@@ -1,6 +1,7 @@
 # Golden Prompts — GPT‑5 / GPT‑5 mini / Gemini 2.5 Pro with OS‑MCP
 
 **Facts (read first):**
+
 - These prompts are designed to verify **MCP tool discovery**, **tool use**, **error handling**, and **result quality** across models (GPT‑5, GPT‑5 mini, Gemini 2.5 Pro) with **Copilot Coding Agent**.
 - They assume your MCP server exposes tools broadly like: `os.uprn.lookup`, `os.usrn.lookup`, `os.address.by_postcode`, `os.boundary.ward_geojson`, `os.map.render` (rename in the prompts if your tool names differ).
 - Keep **web search ON** for freshness tests, but several sections **forbid web** to ensure the model uses MCP tools only.
@@ -29,30 +30,36 @@
 
 - _Prompt:_ “Verify tool schemas by issuing **describe/introspect** calls if available. If not available, compile the schema from prior tool listing.”
 
-**Expected:** The agent enumerates tools and produces parameterised, valid test calls without executing them (or executes with safe inputs, depending on client).
+**Expected:** The agent enumerates tools and produces parametrised, valid test calls without executing them (or executes with safe inputs, depending on client).
 
 ---
 
 ## 2) Core functional scenarios (prefer MCP tools; allow web only if MCP lacks data)
 
 ### A. UPRN lookups (exact IDs)
+
 UPRNs to test: `100023336959, 100023338803, 100023338946, 100023371397`  
 _Prompt:_ “Return the **full records** for these UPRNs via MCP tools. Output a concise table (UPRN, address, building type, coordinates, source). If a field is missing, state ‘null’ rather than guessing.”
 
 ### B. USRN lookups
+
 USRNs to test: `20000185, 8400511, 20000002, 8400037, 48003642`  
 _Prompt:_ “Look up each **USRN** and report: name, road class, authority, geometry type/length. Include a one‑sentence caveat about licensing where applicable.”
 
 ### C. Postcode and locality
+
 _Prompt:_ “List all **addresses** in **Gloucester Street, CV1 3BZ**. Include UPRN, address line, and geo‑point. If your tool works by postcode, filter to the street in post‑processing.”
 
 ### D. Named place & buildings
+
 _Prompt:_ “List **buildings on Downing Street, London** with UPRN (if available), building type, and polygon centroid. Give results only from MCP tools.”
 
 ### E. Boundary geometry as GeoJSON
+
 _Prompt:_ “Return **Coventry ward boundaries** as **GeoJSON** via MCP and summarise the count, names, and bounding boxes.”
 
 ### F. Quick map artefact (if your server supports it)
+
 _Prompt:_ “Render a simple **static map** of **Downing Street buildings** with outlines and labels. Return a PNG or an HTML tile URL. If not supported, state that clearly.”
 
 **Expected:** Uses MCP tools, not web. Outputs structured tables/GeoJSON. States limitations explicitly.

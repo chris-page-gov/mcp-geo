@@ -2,7 +2,7 @@
 
 ## Prompt
 
-I want to use Codex to create the MCP server described in the documents [text](<Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx>) + [text](<Documentation collection task.docx>) and ensure coverage of all the data described in the documentation collection.
+I want to use Codex to create the MCP server described in the documents [Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP)](<Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx>) + [Documentation collection task](<Documentation collection task.docx>) and ensure coverage of all the data described in the documentation collection.
 
 It seems that I need to break this down into tasks, like feature requests. Can you create a complete set of these that I can use Codex to create the application or is there a better way for me to use an agent to create it
 
