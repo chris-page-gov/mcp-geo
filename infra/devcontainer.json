@@ -1,8 +1,10 @@
 {
   "name": "MCP DevContainer",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "build": {
+    "dockerfile": "../infra/Dockerfile",
+    "context": ".."
+  },
   "features": {},
-  "postCreateCommand": "pip install fastapi uvicorn python-dotenv",
   "customizations": {
     "vscode": {
       "settings": {},

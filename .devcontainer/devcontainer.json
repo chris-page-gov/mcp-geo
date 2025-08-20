@@ -23,7 +23,9 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "docker.docker"
       ]
     }
   }
