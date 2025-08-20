@@ -1,0 +1,22 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/v1alpha/mcp.json",
+  "mcpServers": {
+    "os-mcp-stdio": {
+      "command": "./scripts/os-mcp",
+      "args": [],
+      "env": {
+        "OS_API_KEY": "${env:OS_API_KEY}",
+        "ONS_API_KEY": "${env:ONS_API_KEY}",
+        "LOG_LEVEL": "info"
+      },
+      "autoApprove": ["tools", "resources"]
+    },
+    "os-mcp-http": {
+      "url": "http://localhost:7337/",
+      "headers": {
+        "Authorization": "Bearer ${env:OS_MCP_TOKEN}"
+      },
+      "autoApprove": ["tools", "resources"]
+    }
+  }
+}
