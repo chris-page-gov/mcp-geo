@@ -1,11 +1,9 @@
 {
   "name": "os-mcp-dev",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
   "remoteUser": "vscode",
   "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
     }
@@ -18,7 +16,7 @@
     "PYTHONPATH": "/workspaces/os-mcp"
   },
   "forwardPorts": [8000, 5173],
-  "postCreateCommand": "pip install --user -e .[test] && (cd frontend && npm install --no-audit --no-fund || true)",
+  "postCreateCommand": "pip install --upgrade pip && pip install .[test] && (cd frontend && npm install --no-audit --no-fund || true)",
   "postStartCommand": "pip install --user -e .[test] >/dev/null 2>&1 || true",
   "customizations": {
     "vscode": {
