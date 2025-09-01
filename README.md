@@ -43,7 +43,7 @@ A production-ready Model Context Protocol (MCP) server for geospatial and ONS to
 - `tools/` — Tool implementations (stubs)
 - `resources/` — Static resources (code lists, boundaries)
 - `playground/` — Playground UI (stub)
-- `infra/` — Dockerfile, devcontainer, infra
+- `.devcontainer/` — Dockerfile, devcontainer config
 - `tests/` — Unit and contract tests
 - `docs/` — Documentation, backlog, examples
 

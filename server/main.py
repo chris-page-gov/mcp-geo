@@ -32,7 +32,7 @@ app.include_router(playground.router)
 # Health check endpoint
 @app.get("/healthz")
 def healthz():
-    return {"ok": True}
+    return {"status": "OK"}
 
 
 

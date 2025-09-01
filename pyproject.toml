@@ -15,9 +15,11 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "pydantic",
+    "pydantic-settings",
     "python-dotenv",
     "loguru",
-    "pytest"
+    "pytest",
+    "requests"
 ]
 
 [project.optional-dependencies]

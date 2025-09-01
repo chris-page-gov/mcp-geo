@@ -13,7 +13,7 @@ def call(endpoint, method="get", **kwargs):
 def test_healthz():
     resp = call("/healthz")
     assert resp.status_code == 200
-    assert resp.json().get("ok") is True
+    assert resp.json().get("status") == "OK"
 
 def test_tools_list():
     resp = call("/tools/list")
