@@ -10,6 +10,11 @@ A production-ready Model Context Protocol (MCP) server for geospatial and ONS to
 - Tool call transcript endpoint for playground UI
 - Docker and devcontainer support
 
+
+## SSL & Certificate Reliability
+
+The devcontainer and Dockerfile are configured to ensure CA certificates are present and Python requests use the correct certifi CA bundle. This guarantees reliable SSL connections for all Python and system tools.
+
 ## Quickstart
 
 1. **Clone the repo and open in VS Code (with devcontainer support):**
@@ -30,15 +35,48 @@ A production-ready Model Context Protocol (MCP) server for geospatial and ONS to
 	```
 4. **Test endpoints:**
 	- `GET /healthz` — health check
-	- `GET /tools/list` — list available tools
-	- `POST /tools/call` — call a tool (stub)
+	- `GET /tools/list` — list available tools (including all Epic B Ordnance Survey tools)
+	- `POST /tools/call` — call a tool (all Epic B tools return 501 Not Implemented except `os_places.by_postcode`)
 	- `GET /resources/list` — list available resources
 	- `GET /playground/transcript` — tool call transcript
 
 ## Configuration
 - Copy `.env.example` to `.env` and set your API keys and config.
 
+- `server/` — FastAPI app, config, endpoints
+- `tools/` — Tool implementations (stubs)
+- `resources/` — Static resources (code lists, boundaries)
+- `playground/` — Playground UI (stub)
+- `.devcontainer/` — Dockerfile, devcontainer config
+- `tests/` — Unit and contract tests
+- `docs/` — Documentation, backlog, examples
+
+## Available Ordnance Survey (Epic B) Tools
+
+The following OS tools are scaffolded and available via `/tools/list` and `/tools/call`:
+
+- os_places.search
+- os_places.by_postcode
+- os_places.by_uprn
+- os_places.nearest
+- os_places.within
+- os_linked_ids.get
+- os_features.query
+- os_names.find
+- os_names.nearest
+- os_maps.render
+- os_vector_tiles.descriptor
+
+All Epic B tools return 501 Not Implemented with the standard error model, except `os_places.by_postcode` (returns real or stub data if configured).
+
 ## Project Structure
+- `server/` — FastAPI app, config, endpoints
+- `tools/` — Tool implementations (stubs)
+- `resources/` — Static resources (code lists, boundaries)
+- `playground/` — Playground UI (stub)
+- `.devcontainer/` — Dockerfile, devcontainer config
+- `tests/` — Unit and contract tests
+- `docs/` — Documentation, backlog, examples
 - `server/` — FastAPI app, config, endpoints
 - `tools/` — Tool implementations (stubs)
 - `resources/` — Static resources (code lists, boundaries)

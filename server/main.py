@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -12,6 +11,7 @@ from server.mcp import playground
 
 
 app = FastAPI(title="MCP Geo Server")
+print("[DEBUG] server/main.py loaded", flush=True)
 
 # Middleware for correlation ID and request logging
 @app.middleware("http")
@@ -39,10 +39,17 @@ def healthz():
 # Error handler for uniform error model with PII-safe redaction
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
+    print("[DEBUG] Entered generic_exception_handler", flush=True)
+    import traceback
     correlation_id = getattr(request.state, "correlation_id", None)
     safe_message = str(exc).replace(settings.OS_API_KEY, "[REDACTED]") if hasattr(settings, "OS_API_KEY") else str(exc)
-    logger.error(f"Unhandled error: {safe_message} correlation_id={correlation_id}")
+    tb = traceback.format_exc()
+    logger.error(f"Unhandled error: {safe_message} correlation_id={correlation_id}\nTraceback:\n{tb}")
+    # Print the traceback directly to the console for debugging
+    print("\n--- MCP SERVER EXCEPTION TRACEBACK ---\n", flush=True)
+    print(tb, flush=True)
+    print("--- END TRACEBACK ---\n", flush=True)
     return JSONResponse(
         status_code=500,
-        content={"isError": True, "code": "INTERNAL_ERROR", "message": safe_message, "correlationId": correlation_id},
+        content={"isError": True, "code": "INTERNAL_ERROR", "message": safe_message, "correlationId": correlation_id, "traceback": tb},
     )
