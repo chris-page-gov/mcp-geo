@@ -5,6 +5,7 @@ import uuid
 import time
 
 from .config import settings
+from server.security import mask_in_text
 from server.mcp import tools
 from server.mcp import resources
 from server.mcp import playground
@@ -16,14 +17,25 @@ print("[DEBUG] server/main.py loaded", flush=True)
 # Middleware for correlation ID and request logging
 @app.middleware("http")
 async def add_correlation_id_and_log(request: Request, call_next):
-    correlation_id = request.headers.get("x-correlation-id") or str(uuid.uuid4())
+    correlation_id = (
+        request.headers.get("x-correlation-id") or str(uuid.uuid4())
+    )
     request.state.correlation_id = correlation_id
     start_time = time.time()
-    logger.info(f"[start] {request.method} {request.url.path} correlation_id={correlation_id}")
+    logger.info(
+        f"[start] {request.method} {request.url.path} correlation_id={correlation_id}"
+    )
     response = await call_next(request)
     process_time = (time.time() - start_time) * 1000
     response.headers["x-correlation-id"] = correlation_id
-    logger.info(f"[end] {request.method} {request.url.path} correlation_id={correlation_id} status={response.status_code} time_ms={process_time:.2f}")
+    logger.info(
+        "[end] %s %s correlation_id=%s status=%s time_ms=%.2f",
+        request.method,
+        request.url.path,
+        correlation_id,
+        response.status_code,
+        process_time,
+    )
     return response
 app.include_router(tools.router)
 app.include_router(resources.router)
@@ -36,20 +48,34 @@ def healthz():
 
 
 
-# Error handler for uniform error model with PII-safe redaction
+# Error handler for uniform error model with optional traceback (DEBUG_ERRORS)
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    print("[DEBUG] Entered generic_exception_handler", flush=True)
     import traceback
     correlation_id = getattr(request.state, "correlation_id", None)
-    safe_message = str(exc).replace(settings.OS_API_KEY, "[REDACTED]") if hasattr(settings, "OS_API_KEY") else str(exc)
-    tb = traceback.format_exc()
-    logger.error(f"Unhandled error: {safe_message} correlation_id={correlation_id}\nTraceback:\n{tb}")
-    # Print the traceback directly to the console for debugging
-    print("\n--- MCP SERVER EXCEPTION TRACEBACK ---\n", flush=True)
-    print(tb, flush=True)
-    print("--- END TRACEBACK ---\n", flush=True)
-    return JSONResponse(
-        status_code=500,
-        content={"isError": True, "code": "INTERNAL_ERROR", "message": safe_message, "correlationId": correlation_id, "traceback": tb},
+    raw_message = str(exc)
+    safe_message = mask_in_text(
+        raw_message, [getattr(settings, "OS_API_KEY", "")]
     )
+    tb: str | None = traceback.format_exc()
+    if settings.DEBUG_ERRORS:
+        logger.error(
+            "Unhandled error: %s correlation_id=%s\nTraceback:\n%s",
+            safe_message,
+            correlation_id,
+            tb,
+        )
+    else:
+        logger.error(
+            "Unhandled error: %s correlation_id=%s", safe_message, correlation_id
+        )
+        tb = None
+    content = {
+        "isError": True,
+        "code": "INTERNAL_ERROR",
+        "message": safe_message,
+        "correlationId": correlation_id,
+    }
+    if tb:
+        content["traceback"] = tb
+    return JSONResponse(status_code=500, content=content)

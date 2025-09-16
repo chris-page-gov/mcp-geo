@@ -1,83 +1,111 @@
-# Repository Guidelines
+# MCP Geo Repository Guidelines
 
-## Project Structure & Module Organization
-- `src/disk_catalogue/`: Python package (scanner and public API).
-- `tests/`: Pytest suite (`test_*.py`).
-- `scripts/`: Dev and data tooling (lint, tests, CSV/DuckDB helpers).
-- `output/`: Generated CSVs from drive scans (gitignored).
-- Root SQL/CSV docs: `duckdb_schema.sql`, `sample_queries.sql`, `drive_manifest.csv`.
+This document defines how agents (and humans) should work within the `mcp-geo` repository. It replaces a template from a different project—details below are specific to this codebase.
 
-## Build, Test, and Development Commands
-- Install (editable, with dev tools): `pip install -e .[dev]` (or `uv pip install -e .[dev]`).
-- Run tests (with coverage via pyproject): `pytest` or `scripts/run_tests.sh`.
-- Lint/format/type-check: `scripts/lint.sh` (runs ruff, black --check, mypy).
-- Format code: `ruff format .` (or `black .`).
+## Current Tech & Scope
 
-## Coding Style & Naming Conventions
-- Python 3.11, 4‑space indent, LF endings; max line length 100.
-- Use `ruff` (rules: E,F,W,I,B,C4,UP,RUF) and `black` for formatting.
-- Types: `mypy --strict` is enabled; add/maintain type hints.
-- Naming: modules and functions `snake_case`, classes `PascalCase`, constants `UPPER_SNAKE_CASE`.
-- Package import path is `disk_catalogue` (ensure code lives under `src/`).
+- FastAPI-based Model Context Protocol (MCP) server providing geospatial/Ordnance Survey (OS) tooling.
+- Python >=3.11 runtime (update `pyproject.toml` requires-python if bumped).
+- Endpoints implemented so far: `/healthz`, `/tools/list`, `/tools/call`, `/resources/list`, playground transcript endpoints.
+- Epic B OS tools scaffolded (all 501 except `os_places.by_postcode`).
 
-## Testing Guidelines
-- Framework: `pytest` with `pytest-cov` (configured in `pyproject.toml`).
-- Name tests `test_*.py`; prefer small, deterministic unit tests.
-- Keep/raise coverage when changing behavior; add tests for regressions.
-- Use `tmp_path` and fixtures for filesystem interactions.
+## Repository Layout
 
-## Commit & Pull Request Guidelines
-- Follow Conventional Commits (see `commit-template.txt`): `type(scope): subject`.
-  Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci.
-- PRs: include clear description, linked issues, and before/after notes. For data/CLI changes, show example command/output.
-- Run `scripts/lint.sh` and `pytest` locally before opening a PR.
+- `server/`: FastAPI app (`main.py`), config (`config.py`), MCP routers (`mcp/`).
+- `server/mcp/tools.py`: Tool registry + dispatcher (needs refactor to per-tool modules when implementations grow).
+- `server/mcp/resources.py`: Resource listing (placeholder; expand with metadata + retrieval endpoints).
+- `server/mcp/playground.py`: Transcript stub (synchronous; should become async and validated).
+- `resources/`: Static data (currently minimal / placeholder folders expected).
+- `tools/`: Future concrete tool implementation modules (currently unused; align with `server/mcp/tools.py`).
+- `playground/`: Placeholder for a web or CLI UI (not yet populated with frontend assets here).
+- `tests/`: Pytest suite (currently missing critical coverage—see gaps section).
+- `.devcontainer/`: Development container configuration.
+- `CHANGELOG.md`: Unreleased section tracks epics.
+- `pyproject.toml`: Project metadata & dependencies.
+- `.env.example`: Example environment; currently only OS_API_KEY stub.
 
-## Docs & Changelog Sync
-- Always update `CHANGELOG.md` (Unreleased) for user-visible changes: new scripts/CLI flags, schema/view changes, devcontainer behavior, or Git ignore patterns.
-- Keep docs current when code changes:
-  - `README.md`: quick start, catalogue/queries examples, new commands.
-  - `README_cataloguing.md`: end-to-end workflow, orchestrator usage, identifiers (`Drive`, `RelativePath`, `FileKey`).
-  - `sample_queries.sql`: add/edit queries if views/columns change.
-  - Script headers (`scripts/*.sh`, `scripts/*.py`): usage and outputs.
-- If you touch devcontainer or mounts, note it in README “Dev Container” and in the changelog.
-- Do not bump version; maintainers will cut releases. Leave changes under [Unreleased].
+## Build & Run
 
-## Changelog, Versioning, and Commit Practices
-- Working changes (non-release):
-  - Append to `CHANGELOG.md` under `[Unreleased]` with clear bullets (Added/Changed/Fixed/Removed).
-  - Commit with a docs-focused message, e.g.: `docs(changelog): note ingest view changes and new scan script`.
-  - Ensure docs/tests align with the changelog entry.
-- Preparing a release (maintainers):
-  1) Sync with the default branch: `git fetch origin && git switch main && git rebase origin/main`.
-  2) Choose the next SemVer. Update in two places:
-     - `pyproject.toml` → `[project].version`
-     - `src/disk_catalogue/__init__.py` → `__version__`
-  3) Finalize `CHANGELOG.md`:
-     - Move items from `[Unreleased]` to a new `## [x.y.z] - YYYY-MM-DD` section.
-     - Leave `[Unreleased]` in place for future work (empty or with a placeholder).
-  4) Commit with a concise release message whose body mirrors the changelog bullets:
-     - Subject: `chore(release): vX.Y.Z`
-     - Body: copy the `Added/Changed/Fixed` bullets from the new section.
-     - Example:
-       - `chore(release): v0.1.2` + body listing each change exactly as in the changelog.
-  5) Tag the release: `git tag -a vX.Y.Z -m "Release vX.Y.Z"` and push: `git push && git push --tags`.
-  6) Verify: run `scripts/lint.sh`, `scripts/run_tests.sh`, and a quick schema validate.
-- Post‑release: start adding new items back under `[Unreleased]` for subsequent PRs.
+- Devcontainer: open in VS Code, auto installs deps via `postCreateCommand`.
+- Local manual run:
 
-## CI Releases
-- This repo includes a GitHub Actions workflow that creates a Release on tag push (`v*`).
-- The workflow:
-  - Builds Python distributions (`dist/*`).
-  - Extracts the notes for the matching version from `CHANGELOG.md`.
-  - Publishes a GitHub Release and uploads `dist/*` as assets.
-- To publish: follow the release steps above and push the tag. The action runs automatically.
+  ```bash
+  pip install -e .[test]
+  uvicorn server.main:app --reload
+  ```
 
-## Security & Configuration Tips
-- Do not commit secrets or local paths; `.env*`, output CSVs, and DuckDB files are gitignored.
-- Do not commit real drive manifests. Commit `drive_manifest.template.csv`; keep `drive_manifest.csv` untracked (gitignored).
-- When scanning drives, prefer the dev container and read‑only mounts (see `build.md`).
-- Large data belongs in `output/` and stays out of version control.
+- Alternate entrypoint: `python run.py` (ensure it points to uvicorn).
 
-## Agent-Specific Notes
-- Make minimal, focused changes; do not rename files or APIs without discussion.
-- Obey these guidelines for any files you touch and update docs/tests alongside code changes.
+## Coding Standards
+
+- 4-space indent, LF endings, max line length 100 (enforce via editorconfig/formatter—NOTE: no formatter config committed yet).
+- Use type hints everywhere; introduce `mypy` (not currently configured) for stricter checking.
+- Consistent error model: `{ "isError": bool, "code": str, "message": str, ... }`. Add `correlationId` where available; do NOT expose stack traces in production responses—current implementation leaks `traceback` (needs gating behind an env flag like `DEBUG_ERRORS`).
+- Pagination fields: `nextPageToken` not `next_page` (already consistent).
+- Logging: uses `loguru`; ensure secrets redaction is centralised (currently only OS_API_KEY redacted ad‑hoc in one handler).
+
+## Tools & Resources Conventions
+
+- Tool namespace: `os_<domain>.<action>` (keep consistent; document allowed verbs: `search|get|query|find|nearest|within|render|descriptor`).
+- Each tool should provide: name, version, description, input schema, output schema (currently missing—add a `/tools/describe` or embed metadata in `/tools/list`).
+- Move one-off logic in `call_tool` into per-tool functions under `tools/` or `server/mcp/tools/` sub-package.
+
+## Testing Strategy (To Be Implemented)
+
+- Add tests: `tests/test_healthz.py`, `tests/test_tools_list.py`, `tests/test_postcode_validations.py`, `tests/test_error_model.py`.
+- Use `httpx.AsyncClient` with FastAPI lifespan context.
+- Mock external OS API with `responses` or `pytest_httpx` fixture.
+- Add golden test fixtures for known postcode payloads.
+
+## Commits & PRs
+
+- Use Conventional Commits: `feat(server): implement os_places.by_postcode parsing`.
+- Each PR must: update `CHANGELOG.md`, add/adjust docs, include/adjust tests.
+- Avoid bundling unrelated refactors with feature delivery.
+
+## Release Process (Future)
+
+- When stable: introduce GitHub Actions workflow for tagging & publishing (not present yet—add `.github/workflows/release.yml`).
+- Version bump: update `pyproject.toml`; optionally add `__version__` in `server/__init__.py`.
+
+## Security & Configuration
+
+- Never log full secrets (centralise redaction helper: e.g., `server/security.py`).
+- Validate all external inputs (postcode regex OK; add length and normalization utilities module).
+- Timeouts on all outbound HTTP calls (already set for OS API: `timeout=5`). Add retry strategy (e.g., `tenacity`) for transient errors.
+
+## Observability Enhancements (Backlog)
+
+- Add structured JSON logging sink.
+- Add request/response size metrics and tool latency histograms (Prometheus or OTLP exporter).
+- Correlation ID should also propagate to outbound requests via header injection.
+
+## Agent Execution Rules
+
+- Do not introduce new dependencies without updating `pyproject.toml` and rationale in PR.
+- Prefer incremental refactors (extract functions before rewriting blocks).
+- If adding a tool: include JSON schema for request/response in docstring.
+
+## Gaps & Immediate Action Items
+
+1. Missing test suite (only implied tests; create baseline).
+2. Error handler exposes traceback—add config flag gating.
+3. Tool architecture monolithic—refactor to modular soon.
+4. No lint/type tooling configured (add ruff + mypy config sections in `pyproject.toml`).
+5. Duplicate/verbose sections in `README.md` (project structure repeated).
+6. `CHANGELOG.md` repeats Completed Epic sections under both bullet lists and Fixed; normalise categories.
+7. No CI workflow defined (add lint/test pipeline).
+8. Security: OS API key redaction only; create general `redact()` helper.
+9. Playground transcript endpoint synchronous & unvalidated (should parse body, not call `request.json()` incorrectly—it is async in FastAPI; current code likely broken).
+10. `tools` vs `server/mcp/tools.py` duplication of concept; unify.
+
+## Roadmap (Suggested)
+
+- Phase 1: Tests + refactor tool dispatch.
+- Phase 2: Add schemas + describe endpoint.
+- Phase 3: Observability + retries + CI pipeline.
+- Phase 4: Implement Epic B tool functionality incrementally with contract tests.
+
+---
+
+Last updated: (keep current when editing)

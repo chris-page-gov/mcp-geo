@@ -6,11 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "mcp-geo"
 version = "0.1.0"
 description = "MCP server for geospatial and ONS tools"
-authors = [
-    { name = "DCMS-TECH" }
-]
+authors = [ { name = "DCMS-TECH" } ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
@@ -18,12 +16,36 @@ dependencies = [
     "pydantic-settings",
     "python-dotenv",
     "loguru",
-    "pytest",
     "requests"
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "httpx"]
+test = ["pytest", "httpx", "anyio"]
+dev = ["ruff", "mypy", "types-requests", "pytest", "httpx", "anyio"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "W", "I", "B", "C4", "UP", "RUF"]
+
+[tool.ruff.isort]
+known-first-party = ["server", "tools"]
+
+[tool.mypy]
+python_version = 3.11
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+no_implicit_optional = true
+show_error_codes = true
+pretty = true
+exclude = ["migrations/"]
+
+[tool.mypy-server]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
 
 [tool.setuptools]
 packages = ["server", "tools"]
