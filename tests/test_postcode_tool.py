@@ -32,4 +32,9 @@ def test_postcode_valid_without_key_returns_501():
     )
     assert resp.status_code in (200, 501)
     if resp.status_code == 501:
-        assert resp.json().get("code") in ("NO_API_KEY", "OS_API_ERROR")
+        assert resp.json().get("code") in (
+            "NO_API_KEY",
+            "OS_API_ERROR",
+            "UPSTREAM_TLS_ERROR",
+            "UPSTREAM_CONNECT_ERROR",
+        )

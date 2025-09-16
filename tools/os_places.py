@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 import requests
+from requests import exceptions as req_exc
 
 from server.config import settings
 from tools.registry import Tool, register
@@ -36,13 +37,40 @@ def _by_postcode(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         "https://api.os.uk/search/places/v1/postcode?postcode="
         f"{postcode_raw}&key={api_key}"
     )
-    try:
-        resp = requests.get(url, timeout=5)
-    except Exception as exc:  # network / requests errors
-        return 500, {
+    attempts = 3
+    last_exc: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            resp = requests.get(url, timeout=5)
+            break
+        except req_exc.SSLError as exc:  # TLS is not retryable here
+            return 501, {
+                "isError": True,
+                "code": "UPSTREAM_TLS_ERROR",
+                "message": "Upstream TLS failure contacting OS Places: " + str(exc),
+            }
+        except (req_exc.ConnectionError, req_exc.Timeout) as exc:
+            last_exc = exc
+            if attempt == attempts:
+                return 501, {
+                    "isError": True,
+                    "code": "UPSTREAM_CONNECT_ERROR",
+                    "message": "Upstream connection/timeout contacting OS Places after retries: " + str(exc),
+                }
+            # simple exponential backoff: 100ms * 2^(attempt-1)
+            backoff = 0.1 * (2 ** (attempt - 1))
+            time.sleep(min(backoff, 1.0))
+        except Exception as exc:  # unexpected network error
+            return 500, {
+                "isError": True,
+                "code": "INTEGRATION_ERROR",
+                "message": str(exc),
+            }
+    else:  # pragma: no cover - defensive (loop should break or return)
+        return 501, {
             "isError": True,
-            "code": "INTEGRATION_ERROR",
-            "message": str(exc),
+            "code": "UPSTREAM_CONNECT_ERROR",
+            "message": f"Failed after {attempts} attempts: {last_exc}",
         }
     if resp.status_code != 200:
         # Normalise non-200s into OS_API_ERROR

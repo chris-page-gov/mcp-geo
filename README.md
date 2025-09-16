@@ -69,6 +69,33 @@ The following OS tools are scaffolded and available via `/tools/list` and `/tool
 
 All Epic B tools return 501 Not Implemented with the standard error model, except `os_places.by_postcode` (returns real or stub data if configured).
 
+## Error Codes
+
+Tools and endpoints return a uniform error envelope:
+
+```
+{
+	"isError": true,
+	"code": "<ERROR_CODE>
+	"message": "Human-readable description",
+	...
+}
+```
+
+Current error codes in use:
+
+| Code | Meaning |
+|------|---------|
+| INVALID_INPUT | Request failed validation (missing/invalid fields) |
+| UNKNOWN_TOOL | Tool name not registered |
+| NO_API_KEY | Required upstream API key not configured |
+| OS_API_ERROR | Non-200 response returned from OS API |
+| UPSTREAM_TLS_ERROR | TLS / certificate verification failure calling upstream |
+| UPSTREAM_CONNECT_ERROR | Connection or timeout reaching upstream |
+| INTEGRATION_ERROR | Unexpected upstream/network error (catch-all) |
+
+Pagination responses also include `nextPageToken` when additional pages exist.
+
 ## Project Structure
 - `server/` — FastAPI app, config, endpoints
 - `tools/` — Tool implementations (stubs)

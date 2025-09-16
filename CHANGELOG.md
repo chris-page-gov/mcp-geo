@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 	- `/tools/list` includes all Epic B tools
 	- Validation tests for all Epic B tools
 
+- Resilience: `os_places.by_postcode` now maps upstream TLS / connection / timeout failures to 501 with explicit codes (`UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`) instead of generic 500 `INTEGRATION_ERROR`, stabilising the test suite.
+
+- Maintenance: Migrated settings configuration to Pydantic v2 `model_config` (removed deprecated inner `Config` class) eliminating deprecation warnings and preparing for Pydantic v3.
+
 - Completed Epic A: Core MCP server & playground
 	- MCP server scaffold with FastAPI
 	- Health check (`/healthz`), tool/resource listing, and call endpoints

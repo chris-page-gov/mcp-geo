@@ -7,9 +7,11 @@ class Settings(BaseSettings):
     DEBUG_ERRORS: bool = False
     LOG_JSON: bool = False
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    # Pydantic v2 style configuration (replaces deprecated inner Config class)
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+    }
 
 load_dotenv()
 
