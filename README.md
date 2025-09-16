@@ -35,8 +35,8 @@ The devcontainer and Dockerfile are configured to ensure CA certificates are pre
 	```
 4. **Test endpoints:**
 	- `GET /healthz` — health check
-	- `GET /tools/list` — list available tools (including all Epic B Ordnance Survey tools)
-	- `POST /tools/call` — call a tool (all Epic B tools return 501 Not Implemented except `os_places.by_postcode`)
+	- `GET /tools/list` — list available tools
+	- `POST /tools/call` — invoke a tool (Epic B tools perform live OS API calls when `OS_API_KEY` is set, otherwise return 501 with `NO_API_KEY`)
 	- `GET /resources/list` — list available resources
 	- `GET /playground/transcript` — tool call transcript
 
@@ -67,7 +67,7 @@ The following OS tools are scaffolded and available via `/tools/list` and `/tool
 - os_maps.render
 - os_vector_tiles.descriptor
 
-All Epic B tools return 501 Not Implemented with the standard error model, except `os_places.by_postcode` (returns real or stub data if configured).
+Epic B tools now implement real outbound calls (search, addresses, names, features, linked IDs, map metadata, vector tiles descriptor) with graceful degradation (501) if no API key or upstream issues.
 
 ## Error Codes
 

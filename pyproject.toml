@@ -20,8 +20,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "httpx", "anyio"]
-dev = ["ruff", "mypy", "types-requests", "pytest", "httpx", "anyio"]
+test = ["pytest", "pytest-cov", "httpx", "anyio"]
+dev = ["ruff", "mypy", "types-requests", "pytest", "pytest-cov", "httpx", "anyio"]
 
 [tool.ruff]
 line-length = 100

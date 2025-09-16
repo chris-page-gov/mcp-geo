@@ -6,6 +6,12 @@ from tools.registry import get, list_tools, all_tools
 
 # Import tool modules so registration side-effects execute
 import tools.os_places  # noqa: F401
+import tools.os_places_extra  # noqa: F401
+import tools.os_names  # noqa: F401
+import tools.os_linked_ids  # noqa: F401
+import tools.os_features  # noqa: F401
+import tools.os_maps  # noqa: F401
+import tools.os_vector_tiles  # noqa: F401
 
 router = APIRouter()
 
