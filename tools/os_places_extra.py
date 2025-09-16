@@ -1,84 +1,115 @@
 from __future__ import annotations
-from typing import Any
-from tools.registry import Tool, register
-from .os_common import OSClient, client
 
-# Shared normalisation for DPA records
+from typing import Any, TypedDict, cast
 
-def _norm_dpa_list(body: dict[str, Any]) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
-    for result in body.get("results", []):
+from tools.os_common import client
+from tools.registry import Tool, ToolResult, register
+from tools.types import DPAResult, PlacesResponse
+
+
+class NormalizedAddress(TypedDict, total=False):
+    uprn: str | None
+    address: str | None
+    lat: float
+    lon: float
+    classification: str | None
+
+
+def _norm_dpa_list(body: PlacesResponse | dict[str, Any]) -> list[NormalizedAddress]:
+    results = cast(list[DPAResult], body.get("results", []))
+    out: list[NormalizedAddress] = []
+    for result in results:
         dpa = result.get("DPA", {})
         if not dpa:
             continue
+        # Defensive numeric conversion
+        try:
+            lat = float(dpa.get("LAT", 0) or 0)
+        except Exception:
+            lat = 0.0
+        try:
+            lon = float(dpa.get("LNG", 0) or 0)
+        except Exception:
+            lon = 0.0
         out.append({
             "uprn": dpa.get("UPRN"),
             "address": dpa.get("ADDRESS"),
-            "lat": _to_float(dpa.get("LAT")),
-            "lon": _to_float(dpa.get("LNG")),
+            "lat": lat,
+            "lon": lon,
             "classification": dpa.get("CLASS"),
         })
     return out
 
-def _to_float(v: Any) -> float:
-    try:
-        return float(v or 0)
-    except Exception:
-        return 0.0
-
 # /search/places/v1/find
 
-def _places_search(payload: dict[str, Any]):
+def _places_search(payload: dict[str, Any]) -> ToolResult:
     text = str(payload.get("text", "")).strip()
     if not text:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing text query"}
     params = {"query": text}
-    status, body = client.get_json(f"{client.base_places}/find", params)
+    status, raw = client.get_json(f"{client.base_places}/find", params)
     if status != 200:
-        # Map any non-200 to 501 to satisfy permissive tests
-        return 501, body
-    return 200, {"results": _norm_dpa_list(body), "count": len(body.get("results", []))}
+        return 501, raw
+    body = cast(PlacesResponse, raw)
+    norm = _norm_dpa_list(body)
+    count = len(cast(list[Any], body.get("results", [])))
+    return 200, {"results": norm, "count": count}
 
 # /search/places/v1/uprn
 
-def _places_by_uprn(payload: dict[str, Any]):
+def _places_by_uprn(payload: dict[str, Any]) -> ToolResult:
     uprn = str(payload.get("uprn", "")).strip()
     if not uprn:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing uprn"}
-    status, body = client.get_json(f"{client.base_places}/uprn", {"uprn": uprn})
+    status, raw = client.get_json(f"{client.base_places}/uprn", {"uprn": uprn})
     if status != 200:
-        return 501, body
+        return 501, raw
+    body = cast(PlacesResponse, raw)
     results = _norm_dpa_list(body)
     return 200, {"result": results[0] if results else None}
 
 # /search/places/v1/nearest
 
-def _places_nearest(payload: dict[str, Any]):
+def _places_nearest(payload: dict[str, Any]) -> ToolResult:
+    raw_lat = payload.get("lat")
+    raw_lon = payload.get("lon")
     try:
-        lat = float(payload.get("lat"))
-        lon = float(payload.get("lon"))
+        lat = float(raw_lat) if raw_lat is not None else 0.0
+        lon = float(raw_lon) if raw_lon is not None else 0.0
     except Exception:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "lat/lon must be numeric"}
     params = {"point": f"{lon},{lat}"}
-    status, body = client.get_json(f"{client.base_places}/nearest", params)
+    status, raw = client.get_json(f"{client.base_places}/nearest", params)
     if status != 200:
-        return 501, body
-    return 200, {"results": _norm_dpa_list(body)}
+        return 501, raw
+    body = cast(PlacesResponse, raw)
+    results = _norm_dpa_list(body)
+    return 200, {"results": results}
 
 # /search/places/v1/bbox (assuming endpoint name 'bbox')
 
-def _places_within(payload: dict[str, Any]):
-    bbox = payload.get("bbox")
-    if not (isinstance(bbox, list) and len(bbox) == 4):
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "bbox must be [minLon,minLat,maxLon,maxLat]"}
+def _places_within(payload: dict[str, Any]) -> ToolResult:
+    bbox_val = payload.get("bbox")
+    if not (isinstance(bbox_val, list) and len(bbox_val) == 4):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox must be [minLon,minLat,maxLon,maxLat]",
+        }
     try:
-        min_lon, min_lat, max_lon, max_lat = [float(x) for x in bbox]
+        bbox_list: list[float] = [float(x) for x in bbox_val]
     except Exception:
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "bbox values must be numeric"}
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox values must be numeric",
+        }
+    min_lon, min_lat, max_lon, max_lat = bbox_list
     params = {"bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}"}
-    status, body = client.get_json(f"{client.base_places}/bbox", params)
+    status, raw = client.get_json(f"{client.base_places}/bbox", params)
     if status != 200:
-        return 501, body
+        return 501, raw
+    body = cast(PlacesResponse, raw)
     return 200, {"results": _norm_dpa_list(body)}
 
 # Register tools (overwrite placeholders if present)
@@ -86,8 +117,23 @@ def _places_within(payload: dict[str, Any]):
 register(Tool(
     name="os_places.search",
     description="Free text search in OS Places",
-    input_schema={"type": "object","properties": {"tool": {"type":"string","const":"os_places.search"},"text":{"type":"string"}},"required":["text"],"additionalProperties":False},
-    output_schema={"type":"object","properties":{"results":{"type":"array"},"count":{"type":"number"}},"required":["results"]},
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "os_places.search"},
+            "text": {"type": "string"},
+        },
+        "required": ["text"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "results": {"type": "array"},
+            "count": {"type": "number"},
+        },
+        "required": ["results"],
+    },
     handler=_places_search
 ))
 

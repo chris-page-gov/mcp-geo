@@ -4,6 +4,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+ToolResult = tuple[int, dict[str, Any]]
+
 
 @dataclass
 class Tool:
@@ -12,11 +14,9 @@ class Tool:
     version: str = "0.1.0"
     input_schema: dict[str, Any] = field(default_factory=dict)
     output_schema: dict[str, Any] = field(default_factory=dict)
-    handler: (
-        Callable[[dict[str, Any]], tuple[int, dict[str, Any]]] | None
-    ) = None
+    handler: (Callable[[dict[str, Any]], ToolResult] | None) = None
 
-    def call(self, payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    def call(self, payload: dict[str, Any]) -> ToolResult:
         if not self.handler:
             return 501, {
                 "isError": True,

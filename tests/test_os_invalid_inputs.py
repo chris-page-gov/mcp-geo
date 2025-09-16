@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from server.main import app
 
 client = TestClient(app)
@@ -26,5 +27,12 @@ def test_features_query_missing_collection():
 
 
 def test_features_query_bad_bbox():
-    resp = client.post("/tools/call", json={"tool": "os_features.query", "collection": "buildings", "bbox": [0,0,1]})
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1],
+        },
+    )
     assert resp.status_code == 400

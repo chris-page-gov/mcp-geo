@@ -1,7 +1,6 @@
-import json
-import types
 import requests
 from fastapi.testclient import TestClient
+
 from server.main import app
 from tools.os_common import OSClient
 

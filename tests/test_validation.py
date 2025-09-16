@@ -1,4 +1,3 @@
-import pytest
 
 def call(client, endpoint, method="get", **kwargs):
     return getattr(client, method)(endpoint, **kwargs)

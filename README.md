@@ -1,120 +1,90 @@
 # MCP Geo Server
 
-A production-ready Model Context Protocol (MCP) server for geospatial and ONS tools, built with FastAPI and Python. Implements the MCP handshake, tool/resource registry, error model, logging, and a minimal playground transcript panel.
+Production-focused Model Context Protocol (MCP) server for geospatial (Ordnance Survey) tooling built with FastAPI & Python 3.11+. Provides a uniform tool abstraction, typed schemas, structured error model, correlation IDs, and high test coverage (≥90%).
 
-## Features
-- MCP protocol handshake and endpoints (`/tools/list`, `/tools/call`, `/resources/list`)
-- Health check (`/healthz`)
-- Uniform error model and pagination
-- Structured logging, correlation IDs, and request tracing
-- Tool call transcript endpoint for playground UI
-- Docker and devcontainer support
-
-
-## SSL & Certificate Reliability
-
-The devcontainer and Dockerfile are configured to ensure CA certificates are present and Python requests use the correct certifi CA bundle. This guarantees reliable SSL connections for all Python and system tools.
+## Key Features
+- MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`
+- Uniform error envelope and pagination (`nextPageToken`)
+- Dynamic tool registration with schema introspection
+- Structured logging & correlation IDs
+- OS API client with retries and explicit upstream error codes
+- High coverage test suite exercising success + failure paths
 
 ## Quickstart
-
-1. **Clone the repo and open in VS Code (with devcontainer support):**
-	```sh
-	git clone <repo-url>
-	cd mcp-geo
-	# Open in VS Code and reopen in container
-	```
-2. **Install dependencies (if not using devcontainer):**
-	```sh
-	pip install -e .[test]
-	```
-3. **Run the server:**
-	```sh
-	npm run dev
-	# or
-	python run.py
-	```
-4. **Test endpoints:**
-	- `GET /healthz` — health check
-	- `GET /tools/list` — list available tools
-	- `POST /tools/call` — invoke a tool (Epic B tools perform live OS API calls when `OS_API_KEY` is set, otherwise return 501 with `NO_API_KEY`)
-	- `GET /resources/list` — list available resources
-	- `GET /playground/transcript` — tool call transcript
-
-## Configuration
-- Copy `.env.example` to `.env` and set your API keys and config.
-
-- `server/` — FastAPI app, config, endpoints
-- `tools/` — Tool implementations (stubs)
-- `resources/` — Static resources (code lists, boundaries)
-- `playground/` — Playground UI (stub)
-- `.devcontainer/` — Dockerfile, devcontainer config
-- `tests/` — Unit and contract tests
-- `docs/` — Documentation, backlog, examples
-
-## Available Ordnance Survey (Epic B) Tools
-
-The following OS tools are scaffolded and available via `/tools/list` and `/tools/call`:
-
-- os_places.search
-- os_places.by_postcode
-- os_places.by_uprn
-- os_places.nearest
-- os_places.within
-- os_linked_ids.get
-- os_features.query
-- os_names.find
-- os_names.nearest
-- os_maps.render
-- os_vector_tiles.descriptor
-
-Epic B tools now implement real outbound calls (search, addresses, names, features, linked IDs, map metadata, vector tiles descriptor) with graceful degradation (501) if no API key or upstream issues.
-
-## Error Codes
-
-Tools and endpoints return a uniform error envelope:
-
+```bash
+git clone <repo-url>
+cd mcp-geo
+pip install -e .[test]
+uvicorn server.main:app --reload
 ```
-{
-	"isError": true,
-	"code": "<ERROR_CODE>
-	"message": "Human-readable description",
-	...
-}
-```
+Then visit:
+- `GET /healthz`
+- `GET /tools/list`
+- `GET /tools/describe`
+- `POST /tools/call` with `{ "tool": "os_places.by_postcode", "postcode": "SW1A1AA" }`
 
-Current error codes in use:
+Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
 
-| Code | Meaning |
+## Tool Catalog (Epic B Implemented)
+Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.
+
+| Tool | Purpose |
 |------|---------|
-| INVALID_INPUT | Request failed validation (missing/invalid fields) |
-| UNKNOWN_TOOL | Tool name not registered |
-| NO_API_KEY | Required upstream API key not configured |
-| OS_API_ERROR | Non-200 response returned from OS API |
-| UPSTREAM_TLS_ERROR | TLS / certificate verification failure calling upstream |
-| UPSTREAM_CONNECT_ERROR | Connection or timeout reaching upstream |
-| INTEGRATION_ERROR | Unexpected upstream/network error (catch-all) |
+| os_places.search | Free text address search |
+| os_places.by_postcode | UPRNs + addresses for a postcode |
+| os_places.by_uprn | Single address lookup |
+| os_places.nearest | Nearest addresses to a coordinate |
+| os_places.within | Addresses within bbox |
+| os_names.find | Gazetteer name search |
+| os_names.nearest | Nearest named features |
+| os_features.query | NGD features by bbox & collection |
+| os_linked_ids.get | Relationship lookup between UPRN/USRN/TOID |
+| os_maps.render | Static map render metadata (stub/descriptor) |
+| os_vector_tiles.descriptor | Vector tiles style/source descriptor |
 
-Pagination responses also include `nextPageToken` when additional pages exist.
+## Error Model
+All errors conform to:
+```json
+{ "isError": true, "code": "<CODE>", "message": "..." }
+```
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`.
 
 ## Project Structure
-- `server/` — FastAPI app, config, endpoints
-- `tools/` — Tool implementations (stubs)
-- `resources/` — Static resources (code lists, boundaries)
-- `playground/` — Playground UI (stub)
-- `.devcontainer/` — Dockerfile, devcontainer config
-- `tests/` — Unit and contract tests
-- `docs/` — Documentation, backlog, examples
-- `server/` — FastAPI app, config, endpoints
-- `tools/` — Tool implementations (stubs)
-- `resources/` — Static resources (code lists, boundaries)
-- `playground/` — Playground UI (stub)
-- `.devcontainer/` — Dockerfile, devcontainer config
-- `tests/` — Unit and contract tests
-- `docs/` — Documentation, backlog, examples
+```text
+server/        FastAPI app & routers
+tools/         Tool implementations (one module per domain)
+resources/     Static datasets (future expansion)
+playground/    Transcript / UI stubs
+tests/         Pytest suite (≥90% coverage)
+docs/          Backlog & design notes
+.devcontainer/ Dev environment setup
+```
 
-## Development
-- Lint, type-check, and test with `pytest`
-- See `CHANGELOG.md` for release notes
+## Dynamic Tool Registration
+`server/mcp/tools.py` explicitly imports each `tools.*` module at startup to guarantee registration in environments where implicit side-effect imports are skipped (e.g. selective packaging or lazy loaders). This ensures `/tools/describe` always reflects the full catalog without relying on import order.
+
+## Testing & Coverage
+Run tests with:
+```bash
+pytest -q
+```
+Coverage gate (configured) requires ≥90%. Add tests for both success and error branches (retry paths, validation failures, upstream errors). Avoid broad mocks that skip normalization logic.
+
+## Contributing
+- Use Conventional Commits (e.g. `feat(tools): add os_places.within pagination`).
+- Every PR: update `CHANGELOG.md`, add/adjust tests, keep coverage ≥90%.
+- Include JSON schemas (input/output) when adding a tool.
+- Prefer incremental refactors; avoid unrelated changes in feature PRs.
+
+## Examples & Golden Tests
+See `docs/examples.md` for sample payloads, conversation flows, and guidance on chaining tools. Golden scenario tests (`test_golden_scenarios.py`) ensure transformation stability with deterministic mocked upstream responses.
+
+## Configuration
+Copy `.env.example` → `.env` and set `OS_API_KEY`. Optional flags:
+- `DEBUG_ERRORS` (if present / truthy) enables traceback in error responses; otherwise stack traces are suppressed.
+
+## SSL & Certificates
+Container and dev setup ensure current CA bundle (certifi) for stable TLS to OS APIs.
 
 ## License
 MIT

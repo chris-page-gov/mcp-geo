@@ -26,9 +26,11 @@ dev = ["ruff", "mypy", "types-requests", "pytest", "pytest-cov", "httpx", "anyio
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "C4", "UP", "RUF"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["server", "tools"]
 
 [tool.mypy]
@@ -40,7 +42,12 @@ warn_return_any = true
 no_implicit_optional = true
 show_error_codes = true
 pretty = true
-exclude = ["migrations/"]
+exclude = ["migrations/", "build/"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+allow_untyped_defs = true
+allow_incomplete_defs = true
 
 [tool.mypy-server]
 disallow_untyped_defs = true

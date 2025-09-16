@@ -1,4 +1,5 @@
-from server.security import redact, mask_in_text
+from server.security import mask_in_text, redact
+
 
 def test_redact_empty():
     assert redact(None) == ""

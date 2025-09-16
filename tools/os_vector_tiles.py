@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from typing import Any
+
 from tools.registry import Tool, register
+
 from .os_common import client
 
 # Vector tiles descriptor returning style + tile URL template

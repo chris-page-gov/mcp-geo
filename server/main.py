@@ -1,15 +1,14 @@
+import time
+import uuid
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
-import uuid
-import time
+
+from server.mcp import playground, resources, tools
+from server.security import mask_in_text
 
 from .config import settings
-from server.security import mask_in_text
-from server.mcp import tools
-from server.mcp import resources
-from server.mcp import playground
-
 
 app = FastAPI(title="MCP Geo Server")
 print("[DEBUG] server/main.py loaded", flush=True)

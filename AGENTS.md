@@ -4,19 +4,19 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 ## Current Tech & Scope
 
-- FastAPI-based Model Context Protocol (MCP) server providing geospatial/Ordnance Survey (OS) tooling.
-- Python >=3.11 runtime (update `pyproject.toml` requires-python if bumped).
-- Endpoints implemented so far: `/healthz`, `/tools/list`, `/tools/call`, `/resources/list`, playground transcript endpoints.
-- Epic B OS tools scaffolded (all 501 except `os_places.by_postcode`).
+- FastAPI-based Model Context Protocol (MCP) server providing geospatial / Ordnance Survey tooling.
+- Python >=3.11 runtime (bump `requires-python` in `pyproject.toml` if upgraded).
+- Endpoints: `/healthz`, `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`, playground transcript endpoints.
+- Epic A (core) and Epic B (OS tools) implemented with real handlers (OS calls if `OS_API_KEY` set; graceful 501 otherwise).
 
 ## Repository Layout
 
 - `server/`: FastAPI app (`main.py`), config (`config.py`), MCP routers (`mcp/`).
-- `server/mcp/tools.py`: Tool registry + dispatcher (needs refactor to per-tool modules when implementations grow).
+- `server/mcp/tools.py`: Tool metadata/dispatch + explicit dynamic imports guaranteeing registration.
 - `server/mcp/resources.py`: Resource listing (placeholder; expand with metadata + retrieval endpoints).
 - `server/mcp/playground.py`: Transcript stub (synchronous; should become async and validated).
 - `resources/`: Static data (currently minimal / placeholder folders expected).
-- `tools/`: Future concrete tool implementation modules (currently unused; align with `server/mcp/tools.py`).
+- `tools/`: Concrete tool modules (os_places, os_places_extra, os_names, os_features, os_linked_ids, os_maps, os_vector_tiles, etc.).
 - `playground/`: Placeholder for a web or CLI UI (not yet populated with frontend assets here).
 - `tests/`: Pytest suite (currently missing critical coverage—see gaps section).
 - `.devcontainer/`: Development container configuration.
@@ -38,24 +38,26 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 ## Coding Standards
 
-- 4-space indent, LF endings, max line length 100 (enforce via editorconfig/formatter—NOTE: no formatter config committed yet).
-- Use type hints everywhere; introduce `mypy` (not currently configured) for stricter checking.
-- Consistent error model: `{ "isError": bool, "code": str, "message": str, ... }`. Add `correlationId` where available; do NOT expose stack traces in production responses—current implementation leaks `traceback` (needs gating behind an env flag like `DEBUG_ERRORS`).
-- Pagination fields: `nextPageToken` not `next_page` (already consistent).
-- Logging: uses `loguru`; ensure secrets redaction is centralised (currently only OS_API_KEY redacted ad‑hoc in one handler).
+- 4-space indent, LF, max line length 100.
+- Universal type hints; `mypy` clean (no unused ignores) & Ruff enforced.
+- Error model: `{ "isError": true, "code": str, "message": str, "correlationId"?: str }`.
+- `nextPageToken` for pagination (never snake case).
+- Logging via `loguru`; sensitive tokens masked (`server/security.py`).
+- Dynamic tool registration: Explicit import loop in `server/mcp/tools.py` ensures consistent registry population across agent/test environments.
 
 ## Tools & Resources Conventions
 
-- Tool namespace: `os_<domain>.<action>` (keep consistent; document allowed verbs: `search|get|query|find|nearest|within|render|descriptor`).
-- Each tool should provide: name, version, description, input schema, output schema (currently missing—add a `/tools/describe` or embed metadata in `/tools/list`).
-- Move one-off logic in `call_tool` into per-tool functions under `tools/` or `server/mcp/tools/` sub-package.
+- Namespace: `os_<domain>.<verb>` — allowed verbs: `search|get|query|find|nearest|within|render|descriptor`.
+- Each tool supplies: name, version, description, `input_schema`, `output_schema`, handler.
+- Discovery endpoints: `/tools/list` (names + paging), `/tools/describe` (full metadata).
+- Keep handlers small; shared concerns (HTTP, retries) live in `os_common.py`.
 
-## Testing Strategy (To Be Implemented)
+## Testing Strategy
 
-- Add tests: `tests/test_healthz.py`, `tests/test_tools_list.py`, `tests/test_postcode_validations.py`, `tests/test_error_model.py`.
-- Use `httpx.AsyncClient` with FastAPI lifespan context.
-- Mock external OS API with `responses` or `pytest_httpx` fixture.
-- Add golden test fixtures for known postcode payloads.
+- Pytest with coverage gate (≥90%). Current suite covers success + validation + upstream error paths.
+- When adding a tool: include validation tests, success path (mocked upstream), and at least one upstream error normalization test.
+- Prefer monkeypatching minimal surface (e.g., `client.get_json` / `requests.get`) to reach normalization logic.
+- Future: introduce golden fixtures for canonical postcodes & feature queries.
 
 ## Commits & PRs
 
@@ -88,24 +90,26 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 ## Gaps & Immediate Action Items
 
-1. Missing test suite (only implied tests; create baseline).
-2. Error handler exposes traceback—add config flag gating.
-3. Tool architecture monolithic—refactor to modular soon.
-4. No lint/type tooling configured (add ruff + mypy config sections in `pyproject.toml`).
-5. Duplicate/verbose sections in `README.md` (project structure repeated).
-6. `CHANGELOG.md` repeats Completed Epic sections under both bullet lists and Fixed; normalise categories.
-7. No CI workflow defined (add lint/test pipeline).
-8. Security: OS API key redaction only; create general `redact()` helper.
-9. Playground transcript endpoint synchronous & unvalidated (should parse body, not call `request.json()` incorrectly—it is async in FastAPI; current code likely broken).
-10. `tools` vs `server/mcp/tools.py` duplication of concept; unify.
+1. CI pipeline not yet committed (lint, type, test, coverage badge, build image).
+2. Observability: metrics (latency histograms, request counts) & structured JSON log sink pending.
+3. Retry/backoff sophistication (currently simple exponential) – consider `tenacity` or custom jitter.
+4. Resource catalog still minimal (code lists / boundaries not populated).
+5. Pagination not implemented for tools returning large collections (future: token-based for OS features).
+6. Map render tool currently descriptor/stub – add real static map generation or proxy.
+7. Security hardening: rate limiting & circuit breaker not yet implemented.
+8. Add `/resources/get` endpoint for retrieval + caching headers.
+9. Add admin/ONS tools (future epics) with consistent schemas.
+
+Resolved (removed from gaps): baseline tests, dynamic tool registration reliability, redaction helper, README duplication, type + lint config, modular tool structure.
 
 ## Roadmap (Suggested)
 
-- Phase 1: Tests + refactor tool dispatch.
-- Phase 2: Add schemas + describe endpoint.
-- Phase 3: Observability + retries + CI pipeline.
-- Phase 4: Implement Epic B tool functionality incrementally with contract tests.
+- Phase 1 (DONE): Core server + dynamic tool dispatch + baseline tests.
+- Phase 2 (DONE): Implement Epic B OS tools with schemas & describe endpoint.
+- Phase 3 (NEXT): CI pipeline, metrics, richer retries, resource population.
+- Phase 4: ONS data & admin geography tools, golden scenario tests.
+- Phase 5: Performance & scaling (caching, rate limiting, async upstream calls).
 
 ---
 
-Last updated: (keep current when editing)
+Last updated: 2025-09-16

@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from typing import Any
+
 from tools.registry import Tool, register
+
 from .os_common import client
 
 # Maps render metadata: construct a static map URL template (hypothetical)
@@ -8,15 +11,25 @@ from .os_common import client
 def _maps_render(payload: dict[str, Any]):
     bbox = payload.get("bbox")
     if not (isinstance(bbox, list) and len(bbox) == 4):
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "bbox must be [minLon,minLat,maxLon,maxLat]"}
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox must be [minLon,minLat,maxLon,maxLat]",
+        }
     try:
         min_lon, min_lat, max_lon, max_lat = [float(x) for x in bbox]
     except Exception:
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "bbox values must be numeric"}
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox values must be numeric",
+        }
     # Provide a URL template (not fetching binary in this implementation)
     base = client.base_maps
     layer = "raster"  # placeholder layer
-    url_template = f"{base}/{layer}/wms?bbox={min_lon},{min_lat},{max_lon},{max_lat}&key={{API_KEY}}"
+    url_template = (
+        f"{base}/{layer}/wms?bbox={min_lon},{min_lat},{max_lon},{max_lat}&key={{API_KEY}}"
+    )
     return 200, {"render": {"urlTemplate": url_template, "layer": layer}}
 
 register(Tool(

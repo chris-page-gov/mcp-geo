@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from typing import Any
+
 import requests
 from requests import exceptions as req_exc
 
@@ -26,7 +27,9 @@ class OSClient:
             return {}
         return {"key": self.api_key}
 
-    def get_json(self, url: str, params: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
+    def get_json(
+        self, url: str, params: dict[str, Any] | None = None
+    ) -> tuple[int, dict[str, Any]]:
         if not self.api_key:
             return 501, {"isError": True, "code": "NO_API_KEY", "message": "OS_API_KEY not set"}
         merged = {**(params or {}), **self._auth_params()}
@@ -35,21 +38,36 @@ class OSClient:
             try:
                 resp = requests.get(url, params=merged, timeout=DEFAULT_TIMEOUT)
                 if resp.status_code != 200:
-                    return resp.status_code, {
-                        "isError": True,
-                        "code": "OS_API_ERROR",
-                        "message": f"OS API error: {resp.text[:200]}",
-                    }
+                    return (
+                        resp.status_code,
+                        {
+                            "isError": True,
+                            "code": "OS_API_ERROR",
+                            "message": f"OS API error: {resp.text[:200]}",
+                        },
+                    )
                 return 200, resp.json()
             except req_exc.SSLError as exc:
                 return 501, {"isError": True, "code": "UPSTREAM_TLS_ERROR", "message": str(exc)}
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 if attempt == self.retries:
-                    return 501, {"isError": True, "code": "UPSTREAM_CONNECT_ERROR", "message": str(exc)}
+                    return 501, {
+                        "isError": True,
+                        "code": "UPSTREAM_CONNECT_ERROR",
+                        "message": str(exc),
+                    }
                 time.sleep(min(0.1 * (2 ** (attempt - 1)), 1.0))
             except Exception as exc:  # pragma: no cover
-                return 500, {"isError": True, "code": "INTEGRATION_ERROR", "message": str(exc)}
-        return 501, {"isError": True, "code": "UPSTREAM_CONNECT_ERROR", "message": f"Failed after retries: {last_exc}"}
+                return 500, {
+                    "isError": True,
+                    "code": "INTEGRATION_ERROR",
+                    "message": str(exc),
+                }
+        return 501, {
+            "isError": True,
+            "code": "UPSTREAM_CONNECT_ERROR",
+            "message": f"Failed after retries: {last_exc}",
+        }
 
 client = OSClient()

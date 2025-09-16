@@ -2,18 +2,28 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Any
+from typing import Any, TypedDict, cast
 
 import requests
 from requests import exceptions as req_exc
 
 from server.config import settings
-from tools.registry import Tool, register
+from tools.registry import Tool, ToolResult, register
+from tools.types import PlacesResponse
 
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
 
 
-def _by_postcode(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+class NormalizedUPRN(TypedDict, total=False):
+    uprn: str | None
+    address: str | None
+    lat: float
+    lon: float
+    classification: str | None
+    local_custodian_code: str | int | float | None
+
+
+def _by_postcode(payload: dict[str, Any]) -> ToolResult:
     postcode_raw = (
         str(payload.get("postcode", ""))
         .strip()
@@ -55,7 +65,10 @@ def _by_postcode(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
                 return 501, {
                     "isError": True,
                     "code": "UPSTREAM_CONNECT_ERROR",
-                    "message": "Upstream connection/timeout contacting OS Places after retries: " + str(exc),
+                    "message": (
+                        "Upstream connection/timeout contacting OS Places after retries: "
+                        + str(exc)
+                    ),
                 }
             # simple exponential backoff: 100ms * 2^(attempt-1)
             backoff = 0.1 * (2 ** (attempt - 1))
@@ -79,25 +92,40 @@ def _by_postcode(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
             "code": "OS_API_ERROR",
             "message": f"OS API error: {resp.text[:200]}",
         }
-    body = resp.json()
-    uprns: list[dict[str, Any]] = []
-    for result in body.get("results", []):
-        dpa = result.get("DPA", {})
-        uprns.append(
-            {
-                "uprn": dpa.get("UPRN"),
-                "address": dpa.get("ADDRESS"),
-                "lat": float(dpa.get("LAT", 0) or 0),
-                "lon": float(dpa.get("LNG", 0) or 0),
-                "classification": dpa.get("CLASS"),
-                "local_custodian_code": dpa.get("LOCAL_CUSTODIAN_CODE"),
-            }
-        )
+    raw = resp.json()
+    body = cast(PlacesResponse, raw)
+    results = body.get("results", [])
+    uprns: list[NormalizedUPRN] = []
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        dpa_val = result.get("DPA")
+        if not isinstance(dpa_val, dict):
+            continue
+        dpa = dpa_val
+        try:
+            lat = float(dpa.get("LAT", 0) or 0)
+        except Exception:
+            lat = 0.0
+        try:
+            lon = float(dpa.get("LNG", 0) or 0)
+        except Exception:
+            lon = 0.0
+        lcc = dpa.get("LOCAL_CUSTODIAN_CODE")
+        local_custodian_code = cast(str | int | float | None, lcc)
+        uprns.append({
+            "uprn": dpa.get("UPRN"),
+            "address": dpa.get("ADDRESS"),
+            "lat": lat,
+            "lon": lon,
+            "classification": dpa.get("CLASS"),
+            "local_custodian_code": local_custodian_code,
+        })
     return 200, {
         "uprns": uprns,
         "provenance": {
             "source": "os_places",
-            "timestamp": body.get("epoch", time.time()),
+            "timestamp": raw.get("epoch", time.time()),
         },
     }
 
@@ -151,24 +179,4 @@ register(
     )
 )
 
-# Placeholder registrations for future tools (marked not implemented)
-for placeholder in [
-    "os_places.search",
-    "os_places.by_uprn",
-    "os_places.nearest",
-    "os_places.within",
-    "os_linked_ids.get",
-    "os_features.query",
-    "os_names.find",
-    "os_names.nearest",
-    "os_maps.render",
-    "os_vector_tiles.descriptor",
-]:
-    if placeholder == "os_places.by_postcode":  # already registered
-        continue
-    register(
-        Tool(
-            name=placeholder,
-            description=f"Placeholder for {placeholder}",
-        )
-    )
+## Removed obsolete placeholder loop: real tools registered in their modules.

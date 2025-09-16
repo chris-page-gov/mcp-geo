@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from typing import Any
+
 from tools.registry import Tool, register
+
 from .os_common import client
 
 # Simplified features query: bbox + collection
@@ -11,11 +14,19 @@ def _features_query(payload: dict[str, Any]):
     if not collection:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing collection"}
     if not (isinstance(bbox, list) and len(bbox) == 4):
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "bbox must be [minLon,minLat,maxLon,maxLat]"}
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox must be [minLon,minLat,maxLon,maxLat]",
+        }
     try:
         min_lon, min_lat, max_lon, max_lat = [float(x) for x in bbox]
     except Exception:
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "bbox values must be numeric"}
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox values must be numeric",
+        }
     params = {"bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}"}
     status, body = client.get_json(f"{client.base_features}/{collection}", params)
     if status != 200:

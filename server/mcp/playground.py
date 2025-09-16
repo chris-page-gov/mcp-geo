@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Request
 import time
-from pydantic import BaseModel, Field
 from typing import Any
+
+from fastapi import APIRouter, Request
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
 # In-memory transcript (for demo only, not production)
-TOOL_CALL_TRANSCRIPT = []
+
+TOOL_CALL_TRANSCRIPT: list[dict[str, Any]] = []
 MAX_TRANSCRIPT = 10
 
 @router.get("/playground/transcript")

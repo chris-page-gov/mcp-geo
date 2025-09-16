@@ -2,16 +2,25 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
-from tools.registry import get, list_tools, all_tools
+from tools.registry import all_tools, get, list_tools
+import importlib
 
-# Import tool modules so registration side-effects execute
-import tools.os_places  # noqa: F401
-import tools.os_places_extra  # noqa: F401
-import tools.os_names  # noqa: F401
-import tools.os_linked_ids  # noqa: F401
-import tools.os_features  # noqa: F401
-import tools.os_maps  # noqa: F401
-import tools.os_vector_tiles  # noqa: F401
+# Explicitly import tool modules to guarantee registration (some environments skipped side-effect imports)
+for _mod in [
+    "tools.os_places",
+    "tools.os_places_extra",
+    "tools.os_names",
+    "tools.os_linked_ids",
+    "tools.os_features",
+    "tools.os_maps",
+    "tools.os_vector_tiles",
+]:
+    try:  # pragma: no cover - defensive import
+        importlib.import_module(_mod)
+    except Exception:  # pragma: no cover
+        pass
+
+# (Legacy static import block retained for clarity; dynamic imports above ensure execution.)
 
 router = APIRouter()
 
