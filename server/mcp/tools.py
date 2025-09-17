@@ -14,6 +14,7 @@ for _mod in [
     "tools.os_features",
     "tools.os_maps",
     "tools.os_vector_tiles",
+    "tools.admin_lookup",
 ]:
     try:  # pragma: no cover - defensive import
         importlib.import_module(_mod)

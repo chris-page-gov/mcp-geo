@@ -3,7 +3,7 @@
 Production-focused Model Context Protocol (MCP) server for geospatial (Ordnance Survey) tooling built with FastAPI & Python 3.11+. Provides a uniform tool abstraction, typed schemas, structured error model, correlation IDs, and high test coverage (≥90%).
 
 ## Key Features
-- MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`
+- MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`, `/resources/get`
 - Uniform error envelope and pagination (`nextPageToken`)
 - Dynamic tool registration with schema introspection
 - Structured logging & correlation IDs
@@ -41,6 +41,74 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | os_linked_ids.get | Relationship lookup between UPRN/USRN/TOID |
 | os_maps.render | Static map render metadata (stub/descriptor) |
 | os_vector_tiles.descriptor | Vector tiles style/source descriptor |
+| admin_lookup.containing_areas | Administrative area containment for a point |
+| admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
+| admin_lookup.area_geometry | Bounding box geometry for an area |
+| admin_lookup.find_by_name | Case-insensitive substring name search |
+
+## Resources, Filtering & Provenance
+The server exposes static / reference datasets under the resources API surface:
+
+- `GET /resources/list` returns an array of resource descriptors (now including provenance: version, source, license).
+- `GET /resources/get?name=admin_boundaries` returns the administrative boundaries sample dataset with optional parameters:
+	- `limit` (default 100, max 500)
+	- `page` (1-based)
+	- `level` (e.g. `OA`, `LSOA`, `MSOA`, `WARD`, `DISTRICT`, `COUNTY`, `REGION`, `NATION`)
+	- `nameContains` (case-insensitive substring filter)
+	Response includes:
+	- `etag`: Weak ETag for conditional caching (SHA-256 of file + version)
+	- `provenance`: Embedded metadata (version, source, license, retrievedAt)
+	- `count`: Total filtered feature count (across all pages)
+	- `data.features`: Current page of features
+	- `data.total`: Same as `count` (filtered total)
+	- `data.limit`, `data.page`, `data.nextPageToken`
+	- `data.features[*].bbox` retains original CRS (EPSG:4326)
+
+### Conditional Requests (ETag)
+Clients should cache responses and revalidate:
+```
+GET /resources/get?name=admin_boundaries
+If-None-Match: W/"f337e5733a4b7f50"
+```
+If unchanged, the server returns `304 Not Modified` with the same `ETag` header and an empty body.
+
+### Dataset Notes
+## Compression (GZip)
+GZip compression is enabled (minimum payload size 512 bytes). Send:
+```
+Accept-Encoding: gzip
+```
+to receive a compressed response (check `Content-Encoding: gzip`).
+
+## Rate Limiting
+Basic per-minute in-memory rate limiting is enabled by default:
+- Environment variable: `RATE_LIMIT_PER_MIN` (default 120 per IP per top-level path segment)
+- Bypass (tests/dev): `RATE_LIMIT_BYPASS=true` (set to `false` to enforce)
+Responses over the limit return:
+```json
+{ "isError": true, "code": "RATE_LIMITED", "message": "Rate limit exceeded" }
+```
+Note: In-memory approach is not multi-process safe; replace with Redis or a shared store for production.
+
+## Metrics
+Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`):
+- `app_requests_total` counter
+- `app_rate_limited_total` counter
+- `app_request_latency_ms_bucket` / `_count` histogram (client-observed wall time per request)
+
+Example scrape output snippet:
+```
+# HELP app_requests_total Total HTTP requests
+# TYPE app_requests_total counter
+app_requests_total 42
+# HELP app_request_latency_ms Request latency histogram (ms)
+# TYPE app_request_latency_ms histogram
+app_request_latency_ms_bucket{le="50"} 40
+app_request_latency_ms_bucket{le="100"} 41
+app_request_latency_ms_bucket{le="+Inf"} 42
+app_request_latency_ms_count 42
+```
+Current `admin_boundaries` is a minimal illustrative chain (OA→LSOA→MSOA→Ward→District→County→Region→Nation) using real English geography codes (sample Westminster lineage). Not a complete authoritative dataset—replace or extend before production use.
 
 ## Error Model
 All errors conform to:

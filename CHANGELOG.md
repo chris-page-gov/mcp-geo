@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
   - `os_linked_ids.get`
   - `os_maps.render` (descriptor stub)
   - `os_vector_tiles.descriptor`
+- Epic C (partial): `admin_lookup.containing_areas`, `admin_lookup.reverse_hierarchy`, `admin_lookup.area_geometry`, `admin_lookup.find_by_name` using bundled sample boundary resource.
 - Dynamic tool import mechanism in `server/mcp/tools.py` ensuring registry population in all execution contexts.
 - High coverage (>90%) test suite including validation, success, and upstream error normalization paths.
 

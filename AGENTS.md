@@ -93,12 +93,12 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 1. CI pipeline not yet committed (lint, type, test, coverage badge, build image).
 2. Observability: metrics (latency histograms, request counts) & structured JSON log sink pending.
 3. Retry/backoff sophistication (currently simple exponential) – consider `tenacity` or custom jitter.
-4. Resource catalog still minimal (code lists / boundaries not populated).
+4. Resource catalog still minimal (admin sample only) – add real code lists & full boundary sets.
 5. Pagination not implemented for tools returning large collections (future: token-based for OS features).
 6. Map render tool currently descriptor/stub – add real static map generation or proxy.
 7. Security hardening: rate limiting & circuit breaker not yet implemented.
-8. Add `/resources/get` endpoint for retrieval + caching headers.
-9. Add admin/ONS tools (future epics) with consistent schemas.
+8. Enhance `/resources/get` with ETag / caching headers.
+9. ONS data tools (Epic D) not yet started.
 
 Resolved (removed from gaps): baseline tests, dynamic tool registration reliability, redaction helper, README duplication, type + lint config, modular tool structure.
 
@@ -107,7 +107,7 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 - Phase 1 (DONE): Core server + dynamic tool dispatch + baseline tests.
 - Phase 2 (DONE): Implement Epic B OS tools with schemas & describe endpoint.
 - Phase 3 (NEXT): CI pipeline, metrics, richer retries, resource population.
-- Phase 4: ONS data & admin geography tools, golden scenario tests.
+- Phase 4 (IN PROGRESS): Admin geography tools (started `admin_lookup.containing_areas`), ONS data, golden scenario tests.
 - Phase 5: Performance & scaling (caching, rate limiting, async upstream calls).
 
 ---

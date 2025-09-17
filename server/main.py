@@ -1,7 +1,8 @@
 import time
 import uuid
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response as FastAPIResponse
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
@@ -12,10 +13,72 @@ from .config import settings
 
 app = FastAPI(title="MCP Geo Server")
 print("[DEBUG] server/main.py loaded", flush=True)
+app.add_middleware(GZipMiddleware, minimum_size=512)
 
 # Middleware for correlation ID and request logging
+from typing import Callable, Awaitable, Dict, Tuple
+from starlette.responses import Response as StarletteResponse
+import threading
+import time as _time
+
+# In-memory rate limit store & metrics (simple; not for multi-process scale)
+_rate_lock = threading.Lock()
+_rate_counters: Dict[Tuple[str, str], Tuple[int, float]] = {}
+
+# Metrics accumulators
+_metrics_lock = threading.Lock()
+_requests_total: int = 0
+_rate_limited_total: int = 0
+_latency_buckets = [5, 10, 25, 50, 100, 250, 500, 1000, 2000]  # ms
+_latency_hist: Dict[int, int] = {b: 0 for b in _latency_buckets}
+_latency_overflow: int = 0
+
+
+def _record_latency(ms: float) -> None:
+    with _metrics_lock:
+        for b in _latency_buckets:
+            if ms <= b:
+                _latency_hist[b] += 1
+                break
+        else:
+            global _latency_overflow
+            _latency_overflow += 1
+
+
+def _increment_counter(rate_limited: bool = False):
+    global _requests_total, _rate_limited_total
+    with _metrics_lock:
+        _requests_total += 1
+        if rate_limited:
+            _rate_limited_total += 1
+
+
+def _check_rate_limit(request: Request) -> bool:
+    limit = settings.RATE_LIMIT_PER_MIN
+    # Allow explicit bypass via settings (tests set to False to exercise path)
+    if settings.RATE_LIMIT_BYPASS:
+        return True
+    if limit <= 0:
+        return True
+    # Key by client IP (remote addr) and coarse path segment
+    client_ip = request.client.host if request.client else "unknown"
+    path_key = request.url.path.split('/')[1] if '/' in request.url.path else request.url.path
+    key = (client_ip, path_key)
+    now = _time.time()
+    window_start = now // 60  # minute window
+    with _rate_lock:
+        count, win = _rate_counters.get(key, (0, window_start))
+        if win != window_start:
+            count = 0
+            win = window_start
+        if count >= limit:
+            return False
+        _rate_counters[key] = (count + 1, win)
+    return True
+
+
 @app.middleware("http")
-async def add_correlation_id_and_log(request: Request, call_next):
+async def add_correlation_id_and_log(request: Request, call_next: Callable[[Request], Awaitable[StarletteResponse]]) -> StarletteResponse:
     correlation_id = (
         request.headers.get("x-correlation-id") or str(uuid.uuid4())
     )
@@ -24,7 +87,16 @@ async def add_correlation_id_and_log(request: Request, call_next):
     logger.info(
         f"[start] {request.method} {request.url.path} correlation_id={correlation_id}"
     )
-    response = await call_next(request)
+    allowed = _check_rate_limit(request)
+    if not allowed:
+        _increment_counter(rate_limited=True)
+        return JSONResponse(status_code=429, content={
+            "isError": True,
+            "code": "RATE_LIMITED",
+            "message": "Rate limit exceeded",
+            "correlationId": correlation_id,
+        })
+    response: StarletteResponse = await call_next(request)
     process_time = (time.time() - start_time) * 1000
     response.headers["x-correlation-id"] = correlation_id
     logger.info(
@@ -35,10 +107,39 @@ async def add_correlation_id_and_log(request: Request, call_next):
         response.status_code,
         process_time,
     )
+    _record_latency(process_time)
+    _increment_counter()
     return response
 app.include_router(tools.router)
 app.include_router(resources.router)
 app.include_router(playground.router)
+
+
+@app.get("/metrics")
+def metrics():
+    if not settings.METRICS_ENABLED:
+        return JSONResponse(status_code=404, content={"isError": True, "code": "NOT_ENABLED", "message": "Metrics disabled"})
+    # Build Prometheus exposition text
+    lines = [
+        "# HELP app_requests_total Total HTTP requests",
+        "# TYPE app_requests_total counter",
+        f"app_requests_total {_requests_total}",
+        "# HELP app_rate_limited_total Total rate limited responses",
+        "# TYPE app_rate_limited_total counter",
+        f"app_rate_limited_total {_rate_limited_total}",
+        "# HELP app_request_latency_ms Request latency histogram (ms)",
+        "# TYPE app_request_latency_ms histogram",
+    ]
+    cumulative = 0
+    with _metrics_lock:
+        for b in _latency_buckets:
+            cumulative += _latency_hist[b]
+            lines.append(f'app_request_latency_ms_bucket{{le="{b}"}} {cumulative}')
+        # +Inf bucket
+        lines.append(f'app_request_latency_ms_bucket{{le="+Inf"}} {cumulative + _latency_overflow}')
+        lines.append(f"app_request_latency_ms_count {cumulative + _latency_overflow}")
+    body = "\n".join(lines) + "\n"
+    return FastAPIResponse(content=body, media_type="text/plain; version=0.0.4")
 
 # Health check endpoint
 @app.get("/healthz")
@@ -69,7 +170,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
             "Unhandled error: %s correlation_id=%s", safe_message, correlation_id
         )
         tb = None
-    content = {
+    content: dict[str, object] = {
         "isError": True,
         "code": "INTERNAL_ERROR",
         "message": safe_message,
