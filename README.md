@@ -25,7 +25,7 @@ Then visit:
 
 Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
 
-## Tool Catalog (Epic B Implemented)
+## Tool Catalog (Epics B–D)
 Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.
 
 | Tool | Purpose |
@@ -45,6 +45,8 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
 | admin_lookup.area_geometry | Bounding box geometry for an area |
 | admin_lookup.find_by_name | Case-insensitive substring name search |
+| ons_data.query | Query sample ONS observations (geography / measure / time) |
+| ons_data.dimensions | List available ONS observation dimensions |
 
 ## Resources, Filtering & Provenance
 The server exposes static / reference datasets under the resources API surface:
@@ -109,6 +111,74 @@ app_request_latency_ms_bucket{le="+Inf"} 42
 app_request_latency_ms_count 42
 ```
 Current `admin_boundaries` is a minimal illustrative chain (OA→LSOA→MSOA→Ward→District→County→Region→Nation) using real English geography codes (sample Westminster lineage). Not a complete authoritative dataset—replace or extend before production use.
+
+### ONS Observations (Epic D)
+An initial statistical dataset (`resources/ons_observations.json`) is bundled to prototype ONS integration.
+
+Dimensions:
+- `geography`: e.g. `K02000001` (UK), `E92000001` (England)
+- `measure`: `GDPV` (illustrative)
+- `seasonalAdjustment`: `SA` (seasonally adjusted)
+- `time`: Quarterly periods (e.g. `2024 Q1`)
+
+Tool `ons_data.query` supports filters:
+- `geography` (single code)
+- `measure` (single code)
+- `timeRange` — either single period (`2024 Q2`) or inclusive range (`2024 Q1-2024 Q4`)
+- Pagination: `limit` (1–500, default 100) and `page` (1-based)
+
+Response shape:
+```json
+{
+	"results": [ { "geography": "K02000001", "measure": "GDPV", "time": "2024 Q1", "value": 100.2 } ],
+	"count": 5,
+	"data": { "limit": 2, "page": 1, "nextPageToken": "2" }
+}
+```
+`count` is total after filtering (before pagination). `nextPageToken` absent on final page. This mock illustrates future integration with real ONS APIs (observations, dimensions catalogue, metadata endpoints) that will replace or augment the static file.
+
+### ONS Observations Resource
+The underlying sample dataset is also exposed via the resources API:
+```
+GET /resources/list            # includes ons_observations
+GET /resources/get?name=ons_observations&limit=2&page=1
+```
+Response includes `observations`, `dimensions`, pagination metadata, provenance, and ETag for conditional requests.
+
+### ONS Client Scaffold
+`tools/ons_common.py` introduces `ONSClient` with:
+- Simple `get_json` wrapper (retry + error mapping)
+- In-memory TTL cache (configurable via `ONS_CACHE_TTL`, `ONS_CACHE_SIZE`)
+- Pagination helper `build_paged_params(limit, page, extra)`
+This prepares the codebase for swapping the static dataset with live ONS endpoints while keeping test determinism (cache can be tuned in tests).
+
+### Live ONS Mode
+Enable live mode by setting `ONS_LIVE_ENABLED=true` and supplying `dataset`, `edition`, and `version` in tool payloads.
+
+`ons_data.query` (live):
+```
+GET https://api.ons.gov.uk/dataset/{dataset}/edition/{edition}/version/{version}/observations?limit=...&page=...
+```
+
+`ons_data.dimensions` (live):
+1. Fetch version metadata:
+```
+GET https://api.ons.gov.uk/dataset/{dataset}/edition/{edition}/version/{version}
+```
+2. For each dimension id returned, fetch its codes (paged, currently requesting up to 1000):
+```
+GET https://api.ons.gov.uk/dataset/{dataset}/edition/{edition}/version/{version}/dimensions/{dimensionId}/options?limit=1000&page=1
+```
+Provide an optional `dimension` field to retrieve only a single dimension's codes (optimization avoids extra network calls).
+
+If live mode is disabled (or parameters missing) both tools fall back to the bundled sample dataset.
+
+### ons_observations Resource Filters
+The resource endpoint now supports:
+```
+GET /resources/get?name=ons_observations&geography=K02000001&measure=chained_volume_measure
+```
+Filters influence pagination and ETag variant generation (`geography`, `measure`).
 
 ## Error Model
 All errors conform to:

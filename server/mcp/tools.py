@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Request, status
+from typing import Any, Dict
 from fastapi.responses import JSONResponse
 
 from tools.registry import all_tools, get, list_tools
@@ -15,6 +16,7 @@ for _mod in [
     "tools.os_maps",
     "tools.os_vector_tiles",
     "tools.admin_lookup",
+    "tools.ons_data",
 ]:
     try:  # pragma: no cover - defensive import
         importlib.import_module(_mod)
@@ -27,7 +29,7 @@ router = APIRouter()
 
 
 @router.get("/tools/list")
-def list_tools_endpoint(limit: int = 10, page: int = 1):
+def list_tools_endpoint(limit: int = 10, page: int = 1) -> Dict[str, Any]:
     names = list_tools()
     start = (page - 1) * limit
     end = start + limit

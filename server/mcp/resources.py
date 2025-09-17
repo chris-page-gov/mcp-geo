@@ -38,17 +38,44 @@ def _admin_etag(variant_key: str = "") -> str:
     return f"W/\"{h}\""  # weak ETag
 
 
+def _ons_observations_path() -> Path:
+    return Path(__file__).resolve().parent.parent.parent / "resources" / "ons_observations.json"
+
+
+def _ons_etag(variant_key: str = "") -> str:
+    path = _ons_observations_path()
+    try:
+        raw = path.read_bytes()
+    except FileNotFoundError:  # pragma: no cover
+        return "missing"
+    # Basic provenance read to incorporate version if present
+    try:
+        parsed = json.loads(raw.decode())
+        version = parsed.get("provenance", {}).get("version", "v0")
+    except Exception:  # pragma: no cover
+        version = "v0"
+    base = raw + version.encode() + variant_key.encode()
+    h = hashlib.sha256(base).hexdigest()[:16]
+    return f"W/\"{h}\""
+
+
 @router.get("/resources/list")
 def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
-    resources = [
-        {
-            "name": "code_lists",
-        },
+    resources: list[dict[str, Any]] = [
+        {"name": "code_lists"},
         {
             "name": "admin_boundaries",
             "version": _ADMIN_PROVENANCE["version"],
             "license": _ADMIN_PROVENANCE["license"],
             "source": _ADMIN_PROVENANCE["source"],
+        },
+        {
+            "name": "ons_observations",
+            "type": "dataset",
+            "version": None,  # dynamic from file provenance at get time
+            "license": "Open Government Licence v3",
+            "source": "ONS (sample synthetic subset)",
+            "description": "Sample ONS quarterly GDP observations (synthetic) for tooling prototyping",
         },
     ]
     start = (page - 1) * limit
@@ -66,6 +93,8 @@ def get_resource(
     page: int = Query(default=1, ge=1),
     level: Optional[str] = Query(default=None),
     nameContains: Optional[str] = Query(default=None),
+    geography: Optional[str] = Query(default=None),
+    measure: Optional[str] = Query(default=None),
 ) -> Optional[AdminBoundariesPayload]:
     if name == "admin_boundaries":
         path = _admin_boundaries_path()
@@ -113,4 +142,55 @@ def get_resource(
         }
         response.headers["ETag"] = etag
         return payload
+    if name == "ons_observations":
+        path = _ons_observations_path()
+        if not path.exists():  # pragma: no cover
+            raise HTTPException(status_code=404, detail="Resource not found")
+        parsed = json.loads(path.read_text())
+        observations = parsed.get("observations", [])
+        geography_param = geography
+        measure_param = measure
+        if geography_param or measure_param:
+            filtered_obs: list[dict[str, Any]] = []
+            for o in observations:
+                if geography_param and o.get("geography") != geography_param:
+                    continue
+                if measure_param and o.get("measure") != measure_param:
+                    continue
+                filtered_obs.append(o)
+            observations = filtered_obs
+        start = (page - 1) * limit
+        end = start + limit
+        page_items: list[dict[str, Any]] = observations[start:end]
+        next_page_token = str(page + 1) if end < len(observations) else None
+        variant_key = f"obs|{geography_param or '*'}|{measure_param or '*'}|{page}|{limit}"
+        etag = _ons_etag(variant_key)
+        if if_none_match:
+            candidates = {token.strip() for token in if_none_match.split(',') if token.strip()}
+            if etag in candidates or "*" in candidates:
+                response.status_code = 304
+                response.headers["ETag"] = etag
+                return None
+        provenance = parsed.get("provenance", {})
+        payload = {
+            "name": name,
+            "count": len(observations),
+            "etag": etag,
+            "provenance": provenance,
+            "data": {
+                "observations": page_items,
+                "total": len(observations),
+                "limit": limit,
+                "page": page,
+                "nextPageToken": next_page_token,
+                "dimensions": parsed.get("dimensions", {}),
+                "appliedFilters": {
+                    "geography": geography_param,
+                    "measure": measure_param,
+                },
+            },
+        }
+        response.headers["ETag"] = etag
+        return payload  # type: ignore[return-value]
+
     raise HTTPException(status_code=404, detail="Resource not found")
