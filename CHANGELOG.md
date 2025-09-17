@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- (placeholder)
+
+### Changed
+- (placeholder)
+
+### Fixed
+- (placeholder)
+
+## [0.2.0] - 2025-09-17
+
+### Added
 - Epic A: Core MCP server (health, tools list/call/describe, resources list, transcript endpoint, error handler, logging with correlation IDs, devcontainer & Docker setup).
 - Epic B: OS tooling with real handlers (conditional on `OS_API_KEY`):
   - `os_places`: search, by_postcode, by_uprn, nearest, within
@@ -17,11 +28,17 @@ All notable changes to this project will be documented in this file.
 - Epic C (partial): `admin_lookup.containing_areas`, `admin_lookup.reverse_hierarchy`, `admin_lookup.area_geometry`, `admin_lookup.find_by_name` using bundled sample boundary resource.
 - Dynamic tool import mechanism in `server/mcp/tools.py` ensuring registry population in all execution contexts.
 - High coverage (>90%) test suite including validation, success, and upstream error normalization paths.
+- Epic D: statistical integration foundations:
+  - `ons_data.query` tool with sample observations + filters + pagination.
+  - `ons_observations` resource (pagination + ETag + provenance + filters geography/measure with variant ETag).
+  - ONS client scaffold (`ONSClient`) with TTL caching and pagination helper.
+  - Live ONS integration path for `ons_data.query` (dataset/edition/version) gated by `ONS_LIVE_ENABLED`.
+  - `ons_data.dimensions` tool (sample & live modes) including live version metadata fetch + per-dimension options and single-dimension optimization.
 
 ### Changed
 - Unified retry + error normalization via shared OS client (`os_common.OSClient`).
 - Settings migrated to Pydantic v2 style (removed deprecated inner `Config`).
-- README overhauled (deduplicated structure, added testing & contributing guidance). 
+- README overhauled with testing & contributing guidance.
 
 ### Fixed
 - Upstream TLS / connect / timeout failures for `os_places.by_postcode` mapped to explicit codes (`UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`).
