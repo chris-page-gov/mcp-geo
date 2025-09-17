@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-geo"
-version = "0.2.0"
+version = "0.2.1"
 description = "MCP server for geospatial and ONS tools"
 authors = [ { name = "DCMS-TECH" } ]
 readme = "README.md"
@@ -18,6 +18,9 @@ dependencies = [
     "loguru",
     "requests"
 ]
+
+[project.scripts]
+mcp-geo-stdio = "scripts.os-mcp:main"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "httpx", "anyio"]

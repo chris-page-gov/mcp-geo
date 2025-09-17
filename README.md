@@ -226,3 +226,110 @@ Container and dev setup ensure current CA bundle (certifi) for stable TLS to OS 
 
 ## License
 MIT
+
+## MCP STDIO Adapter (Local Dev)
+The script `scripts/os-mcp` now implements JSON-RPC 2.0 over STDIO with `Content-Length` framing. It is referenced by `mcp.json` (`os-mcp-stdio`).
+
+### Framing
+Each request/response:
+```
+Content-Length: <bytes>\r\n
+\r\n
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}
+```
+
+### Methods
+| Method          | Description |
+|-----------------|-------------|
+| initialize      | Returns server metadata & capabilities |
+| tools/list      | Lists tools (name, description, schemas) |
+| tools/call      | Invoke a tool (`params.tool`, optional `params.args`) |
+| resources/list  | Lists basic resource names |
+| resources/describe | Returns resource metadata (name, description, license) |
+| resources/get   | Fetch resource data (supports filters, ETag varianting) |
+| shutdown        | Graceful shutdown (result null) |
+| exit (notify)   | Process terminates (no response) |
+
+Tool call result shape:
+```json
+{
+	"jsonrpc": "2.0",
+	"id": 3,
+	"result": { "status": 200, "ok": true, "data": { ...tool output... } }
+}
+```
+
+### Manual Test
+```bash
+python scripts/os-mcp & PID=$!
+printf 'Content-Length: 60\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | nc -U /dev/fd/0 # or use a small Python helper
+kill $PID
+```
+Simpler: write a tiny Python snippet to send framed messages (see `tests/test_stdio_adapter.py`).
+
+### VS Code
+Opening the workspace lets compatible MCP extensions discover `mcp.json` and spawn the STDIO adapter. Environment variables (`OS_API_KEY`, `ONS_LIVE_ENABLED`) are injected via the `env` block.
+
+### Notes
+- `resources/get` now emits a weak ETag (`etag`) and supports conditional retrieval via `ifNoneMatch` param. If matched, response shape: `{ "jsonrpc":"2.0", "id": <n>, "result": { "notModified": true, "etag": "W/\"...\"" } }`.
+- Use the same pagination/filter parameters when revalidating or the variant key changes and a full payload is returned.
+- `resources/describe` returns the static metadata list (extend as resources grow).
+- Errors follow JSON-RPC error envelope with custom positive codes (1001-1003) for validation and -32603 for internal errors.
+
+### Helper Client Script
+For quick one-shot invocations without crafting frames manually, use the helper script added in `scripts/mcp_client.py` (it spawns the adapter, performs `initialize`, your requested method, then `shutdown`/`exit`).
+
+Examples:
+```bash
+# List tools
+python scripts/mcp_client.py tools/list
+
+# Describe available ONS dimensions (sample mode)
+python scripts/mcp_client.py tools/call ons_data.dimensions '{}'
+
+# Live mode (requires env vars); pass dataset/edition/version via params
+ONS_LIVE_ENABLED=true python scripts/mcp_client.py tools/call ons_data.dimensions '{"params":{"dataset":"gdp","edition":"time-series","version":"1"}}'
+
+# Query observations (sample)
+python scripts/mcp_client.py tools/call ons_data.query '{"params":{"geography":"K02000001","limit":2}}'
+
+# Fetch resource with ETag then conditional request (two approaches)
+R1=$(python scripts/mcp_client.py resources/get '{"name":"admin_boundaries","limit":1}' | jq -r '.response.result.etag')
+python scripts/mcp_client.py resources/get '{"name":"admin_boundaries","limit":1,"ifNoneMatch":"'$R1'"}'
+
+# Or using the convenience flag (no JSON escaping needed):
+python scripts/mcp_client.py resources/get --if-none-match "$R1" '{"name":"admin_boundaries","limit":1}'
+```
+
+The JSON argument after the tool name is merged into the request `params` object. Include nested objects as required by each tool schema.
+
+### Correct Inline Heredoc Helper (Advanced)
+If you prefer piping multiple framed requests to a persistently running adapter instance:
+```bash
+python scripts/os-mcp & APP_PID=$!
+python - <<'PY'
+import sys, json
+def send(mid, method, params=None):
+	msg = {"jsonrpc":"2.0","id":mid,"method":method,"params":params or {}}
+	body = json.dumps(msg).encode()
+	sys.stdout.buffer.write(b"Content-Length: "+str(len(body)).encode()+b"\r\n\r\n"+body)
+	sys.stdout.flush()
+
+# Emit two requests (initialize then list tools)
+send(1, "initialize")
+send(2, "tools/list")
+PY | ./scripts/os-mcp
+kill $APP_PID
+```
+Be careful to avoid duplicating or truncating function definitions when editing inline; each framed JSON-RPC message must be complete and preceded by a correct `Content-Length` header.
+
+### REPL Mode
+Interactive session:
+```bash
+python scripts/mcp_client.py --repl
+mcp> resources/describe
+mcp> resources/get {"name":"ons_observations","geography":"K02000001","limit":2}
+mcp> resources/get {"name":"ons_observations","geography":"K02000001","limit":2,"ifNoneMatch":"W/\"abc123deadbeef00\""}
+mcp> exit
+```
+`notModified` responses are compacted by the client for readability.

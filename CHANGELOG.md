@@ -14,6 +14,22 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - (placeholder)
 
+## [0.2.1] - 2025-09-17
+
+### Added
+- STDIO adapter: `resources/get` parity enhancements (pagination + filtering retained) now include weak ETag generation and conditional `ifNoneMatch` support returning `{ "notModified": true }` short result.
+- STDIO adapter: `resources/describe` method returning resource metadata (name, description, license).
+- Client: REPL mode (`--repl`) and generic JSON param parsing for any method.
+- Client: Skips initial log notifications automatically.
+- Client: `--if-none-match <etag>` convenience flag for conditional `resources/get`.
+
+### Changed
+- Resource responses over STDIO now include `etag` field when not modified conditions are not met.
+- Internal refactor: centralized ETag computation helper in adapter.
+
+### Fixed
+- STDIO tests updated to tolerate initial log frames preventing spurious KeyError on first read.
+
 ## [0.2.0] - 2025-09-17
 
 ### Added
