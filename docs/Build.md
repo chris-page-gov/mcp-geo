@@ -44,7 +44,7 @@ Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste int
 
 ---
 
-### EPIC B — Ordnance Survey (OS) tools
+### EPIC B — Ordnance Survey (OS) tools (enriched)
 
 #### **B1. `os_places.*` (AddressBase geocoder)**
 
@@ -56,7 +56,7 @@ Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste int
   * `os_places.nearest(lat, lon)`
   * `os_places.within(polygon|bbox|radius)`
 * **I/O:** Return **structured JSON**: `{ uprn, address, lat, lon, classification, local_custodian_code, … }`.
-* **Acceptance:** Given known inputs (incl. SW1A 2AA), returns UPRNs and classification; rate‑limit handling; no secrets leak.
+* **Acceptance:** Given known inputs (incl. SW1A 2AA), returns UPRNs plus enrichment fields (`classificationDescription`, `localCustodianName`); rate‑limit handling; no secrets leak.
 
 #### **B2. `os_linked_ids.get(identifier)`**
 
@@ -103,7 +103,7 @@ Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste int
 
 ---
 
-### EPIC D — ONS Statistics (beta API) tools
+### EPIC D — ONS Statistics (beta API) tools & discovery
 
 #### **D1. `ons_data.get_observation(dataset, area_code, time, dims={})`**
 
@@ -113,7 +113,7 @@ Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste int
 #### **D2. `ons_data.create_filter(...)` + `ons_data.get_filter_output(filter_id, format)`**
 
 * POST filter → poll → fetch CSV/XLSX/JSON; stream large results as a **resource**.
-* **Acceptance:** Generates a small table (e.g., population by age bands for a ward) and exposes it as a downloadable resource.
+* **Acceptance:** Generates a small table (e.g., population by age bands for a ward) and exposes it as JSON (future: downloadable CSV/XLSX) while maintaining coverage tests.
 
 #### **D3. Discovery helpers**
 
@@ -226,8 +226,8 @@ Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste int
 
 ## Definition of Done (project)
 
-* All tools in Epics B–D implemented with typed inputs/outputs, pagination, and uniform error model.
-* Static resources (code lists, boundaries) are versioned, documented, and discoverable via `resources/list`.
+* All tools in Epics B–D implemented with typed inputs/outputs, pagination, enrichment (where applicable), and uniform error model.
+* Static resources (code lists, boundaries) are versioned, documented, enriched with caching headers and provenance timestamps, and discoverable via `resources/list`.
 * Golden scenarios in EPIC E pass, producing both textual answers and (where specified) map images.
 * Secrets redaction, rate limiting, retry/backoff, and basic dashboards exist.
 * CI green; a newcomer can run the stack locally in <10 minutes, and deploy via Docker.

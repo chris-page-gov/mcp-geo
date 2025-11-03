@@ -45,8 +45,14 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
 | admin_lookup.area_geometry | Bounding box geometry for an area |
 | admin_lookup.find_by_name | Case-insensitive substring name search |
-| ons_data.query | Query sample ONS observations (geography / measure / time) |
-| ons_data.dimensions | List available ONS observation dimensions |
+| ons_data.query | Query sample or live ONS observations (geography / measure / time) |
+| ons_data.dimensions | List available ONS observation dimensions (sample or live) |
+| ons_data.get_observation | Retrieve a single observation (sample/live) |
+| ons_data.create_filter | Create an ONS bulk filter (sample scaffold) |
+| ons_data.get_filter_output | Retrieve filter output in JSON (sample) |
+| ons_search.query | Search ONS datasets/dimensions (sample) |
+| ons_codes.list | List dimension IDs (sample/live) |
+| ons_codes.options | List codes/options for a dimension (sample/live) |
 
 ## Resources, Filtering & Provenance
 The server exposes static / reference datasets under the resources API surface:
@@ -112,7 +118,7 @@ app_request_latency_ms_count 42
 ```
 Current `admin_boundaries` is a minimal illustrative chain (OA→LSOA→MSOA→Ward→District→County→Region→Nation) using real English geography codes (sample Westminster lineage). Not a complete authoritative dataset—replace or extend before production use.
 
-### ONS Observations (Epic D)
+### ONS Observations & Discovery (Epic D)
 An initial statistical dataset (`resources/ons_observations.json`) is bundled to prototype ONS integration.
 
 Dimensions:
@@ -145,14 +151,14 @@ GET /resources/get?name=ons_observations&limit=2&page=1
 ```
 Response includes `observations`, `dimensions`, pagination metadata, provenance, and ETag for conditional requests.
 
-### ONS Client Scaffold
+### ONS Client & Discovery Scaffold
 `tools/ons_common.py` introduces `ONSClient` with:
 - Simple `get_json` wrapper (retry + error mapping)
 - In-memory TTL cache (configurable via `ONS_CACHE_TTL`, `ONS_CACHE_SIZE`)
 - Pagination helper `build_paged_params(limit, page, extra)`
 This prepares the codebase for swapping the static dataset with live ONS endpoints while keeping test determinism (cache can be tuned in tests).
 
-### Live ONS Mode
+### Live ONS Mode & Codes
 Enable live mode by setting `ONS_LIVE_ENABLED=true` and supplying `dataset`, `edition`, and `version` in tool payloads.
 
 `ons_data.query` (live):
@@ -173,7 +179,7 @@ Provide an optional `dimension` field to retrieve only a single dimension's code
 
 If live mode is disabled (or parameters missing) both tools fall back to the bundled sample dataset.
 
-### ons_observations Resource Filters
+### ons_observations Resource & Filters
 The resource endpoint now supports:
 ```
 GET /resources/get?name=ons_observations&geography=K02000001&measure=chained_volume_measure
@@ -185,7 +191,7 @@ All errors conform to:
 ```json
 { "isError": true, "code": "<CODE>", "message": "..." }
 ```
-Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`.
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
 
 ## Project Structure
 ```text
@@ -214,8 +220,22 @@ Coverage gate (configured) requires ≥90%. Add tests for both success and error
 - Include JSON schemas (input/output) when adding a tool.
 - Prefer incremental refactors; avoid unrelated changes in feature PRs.
 
+## Enriched Address Data
+`os_places.by_postcode` now enriches each UPRN record with:
+- `classificationDescription` — human-readable description looked up from `address_classification_codes.json`.
+- `localCustodianName` — local authority name from `custodian_codes.json`.
+These static code lists are exposed via `/resources/get?name=address_classification_codes` and `/resources/get?name=custodian_codes`.
+Other `os_places.*` endpoints will adopt the same enrichment (roadmap).
+
 ## Examples & Golden Tests
 See `docs/examples.md` for sample payloads, conversation flows, and guidance on chaining tools. Golden scenario tests (`test_golden_scenarios.py`) ensure transformation stability with deterministic mocked upstream responses.
+
+## Resource Caching & Provenance
+All `/resources/get` responses include:
+- `etag` (weak) for conditional requests
+- `provenance.retrievedAt` timestamp
+- `Cache-Control` header (currently 300s for dynamic admin boundaries sample; 86400s for static code lists)
+Clients should respect TTL and still perform ETag revalidation for freshness.
 
 ## Configuration
 Copy `.env.example` → `.env` and set `OS_API_KEY`. Optional flags:

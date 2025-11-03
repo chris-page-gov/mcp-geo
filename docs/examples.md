@@ -6,6 +6,21 @@
 POST /tools/call
 { "tool": "os_places.by_postcode", "postcode": "SW1A1AA" }
 
+# Enriched UPRN output now includes classificationDescription & localCustodianName
+# Example response excerpt:
+# {
+#   "uprns": [
+#     {
+#       "uprn": "100023336959",
+#       "address": "10 Downing Street, London",
+#       "classification": "RD",
+#       "classificationDescription": "Residential Detached",
+#       "local_custodian_code": 5990,
+#       "localCustodianName": "Westminster City Council"
+#     }
+#   ]
+# }
+
 POST /tools/call
 { "tool": "os_places.search", "text": "10 Downing Street" }
 
@@ -26,6 +41,27 @@ POST /tools/call
 
 POST /tools/call
 { "tool": "os_linked_ids.get", "identifier": "100021892956" }
+
+POST /tools/call
+{ "tool": "ons_data.query", "geography": "K02000001", "limit": 2 }
+
+POST /tools/call
+{ "tool": "ons_data.dimensions" }
+
+POST /tools/call
+{ "tool": "ons_search.query", "term": "population" }
+
+POST /tools/call
+{ "tool": "ons_codes.list" }
+
+POST /tools/call
+{ "tool": "ons_codes.options", "dimension": "geography" }
+
+POST /tools/call
+{ "tool": "ons_data.create_filter", "geography": ["K02000001"], "measure": ["GDPV"], "timeRange": "2024 Q1-2024 Q2" }
+
+POST /tools/call
+{ "tool": "ons_data.get_filter_output", "filterId": "FILT123" }
 ```
 
 ## Error Examples
@@ -46,7 +82,7 @@ POST /tools/call
 ### 1. UPRNs for a Postcode
 User: List addresses for SW1A 1AA.
 Assistant (internal): call os_places.by_postcode { postcode: "SW1A1AA" }
-Assistant: Returns N UPRNs with addresses.
+Assistant: Returns N UPRNs with addresses + classificationDescription + localCustodianName.
 
 ### 2. Nearest Named Feature then Addresses
 User: What named features and addresses are near 51.5034,-0.1276?
@@ -60,6 +96,22 @@ User: Show building feature IDs in small Westminster box.
 Assistant (internal): os_features.query { collection: "buildings", bbox: [...] }
 Assistant: Lists feature IDs and geometry types.
 
+### 5. ONS Dimensions & Query
+User: What observation dimensions are available?
+Assistant (internal): ons_data.dimensions {}
+Assistant: Returns dimension list and codes.
+
+User: Get two observations for UK GDPV.
+Assistant (internal): ons_data.query { geography: "K02000001", measure: "GDPV", limit: 2 }
+Assistant: Provides first two observations, includes count and pagination token if more.
+
+### 6. ONS Filter Workflow (Sample)
+User: Prepare a bulk GDPV filter for UK 2024 Q1-Q2.
+Assistant (internal sequence):
+1. ons_data.create_filter { geography: ["K02000001"], measure: ["GDPV"], timeRange: "2024 Q1-2024 Q2" }
+2. ons_data.get_filter_output { filterId: "<returned id>" }
+Assistant: Returns JSON results (future: CSV/XLSX).
+
 ### 4. Linked Identifiers
 User: Given this UPRN 100021892956 what other IDs exist?
 Assistant (internal): os_linked_ids.get { identifier: "100021892956" }
@@ -70,6 +122,7 @@ Assistant: Presents related USRNs / TOIDs if present.
 - Use nearest tools only when both lat & lon present.
 - Summaries: list top 5 results; mention total count when >5.
 - Chain: find geometry (features / coordinates) first, then overlay other data.
+- For ONS queries, enumerate dimensions first (ons_data.dimensions) to guide valid filters and reduce errors.
 
 ## Golden Test Philosophy
 Golden tests provide deterministic inputs + mocked upstream responses verifying schema stability and transformation logic. They SHOULD NOT hit live OS APIs.

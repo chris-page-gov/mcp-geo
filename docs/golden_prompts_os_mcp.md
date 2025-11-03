@@ -1,9 +1,9 @@
-# Golden Prompts — GPT‑5 / GPT‑5 mini / Gemini 2.5 Pro with OS‑MCP
+# Golden Prompts — Model Evaluation with MCP Geo Server
 
 **Facts (read first):**
 
 - These prompts are designed to verify **MCP tool discovery**, **tool use**, **error handling**, and **result quality** across models (GPT‑5, GPT‑5 mini, Gemini 2.5 Pro) with **Copilot Coding Agent**.
-- They assume your MCP server exposes tools broadly like: `os.uprn.lookup`, `os.usrn.lookup`, `os.address.by_postcode`, `os.boundary.ward_geojson`, `os.map.render` (rename in the prompts if your tool names differ).
+- They assume your MCP server exposes tools with canonical names (subset): `os_places.by_postcode`, `os_places.search`, `os_places.nearest`, `os_names.find`, `os_features.query`, `os_maps.render`, `admin_lookup.containing_areas`, `admin_lookup.reverse_hierarchy`, `ons_data.query`, `ons_data.dimensions`, `ons_data.create_filter`, `ons_data.get_filter_output`, `ons_search.query`, `ons_codes.list`, `ons_codes.options`.
 - Keep **web search ON** for freshness tests, but several sections **forbid web** to ensure the model uses MCP tools only.
 - For governance validation, keep **Suggestions matching public code = Allow** (so you can see code referencing) during evaluation.
 
@@ -36,31 +36,31 @@
 
 ## 2) Core functional scenarios (prefer MCP tools; allow web only if MCP lacks data)
 
-### A. UPRN lookups (exact IDs)
+### A. Postcode & UPRN enrichment
 
-UPRNs to test: `100023336959, 100023338803, 100023338946, 100023371397`  
-_Prompt:_ “Return the **full records** for these UPRNs via MCP tools. Output a concise table (UPRN, address, building type, coordinates, source). If a field is missing, state ‘null’ rather than guessing.”
+Postcode to test: `SW1A1AA`  
+_Prompt:_ “Return all addresses for SW1A 1AA via MCP tools. Output table: UPRN, address, classification, classificationDescription, localCustodianName, lat, lon. If a field absent use null.”
 
-### B. USRN lookups
+### B. Administrative containment
 
-USRNs to test: `20000185, 8400511, 20000002, 8400037, 48003642`  
-_Prompt:_ “Look up each **USRN** and report: name, road class, authority, geometry type/length. Include a one‑sentence caveat about licensing where applicable.”
+Point: `lat=51.5010, lon=-0.1416` (near Buckingham Palace)  
+_Prompt:_ “List containing areas (smallest→largest) with id, level, name.”
 
-### C. Postcode and locality
+### C. Street filtering within postcode
 
-_Prompt:_ “List all **addresses** in **Gloucester Street, CV1 3BZ**. Include UPRN, address line, and geo‑point. If your tool works by postcode, filter to the street in post‑processing.”
+_Prompt:_ “List addresses in Gloucester Street, CV1 3BZ. If only postcode results available, filter client-side to those containing 'Gloucester Street'. Provide counts before/after.”
 
-### D. Named place & buildings
+### D. Named place & nearby addresses
 
-_Prompt:_ “List **buildings on Downing Street, London** with UPRN (if available), building type, and polygon centroid. Give results only from MCP tools.”
+_Prompt:_ “Find named features near 51.5034,-0.1276 then list nearest addresses. Summarise top 5 names and number of addresses.”
 
-### E. Boundary geometry as GeoJSON
+### E. Ward boundary geometry
 
-_Prompt:_ “Return **Coventry ward boundaries** as **GeoJSON** via MCP and summarise the count, names, and bounding boxes.”
+_Prompt:_ “Return Coventry ward boundaries as GeoJSON via MCP resources and summarise name + bbox per ward.”
 
-### F. Quick map artefact (if your server supports it)
+### F. Static map descriptor
 
-_Prompt:_ “Render a simple **static map** of **Downing Street buildings** with outlines and labels. Return a PNG or an HTML tile URL. If not supported, state that clearly.”
+_Prompt:_ “Describe or render a static map for Downing Street (bbox around 51.503,-0.128) with address points. If rendering unsupported, supply descriptor and note limitation.”
 
 **Expected:** Uses MCP tools, not web. Outputs structured tables/GeoJSON. States limitations explicitly.
 
@@ -68,9 +68,9 @@ _Prompt:_ “Render a simple **static map** of **Downing Street buildings** with
 
 ## 3) Tool‑use enforcement (no web, must call tools)
 
-- _Prompt:_ “**Do not browse the web.** Use MCP tools only. For **‘What roads are in CV1 3BZ?’**, explain the plan, then perform the calls. If a result requires a secondary filter, show it.”
+- _Prompt:_ “**Do not browse the web.** Use MCP tools only. For **‘What addresses are in CV1 3BZ on Gloucester Street?’**, explain plan, perform calls and filtering.”
 
-- _Prompt:_ “**Do not browse the web.** Use MCP tools only. ‘**What is the USRN of Gloucester Street CV1 3BZ?**’ Return a single USRN and a confidence note.”
+- _Prompt:_ “**Do not browse the web.** Use MCP tools only. ‘**Which administrative areas contain 51.5010,-0.1416?**’ Return ordered chain + confidence note.”
 
 **Expected:** The agent calls road/USRN tools and avoids hallucination.
 
@@ -78,19 +78,22 @@ _Prompt:_ “Render a simple **static map** of **Downing Street buildings** with
 
 ## 4) Error‑handling & robustness
 
-- _Prompt:_ “Lookup UPRN `999999999999` (deliberately invalid). Provide a **graceful error** with remediation suggestions (e.g., ‘validate length’, ‘check dataset coverage’).”
+- _Prompt:_ “Lookup postcode `ZZ99ZZ` (invalid). Provide graceful error + remediation suggestions (format validation, official sources).”
 
-- _Prompt:_ “The boundary service returns **HTTP 429**. Implement backoff and retry guidance for me in three bullet points.”
+- _Prompt:_ “A tool returns **RATE_LIMITED**. Implement adaptive backoff in three bullet points.”
 
 - _Prompt:_ “A tool returns a polygon with **SRID:27700** (BNG). Convert to **WGS84 (EPSG:4326)** and provide GeoJSON coordinates.”
 
 ---
 
-## 5) Web‑freshness checks (web ON)
+## 5) ONS statistics (sample vs live)
 
-- _Prompt:_ “Using web search in addition to MCP, list any **recent changes** to **OS NGD** or **ONS Open Geography** APIs in the last 30 days and cite the sources.”
+- _Prompt:_ “List available ONS observation dimensions (sample). Then show first 2 observations for UK GDPV. Explain how live mode changes required parameters.”
 
-- _Prompt:_ “Cross‑check the MCP result for **Downing Street buildings** with any **official OS doc** you find. If there’s a mismatch, explain likely reasons (licensing, recency, generalisation).”
+## 6) Web‑freshness checks (web ON)
+
+- _Prompt:_ “Using web search and MCP, list any recent changes to OS NGD or ONS Open Geography APIs in the last 30 days with citations.”
+- _Prompt:_ “Cross‑check MCP result for Downing Street features with OS docs; explain mismatches (licensing, recency, generalisation).”
 
 **Expected:** Provides citations and a short reconciliation.
 
@@ -110,7 +113,7 @@ _Prompt:_ “Render a simple **static map** of **Downing Street buildings** with
 
 1. **Tool discovery** (lists tools & params correctly)  
 2. **Correct tool use** (no hallucinated endpoints; valid params)  
-3. **Result quality** (complete fields, precise filtering)  
+3. **Result quality** (complete fields including enrichment, precise filtering)  
 4. **Grounding** (admits unknowns; no fabrication)  
 5. **Error handling** (clear recovery steps)  
 6. **Governance** (no secret leakage; licensing caveats)  
