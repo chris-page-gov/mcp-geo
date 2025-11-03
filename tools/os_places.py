@@ -9,9 +9,41 @@ from requests import exceptions as req_exc
 
 from server.config import settings
 from tools.registry import Tool, ToolResult, register
+from pathlib import Path
+import json
 from tools.types import PlacesResponse
 
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
+
+# In-memory code list caches (loaded once)
+_CLASS_CODES: dict[str, str] = {}
+_CUSTODIANS: dict[str, str] = {}
+
+def _load_code_lists() -> None:
+    global _CLASS_CODES, _CUSTODIANS
+    if _CLASS_CODES and _CUSTODIANS:
+        return  # already loaded
+    base = Path(__file__).resolve().parent.parent / "resources"
+    try:
+        cls_path = base / "address_classification_codes.json"
+        data = json.loads(cls_path.read_text())
+        for entry in data.get("codes", []):
+            code = str(entry.get("code"))
+            desc = str(entry.get("description")) if entry.get("description") else ""
+            if code:
+                _CLASS_CODES[code] = desc
+    except Exception:  # pragma: no cover - missing file fallback
+        _CLASS_CODES = {}
+    try:
+        cust_path = base / "custodian_codes.json"
+        data = json.loads(cust_path.read_text())
+        for entry in data.get("codes", []):
+            code_val = entry.get("code")
+            name = entry.get("name")
+            if code_val is not None and name:
+                _CUSTODIANS[str(code_val)] = str(name)
+    except Exception:  # pragma: no cover
+        _CUSTODIANS = {}
 
 
 class NormalizedUPRN(TypedDict, total=False):
@@ -95,6 +127,7 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
     raw = resp.json()
     body = cast(PlacesResponse, raw)
     results = body.get("results", [])
+    _load_code_lists()
     uprns: list[NormalizedUPRN] = []
     for result in results:
         if not isinstance(result, dict):
@@ -113,13 +146,18 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
             lon = 0.0
         lcc = dpa.get("LOCAL_CUSTODIAN_CODE")
         local_custodian_code = cast(str | int | float | None, lcc)
+        classification_code = dpa.get("CLASS")
+        classification_desc = _CLASS_CODES.get(str(classification_code), None) if classification_code else None
+        cust_name = _CUSTODIANS.get(str(local_custodian_code), None) if local_custodian_code is not None else None
         uprns.append({
             "uprn": dpa.get("UPRN"),
             "address": dpa.get("ADDRESS"),
             "lat": lat,
             "lon": lon,
-            "classification": dpa.get("CLASS"),
+            "classification": classification_code,
+            "classificationDescription": classification_desc,
             "local_custodian_code": local_custodian_code,
+            "localCustodianName": cust_name,
         })
     return 200, {
         "uprns": uprns,
@@ -158,6 +196,7 @@ register(
                             "lat": {"type": "number"},
                             "lon": {"type": "number"},
                             "classification": {"type": ["string", "null"]},
+                            "classificationDescription": {"type": ["string", "null"]},
                             "local_custodian_code": {
                                 "type": [
                                     "string",
@@ -165,6 +204,7 @@ register(
                                     "null",
                                 ]
                             },
+                            "localCustodianName": {"type": ["string", "null"]},
                         },
                         "required": ["uprn", "address", "lat", "lon"],
                         "additionalProperties": True,

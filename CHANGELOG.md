@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Added
+- Place enrichment: `os_places.by_postcode` now returns `classificationDescription` and `localCustodianName` derived from static code list resources.
+- Resource headers: `Cache-Control` added with differentiated TTL (300s for dynamic admin boundaries sample, 86400s for static code lists).
+- Standardized resource provenance field `retrievedAt` across all `/resources/get` responses.
 
+### Tests
+- Added `test_os_places_enrichment.py` covering enrichment fields.
+- Added `test_resources_provenance_headers.py` validating cache headers and provenance presence.
+
+### Internal
+- Minor refactor in `server/mcp/resources.py` for provenance normalization.
 ### Added
 - STDIO adapter branch tests for parse errors (-32700), invalid version (-32600), invalid params (-32602), and ETag not-modified flow.
 

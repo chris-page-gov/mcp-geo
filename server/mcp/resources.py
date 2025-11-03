@@ -62,11 +62,46 @@ def _ons_etag(variant_key: str = "") -> str:
 @router.get("/resources/list")
 def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
     resources: list[dict[str, Any]] = [
-        {"name": "admin_boundaries", "version": _ADMIN_PROVENANCE["version"], "license": _ADMIN_PROVENANCE["license"], "source": _ADMIN_PROVENANCE["source"]},
-        {"name": "ons_observations", "type": "dataset", "version": None, "license": "Open Government Licence v3", "source": "ONS (sample synthetic subset)", "description": "Sample ONS quarterly GDP observations (synthetic)"},
-        {"name": "address_classification_codes", "type": "code_list", "version": "2025.11.03-alpha", "license": "Open Government Licence v3"},
-        {"name": "custodian_codes", "type": "code_list", "version": "2025.11.03-alpha", "license": "Open Government Licence v3"},
-        {"name": "boundaries_wards", "type": "boundary", "version": "2025.11.03-alpha", "license": "Open Government Licence v3"},
+        {
+            "name": "admin_boundaries",
+            "type": "boundary_hierarchy",
+            "version": _ADMIN_PROVENANCE["version"],
+            "license": _ADMIN_PROVENANCE["license"],
+            "source": _ADMIN_PROVENANCE["source"],
+            "description": "Sample administrative boundary chain",
+        },
+        {
+            "name": "ons_observations",
+            "type": "dataset",
+            "version": None,
+            "license": "Open Government Licence v3",
+            "source": "ONS (sample synthetic subset)",
+            "description": "Sample ONS quarterly GDP observations (synthetic)",
+        },
+        {
+            "name": "address_classification_codes",
+            "type": "code_list",
+            "version": "2025.11.03-alpha",
+            "license": "Open Government Licence v3",
+            "source": "OS AddressBase (sample subset)",
+            "description": "Address classification code descriptions",
+        },
+        {
+            "name": "custodian_codes",
+            "type": "code_list",
+            "version": "2025.11.03-alpha",
+            "license": "Open Government Licence v3",
+            "source": "Local Authority Codes (sample)",
+            "description": "Local custodian code to name mapping",
+        },
+        {
+            "name": "boundaries_wards",
+            "type": "boundary",
+            "version": "2025.11.03-alpha",
+            "license": "Open Government Licence v3",
+            "source": "Sample Ward Boundaries (synthetic subset)",
+            "description": "Ward-level bounding boxes (sample subset)",
+        },
     ]
     start = (page - 1) * limit
     end = start + limit
@@ -121,7 +156,7 @@ def get_resource(
             "name": name,
             "count": len(filtered),
             "etag": etag,
-            "provenance": _ADMIN_PROVENANCE,
+            "provenance": {**_ADMIN_PROVENANCE, "retrievedAt": datetime.now(timezone.utc).isoformat()},
             "data": {
                 "features": page_items,
                 "total": len(filtered),
@@ -131,6 +166,7 @@ def get_resource(
             },
         }
         response.headers["ETag"] = etag
+        response.headers["Cache-Control"] = "public, max-age=300"
         return payload
     if name == "ons_observations":
         path = _ons_observations_path()
@@ -166,7 +202,7 @@ def get_resource(
             "name": name,
             "count": len(observations),
             "etag": etag,
-            "provenance": provenance,
+            "provenance": {**provenance, "retrievedAt": datetime.now(timezone.utc).isoformat()},
             "data": {
                 "observations": page_items,
                 "total": len(observations),
@@ -181,6 +217,7 @@ def get_resource(
             },
         }
         response.headers["ETag"] = etag
+        response.headers["Cache-Control"] = "public, max-age=300"
         return payload  # type: ignore[return-value]
 
     # Code lists & ward boundaries (simple pagination + ETag varianting)
@@ -205,7 +242,7 @@ def get_resource(
             "name": name,
             "count": len(items),
             "etag": etag,
-            "provenance": provenance,
+            "provenance": {**provenance, "retrievedAt": datetime.now(timezone.utc).isoformat()},
             "data": {
                 "items": page_items,
                 "total": len(items),
@@ -215,6 +252,7 @@ def get_resource(
             },
         }
         response.headers["ETag"] = etag
+        response.headers["Cache-Control"] = "public, max-age=86400"
         return payload
 
     base_path = Path(__file__).resolve().parent.parent.parent / "resources"
