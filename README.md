@@ -237,6 +237,9 @@ All `/resources/get` responses include:
 - `Cache-Control` header (currently 300s for dynamic admin boundaries sample; 86400s for static code lists)
 Clients should respect TTL and still perform ETag revalidation for freshness.
 
+## Troubleshooting
+See `docs/troubleshooting.md` for a table of common error codes (`INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, etc.) and remediation steps.
+
 ## Configuration
 Copy `.env.example` → `.env` and set `OS_API_KEY`. Optional flags:
 - `DEBUG_ERRORS` (if present / truthy) enables traceback in error responses; otherwise stack traces are suppressed.

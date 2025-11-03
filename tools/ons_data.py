@@ -276,9 +276,50 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
     status, result = _query(stored)
     if status != 200:
         return status, result
-    if fmt != "JSON":
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Only JSON format supported in sample mode"}
-    return 200, {"filterId": filter_id, "format": fmt, "data": result}
+    # Supported formats: JSON (structured object), CSV (text), XLSX (base64 binary)
+    if fmt == "JSON":
+        return 200, {"filterId": filter_id, "format": fmt, "data": result}
+    rows = result.get("results", [])
+    if fmt == "CSV":
+        # Build header from union of keys
+        headers: list[str] = []
+        for r in rows:
+            if isinstance(r, dict):
+                for k in r.keys():
+                    if k not in headers:
+                        headers.append(k)
+        import io, csv
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(headers)
+        for r in rows:
+            if isinstance(r, dict):
+                writer.writerow([r.get(h, "") for h in headers])
+        csv_text = buf.getvalue()
+        return 200, {"filterId": filter_id, "format": fmt, "contentType": "text/csv", "dataBase64": csv_text.encode().decode(), "rows": len(rows), "columns": len(headers)}
+    if fmt == "XLSX":
+        try:
+            import io
+            from openpyxl import Workbook  # type: ignore
+            wb = Workbook()
+            ws = wb.active
+            headers: list[str] = []
+            for r in rows:
+                if isinstance(r, dict):
+                    for k in r.keys():
+                        if k not in headers:
+                            headers.append(k)
+            ws.append(headers)
+            for r in rows:
+                if isinstance(r, dict):
+                    ws.append([r.get(h, "") for h in headers])
+            stream = io.BytesIO()
+            wb.save(stream)
+            b64 = stream.getvalue().hex()  # hex to keep simple (could use base64)
+            return 200, {"filterId": filter_id, "format": fmt, "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "dataHex": b64, "rows": len(rows), "columns": len(headers)}
+        except Exception as exc:  # pragma: no cover
+            return 500, {"isError": True, "code": "INTEGRATION_ERROR", "message": f"XLSX generation failed: {exc}"}
+    return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Unsupported format (use JSON, CSV, XLSX)"}
 
 register(Tool(
     name="ons_data.get_observation",
@@ -311,8 +352,8 @@ register(Tool(
 
 register(Tool(
     name="ons_data.get_filter_output",
-    description="Retrieve data for a previously created filter (JSON only in sample mode).",
-    input_schema={"type": "object", "properties": {"tool": {"type": "string", "const": "ons_data.get_filter_output"}, "filterId": {"type": "string"}, "format": {"type": "string"}}, "required": ["filterId"], "additionalProperties": False},
-    output_schema={"type": "object", "properties": {"filterId": {"type": "string"}, "format": {"type": "string"}, "data": {"type": "object"}}, "required": ["filterId", "format", "data"]},
+    description="Retrieve data for a previously created filter (formats: JSON, CSV, XLSX).",
+    input_schema={"type": "object", "properties": {"tool": {"type": "string", "const": "ons_data.get_filter_output"}, "filterId": {"type": "string"}, "format": {"type": "string", "enum": ["JSON", "CSV", "XLSX"]}}, "required": ["filterId"], "additionalProperties": False},
+    output_schema={"type": "object", "properties": {"filterId": {"type": "string"}, "format": {"type": "string"}, "data": {"type": "object"}, "contentType": {"type": ["string", "null"]}, "dataBase64": {"type": ["string", "null"]}, "dataHex": {"type": ["string", "null"]}, "rows": {"type": ["integer", "null"]}, "columns": {"type": ["integer", "null"]}}, "required": ["filterId", "format"]},
     handler=_get_filter_output,
 ))

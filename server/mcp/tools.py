@@ -87,6 +87,8 @@ def describe_tools(name: str | None = None):
                     "version": tool.version,
                     "inputSchema": tool.input_schema,
                     "outputSchema": tool.output_schema,
+                    "inputSchemaRef": f"#/tools/{tool.name}/inputSchema",
+                    "outputSchemaRef": f"#/tools/{tool.name}/outputSchema",
                 }
             ]
         }
@@ -98,6 +100,8 @@ def describe_tools(name: str | None = None):
                 "version": t.version,
                 "inputSchema": t.input_schema,
                 "outputSchema": t.output_schema,
+                "inputSchemaRef": f"#/tools/{t.name}/inputSchema",
+                "outputSchemaRef": f"#/tools/{t.name}/outputSchema",
             }
             for t in all_tools()
         ]

@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 - Tool catalog auto-generation script `scripts/generate_tool_catalog.py` and published `docs/tool_catalog.md`.
 - Troubleshooting guide `docs/troubleshooting.md` listing error codes and remediation steps.
 - Extended ONS filter workflow examples in `docs/examples.md` with sample responses.
+- CSV and XLSX formats for `ons_data.get_filter_output` (returns `dataBase64` for CSV text and `dataHex` for XLSX binary).
+- Schema reference fields `inputSchemaRef` and `outputSchemaRef` added to `/tools/describe` output.
 
 ### Tests
 - Added `test_os_places_enrichment.py` covering enrichment fields.

@@ -12,7 +12,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | ons_codes.options | 0.1.0 | List codes/options for a given ONS sample dimension. |
 | ons_data.create_filter | 0.1.0 | Create a filter for ONS observations (sample subset). Returns filterId. |
 | ons_data.dimensions | 0.1.0 | List available ONS observation dimensions (sample or live dataset metadata). Optionally restrict to one dimension via 'dimension' field. |
-| ons_data.get_filter_output | 0.1.0 | Retrieve data for a previously created filter (JSON only in sample mode). |
+| ons_data.get_filter_output | 0.1.0 | Retrieve data for a previously created filter (formats: JSON, CSV, XLSX). |
 | ons_data.get_observation | 0.1.0 | Fetch a single observation by geography, measure, time (live or sample). |
 | ons_data.query | 0.1.0 | Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination). |
 | ons_search.query | 0.1.0 | Search sample ONS dimensions for code fragments. |
@@ -406,7 +406,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_data.get_filter_output
 
-**Description:** Retrieve data for a previously created filter (JSON only in sample mode).
+**Description:** Retrieve data for a previously created filter (formats: JSON, CSV, XLSX).
 
 **Version:** 0.1.0
 
@@ -420,6 +420,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
       "type": "string"
     },
     "format": {
+      "enum": [
+        "JSON",
+        "CSV",
+        "XLSX"
+      ],
       "type": "string"
     },
     "tool": {
@@ -438,20 +443,49 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
+    "columns": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "contentType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "data": {
       "type": "object"
+    },
+    "dataBase64": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dataHex": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "filterId": {
       "type": "string"
     },
     "format": {
       "type": "string"
+    },
+    "rows": {
+      "type": [
+        "integer",
+        "null"
+      ]
     }
   },
   "required": [
     "filterId",
-    "format",
-    "data"
+    "format"
   ],
   "type": "object"
 }

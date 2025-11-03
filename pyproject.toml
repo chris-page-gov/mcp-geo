@@ -18,6 +18,7 @@ dependencies = [
     "loguru",
     "requests",
     "httpx"  # required by starlette.testclient used in tests
+    ,"openpyxl"  # XLSX generation for filter output
 ]
 
 [project.scripts]

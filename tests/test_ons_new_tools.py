@@ -31,9 +31,13 @@ def test_create_filter_and_get_output():
 def test_filter_output_invalid_format():
     create = client.post('/tools/call', json={'tool': 'ons_data.create_filter'})
     fid = create.json()['filterId']
-    get = client.post('/tools/call', json={'tool': 'ons_data.get_filter_output', 'filterId': fid, 'format': 'CSV'})
-    assert get.status_code == 400
-    err = get.json()
+    # CSV is now valid; expect success
+    get_csv = client.post('/tools/call', json={'tool': 'ons_data.get_filter_output', 'filterId': fid, 'format': 'CSV'})
+    assert get_csv.status_code == 200
+    # Unsupported format triggers INVALID_INPUT
+    get_bad = client.post('/tools/call', json={'tool': 'ons_data.get_filter_output', 'filterId': fid, 'format': 'PDF'})
+    assert get_bad.status_code == 400
+    err = get_bad.json()
     assert err['isError'] and err['code'] == 'INVALID_INPUT'
 
 
