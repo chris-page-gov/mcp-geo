@@ -112,6 +112,34 @@ Assistant (internal sequence):
 2. ons_data.get_filter_output { filterId: "<returned id>" }
 Assistant: Returns JSON results (future: CSV/XLSX).
 
+Example create filter response:
+```
+{
+	"filterId": "FILT123",
+	"status": "created",
+	"requested": {
+		"geography": ["K02000001"],
+		"measure": ["GDPV"],
+		"timeRange": "2024 Q1-2024 Q2"
+	}
+}
+```
+
+Example get filter output response:
+```
+{
+	"filterId": "FILT123",
+	"results": [
+		{"geography": "K02000001", "measure": "GDPV", "time": "2024 Q1", "value": 100.2},
+		{"geography": "K02000001", "measure": "GDPV", "time": "2024 Q2", "value": 101.0}
+	],
+	"count": 2,
+	"provenance": {"source": "ons_data", "mode": "sample"}
+}
+```
+
+Future enhancement: CSV/XLSX output with `format` parameter (planned) and streaming for large result sets.
+
 ### 4. Linked Identifiers
 User: Given this UPRN 100021892956 what other IDs exist?
 Assistant (internal): os_linked_ids.get { identifier: "100021892956" }

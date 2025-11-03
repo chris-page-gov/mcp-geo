@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 - Place enrichment: `os_places.by_postcode` now returns `classificationDescription` and `localCustodianName` derived from static code list resources.
 - Resource headers: `Cache-Control` added with differentiated TTL (300s for dynamic admin boundaries sample, 86400s for static code lists).
 - Standardized resource provenance field `retrievedAt` across all `/resources/get` responses.
+- Tool catalog auto-generation script `scripts/generate_tool_catalog.py` and published `docs/tool_catalog.md`.
+- Troubleshooting guide `docs/troubleshooting.md` listing error codes and remediation steps.
+- Extended ONS filter workflow examples in `docs/examples.md` with sample responses.
 
 ### Tests
 - Added `test_os_places_enrichment.py` covering enrichment fields.
