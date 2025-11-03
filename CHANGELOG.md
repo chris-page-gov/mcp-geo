@@ -6,13 +6,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- (placeholder)
+- STDIO adapter branch tests for parse errors (-32700), invalid version (-32600), invalid params (-32602), and ETag not-modified flow.
 
 ### Changed
-- (placeholder)
+- Refactor(server): move STDIO adapter implementation to `server/stdio_adapter.py` with type hints; legacy wrapper preserved.
 
 ### Fixed
-- (placeholder)
+- Correct handling of non-dict `params` triggering JSON-RPC -32602 Invalid params error.
 
 ## [0.2.1] - 2025-09-17
 

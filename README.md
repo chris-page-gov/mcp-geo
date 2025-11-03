@@ -228,7 +228,11 @@ Container and dev setup ensure current CA bundle (certifi) for stable TLS to OS 
 MIT
 
 ## MCP STDIO Adapter (Local Dev)
-The script `scripts/os-mcp` now implements JSON-RPC 2.0 over STDIO with `Content-Length` framing. It is referenced by `mcp.json` (`os-mcp-stdio`).
+The JSON-RPC 2.0 STDIO adapter lives in `server/stdio_adapter.py` (refactored from the prior `scripts/os_mcp.py`). Legacy entry points remain:
+- Console script: `mcp-geo-stdio`
+- Wrapper script: `scripts/os-mcp` (delegates to `server/stdio_adapter.py`)
+
+This adapter is referenced by `mcp.json` (`os-mcp-stdio`).
 
 ### Framing
 Each request/response:
