@@ -15,6 +15,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - `server/mcp/tools.py`: Tool metadata/dispatch + explicit dynamic imports guaranteeing registration.
 - `server/mcp/resources.py`: Resource listing (placeholder; expand with metadata + retrieval endpoints).
 - `server/mcp/playground.py`: Transcript stub (synchronous; should become async and validated).
+- `server/stdio_adapter.py`: JSON-RPC 2.0 STDIO adapter (relocated from legacy `scripts/os_mcp.py`; console script `mcp-geo-stdio` + wrapper `scripts/os-mcp` retained for compatibility).
 - `resources/`: Static data (currently minimal / placeholder folders expected).
 - `tools/`: Concrete tool modules (os_places, os_places_extra, os_names, os_features, os_linked_ids, os_maps, os_vector_tiles, etc.).
 - `playground/`: Placeholder for a web or CLI UI (not yet populated with frontend assets here).
@@ -100,7 +101,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 8. Enhance `/resources/get` with ETag / caching headers.
 9. ONS data tools (Epic D) not yet started.
 
-Resolved (removed from gaps): baseline tests, dynamic tool registration reliability, redaction helper, README duplication, type + lint config, modular tool structure.
+Resolved (removed from gaps): baseline tests, dynamic tool registration reliability, redaction helper, README duplication, type + lint config, modular tool structure, STDIO adapter relocation with branch tests (+ invalid params fix), ETag support for resources over STDIO.
 
 ## Roadmap (Suggested)
 
@@ -112,4 +113,4 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 
 ---
 
-Last updated: 2025-09-16
+Last updated: 2025-11-03
