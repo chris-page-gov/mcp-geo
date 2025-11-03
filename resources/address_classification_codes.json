@@ -1,0 +1,13 @@
+{
+  "provenance": {
+    "source": "OS AddressBase (sample subset)",
+    "license": "Open Government Licence v3",
+    "version": "2025.11.03-alpha"
+  },
+  "codes": [
+    {"code": "RD", "description": "Residential"},
+    {"code": "CM", "description": "Commercial"},
+    {"code": "RC", "description": "Residential/Commercial Mixed"},
+    {"code": "OT", "description": "Other / Special"}
+  ]
+}

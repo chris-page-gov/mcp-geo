@@ -1,0 +1,12 @@
+{
+  "provenance": {
+    "source": "Local Authority Custodian Codes (sample)",
+    "license": "Open Government Licence v3",
+    "version": "2025.11.03-alpha"
+  },
+  "codes": [
+    {"code": 5990, "name": "Westminster City Council"},
+    {"code": 1705, "name": "Coventry City Council"},
+    {"code": 1775, "name": "Oxford City Council"}
+  ]
+}

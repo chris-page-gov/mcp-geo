@@ -17,6 +17,8 @@ for _mod in [
     "tools.os_vector_tiles",
     "tools.admin_lookup",
     "tools.ons_data",
+    "tools.ons_search",
+    "tools.ons_codes",
 ]:
     try:  # pragma: no cover - defensive import
         importlib.import_module(_mod)

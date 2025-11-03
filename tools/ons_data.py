@@ -218,3 +218,101 @@ register(Tool(
     },
     handler=_dimensions,
 ))
+
+# --- Additional ONS Tools (D1 & D2) -------------------------------------------------
+
+_FILTER_STORE: dict[str, dict[str, Any]] = {}
+_FILTER_COUNTER = 0
+
+def _get_observation(payload: dict[str, Any]) -> ToolResult:
+    # Simplified: return first matching observation (sample or live)
+    dataset = payload.get("dataset")
+    edition = payload.get("edition")
+    version = payload.get("version")
+    geography = payload.get("geography")
+    measure = payload.get("measure")
+    time = payload.get("time")
+    if settings.ONS_LIVE_ENABLED and dataset and edition and version and geography and measure and time:
+        # Live single observation path (simulate by querying observations then filtering)
+        params = {"geography": geography, "measure": measure, "time": time}
+        url = f"{ons_client.base_api}/dataset/{dataset}/edition/{edition}/version/{version}/observations"
+        status, data = ons_client.get_json(url, params=params)
+        if status != 200:
+            return status, data
+        obs = data.get("observations", [])
+        first = obs[0] if obs else None
+        if not first:
+            return 404, {"isError": True, "code": "NO_OBSERVATION", "message": "No matching observation"}
+        return 200, {"observation": first, "live": True}
+    # Sample path
+    if not (geography and measure and time):
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "geography, measure, time required"}
+    data = _load()
+    for o in data.get("observations", []):
+        if o.get("geography") == geography and o.get("measure") == measure and o.get("time") == time:
+            return 200, {"observation": o, "live": False}
+    return 404, {"isError": True, "code": "NO_OBSERVATION", "message": "No matching observation"}
+
+def _create_filter(payload: dict[str, Any]) -> ToolResult:
+    global _FILTER_COUNTER
+    # Accept same filtering fields as query + dataset metadata
+    filter_payload = {k: payload.get(k) for k in ["geography", "measure", "timeRange", "dataset", "edition", "version"] if payload.get(k) is not None}
+    _FILTER_COUNTER += 1
+    filter_id = f"f{_FILTER_COUNTER:04d}"
+    # Always store; if no params provided store empty dict (interpreted as unfiltered sample)
+    _FILTER_STORE[filter_id] = filter_payload or {}
+    return 201, {"filterId": filter_id, "params": filter_payload}
+
+def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
+    filter_id = payload.get("filterId")
+    fmt = (payload.get("format") or "JSON").upper()
+    if not isinstance(filter_id, str):
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing filterId"}
+    stored = _FILTER_STORE.get(filter_id)
+    if stored is None:
+        # Treat unknown id as 404
+        return 404, {"isError": True, "code": "UNKNOWN_FILTER", "message": "Filter not found"}
+    # Re-use _query logic for sample; ignore live for now
+    status, result = _query(stored)
+    if status != 200:
+        return status, result
+    if fmt != "JSON":
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Only JSON format supported in sample mode"}
+    return 200, {"filterId": filter_id, "format": fmt, "data": result}
+
+register(Tool(
+    name="ons_data.get_observation",
+    description="Fetch a single observation by geography, measure, time (live or sample).",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "ons_data.get_observation"},
+            "geography": {"type": "string"},
+            "measure": {"type": "string"},
+            "time": {"type": "string"},
+            "dataset": {"type": "string"},
+            "edition": {"type": "string"},
+            "version": {"type": "string"},
+        },
+        "required": ["geography", "measure", "time"],
+        "additionalProperties": False,
+    },
+    output_schema={"type": "object", "properties": {"observation": {"type": "object"}, "live": {"type": "boolean"}}, "required": ["observation", "live"]},
+    handler=_get_observation,
+))
+
+register(Tool(
+    name="ons_data.create_filter",
+    description="Create a filter for ONS observations (sample subset). Returns filterId.",
+    input_schema={"type": "object", "properties": {"tool": {"type": "string", "const": "ons_data.create_filter"}, "geography": {"type": "string"}, "measure": {"type": "string"}, "timeRange": {"type": "string"}}, "required": [], "additionalProperties": False},
+    output_schema={"type": "object", "properties": {"filterId": {"type": "string"}, "params": {"type": "object"}}, "required": ["filterId", "params"]},
+    handler=_create_filter,
+))
+
+register(Tool(
+    name="ons_data.get_filter_output",
+    description="Retrieve data for a previously created filter (JSON only in sample mode).",
+    input_schema={"type": "object", "properties": {"tool": {"type": "string", "const": "ons_data.get_filter_output"}, "filterId": {"type": "string"}, "format": {"type": "string"}}, "required": ["filterId"], "additionalProperties": False},
+    output_schema={"type": "object", "properties": {"filterId": {"type": "string"}, "format": {"type": "string"}, "data": {"type": "object"}}, "required": ["filterId", "format", "data"]},
+    handler=_get_filter_output,
+))

@@ -62,21 +62,11 @@ def _ons_etag(variant_key: str = "") -> str:
 @router.get("/resources/list")
 def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
     resources: list[dict[str, Any]] = [
-        {"name": "code_lists"},
-        {
-            "name": "admin_boundaries",
-            "version": _ADMIN_PROVENANCE["version"],
-            "license": _ADMIN_PROVENANCE["license"],
-            "source": _ADMIN_PROVENANCE["source"],
-        },
-        {
-            "name": "ons_observations",
-            "type": "dataset",
-            "version": None,  # dynamic from file provenance at get time
-            "license": "Open Government Licence v3",
-            "source": "ONS (sample synthetic subset)",
-            "description": "Sample ONS quarterly GDP observations (synthetic) for tooling prototyping",
-        },
+        {"name": "admin_boundaries", "version": _ADMIN_PROVENANCE["version"], "license": _ADMIN_PROVENANCE["license"], "source": _ADMIN_PROVENANCE["source"]},
+        {"name": "ons_observations", "type": "dataset", "version": None, "license": "Open Government Licence v3", "source": "ONS (sample synthetic subset)", "description": "Sample ONS quarterly GDP observations (synthetic)"},
+        {"name": "address_classification_codes", "type": "code_list", "version": "2025.11.03-alpha", "license": "Open Government Licence v3"},
+        {"name": "custodian_codes", "type": "code_list", "version": "2025.11.03-alpha", "license": "Open Government Licence v3"},
+        {"name": "boundaries_wards", "type": "boundary", "version": "2025.11.03-alpha", "license": "Open Government Licence v3"},
     ]
     start = (page - 1) * limit
     end = start + limit
@@ -192,5 +182,43 @@ def get_resource(
         }
         response.headers["ETag"] = etag
         return payload  # type: ignore[return-value]
+
+    # Code lists & ward boundaries (simple pagination + ETag varianting)
+    def _generic_resource(path: Path, variant_key: str) -> Optional[Dict[str, Any]]:
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="Resource not found")
+        parsed = json.loads(path.read_text())
+        items = parsed.get("codes") or parsed.get("features") or []
+        start = (page - 1) * limit
+        end = start + limit
+        page_items = items[start:end]
+        next_page_token = str(page + 1) if end < len(items) else None
+        provenance = parsed.get("provenance", {})
+        etag = _ons_etag(f"{name}|{variant_key}|{page}|{limit}")
+        if if_none_match:
+            candidates = {token.strip() for token in if_none_match.split(',') if token.strip()}
+            if etag in candidates or "*" in candidates:
+                response.status_code = 304
+                response.headers["ETag"] = etag
+                return None
+        payload = {
+            "name": name,
+            "count": len(items),
+            "etag": etag,
+            "provenance": provenance,
+            "data": {
+                "items": page_items,
+                "total": len(items),
+                "limit": limit,
+                "page": page,
+                "nextPageToken": next_page_token,
+            },
+        }
+        response.headers["ETag"] = etag
+        return payload
+
+    base_path = Path(__file__).resolve().parent.parent.parent / "resources"
+    if name in {"address_classification_codes", "custodian_codes", "boundaries_wards"}:
+        return _generic_resource(base_path / f"{name}.json", "base")
 
     raise HTTPException(status_code=404, detail="Resource not found")
