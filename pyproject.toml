@@ -16,11 +16,12 @@ dependencies = [
     "pydantic-settings",
     "python-dotenv",
     "loguru",
-    "requests"
+    "requests",
+    "httpx"  # required by starlette.testclient used in tests
 ]
 
 [project.scripts]
-mcp-geo-stdio = "scripts.os-mcp:main"
+mcp-geo-stdio = "scripts.os_mcp:main"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "httpx", "anyio"]
@@ -58,4 +59,4 @@ disallow_incomplete_defs = true
 
 
 [tool.setuptools]
-packages = ["server", "tools"]
+packages = ["server", "tools", "scripts"]
