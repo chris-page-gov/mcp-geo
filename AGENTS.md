@@ -13,7 +13,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 - `server/`: FastAPI app (`main.py`), config (`config.py`), MCP routers (`mcp/`).
 - `server/mcp/tools.py`: Tool metadata/dispatch + explicit dynamic imports guaranteeing registration.
-- `server/mcp/resources.py`: Resource listing (placeholder; expand with metadata + retrieval endpoints).
+- `server/mcp/resources.py`: Resource listing + retrieval with filtering, paging, and ETag/`If-None-Match` support.
 - `server/mcp/playground.py`: Transcript stub (synchronous; should become async and validated).
 - `server/stdio_adapter.py`: JSON-RPC 2.0 STDIO adapter (relocated from legacy `scripts/os_mcp.py`; console script `mcp-geo-stdio` + wrapper `scripts/os-mcp` retained for compatibility).
 - `resources/`: Static data (currently minimal / placeholder folders expected).
@@ -35,6 +35,12 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
   uvicorn server.main:app --reload
   ```
 
+- Run tests:
+
+  ```bash
+  pytest -q
+  ```
+
 - Alternate entrypoint: `python run.py` (ensure it points to uvicorn).
 
 ## Coding Standards
@@ -45,6 +51,8 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - `nextPageToken` for pagination (never snake case).
 - Logging via `loguru`; sensitive tokens masked (`server/security.py`).
 - Dynamic tool registration: Explicit import loop in `server/mcp/tools.py` ensures consistent registry population across agent/test environments.
+- Rate limiting: middleware in `server/main.py` (defaults: `RATE_LIMIT_PER_MIN=120`, `RATE_LIMIT_BYPASS=True` in `server/config.py`; over-limit returns `429` + `{code:"RATE_LIMITED"}`).
+- Metrics: `GET /metrics` enabled by default (`METRICS_ENABLED=True` in `server/config.py`).
 
 ## Tools & Resources Conventions
 
@@ -52,6 +60,14 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - Each tool supplies: name, version, description, `input_schema`, `output_schema`, handler.
 - Discovery endpoints: `/tools/list` (names + paging), `/tools/describe` (full metadata).
 - Keep handlers small; shared concerns (HTTP, retries) live in `os_common.py`.
+- Tools register via side effects into `tools/registry.py`; ensure modules are explicitly imported in `server/mcp/tools.py` (don’t rely on import order).
+- OS-backed tools must return `501` with `{code:"NO_API_KEY"}` when `OS_API_KEY` is unset (see `tools/os_common.py`).
+- Resources support filtering, paging, and weak ETags; use `If-None-Match` and return `304` with `ETag` header when appropriate (see `server/mcp/resources.py`).
+
+## STDIO adapter notes
+
+- `server/stdio_adapter.py` speaks JSON-RPC 2.0 with `Content-Length` framing; methods map to `tools/*` and `resources/*`.
+- Keep responses compatible with existing tests under `tests/test_stdio_*.py` when modifying adapter behavior.
 
 ## Testing Strategy
 
@@ -76,6 +92,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - Never log full secrets (centralise redaction helper: e.g., `server/security.py`).
 - Validate all external inputs (postcode regex OK; add length and normalization utilities module).
 - Timeouts on all outbound HTTP calls (already set for OS API: `timeout=5`). Add retry strategy (e.g., `tenacity`) for transient errors.
+- Config knobs live in `server/config.py`: `OS_API_KEY`, `DEBUG_ERRORS`, `RATE_LIMIT_PER_MIN`, `RATE_LIMIT_BYPASS`, `METRICS_ENABLED`, `ONS_LIVE_ENABLED`, `ONS_CACHE_TTL`, `ONS_CACHE_SIZE`.
 
 ## Observability Enhancements (Backlog)
 
@@ -92,13 +109,13 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 ## Gaps & Immediate Action Items
 
 1. CI pipeline not yet committed (lint, type, test, coverage badge, build image).
-2. Observability: metrics (latency histograms, request counts) & structured JSON log sink pending.
+2. Observability: improve/extend metrics and add structured JSON log sink.
 3. Retry/backoff sophistication (currently simple exponential) – consider `tenacity` or custom jitter.
 4. Resource catalog still minimal (admin sample only) – add real code lists & full boundary sets.
 5. Pagination not implemented for tools returning large collections (future: token-based for OS features).
 6. Map render tool currently descriptor/stub – add real static map generation or proxy.
-7. Security hardening: rate limiting & circuit breaker not yet implemented.
-8. Enhance `/resources/get` with ETag / caching headers.
+7. Security hardening: circuit breaker not yet implemented (rate limiting is present in `server/main.py`).
+8. Enhance resources further (ETag / caching headers are present; expand to more datasets).
 9. ONS data tools (Epic D) not yet started.
 
 Resolved (removed from gaps): baseline tests, dynamic tool registration reliability, redaction helper, README duplication, type + lint config, modular tool structure, STDIO adapter relocation with branch tests (+ invalid params fix), ETag support for resources over STDIO.
