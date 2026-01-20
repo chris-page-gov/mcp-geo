@@ -1,0 +1,5 @@
+[submodule "submodules/os-mcp"]
+	path = submodules/os-mcp
+	url = https://github.com/chris-page-gov/os-mcp
+	branch = geo-mcpi
+	ignore = untracked
