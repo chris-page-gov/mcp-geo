@@ -30,7 +30,7 @@ def _features_query(payload: dict[str, Any]):
     params = {"bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}"}
     status, body = client.get_json(f"{client.base_features}/{collection}", params)
     if status != 200:
-        return status, body
+        return 501, body
     # Return a trimmed feature list (id + geometry type)
     features_out = []
     for feat in body.get("features", []):

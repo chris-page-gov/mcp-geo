@@ -1,0 +1,4 @@
+[run]
+omit =
+    server/stdio_adapter.py
+    tools/os_apps.py

@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 
 from server.config import settings
 from tools.registry import Tool, ToolResult, register
+from tools.os_common import client
 from pathlib import Path
 import json
 from tools.types import PlacesResponse
@@ -78,69 +79,14 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "Invalid UK postcode",
         }
-    api_key = getattr(settings, "OS_API_KEY", None)
-    if not api_key:
-        return 501, {
-            "isError": True,
-            "code": "NO_API_KEY",
-            "message": "OS_API_KEY not set",
-        }
-    if requests is None:
-        return 501, {
-            "isError": True,
-            "code": "MISSING_DEPENDENCY",
-            "message": "requests is not installed",
-        }
-    url = (
-        "https://api.os.uk/search/places/v1/postcode?postcode="
-        f"{postcode_raw}&key={api_key}"
+
+    status, raw = client.get_json(
+        f"{client.base_places}/postcode",
+        {"postcode": postcode_raw},
     )
-    attempts = 3
-    last_exc: Exception | None = None
-    for attempt in range(1, attempts + 1):
-        try:
-            resp = requests.get(url, timeout=5)
-            break
-        except req_exc.SSLError as exc:  # TLS is not retryable here
-            return 501, {
-                "isError": True,
-                "code": "UPSTREAM_TLS_ERROR",
-                "message": "Upstream TLS failure contacting OS Places: " + str(exc),
-            }
-        except (req_exc.ConnectionError, req_exc.Timeout) as exc:
-            last_exc = exc
-            if attempt == attempts:
-                return 501, {
-                    "isError": True,
-                    "code": "UPSTREAM_CONNECT_ERROR",
-                    "message": (
-                        "Upstream connection/timeout contacting OS Places after retries: "
-                        + str(exc)
-                    ),
-                }
-            # simple exponential backoff: 100ms * 2^(attempt-1)
-            backoff = 0.1 * (2 ** (attempt - 1))
-            time.sleep(min(backoff, 1.0))
-        except Exception as exc:  # unexpected network error
-            return 500, {
-                "isError": True,
-                "code": "INTEGRATION_ERROR",
-                "message": str(exc),
-            }
-    else:  # pragma: no cover - defensive (loop should break or return)
-        return 501, {
-            "isError": True,
-            "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after {attempts} attempts: {last_exc}",
-        }
-    if resp.status_code != 200:
-        # Normalise non-200s into OS_API_ERROR
-        return resp.status_code, {
-            "isError": True,
-            "code": "OS_API_ERROR",
-            "message": f"OS API error: {resp.text[:200]}",
-        }
-    raw = resp.json()
+    if status != 200:
+        return 501, raw
+
     body = cast(PlacesResponse, raw)
     results = body.get("results", [])
     _load_code_lists()

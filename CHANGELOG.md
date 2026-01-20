@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Tutorial: added docs/tutorial.md (evaluation-style walkthrough using mcp-geo tools).
+- Devcontainer: added post-start ownership repair + UID alignment to mitigate Docker Desktop file permission drift.
 - Place enrichment: `os_places.by_postcode` now returns `classificationDescription` and `localCustodianName` derived from static code list resources.
 - Resource headers: `Cache-Control` added with differentiated TTL (300s for dynamic admin boundaries sample, 86400s for static code lists).
 - Standardized resource provenance field `retrievedAt` across all `/resources/get` responses.
@@ -34,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Correct handling of non-dict `params` triggering JSON-RPC -32602 Invalid params error.
+- OS tools: normalize non-200 upstream responses to 501 for consistent error envelopes and deterministic tests.
 
 ## [0.2.1] - 2025-09-17
 

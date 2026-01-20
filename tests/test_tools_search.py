@@ -14,7 +14,7 @@ def test_tools_search_basic_query():
 
 
 def test_tools_search_regex_mode():
-    resp = client.post("/tools/search", json={"query": r"^os_places\\.", "mode": "regex"})
+    resp = client.post("/tools/search", json={"query": r"^os_places\.", "mode": "regex"})
     assert resp.status_code == 200
     data = resp.json()
     assert any(t["name"].startswith("os_places.") for t in data["tools"])
