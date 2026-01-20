@@ -1,5 +1,24 @@
 {
   "cSpell.language": "en-GB",
+  "mcp.servers": {
+    "mcp-geo": {
+      "command": "python3",
+      "args": [
+        "./scripts/os-mcp"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "OS_API_KEY": "${env:OS_API_KEY}",
+        "STDIO_KEY": "${env:STDIO_KEY}",
+        "BEARER_TOKENS": "${env:BEARER_TOKENS}"
+      },
+      "description": "Local mcp-geo stdio server"
+    }
+  },
+  "terminal.integrated.env.linux": {
+    "STDIO_KEY": "${env:STDIO_KEY}",
+    "BEARER_TOKENS": "${env:BEARER_TOKENS}"
+  },
   "python.testing.pytestArgs": [
     "tests"
   ],

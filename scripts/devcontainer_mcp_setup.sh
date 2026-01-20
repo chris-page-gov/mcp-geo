@@ -12,6 +12,12 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 server_name="mcp-geo"
 server_cmd="$repo_root/scripts/os-mcp"
 
+legacy_server_name="os-ngd-api"
+if codex mcp get "$legacy_server_name" >/dev/null 2>&1; then
+  codex mcp remove "$legacy_server_name" >/dev/null 2>&1 || \
+    codex mcp rm "$legacy_server_name" >/dev/null 2>&1 || true
+fi
+
 if codex mcp get "$server_name" >/dev/null 2>&1; then
   exit 0
 fi

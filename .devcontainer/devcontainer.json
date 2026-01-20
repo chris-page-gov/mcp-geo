@@ -23,6 +23,7 @@
   ],
   "postCreateCommand": "pip install --upgrade pip && pip install .[test] && (cd frontend && npm install --no-audit --no-fund || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
+  "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
   "customizations": {
     "vscode": {
       "extensions": [
