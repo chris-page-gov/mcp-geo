@@ -28,6 +28,10 @@ Then visit:
 
 Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
 
+## Tutorial
+
+See [docs/tutorial.md](docs/tutorial.md) for an evaluation-style walkthrough covering tool discovery, admin lookup, OS tools, ONS tools, resources/ETags, and STDIO.
+
 ## Tool Catalog (Epics B–D)
 Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.
 
