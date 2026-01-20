@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Geo - Statistics Dashboard</title>
+    <style>
+      :root {
+        --bg-1: #fff5e9;
+        --bg-2: #eef3ff;
+        --ink: #1c1f2b;
+        --muted: #5c657a;
+        --accent: #f08c4a;
+        --accent-2: #3a6ea5;
+        --panel: rgba(255, 255, 255, 0.88);
+        --line: rgba(28, 31, 43, 0.1);
+        --shadow: 0 22px 55px rgba(33, 40, 55, 0.18);
+        --radius: 18px;
+        --font: "Manrope", "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--ink);
+        background: radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 42%, var(--bg-2) 100%);
+      }
+
+      .shell {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .badge {
+        background: rgba(240, 140, 74, 0.16);
+        color: var(--accent);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .card {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 16px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        animation: drift 0.6s ease-out both;
+      }
+
+      .card:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+
+      .card:nth-child(3) {
+        animation-delay: 0.16s;
+      }
+
+      .card h4 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .card .value {
+        font-size: 22px;
+        font-weight: 600;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 20px;
+        margin-top: 22px;
+      }
+
+      .chart {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        min-height: 300px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bars {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        height: 220px;
+        margin-top: 20px;
+      }
+
+      .bar {
+        flex: 1;
+        background: linear-gradient(180deg, var(--accent), #f7c39e);
+        border-radius: 10px 10px 6px 6px;
+      }
+
+      .table {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        font-size: 13px;
+      }
+
+      .table table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .table th,
+      .table td {
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .payload {
+        margin-top: 16px;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(28, 31, 43, 0.05);
+        font-size: 12px;
+        color: var(--muted);
+        height: 120px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      @keyframes drift {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 960px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div>
+          <div class="title">Statistics Dashboard</div>
+          <div class="subtitle">Compare observations across selected areas.</div>
+        </div>
+        <div class="badge">Live preview</div>
+      </header>
+
+      <section class="cards">
+        <div class="card">
+          <h4>Latest value</h4>
+          <div class="value">102.4</div>
+        </div>
+        <div class="card">
+          <h4>Average</h4>
+          <div class="value">98.7</div>
+        </div>
+        <div class="card">
+          <h4>Range</h4>
+          <div class="value">95.2 - 110.3</div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="chart">
+          <div class="bars">
+            <div class="bar" style="height: 65%"></div>
+            <div class="bar" style="height: 78%"></div>
+            <div class="bar" style="height: 54%"></div>
+            <div class="bar" style="height: 90%"></div>
+            <div class="bar" style="height: 70%"></div>
+          </div>
+        </div>
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Coventry</td>
+                <td>102.4</td>
+              </tr>
+              <tr>
+                <td>Birmingham</td>
+                <td>98.1</td>
+              </tr>
+              <tr>
+                <td>Leeds</td>
+                <td>96.3</td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="payload" class="payload">Waiting for MCP host payload...</div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const payload = document.getElementById("payload");
+      window.addEventListener("message", (event) => {
+        if (!event || !event.data) {
+          return;
+        }
+        payload.textContent = JSON.stringify(event.data, null, 2);
+      });
+    </script>
+  </body>
+</html>

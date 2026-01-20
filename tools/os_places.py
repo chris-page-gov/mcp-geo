@@ -4,8 +4,18 @@ import re
 import time
 from typing import Any, TypedDict, cast
 
-import requests
-from requests import exceptions as req_exc
+try:
+    import requests
+    from requests import exceptions as req_exc
+except ImportError:  # pragma: no cover - optional dependency fallback
+    requests = None  # type: ignore[assignment]
+
+    class _ReqExc:
+        SSLError = Exception
+        ConnectionError = Exception
+        Timeout = Exception
+
+    req_exc = _ReqExc()
 
 from server.config import settings
 from tools.registry import Tool, ToolResult, register
@@ -74,6 +84,12 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
             "isError": True,
             "code": "NO_API_KEY",
             "message": "OS_API_KEY not set",
+        }
+    if requests is None:
+        return 501, {
+            "isError": True,
+            "code": "MISSING_DEPENDENCY",
+            "message": "requests is not installed",
         }
     url = (
         "https://api.os.uk/search/places/v1/postcode?postcode="
@@ -147,8 +163,14 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
         lcc = dpa.get("LOCAL_CUSTODIAN_CODE")
         local_custodian_code = cast(str | int | float | None, lcc)
         classification_code = dpa.get("CLASS")
-        classification_desc = _CLASS_CODES.get(str(classification_code), None) if classification_code else None
-        cust_name = _CUSTODIANS.get(str(local_custodian_code), None) if local_custodian_code is not None else None
+        if classification_code:
+            classification_desc = _CLASS_CODES.get(str(classification_code), None)
+        else:
+            classification_desc = None
+        if local_custodian_code is not None:
+            cust_name = _CUSTODIANS.get(str(local_custodian_code), None)
+        else:
+            cust_name = None
         uprns.append({
             "uprn": dpa.get("UPRN"),
             "address": dpa.get("ADDRESS"),

@@ -64,6 +64,25 @@ POST /tools/call
 { "tool": "ons_data.get_filter_output", "filterId": "FILT123" }
 ```
 
+## Tool Search and MCP-Apps
+
+```
+POST /tools/search
+{ "query": "postcode" }
+
+POST /tools/search
+{ "query": "^os_places\\.", "mode": "regex" }
+
+POST /tools/call
+{ "tool": "os_mcp.descriptor" }
+
+POST /tools/call
+{ "tool": "os_apps.render_geography_selector", "level": "ward" }
+
+GET /resources/get?uri=skills://mcp-geo/getting-started
+GET /resources/get?uri=ui://mcp-geo/geography-selector
+```
+
 ## Error Examples
 
 ```
@@ -154,4 +173,3 @@ Assistant: Presents related USRNs / TOIDs if present.
 
 ## Golden Test Philosophy
 Golden tests provide deterministic inputs + mocked upstream responses verifying schema stability and transformation logic. They SHOULD NOT hit live OS APIs.
-

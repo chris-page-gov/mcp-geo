@@ -1,5 +1,16 @@
-from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional dependency fallback
+    def load_dotenv() -> None:
+        return None
+
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:  # pragma: no cover - optional dependency fallback
+    class BaseSettings:  # minimal shim for tests without pydantic-settings
+        def __init__(self, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
 
 
 class Settings(BaseSettings):

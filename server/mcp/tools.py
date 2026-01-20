@@ -1,13 +1,15 @@
+import importlib
+from typing import Any, Dict
 
 from fastapi import APIRouter, Request, status
-from typing import Any, Dict
 from fastapi.responses import JSONResponse
 
-from tools.registry import all_tools, get, list_tools
-import importlib
+from server.mcp.tool_search import get_tool_metadata, search_tools
+from tools.registry import Tool, all_tools, get, list_tools, register
 
-# Explicitly import tool modules to guarantee registration (some environments skipped side-effect imports)
-for _mod in [
+# Explicitly import tool modules to guarantee registration
+# (some environments skipped side-effect imports).
+_IMPORT_MODULES = [
     "tools.os_places",
     "tools.os_places_extra",
     "tools.os_names",
@@ -19,11 +21,73 @@ for _mod in [
     "tools.ons_data",
     "tools.ons_search",
     "tools.ons_codes",
-]:
+    "tools.os_mcp",
+    "tools.os_apps",
+]
+
+for _mod in _IMPORT_MODULES:
     try:  # pragma: no cover - defensive import
         importlib.import_module(_mod)
     except Exception:  # pragma: no cover
         pass
+
+if get("os_features.query") is None:
+    register(
+        Tool(
+            name="os_features.query",
+            description="Query features by bbox",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "tool": {"type": "string", "const": "os_features.query"},
+                    "collection": {"type": "string"},
+                    "bbox": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "minItems": 4,
+                        "maxItems": 4,
+                    },
+                },
+                "required": ["collection", "bbox"],
+                "additionalProperties": False,
+            },
+            output_schema={
+                "type": "object",
+                "properties": {
+                    "features": {"type": "array"},
+                    "count": {"type": "number"},
+                },
+                "required": ["features"],
+            },
+        )
+    )
+
+_PREFIX_IMPORTS = {
+    "os_places": ["tools.os_places", "tools.os_places_extra"],
+    "os_names": ["tools.os_names"],
+    "os_linked_ids": ["tools.os_linked_ids"],
+    "os_features": ["tools.os_features"],
+    "os_maps": ["tools.os_maps"],
+    "os_vector_tiles": ["tools.os_vector_tiles"],
+    "admin_lookup": ["tools.admin_lookup"],
+    "ons_data": ["tools.ons_data"],
+    "ons_search": ["tools.ons_search"],
+    "ons_codes": ["tools.ons_codes"],
+    "os_mcp": ["tools.os_mcp"],
+    "os_apps": ["tools.os_apps"],
+}
+
+
+def _try_import_for_tool(tool_name: str) -> list[str]:
+    prefix = tool_name.split(".", 1)[0].lower()
+    modules = _PREFIX_IMPORTS.get(prefix, [])
+    errors: list[str] = []
+    for mod in modules:
+        try:
+            importlib.import_module(mod)
+        except Exception as exc:  # pragma: no cover - defensive import
+            errors.append(f"{mod}: {exc}")
+    return errors
 
 # (Legacy static import block retained for clarity; dynamic imports above ensure execution.)
 
@@ -43,7 +107,7 @@ def list_tools_endpoint(limit: int = 10, page: int = 1) -> Dict[str, Any]:
 async def call_tool(request: Request):
     data = await request.json()
     tool_name = data.get("tool")
-    if not tool_name:
+    if not isinstance(tool_name, str) or not tool_name.strip():
         return JSONResponse(
             status_code=400,
             content={
@@ -52,8 +116,28 @@ async def call_tool(request: Request):
                 "message": "Missing 'tool' field",
             },
         )
+    tool_name = tool_name.strip()
     tool = get(tool_name)
     if not tool:
+        errors = _try_import_for_tool(tool_name)
+        tool = get(tool_name)
+        prefix = tool_name.split(".", 1)[0].lower()
+        if not tool and (errors or prefix in _PREFIX_IMPORTS):
+            code = "TOOL_IMPORT_FAILED" if errors else "TOOL_NOT_REGISTERED"
+            message = (
+                "Failed to import tool module"
+                if errors
+                else "Tool module imported but tool not registered"
+            )
+            return JSONResponse(
+                status_code=501,
+                content={
+                    "isError": True,
+                    "code": code,
+                    "message": message,
+                    "details": errors,
+                },
+            )
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={
@@ -64,6 +148,97 @@ async def call_tool(request: Request):
         )
     status_code, payload = tool.call(data)
     return JSONResponse(status_code=status_code, content=payload)
+
+
+@router.post("/tools/search")
+async def search_tools_endpoint(request: Request):
+    data = await request.json()
+    query = data.get("query") or data.get("q")
+    if not isinstance(query, str) or not query.strip():
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Missing 'query' field",
+            },
+        )
+    mode = data.get("mode", "token")
+    if not isinstance(mode, str):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "mode must be a string",
+            },
+        )
+    limit = data.get("limit", 10)
+    if not isinstance(limit, int) or limit < 1:
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "limit must be >= 1",
+            },
+        )
+    category = data.get("category")
+    if category is not None and not isinstance(category, str):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "category must be a string",
+            },
+        )
+    include_schemas = data.get("includeSchemas", False)
+    if not isinstance(include_schemas, bool):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "includeSchemas must be a boolean",
+            },
+        )
+    try:
+        results = search_tools(
+            query,
+            mode=mode,
+            limit=limit,
+            category=category,
+            include_schemas=include_schemas,
+        )
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": str(exc),
+            },
+        )
+    return {"tools": results, "count": len(results), "mode": mode}
+
+
+def _describe_tool(tool: Tool) -> dict[str, Any]:
+    meta = get_tool_metadata(tool)
+    return {
+        "name": tool.name,
+        "description": tool.description,
+        "version": tool.version,
+        "inputSchema": tool.input_schema,
+        "outputSchema": tool.output_schema,
+        "inputSchemaRef": f"#/tools/{tool.name}/inputSchema",
+        "outputSchemaRef": f"#/tools/{tool.name}/outputSchema",
+        "annotations": meta.get("annotations", {}),
+        "category": meta.get("category"),
+        "keywords": meta.get("keywords", []),
+        "deferLoading": meta.get("defer_loading", False),
+        "defer_loading": meta.get("defer_loading", False),
+    }
 
 
 @router.get("/tools/describe")
@@ -79,30 +254,7 @@ def describe_tools(name: str | None = None):
                     "message": f"Tool '{name}' not found",
                 },
             )
-        return {
-            "tools": [
-                {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "version": tool.version,
-                    "inputSchema": tool.input_schema,
-                    "outputSchema": tool.output_schema,
-                    "inputSchemaRef": f"#/tools/{tool.name}/inputSchema",
-                    "outputSchemaRef": f"#/tools/{tool.name}/outputSchema",
-                }
-            ]
-        }
+        return {"tools": [_describe_tool(tool)]}
     return {
-        "tools": [
-            {
-                "name": t.name,
-                "description": t.description,
-                "version": t.version,
-                "inputSchema": t.input_schema,
-                "outputSchema": t.output_schema,
-                "inputSchemaRef": f"#/tools/{t.name}/inputSchema",
-                "outputSchemaRef": f"#/tools/{t.name}/outputSchema",
-            }
-            for t in all_tools()
-        ]
+        "tools": [_describe_tool(t) for t in all_tools()]
     }

@@ -1,12 +1,25 @@
-from fastapi import APIRouter, HTTPException, Header, Response, Query
-from pathlib import Path
-import json
 import hashlib
+import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, HTTPException, Header, Query, Response
 from typing_extensions import TypedDict
+
+from server.mcp.resource_catalog import (
+    DATA_RESOURCE_PREFIX,
+    data_resource_uri,
+    list_skill_resources,
+    list_ui_resources,
+    load_skill_content,
+    load_ui_content,
+    resolve_skill_resource,
+    resolve_ui_resource,
+)
 class AdminBoundariesPayload(TypedDict):
     name: str
+    uri: str
     count: int
     etag: str
     provenance: Dict[str, str]
@@ -59,50 +72,81 @@ def _ons_etag(variant_key: str = "") -> str:
     return f"W/\"{h}\""
 
 
-@router.get("/resources/list")
-def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
+def _build_resource_list() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = [
         {
             "name": "admin_boundaries",
+            "uri": data_resource_uri("admin_boundaries"),
             "type": "boundary_hierarchy",
             "version": _ADMIN_PROVENANCE["version"],
             "license": _ADMIN_PROVENANCE["license"],
             "source": _ADMIN_PROVENANCE["source"],
             "description": "Sample administrative boundary chain",
+            "mimeType": "application/json",
+            "annotations": {"audience": ["assistant"], "priority": 0.7},
         },
         {
             "name": "ons_observations",
+            "uri": data_resource_uri("ons_observations"),
             "type": "dataset",
             "version": None,
             "license": "Open Government Licence v3",
             "source": "ONS (sample synthetic subset)",
             "description": "Sample ONS quarterly GDP observations (synthetic)",
+            "mimeType": "application/json",
+            "annotations": {"audience": ["assistant"], "priority": 0.6},
         },
         {
             "name": "address_classification_codes",
+            "uri": data_resource_uri("address_classification_codes"),
             "type": "code_list",
             "version": "2025.11.03-alpha",
             "license": "Open Government Licence v3",
             "source": "OS AddressBase (sample subset)",
             "description": "Address classification code descriptions",
+            "mimeType": "application/json",
+            "annotations": {"audience": ["assistant"], "priority": 0.4},
         },
         {
             "name": "custodian_codes",
+            "uri": data_resource_uri("custodian_codes"),
             "type": "code_list",
             "version": "2025.11.03-alpha",
             "license": "Open Government Licence v3",
             "source": "Local Authority Codes (sample)",
             "description": "Local custodian code to name mapping",
+            "mimeType": "application/json",
+            "annotations": {"audience": ["assistant"], "priority": 0.4},
         },
         {
             "name": "boundaries_wards",
+            "uri": data_resource_uri("boundaries_wards"),
             "type": "boundary",
             "version": "2025.11.03-alpha",
             "license": "Open Government Licence v3",
             "source": "Sample Ward Boundaries (synthetic subset)",
             "description": "Ward-level bounding boxes (sample subset)",
+            "mimeType": "application/json",
+            "annotations": {"audience": ["assistant"], "priority": 0.5},
         },
     ]
+    resources.extend(list_skill_resources())
+    resources.extend(list_ui_resources())
+    return resources
+
+
+@router.get("/resources/list")
+def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
+    resources = _build_resource_list()
+    start = (page - 1) * limit
+    end = start + limit
+    next_page_token = str(page + 1) if end < len(resources) else None
+    return {"resources": resources[start:end], "nextPageToken": next_page_token}
+
+
+@router.get("/resources/describe")
+def describe_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
+    resources = _build_resource_list()
     start = (page - 1) * limit
     end = start + limit
     next_page_token = str(page + 1) if end < len(resources) else None
@@ -111,16 +155,106 @@ def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
 
 @router.get("/resources/get")
 def get_resource(
-    name: str,
     response: Response,
-    if_none_match: Optional[str] = Header(default=None, alias="If-None-Match", convert_underscores=False),
+    name: str | None = Query(default=None),
+    uri: str | None = Query(default=None),
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
     limit: int = Query(default=100, ge=1, le=500),
     page: int = Query(default=1, ge=1),
     level: Optional[str] = Query(default=None),
     nameContains: Optional[str] = Query(default=None),
     geography: Optional[str] = Query(default=None),
     measure: Optional[str] = Query(default=None),
-) -> Optional[AdminBoundariesPayload]:
+) -> Optional[Dict[str, Any]]:
+    if not name and not uri:
+        raise HTTPException(status_code=400, detail="Missing resource name or uri")
+
+    def _match_etag(etag: str) -> bool:
+        if not if_none_match:
+            return False
+        candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
+        return etag in candidates or "*" in candidates
+
+    if uri:
+        if uri.startswith(DATA_RESOURCE_PREFIX):
+            name = uri[len(DATA_RESOURCE_PREFIX):]
+        else:
+            ui_entry = resolve_ui_resource(uri)
+            if ui_entry:
+                content, etag = load_ui_content(ui_entry)
+                if _match_etag(etag):
+                    response.status_code = 304
+                    response.headers["ETag"] = etag
+                    return None
+                response.headers["ETag"] = etag
+                response.headers["Cache-Control"] = "public, max-age=300"
+                return {
+                    "uri": ui_entry["uri"],
+                    "name": ui_entry["name"],
+                    "title": ui_entry["title"],
+                    "mimeType": ui_entry["mimeType"],
+                    "etag": etag,
+                    "content": content,
+                }
+            skill_entry = resolve_skill_resource(uri)
+            if skill_entry:
+                content, etag = load_skill_content()
+                if _match_etag(etag):
+                    response.status_code = 304
+                    response.headers["ETag"] = etag
+                    return None
+                response.headers["ETag"] = etag
+                response.headers["Cache-Control"] = "public, max-age=300"
+                return {
+                    "uri": skill_entry["uri"],
+                    "name": skill_entry["name"],
+                    "title": skill_entry["title"],
+                    "mimeType": skill_entry["mimeType"],
+                    "etag": etag,
+                    "content": content,
+                }
+            raise HTTPException(status_code=404, detail="Resource not found")
+
+    if name:
+        ui_entry = resolve_ui_resource(name)
+        if ui_entry:
+            content, etag = load_ui_content(ui_entry)
+            if _match_etag(etag):
+                response.status_code = 304
+                response.headers["ETag"] = etag
+                return None
+            response.headers["ETag"] = etag
+            response.headers["Cache-Control"] = "public, max-age=300"
+            return {
+                "uri": ui_entry["uri"],
+                "name": ui_entry["name"],
+                "title": ui_entry["title"],
+                "mimeType": ui_entry["mimeType"],
+                "etag": etag,
+                "content": content,
+            }
+        skill_entry = resolve_skill_resource(name)
+        if skill_entry:
+            content, etag = load_skill_content()
+            if _match_etag(etag):
+                response.status_code = 304
+                response.headers["ETag"] = etag
+                return None
+            response.headers["ETag"] = etag
+            response.headers["Cache-Control"] = "public, max-age=300"
+            return {
+                "uri": skill_entry["uri"],
+                "name": skill_entry["name"],
+                "title": skill_entry["title"],
+                "mimeType": skill_entry["mimeType"],
+                "etag": etag,
+                "content": content,
+            }
+
+    if not name:
+        raise HTTPException(status_code=404, detail="Resource not found")
     if name == "admin_boundaries":
         path = _admin_boundaries_path()
         if not path.exists():  # pragma: no cover - defensive
@@ -147,16 +281,22 @@ def get_resource(
         etag = _admin_etag(variant_key)
         if if_none_match:
             # Support multiple ETags in header (comma-separated) per RFC 7232
-            candidates = {token.strip() for token in if_none_match.split(',') if token.strip()}
+            candidates = {
+                token.strip() for token in if_none_match.split(",") if token.strip()
+            }
             if etag in candidates or "*" in candidates:
                 response.status_code = 304
                 response.headers["ETag"] = etag
                 return None
         payload: AdminBoundariesPayload = {
             "name": name,
+            "uri": data_resource_uri(name),
             "count": len(filtered),
             "etag": etag,
-            "provenance": {**_ADMIN_PROVENANCE, "retrievedAt": datetime.now(timezone.utc).isoformat()},
+            "provenance": {
+                **_ADMIN_PROVENANCE,
+                "retrievedAt": datetime.now(timezone.utc).isoformat(),
+            },
             "data": {
                 "features": page_items,
                 "total": len(filtered),
@@ -200,6 +340,7 @@ def get_resource(
         provenance = parsed.get("provenance", {})
         payload = {
             "name": name,
+            "uri": data_resource_uri(name),
             "count": len(observations),
             "etag": etag,
             "provenance": {**provenance, "retrievedAt": datetime.now(timezone.utc).isoformat()},
@@ -240,6 +381,7 @@ def get_resource(
                 return None
         payload = {
             "name": name,
+            "uri": data_resource_uri(name),
             "count": len(items),
             "etag": etag,
             "provenance": {**provenance, "retrievedAt": datetime.now(timezone.utc).isoformat()},

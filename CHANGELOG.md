@@ -13,10 +13,16 @@ All notable changes to this project will be documented in this file.
 - Extended ONS filter workflow examples in `docs/examples.md` with sample responses.
 - CSV and XLSX formats for `ons_data.get_filter_output` (returns `dataBase64` for CSV text and `dataHex` for XLSX binary).
 - Schema reference fields `inputSchemaRef` and `outputSchemaRef` added to `/tools/describe` output.
+- Tool search endpoint `/tools/search` and stdio `tools/search`, including annotations and `deferLoading` metadata.
+- Agent Skills resource `skills://mcp-geo/getting-started` backed by `SKILL.md`.
+- MCP-Apps UI resources (`ui://mcp-geo/...`) with helper tools `os_apps.render_*`.
+- Server descriptor tool `os_mcp.descriptor` exposing tool search config and UI catalog.
+- Resource URIs (`resource://mcp-geo/...`) and `/resources/describe` parity for HTTP.
 
 ### Tests
 - Added `test_os_places_enrichment.py` covering enrichment fields.
 - Added `test_resources_provenance_headers.py` validating cache headers and provenance presence.
+- Added tool search, skills, MCP-Apps, and descriptor coverage tests.
 
 ### Internal
 - Minor refactor in `server/mcp/resources.py` for provenance normalization.

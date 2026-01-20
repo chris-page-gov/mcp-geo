@@ -25,20 +25,70 @@ def _read_one(stream):
 
 
 def test_stdio_resources_get_admin_boundaries():
-    proc = subprocess.Popen([sys.executable, str(SCRIPT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    proc = subprocess.Popen(
+        [sys.executable, str(SCRIPT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+    )
     assert proc.stdin and proc.stdout
-    proc.stdin.write(_rpc({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}))
+    proc.stdin.write(
+        _rpc({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    )
     proc.stdin.flush()
     first = _read_one(proc.stdout)
     if "result" not in first and first.get("method") == "log":
         first = _read_one(proc.stdout)
     # Get resource
-    proc.stdin.write(_rpc({"jsonrpc": "2.0", "id": 2, "method": "resources/get", "params": {"name": "admin_boundaries", "limit": 1, "page": 1}}))
+    proc.stdin.write(
+        _rpc(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "resources/get",
+                "params": {"name": "admin_boundaries", "limit": 1, "page": 1},
+            }
+        )
+    )
     proc.stdin.flush()
     resp = _read_one(proc.stdout)
     assert resp["result"]["name"] == "admin_boundaries"
     assert resp["result"]["data"]["limit"] == 1
-    proc.stdin.write(_rpc({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": {}}))
+    proc.stdin.write(
+        _rpc({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": {}})
+    )
+    proc.stdin.write(_rpc({"jsonrpc": "2.0", "method": "exit"}))
+    proc.stdin.flush()
+    proc.terminate()
+    proc.wait(timeout=5)
+
+
+def test_stdio_resources_get_skills_uri():
+    proc = subprocess.Popen(
+        [sys.executable, str(SCRIPT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+    )
+    assert proc.stdin and proc.stdout
+    proc.stdin.write(
+        _rpc({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    )
+    proc.stdin.flush()
+    first = _read_one(proc.stdout)
+    if "result" not in first and first.get("method") == "log":
+        first = _read_one(proc.stdout)
+    proc.stdin.write(
+        _rpc(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "resources/get",
+                "params": {"uri": "skills://mcp-geo/getting-started"},
+            }
+        )
+    )
+    proc.stdin.flush()
+    resp = _read_one(proc.stdout)
+    assert resp["result"]["mimeType"] == "text/markdown"
+    assert "MCP Geo Skills" in resp["result"]["content"]
+    proc.stdin.write(
+        _rpc({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": {}})
+    )
     proc.stdin.write(_rpc({"jsonrpc": "2.0", "method": "exit"}))
     proc.stdin.flush()
     proc.terminate()

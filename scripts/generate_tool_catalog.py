@@ -27,6 +27,8 @@ for _mod in [
     "tools.ons_data",
     "tools.ons_search",
     "tools.ons_codes",
+    "tools.os_mcp",
+    "tools.os_apps",
 ]:
     try:
         importlib.import_module(_mod)

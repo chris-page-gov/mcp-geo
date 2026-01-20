@@ -20,8 +20,9 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 1. Capture correlationId from response headers/logs for traceability.
 2. Reproduce with minimal payload and add parameters progressively.
 3. Use `/tools/describe?name=<tool>` to confirm required fields and types.
-4. Validate network connectivity (e.g., container DNS) if upstream errors persist.
-5. Monitor rate limiting metrics (if enabled) to tune client request pacing.
+4. If the tool list is large, use `/tools/search` to locate the right tool quickly.
+5. Validate network connectivity (e.g., container DNS) if upstream errors persist.
+6. Monitor rate limiting metrics (if enabled) to tune client request pacing.
 
 ## Conditional Requests & Caching
 If receiving repeated full payloads for static resources, ensure you supply the prior `etag` via `ifNoneMatch` (HTTP) or `ifNoneMatch` param (STDIO) for efficient `304`/`notModified` responses.

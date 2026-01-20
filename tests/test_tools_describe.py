@@ -22,6 +22,11 @@ def test_tools_describe_all():
     # Ensure schemas present
     bp = next(t for t in data["tools"] if t["name"] == "os_places.by_postcode")
     assert "inputSchema" in bp and "outputSchema" in bp
+    assert "annotations" in bp
+    assert bp["annotations"].get("readOnlyHint") is True
+    assert bp["annotations"].get("openWorldHint") is True
+    assert "deferLoading" in bp
+    assert "category" in bp
 
 
 def test_tools_describe_single():

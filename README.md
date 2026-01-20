@@ -3,9 +3,12 @@
 Production-focused Model Context Protocol (MCP) server for geospatial (Ordnance Survey) tooling built with FastAPI & Python 3.11+. Provides a uniform tool abstraction, typed schemas, structured error model, correlation IDs, and high test coverage (≥90%).
 
 ## Key Features
-- MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`, `/resources/get`
+- MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/get`
 - Uniform error envelope and pagination (`nextPageToken`)
 - Dynamic tool registration with schema introspection
+- Tool annotations + defer-loading metadata for tool search integrations
+- Agent skills resource (`skills://mcp-geo/getting-started`)
+- MCP-Apps UI resources (`ui://mcp-geo/...`) with helper `os_apps.*` tools
 - Structured logging & correlation IDs
 - OS API client with retries and explicit upstream error codes
 - High coverage test suite exercising success + failure paths
@@ -53,6 +56,11 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | ons_search.query | Search ONS datasets/dimensions (sample) |
 | ons_codes.list | List dimension IDs (sample/live) |
 | ons_codes.options | List codes/options for a dimension (sample/live) |
+| os_mcp.descriptor | Server capabilities and tool search configuration |
+| os_apps.render_geography_selector | Open the MCP-Apps geography selector widget |
+| os_apps.render_statistics_dashboard | Open the MCP-Apps statistics dashboard widget |
+| os_apps.render_feature_inspector | Open the MCP-Apps feature inspector widget |
+| os_apps.render_route_planner | Open the MCP-Apps route planner widget |
 
 ## Resources, Filtering & Provenance
 The server exposes static / reference datasets under the resources API surface:
@@ -71,6 +79,18 @@ The server exposes static / reference datasets under the resources API surface:
 	- `data.total`: Same as `count` (filtered total)
 	- `data.limit`, `data.page`, `data.nextPageToken`
 	- `data.features[*].bbox` retains original CRS (EPSG:4326)
+
+### Skills and MCP-Apps Resources
+In addition to data resources, MCP Geo exposes:
+
+- `skills://mcp-geo/getting-started` (Agent Skills guidance)
+- `ui://mcp-geo/geography-selector`
+- `ui://mcp-geo/statistics-dashboard`
+- `ui://mcp-geo/feature-inspector`
+- `ui://mcp-geo/route-planner`
+
+Use `GET /resources/get?uri=...` to fetch these resources. MCP-Apps widgets are
+HTML documents with `text/html;profile=mcp-app` MIME types.
 
 ### Conditional Requests (ETag)
 Clients should cache responses and revalidate:

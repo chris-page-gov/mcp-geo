@@ -3,8 +3,18 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import requests
-from requests import exceptions as req_exc
+try:
+    import requests
+    from requests import exceptions as req_exc
+except ImportError:  # pragma: no cover - optional dependency fallback
+    requests = None  # type: ignore[assignment]
+
+    class _ReqExc:  # minimal shim for exception names used below
+        SSLError = Exception
+        ConnectionError = Exception
+        Timeout = Exception
+
+    req_exc = _ReqExc()
 
 from server.config import settings
 
@@ -32,6 +42,12 @@ class OSClient:
     ) -> tuple[int, dict[str, Any]]:
         if not self.api_key:
             return 501, {"isError": True, "code": "NO_API_KEY", "message": "OS_API_KEY not set"}
+        if requests is None:
+            return 501, {
+                "isError": True,
+                "code": "MISSING_DEPENDENCY",
+                "message": "requests is not installed",
+            }
         merged = {**(params or {}), **self._auth_params()}
         last_exc: Exception | None = None
         for attempt in range(1, self.retries + 1):

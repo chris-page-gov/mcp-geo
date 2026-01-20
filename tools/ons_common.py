@@ -1,11 +1,22 @@
 from __future__ import annotations
 
-import time
 import json
 import threading
+import time
 from typing import Any, Dict, Tuple
-import requests
-from requests import exceptions as req_exc
+
+try:
+    import requests
+    from requests import exceptions as req_exc
+except ImportError:  # pragma: no cover - optional dependency fallback
+    requests = None  # type: ignore[assignment]
+
+    class _ReqExc:
+        SSLError = Exception
+        ConnectionError = Exception
+        Timeout = Exception
+
+    req_exc = _ReqExc()
 
 from server.config import settings
 
@@ -58,7 +69,12 @@ class TTLCache:
 class ONSClient:
     base_api = "https://api.ons.gov.uk"
 
-    def __init__(self, retries: int = DEFAULT_RETRIES, cache_ttl: float | None = None, cache_size: int | None = None):
+    def __init__(
+        self,
+        retries: int = DEFAULT_RETRIES,
+        cache_ttl: float | None = None,
+        cache_size: int | None = None,
+    ):
         self.retries = retries
         ttl = cache_ttl if cache_ttl is not None else getattr(settings, "ONS_CACHE_TTL", 60.0)
         size = cache_size if cache_size is not None else getattr(settings, "ONS_CACHE_SIZE", 256)
@@ -67,7 +83,18 @@ class ONSClient:
     def _cache_key(self, url: str, params: dict[str, Any] | None) -> str:
         return json.dumps([url, params], sort_keys=True)
 
-    def get_json(self, url: str, params: dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, dict[str, Any]]:
+    def get_json(
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, dict[str, Any]]:
+        if requests is None:
+            return 501, {
+                "isError": True,
+                "code": "MISSING_DEPENDENCY",
+                "message": "requests is not installed",
+            }
         key = self._cache_key(url, params)
         if use_cache:
             cached = self.cache.get(key)
@@ -89,7 +116,11 @@ class ONSClient:
                     self.cache.set(key, data)
                 return 200, data
             except req_exc.SSLError as exc:
-                return 501, {"isError": True, "code": "UPSTREAM_TLS_ERROR", "message": str(exc)}
+                return 501, {
+                    "isError": True,
+                    "code": "UPSTREAM_TLS_ERROR",
+                    "message": str(exc),
+                }
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 if attempt == self.retries:
@@ -100,15 +131,22 @@ class ONSClient:
                     }
                 time.sleep(min(0.1 * (2 ** (attempt - 1)), 1.0))
             except Exception as exc:  # pragma: no cover
-                return 500, {"isError": True, "code": "INTEGRATION_ERROR", "message": str(exc)}
+                return 500, {
+                    "isError": True,
+                    "code": "INTEGRATION_ERROR",
+                    "message": str(exc),
+                }
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
             "message": f"Failed after retries: {last_exc}",
         }
 
-    def build_paged_params(self, limit: int, page: int, extra: dict[str, Any] | None = None) -> dict[str, Any]:
-        # ONS APIs often expose pagination using limit/offset or page parameters; we simulate limit/page
+    def build_paged_params(
+        self, limit: int, page: int, extra: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        # ONS APIs often expose pagination using limit/offset or page parameters.
+        # We simulate limit/page for consistent usage in tests.
         params = {"limit": limit, "page": page}
         if extra:
             params.update(extra)

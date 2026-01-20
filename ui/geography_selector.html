@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Geo - Geography Selector</title>
+    <style>
+      :root {
+        --bg-1: #e9f7f4;
+        --bg-2: #fdf6e7;
+        --ink: #182625;
+        --muted: #4a5d5a;
+        --accent: #00a08f;
+        --accent-2: #f4b183;
+        --panel: rgba(255, 255, 255, 0.85);
+        --line: rgba(24, 38, 37, 0.12);
+        --shadow: 0 24px 60px rgba(20, 35, 34, 0.18);
+        --radius: 18px;
+        --font: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--ink);
+        background: radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 40%, var(--bg-2) 100%);
+      }
+
+      .shell {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      .status-pill {
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(0, 160, 143, 0.15);
+        color: var(--accent);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 20px;
+        margin-top: 24px;
+      }
+
+      .map {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--line);
+        min-height: 420px;
+        position: relative;
+        overflow: hidden;
+        animation: rise 0.6s ease-out;
+      }
+
+      .map::before {
+        content: "";
+        position: absolute;
+        inset: 24px;
+        border-radius: 14px;
+        background:
+          linear-gradient(120deg, rgba(0, 160, 143, 0.18), transparent 55%),
+          linear-gradient(220deg, rgba(244, 177, 131, 0.2), transparent 50%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(24, 38, 37, 0.08) 0px,
+            rgba(24, 38, 37, 0.08) 1px,
+            transparent 1px,
+            transparent 24px
+          );
+      }
+
+      .map-label {
+        position: absolute;
+        top: 32px;
+        left: 32px;
+        font-weight: 600;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 6px 12px;
+        border-radius: 12px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        animation: rise 0.6s ease-out 0.1s both;
+      }
+
+      .panel h3 {
+        margin: 0 0 12px;
+        font-size: 16px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .field input,
+      .field select {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        font-size: 14px;
+        background: #fff;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 18px;
+      }
+
+      .chip {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0, 160, 143, 0.14);
+        color: var(--accent);
+        font-size: 12px;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: linear-gradient(120deg, var(--accent), #00806f);
+        color: #fff;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .payload {
+        margin-top: 16px;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(24, 38, 37, 0.05);
+        font-size: 12px;
+        color: var(--muted);
+        height: 140px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 960px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div>
+          <div class="title">Geography Selector</div>
+          <div class="subtitle">Pick areas, refine by level, and send selection back.</div>
+        </div>
+        <div class="status-pill">Awaiting host</div>
+      </header>
+
+      <section class="grid">
+        <div class="map">
+          <div class="map-label">Map preview</div>
+        </div>
+
+        <aside class="panel">
+          <h3>Selection controls</h3>
+          <div class="field">
+            <label for="level">Level</label>
+            <select id="level">
+              <option>Local Authority</option>
+              <option>Ward</option>
+              <option>MSOA</option>
+              <option>LSOA</option>
+              <option>OA</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="search">Search</label>
+            <input id="search" placeholder="Search by name or postcode" />
+          </div>
+          <div class="field">
+            <label>Selected</label>
+            <div class="chips">
+              <span class="chip">Example: Coventry</span>
+              <span class="chip">Example: Birmingham</span>
+            </div>
+          </div>
+          <button class="cta" type="button">Send selection</button>
+          <div id="payload" class="payload">Waiting for MCP host payload...</div>
+        </aside>
+      </section>
+    </div>
+
+    <script>
+      const payload = document.getElementById("payload");
+      window.addEventListener("message", (event) => {
+        if (!event || !event.data) {
+          return;
+        }
+        payload.textContent = JSON.stringify(event.data, null, 2);
+      });
+    </script>
+  </body>
+</html>
