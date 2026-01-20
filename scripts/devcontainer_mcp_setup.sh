@@ -1,4 +1,8 @@
-#!/usr/bin/env bashset -euo pipefail
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Registers the MCP server with the local Codex MCP registry (if available).
+# No-op when codex isn't installed.
 
 if ! command -v codex >/dev/null 2>&1; then
   exit 0
@@ -14,8 +18,9 @@ fi
 
 env_args=()
 for var in OS_API_KEY ONS_API_KEY ONS_LIVE_ENABLED LOG_LEVEL STDIO_KEY BEARER_TOKENS; do
-  if [ -n "${!var:-}" ]; then
+  if [[ -n "${!var:-}" ]]; then
     env_args+=(--env "$var=${!var}")
-  fidone
+  fi
+done
 
 codex mcp add "${env_args[@]}" "$server_name" -- "$server_cmd"
