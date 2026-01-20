@@ -4,19 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Geography Selector</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    />
     <style>
       :root {
-        --bg-1: #e9f7f4;
-        --bg-2: #fdf6e7;
-        --ink: #182625;
-        --muted: #4a5d5a;
-        --accent: #00a08f;
-        --accent-2: #f4b183;
-        --panel: rgba(255, 255, 255, 0.85);
-        --line: rgba(24, 38, 37, 0.12);
-        --shadow: 0 24px 60px rgba(20, 35, 34, 0.18);
+        --bg-1: #eef5f2;
+        --bg-2: #f6efe2;
+        --ink: #14201f;
+        --muted: #4b5a57;
+        --accent: #1a9b8b;
+        --accent-2: #f0a868;
+        --accent-3: #1c4f6d;
+        --panel: rgba(255, 255, 255, 0.88);
+        --line: rgba(20, 32, 31, 0.12);
+        --shadow: 0 20px 50px rgba(20, 32, 31, 0.18);
         --radius: 18px;
-        --font: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+        --font-display: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+        --font-body: "IBM Plex Sans", "Space Grotesk", "Segoe UI", sans-serif;
       }
 
       * {
@@ -26,15 +36,17 @@
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: var(--font);
+        font-family: var(--font-body);
         color: var(--ink);
-        background: radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 40%, var(--bg-2) 100%);
+        background:
+          radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 45%, var(--bg-2) 100%),
+          repeating-linear-gradient(45deg, rgba(20, 32, 31, 0.05) 0 1px, transparent 1px 18px);
       }
 
       .shell {
-        padding: 24px;
-        max-width: 1200px;
+        max-width: 1280px;
         margin: 0 auto;
+        padding: 28px;
       }
 
       header {
@@ -45,124 +57,142 @@
       }
 
       .title {
-        font-size: 28px;
+        font-family: var(--font-display);
+        font-size: 30px;
         font-weight: 600;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.3px;
       }
 
       .subtitle {
         color: var(--muted);
         font-size: 14px;
-        margin-top: 4px;
+        margin-top: 6px;
+        max-width: 520px;
       }
 
       .status-pill {
         padding: 8px 14px;
         border-radius: 999px;
-        background: rgba(0, 160, 143, 0.15);
+        background: rgba(26, 155, 139, 0.12);
         color: var(--accent);
         font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.12em;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-        gap: 20px;
-        margin-top: 24px;
-      }
-
-      .map {
-        background: var(--panel);
-        border-radius: var(--radius);
-        padding: 18px;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--line);
-        min-height: 420px;
-        position: relative;
-        overflow: hidden;
-        animation: rise 0.6s ease-out;
-      }
-
-      .map::before {
-        content: "";
-        position: absolute;
-        inset: 24px;
-        border-radius: 14px;
-        background:
-          linear-gradient(120deg, rgba(0, 160, 143, 0.18), transparent 55%),
-          linear-gradient(220deg, rgba(244, 177, 131, 0.2), transparent 50%),
-          repeating-linear-gradient(
-            90deg,
-            rgba(24, 38, 37, 0.08) 0px,
-            rgba(24, 38, 37, 0.08) 1px,
-            transparent 1px,
-            transparent 24px
-          );
-      }
-
-      .map-label {
-        position: absolute;
-        top: 32px;
-        left: 32px;
-        font-weight: 600;
-        font-size: 14px;
-        background: rgba(255, 255, 255, 0.8);
-        padding: 6px 12px;
-        border-radius: 12px;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
+        gap: 22px;
+        margin-top: 26px;
       }
 
       .panel {
         background: var(--panel);
         border-radius: var(--radius);
-        padding: 18px;
+        padding: 20px;
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
-        animation: rise 0.6s ease-out 0.1s both;
+        position: relative;
+        overflow: hidden;
+        animation: floatIn 0.7s ease-out;
+      }
+
+      .panel::after {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border-radius: 14px;
+        border: 1px dashed rgba(20, 32, 31, 0.08);
+        pointer-events: none;
       }
 
       .panel h3 {
         margin: 0 0 12px;
         font-size: 16px;
+        font-family: var(--font-display);
+      }
+
+      .control-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        animation-delay: 0.05s;
+      }
+
+      .map-panel {
+        min-height: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        animation-delay: 0.12s;
+      }
+
+      .pill-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--accent-3);
+        background: rgba(28, 79, 109, 0.12);
+      }
+
+      .section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .segment {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .segment button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .segment button.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
       }
 
       .field {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        margin-bottom: 14px;
       }
 
-      .field label {
+      label {
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
         color: var(--muted);
       }
 
-      .field input,
-      .field select {
+      input,
+      select,
+      textarea {
         padding: 10px 12px;
         border-radius: 10px;
         border: 1px solid var(--line);
         font-size: 14px;
         background: #fff;
-      }
-
-      .chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin: 10px 0 18px;
-      }
-
-      .chip {
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(0, 160, 143, 0.14);
-        color: var(--accent);
-        font-size: 12px;
+        font-family: var(--font-body);
       }
 
       .cta {
@@ -172,29 +202,143 @@
         width: 100%;
         padding: 12px 16px;
         border-radius: 12px;
-        background: linear-gradient(120deg, var(--accent), #00806f);
+        background: linear-gradient(120deg, var(--accent), #147d70);
         color: #fff;
         border: none;
         font-size: 14px;
         cursor: pointer;
       }
 
-      .payload {
-        margin-top: 16px;
-        padding: 12px;
+      .results {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .result-card {
+        padding: 10px 12px;
         border-radius: 12px;
-        background: rgba(24, 38, 37, 0.05);
+        border: 1px solid var(--line);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(20, 32, 31, 0.12);
+      }
+
+      .result-meta {
         font-size: 12px;
         color: var(--muted);
-        height: 140px;
+      }
+
+      .selection-summary {
+        display: grid;
+        gap: 8px;
+        background: rgba(26, 155, 139, 0.08);
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .map-shell {
+        flex: 1;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        position: relative;
+        min-height: 380px;
+        background:
+          linear-gradient(140deg, rgba(26, 155, 139, 0.18), transparent 60%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(20, 32, 31, 0.08) 0px,
+            rgba(20, 32, 31, 0.08) 1px,
+            transparent 1px,
+            transparent 24px
+          );
+      }
+
+      #map {
+        position: absolute;
+        inset: 0;
+      }
+
+      .map-overlay {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+      }
+
+      .zoom-ladder {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .zoom-step {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(20, 32, 31, 0.08);
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .zoom-step.active {
+        background: rgba(26, 155, 139, 0.18);
+        color: var(--accent);
+      }
+
+      .layer-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+      }
+
+      .layer-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .layer-toggle input {
+        accent-color: var(--accent);
+      }
+
+      .payload {
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(20, 32, 31, 0.05);
+        font-size: 12px;
+        color: var(--muted);
+        height: 120px;
         overflow: auto;
         white-space: pre-wrap;
       }
 
-      @keyframes rise {
+      @keyframes floatIn {
         from {
           opacity: 0;
-          transform: translateY(16px);
+          transform: translateY(18px);
         }
         to {
           opacity: 1;
@@ -202,7 +346,7 @@
         }
       }
 
-      @media (max-width: 960px) {
+      @media (max-width: 1020px) {
         .grid {
           grid-template-columns: 1fr;
         }
@@ -214,53 +358,597 @@
       <header>
         <div>
           <div class="title">Geography Selector</div>
-          <div class="subtitle">Pick areas, refine by level, and send selection back.</div>
+          <div class="subtitle">
+            Progressive disclosure for UK geographies. Search by postcode, UPRN, or area name and
+            surface the right boundaries as you zoom.
+          </div>
         </div>
-        <div class="status-pill">Awaiting host</div>
+        <div class="status-pill" id="status">Awaiting host</div>
       </header>
 
       <section class="grid">
-        <div class="map">
-          <div class="map-label">Map preview</div>
-        </div>
+        <aside class="panel control-panel">
+          <div class="section">
+            <h3>Search mode</h3>
+            <div class="segment" id="modeButtons"></div>
+          </div>
 
-        <aside class="panel">
-          <h3>Selection controls</h3>
-          <div class="field">
-            <label for="level">Level</label>
-            <select id="level">
-              <option>Local Authority</option>
-              <option>Ward</option>
-              <option>MSOA</option>
-              <option>LSOA</option>
-              <option>OA</option>
-            </select>
+          <div class="section">
+            <div class="field">
+              <label for="queryInput">Search</label>
+              <input id="queryInput" placeholder="Enter area name, postcode, or UPRN" />
+            </div>
+            <div class="field">
+              <label for="levelSelect">Level focus</label>
+              <select id="levelSelect">
+                <option value="local_auth">Local Authority</option>
+                <option value="parl_const">Parliamentary Constituency</option>
+                <option value="ward">Ward</option>
+                <option value="msoa">MSOA</option>
+                <option value="lsoa">LSOA</option>
+                <option value="oa">OA</option>
+                <option value="built_up_area">Built-up Area</option>
+                <option value="postcode">Postcode</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="apiKeyInput">OS API Key (optional)</label>
+              <input id="apiKeyInput" placeholder="Paste key to enable OS vector tiles" />
+            </div>
+            <button class="cta" id="searchButton" type="button">Run search</button>
           </div>
-          <div class="field">
-            <label for="search">Search</label>
-            <input id="search" placeholder="Search by name or postcode" />
+
+          <div class="section">
+            <h3>Results</h3>
+            <div class="results" id="results"></div>
           </div>
-          <div class="field">
-            <label>Selected</label>
-            <div class="chips">
-              <span class="chip">Example: Coventry</span>
-              <span class="chip">Example: Birmingham</span>
+
+          <div class="section">
+            <h3>Selected geography</h3>
+            <div class="selection-summary" id="selectionSummary">
+              <div class="result-meta">No selection yet.</div>
+            </div>
+            <button class="cta" id="sendSelection" type="button">Send selection</button>
+          </div>
+
+          <div class="section">
+            <h3>Host payload</h3>
+            <div id="payload" class="payload">Waiting for MCP host payload...</div>
+          </div>
+        </aside>
+
+        <div class="panel map-panel">
+          <div class="pill-row">
+            <span class="pill">OS Vector Tiles ready</span>
+            <span class="pill">MasterMap depth at zoom 15+</span>
+            <span class="pill">Boundaries + AddressBase layers</span>
+          </div>
+          <div class="map-shell">
+            <div id="map"></div>
+            <div class="map-overlay">
+              <div><strong>Zoom ladder</strong></div>
+              <div class="zoom-ladder" id="zoomLadder"></div>
             </div>
           </div>
-          <button class="cta" type="button">Send selection</button>
-          <div id="payload" class="payload">Waiting for MCP host payload...</div>
-        </aside>
+          <div class="section">
+            <h3>Layers</h3>
+            <div class="layer-list" id="layerList"></div>
+          </div>
+        </div>
       </section>
     </div>
 
+    <script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
     <script>
-      const payload = document.getElementById("payload");
+      const modes = [
+        { id: "area", label: "Area name", tool: "admin_lookup.find_by_name" },
+        { id: "postcode", label: "Postcode", tool: "os_places.by_postcode" },
+        { id: "uprn", label: "UPRN", tool: "os_places.by_uprn" },
+        { id: "gss", label: "GSS code", tool: "admin_lookup.area_geometry" },
+        { id: "free", label: "Free text", tool: "os_places.search" },
+      ];
+
+      const zoomSteps = [
+        { min: 0, label: "Nation / Region" },
+        { min: 6, label: "Local Authority" },
+        { min: 9, label: "Wards" },
+        { min: 11, label: "MSOA / LSOA" },
+        { min: 13, label: "Output Areas" },
+        { min: 15, label: "Buildings / UPRN" },
+      ];
+
+      const layerDefinitions = [
+        { id: "boundaries", label: "Boundaries", color: "#1a9b8b" },
+        { id: "addresses", label: "Address Points", color: "#f0a868" },
+        { id: "highways", label: "Highways", color: "#1c4f6d" },
+      ];
+
+      const sampleAreas = [
+        { id: "E09000033", name: "Westminster", level: "DISTRICT", bbox: [-0.1500, 51.4950, -0.1300, 51.5050] },
+        { id: "E05000644", name: "St James's Ward", level: "WARD", bbox: [-0.1450, 51.4980, -0.1340, 51.5040] },
+        { id: "E01004736", name: "Westminster 018A", level: "LSOA", bbox: [-0.1410, 51.4995, -0.1375, 51.5020] },
+      ];
+
+      const sampleAddresses = [
+        {
+          uprn: "100023336959",
+          address: "10 Downing Street, London",
+          lat: 51.5034,
+          lon: -0.1276,
+          classification: "RD",
+          classificationDescription: "Residential Detached",
+        },
+      ];
+
+      const sampleHighways = {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: { name: "Whitehall" },
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [-0.1272, 51.5062],
+                [-0.1266, 51.5035],
+                [-0.1258, 51.5009],
+              ],
+            },
+          },
+        ],
+      };
+
+      const state = {
+        mode: modes[0],
+        map: null,
+        sourcesReady: false,
+        selection: null,
+        hostReady: false,
+        vectorTiles: null,
+      };
+
+      const statusEl = document.getElementById("status");
+      const modeButtons = document.getElementById("modeButtons");
+      const queryInput = document.getElementById("queryInput");
+      const levelSelect = document.getElementById("levelSelect");
+      const resultsEl = document.getElementById("results");
+      const selectionEl = document.getElementById("selectionSummary");
+      const payloadEl = document.getElementById("payload");
+      const zoomLadderEl = document.getElementById("zoomLadder");
+      const layerListEl = document.getElementById("layerList");
+      const apiKeyInput = document.getElementById("apiKeyInput");
+
+      const pendingCalls = new Map();
+
+      function postToHost(message) {
+        if (window.parent) {
+          window.parent.postMessage(message, "*");
+        }
+      }
+
+      function requestTool(tool, args) {
+        const id = `call_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        postToHost({ type: "mcp-app:tool-call", id, tool, args });
+        return new Promise((resolve, reject) => {
+          pendingCalls.set(id, { resolve, reject });
+          setTimeout(() => {
+            if (pendingCalls.has(id)) {
+              pendingCalls.delete(id);
+              reject(new Error("Tool call timeout"));
+            }
+          }, 4000);
+        });
+      }
+
+      function buildSegmentButtons() {
+        modes.forEach((mode) => {
+          const btn = document.createElement("button");
+          btn.textContent = mode.label;
+          btn.addEventListener("click", () => {
+            state.mode = mode;
+            document.querySelectorAll(".segment button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+          });
+          if (mode === state.mode) {
+            btn.classList.add("active");
+          }
+          modeButtons.appendChild(btn);
+        });
+      }
+
+      function buildZoomLadder() {
+        zoomSteps.forEach((step) => {
+          const chip = document.createElement("div");
+          chip.className = "zoom-step";
+          chip.textContent = step.label;
+          zoomLadderEl.appendChild(chip);
+          step.el = chip;
+        });
+      }
+
+      function updateZoomLadder(zoom) {
+        zoomSteps.forEach((step) => {
+          const active = zoom >= step.min && (!step.max || zoom < step.max);
+          step.el.classList.toggle("active", active);
+        });
+      }
+
+      function buildLayerToggles() {
+        layerDefinitions.forEach((layer) => {
+          const wrapper = document.createElement("label");
+          wrapper.className = "layer-toggle";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = true;
+          input.addEventListener("change", () => toggleLayer(layer.id, input.checked));
+          const span = document.createElement("span");
+          span.textContent = layer.label;
+          wrapper.appendChild(input);
+          wrapper.appendChild(span);
+          layerListEl.appendChild(wrapper);
+        });
+      }
+
+      function initMap() {
+        if (!window.maplibregl) {
+          return;
+        }
+        const fallbackStyle = {
+          version: 8,
+          sources: {
+            osm: {
+              type: "raster",
+              tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+              tileSize: 256,
+            },
+          },
+          layers: [{ id: "osm", type: "raster", source: "osm" }],
+        };
+        state.map = new maplibregl.Map({
+          container: "map",
+          style: fallbackStyle,
+          center: [-0.135, 51.503],
+          zoom: 11,
+        });
+        state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
+        state.map.on("load", () => {
+          addSourcesAndLayers();
+          updateZoomLadder(state.map.getZoom());
+        });
+        state.map.on("zoom", () => updateZoomLadder(state.map.getZoom()));
+      }
+
+      function addSourcesAndLayers() {
+        if (!state.map || state.sourcesReady) {
+          return;
+        }
+        state.map.addSource("boundaries", { type: "geojson", data: featureCollection([]) });
+        state.map.addLayer({
+          id: "boundaries-fill",
+          type: "fill",
+          source: "boundaries",
+          paint: { "fill-color": "#1a9b8b", "fill-opacity": 0.25 },
+        });
+        state.map.addLayer({
+          id: "boundaries-line",
+          type: "line",
+          source: "boundaries",
+          paint: { "line-color": "#1a9b8b", "line-width": 2 },
+        });
+
+        state.map.addSource("addresses", { type: "geojson", data: featureCollection([]) });
+        state.map.addLayer({
+          id: "addresses-circle",
+          type: "circle",
+          source: "addresses",
+          paint: { "circle-radius": 6, "circle-color": "#f0a868", "circle-stroke-width": 1, "circle-stroke-color": "#fff" },
+        });
+
+        state.map.addSource("highways", { type: "geojson", data: sampleHighways });
+        state.map.addLayer({
+          id: "highways-line",
+          type: "line",
+          source: "highways",
+          paint: { "line-color": "#1c4f6d", "line-width": 3 },
+        });
+
+        state.sourcesReady = true;
+      }
+
+      function toggleLayer(layerId, isVisible) {
+        if (!state.map) {
+          return;
+        }
+        const mapping = {
+          boundaries: ["boundaries-fill", "boundaries-line"],
+          addresses: ["addresses-circle"],
+          highways: ["highways-line"],
+        };
+        (mapping[layerId] || []).forEach((id) => {
+          if (state.map.getLayer(id)) {
+            state.map.setLayoutProperty(id, "visibility", isVisible ? "visible" : "none");
+          }
+        });
+      }
+
+      function featureCollection(features) {
+        return { type: "FeatureCollection", features };
+      }
+
+      function bboxToPolygon(bbox) {
+        const [minLon, minLat, maxLon, maxLat] = bbox;
+        return {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [minLon, minLat],
+              [maxLon, minLat],
+              [maxLon, maxLat],
+              [minLon, maxLat],
+              [minLon, minLat],
+            ]],
+          },
+        };
+      }
+
+      function setBoundaries(features) {
+        if (!state.map || !state.sourcesReady) {
+          return;
+        }
+        const polygons = features.map((f) => ({
+          ...bboxToPolygon(f.bbox),
+          properties: { name: f.name, level: f.level, id: f.id },
+        }));
+        state.map.getSource("boundaries").setData(featureCollection(polygons));
+        if (polygons.length) {
+          const coords = polygons[0].geometry.coordinates[0];
+          const bounds = coords.reduce(
+            (acc, coord) => acc.extend(coord),
+            new maplibregl.LngLatBounds(coords[0], coords[0])
+          );
+          state.map.fitBounds(bounds, { padding: 40, duration: 800 });
+        }
+      }
+
+      function setAddresses(addresses) {
+        if (!state.map || !state.sourcesReady) {
+          return;
+        }
+        const points = addresses
+          .filter((a) => a.lat && a.lon)
+          .map((a) => ({
+            type: "Feature",
+            properties: a,
+            geometry: { type: "Point", coordinates: [a.lon, a.lat] },
+          }));
+        state.map.getSource("addresses").setData(featureCollection(points));
+      }
+
+      function renderResults(items) {
+        resultsEl.innerHTML = "";
+        if (!items.length) {
+          resultsEl.innerHTML = '<div class="result-meta">No results yet.</div>';
+          return;
+        }
+        items.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "result-card";
+          card.innerHTML = `<strong>${item.title}</strong><div class="result-meta">${item.subtitle}</div>`;
+          card.addEventListener("click", () => selectResult(item));
+          resultsEl.appendChild(card);
+        });
+      }
+
+      function selectResult(item) {
+        state.selection = item;
+        selectionEl.innerHTML = `
+          <strong>${item.title}</strong>
+          <div class="result-meta">${item.subtitle}</div>
+          <div class="result-meta">${item.meta || ""}</div>
+        `;
+        if (item.bbox) {
+          setBoundaries([item]);
+        }
+        if (item.addresses) {
+          setAddresses(item.addresses);
+        }
+      }
+
+      function normalizePostcode(raw) {
+        return raw.replace(/\s+/g, "").toUpperCase();
+      }
+
+      async function runSearch() {
+        const query = queryInput.value.trim();
+        if (!query) {
+          return;
+        }
+        const level = levelSelect.value;
+        const mode = state.mode.id;
+        let results = [];
+
+        try {
+          if (mode === "postcode") {
+            const postcode = normalizePostcode(query);
+            const data = await safeToolCall("os_places.by_postcode", { postcode });
+            const uprns = (data.uprns || []).map((entry) => ({
+              title: entry.address || `UPRN ${entry.uprn}`,
+              subtitle: entry.classificationDescription || entry.classification || "Address",
+              meta: entry.uprn,
+              addresses: [entry],
+            }));
+            results = uprns;
+          } else if (mode === "uprn") {
+            const data = await safeToolCall("os_places.by_uprn", { uprn: query });
+            const item = data.result || data;
+            results = [
+              {
+                title: item.address || `UPRN ${query}`,
+                subtitle: item.classificationDescription || "Address",
+                meta: item.uprn || query,
+                addresses: [item],
+              },
+            ];
+          } else if (mode === "gss") {
+            const data = await safeToolCall("admin_lookup.area_geometry", { id: query });
+            results = [
+              {
+                id: query,
+                name: query,
+                level,
+                title: query,
+                subtitle: "Boundary bbox",
+                bbox: data.bbox,
+              },
+            ];
+          } else if (mode === "free") {
+            const data = await safeToolCall("os_places.search", { text: query });
+            const entries = (data.results || []).map((entry) => ({
+              title: entry.address || "Address",
+              subtitle: entry.classificationDescription || entry.classification || "Address",
+              meta: entry.uprn,
+              addresses: [entry],
+            }));
+            results = entries;
+          } else {
+            const data = await safeToolCall("admin_lookup.find_by_name", { text: query });
+            results = (data.results || sampleAreas)
+              .filter((area) => !level || area.level?.toLowerCase().includes(level) || true)
+              .map((area) => ({
+                ...area,
+                title: area.name,
+                subtitle: area.level || "Area",
+              }));
+          }
+        } catch (err) {
+          results = sampleAreas.map((area) => ({
+            ...area,
+            title: area.name,
+            subtitle: area.level,
+          }));
+        }
+
+        renderResults(results);
+      }
+
+      async function safeToolCall(tool, args) {
+        if (state.hostReady) {
+          const result = await requestTool(tool, args);
+          if (result && result.data) {
+            return result.data;
+          }
+        }
+        return mockToolCall(tool, args);
+      }
+
+      function mockToolCall(tool, args) {
+        if (tool === "admin_lookup.find_by_name") {
+          return { results: sampleAreas.filter((a) => a.name.toLowerCase().includes(args.text.toLowerCase())) };
+        }
+        if (tool === "admin_lookup.area_geometry") {
+          const match = sampleAreas.find((a) => a.id === args.id) || sampleAreas[0];
+          return { id: match.id, bbox: match.bbox };
+        }
+        if (tool === "os_places.by_postcode") {
+          return { uprns: sampleAddresses };
+        }
+        if (tool === "os_places.by_uprn") {
+          return { result: sampleAddresses[0] };
+        }
+        if (tool === "os_places.search") {
+          return { results: sampleAddresses };
+        }
+        if (tool === "os_vector_tiles.descriptor") {
+          return {
+            vectorTiles: {
+              style: "light",
+              styleUrl: "https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}",
+              tileTemplate: "https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}",
+            },
+          };
+        }
+        return {};
+      }
+
+      function applyConfig(config) {
+        if (!config) {
+          return;
+        }
+        if (config.level) {
+          levelSelect.value = config.level;
+        }
+        if (config.searchTerm) {
+          queryInput.value = config.searchTerm;
+        }
+        if (config.vectorTiles) {
+          state.vectorTiles = config.vectorTiles;
+        }
+        if (config.initialView && state.map) {
+          state.map.flyTo({ center: [config.initialView.lng, config.initialView.lat], zoom: config.initialZoom || 10 });
+        }
+      }
+
+      function applyVectorTiles() {
+        if (!state.map || !state.vectorTiles) {
+          return;
+        }
+        const apiKey = apiKeyInput.value.trim();
+        const styleUrl = state.vectorTiles.styleUrl?.replace("{API_KEY}", apiKey || "");
+        if (styleUrl) {
+          state.map.setStyle(styleUrl);
+          state.map.once("style.load", () => addSourcesAndLayers());
+        }
+      }
+
+      async function bootstrapTiles() {
+        if (state.vectorTiles) {
+          return;
+        }
+        const data = await safeToolCall("os_vector_tiles.descriptor", {});
+        if (data.vectorTiles) {
+          state.vectorTiles = data.vectorTiles;
+          applyVectorTiles();
+        }
+      }
+
+      document.getElementById("searchButton").addEventListener("click", runSearch);
+      document.getElementById("sendSelection").addEventListener("click", () => {
+        if (state.selection) {
+          postToHost({ type: "mcp-app:selection", selection: state.selection });
+        }
+      });
+      apiKeyInput.addEventListener("change", applyVectorTiles);
+
       window.addEventListener("message", (event) => {
         if (!event || !event.data) {
           return;
         }
-        payload.textContent = JSON.stringify(event.data, null, 2);
+        payloadEl.textContent = JSON.stringify(event.data, null, 2);
+        if (event.data.type === "mcp-app:init") {
+          state.hostReady = true;
+          statusEl.textContent = "Host connected";
+          applyConfig(event.data.config || event.data.payload || {});
+          applyVectorTiles();
+          bootstrapTiles();
+        }
+        if (event.data.type === "mcp-app:tool-result") {
+          const pending = pendingCalls.get(event.data.id);
+          if (pending) {
+            pending.resolve(event.data);
+            pendingCalls.delete(event.data.id);
+          }
+        }
       });
+
+      buildSegmentButtons();
+      buildZoomLadder();
+      buildLayerToggles();
+      initMap();
+      renderResults([]);
+
+      postToHost({ type: "mcp-app:ready", name: "geography-selector" });
     </script>
   </body>
 </html>

@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 13ad9383
+Timestamp: 2026-01-20T20:22:27.713933
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Show two ONS observations for UK GDPV"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: unknown
+Confidence: 0.0
+Recommended Tool: os_mcp.descriptor
+Workflow Steps: ['os_mcp.descriptor']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.query
+········································
+Timestamp: 2026-01-20T20:22:27.720509
+Duration: 3.9ms
+Status: SUCCESS
+
+Inputs:
+{'geography': 'K02000001', 'limit': 2}
+
+Outputs:
+{'results': [{'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q1', 'value': 525.1}, {'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q2', 'value': 526.3}], 'count': 5, 'limit': 2, 'page': 1, 'nextPageToken': '2'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Show two ONS observations for UK GDPV", "intent": "unknown", "confidence": 0.0, "recommended_tool": "os_mcp.descriptor", "recommended_parameters": {}, "explanation": "Use the server descriptor to discover tool search defaults.", "workflow_steps": ["os_mcp.descriptor"], "alternative_tools": ["os_mcp.descriptor", "admin_lookup.find_by_name"], "guidance": "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."}}, {"tool": "ons_data.query", "response": {"results": [{"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q1", "value": 525.1}, {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q2", "value": 526.3}], "count": 5, "limit": 2, "page": 1, "nextPageToken": "2"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 6.6ms
+Success: True

@@ -27,7 +27,9 @@ def test_os_places_by_postcode_success(monkeypatch):
         "epoch": 1234567890,
     }
 
+    captured = {}
     def fake_get_json(url, params=None):  # noqa: ARG001
+        captured.update(params or {})
         return 200, fake_raw
 
     monkeypatch.setattr(os_places.client, "get_json", fake_get_json)
@@ -37,3 +39,4 @@ def test_os_places_by_postcode_success(monkeypatch):
     data = resp.json()
     assert len(data["uprns"]) == 2
     assert {d["uprn"] for d in data["uprns"]} == {"100", "101"}
+    assert captured["output_srs"] == "WGS84"

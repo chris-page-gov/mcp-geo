@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 70b26fc5
+Timestamp: 2026-01-20T20:22:26.914392
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Addresses within a small Westminster bbox"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: address_lookup
+Confidence: 0.8
+Recommended Tool: os_places.search
+Workflow Steps: ['os_places.search']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_places.within
+········································
+Timestamp: 2026-01-20T20:22:27.085567
+Duration: 170.2ms
+Status: ERROR
+
+Inputs:
+{'bbox': [-0.15, 51.49, -0.12, 51.51]}
+
+Outputs:
+{'isError': True, 'code': 'OS_API_ERROR', 'message': 'OS API error: {\r\n  "error" : {\r\n    "statuscode" : 400,\r\n    "message" : "Area of data coverage is in BNG and is a minimum of 0,0 to maximum of 700000.00,1300000.00. Provided coordinates fall outside this area."\r\n '}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Addresses within a small Westminster bbox", "intent": "address_lookup", "confidence": 0.8, "recommended_tool": "os_places.search", "recommended_parameters": {"text": "Addresses within a small Westminster bbox"}, "explanation": "Free-text address search using OS Places.", "workflow_steps": ["os_places.search"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.within", "response": {"isError": true, "code": "OS_API_ERROR", "message": "OS API error: {\r\n  \"error\" : {\r\n    \"statuscode\" : 400,\r\n    \"message\" : \"Area of data coverage is in BNG and is a minimum of 0,0 to maximum of 700000.00,1300000.00. Provided coordinates fall outside this area.\"\r\n "}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 171.2ms
+Success: True

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any, TypedDict, cast
 
 from tools.os_common import client
@@ -14,6 +15,87 @@ class NormalizedAddress(TypedDict, total=False):
     lon: float
     classification: str | None
 
+
+MAX_BBOX_AREA_M2 = 1_000_000.0
+MAX_BBOX_TILE_COUNT = 25
+
+
+def _meters_per_degree(lat: float) -> tuple[float, float]:
+    lat_rad = math.radians(lat)
+    m_per_deg_lat = (
+        111_132.92
+        - 559.82 * math.cos(2 * lat_rad)
+        + 1.175 * math.cos(4 * lat_rad)
+        - 0.0023 * math.cos(6 * lat_rad)
+    )
+    m_per_deg_lon = (
+        111_412.84 * math.cos(lat_rad)
+        - 93.5 * math.cos(3 * lat_rad)
+        + 0.118 * math.cos(5 * lat_rad)
+    )
+    return m_per_deg_lat, m_per_deg_lon
+
+
+def _bbox_area_m2(min_lon: float, min_lat: float, max_lon: float, max_lat: float) -> float:
+    mid_lat = (min_lat + max_lat) / 2.0
+    m_per_deg_lat, m_per_deg_lon = _meters_per_degree(mid_lat)
+    width_deg = max_lon - min_lon
+    height_deg = max_lat - min_lat
+    width_m = width_deg * m_per_deg_lon
+    height_m = height_deg * m_per_deg_lat
+    return abs(width_m * height_m)
+
+
+def _tile_or_clamp_bbox(
+    min_lon: float,
+    min_lat: float,
+    max_lon: float,
+    max_lat: float,
+) -> tuple[list[tuple[float, float, float, float]], dict[str, Any]]:
+    mid_lat = (min_lat + max_lat) / 2.0
+    m_per_deg_lat, m_per_deg_lon = _meters_per_degree(mid_lat)
+    width_deg = max_lon - min_lon
+    height_deg = max_lat - min_lat
+    area = _bbox_area_m2(min_lon, min_lat, max_lon, max_lat)
+    if area <= MAX_BBOX_AREA_M2:
+        return [(min_lon, min_lat, max_lon, max_lat)], {"bboxMode": "single", "tileCount": 1}
+    if m_per_deg_lat <= 0 or m_per_deg_lon <= 0:
+        return [(min_lon, min_lat, max_lon, max_lat)], {"bboxMode": "single", "tileCount": 1}
+
+    target_edge_m = math.sqrt(MAX_BBOX_AREA_M2)
+    tile_lon_deg = target_edge_m / m_per_deg_lon
+    tile_lat_deg = target_edge_m / m_per_deg_lat
+    tiles_x = max(1, math.ceil(width_deg / tile_lon_deg))
+    tiles_y = max(1, math.ceil(height_deg / tile_lat_deg))
+    tile_count = tiles_x * tiles_y
+
+    if tile_count > MAX_BBOX_TILE_COUNT:
+        scale = math.sqrt(MAX_BBOX_AREA_M2 / area)
+        new_width_deg = width_deg * scale
+        new_height_deg = height_deg * scale
+        center_lon = (min_lon + max_lon) / 2.0
+        center_lat = (min_lat + max_lat) / 2.0
+        clamped_min_lon = center_lon - new_width_deg / 2.0
+        clamped_max_lon = center_lon + new_width_deg / 2.0
+        clamped_min_lat = center_lat - new_height_deg / 2.0
+        clamped_max_lat = center_lat + new_height_deg / 2.0
+        return [
+            (clamped_min_lon, clamped_min_lat, clamped_max_lon, clamped_max_lat),
+        ], {
+            "bboxMode": "clamped",
+            "tileCount": 1,
+            "originalTileCount": tile_count,
+        }
+
+    tiles: list[tuple[float, float, float, float]] = []
+    for ix in range(tiles_x):
+        tile_min_lon = min_lon + ix * tile_lon_deg
+        tile_max_lon = min(tile_min_lon + tile_lon_deg, max_lon)
+        for iy in range(tiles_y):
+            tile_min_lat = min_lat + iy * tile_lat_deg
+            tile_max_lat = min(tile_min_lat + tile_lat_deg, max_lat)
+            tiles.append((tile_min_lon, tile_min_lat, tile_max_lon, tile_max_lat))
+    return tiles, {"bboxMode": "tiled", "tileCount": tile_count}
 
 def _norm_dpa_list(body: PlacesResponse | dict[str, Any]) -> list[NormalizedAddress]:
     results = cast(list[DPAResult], body.get("results", []))
@@ -61,7 +143,10 @@ def _places_by_uprn(payload: dict[str, Any]) -> ToolResult:
     uprn = str(payload.get("uprn", "")).strip()
     if not uprn:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing uprn"}
-    status, raw = client.get_json(f"{client.base_places}/uprn", {"uprn": uprn})
+    status, raw = client.get_json(
+        f"{client.base_places}/uprn",
+        {"uprn": uprn, "output_srs": "WGS84"},
+    )
     if status != 200:
         return 501, raw
     body = cast(PlacesResponse, raw)
@@ -78,7 +163,8 @@ def _places_nearest(payload: dict[str, Any]) -> ToolResult:
         lon = float(raw_lon) if raw_lon is not None else 0.0
     except Exception:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "lat/lon must be numeric"}
-    params = {"point": f"{lon},{lat}"}
+    # OS Places expects WGS84 axis order for srs=WGS84 (lat,lon).
+    params = {"point": f"{lat},{lon}", "srs": "WGS84"}
     status, raw = client.get_json(f"{client.base_places}/nearest", params)
     if status != 200:
         return 501, raw
@@ -105,12 +191,42 @@ def _places_within(payload: dict[str, Any]) -> ToolResult:
             "message": "bbox values must be numeric",
         }
     min_lon, min_lat, max_lon, max_lat = bbox_list
-    params = {"bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}"}
-    status, raw = client.get_json(f"{client.base_places}/bbox", params)
-    if status != 200:
-        return 501, raw
-    body = cast(PlacesResponse, raw)
-    return 200, {"results": _norm_dpa_list(body)}
+    if min_lon >= max_lon or min_lat >= max_lat:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "bbox must be [minLon,minLat,maxLon,maxLat] with min < max",
+        }
+
+    tiles, meta = _tile_or_clamp_bbox(min_lon, min_lat, max_lon, max_lat)
+    combined: list[NormalizedAddress] = []
+    for tile_min_lon, tile_min_lat, tile_max_lon, tile_max_lat in tiles:
+        # For WGS84, OS Places bbox expects axis order lat,lon.
+        params = {
+            "bbox": f"{tile_min_lat},{tile_min_lon},{tile_max_lat},{tile_max_lon}",
+            "srs": "WGS84",
+        }
+        status, raw = client.get_json(f"{client.base_places}/bbox", params)
+        if status != 200:
+            return 501, raw
+        body = cast(PlacesResponse, raw)
+        combined.extend(_norm_dpa_list(body))
+
+    seen: set[str] = set()
+    deduped: list[NormalizedAddress] = []
+    for entry in combined:
+        key = entry.get("uprn")
+        if key is None:
+            key = f"{entry.get('address')}|{entry.get('lat')}|{entry.get('lon')}"
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(entry)
+
+    response: dict[str, Any] = {"results": deduped}
+    if meta.get("bboxMode") != "single":
+        response["provenance"] = meta
+    return 200, response
 
 # Register tools (overwrite placeholders if present)
 
@@ -157,6 +273,14 @@ register(Tool(
     name="os_places.within",
     description="Addresses within a bounding box",
     input_schema={"type":"object","properties":{"tool":{"type":"string","const":"os_places.within"},"bbox":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4}},"required":["bbox"],"additionalProperties":False},
-    output_schema={"type":"object","properties":{"results":{"type":"array"}},"required":["results"]},
+    output_schema={
+        "type": "object",
+        "properties": {
+            "results": {"type": "array"},
+            "provenance": {"type": "object"},
+        },
+        "required": ["results"],
+        "additionalProperties": True,
+    },
     handler=_places_within
 ))

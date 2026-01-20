@@ -15,7 +15,7 @@
    _Prompt:_ “Which model are you? Switch between **GPT‑5**, **GPT‑5 mini**, and **Gemini 2.5 Pro**, then summarise one difference in behaviour you expect for this task.”
 
 2. **Confirm MCP connection**  
-   _Prompt:_ “List the **MCP servers** available and the **tools** for server `os-mcp-stdio` (or `os-mcp-http`). For each tool, give: name, description, required/optional params, and a one‑line example call.”
+   _Prompt:_ “List the **MCP servers** available and the **tools** for server `mcp-geo-stdio` (or `mcp-geo-http`). For each tool, give: name, description, required/optional params, and a one‑line example call.”
 
 3. **Policy sanity**  
    _Prompt:_ “Confirm that **web search is enabled**, **coding agent is enabled**, and **suggestions matching public code are allowed** in this workspace.”
@@ -101,9 +101,9 @@ _Prompt:_ “Describe or render a static map for Downing Street (bbox around 51.
 
 ## 6) Extensions (optional, if installed)
 
-- _Prompt:_ “@Jira Create a ticket ‘OS‑MCP: add postcode → ward tool’ in project **DATA**, link it to repo `os-mcp`, and paste the prompt you used above.”
+- _Prompt:_ “@Jira Create a ticket ‘MCP‑GEO: add postcode → ward tool’ in project **DATA**, link it to repo `mcp-geo`, and paste the prompt you used above.”
 
-- _Prompt:_ “@Octopus or @Azure Trigger pipeline ‘os‑mcp‑deploy‑dev’ with variables `{ feature: 'ward_geojson' }`.”
+- _Prompt:_ “@Octopus or @Azure Trigger pipeline ‘mcp-geo-deploy-dev’ with variables `{ feature: 'ward_geojson' }`.”
 
 **Expected:** Extension banner appears; the agent requests/uses the extension with the right scopes.
 

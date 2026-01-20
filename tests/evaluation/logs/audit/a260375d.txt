@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: a260375d
+Timestamp: 2026-01-20T20:22:27.982758
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Fetch an unknown ONS filter output"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.get_filter_output
+········································
+Timestamp: 2026-01-20T20:22:27.986137
+Duration: 1.4ms
+Status: ERROR
+
+Inputs:
+{'filterId': 'unknown'}
+
+Outputs:
+{'isError': True, 'code': 'UNKNOWN_FILTER', 'message': 'Filter not found'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Fetch an unknown ONS filter output", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Fetch"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.get_filter_output", "response": {"isError": true, "code": "UNKNOWN_FILTER", "message": "Filter not found"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.4ms
+Success: True

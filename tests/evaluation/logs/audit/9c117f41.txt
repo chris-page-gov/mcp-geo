@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 9c117f41
+Timestamp: 2026-01-20T20:22:26.903946
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Which administrative areas contain 51.5010,-0.1416?"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: admin_lookup.containing_areas
+········································
+Timestamp: 2026-01-20T20:22:26.906920
+Duration: 1.4ms
+Status: SUCCESS
+
+Inputs:
+{'lat': 51.501, 'lon': -0.1416}
+
+Outputs:
+{'results': [{'id': 'E02000977', 'level': 'MSOA', 'name': 'Westminster 018', 'parent': 'E05000644'}, {'id': 'E05000644', 'level': 'WARD', 'name': "St James's Ward (historic)", 'parent': 'E09000033'}, {'id': 'E09000033', 'level': 'DISTRICT', 'name': 'Westminster', 'parent': 'E10000014'}, {'id': 'E10000014', 'level': 'COUNTY', 'name': 'Greater London', 'parent': 'E12000007'}, {'id': 'E12000007', 'level': 'REGION', 'name': 'London', 'parent': 'E92000001'}, {'id': 'E92000001', 'level': 'NATION', 'name': 'England', 'parent': None}]}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Which administrative areas contain 51.5010,-0.1416?", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Which"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.containing_areas", "response": {"results": [{"id": "E02000977", "level": "MSOA", "name": "Westminster 018", "parent": "E05000644"}, {"id": "E05000644", "level": "WARD", "name": "St James's Ward (historic)", "parent": "E09000033"}, {"id": "E09000033", "level": "DISTRICT", "name": "Westminster", "parent": "E10000014"}, {"id": "E10000014", "level": "COUNTY", "name": "Greater London", "parent": "E12000007"}, {"id": "E12000007", "level": "REGION", "name": "London", "parent": "E92000001"}, {"id": "E92000001", "level": "NATION", "name": "England", "parent": null}]}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.0ms
+Success: True

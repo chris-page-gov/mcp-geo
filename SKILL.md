@@ -14,6 +14,20 @@ reliable guide to tool selection.
 - MCP-Apps widgets for interactive selection and inspection.
 - Tool search metadata for large tool catalogs.
 
+## Start Here: os_mcp.route_query
+
+For any natural language request, call `os_mcp.route_query` first. It returns
+the intent, a recommended tool, and suggested workflow steps.
+
+Example:
+```
+{ "tool": "os_mcp.route_query", "query": "Find Westminster ward boundaries" }
+```
+
+Use `recommended_tool`, `recommended_parameters`, and `workflow_steps` to pick
+the next tool calls. When the intent is unclear, fall back to `os_mcp.descriptor`
+or `/tools/search`.
+
 ## Quick Tool Selection
 
 Addresses and postcodes:

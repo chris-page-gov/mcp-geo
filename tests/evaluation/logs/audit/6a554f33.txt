@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 6a554f33
+Timestamp: 2026-01-20T20:22:26.907450
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Show the hierarchy for ward E05000644"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: unknown
+Confidence: 0.0
+Recommended Tool: os_mcp.descriptor
+Workflow Steps: ['os_mcp.descriptor']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: admin_lookup.reverse_hierarchy
+········································
+Timestamp: 2026-01-20T20:22:26.910197
+Duration: 1.2ms
+Status: SUCCESS
+
+Inputs:
+{'id': 'E05000644'}
+
+Outputs:
+{'chain': [{'id': 'E05000644', 'level': 'WARD', 'name': "St James's Ward (historic)"}, {'id': 'E09000033', 'level': 'DISTRICT', 'name': 'Westminster'}, {'id': 'E10000014', 'level': 'COUNTY', 'name': 'Greater London'}, {'id': 'E12000007', 'level': 'REGION', 'name': 'London'}, {'id': 'E92000001', 'level': 'NATION', 'name': 'England'}]}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Show the hierarchy for ward E05000644", "intent": "unknown", "confidence": 0.0, "recommended_tool": "os_mcp.descriptor", "recommended_parameters": {}, "explanation": "Use the server descriptor to discover tool search defaults.", "workflow_steps": ["os_mcp.descriptor"], "alternative_tools": ["os_mcp.descriptor", "admin_lookup.find_by_name"], "guidance": "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."}}, {"tool": "admin_lookup.reverse_hierarchy", "response": {"chain": [{"id": "E05000644", "level": "WARD", "name": "St James's Ward (historic)"}, {"id": "E09000033", "level": "DISTRICT", "name": "Westminster"}, {"id": "E10000014", "level": "COUNTY", "name": "Greater London"}, {"id": "E12000007", "level": "REGION", "name": "London"}, {"id": "E92000001", "level": "NATION", "name": "England"}]}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 2.8ms
+Success: True

@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 15cb80c1
+Timestamp: 2026-01-20T20:49:46.014705
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Lookup UPRN 100023336959"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: address_lookup
+Confidence: 0.95
+Recommended Tool: os_places.by_uprn
+Workflow Steps: ['os_places.by_uprn']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_places.by_uprn
+········································
+Timestamp: 2026-01-20T20:49:46.190266
+Duration: 173.3ms
+Status: SUCCESS
+
+Inputs:
+{'uprn': '100023336959'}
+
+Outputs:
+{'result': {'uprn': '100023336959', 'address': 'FOREIGN & COMMONWEALTH OFFICE, KING CHARLES STREET, LONDON, SW1A 2AH', 'lat': 51.5024319, 'lon': -0.128047, 'classification': None}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Lookup UPRN 100023336959", "intent": "address_lookup", "confidence": 0.95, "recommended_tool": "os_places.by_uprn", "recommended_parameters": {"uprn": "100023336959"}, "explanation": "Lookup a specific address by UPRN using OS Places.", "workflow_steps": ["os_places.by_uprn"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.by_uprn", "response": {"result": {"uprn": "100023336959", "address": "FOREIGN & COMMONWEALTH OFFICE, KING CHARLES STREET, LONDON, SW1A 2AH", "lat": 51.5024319, "lon": -0.128047, "classification": null}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 175.6ms
+Success: True

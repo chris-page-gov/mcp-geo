@@ -23,7 +23,7 @@ def test_rate_limit_enforced():
     settings.RATE_LIMIT_BYPASS = False
     hits: list[int] = []
     for _ in range(7):
-        resp = client.get("/healthz")
+        resp = client.get("/health")
         status: int = resp.status_code
         hits.append(status)
     # Restore

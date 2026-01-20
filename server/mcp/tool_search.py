@@ -50,10 +50,11 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "ons_search": ["ons", "search", "dataset", "discover"],
     "ons_codes": ["codes", "dimension", "options"],
     "os_apps": ["ui", "widget", "interactive", "mcp-apps"],
-    "os_mcp": ["metadata", "tool-search", "skills", "capabilities"],
+    "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
 
 ALWAYS_LOADED_TOOLS: Set[str] = {
+    "os_mcp.route_query",
     "os_places.search",
     "os_places.by_postcode",
     "os_names.find",

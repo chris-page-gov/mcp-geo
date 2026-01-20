@@ -1,0 +1,50 @@
+============================================================
+AUDIT LOG: b9ad7042
+Timestamp: 2026-01-20T20:49:47.630297
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Create an ONS filter for UK GDPV 2024 Q1-Q2"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.create_filter
+········································
+Timestamp: 2026-01-20T20:49:47.635245
+Duration: 2.6ms
+Status: SUCCESS
+
+Inputs:
+{'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2'}
+
+Outputs:
+{'filterId': 'f0001', 'params': {'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2'}}
+
+### Tool Call 2: ons_data.get_filter_output
+········································
+Timestamp: 2026-01-20T20:49:47.638483
+Duration: 3.2ms
+Status: SUCCESS
+
+Inputs:
+{'filterId': 'f0001'}
+
+Outputs:
+{'filterId': 'f0001', 'format': 'JSON', 'data': {'results': [], 'count': 0, 'limit': 50, 'page': 1, 'nextPageToken': None}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Create an ONS filter for UK GDPV 2024 Q1-Q2", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Create"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.create_filter", "response": {"filterId": "f0001", "params": {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2"}}}, {"tool": "ons_data.get_filter_output", "response": {"filterId": "f0001", "format": "JSON", "data": {"results": [], "count": 0, "limit": 50, "page": 1, "nextPageToken": null}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 8.2ms
+Success: True

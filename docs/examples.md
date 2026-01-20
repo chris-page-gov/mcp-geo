@@ -74,6 +74,9 @@ POST /tools/search
 { "query": "^os_places\\.", "mode": "regex" }
 
 POST /tools/call
+{ "tool": "os_mcp.route_query", "query": "Find Westminster ward boundaries" }
+
+POST /tools/call
 { "tool": "os_mcp.descriptor" }
 
 POST /tools/call

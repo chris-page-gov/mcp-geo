@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: c656ba2c
+Timestamp: 2026-01-20T20:49:47.645099
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Compare wellbeing between Westminster and Greater London"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: area_comparison
+Confidence: 0.9
+Recommended Tool: os_apps.render_statistics_dashboard
+Workflow Steps: ['os_apps.render_statistics_dashboard', 'ons_data.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_apps.render_statistics_dashboard
+········································
+Timestamp: 2026-01-20T20:49:47.649323
+Duration: 1.9ms
+Status: SUCCESS
+
+Inputs:
+{'areaCodes': ['E09000033', 'E10000014'], 'dataset': 'wellbeing', 'measure': 'life-satisfaction'}
+
+Outputs:
+{'status': 'ready', 'config': {'dataset': 'wellbeing', 'areaCodes': ['E09000033', 'E10000014'], 'measure': 'life-satisfaction'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], '_meta': {'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], 'audience': ['user']}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Compare wellbeing between Westminster and Greater London", "intent": "area_comparison", "confidence": 0.9, "recommended_tool": "os_apps.render_statistics_dashboard", "recommended_parameters": {}, "explanation": "Open the statistics dashboard to compare multiple areas.", "workflow_steps": ["os_apps.render_statistics_dashboard", "ons_data.query"], "alternative_tools": ["ons_data.query"], "guidance": "Use the statistics dashboard to compare multiple areas, or query per area and compare."}}, {"tool": "os_apps.render_statistics_dashboard", "response": {"status": "ready", "config": {"dataset": "wellbeing", "areaCodes": ["E09000033", "E10000014"], "measure": "life-satisfaction"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "_meta": {"uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "audience": ["user"]}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 4.3ms
+Success: True

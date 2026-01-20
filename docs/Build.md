@@ -29,7 +29,7 @@ Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste int
   * Repo layout (`/server`, `/tools`, `/resources`, `/playground`, `/tests`, `/infra`).
   * MCP protocol handshake, `tools/list`, `tools/call`, `resources/list`, structured outputs.
   * `.env.example` for keys; typed config loader; Dockerfile + devcontainer.
-* **Acceptance:** `npm run dev` (or `uv run`/`poetry run`) starts server; `/healthz` returns OK; `tools/list` shows a placeholder tool.
+* **Acceptance:** `npm run dev` (or `uv run`/`poetry run`) starts server; `/health` returns OK; `tools/list` shows a placeholder tool.
 
 #### **A1. Observability & DX**
 

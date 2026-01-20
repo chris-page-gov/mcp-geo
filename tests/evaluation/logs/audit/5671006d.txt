@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 5671006d
+Timestamp: 2026-01-20T20:22:25.854924
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Find Westminster"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: admin_lookup.find_by_name
+········································
+Timestamp: 2026-01-20T20:22:25.862463
+Duration: 1.6ms
+Status: SUCCESS
+
+Inputs:
+{'text': 'Westminster'}
+
+Outputs:
+{'results': [{'id': 'E01004736', 'level': 'LSOA', 'name': 'Westminster 018A'}, {'id': 'E02000977', 'level': 'MSOA', 'name': 'Westminster 018'}, {'id': 'E09000033', 'level': 'DISTRICT', 'name': 'Westminster'}]}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Find Westminster", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Westminster"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E01004736", "level": "LSOA", "name": "Westminster 018A"}, {"id": "E02000977", "level": "MSOA", "name": "Westminster 018"}, {"id": "E09000033", "level": "DISTRICT", "name": "Westminster"}]}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 7.6ms
+Success: True

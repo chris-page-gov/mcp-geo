@@ -9,9 +9,11 @@ Production-focused Model Context Protocol (MCP) server for geospatial (Ordnance 
 - Tool annotations + defer-loading metadata for tool search integrations
 - Agent skills resource (`skills://mcp-geo/getting-started`)
 - MCP-Apps UI resources (`ui://mcp-geo/...`) with helper `os_apps.*` tools
+- Routing tool `os_mcp.route_query` for intent classification and workflow guidance
 - Structured logging & correlation IDs
 - OS API client with retries and explicit upstream error codes
 - High coverage test suite exercising success + failure paths
+ - Evaluation harness with question suite and scoring rubric
 
 ## Quickstart
 ```bash
@@ -21,7 +23,7 @@ pip install -e .[test]
 uvicorn server.main:app --reload
 ```
 Then visit:
-- `GET /healthz`
+- `GET /health`
 - `GET /tools/list`
 - `GET /tools/describe`
 - `POST /tools/call` with `{ "tool": "os_places.by_postcode", "postcode": "SW1A1AA" }`
@@ -31,6 +33,10 @@ Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; othe
 ## Tutorial
 
 See [docs/tutorial.md](docs/tutorial.md) for an evaluation-style walkthrough covering tool discovery, admin lookup, OS tools, ONS tools, resources/ETags, and STDIO.
+
+## Evaluation
+
+See [docs/evaluation.md](docs/evaluation.md) for the question suite, rubric, and harness usage.
 
 ## Tool Catalog (Epics B–D)
 Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.
@@ -61,6 +67,7 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | ons_codes.list | List dimension IDs (sample/live) |
 | ons_codes.options | List codes/options for a dimension (sample/live) |
 | os_mcp.descriptor | Server capabilities and tool search configuration |
+| os_mcp.route_query | Intent classification and tool/workflow recommendation |
 | os_apps.render_geography_selector | Open the MCP-Apps geography selector widget |
 | os_apps.render_statistics_dashboard | Open the MCP-Apps statistics dashboard widget |
 | os_apps.render_feature_inspector | Open the MCP-Apps feature inspector widget |
@@ -279,7 +286,7 @@ The JSON-RPC 2.0 STDIO adapter lives in `server/stdio_adapter.py` (refactored fr
 - Console script: `mcp-geo-stdio`
 - Wrapper script: `scripts/os-mcp` (delegates to `server/stdio_adapter.py`)
 
-This adapter is referenced by `mcp.json` (`os-mcp-stdio`).
+This adapter is referenced by `mcp.json` (`mcp-geo-stdio`).
 
 ### Framing
 Each request/response:

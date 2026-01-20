@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: cab0fd87
+Timestamp: 2026-01-20T20:22:26.900466
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Open the statistics dashboard for Westminster"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: statistics
+Confidence: 1.0
+Recommended Tool: ons_data.query
+Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_apps.render_statistics_dashboard
+········································
+Timestamp: 2026-01-20T20:22:26.903415
+Duration: 1.4ms
+Status: SUCCESS
+
+Inputs:
+{'areaCodes': ['E09000033'], 'dataset': 'gdp', 'measure': 'GDPV'}
+
+Outputs:
+{'status': 'ready', 'config': {'dataset': 'gdp', 'areaCodes': ['E09000033'], 'measure': 'GDPV'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], '_meta': {'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], 'audience': ['user']}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Open the statistics dashboard for Westminster", "intent": "statistics", "confidence": 1.0, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "os_apps.render_statistics_dashboard", "response": {"status": "ready", "config": {"dataset": "gdp", "areaCodes": ["E09000033"], "measure": "GDPV"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "_meta": {"uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "audience": ["user"]}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.0ms
+Success: True

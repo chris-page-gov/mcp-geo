@@ -6,7 +6,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 - FastAPI-based Model Context Protocol (MCP) server providing geospatial / Ordnance Survey tooling.
 - Python >=3.11 runtime (bump `requires-python` in `pyproject.toml` if upgraded).
-- Endpoints: `/healthz`, `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`, playground transcript endpoints.
+- Endpoints: `/health`, `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`, playground transcript endpoints.
 - Epic A (core) and Epic B (OS tools) implemented with real handlers (OS calls if `OS_API_KEY` set; graceful 501 otherwise).
 
 ## Repository Layout

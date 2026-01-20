@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: de63e4c3
+Timestamp: 2026-01-20T20:49:46.771126
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Static map descriptor for Westminster bbox"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: map_render
+Confidence: 0.85
+Recommended Tool: os_maps.render
+Workflow Steps: ['os_maps.render']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_maps.render
+········································
+Timestamp: 2026-01-20T20:49:46.775947
+Duration: 2.0ms
+Status: SUCCESS
+
+Inputs:
+{'bbox': [-0.15, 51.49, -0.12, 51.51]}
+
+Outputs:
+{'render': {'urlTemplate': 'https://api.os.uk/maps/v1/raster/wms?bbox=-0.15,51.49,-0.12,51.51&key={API_KEY}', 'layer': 'raster'}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Static map descriptor for Westminster bbox", "intent": "map_render", "confidence": 0.85, "recommended_tool": "os_maps.render", "recommended_parameters": {}, "explanation": "Return a static map descriptor for a bounding box.", "workflow_steps": ["os_maps.render"], "alternative_tools": ["os_vector_tiles.descriptor"], "guidance": "Use os_maps.render with a bbox to obtain a static map URL template."}}, {"tool": "os_maps.render", "response": {"render": {"urlTemplate": "https://api.os.uk/maps/v1/raster/wms?bbox=-0.15,51.49,-0.12,51.51&key={API_KEY}", "layer": "raster"}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 4.9ms
+Success: True

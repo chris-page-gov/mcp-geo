@@ -4,8 +4,8 @@ def call(client, endpoint, method="get", **kwargs):
 
 # Example: test harness for validation
 
-def test_healthz(client):
-    resp = call(client, "/healthz")
+def test_health(client):
+    resp = call(client, "/health")
     assert resp.status_code == 200
     assert resp.json().get("status") == "OK"
 

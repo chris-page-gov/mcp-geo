@@ -1,25 +1,17 @@
 {
   "$schema": "https://modelcontextprotocol.io/schemas/v1alpha/mcp.json",
   "mcpServers": {
-    "os-mcp-stdio": {
+    "mcp-geo-stdio": {
       "command": "./scripts/os-mcp",
       "args": [],
       "env": {
         "OS_API_KEY": "${env:OS_API_KEY}",
-        "ONS_API_KEY": "${env:ONS_API_KEY}",
-        "ONS_LIVE_ENABLED": "true",
-        "LOG_LEVEL": "info"
+        "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}"
       },
       "autoApprove": ["tools", "resources"]
     },
-    "os-mcp-http": {
-      "url": "http://localhost:8000/",
-      "headers": {
-        "Authorization": "Bearer ${env:OS_MCP_TOKEN}"
-      },
-      "env": {
-        "ONS_LIVE_ENABLED": "true"
-      },
+    "mcp-geo-http": {
+      "url": "http://localhost:8000",
       "autoApprove": ["tools", "resources"]
     }
   }

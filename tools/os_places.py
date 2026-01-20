@@ -82,7 +82,7 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
 
     status, raw = client.get_json(
         f"{client.base_places}/postcode",
-        {"postcode": postcode_raw},
+        {"postcode": postcode_raw, "output_srs": "WGS84"},
     )
     if status != 200:
         return 501, raw

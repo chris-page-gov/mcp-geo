@@ -5,38 +5,42 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- Tutorial: added docs/tutorial.md (evaluation-style walkthrough using mcp-geo tools).
-- Devcontainer: added post-start ownership repair + UID alignment to mitigate Docker Desktop file permission drift.
-- Place enrichment: `os_places.by_postcode` now returns `classificationDescription` and `localCustodianName` derived from static code list resources.
-- Resource headers: `Cache-Control` added with differentiated TTL (300s for dynamic admin boundaries sample, 86400s for static code lists).
-- Standardized resource provenance field `retrievedAt` across all `/resources/get` responses.
-- Tool catalog auto-generation script `scripts/generate_tool_catalog.py` and published `docs/tool_catalog.md`.
-- Troubleshooting guide `docs/troubleshooting.md` listing error codes and remediation steps.
-- Extended ONS filter workflow examples in `docs/examples.md` with sample responses.
-- CSV and XLSX formats for `ons_data.get_filter_output` (returns `dataBase64` for CSV text and `dataHex` for XLSX binary).
-- Schema reference fields `inputSchemaRef` and `outputSchemaRef` added to `/tools/describe` output.
-- Tool search endpoint `/tools/search` and stdio `tools/search`, including annotations and `deferLoading` metadata.
-- Agent Skills resource `skills://mcp-geo/getting-started` backed by `SKILL.md`.
-- MCP-Apps UI resources (`ui://mcp-geo/...`) with helper tools `os_apps.render_*`.
-- Server descriptor tool `os_mcp.descriptor` exposing tool search config and UI catalog.
-- Resource URIs (`resource://mcp-geo/...`) and `/resources/describe` parity for HTTP.
-
-### Tests
-- Added `test_os_places_enrichment.py` covering enrichment fields.
-- Added `test_resources_provenance_headers.py` validating cache headers and provenance presence.
-- Added tool search, skills, MCP-Apps, and descriptor coverage tests.
-
-### Internal
-- Minor refactor in `server/mcp/resources.py` for provenance normalization.
-### Added
-- STDIO adapter branch tests for parse errors (-32700), invalid version (-32600), invalid params (-32602), and ETag not-modified flow.
+- (none)
 
 ### Changed
-- Refactor(server): move STDIO adapter implementation to `server/stdio_adapter.py` with type hints; legacy wrapper preserved.
+- (none)
 
 ### Fixed
-- Correct handling of non-dict `params` triggering JSON-RPC -32602 Invalid params error.
-- OS tools: normalize non-200 upstream responses to 501 for consistent error envelopes and deterministic tests.
+- (none)
+
+## [0.2.2] - 2026-01-20
+### Breaking
+- Health check endpoint renamed to `/health` (was `/healthz`).
+
+### Added
+- Evaluation framework (question suite, rubric, harness, audit logs) and `docs/evaluation.md`.
+- Tool search endpoint `/tools/search` and stdio `tools/search` with annotations and `deferLoading`.
+- `os_mcp.descriptor` and `os_mcp.route_query` for tool discovery and routing.
+- MCP-Apps UI resources with MapLibre geography selector and progressive disclosure UI.
+- Skills resource `skills://mcp-geo/getting-started`.
+- Tool catalog generator and `docs/tool_catalog.md`.
+- Troubleshooting guide and expanded examples.
+- ONS filter output CSV/XLSX formats.
+- Tutorial expanded with multi-client setup and MCP-Apps/tool search walkthrough.
+
+### Changed
+- STDIO adapter moved to `server/stdio_adapter.py` with legacy wrapper retained.
+- OS Places tools now request WGS84 output; `os_places.within` supports oversized bbox tiling/clamping.
+- `mcp.json` server entries renamed to `mcp-geo-stdio` / `mcp-geo-http`.
+
+### Fixed
+- OS Places WGS84 coordinate handling for `nearest`/`within` to avoid BNG coverage errors.
+- Non-200 OS API responses normalized to 501 error envelopes for consistency.
+- JSON-RPC invalid params handling for non-dict `params`.
+
+### Tests
+- Added routing, MCP-Apps, tool search, and STDIO error branch coverage.
+- Added OS Places bbox tiling/clamping tests and evaluation harness coverage.
 
 ## [0.2.1] - 2025-09-17
 

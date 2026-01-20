@@ -16,9 +16,15 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | ons_data.get_observation | 0.1.0 | Fetch a single observation by geography, measure, time (live or sample). |
 | ons_data.query | 0.1.0 | Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination). |
 | ons_search.query | 0.1.0 | Search sample ONS dimensions for code fragments. |
+| os_apps.render_feature_inspector | 0.1.0 | Open the MCP-Apps feature inspector widget. |
+| os_apps.render_geography_selector | 0.1.0 | Open the MCP-Apps geography selector widget. |
+| os_apps.render_route_planner | 0.1.0 | Open the MCP-Apps route planner widget. |
+| os_apps.render_statistics_dashboard | 0.1.0 | Open the MCP-Apps statistics dashboard widget. |
 | os_features.query | 0.1.0 | Query features by bbox |
 | os_linked_ids.get | 0.1.0 | Resolve linked identifiers (UPRN/TOID etc) |
 | os_maps.render | 0.1.0 | Return metadata for rendering a map image (URL template) |
+| os_mcp.descriptor | 0.1.0 | Describe server capabilities and tool search configuration. |
+| os_mcp.route_query | 0.1.0 | Classify a query and recommend the right tool/workflow. |
 | os_names.find | 0.1.0 | Find place names |
 | os_names.nearest | 0.1.0 | Nearest named features |
 | os_places.by_postcode | 0.1.0 | Lookup UPRNs and addresses for a UK postcode via OS Places API |
@@ -693,6 +699,273 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```
 
 
+## os_apps.render_feature_inspector
+
+**Description:** Open the MCP-Apps feature inspector widget.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "collectionId": {
+      "type": "string"
+    },
+    "featureId": {
+      "type": "string"
+    },
+    "linkedIds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool": {
+      "const": "os_apps.render_feature_inspector",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "_meta": {
+      "type": "object"
+    },
+    "config": {
+      "type": "object"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "uiResourceUris": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "uiResourceUris"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_apps.render_geography_selector
+
+**Description:** Open the MCP-Apps geography selector widget.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "focusLevel": {
+      "type": "string"
+    },
+    "focusName": {
+      "type": "string"
+    },
+    "initialLat": {
+      "type": "number"
+    },
+    "initialLng": {
+      "type": "number"
+    },
+    "initialZoom": {
+      "type": "integer"
+    },
+    "level": {
+      "type": "string"
+    },
+    "multiSelect": {
+      "type": "boolean"
+    },
+    "searchTerm": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "os_apps.render_geography_selector",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "_meta": {
+      "type": "object"
+    },
+    "config": {
+      "type": "object"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "uiResourceUris": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "uiResourceUris"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_apps.render_route_planner
+
+**Description:** Open the MCP-Apps route planner widget.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "endLat": {
+      "type": "number"
+    },
+    "endLng": {
+      "type": "number"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "startLat": {
+      "type": "number"
+    },
+    "startLng": {
+      "type": "number"
+    },
+    "tool": {
+      "const": "os_apps.render_route_planner",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "_meta": {
+      "type": "object"
+    },
+    "config": {
+      "type": "object"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "uiResourceUris": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "uiResourceUris"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_apps.render_statistics_dashboard
+
+**Description:** Open the MCP-Apps statistics dashboard widget.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "areaCodes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dataset": {
+      "type": "string"
+    },
+    "measure": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "os_apps.render_statistics_dashboard",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "_meta": {
+      "type": "object"
+    },
+    "config": {
+      "type": "object"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "uiResourceUris": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "status",
+    "uiResourceUris"
+  ],
+  "type": "object"
+}
+```
+
+
 ## os_features.query
 
 **Description:** Query features by bbox
@@ -836,6 +1109,143 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   },
   "required": [
     "render"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_mcp.descriptor
+
+**Description:** Describe server capabilities and tool search configuration.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "description": "Optional tool category to filter search config.",
+      "type": "string"
+    },
+    "includeTools": {
+      "default": true,
+      "description": "Include per-tool metadata in toolSearch section.",
+      "type": "boolean"
+    },
+    "tool": {
+      "const": "os_mcp.descriptor",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "capabilities": {
+      "type": "object"
+    },
+    "server": {
+      "type": "string"
+    },
+    "skillsUri": {
+      "type": "string"
+    },
+    "toolSearch": {
+      "type": "object"
+    },
+    "uiResourceCatalog": {
+      "type": "array"
+    },
+    "uiResources": {
+      "type": "array"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "server",
+    "version",
+    "toolSearch"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_mcp.route_query
+
+**Description:** Classify a query and recommend the right tool/workflow.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "os_mcp.route_query",
+      "type": "string"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "alternative_tools": {
+      "type": "array"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "guidance": {
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "query": {
+      "type": "string"
+    },
+    "recommended_parameters": {
+      "type": "object"
+    },
+    "recommended_tool": {
+      "type": "string"
+    },
+    "workflow_steps": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "intent",
+    "confidence",
+    "recommended_tool",
+    "workflow_steps"
   ],
   "type": "object"
 }

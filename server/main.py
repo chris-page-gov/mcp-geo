@@ -142,8 +142,8 @@ def metrics():
     return FastAPIResponse(content=body, media_type="text/plain; version=0.0.4")
 
 # Health check endpoint
-@app.get("/healthz")
-def healthz():
+@app.get("/health")
+def health():
     return {"status": "OK"}
 
 

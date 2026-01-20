@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 992f80bb
+Timestamp: 2026-01-20T20:22:27.731497
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Plan a route from Coventry to London"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: route_planning
+Confidence: 1.0
+Recommended Tool: os_apps.render_route_planner
+Workflow Steps: ['os_apps.render_route_planner']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_apps.render_route_planner
+········································
+Timestamp: 2026-01-20T20:22:27.736345
+Duration: 2.3ms
+Status: SUCCESS
+
+Inputs:
+{'startLat': 52.4081, 'startLng': -1.5106, 'endLat': 51.5074, 'endLng': -0.1278}
+
+Outputs:
+{'status': 'ready', 'config': {'start': {'lat': 52.4081, 'lng': -1.5106}, 'end': {'lat': 51.5074, 'lng': -0.1278}}, 'instructions': 'Open the route planner to set start and end points and view directions.', 'uiResourceUris': ['ui://mcp-geo/route-planner'], '_meta': {'uiResourceUris': ['ui://mcp-geo/route-planner'], 'audience': ['user']}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Plan a route from Coventry to London", "intent": "route_planning", "confidence": 1.0, "recommended_tool": "os_apps.render_route_planner", "recommended_parameters": {}, "explanation": "Open the route planner to choose start/end points.", "workflow_steps": ["os_apps.render_route_planner"], "alternative_tools": ["os_maps.render"], "guidance": "Use the route planner widget to set start/end coordinates."}}, {"tool": "os_apps.render_route_planner", "response": {"status": "ready", "config": {"start": {"lat": 52.4081, "lng": -1.5106}, "end": {"lat": 51.5074, "lng": -0.1278}}, "instructions": "Open the route planner to set start and end points and view directions.", "uiResourceUris": ["ui://mcp-geo/route-planner"], "_meta": {"uiResourceUris": ["ui://mcp-geo/route-planner"], "audience": ["user"]}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 4.9ms
+Success: True

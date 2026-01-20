@@ -1,0 +1,1763 @@
+{
+  "timestamp": "2026-01-20T20:49:48.909786",
+  "summary": {
+    "total_questions": 33,
+    "total_score": 2996,
+    "percentage": 90.78787878787878
+  },
+  "results": [
+    {
+      "question_id": "B001",
+      "question": "Find Westminster",
+      "expected_intent": "place_lookup",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "admin_lookup.find_by_name"
+      ],
+      "duration_ms": 6.804704666137695,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (place_lookup) with high confidence (0.80)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B002",
+      "question": "UPRNs for SW1A 1AA",
+      "expected_intent": "address_lookup",
+      "detected_intent": "address_lookup",
+      "confidence": 0.95,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_places.by_postcode"
+      ],
+      "duration_ms": 208.2538604736328,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (address_lookup) with high confidence (0.95)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B003",
+      "question": "Lookup UPRN 100023336959",
+      "expected_intent": "address_lookup",
+      "detected_intent": "address_lookup",
+      "confidence": 0.95,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_places.by_uprn"
+      ],
+      "duration_ms": 175.60935020446777,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (address_lookup) with high confidence (0.95)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B004",
+      "question": "Find named features for Oxford",
+      "expected_intent": "feature_search",
+      "detected_intent": "feature_search",
+      "confidence": 1.0,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_names.find"
+      ],
+      "duration_ms": 568.3441162109375,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (feature_search) with high confidence (1.00)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B005",
+      "question": "Vector tiles descriptor",
+      "expected_intent": "vector_tiles",
+      "detected_intent": "vector_tiles",
+      "confidence": 0.9,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_vector_tiles.descriptor"
+      ],
+      "duration_ms": 7.904291152954102,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (vector_tiles) with high confidence (0.90)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B006",
+      "question": "Static map descriptor for Westminster bbox",
+      "expected_intent": "map_render",
+      "detected_intent": "map_render",
+      "confidence": 0.85,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_maps.render"
+      ],
+      "duration_ms": 4.859209060668945,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (map_render) with high confidence (0.85)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B007",
+      "question": "List available ONS observation dimensions",
+      "expected_intent": "dataset_discovery",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "ons_data.dimensions"
+      ],
+      "duration_ms": 4.621744155883789,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected dataset_discovery, got place_lookup"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B008",
+      "question": "Search ONS codes for GDP",
+      "expected_intent": "dataset_discovery",
+      "detected_intent": "statistics",
+      "confidence": 0.83,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "ons_search.query"
+      ],
+      "duration_ms": 3.6706924438476562,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected dataset_discovery, got statistics"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B009",
+      "question": "Open a map so I can select wards",
+      "expected_intent": "interactive_selection",
+      "detected_intent": "interactive_selection",
+      "confidence": 0.9,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_geography_selector"
+      ],
+      "duration_ms": 4.343509674072266,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (interactive_selection) with high confidence (0.90)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "B010",
+      "question": "Open the statistics dashboard for Westminster",
+      "expected_intent": "area_comparison",
+      "detected_intent": "statistics",
+      "confidence": 0.83,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_statistics_dashboard"
+      ],
+      "duration_ms": 3.0858516693115234,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected area_comparison, got statistics"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I001",
+      "question": "Which administrative areas contain 51.5010,-0.1416?",
+      "expected_intent": "place_lookup",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "admin_lookup.containing_areas"
+      ],
+      "duration_ms": 3.7293434143066406,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (place_lookup) with high confidence (0.80)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I002",
+      "question": "Show the hierarchy for ward E05000644",
+      "expected_intent": "place_lookup",
+      "detected_intent": "unknown",
+      "confidence": 0.0,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "admin_lookup.reverse_hierarchy"
+      ],
+      "duration_ms": 2.3467540740966797,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected place_lookup, got unknown"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I003",
+      "question": "Get the boundary bbox for Westminster",
+      "expected_intent": "boundary_fetch",
+      "detected_intent": "boundary_fetch",
+      "confidence": 0.85,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "admin_lookup.find_by_name",
+        "admin_lookup.area_geometry"
+      ],
+      "duration_ms": 4.197835922241211,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (boundary_fetch) with high confidence (0.85)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 3/3 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I004",
+      "question": "Addresses within a small Westminster bbox",
+      "expected_intent": "address_lookup",
+      "detected_intent": "address_lookup",
+      "confidence": 0.8,
+      "score": 70,
+      "percentage": 70.0,
+      "level": "acceptable",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_places.within"
+      ],
+      "duration_ms": 174.24869537353516,
+      "error": "OS_API_ERROR",
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (address_lookup) with high confidence (0.80)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 0,
+          "max_points": 20,
+          "level": "fail",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 0,
+          "max_points": 10,
+          "level": "fail",
+          "details": "Unhandled errors"
+        }
+      ]
+    },
+    {
+      "question_id": "I005",
+      "question": "Nearest addresses to 51.5034,-0.1276",
+      "expected_intent": "address_lookup",
+      "detected_intent": "address_lookup",
+      "confidence": 0.8,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_places.nearest"
+      ],
+      "duration_ms": 199.25594329833984,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (address_lookup) with high confidence (0.80)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I006",
+      "question": "Resolve linked IDs for UPRN 100021892956",
+      "expected_intent": "linked_ids",
+      "detected_intent": "address_lookup",
+      "confidence": 0.95,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_linked_ids.get"
+      ],
+      "duration_ms": 281.2998294830322,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected linked_ids, got address_lookup"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I007",
+      "question": "Find building features in a Westminster bbox",
+      "expected_intent": "feature_search",
+      "detected_intent": "feature_search",
+      "confidence": 1.0,
+      "score": 90,
+      "percentage": 90.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_features.query"
+      ],
+      "duration_ms": 155.08270263671875,
+      "error": "OS_API_ERROR",
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (feature_search) with high confidence (1.00)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 0,
+          "max_points": 10,
+          "level": "fail",
+          "details": "Unhandled errors"
+        }
+      ]
+    },
+    {
+      "question_id": "I008",
+      "question": "Show two ONS observations for UK GDPV",
+      "expected_intent": "statistics",
+      "detected_intent": "unknown",
+      "confidence": 0.0,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "ons_data.query"
+      ],
+      "duration_ms": 7.100582122802734,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected statistics, got unknown"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I009",
+      "question": "Create an ONS filter for UK GDPV 2024 Q1-Q2",
+      "expected_intent": "statistics",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "ons_data.create_filter",
+        "ons_data.get_filter_output"
+      ],
+      "duration_ms": 8.218526840209961,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected statistics, got place_lookup"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 3/3 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "I010",
+      "question": "Plan a route from Coventry to London",
+      "expected_intent": "route_planning",
+      "detected_intent": "route_planning",
+      "confidence": 1.0,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_route_planner"
+      ],
+      "duration_ms": 4.864931106567383,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (route_planning) with high confidence (1.00)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "A001",
+      "question": "Compare wellbeing between Westminster and Greater London",
+      "expected_intent": "area_comparison",
+      "detected_intent": "area_comparison",
+      "confidence": 0.9,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_statistics_dashboard"
+      ],
+      "duration_ms": 4.250049591064453,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (area_comparison) with high confidence (0.90)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "A002",
+      "question": "Select an OA in Westminster and fetch its boundary",
+      "expected_intent": "interactive_selection",
+      "detected_intent": "interactive_selection",
+      "confidence": 0.9,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_geography_selector",
+        "admin_lookup.area_geometry"
+      ],
+      "duration_ms": 6.234884262084961,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (interactive_selection) with high confidence (0.90)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 3/3 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "A003",
+      "question": "Inspect an NGD feature id",
+      "expected_intent": "feature_search",
+      "detected_intent": "feature_search",
+      "confidence": 1.0,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_feature_inspector"
+      ],
+      "duration_ms": 3.0488967895507812,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (feature_search) with high confidence (1.00)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "A004",
+      "question": "Build a map stack for Westminster (tiles + static)",
+      "expected_intent": "map_render",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_vector_tiles.descriptor",
+        "os_maps.render"
+      ],
+      "duration_ms": 3.730297088623047,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected map_render, got place_lookup"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 3/3 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "A005",
+      "question": "Find tools related to postcode search",
+      "expected_intent": "unknown",
+      "detected_intent": "unknown",
+      "confidence": 0.0,
+      "score": 90,
+      "percentage": 90.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "tools/search"
+      ],
+      "duration_ms": 3.401041030883789,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 15,
+          "max_points": 25,
+          "level": "acceptable",
+          "details": "Correct intent (unknown) with low confidence (0.00)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "A006",
+      "question": "Fetch the MCP Geo skills guide",
+      "expected_intent": "unknown",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 75,
+      "percentage": 75.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "resources/get"
+      ],
+      "duration_ms": 4.908084869384766,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 0,
+          "max_points": 25,
+          "level": "fail",
+          "details": "Wrong intent: expected unknown, got place_lookup"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "E001",
+      "question": "Lookup postcode ZZ99ZZ",
+      "expected_intent": "address_lookup",
+      "detected_intent": "address_lookup",
+      "confidence": 0.95,
+      "score": 80,
+      "percentage": 80.0,
+      "level": "good",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_places.by_postcode"
+      ],
+      "duration_ms": 1215.6035900115967,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (address_lookup) with high confidence (0.95)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 0,
+          "max_points": 20,
+          "level": "fail",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "E002",
+      "question": "Render a map with invalid bbox values",
+      "expected_intent": "map_render",
+      "detected_intent": "map_render",
+      "confidence": 0.85,
+      "score": 97,
+      "percentage": 97.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_maps.render"
+      ],
+      "duration_ms": 3.316640853881836,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (map_render) with high confidence (0.85)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 7,
+          "max_points": 10,
+          "level": "good",
+          "details": "Errors handled gracefully"
+        }
+      ]
+    },
+    {
+      "question_id": "E003",
+      "question": "Fetch boundary for unknown area id",
+      "expected_intent": "boundary_fetch",
+      "detected_intent": "boundary_fetch",
+      "confidence": 0.85,
+      "score": 97,
+      "percentage": 97.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "admin_lookup.area_geometry"
+      ],
+      "duration_ms": 2.5415420532226562,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (boundary_fetch) with high confidence (0.85)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 7,
+          "max_points": 10,
+          "level": "good",
+          "details": "Errors handled gracefully"
+        }
+      ]
+    },
+    {
+      "question_id": "E004",
+      "question": "Fetch an unknown ONS filter output",
+      "expected_intent": "statistics",
+      "detected_intent": "statistics",
+      "confidence": 0.83,
+      "score": 97,
+      "percentage": 97.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "ons_data.get_filter_output"
+      ],
+      "duration_ms": 2.7446746826171875,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (statistics) with high confidence (0.83)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 7,
+          "max_points": 10,
+          "level": "good",
+          "details": "Errors handled gracefully"
+        }
+      ]
+    },
+    {
+      "question_id": "M001",
+      "question": "St James's",
+      "expected_intent": "place_lookup",
+      "detected_intent": "place_lookup",
+      "confidence": 0.8,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "admin_lookup.find_by_name"
+      ],
+      "duration_ms": 2.621889114379883,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (place_lookup) with high confidence (0.80)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "M002",
+      "question": "Westminster data",
+      "expected_intent": "statistics",
+      "detected_intent": "statistics",
+      "confidence": 0.83,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "ons_data.query"
+      ],
+      "duration_ms": 2.5937557220458984,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (statistics) with high confidence (0.83)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    },
+    {
+      "question_id": "M003",
+      "question": "Select Westminster ward",
+      "expected_intent": "interactive_selection",
+      "detected_intent": "interactive_selection",
+      "confidence": 0.9,
+      "score": 100,
+      "percentage": 100.0,
+      "level": "excellent",
+      "tool_calls": [
+        "os_mcp.route_query",
+        "os_apps.render_geography_selector"
+      ],
+      "duration_ms": 2.684354782104492,
+      "error": null,
+      "dimensions": [
+        {
+          "dimension": "intent_recognition",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Correct intent (interactive_selection) with high confidence (0.90)"
+        },
+        {
+          "dimension": "tool_selection",
+          "points": 25,
+          "max_points": 25,
+          "level": "excellent",
+          "details": "Used 2/2 required tools"
+        },
+        {
+          "dimension": "efficiency",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Within expected tool calls"
+        },
+        {
+          "dimension": "response_quality",
+          "points": 20,
+          "max_points": 20,
+          "level": "excellent",
+          "details": "Response keyword/value coverage"
+        },
+        {
+          "dimension": "error_handling",
+          "points": 10,
+          "max_points": 10,
+          "level": "excellent",
+          "details": "No errors encountered"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+MCP Geo Evaluation Benchmark
+timestamp: 2026-01-20T20:49:48.909786
+questions: 33
+min_ms: 2.35
+median_ms: 4.62
+mean_ms: 93.50
+p90_ms: 208.25
+p95_ms: 568.34
+max_ms: 1215.60
