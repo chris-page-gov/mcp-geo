@@ -13,6 +13,23 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - (none)
 
+## [0.2.3] - 2026-01-21
+### Added
+- MCP stdio trace proxy `scripts/mcp_stdio_trace_proxy.py` for JSON-RPC traffic capture.
+- UI interaction logging tool `os_apps.log_event` with `UI_EVENT_LOG_PATH`.
+- Client tracing guide `docs/client_trace_strategy.md` covering MCP + UI logs.
+- Dockerfile + `.dockerignore` for containerized STDIO usage, plus Docker client config docs.
+
+### Changed
+- Geography selector MCP-App emits UI interaction events for tracing.
+
+### Fixed
+- STDIO adapter auto-detects JSON line framing vs Content-Length to avoid client parse errors.
+- STDIO initialize response now includes protocol version and server info with spec-style capabilities.
+- STDIO tool names normalized to Claude-compatible pattern while still accepting original dotted names.
+- `ons_data.create_filter` no longer marked read-only in tool annotations.
+- STDIO adapter now accepts `arguments` payloads for `tools/call` (MCP spec compatibility).
+
 ## [0.2.2] - 2026-01-20
 ### Breaking
 - Health check endpoint renamed to `/health` (was `/healthz`).

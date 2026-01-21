@@ -30,6 +30,41 @@ Then visit:
 
 Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
 
+## Docker (STDIO / Claude Desktop)
+Build the image:
+```bash
+docker build -t mcp-geo-server .
+```
+
+Claude Desktop config example (STDIO transport):
+```json
+{
+  "mcpServers": {
+    "mcp-geo": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "OS_API_KEY=your-api-key-here",
+        "-e",
+        "ONS_LIVE_ENABLED=true",
+        "mcp-geo-server"
+      ]
+    }
+  }
+}
+```
+
+Optional HTTP transport:
+```bash
+docker run --rm -p 8000:8000 \
+  -e OS_API_KEY=your-api-key-here \
+  mcp-geo-server \
+  uvicorn server.main:app --host 0.0.0.0 --port 8000
+```
+
 ## Tutorial
 
 See [docs/tutorial.md](docs/tutorial.md) for an evaluation-style walkthrough covering tool discovery, admin lookup, OS tools, ONS tools, resources/ETags, and STDIO.
@@ -37,6 +72,11 @@ See [docs/tutorial.md](docs/tutorial.md) for an evaluation-style walkthrough cov
 ## Evaluation
 
 See [docs/evaluation.md](docs/evaluation.md) for the question suite, rubric, and harness usage.
+
+## Client Tracing
+
+See [docs/client_trace_strategy.md](docs/client_trace_strategy.md) for MCP traffic
+and MCP-Apps UI interaction capture using the stdio trace proxy.
 
 ## Tool Catalog (Epics B–D)
 Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.

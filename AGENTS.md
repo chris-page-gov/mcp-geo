@@ -82,10 +82,17 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - Each PR must: update `CHANGELOG.md`, add/adjust docs, include/adjust tests.
 - Avoid bundling unrelated refactors with feature delivery.
 
-## Release Process (Future)
+## Release Process (Publish a Version)
 
-- When stable: introduce GitHub Actions workflow for tagging & publishing (not present yet—add `.github/workflows/release.yml`).
-- Version bump: update `pyproject.toml`; optionally add `__version__` in `server/__init__.py`.
+Definition of "publish a version" in this repo:
+- Update versions in `pyproject.toml` and `server/__init__.py`.
+- Move the `[Unreleased]` section in `CHANGELOG.md` into a new dated release.
+- Add `RELEASE_NOTES/<version>.md` (match the changelog summary).
+- Run tests (`pytest -q`) and confirm coverage gate passes.
+- Create a git tag `v<version>` that points at the release commit.
+- Optional but recommended: build the Docker image (`docker build -t mcp-geo-server .`).
+
+If you need CI automation later, add `.github/workflows/release.yml` to formalize the above.
 
 ## Security & Configuration
 
@@ -105,6 +112,13 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - Do not introduce new dependencies without updating `pyproject.toml` and rationale in PR.
 - Prefer incremental refactors (extract functions before rewriting blocks).
 - If adding a tool: include JSON schema for request/response in docstring.
+
+## MCP Client Interop Learnings
+
+- Claude uses `tools/call` with `params.name` + `params.arguments` (not `args`); support both.
+- Claude expects tool names matching `^[a-zA-Z0-9_-]{1,64}$`; normalize dotted names for stdio list/search and accept originals for calls.
+- STDIO framing can be JSON lines or Content-Length; auto-detect and allow `MCP_STDIO_FRAMING=line` to force.
+- Do not respond to JSON-RPC notifications (no `id`) to avoid client disconnects.
 
 ## Gaps & Immediate Action Items
 
@@ -130,4 +144,4 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 
 ---
 
-Last updated: 2025-11-03
+Last updated: 2026-01-21

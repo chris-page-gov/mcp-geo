@@ -49,7 +49,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "ons_data": ["ons", "statistics", "observations", "dataset"],
     "ons_search": ["ons", "search", "dataset", "discover"],
     "ons_codes": ["codes", "dimension", "options"],
-    "os_apps": ["ui", "widget", "interactive", "mcp-apps"],
+    "os_apps": ["ui", "widget", "interactive", "mcp-apps", "event", "log", "telemetry"],
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
 
@@ -63,6 +63,7 @@ ALWAYS_LOADED_TOOLS: Set[str] = {
     "admin_lookup.find_by_name",
     "os_mcp.descriptor",
     "os_apps.render_geography_selector",
+    "os_apps.log_event",
 }
 
 EXTERNAL_PREFIXES: Set[str] = {
@@ -76,8 +77,8 @@ EXTERNAL_PREFIXES: Set[str] = {
     "ons_search",
 }
 
-STATEFUL_TOOLS: Set[str] = set()
-NON_IDEMPOTENT_TOOLS: Set[str] = set()
+STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter"}
+NON_IDEMPOTENT_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter"}
 
 
 def _tokenize(text: str) -> list[str]:

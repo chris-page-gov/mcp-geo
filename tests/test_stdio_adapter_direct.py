@@ -1,4 +1,4 @@
-import io, json
+import io, json, re
 from server import stdio_adapter
 
 def frame(msg: dict) -> bytes:
@@ -34,3 +34,17 @@ def test_direct_main_initialize_and_exit():
     if 'result' not in first and first.get('method') == 'log':  # skip log notification
         first = read_one(buf)
     assert first.get('result', {}).get('server') == 'mcp-geo'
+
+
+def test_tool_names_sanitized_and_resolvable():
+    result = stdio_adapter.handle_list_tools({})
+    names = [t["name"] for t in result["tools"]]
+    assert any(name == "os_places_by_postcode" for name in names)
+    assert all(re.match(r"^[A-Za-z0-9_-]{1,64}$", name) for name in names)
+    call = stdio_adapter.handle_call_tool({"tool": "ons_data_dimensions", "args": {}})
+    assert call.get("ok") is True
+
+
+def test_call_tool_accepts_arguments_payload():
+    call = stdio_adapter.handle_call_tool({"name": "ons_data_dimensions", "arguments": {}})
+    assert call.get("ok") is True

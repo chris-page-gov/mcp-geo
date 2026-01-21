@@ -505,6 +505,7 @@
         selection: null,
         hostReady: false,
         vectorTiles: null,
+        sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
 
       const statusEl = document.getElementById("status");
@@ -548,6 +549,7 @@
             state.mode = mode;
             document.querySelectorAll(".segment button").forEach((b) => b.classList.remove("active"));
             btn.classList.add("active");
+            logUiEvent("mode_change", { mode: mode.id });
           });
           if (mode === state.mode) {
             btn.classList.add("active");
@@ -669,6 +671,7 @@
             state.map.setLayoutProperty(id, "visibility", isVisible ? "visible" : "none");
           }
         });
+        logUiEvent("layer_toggle", { layer: layerId, enabled: isVisible });
       }
 
       function featureCollection(features) {
@@ -754,6 +757,7 @@
         if (item.addresses) {
           setAddresses(item.addresses);
         }
+        logUiEvent("select_result", summarizeSelection(item));
       }
 
       function normalizePostcode(raw) {
@@ -768,6 +772,7 @@
         const level = levelSelect.value;
         const mode = state.mode.id;
         let results = [];
+        logUiEvent("search", { query, mode, level });
 
         try {
           if (mode === "postcode") {
@@ -843,7 +848,45 @@
         return mockToolCall(tool, args);
       }
 
+      function summarizeSelection(item) {
+        if (!item) {
+          return {};
+        }
+        const summary = {
+          id: item.id || item.meta || null,
+          name: item.name || item.title || null,
+          level: item.level || null,
+        };
+        if (item.addresses && item.addresses.length) {
+          summary.uprn = item.addresses[0].uprn || null;
+        }
+        return summary;
+      }
+
+      async function logUiEvent(eventType, payload) {
+        if (!state.hostReady) {
+          return;
+        }
+        try {
+          await requestTool("os_apps.log_event", {
+            eventType,
+            source: "geography-selector",
+            sessionId: state.sessionId,
+            payload: payload || {},
+            context: {
+              mode: state.mode?.id || null,
+              level: levelSelect.value || null,
+            },
+          });
+        } catch (err) {
+          return;
+        }
+      }
+
       function mockToolCall(tool, args) {
+        if (tool === "os_apps.log_event") {
+          return { status: "logged" };
+        }
         if (tool === "admin_lookup.find_by_name") {
           return { results: sampleAreas.filter((a) => a.name.toLowerCase().includes(args.text.toLowerCase())) };
         }
@@ -917,6 +960,7 @@
       document.getElementById("sendSelection").addEventListener("click", () => {
         if (state.selection) {
           postToHost({ type: "mcp-app:selection", selection: state.selection });
+          logUiEvent("send_selection", summarizeSelection(state.selection));
         }
       });
       apiKeyInput.addEventListener("change", applyVectorTiles);
@@ -932,6 +976,7 @@
           applyConfig(event.data.config || event.data.payload || {});
           applyVectorTiles();
           bootstrapTiles();
+          logUiEvent("host_ready", { name: event.data.name || "mcp-app" });
         }
         if (event.data.type === "mcp-app:tool-result") {
           const pending = pendingCalls.get(event.data.id);

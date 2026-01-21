@@ -10,6 +10,20 @@
       },
       "autoApprove": ["tools", "resources"]
     },
+    "mcp-geo-docker": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "OS_API_KEY=${env:OS_API_KEY}",
+        "-e",
+        "ONS_LIVE_ENABLED=${env:ONS_LIVE_ENABLED}",
+        "mcp-geo-server"
+      ],
+      "autoApprove": ["tools", "resources"]
+    },
     "mcp-geo-http": {
       "url": "http://localhost:8000",
       "autoApprove": ["tools", "resources"]

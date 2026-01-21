@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     ONS_CACHE_TTL: float = 60.0
     ONS_CACHE_SIZE: int = 256
     ONS_LIVE_ENABLED: bool = False
+    UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

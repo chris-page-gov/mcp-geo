@@ -1,0 +1,17 @@
+.env
+.env.*
+.git
+.gitignore
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.vscode
+__pycache__
+build
+dist
+logs
+mcp_geo.egg-info
+node_modules
+submodules
+tests
+docs

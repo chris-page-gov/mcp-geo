@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,6 +38,7 @@ from server.mcp.tool_search import get_tool_metadata, search_tools
 from server import __version__ as SERVER_VERSION
 
 JSONRPC = "2.0"
+PROTOCOL_VERSION = "2025-06-18"
 
 RESOURCE_LIST: List[dict[str, Any]] = [
     {
@@ -302,10 +305,60 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
         }
     raise LookupError(f"Unknown resource '{name}'")
 
-def _write_message(payload: Dict[str, Any]) -> None:
+def _resolve_framing() -> Optional[str]:
+    raw = os.environ.get("MCP_STDIO_FRAMING", "").strip().lower()
+    if raw in {"content-length", "content_length", "contentlength", "lsp"}:
+        return "content-length"
+    if raw in {"line", "lines", "jsonl", "newline"}:
+        return "line"
+    return None
+
+
+def _bool_env(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _sanitize_tool_name(name: str, seen: Dict[str, str]) -> str:
+    base = re.sub(r"[^A-Za-z0-9_-]", "_", name)
+    if not base:
+        base = "tool"
+    candidate = base
+    if len(candidate) > 64:
+        digest = hashlib.sha1(name.encode()).hexdigest()[:8]
+        max_prefix = 64 - 1 - len(digest)
+        candidate = f"{candidate[:max_prefix]}_{digest}"
+    if candidate in seen and seen[candidate] != name:
+        digest = hashlib.sha1(name.encode()).hexdigest()[:8]
+        max_prefix = 64 - 1 - len(digest)
+        candidate = f"{base[:max_prefix]}_{digest}"
+    return candidate
+
+
+def _build_tool_name_maps() -> tuple[Dict[str, str], Dict[str, str]]:
+    original_to_sanitized: Dict[str, str] = {}
+    sanitized_to_original: Dict[str, str] = {}
+    for tool in all_tools():
+        original = tool.name
+        sanitized = _sanitize_tool_name(original, sanitized_to_original)
+        original_to_sanitized[original] = sanitized
+        sanitized_to_original[sanitized] = original
+    return original_to_sanitized, sanitized_to_original
+
+
+def _resolve_tool_name(name: str) -> str:
+    if get_tool(name):
+        return name
+    _, sanitized_to_original = _build_tool_name_maps()
+    return sanitized_to_original.get(name, name)
+
+
+def _write_message(payload: Dict[str, Any], framing: str) -> None:
     data = json.dumps(payload, separators=(",", ":"))
     try:
-        sys.stdout.write(f"Content-Length: {len(data)}\r\n\r\n{data}")
+        if framing == "line":
+            sys.stdout.write(f"{data}\n")
+        else:
+            sys.stdout.write(f"Content-Length: {len(data)}\r\n\r\n{data}")
         sys.stdout.flush()
     except BrokenPipeError:  # pragma: no cover
         pass
@@ -319,31 +372,40 @@ def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[
         err["data"] = data
     return {"jsonrpc": JSONRPC, "id": msg_id, "error": err}
 
-def handle_initialize(_params: Dict[str, Any]) -> Any:
+def handle_initialize(params: Dict[str, Any]) -> Any:
+    requested = params.get("protocolVersion")
+    protocol_version = requested if isinstance(requested, str) else PROTOCOL_VERSION
     return {
+        "protocolVersion": protocol_version,
+        "serverInfo": {"name": "mcp-geo", "version": SERVER_VERSION},
+        "capabilities": {
+            "tools": {"list": True, "call": True, "search": True},
+            "resources": {"list": True, "read": True, "describe": True},
+            "toolSearch": {"query": True},
+            "uiResources": {"list": True},
+            "skills": {"list": True},
+        },
         "server": "mcp-geo",
         "version": SERVER_VERSION,
-        "capabilities": {
-            "tools": True,
-            "resources": True,
-            "toolSearch": True,
-            "uiResources": True,
-            "skills": True,
-        },
     }
 
 def handle_list_tools(_params: Dict[str, Any]) -> Any:
     tool_entries: list[dict[str, Any]] = []
+    original_to_sanitized, _ = _build_tool_name_maps()
     for t in all_tools():
         meta = get_tool_metadata(t)
+        name = original_to_sanitized.get(t.name, t.name)
+        annotations = dict(meta.get("annotations", {}))
+        if name != t.name:
+            annotations["originalName"] = t.name
         tool_entries.append(
             {
-                "name": t.name,
+                "name": name,
                 "description": t.description,
                 "version": t.version,
                 "inputSchema": t.input_schema,
                 "outputSchema": t.output_schema,
-                "annotations": meta.get("annotations", {}),
+                "annotations": annotations,
                 "category": meta.get("category"),
                 "keywords": meta.get("keywords", []),
                 "deferLoading": meta.get("defer_loading", False),
@@ -376,16 +438,28 @@ def handle_search_tools(params: Dict[str, Any]) -> Any:
         category=category,
         include_schemas=include_schemas,
     )
+    original_to_sanitized, _ = _build_tool_name_maps()
+    for entry in results:
+        original = entry.get("name")
+        if not isinstance(original, str):
+            continue
+        sanitized = original_to_sanitized.get(original, original)
+        if sanitized != original:
+            annotations = dict(entry.get("annotations", {}) or {})
+            annotations["originalName"] = original
+            entry["annotations"] = annotations
+        entry["name"] = sanitized
     return {"tools": results, "count": len(results), "mode": mode}
 
 def handle_call_tool(params: Dict[str, Any]) -> Any:
     name = params.get("tool") or params.get("name")
     if not isinstance(name, str):
         raise ValueError("Missing tool name")
-    tool = get_tool(name)
+    resolved_name = _resolve_tool_name(name)
+    tool = get_tool(resolved_name)
     if not tool:
         raise LookupError(f"Unknown tool '{name}'")
-    payload = params.get("args") or params.get("payload") or {}
+    payload = params.get("args") or params.get("arguments") or params.get("payload") or {}
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
     status, data = tool.call(payload)
@@ -408,12 +482,14 @@ HANDLERS: Dict[str, Any] = {
     "shutdown": handle_shutdown,
 }
 
-def _read_headers(stdin) -> Optional[int]:
+def _read_headers(stdin, first_line: Optional[str] = None) -> tuple[Optional[int], Optional[str]]:
     content_length: Optional[int] = None
+    line = first_line
     while True:
-        line = stdin.readline()
+        if line is None:
+            line = stdin.readline()
         if line == "":
-            return None  # EOF
+            return None, None
         if line in ("\n", "\r\n"):
             break
         lower = line.lower()
@@ -421,15 +497,77 @@ def _read_headers(stdin) -> Optional[int]:
             try:
                 content_length = int(line.split(":", 1)[1].strip())
             except ValueError:
-                return None
-    return content_length
+                return None, "Invalid Content-Length"
+        line = None
+    if content_length is None:
+        return None, "Missing Content-Length"
+    return content_length, None
+
+
+def _read_message(
+    stdin: TextIO,
+    framing: Optional[str],
+) -> tuple[Optional[Dict[str, Any]], Optional[str], Optional[str]]:
+    if framing == "content-length":
+        length, error = _read_headers(stdin)
+        if error:
+            return None, framing, error
+        if length is None:
+            return None, framing, None
+        body = stdin.read(length)
+        if not body:
+            return None, framing, None
+        try:
+            return json.loads(body), framing, None
+        except json.JSONDecodeError:
+            return None, framing, "Parse error"
+    if framing == "line":
+        while True:
+            line = stdin.readline()
+            if line == "":
+                return None, framing, None
+            text = line.strip()
+            if not text:
+                continue
+            try:
+                return json.loads(text), framing, None
+            except json.JSONDecodeError:
+                return None, framing, "Parse error"
+    while True:
+        line = stdin.readline()
+        if line == "":
+            return None, framing, None
+        if line in ("\n", "\r\n"):
+            continue
+        if line.lower().startswith("content-length:"):
+            framing = "content-length"
+            length, error = _read_headers(stdin, first_line=line)
+            if error:
+                return None, framing, error
+            if length is None:
+                return None, framing, None
+            body = stdin.read(length)
+            if not body:
+                return None, framing, None
+            try:
+                return json.loads(body), framing, None
+            except json.JSONDecodeError:
+                return None, framing, "Parse error"
+        framing = "line"
+        text = line.strip()
+        if not text:
+            continue
+        try:
+            return json.loads(text), framing, None
+        except json.JSONDecodeError:
+            return None, framing, "Parse error"
 
 def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> None:
     """Run adapter loop with optional injected streams (for unit tests).
 
     stdin/stdout may be injected StringIO objects in tests; in production they
-    default to process stdio. All responses are framed using Content-Length and
-    JSON-RPC 2.0 envelopes.
+    default to process stdio. Framing auto-detects Content-Length vs JSON lines;
+    set MCP_STDIO_FRAMING=content-length or MCP_STDIO_FRAMING=line to force.
     """
     if stdin is None:
         stdin = sys.stdin  # type: ignore[assignment]
@@ -438,27 +576,23 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
     orig_stdout = sys.stdout
     sys.stdout = stdout  # type: ignore
     try:
-        _write_message(
-            {
-                "jsonrpc": JSONRPC,
-                "method": "log",
-                "params": {"level": "info", "message": "mcp-geo stdio adapter starting"},
-            }
-        )
+        framing = _resolve_framing()
+        startup_log_pending = _bool_env("MCP_STDIO_LOG_STARTUP")
         while True:
-            length = _read_headers(stdin)
-            if length is None:
+            msg, framing, error = _read_message(stdin, framing)
+            if msg is None:
+                if error and framing:
+                    _write_message(_resp_error(None, -32700, error), framing)
+                    continue
                 break
-            body = stdin.read(length)
-            if not body:
-                break
-            try:
-                msg = json.loads(body)
-            except json.JSONDecodeError:
-                _write_message(_resp_error(None, -32700, "Parse error"))
-                continue
+            is_notification = msg.get("id") is None
             if msg.get("jsonrpc") != JSONRPC:
-                _write_message(_resp_error(msg.get("id"), -32600, "Invalid Request"))
+                if framing:
+                    if not is_notification:
+                        _write_message(
+                            _resp_error(msg.get("id"), -32600, "Invalid Request"),
+                            framing,
+                        )
                 continue
             method = msg.get("method")
             msg_id = msg.get("id")
@@ -466,36 +600,69 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
                 break
             handler = HANDLERS.get(method)
             if not handler:
-                _write_message(
-                    _resp_error(msg_id, -32601, f"Method not found: {method}")
-                )
+                if framing:
+                    if not is_notification:
+                        _write_message(
+                            _resp_error(msg_id, -32601, f"Method not found: {method}"),
+                            framing,
+                        )
                 continue
             # Preserve original type to validate; only default to empty dict when param key absent.
             params = msg.get("params")
             if params is None:
                 params = {}
             if not isinstance(params, dict):
-                _write_message(_resp_error(msg_id, -32602, "Invalid params"))
+                if framing:
+                    if not is_notification:
+                        _write_message(_resp_error(msg_id, -32602, "Invalid params"), framing)
                 continue
             try:
                 result = handler(params)
-                _write_message(_resp_success(msg_id, result))
+                if framing:
+                    if not is_notification:
+                        _write_message(_resp_success(msg_id, result), framing)
             except LookupError as e:
-                _write_message(_resp_error(msg_id, 1001, str(e)))
+                if framing:
+                    if not is_notification:
+                        _write_message(_resp_error(msg_id, 1001, str(e)), framing)
             except ValueError as e:
-                _write_message(_resp_error(msg_id, 1002, str(e)))
+                if framing:
+                    if not is_notification:
+                        _write_message(_resp_error(msg_id, 1002, str(e)), framing)
             except TypeError as e:
-                _write_message(_resp_error(msg_id, 1003, str(e)))
+                if framing:
+                    if not is_notification:
+                        _write_message(_resp_error(msg_id, 1003, str(e)), framing)
             except Exception as e:  # pragma: no cover
-                _write_message(_resp_error(msg_id, -32603, f"Internal error: {e}"))
+                if framing:
+                    if not is_notification:
+                        _write_message(
+                            _resp_error(msg_id, -32603, f"Internal error: {e}"),
+                            framing,
+                        )
+            if startup_log_pending and framing:
+                _write_message(
+                    {
+                        "jsonrpc": JSONRPC,
+                        "method": "log",
+                        "params": {
+                            "level": "info",
+                            "message": "mcp-geo stdio adapter starting",
+                        },
+                    },
+                    framing,
+                )
+                startup_log_pending = False
         try:
-            _write_message(
-                {
-                    "jsonrpc": JSONRPC,
-                    "method": "log",
-                    "params": {"level": "info", "message": "adapter exiting"},
-                }
-            )
+            if framing and _bool_env("MCP_STDIO_LOG_STARTUP"):
+                _write_message(
+                    {
+                        "jsonrpc": JSONRPC,
+                        "method": "log",
+                        "params": {"level": "info", "message": "adapter exiting"},
+                    },
+                    framing,
+                )
         except Exception:  # pragma: no cover
             pass
     finally:

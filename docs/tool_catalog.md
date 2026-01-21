@@ -16,6 +16,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | ons_data.get_observation | 0.1.0 | Fetch a single observation by geography, measure, time (live or sample). |
 | ons_data.query | 0.1.0 | Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination). |
 | ons_search.query | 0.1.0 | Search sample ONS dimensions for code fragments. |
+| os_apps.log_event | 0.1.0 | Log MCP-Apps UI interaction events for tracing. |
 | os_apps.render_feature_inspector | 0.1.0 | Open the MCP-Apps feature inspector widget. |
 | os_apps.render_geography_selector | 0.1.0 | Open the MCP-Apps geography selector widget. |
 | os_apps.render_route_planner | 0.1.0 | Open the MCP-Apps route planner widget. |
@@ -693,6 +694,78 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "required": [
     "results",
     "count"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_apps.log_event
+
+**Description:** Log MCP-Apps UI interaction events for tracing.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "context": {
+      "type": "object"
+    },
+    "eventType": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "sessionId": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "number"
+    },
+    "tool": {
+      "const": "os_apps.log_event",
+      "type": "string"
+    }
+  },
+  "required": [
+    "eventType"
+  ],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "eventId": {
+      "type": "string"
+    },
+    "logPath": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "status",
+    "eventId",
+    "timestamp"
   ],
   "type": "object"
 }
@@ -1619,7 +1692,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ```json
 {
+  "additionalProperties": true,
   "properties": {
+    "provenance": {
+      "type": "object"
+    },
     "results": {
       "type": "array"
     }

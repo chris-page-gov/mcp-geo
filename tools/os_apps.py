@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import json
+import threading
+import time
+import uuid
+from pathlib import Path
 from typing import Any
 
+from server.config import settings
 from tools.registry import Tool, ToolResult, register
 
 _UI_URIS = {
@@ -10,6 +16,16 @@ _UI_URIS = {
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
 }
+_EVENT_LOG_LOCK = threading.Lock()
+_SENSITIVE_KEY_MARKERS = (
+    "api_key",
+    "apikey",
+    "authorization",
+    "auth",
+    "token",
+    "secret",
+    "password",
+)
 
 
 def _error(message: str) -> ToolResult:
@@ -23,6 +39,117 @@ def _build_widget_response(uri: str, config: dict[str, Any], instructions: str) 
         "instructions": instructions,
         "uiResourceUris": [uri],
         "_meta": {"uiResourceUris": [uri], "audience": ["user"]},
+    }
+
+
+def _looks_sensitive(key: str) -> bool:
+    key_norm = key.lower()
+    if key_norm in _SENSITIVE_KEY_MARKERS:
+        return True
+    if key_norm.endswith("_key") or key_norm.endswith("_token"):
+        return True
+    if key_norm.startswith("bearer"):
+        return True
+    return False
+
+
+def _redact_payload(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        redacted: dict[str, Any] = {}
+        for key, value in payload.items():
+            if _looks_sensitive(str(key)):
+                redacted[key] = "***"
+            else:
+                redacted[key] = _redact_payload(value)
+        return redacted
+    if isinstance(payload, list):
+        return [_redact_payload(item) for item in payload]
+    return payload
+
+
+def _get_event_log_path() -> Path | None:
+    raw = getattr(settings, "UI_EVENT_LOG_PATH", "")
+    if not raw:
+        return None
+    return Path(raw)
+
+
+def _log_event(payload: dict[str, Any]) -> ToolResult:
+    """Log UI interaction events for MCP-Apps widgets.
+
+    Request schema:
+    {
+      "type": "object",
+      "properties": {
+        "eventType": {"type": "string"},
+        "source": {"type": "string"},
+        "payload": {"type": "object"},
+        "context": {"type": "object"},
+        "timestamp": {"type": "number"},
+        "sessionId": {"type": "string"}
+      },
+      "required": ["eventType"]
+    }
+
+    Response schema:
+    {
+      "type": "object",
+      "properties": {
+        "status": {"type": "string"},
+        "eventId": {"type": "string"},
+        "timestamp": {"type": "number"},
+        "logPath": {"type": ["string", "null"]}
+      },
+      "required": ["status", "eventId", "timestamp"]
+    }
+    """
+    event_type = payload.get("eventType")
+    if not isinstance(event_type, str) or not event_type.strip():
+        return _error("eventType must be a non-empty string")
+    source = payload.get("source")
+    if source is not None and not isinstance(source, str):
+        return _error("source must be a string")
+    context = payload.get("context")
+    if context is not None and not isinstance(context, dict):
+        return _error("context must be an object")
+    event_payload = payload.get("payload")
+    if event_payload is not None and not isinstance(event_payload, (dict, list, str, int, float, bool)):
+        return _error("payload must be JSON-serializable")
+    session_id = payload.get("sessionId")
+    if session_id is not None and not isinstance(session_id, str):
+        return _error("sessionId must be a string")
+    timestamp = payload.get("timestamp")
+    if timestamp is not None and not isinstance(timestamp, (int, float)):
+        return _error("timestamp must be a number")
+
+    event_id = uuid.uuid4().hex
+    event_ts = float(timestamp) if timestamp is not None else time.time()
+    record: dict[str, Any] = {
+        "eventId": event_id,
+        "eventType": event_type.strip(),
+        "source": source or "mcp-app",
+        "timestamp": event_ts,
+    }
+    if session_id:
+        record["sessionId"] = session_id
+    if context:
+        record["context"] = _redact_payload(context)
+    if event_payload is not None:
+        record["payload"] = _redact_payload(event_payload)
+
+    log_path = _get_event_log_path()
+    if log_path:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        line = json.dumps(record, ensure_ascii=True, default=str)
+        with _EVENT_LOG_LOCK:
+            with log_path.open("a", encoding="utf-8") as handle:
+                handle.write(line + "\n")
+
+    return 200, {
+        "status": "logged",
+        "eventId": event_id,
+        "timestamp": event_ts,
+        "logPath": str(log_path) if log_path else None,
     }
 
 
@@ -386,5 +513,37 @@ register(
             "required": ["status", "uiResourceUris"],
         },
         handler=_render_route_planner,
+    )
+)
+
+register(
+    Tool(
+        name="os_apps.log_event",
+        description="Log MCP-Apps UI interaction events for tracing.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_apps.log_event"},
+                "eventType": {"type": "string"},
+                "source": {"type": "string"},
+                "payload": {"type": "object"},
+                "context": {"type": "object"},
+                "timestamp": {"type": "number"},
+                "sessionId": {"type": "string"},
+            },
+            "required": ["eventType"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "status": {"type": "string"},
+                "eventId": {"type": "string"},
+                "timestamp": {"type": "number"},
+                "logPath": {"type": ["string", "null"]},
+            },
+            "required": ["status", "eventId", "timestamp"],
+        },
+        handler=_log_event,
     )
 )

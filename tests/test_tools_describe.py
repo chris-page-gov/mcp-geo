@@ -19,6 +19,7 @@ def test_tools_describe_all():
     data = resp.json()
     names = [t["name"] for t in data["tools"]]
     assert "os_places.by_postcode" in names
+    assert "ons_data.create_filter" in names
     # Ensure schemas present
     bp = next(t for t in data["tools"] if t["name"] == "os_places.by_postcode")
     assert "inputSchema" in bp and "outputSchema" in bp
@@ -27,6 +28,8 @@ def test_tools_describe_all():
     assert bp["annotations"].get("openWorldHint") is True
     assert "deferLoading" in bp
     assert "category" in bp
+    create_filter = next(t for t in data["tools"] if t["name"] == "ons_data.create_filter")
+    assert create_filter["annotations"].get("readOnlyHint") is not True
 
 
 def test_tools_describe_single():

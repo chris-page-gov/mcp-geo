@@ -28,6 +28,7 @@ curl -sS -o /dev/null -w 'health=%{http_code}\n' "$BASE_URL/health"
   If unset, OS-backed tools return `501` with `{ "code": "NO_API_KEY" }`.
 - `ONS_LIVE_ENABLED=true`: enables live ONS API access for `ons_data.*` when you supply `dataset`, `edition`, `version`.
   If unset/false, mcp-geo uses bundled sample data.
+- `UI_EVENT_LOG_PATH`: path to the MCP-Apps UI interaction log (default: `logs/ui-events.jsonl`).
 
 ## Client setup (MCP-capable clients)
 
@@ -56,6 +57,35 @@ Notes:
 - If your client supports `cwd`, set it to the repo root when using `./scripts/os-mcp`.
 - Remove `ONS_LIVE_ENABLED` or set it to `"false"` if you want sample ONS data only.
 - `mcp.json` includes a ready-to-copy entry using the same settings.
+- Claude Desktop enforces tool name patterns; the stdio adapter normalizes dotted names to underscores in list/search results. Use the names shown in your client (the server still accepts original names).
+
+### Docker STDIO config (Claude Desktop / Claude Code)
+
+Build the image from the repo root:
+```bash
+docker build -t mcp-geo-server .
+```
+
+Then use this client config:
+```json
+{
+  "mcpServers": {
+    "mcp-geo": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e",
+        "OS_API_KEY=your-api-key-here",
+        "-e",
+        "ONS_LIVE_ENABLED=true",
+        "mcp-geo-server"
+      ]
+    }
+  }
+}
+```
 
 ### Anthropic (Claude Desktop / Claude Code)
 
@@ -133,6 +163,11 @@ Notes for other clients:
 - Microsoft/OpenAI/Google MCP-capable clients can still use tool search; if they
   do not render MCP-Apps, they will receive `uiResourceUris` and can fall back
   to data-only flows.
+
+## Client tracing (tools + UI)
+
+For end-to-end tracing (tool search, tool calls, and MCP-Apps UI events), see
+`docs/client_trace_strategy.md`.
 
 ## How to call tools
 
