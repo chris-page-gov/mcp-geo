@@ -59,6 +59,25 @@ Notes:
 - `mcp.json` includes a ready-to-copy entry using the same settings.
 - Claude Desktop enforces tool name patterns; the stdio adapter normalizes dotted names to underscores in list/search results. Use the names shown in your client (the server still accepts original names).
 
+### HTTP /mcp (Streamable HTTP)
+
+The server exposes a native `/mcp` JSON-RPC endpoint for remote MCP clients (ChatGPT,
+Inspector, web apps, etc.).
+
+Initialize:
+```bash
+curl -sS "$BASE_URL/mcp" \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"1","method":"initialize","params":{}}'
+```
+
+Then call tools (reuse the `mcp-session-id` response header if you want a stable session):
+```bash
+curl -sS "$BASE_URL/mcp" \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"2","method":"tools/call","params":{"name":"ons_data_dimensions","arguments":{}}}'
+```
+
 ### Docker STDIO config (Claude Desktop / Claude Code)
 
 Build the image from the repo root:

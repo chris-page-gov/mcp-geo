@@ -34,12 +34,11 @@ That means a stdio-only server (typical Claude Desktop setup) needs a bridge (or
 Implementation plan: “map-geo + proxy logging” to OpenAI (ChatGPT) clients
 
 Architecture (simple, robust, debuggable)
-	1.	map-geo MCP server (your existing implementation)
-	2.	MCP Proxy (logging) in front of it (you already have this)
-	3.	Remote HTTP endpoint exposing /mcp using Streamable HTTP or HTTP/SSE
-	4.	Public HTTPS tunnel for local demos (ngrok or Cloudflare Tunnel)  ￼
-	5.	Validation harness: MCP Inspector (fastest way to debug before ChatGPT)  ￼
-	6.	ChatGPT developer mode connector pointing to https://…/mcp  ￼
+	1.	map-geo MCP server (native `/mcp` Streamable HTTP + existing /tools/* + /resources/*)
+	2.	MCP HTTP trace proxy in front of it (for ChatGPT traffic capture)
+	3.	Public HTTPS tunnel for local demos (ngrok)  ￼
+	4.	Validation harness: MCP Inspector (fastest way to debug before ChatGPT)  ￼
+	5.	ChatGPT developer mode connector pointing to https://…/mcp  ￼
 
 Why this works well
 	•	Inspector gives you immediate visibility into tool schemas, raw requests/responses, and UI resources.  ￼
@@ -69,14 +68,16 @@ Part A — One-time setup on a Mac (novice steps)
 Part B — Run the server locally (with logging proxy) and expose it over HTTPS
 
 Goal: end up with a public URL like https://something.example/mcp.
-	1.	Start map-geo behind your MCP Proxy
+	1.	Start map-geo behind the HTTP trace proxy
 
-	•	Start it exactly the way you do for Claude Desktop but ensure it’s available via an HTTP /mcp endpoint (either because map-geo supports HTTP directly, or because you run an HTTP bridge).
+	•	Start `uvicorn server.main:app --reload` and run the HTTP trace proxy:
+	  `python scripts/mcp_http_trace_proxy.py --upstream http://127.0.0.1:8000/mcp`
 	•	Sanity check: your logs should show tools/list and at least one tools/call when tested.
 
 	2.	Expose it publicly
 
 	•	Use either ngrok or Cloudflare Tunnel to expose your local /mcp endpoint to the public internet. OpenAI explicitly suggests these for local development.  ￼
+	•	Devcontainer note: run the server + proxy inside the container (ports 8000/8899 forwarded), then run ngrok on the host targeting `http://127.0.0.1:8899/mcp`.
 
 	3.	Verify in MCP Inspector (do this before ChatGPT)
 

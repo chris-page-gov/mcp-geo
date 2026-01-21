@@ -25,7 +25,7 @@
       "autoApprove": ["tools", "resources"]
     },
     "mcp-geo-http": {
-      "url": "http://localhost:8000",
+      "url": "http://localhost:8000/mcp",
       "autoApprove": ["tools", "resources"]
     }
   }

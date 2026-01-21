@@ -3,3 +3,15 @@
 	url = https://github.com/chris-page-gov/os-mcp
 	branch = geo-mcpi
 	ignore = untracked
+[submodule "docs/vendor/mcp/repos/modelcontextprotocol"]
+	path = docs/vendor/mcp/repos/modelcontextprotocol
+	url = https://github.com/modelcontextprotocol/modelcontextprotocol.git
+[submodule "docs/vendor/mcp/repos/ext-apps"]
+	path = docs/vendor/mcp/repos/ext-apps
+	url = https://github.com/modelcontextprotocol/ext-apps.git
+[submodule "docs/vendor/mcp/repos/inspector"]
+	path = docs/vendor/mcp/repos/inspector
+	url = https://github.com/modelcontextprotocol/inspector.git
+[submodule "docs/vendor/openai/repos/openai-apps-sdk-examples"]
+	path = docs/vendor/openai/repos/openai-apps-sdk-examples
+	url = https://github.com/openai/openai-apps-sdk-examples.git

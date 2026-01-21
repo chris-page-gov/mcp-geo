@@ -6,7 +6,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from server.mcp import playground, resources, tools
+from server.mcp import http_transport, playground, resources, tools
 from server.security import mask_in_text
 
 from .config import settings
@@ -113,6 +113,7 @@ async def add_correlation_id_and_log(request: Request, call_next: Callable[[Requ
 app.include_router(tools.router)
 app.include_router(resources.router)
 app.include_router(playground.router)
+app.include_router(http_transport.router)
 
 
 @app.get("/metrics")

@@ -27,6 +27,25 @@ What you get in `logs/mcp-trace.jsonl`:
 - `tools/list`, `tools/search`, `tools/call` traffic
 - `resources/list`, `resources/get` traffic
 
+## 1b) Capture MCP JSON-RPC traffic (HTTP proxy)
+
+For ChatGPT or any HTTP client, run the HTTP trace proxy in front of `/mcp`:
+
+```bash
+python scripts/mcp_http_trace_proxy.py \
+  --upstream http://127.0.0.1:8000/mcp \
+  --log logs/mcp-http-trace.jsonl \
+  --host 127.0.0.1 \
+  --port 8899
+```
+
+Point your HTTP client at `http://127.0.0.1:8899/mcp` (or tunnel that URL).
+
+What you get in `logs/mcp-http-trace.jsonl`:
+- Request/response headers (authorization redacted)
+- JSON-RPC payloads for initialize, tools/list, tools/call, and resources/get
+- Streamed SSE chunks (if any)
+
 ## 2) Capture UI interactions (MCP-Apps)
 
 MCP-Apps widgets in this repo emit UI interaction events via the

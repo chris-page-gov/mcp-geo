@@ -51,6 +51,9 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Local logs
+logs/
+
 # Translations
 *.mo
 *.pot
@@ -208,3 +211,7 @@ __marimo__/
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Vendor snapshots (store as release artifacts, not in git)
+docs/vendor/**/_snapshot/
+docs/vendor/**/_snapshot_noscript/

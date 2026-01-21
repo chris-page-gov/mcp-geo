@@ -19,7 +19,8 @@
   },
   "forwardPorts": [
     8000,
-    5173
+    5173,
+    8899
   ],
   "postCreateCommand": "pip install --upgrade pip && pip install .[test] && (cd frontend && npm install --no-audit --no-fund || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
@@ -33,7 +34,8 @@
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
         "docker.docker",
-        "openai.chatgpt"
+        "openai.chatgpt",
+        "ms-vscode.live-server"
       ]
     }
   },

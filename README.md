@@ -8,7 +8,7 @@ See [Latest Specification which this MUST conform to](https://modelcontextprotoc
 This is a preview spec; tracking and review cadence live in `docs/spec_tracking.md`.
 
 ## Key Features
-- MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/get`
+- MCP endpoints: `/mcp` (streamable HTTP JSON-RPC), `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/get`
 - Uniform error envelope and pagination (`nextPageToken`)
 - Dynamic tool registration with schema introspection
 - Tool annotations + defer-loading metadata for tool search integrations
@@ -32,6 +32,7 @@ Then visit:
 - `GET /tools/list`
 - `GET /tools/describe`
 - `POST /tools/call` with `{ "tool": "os_places.by_postcode", "postcode": "SW1A1AA" }`
+- `POST /mcp` with `{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}`
 
 Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
 
@@ -81,7 +82,7 @@ See [docs/evaluation.md](docs/evaluation.md) for the question suite, rubric, and
 ## Client Tracing
 
 See [docs/client_trace_strategy.md](docs/client_trace_strategy.md) for MCP traffic
-and MCP-Apps UI interaction capture using the stdio trace proxy.
+and MCP-Apps UI interaction capture using the stdio and HTTP trace proxies.
 
 ## Tool Catalog (Epics B–D)
 Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.

@@ -13,6 +13,22 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - (none)
 
+## [0.2.5] - 2026-01-21
+### Added
+- Native `/mcp` Streamable HTTP JSON-RPC endpoint for MCP clients (ChatGPT, Inspector).
+- HTTP trace proxy `scripts/mcp_http_trace_proxy.py` for capturing /mcp traffic.
+- Vendor snapshot tooling (`scripts/vendor_fetch.sh`, `scripts/vendor_html_nojs.py`, `scripts/vendor_package.sh`) and storage policy (`docs/vendor/README.md`).
+- Placeholder OpenAI doc stash under `docs/vendor/openai/` for ChatGPT connector references.
+- HTTP MCP tests covering initialize, tools/list, tools/call, and resources/get.
+- Local OS map demo server `scripts/claude_serve_map.py`.
+
+### Changed
+- README/tutorial/ChatGPT setup updated for `/mcp` usage and HTTP trace proxy flow.
+- Vendor docs now keep snapshots out of git and recommend release artifacts for HTML bundles.
+
+### Fixed
+- (none)
+
 ## [0.2.4] - 2026-01-21
 ### Added
 - Preview spec tracking log (`docs/spec_tracking.md`) and enforcement in agent instructions.
