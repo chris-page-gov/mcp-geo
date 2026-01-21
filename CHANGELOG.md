@@ -13,6 +13,17 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - (none)
 
+## [0.2.4] - 2026-01-21
+### Added
+- Preview spec tracking log (`docs/spec_tracking.md`) and enforcement in agent instructions.
+- Static map fallback metadata for `os_apps.render_geography_selector` when UI is unsupported (stdio).
+
+### Changed
+- README notes MCP spec preview tracking and MCP-Apps fallback behavior.
+
+### Fixed
+- (none)
+
 ## [0.2.3] - 2026-01-21
 ### Added
 - MCP stdio trace proxy `scripts/mcp_stdio_trace_proxy.py` for JSON-RPC traffic capture.

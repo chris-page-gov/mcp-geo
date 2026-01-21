@@ -2,6 +2,11 @@
 
 Production-focused Model Context Protocol (MCP) server for geospatial (Ordnance Survey) tooling built with FastAPI & Python 3.11+. Provides a uniform tool abstraction, typed schemas, structured error model, correlation IDs, and high test coverage (≥90%).
 
+## MCP Specification
+
+See [Latest Specification which this MUST conform to](https://modelcontextprotocol.io/specification/2025-11-25).
+This is a preview spec; tracking and review cadence live in `docs/spec_tracking.md`.
+
 ## Key Features
 - MCP endpoints: `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/get`
 - Uniform error envelope and pagination (`nextPageToken`)
@@ -142,6 +147,12 @@ In addition to data resources, MCP Geo exposes:
 
 Use `GET /resources/get?uri=...` to fetch these resources. MCP-Apps widgets are
 HTML documents with `text/html;profile=mcp-app` MIME types.
+
+MCP-Apps support varies by client. If the client does not advertise UI support,
+the stdio adapter injects a `fallback` static map payload for
+`os_apps.render_geography_selector` (computed via `os_maps.render`).
+Set `MCP_STDIO_UI_SUPPORTED=1` to force UI mode, or
+`MCP_STDIO_FALLBACK_BBOX_DEG` to control the fallback map span.
 
 ### Conditional Requests (ETag)
 Clients should cache responses and revalidate:

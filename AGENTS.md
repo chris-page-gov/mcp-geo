@@ -113,12 +113,20 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 - Prefer incremental refactors (extract functions before rewriting blocks).
 - If adding a tool: include JSON schema for request/response in docstring.
 
+## Preview Spec Tracking
+
+- Any preview/evolving spec or feature must be logged in `docs/spec_tracking.md`.
+- Entries must include spec URL, status, owner, last-checked date, and review cadence.
+- Update README if a preview spec link changes or new preview features are added.
+- Note client-behavior evidence (logs or traces) in the tracking entry when available.
+
 ## MCP Client Interop Learnings
 
 - Claude uses `tools/call` with `params.name` + `params.arguments` (not `args`); support both.
 - Claude expects tool names matching `^[a-zA-Z0-9_-]{1,64}$`; normalize dotted names for stdio list/search and accept originals for calls.
 - STDIO framing can be JSON lines or Content-Length; auto-detect and allow `MCP_STDIO_FRAMING=line` to force.
 - Do not respond to JSON-RPC notifications (no `id`) to avoid client disconnects.
+- Some clients do not advertise MCP-Apps UI support; stdio adds `data.fallback` static map metadata for `os_apps.render_geography_selector` unless `MCP_STDIO_UI_SUPPORTED=1`. Use `MCP_STDIO_FALLBACK_BBOX_DEG` to control fallback span.
 
 ## Gaps & Immediate Action Items
 

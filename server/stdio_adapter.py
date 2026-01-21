@@ -313,9 +313,7 @@ def _resolve_framing() -> Optional[str]:
         return "line"
     return None
 
-
-def _bool_env(name: str) -> bool:
-    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+CLIENT_CAPABILITIES: Dict[str, Any] = {}
 
 
 def _sanitize_tool_name(name: str, seen: Dict[str, str]) -> str:
@@ -372,9 +370,158 @@ def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[
         err["data"] = data
     return {"jsonrpc": JSONRPC, "id": msg_id, "error": err}
 
+def _read_bool_env(name: str) -> Optional[bool]:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return None
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _bool_env(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
+    override = _read_bool_env("MCP_STDIO_UI_SUPPORTED")
+    if override is not None:
+        return override
+    for key in ("uiResources", "mcpApps", "mcp_apps", "mcpAppsUi"):
+        if key not in capabilities:
+            continue
+        value = capabilities[key]
+        if isinstance(value, dict):
+            return any(bool(v) for v in value.values())
+        return bool(value)
+    return False
+
+
+def _extract_ui_resource_uris(data: Any) -> list[str]:
+    if not isinstance(data, dict):
+        return []
+    uris: list[str] = []
+    direct = data.get("uiResourceUris")
+    if isinstance(direct, list):
+        uris.extend([u for u in direct if isinstance(u, str)])
+    meta = data.get("_meta")
+    if isinstance(meta, dict):
+        meta_uris = meta.get("uiResourceUris")
+        if isinstance(meta_uris, list):
+            uris.extend([u for u in meta_uris if isinstance(u, str)])
+    seen: set[str] = set()
+    unique: list[str] = []
+    for uri in uris:
+        if uri in seen:
+            continue
+        seen.add(uri)
+        unique.append(uri)
+    return unique
+
+
+def _tool_content_from_data(data: Any, allow_resource: bool) -> List[Dict[str, Any]]:
+    if data is None:
+        return []
+    content: List[Dict[str, Any]] = []
+    if allow_resource:
+        for uri in _extract_ui_resource_uris(data):
+            block: Dict[str, Any] = {"type": "resource", "resource": {"uri": uri}}
+            ui_entry = resolve_ui_resource(uri)
+            if ui_entry:
+                block["resource"]["mimeType"] = ui_entry["mimeType"]
+            content.append(block)
+    if isinstance(data, str):
+        text = data
+    else:
+        try:
+            text = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
+        except TypeError:
+            text = str(data)
+    content.append({"type": "text", "text": text})
+    return content
+
+
+def _extract_initial_view(payload: Dict[str, Any], data: Any) -> tuple[Optional[float], Optional[float], Optional[int]]:
+    lat = payload.get("initialLat")
+    lng = payload.get("initialLng")
+    zoom = payload.get("initialZoom")
+    if isinstance(data, dict):
+        config = data.get("config")
+        if isinstance(config, dict):
+            view = config.get("initialView")
+            if isinstance(view, dict):
+                lat = view.get("lat", lat)
+                lng = view.get("lng", lng)
+            zoom = config.get("initialZoom", zoom)
+    try:
+        lat_f = float(lat) if lat is not None else None
+        lng_f = float(lng) if lng is not None else None
+    except (TypeError, ValueError):
+        return None, None, None
+    zoom_i: Optional[int] = None
+    if zoom is not None:
+        try:
+            zoom_i = int(zoom)
+        except (TypeError, ValueError):
+            zoom_i = None
+    return lat_f, lng_f, zoom_i
+
+
+def _fallback_bbox(lat: float, lng: float, zoom: Optional[int]) -> list[float]:
+    span_env = os.getenv("MCP_STDIO_FALLBACK_BBOX_DEG", "").strip()
+    span: float
+    if span_env:
+        try:
+            span = float(span_env)
+        except ValueError:
+            span = 0.01
+    else:
+        z = zoom if isinstance(zoom, int) else 16
+        z = max(1, min(z, 20))
+        deg_per_tile = 360.0 / (2 ** z)
+        span = deg_per_tile * 2
+    half = span / 2.0
+    min_lon = max(-180.0, lng - half)
+    max_lon = min(180.0, lng + half)
+    min_lat = max(-90.0, lat - half)
+    max_lat = min(90.0, lat + half)
+    return [min_lon, min_lat, max_lon, max_lat]
+
+
+def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[Dict[str, Any]]:
+    lat, lng, zoom = _extract_initial_view(payload, data)
+    if lat is None or lng is None:
+        return None
+    bbox = _fallback_bbox(lat, lng, zoom)
+    maps_tool = get_tool("os_maps.render")
+    render: Optional[Dict[str, Any]] = None
+    status: Optional[int] = None
+    if maps_tool:
+        status, render_data = maps_tool.call({"tool": "os_maps.render", "bbox": bbox})
+        if status == 200 and isinstance(render_data, dict):
+            render = render_data.get("render")
+    fallback: Dict[str, Any] = {
+        "type": "static_map",
+        "center": {"lat": lat, "lng": lng},
+        "bbox": bbox,
+        "note": "Client does not support MCP-Apps UI; use render.urlTemplate with your API key.",
+    }
+    if zoom is not None:
+        fallback["zoom"] = zoom
+    if render is not None:
+        fallback["render"] = render
+    if status is not None and status != 200:
+        fallback["mapError"] = {"status": status}
+    return fallback
+
+
 def handle_initialize(params: Dict[str, Any]) -> Any:
     requested = params.get("protocolVersion")
     protocol_version = requested if isinstance(requested, str) else PROTOCOL_VERSION
+    global CLIENT_CAPABILITIES
+    capabilities = params.get("capabilities")
+    CLIENT_CAPABILITIES = capabilities if isinstance(capabilities, dict) else {}
     return {
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": SERVER_VERSION},
@@ -463,7 +610,27 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
     status, data = tool.call(payload)
-    return {"status": status, "ok": 200 <= status < 300, "data": data}
+    if isinstance(data, dict):
+        data = dict(data)
+        ui_supported = _client_supports_ui(CLIENT_CAPABILITIES)
+        if resolved_name.startswith("os_apps.render_") and not ui_supported:
+            fallback = _build_static_map_fallback(payload, data)
+            if fallback:
+                data["fallback"] = fallback
+    ok = 200 <= status < 300
+    result: Dict[str, Any] = {"status": status, "ok": ok, "data": data}
+    allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False)
+    result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
+    ui_uris = _extract_ui_resource_uris(data)
+    if ui_uris:
+        result["uiResourceUris"] = ui_uris
+        if isinstance(data, dict):
+            meta = data.get("_meta")
+            if isinstance(meta, dict):
+                result["_meta"] = meta
+    if not ok or (isinstance(data, dict) and data.get("isError") is True):
+        result["isError"] = True
+    return result
 
 def handle_list_resources(_params: Dict[str, Any]) -> Any:
     return {"resources": RESOURCE_LIST}

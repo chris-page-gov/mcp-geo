@@ -48,3 +48,31 @@ def test_tool_names_sanitized_and_resolvable():
 def test_call_tool_accepts_arguments_payload():
     call = stdio_adapter.handle_call_tool({"name": "ons_data_dimensions", "arguments": {}})
     assert call.get("ok") is True
+    assert call.get("content")
+    assert call["content"][0]["type"] == "text"
+
+
+def test_ui_tools_emit_resource_content(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_RESOURCE_CONTENT", "1")
+    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
+    assert call.get("ok") is True
+    resources = [item for item in call.get("content", []) if item.get("type") == "resource"]
+    assert resources
+    assert resources[0]["resource"]["uri"].startswith("ui://")
+
+
+def test_ui_tools_fallback_to_static_map(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_UI_SUPPORTED", "0")
+    call = stdio_adapter.handle_call_tool(
+        {
+            "name": "os_apps_render_geography_selector",
+            "arguments": {"initialLat": 52.0, "initialLng": -1.0, "initialZoom": 16},
+        }
+    )
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    assert isinstance(data, dict)
+    fallback = data.get("fallback")
+    assert isinstance(fallback, dict)
+    assert fallback.get("type") == "static_map"
+    assert "render" in fallback
