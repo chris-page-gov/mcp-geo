@@ -15,7 +15,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | ons_data.get_filter_output | 0.1.0 | Retrieve data for a previously created filter (formats: JSON, CSV, XLSX). |
 | ons_data.get_observation | 0.1.0 | Fetch a single observation by geography, measure, time (live or sample). |
 | ons_data.query | 0.1.0 | Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination). |
-| ons_search.query | 0.1.0 | Search sample ONS dimensions for code fragments. |
+| ons_search.query | 0.1.0 | Search live ONS datasets by term; falls back to sample dimension codes when live search is disabled or unavailable. |
 | os_apps.log_event | 0.1.0 | Log MCP-Apps UI interaction events for tracing. |
 | os_apps.render_feature_inspector | 0.1.0 | Open the MCP-Apps feature inspector widget. |
 | os_apps.render_geography_selector | 0.1.0 | Open the MCP-Apps geography selector widget. |
@@ -146,6 +146,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 {
   "additionalProperties": false,
   "properties": {
+    "limit": {
+      "maximum": 200,
+      "minimum": 1,
+      "type": "integer"
+    },
     "text": {
       "type": "string"
     },
@@ -655,7 +660,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_search.query
 
-**Description:** Search sample ONS dimensions for code fragments.
+**Description:** Search live ONS datasets by term; falls back to sample dimension codes when live search is disabled or unavailable.
 
 **Version:** 0.1.0
 
@@ -665,6 +670,15 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 {
   "additionalProperties": false,
   "properties": {
+    "limit": {
+      "maximum": 500,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "offset": {
+      "minimum": 0,
+      "type": "integer"
+    },
     "term": {
       "type": "string"
     },
@@ -687,8 +701,29 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "count": {
       "type": "integer"
     },
+    "limit": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "offset": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
     "results": {
       "type": "array"
+    },
+    "total": {
+      "type": [
+        "integer",
+        "null"
+      ]
     }
   },
   "required": [

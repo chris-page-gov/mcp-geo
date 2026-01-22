@@ -1,9 +1,23 @@
+import pytest
 from fastapi.testclient import TestClient
+from server.config import settings
 from server.main import app
+
+
+@pytest.fixture(autouse=True)
+def _disable_admin_lookup_live(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", False, raising=False)
 
 def test_admin_lookup_success():
     client = TestClient(app)
-    resp = client.post("/tools/call", json={"tool": "admin_lookup.containing_areas", "lat": 51.5005, "lon": -0.1390})
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "admin_lookup.containing_areas",
+            "lat": 51.5005,
+            "lon": -0.1390,
+        },
+    )
     assert resp.status_code == 200
     data = resp.json()
     # Expect at least OA upward chain present (using realistic codes)
@@ -13,13 +27,27 @@ def test_admin_lookup_success():
 
 def test_admin_lookup_invalid_input():
     client = TestClient(app)
-    resp = client.post("/tools/call", json={"tool": "admin_lookup.containing_areas", "lat": "abc", "lon": 1})
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "admin_lookup.containing_areas",
+            "lat": "abc",
+            "lon": 1,
+        },
+    )
     assert resp.status_code == 400
     assert resp.json()["code"] == "INVALID_INPUT"
 
 
 def test_admin_lookup_no_match():
     client = TestClient(app)
-    resp = client.post("/tools/call", json={"tool": "admin_lookup.containing_areas", "lat": 60.0, "lon": -3.0})
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "admin_lookup.containing_areas",
+            "lat": 60.0,
+            "lon": -3.0,
+        },
+    )
     assert resp.status_code == 200
     assert resp.json()["results"] == []

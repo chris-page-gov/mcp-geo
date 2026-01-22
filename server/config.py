@@ -20,9 +20,15 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MIN: int = 120  # default per client IP
     METRICS_ENABLED: bool = True
     RATE_LIMIT_BYPASS: bool = True  # bypass limiter (tests toggle off when needed)
+    ADMIN_LOOKUP_LIVE_ENABLED: bool = True
+    ADMIN_LOOKUP_ARCGIS_BASE: str = (
+        "https://services1.arcgis.com/ESMARspQHYMw9BZ9/ArcGIS/rest/services"
+    )
     ONS_CACHE_TTL: float = 60.0
     ONS_CACHE_SIZE: int = 256
     ONS_LIVE_ENABLED: bool = False
+    ONS_SEARCH_LIVE_ENABLED: bool = True
+    ONS_DATASET_API_BASE: str = "https://api.beta.ons.gov.uk/v1"
     UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)

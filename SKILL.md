@@ -9,8 +9,8 @@ reliable guide to tool selection.
 - OS Places address lookups (postcodes, UPRNs, nearest addresses).
 - OS Names gazetteer searches for named features.
 - OS NGD feature queries for topographic datasets.
-- ONS dataset discovery and observation queries.
-- Administrative area lookups from bundled boundary samples.
+- ONS dataset discovery and observation queries (live dataset search).
+- Administrative area lookups from live ONS geography (ArcGIS), with sample fallback.
 - MCP-Apps widgets for interactive selection and inspection.
 - Tool search metadata for large tool catalogs.
 
@@ -45,7 +45,7 @@ Administrative areas:
 - Use `admin_lookup.reverse_hierarchy` for ancestor chains.
 
 ONS statistics:
-- Use `ons_search.query` to discover datasets and dimensions.
+- Use `ons_search.query` to discover live ONS datasets.
 - Use `ons_data.query` to fetch observations (sample or live mode).
 - Use `ons_data.dimensions` to list dimension ids and options.
 

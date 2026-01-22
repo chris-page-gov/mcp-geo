@@ -378,6 +378,14 @@ curl -sS "$BASE_URL/tools/call" \
   -d '{"tool":"ons_data.query","dataset":"<dataset>","edition":"<edition>","version":"<version>","geography":"K02000001"}'
 ```
 
+Search available datasets (live via ONS beta API):
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"ons_search.query","term":"population"}'
+```
+
 ## Resources and conditional caching (ETag)
 
 1) Fetch a resource and note the `ETag` response header:

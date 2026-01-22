@@ -49,6 +49,7 @@ POST /tools/call
 { "tool": "ons_data.dimensions" }
 
 POST /tools/call
+# Live dataset search (beta API)
 { "tool": "ons_search.query", "term": "population" }
 
 POST /tools/call

@@ -105,6 +105,13 @@ def test_http_transport_client_supports_ui_override(monkeypatch):
     monkeypatch.delenv("MCP_HTTP_UI_SUPPORTED", raising=False)
     assert http_transport._client_supports_ui({"uiResources": {"render": True}}) is True
 
+def test_http_transport_client_supports_ui_nested(monkeypatch):
+    from server.mcp import http_transport
+
+    monkeypatch.delenv("MCP_HTTP_UI_SUPPORTED", raising=False)
+    capabilities = {"capabilities": {"ui": {"enabled": True}}}
+    assert http_transport._client_supports_ui(capabilities) is True
+
 
 def test_http_transport_resp_error_with_data():
     from server.mcp import http_transport

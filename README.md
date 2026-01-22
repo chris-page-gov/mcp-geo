@@ -109,7 +109,7 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | ons_data.get_observation | Retrieve a single observation (sample/live) |
 | ons_data.create_filter | Create an ONS bulk filter (sample scaffold) |
 | ons_data.get_filter_output | Retrieve filter output in JSON (sample) |
-| ons_search.query | Search ONS datasets/dimensions (sample) |
+| ons_search.query | Search live ONS datasets (beta API; falls back to sample codes) |
 | ons_codes.list | List dimension IDs (sample/live) |
 | ons_codes.options | List codes/options for a dimension (sample/live) |
 | os_mcp.descriptor | Server capabilities and tool search configuration |
@@ -199,7 +199,7 @@ app_request_latency_ms_bucket{le="100"} 41
 app_request_latency_ms_bucket{le="+Inf"} 42
 app_request_latency_ms_count 42
 ```
-Current `admin_boundaries` is a minimal illustrative chain (OA→LSOA→MSOA→Ward→District→County→Region→Nation) using real English geography codes (sample Westminster lineage). Not a complete authoritative dataset—replace or extend before production use.
+Current `admin_boundaries` is a minimal illustrative chain (OA→LSOA→MSOA→Ward→District→County→Region→Nation) using real English geography codes (sample Westminster lineage). The admin lookup tools now call live ONS Open Geography services by default; the bundled resource remains a lightweight fallback and demo dataset.
 
 ### ONS Observations & Discovery (Epic D)
 An initial statistical dataset (`resources/ons_observations.json`) is bundled to prototype ONS integration.
@@ -224,7 +224,7 @@ Response shape:
 	"data": { "limit": 2, "page": 1, "nextPageToken": "2" }
 }
 ```
-`count` is total after filtering (before pagination). `nextPageToken` absent on final page. This mock illustrates future integration with real ONS APIs (observations, dimensions catalogue, metadata endpoints) that will replace or augment the static file.
+`count` is total after filtering (before pagination). `nextPageToken` absent on final page. The observations dataset remains static for determinism, while dataset discovery now uses the live ONS beta API.
 
 ### ONS Observations Resource
 The underlying sample dataset is also exposed via the resources API:
@@ -261,6 +261,12 @@ GET https://api.ons.gov.uk/dataset/{dataset}/edition/{edition}/version/{version}
 Provide an optional `dimension` field to retrieve only a single dimension's codes (optimization avoids extra network calls).
 
 If live mode is disabled (or parameters missing) both tools fall back to the bundled sample dataset.
+
+`ons_search.query` (live dataset search):
+```
+GET https://api.beta.ons.gov.uk/v1/datasets?search=<term>&limit=...&offset=...
+```
+You can override the base with `ONS_DATASET_API_BASE` or disable live search with `ONS_SEARCH_LIVE_ENABLED=false`.
 
 ### ons_observations Resource & Filters
 The resource endpoint now supports:

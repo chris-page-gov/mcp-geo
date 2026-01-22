@@ -8,10 +8,20 @@ All notable changes to this project will be documented in this file.
 - (none)
 
 ### Changed
-- (none)
+- Docker image defaults `ONS_LIVE_ENABLED=true` so live ONS calls are available without extra flags.
+- STDIO MCP-Apps calls now include UI resource content by default; UI capability detection is more permissive.
+- OS Names and OS Places requests now ask for WGS84 output to improve coordinate availability.
+- admin_lookup tools now query live ONS Open Geography (ArcGIS) services by default.
+- ons_search now targets the live ONS beta dataset search API when enabled.
 
 ### Fixed
-- (none)
+- Docker MCP config no longer suppresses live ONS mode when `ONS_LIVE_ENABLED` is unset.
+- admin_lookup hints now surface when the bundled sample has no matching area names.
+
+### Tests
+- Added coverage for MCP-Apps UI capability detection defaults (stdio/http).
+- Added live admin lookup + ArcGIS client branch coverage.
+- Added ONS search fallback/live edge-case coverage and cache eviction tests.
 
 ## [0.2.5] - 2026-01-21
 ### Added

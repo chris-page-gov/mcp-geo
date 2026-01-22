@@ -71,17 +71,34 @@ def _bool_env(name: str, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _capability_truthy(value: Any) -> bool:
+    if isinstance(value, dict):
+        for flag in ("enabled", "supported", "render", "rendering", "ui"):
+            if flag in value and bool(value[flag]):
+                return True
+        return any(_capability_truthy(v) for v in value.values())
+    if isinstance(value, list):
+        return any(_capability_truthy(v) for v in value)
+    return bool(value)
+
+
 def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
     override = _read_bool_env("MCP_HTTP_UI_SUPPORTED")
     if override is not None:
         return override
-    for key in ("uiResources", "mcpApps", "mcp_apps", "mcpAppsUi"):
-        if key not in capabilities:
-            continue
-        value = capabilities[key]
-        if isinstance(value, dict):
-            return any(bool(v) for v in value.values())
-        return bool(value)
+    keys = ("uiResources", "mcpApps", "mcp_apps", "mcpAppsUi", "ui", "apps")
+    def _scan(container: Any) -> bool:
+        if not isinstance(container, dict):
+            return False
+        for key in keys:
+            if key in container and _capability_truthy(container[key]):
+                return True
+        return False
+    if _scan(capabilities):
+        return True
+    for bucket in ("experimental", "extensions", "capabilities"):
+        if _scan(capabilities.get(bucket)):
+            return True
     return False
 
 

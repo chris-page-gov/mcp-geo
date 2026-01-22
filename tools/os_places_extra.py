@@ -128,7 +128,7 @@ def _places_search(payload: dict[str, Any]) -> ToolResult:
     text = str(payload.get("text", "")).strip()
     if not text:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing text query"}
-    params = {"query": text}
+    params = {"query": text, "output_srs": "WGS84"}
     status, raw = client.get_json(f"{client.base_places}/find", params)
     if status != 200:
         return 501, raw
@@ -164,7 +164,7 @@ def _places_nearest(payload: dict[str, Any]) -> ToolResult:
     except Exception:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "lat/lon must be numeric"}
     # OS Places expects WGS84 axis order for srs=WGS84 (lat,lon).
-    params = {"point": f"{lat},{lon}", "srs": "WGS84"}
+    params = {"point": f"{lat},{lon}", "srs": "WGS84", "output_srs": "WGS84"}
     status, raw = client.get_json(f"{client.base_places}/nearest", params)
     if status != 200:
         return 501, raw
@@ -205,6 +205,7 @@ def _places_within(payload: dict[str, Any]) -> ToolResult:
         params = {
             "bbox": f"{tile_min_lat},{tile_min_lon},{tile_max_lat},{tile_max_lon}",
             "srs": "WGS84",
+            "output_srs": "WGS84",
         }
         status, raw = client.get_json(f"{client.base_places}/bbox", params)
         if status != 200:

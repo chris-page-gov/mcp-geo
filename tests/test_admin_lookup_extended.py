@@ -1,5 +1,12 @@
+import pytest
 from fastapi.testclient import TestClient
+from server.config import settings
 from server.main import app
+
+
+@pytest.fixture(autouse=True)
+def _disable_admin_lookup_live(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", False, raising=False)
 
 
 def _client():
@@ -42,6 +49,15 @@ def test_admin_find_by_name_success():
     assert resp.status_code == 200
     results = resp.json()["results"]
     assert any(r["id"] == "E09000033" for r in results)
+
+def test_admin_find_by_name_no_match_hints():
+    c = _client()
+    resp = c.post("/tools/call", json={"tool": "admin_lookup.find_by_name", "text": "Nopeville"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["results"] == []
+    assert "hints" in body
+    assert "note" in body["hints"]
 
 
 def test_resource_get_admin_boundaries():

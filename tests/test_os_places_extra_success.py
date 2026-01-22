@@ -3,17 +3,47 @@ from server.main import app
 
 def test_os_places_search_success(monkeypatch):
     from tools import os_places_extra
+    captured = {}
     def fake_get_json(url, params):
+        captured.update(params)
         return 200, {
             "results": [
-                {"DPA": {"UPRN": "1", "ADDRESS": "A St", "LAT": 51.0, "LNG": -0.1, "CLASS": "R"}},
-                {"DPA": {"UPRN": "2", "ADDRESS": "B St", "LAT": 52.0, "LNG": -0.2, "CLASS": "C"}},
+                {
+                    "DPA": {
+                        "UPRN": "1",
+                        "ADDRESS": "A St",
+                        "LAT": 51.0,
+                        "LNG": -0.1,
+                        "CLASS": "R",
+                    }
+                },
+                {
+                    "DPA": {
+                        "UPRN": "2",
+                        "ADDRESS": "B St",
+                        "LAT": 52.0,
+                        "LNG": -0.2,
+                        "CLASS": "C",
+                    }
+                },
             ]
         }
-    monkeypatch.setattr(os_places_extra, "client", type("C", (), {"get_json": staticmethod(fake_get_json), "base_places": "http://example"})())
+    fake_client = type(
+        "C",
+        (),
+        {
+            "get_json": staticmethod(fake_get_json),
+            "base_places": "http://example",
+        },
+    )()
+    monkeypatch.setattr(os_places_extra, "client", fake_client)
     client = TestClient(app)
-    resp = client.post("/tools/call", json={"tool": "os_places.search", "text": "foo"})
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_places.search", "text": "foo"},
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["count"] == 2
     assert len(data["results"]) == 2
+    assert captured["output_srs"] == "WGS84"
