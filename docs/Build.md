@@ -106,6 +106,16 @@ docker run --rm -i \
   mcp-geo-server
 ```
 
+When to use STDIO:
+- Use STDIO for desktop MCP clients that require it (Claude Desktop / Claude Code).
+- Use HTTP `/mcp` for Inspector, ChatGPT connectors, and web clients.
+
+To rebuild the STDIO image:
+
+```bash
+docker build -t mcp-geo-server .
+```
+
 ## Smoke check
 
 After starting the server, confirm basic health and discovery:

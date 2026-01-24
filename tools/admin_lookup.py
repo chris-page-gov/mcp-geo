@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 try:
@@ -23,13 +22,8 @@ from server.config import settings
 from tools.ons_common import TTLCache
 from tools.registry import Tool, register, ToolResult
 
-_RESOURCE_PATH = Path(__file__).parent.parent / "resources" / "admin_boundaries.json"
-
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
-
-# Lazy cache (sample fallback)
-_BOUNDARIES_CACHE: list[dict[str, Any]] | None = None
 
 _DEFAULT_ARCGIS_BASE = "https://services1.arcgis.com/ESMARspQHYMw9BZ9/ArcGIS/rest/services"
 
@@ -188,19 +182,6 @@ def _service_query_url(service: str) -> str:
     return f"{_arcgis_base().rstrip('/')}/{service}/FeatureServer/0/query"
 
 
-def _load_sample() -> list[dict[str, Any]]:
-    global _BOUNDARIES_CACHE
-    if _BOUNDARIES_CACHE is None:
-        data = json.loads(_RESOURCE_PATH.read_text())
-        _BOUNDARIES_CACHE = data.get("features", [])
-    return _BOUNDARIES_CACHE or []
-
-
-def _point_in_bbox(lat: float, lon: float, bbox: list[float]) -> bool:
-    min_lon, min_lat, max_lon, max_lat = bbox
-    return (min_lon <= lon <= max_lon) and (min_lat <= lat <= max_lat)
-
-
 def _live_enabled() -> bool:
     return bool(getattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", True))
 
@@ -344,62 +325,6 @@ def _live_find_by_id(area_id: str) -> tuple[dict[str, Any] | None, dict[str, Any
     return None, {"code": "NOT_FOUND"}
 
 
-def _sample_containing_areas(lat: float, lon: float) -> ToolResult:
-    feats = _load_sample()
-    matches: list[dict[str, Any]] = []
-    for feat in feats:
-        bbox = feat.get("bbox")
-        if not (isinstance(bbox, list) and len(bbox) == 4):
-            continue
-        if _point_in_bbox(lat, lon, bbox):
-            matches.append({
-                "id": feat.get("id"),
-                "level": feat.get("level"),
-                "name": feat.get("name"),
-                "parent": feat.get("parent"),
-            })
-    if not matches:
-        return 200, {"results": []}
-    return 200, {"results": matches}
-
-
-def _sample_reverse_hierarchy(area_id: str) -> ToolResult:
-    feats = {f.get("id"): f for f in _load_sample()}
-    if area_id not in feats:
-        return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
-    chain = []
-    current = feats[area_id]
-    while current:
-        chain.append({
-            "id": current.get("id"),
-            "level": current.get("level"),
-            "name": current.get("name"),
-        })
-        parent_id = current.get("parent")
-        current = feats.get(parent_id) if parent_id else None
-    return 200, {"chain": chain}
-
-
-def _sample_area_geometry(area_id: str) -> ToolResult:
-    for feat in _load_sample():
-        if feat.get("id") == area_id:
-            return 200, {"id": area_id, "bbox": feat.get("bbox")}
-    return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
-
-
-def _sample_find_by_name(text: str) -> ToolResult:
-    matches = []
-    for feat in _load_sample():
-        name = str(feat.get("name", ""))
-        if text in name.lower():
-            matches.append({
-                "id": feat.get("id"),
-                "level": feat.get("level"),
-                "name": name,
-            })
-    return 200, {"results": matches}
-
-
 def _containing_areas(payload: dict[str, Any]) -> ToolResult:
     raw_lat = payload.get("lat")
     raw_lon = payload.get("lon")
@@ -408,11 +333,20 @@ def _containing_areas(payload: dict[str, Any]) -> ToolResult:
         lon = float(raw_lon)
     except Exception:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "lat/lon must be numeric"}
-    if _live_enabled():
-        live = _live_containing_areas(lat, lon)
-        if live is not None:
-            return 200, {"results": live, "live": True}
-    return _sample_containing_areas(lat, lon)
+    if not _live_enabled():
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
+        }
+    live = _live_containing_areas(lat, lon)
+    if live is None:
+        return 502, {
+            "isError": True,
+            "code": "ADMIN_LOOKUP_API_ERROR",
+            "message": "Admin lookup live query failed.",
+        }
+    return 200, {"results": live, "live": True}
 
 
 register(Tool(
@@ -443,19 +377,28 @@ def _reverse_hierarchy(payload: dict[str, Any]) -> ToolResult:
     area_id = str(payload.get("id", "")).strip()
     if not area_id:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing id"}
-    if _live_enabled():
-        hit, err = _live_find_by_id(area_id)
-        if err is None and hit:
-            lat = hit.get("lat")
-            lon = hit.get("lon")
-            if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
-                live = _live_containing_areas(float(lat), float(lon))
-                if live is not None:
-                    return 200, {"chain": live, "live": True}
-            return 200, {"chain": [hit], "live": True}
-        if err and err.get("code") == "NOT_FOUND":
-            return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
-    return _sample_reverse_hierarchy(area_id)
+    if not _live_enabled():
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
+        }
+    hit, err = _live_find_by_id(area_id)
+    if err is None and hit:
+        lat = hit.get("lat")
+        lon = hit.get("lon")
+        if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
+            live = _live_containing_areas(float(lat), float(lon))
+            if live is not None:
+                return 200, {"chain": live, "live": True}
+        return 200, {"chain": [hit], "live": True}
+    if err and err.get("code") == "NOT_FOUND":
+        return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
+    return 502, {
+        "isError": True,
+        "code": "ADMIN_LOOKUP_API_ERROR",
+        "message": "Admin lookup live query failed.",
+    }
 
 
 register(Tool(
@@ -483,13 +426,22 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
     area_id = str(payload.get("id", "")).strip()
     if not area_id:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing id"}
-    if _live_enabled():
-        bbox, meta = _live_area_geometry(area_id)
-        if bbox is not None:
-            return 200, {"id": area_id, "bbox": bbox, "live": True, "meta": meta}
-        if meta and meta.get("code") == "NOT_FOUND":
-            return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
-    return _sample_area_geometry(area_id)
+    if not _live_enabled():
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
+        }
+    bbox, meta = _live_area_geometry(area_id)
+    if bbox is not None:
+        return 200, {"id": area_id, "bbox": bbox, "live": True, "meta": meta}
+    if meta and meta.get("code") == "NOT_FOUND":
+        return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
+    return 502, {
+        "isError": True,
+        "code": "ADMIN_LOOKUP_API_ERROR",
+        "message": "Admin lookup live query failed.",
+    }
 
 
 register(Tool(
@@ -520,22 +472,20 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
     limit = payload.get("limit", 25)
     if not isinstance(limit, int) or limit < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be >= 1"}
-    if _live_enabled():
-        live = _live_find_by_name(text, limit)
-        if live is not None:
-            return 200, {"results": live, "count": len(live), "live": True}
-    sample = _sample_find_by_name(text.lower())
-    if sample[1].get("results"):
-        return sample
-    return 200, {
-        "results": [],
-        "hints": {
-            "note": (
-                "No matches in bundled admin boundary sample. Try os_names.find, "
-                "os_places.search, or the geography selector UI."
-            ),
-        },
-    }
+    if not _live_enabled():
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
+        }
+    live = _live_find_by_name(text, limit)
+    if live is None:
+        return 502, {
+            "isError": True,
+            "code": "ADMIN_LOOKUP_API_ERROR",
+            "message": "Admin lookup live query failed.",
+        }
+    return 200, {"results": live, "count": len(live), "live": True}
 
 
 register(Tool(

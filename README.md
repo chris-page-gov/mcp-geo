@@ -37,6 +37,11 @@ Then visit:
 
 Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
 
+## Getting Started (User Guide)
+
+See `docs/getting_started.md` for a quick way to discover available data, run
+MCP Inspector, and explore tools/resources.
+
 ## Docker (STDIO / Claude Desktop)
 Build the image:
 ```bash

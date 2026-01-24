@@ -148,6 +148,9 @@ async def call_tool(request: Request):
             },
         )
     status_code, payload = tool.call(data)
+    if tool_name == "os_mcp.descriptor" and isinstance(payload, dict):
+        payload = dict(payload)
+        payload.setdefault("transport", "http")
     return JSONResponse(status_code=status_code, content=payload)
 
 

@@ -1,26 +1,16 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 from server.config import settings
 from tools.ons_common import ONSClient
 from tools.registry import Tool, register, ToolResult
 
-_OBS_PATH = Path(__file__).parent.parent / "resources" / "ons_observations.json"
 _SEARCH_CLIENT = ONSClient()
 _SEARCH_CLIENT.base_api = (
     getattr(settings, "ONS_DATASET_API_BASE", "")
     or "https://api.beta.ons.gov.uk/v1"
 )
-
-
-def _load() -> dict[str, Any]:
-    try:
-        return json.loads(_OBS_PATH.read_text())
-    except Exception:
-        return {}
 
 
 def _live_enabled() -> bool:
@@ -57,17 +47,6 @@ def _live_search(term: str, limit: int, offset: int) -> ToolResult:
     }
 
 
-def _sample_search(term: str) -> ToolResult:
-    data = _load()
-    dims = data.get("dimensions", {})
-    hits: list[dict[str, Any]] = []
-    for dim_name, codes in dims.items():
-        for code in codes:
-            if term in str(code).lower():
-                hits.append({"kind": "code", "dimension": dim_name, "code": code})
-    return 200, {"results": hits, "count": len(hits), "live": False}
-
-
 def _search(payload: dict[str, Any]) -> ToolResult:
     term = (payload.get("term") or "").strip()
     if not term:
@@ -78,18 +57,17 @@ def _search(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be >= 1"}
     if not isinstance(offset, int) or offset < 0:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "offset must be >= 0"}
-    if _live_enabled():
-        status, data = _live_search(term, limit, offset)
-        if status == 200:
-            return status, data
-    return _sample_search(term.lower())
+    if not _live_enabled():
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "ONS search live mode is disabled. Set ONS_SEARCH_LIVE_ENABLED=true.",
+        }
+    return _live_search(term, limit, offset)
 
 register(Tool(
     name="ons_search.query",
-    description=(
-        "Search live ONS datasets by term; falls back to sample dimension codes "
-        "when live search is disabled or unavailable."
-    ),
+    description="Search live ONS datasets by term.",
     input_schema={
         "type": "object",
         "properties": {

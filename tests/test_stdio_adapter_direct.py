@@ -41,12 +41,12 @@ def test_tool_names_sanitized_and_resolvable():
     names = [t["name"] for t in result["tools"]]
     assert any(name == "os_places_by_postcode" for name in names)
     assert all(re.match(r"^[A-Za-z0-9_-]{1,64}$", name) for name in names)
-    call = stdio_adapter.handle_call_tool({"tool": "ons_data_dimensions", "args": {}})
+    call = stdio_adapter.handle_call_tool({"tool": "os_mcp_descriptor", "args": {}})
     assert call.get("ok") is True
 
 
 def test_call_tool_accepts_arguments_payload():
-    call = stdio_adapter.handle_call_tool({"name": "ons_data_dimensions", "arguments": {}})
+    call = stdio_adapter.handle_call_tool({"name": "os_mcp_descriptor", "arguments": {}})
     assert call.get("ok") is True
     assert call.get("content")
     assert call["content"][0]["type"] == "text"
@@ -62,6 +62,7 @@ def test_ui_tools_emit_resource_content(monkeypatch):
 
 def test_ui_tools_include_resource_content_by_default(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_RESOURCE_CONTENT", raising=False)
+    monkeypatch.setenv("MCP_STDIO_UI_SUPPORTED", "1")
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
     assert call.get("ok") is True
     resources = [item for item in call.get("content", []) if item.get("type") == "resource_link"]

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     )
     ONS_CACHE_TTL: float = 60.0
     ONS_CACHE_SIZE: int = 256
-    ONS_LIVE_ENABLED: bool = False
+    ONS_LIVE_ENABLED: bool = True
     ONS_SEARCH_LIVE_ENABLED: bool = True
     ONS_DATASET_API_BASE: str = "https://api.beta.ons.gov.uk/v1"
     UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"

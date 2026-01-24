@@ -67,7 +67,7 @@ class TTLCache:
 
 
 class ONSClient:
-    base_api = "https://api.ons.gov.uk"
+    base_api = getattr(settings, "ONS_DATASET_API_BASE", "") or "https://api.beta.ons.gov.uk/v1"
 
     def __init__(
         self,

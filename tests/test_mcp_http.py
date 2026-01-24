@@ -42,7 +42,7 @@ def test_mcp_http_call_tool_accepts_arguments(client):
         json=_call_payload(
             "call-1",
             "tools/call",
-            {"name": "ons_data_dimensions", "arguments": {}},
+            {"name": "os_mcp_descriptor", "arguments": {}},
         ),
     )
     payload = resp.json()
@@ -184,7 +184,7 @@ def test_mcp_http_call_tool_errors(client):
             "jsonrpc": "2.0",
             "id": "x",
             "method": "tools/call",
-            "params": {"name": "ons_data_dimensions", "arguments": "bad"},
+            "params": {"name": "os_mcp_descriptor", "arguments": "bad"},
         },
     )
     assert resp.json()["error"]["code"] == 1003

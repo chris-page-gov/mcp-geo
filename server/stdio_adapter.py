@@ -11,7 +11,6 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TextIO
 
@@ -26,7 +25,6 @@ from server.mcp import tools as _mcp_import  # noqa: F401
 from tools.registry import all_tools, get as get_tool
 from server.mcp.resource_catalog import (
     DATA_RESOURCE_PREFIX,
-    data_resource_uri,
     list_skill_resources,
     list_ui_resources,
     load_skill_content,
@@ -37,81 +35,14 @@ from server.mcp.resource_catalog import (
 from tools.os_apps import build_ui_tool_meta
 from server.mcp.tool_search import get_tool_metadata, search_tools
 from server import __version__ as SERVER_VERSION
+from server.protocol import PROTOCOL_VERSION
 
 JSONRPC = "2.0"
-PROTOCOL_VERSION = "2025-06-18"
 
-RESOURCE_LIST: List[dict[str, Any]] = [
-    {
-        "name": "admin_boundaries",
-        "uri": data_resource_uri("admin_boundaries"),
-        "type": "boundary_hierarchy",
-        "version": "2025.09.17-alpha",
-        "license": "Open Government Licence v3",
-        "source": "ONS / Ordnance Survey open data (sample subset)",
-        "description": "Sample administrative boundaries chain",
-        "mimeType": "application/json",
-        "annotations": {"audience": ["assistant"], "priority": 0.7},
-    },
-    {
-        "name": "ons_observations",
-        "uri": data_resource_uri("ons_observations"),
-        "type": "dataset",
-        "version": None,
-        "license": "Open Government Licence v3",
-        "source": "ONS (sample synthetic subset)",
-        "description": "Sample ONS GDP observations (synthetic)",
-        "mimeType": "application/json",
-        "annotations": {"audience": ["assistant"], "priority": 0.6},
-    },
-    {
-        "name": "address_classification_codes",
-        "uri": data_resource_uri("address_classification_codes"),
-        "type": "code_list",
-        "version": "2025.11.03-alpha",
-        "license": "Open Government Licence v3",
-        "source": "OS AddressBase (sample subset)",
-        "description": "Address classification code descriptions",
-        "mimeType": "application/json",
-        "annotations": {"audience": ["assistant"], "priority": 0.4},
-    },
-    {
-        "name": "custodian_codes",
-        "uri": data_resource_uri("custodian_codes"),
-        "type": "code_list",
-        "version": "2025.11.03-alpha",
-        "license": "Open Government Licence v3",
-        "source": "Local Authority Codes (sample)",
-        "description": "Local custodian code to name mapping",
-        "mimeType": "application/json",
-        "annotations": {"audience": ["assistant"], "priority": 0.4},
-    },
-    {
-        "name": "boundaries_wards",
-        "uri": data_resource_uri("boundaries_wards"),
-        "type": "boundary",
-        "version": "2025.11.03-alpha",
-        "license": "Open Government Licence v3",
-        "source": "Sample Ward Boundaries (synthetic subset)",
-        "description": "Ward-level bounding boxes (sample subset)",
-        "mimeType": "application/json",
-        "annotations": {"audience": ["assistant"], "priority": 0.5},
-    },
-]
+RESOURCE_LIST: List[dict[str, Any]] = []
 RESOURCE_LIST.extend(list_skill_resources())
 RESOURCE_LIST.extend(list_ui_resources())
 
-RESOURCES_PATH = ROOT / "resources"
-
-def _read_json(path: Path) -> Any:
-    try:
-        return json.loads(path.read_text())
-    except FileNotFoundError:  # pragma: no cover (error handled upstream)
-        raise LookupError("Resource file missing")
-
-def _etag_for(name: str, variant: str, raw_bytes: bytes, version: str = "v0") -> str:
-    h = hashlib.sha256(raw_bytes + version.encode() + variant.encode()).hexdigest()[:16]
-    return f"W/\"{h}\""
 
 def handle_get_resource(params: Dict[str, Any]) -> Any:
     name = params.get("name")
@@ -121,6 +52,7 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
     if uri:
         if isinstance(uri, str) and uri.startswith(DATA_RESOURCE_PREFIX):
             name = uri[len(DATA_RESOURCE_PREFIX):]
+            raise LookupError("Resource not available in live-only mode")
         else:
             ui_entry = resolve_ui_resource(str(uri))
             if ui_entry:
@@ -152,126 +84,6 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
             return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
     if not isinstance(name, str):
         raise ValueError("Missing resource name")
-    if name == "admin_boundaries":
-        raw = _read_json(RESOURCES_PATH / "admin_boundaries.json")
-        features = raw.get("features", [])
-        level = params.get("level")
-        name_contains = params.get("nameContains")
-        if level:
-            lvl = str(level).upper()
-            features = [f for f in features if f.get("level") == lvl]
-        if name_contains:
-            needle = str(name_contains).lower()
-            features = [f for f in features if needle in str(f.get("name", "")).lower()]
-        limit = int(params.get("limit", 100))
-        page = int(params.get("page", 1))
-        start = (page - 1) * limit
-        end = start + limit
-        page_items = features[start:end]
-        next_page_token = str(page + 1) if end < len(features) else None
-        variant_key = f"ab|{level or '*'}|{name_contains or '*'}|{limit}|{page}"
-        etag = _etag_for(name, variant_key, json.dumps(raw, separators=(",", ":")).encode())
-        payload = {
-            "name": name,
-            "uri": data_resource_uri(name),
-            "count": len(features),
-            "etag": etag,
-            "data": {
-                "features": page_items,
-                "total": len(features),
-                "limit": limit,
-                "page": page,
-                "nextPageToken": next_page_token,
-            },
-        }
-        return _read_result(
-            data_resource_uri(name),
-            "application/json",
-            json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
-        )
-    if name == "ons_observations":
-        raw = _read_json(RESOURCES_PATH / "ons_observations.json")
-        observations = raw.get("observations", [])
-        geography = params.get("geography")
-        measure = params.get("measure")
-        if geography or measure:
-            filtered_obs: list[dict[str, Any]] = []
-            for o in observations:
-                if geography and o.get("geography") != geography:
-                    continue
-                if measure and o.get("measure") != measure:
-                    continue
-                filtered_obs.append(o)
-            observations = filtered_obs
-        limit = int(params.get("limit", 100))
-        page = int(params.get("page", 1))
-        start = (page - 1) * limit
-        end = start + limit
-        page_items = observations[start:end]
-        next_page_token = str(page + 1) if end < len(observations) else None
-        variant_key = f"obs|{geography or '*'}|{measure or '*'}|{page}|{limit}"
-        etag = _etag_for(
-            name, variant_key, json.dumps(raw, separators=(",", ":")).encode()
-        )
-        payload = {
-            "name": name,
-            "uri": data_resource_uri(name),
-            "count": len(observations),
-            "etag": etag,
-            "provenance": {
-                **raw.get("provenance", {}),
-                "retrievedAt": datetime.now(timezone.utc).isoformat(),
-            },
-            "data": {
-                "observations": page_items,
-                "total": len(observations),
-                "limit": limit,
-                "page": page,
-                "nextPageToken": next_page_token,
-                "dimensions": raw.get("dimensions", {}),
-                "appliedFilters": {"geography": geography, "measure": measure},
-            },
-        }
-        return _read_result(
-            data_resource_uri(name),
-            "application/json",
-            json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
-        )
-    if name in {"address_classification_codes", "custodian_codes", "boundaries_wards"}:
-        raw = _read_json(RESOURCES_PATH / f"{name}.json")
-        items = raw.get("codes") or raw.get("features") or []
-        limit = int(params.get("limit", 100))
-        page = int(params.get("page", 1))
-        start = (page - 1) * limit
-        end = start + limit
-        page_items = items[start:end]
-        next_page_token = str(page + 1) if end < len(items) else None
-        variant_key = f"{name}|base|{page}|{limit}"
-        etag = _etag_for(
-            name, variant_key, json.dumps(raw, separators=(",", ":")).encode()
-        )
-        payload = {
-            "name": name,
-            "uri": data_resource_uri(name),
-            "count": len(items),
-            "etag": etag,
-            "provenance": {
-                **raw.get("provenance", {}),
-                "retrievedAt": datetime.now(timezone.utc).isoformat(),
-            },
-            "data": {
-                "items": page_items,
-                "total": len(items),
-                "limit": limit,
-                "page": page,
-                "nextPageToken": next_page_token,
-            },
-        }
-        return _read_result(
-            data_resource_uri(name),
-            "application/json",
-            json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
-        )
     raise LookupError(f"Unknown resource '{name}'")
 
 def _resolve_framing() -> Optional[str]:
@@ -647,6 +459,8 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     status, data = tool.call(payload)
     if isinstance(data, dict):
         data = dict(data)
+        if resolved_name == "os_mcp.descriptor":
+            data.setdefault("transport", "stdio")
         ui_supported = _client_supports_ui(CLIENT_CAPABILITIES)
         if resolved_name.startswith("os_apps.render_") and not ui_supported:
             fallback = _build_static_map_fallback(payload, data)
@@ -655,7 +469,9 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     ok = 200 <= status < 300
     result: Dict[str, Any] = {"status": status, "ok": ok, "data": data}
     ui_uris = _extract_ui_resource_uris(data)
-    allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False) or bool(ui_uris)
+    allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False) or (
+        ui_supported and bool(ui_uris)
+    )
     if isinstance(data, dict):
         content_override = data.get("content")
         if isinstance(content_override, list):
@@ -682,6 +498,9 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
 def handle_list_resources(_params: Dict[str, Any]) -> Any:
     return {"resources": RESOURCE_LIST}
 
+def handle_list_resource_templates(_params: Dict[str, Any]) -> Any:
+    return {"resourceTemplates": []}
+
 def handle_shutdown(_params: Dict[str, Any]) -> Any:
     return None
 
@@ -691,6 +510,7 @@ HANDLERS: Dict[str, Any] = {
     "tools/search": handle_search_tools,
     "tools/call": handle_call_tool,
     "resources/list": handle_list_resources,
+    "resources/templates/list": handle_list_resource_templates,
     "resources/describe": lambda _p: {"resources": RESOURCE_LIST},
     "resources/read": handle_get_resource,
     "shutdown": handle_shutdown,

@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Any
 
 from server import __version__ as SERVER_VERSION
+from server.protocol import PROTOCOL_VERSION
 from server.mcp.resource_catalog import SKILLS_RESOURCE, list_ui_resources
 from server.mcp.tool_search import get_tool_search_config
 from tools.registry import Tool, ToolResult, register
@@ -402,7 +403,7 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
         return (
             "admin_lookup.find_by_name",
             ["admin_lookup.find_by_name"],
-            "Find administrative areas by name using bundled boundaries.",
+            "Find administrative areas by name using admin_lookup.find_by_name.",
         )
     if intent == QueryIntent.BOUNDARY_FETCH:
         return (
@@ -549,13 +550,15 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
       "properties": {
         "server": {"type": "string"},
         "version": {"type": "string"},
+        "protocolVersion": {"type": "string"},
+        "transport": {"type": "string"},
         "capabilities": {"type": "object"},
         "toolSearch": {"type": "object"},
         "skillsUri": {"type": "string"},
         "uiResources": {"type": "array"},
         "uiResourceCatalog": {"type": "array"}
       },
-      "required": ["server", "version", "toolSearch"]
+      "required": ["server", "version", "protocolVersion", "toolSearch"]
     }
     """
     category = payload.get("category")
@@ -577,6 +580,7 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
     return 200, {
         "server": "mcp-geo",
         "version": SERVER_VERSION,
+        "protocolVersion": PROTOCOL_VERSION,
         "capabilities": {
             "toolSearch": True,
             "skills": True,
@@ -667,13 +671,15 @@ register(
             "properties": {
                 "server": {"type": "string"},
                 "version": {"type": "string"},
+                "protocolVersion": {"type": "string"},
+                "transport": {"type": "string"},
                 "capabilities": {"type": "object"},
                 "toolSearch": {"type": "object"},
                 "skillsUri": {"type": "string"},
                 "uiResources": {"type": "array"},
                 "uiResourceCatalog": {"type": "array"},
             },
-            "required": ["server", "version", "toolSearch"],
+            "required": ["server", "version", "protocolVersion", "toolSearch"],
         },
         handler=_descriptor,
     )

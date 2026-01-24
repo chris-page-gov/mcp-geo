@@ -4,31 +4,13 @@ from server.config import settings
 from server.main import app
 
 
-def test_ons_search_sample_fallback(monkeypatch):
-    from tools import ons_search
-
+def test_ons_search_live_disabled_returns_error(monkeypatch):
     monkeypatch.setattr(settings, "ONS_SEARCH_LIVE_ENABLED", False, raising=False)
-    monkeypatch.setattr(
-        ons_search,
-        "_load",
-        lambda: {"dimensions": {"geo": ["abc", "def"]}},
-    )
     client = TestClient(app)
     resp = client.post("/tools/call", json={"tool": "ons_search.query", "term": "ab"})
-    assert resp.status_code == 200
+    assert resp.status_code == 501
     body = resp.json()
-    assert body["live"] is False
-    assert any(r["code"] == "abc" for r in body["results"])
-
-
-def test_ons_search_load_failure_returns_empty(monkeypatch):
-    from tools import ons_search
-
-    def boom(self):  # noqa: ARG001
-        raise OSError("nope")
-
-    monkeypatch.setattr(ons_search.Path, "read_text", boom)
-    assert ons_search._load() == {}
+    assert body["code"] == "LIVE_DISABLED"
 
 
 def test_ons_search_invalid_limit_offset(client):

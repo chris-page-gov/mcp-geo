@@ -11,12 +11,12 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse, Response
 
 from server import stdio_adapter
+from server.protocol import PROTOCOL_VERSION
 from tools.registry import get as get_tool
 
 router = APIRouter()
 
 JSONRPC = stdio_adapter.JSONRPC
-PROTOCOL_VERSION = stdio_adapter.PROTOCOL_VERSION
 
 _SESSION_LOCK = threading.Lock()
 _SESSION_STATE: Dict[str, Dict[str, Any]] = {}
@@ -147,6 +147,8 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
     status_code, data = tool.call(payload)
     if isinstance(data, dict):
         data = dict(data)
+        if resolved_name == "os_mcp.descriptor":
+            data.setdefault("transport", "http")
         ui_supported = _client_supports_ui(capabilities)
         if resolved_name.startswith("os_apps.render_") and not ui_supported:
             fallback = stdio_adapter._build_static_map_fallback(payload, data)
@@ -197,6 +199,8 @@ def _dispatch(method: str, params: Dict[str, Any], session_state: Dict[str, Any]
         return _call_tool(params, session_state.get("capabilities", {}))
     if method == "resources/list":
         return stdio_adapter.handle_list_resources(params)
+    if method == "resources/templates/list":
+        return stdio_adapter.handle_list_resource_templates(params)
     if method == "resources/describe":
         return {"resources": stdio_adapter.RESOURCE_LIST}
     if method == "resources/read":

@@ -40,8 +40,8 @@ def test_stdio_initialize_and_list_tools():
     proc.stdin.flush()
     resp2 = _read_one(proc.stdout)
     assert "tools" in resp2["result"] and isinstance(resp2["result"]["tools"], list)
-    # call a trivial tool (dimensions sample)
-    proc.stdin.write(_rpc({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"tool": "ons_data.dimensions", "args": {}}}))
+    # call a trivial tool (descriptor)
+    proc.stdin.write(_rpc({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"tool": "os_mcp.descriptor", "args": {}}}))
     proc.stdin.flush()
     resp3 = _read_one(proc.stdout)
     assert resp3["result"]["ok"] is True

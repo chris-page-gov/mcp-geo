@@ -24,7 +24,7 @@ def _read_one(stream):
     return json.loads(body.decode())
 
 
-def test_stdio_resources_get_admin_boundaries():
+def test_stdio_resources_get_skills_name():
     proc = subprocess.Popen(
         [sys.executable, str(SCRIPT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE
     )
@@ -43,16 +43,14 @@ def test_stdio_resources_get_admin_boundaries():
                 "jsonrpc": "2.0",
                 "id": 2,
                 "method": "resources/read",
-                "params": {"name": "admin_boundaries", "limit": 1, "page": 1},
+                "params": {"name": "skills_getting_started"},
             }
         )
     )
     proc.stdin.flush()
     resp = _read_one(proc.stdout)
     contents = resp["result"]["contents"]
-    payload = json.loads(contents[0]["text"])
-    assert payload["name"] == "admin_boundaries"
-    assert payload["data"]["limit"] == 1
+    assert contents[0]["uri"] == "skills://mcp-geo/getting-started"
     proc.stdin.write(
         _rpc({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": {}})
     )

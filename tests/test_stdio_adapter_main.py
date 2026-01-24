@@ -30,8 +30,8 @@ def test_adapter_full_sequence():
     stdin_bytes = b"".join([
         frame({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}),
         frame({"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}),
-        frame({"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"tool":"ons_data.dimensions","args":{}}}),
-        frame({"jsonrpc":"2.0","id":4,"method":"resources/read","params":{"name":"admin_boundaries","limit":1}}),
+        frame({"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"tool":"os_mcp.descriptor","args":{}}}),
+        frame({"jsonrpc":"2.0","id":4,"method":"resources/read","params":{"name":"skills_getting_started"}}),
         frame({"jsonrpc":"2.0","id":5,"method":"no_such_method","params":{}}),
         frame({"jsonrpc":"2.0","method":"exit"}),
     ])
@@ -50,8 +50,8 @@ def test_adapter_full_sequence():
     tool_call = next(m for m in results if m.get("id") == 3)
     assert tool_call["result"].get("ok") is True
     resource_get = next(m for m in results if m.get("id") == 4)
-    payload = json.loads(resource_get["result"]["contents"][0]["text"])
-    assert payload.get("name") == "admin_boundaries"
+    contents = resource_get["result"]["contents"]
+    assert contents[0]["uri"] == "skills://mcp-geo/getting-started"
     # Error response for unknown method should have error
     error_msg = next(m for m in msgs if m.get("id") == 5 and "error" in m)
     assert error_msg["error"]["code"] == -32601
