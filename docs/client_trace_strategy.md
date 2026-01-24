@@ -25,7 +25,7 @@ Then point your MCP client to this proxy command instead of calling `mcp-geo-std
 What you get in `logs/mcp-trace.jsonl`:
 - `initialize` payloads (client capabilities)
 - `tools/list`, `tools/search`, `tools/call` traffic
-- `resources/list`, `resources/get` traffic
+- `resources/list`, `resources/read` traffic
 
 ## 1b) Capture MCP JSON-RPC traffic (HTTP proxy)
 
@@ -43,7 +43,7 @@ Point your HTTP client at `http://127.0.0.1:8899/mcp` (or tunnel that URL).
 
 What you get in `logs/mcp-http-trace.jsonl`:
 - Request/response headers (authorization redacted)
-- JSON-RPC payloads for initialize, tools/list, tools/call, and resources/get
+- JSON-RPC payloads for initialize, tools/list, tools/call, and resources/read
 - Streamed SSE chunks (if any)
 
 ## 2) Capture UI interactions (MCP-Apps)

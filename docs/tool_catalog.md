@@ -848,6 +848,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "_meta": {
       "type": "object"
     },
+    "content": {
+      "type": "array"
+    },
     "config": {
       "type": "object"
     },
@@ -856,6 +859,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "status": {
       "type": "string"
+    },
+    "structuredContent": {
+      "type": "object"
     },
     "uiResourceUris": {
       "type": "array"
@@ -923,6 +929,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "_meta": {
       "type": "object"
     },
+    "content": {
+      "type": "array"
+    },
     "config": {
       "type": "object"
     },
@@ -931,6 +940,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "status": {
       "type": "string"
+    },
+    "structuredContent": {
+      "type": "object"
     },
     "uiResourceUris": {
       "type": "array"
@@ -989,6 +1001,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "_meta": {
       "type": "object"
     },
+    "content": {
+      "type": "array"
+    },
     "config": {
       "type": "object"
     },
@@ -997,6 +1012,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "status": {
       "type": "string"
+    },
+    "structuredContent": {
+      "type": "object"
     },
     "uiResourceUris": {
       "type": "array"
@@ -1780,5 +1798,3 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "type": "object"
 }
 ```
-
-

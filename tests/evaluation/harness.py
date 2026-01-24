@@ -28,7 +28,14 @@ from tests.evaluation.questions import (
     ToolCallSpec,
     get_questions,
 )
-from tests.evaluation.rubric import DimensionScore, EvaluationResult, QuestionScore, Rubric, ScoreLevel
+from tests.evaluation.rubric import (
+    DimensionScore,
+    EvaluationResult,
+    QuestionScore,
+    Rubric,
+    ScoreLevel,
+)
+from tools.registry import list_tools
 
 
 @dataclass
@@ -58,7 +65,7 @@ class MCPHttpClient:
         return resp.status_code, resp.json()
 
     def get_resource(self, params: Dict[str, Any]) -> tuple[int, Dict[str, Any]]:
-        resp = self.client.get("/resources/get", params=params)
+        resp = self.client.get("/resources/read", params=params)
         return resp.status_code, resp.json()
 
 
@@ -80,6 +87,7 @@ class EvaluationHarness:
         self.rubric = Rubric()
         self.audit_logger = AuditLogger(log_dir=log_dir)
         self.results: List[TestResult] = []
+        self.last_evaluation: Optional[EvaluationResult] = None
 
     def _resolve_payload(self, payload: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         resolved: Dict[str, Any] = {}
@@ -174,6 +182,8 @@ class EvaluationHarness:
         )
 
         self.audit_logger.record_response(full_response)
+        if unexpected_errors:
+            self.audit_logger.record_error("; ".join(unexpected_errors))
         audit_record = self.audit_logger.end_query()
 
         result = TestResult(
@@ -333,8 +343,89 @@ class EvaluationHarness:
             by_intent=by_intent,
             summary=self._generate_summary(),
         )
+        self.last_evaluation = result
         self._print_summary(result)
         return result
+
+    def _build_utilization_report(self) -> Dict[str, Any]:
+        tool_stats: Dict[str, Dict[str, Any]] = {}
+        total_calls = 0
+        for result in self.results:
+            record = result.audit_record
+            if not record:
+                continue
+            for call in record.tool_calls:
+                total_calls += 1
+                stats = tool_stats.setdefault(
+                    call.tool_name,
+                    {"calls": 0, "success": 0, "errors": 0},
+                )
+                stats["calls"] += 1
+                if call.success:
+                    stats["success"] += 1
+                else:
+                    stats["errors"] += 1
+        for stats in tool_stats.values():
+            calls = stats["calls"]
+            stats["successRate"] = round((stats["success"] / calls) * 100, 2) if calls else 0.0
+        registered_tools = set(list_tools())
+        called_tools = set(tool_stats.keys())
+        missing_tools = sorted(registered_tools - called_tools)
+        coverage_pct = (
+            (len(registered_tools) - len(missing_tools)) / len(registered_tools) * 100
+            if registered_tools
+            else 0.0
+        )
+        return {
+            "totalCalls": total_calls,
+            "uniqueToolsCalled": len(called_tools),
+            "registeredTools": len(registered_tools),
+            "coveragePercent": round(coverage_pct, 2),
+            "missingTools": missing_tools,
+            "perTool": tool_stats,
+        }
+
+    def _build_effectiveness_report(self, evaluation: Optional[EvaluationResult]) -> Dict[str, Any]:
+        total_questions = len(self.results)
+        pass_threshold = 75.0
+        if total_questions:
+            avg_score = sum(r.score.percentage for r in self.results) / total_questions
+            passed = sum(1 for r in self.results if r.score.percentage >= pass_threshold)
+        else:
+            avg_score = 0.0
+            passed = 0
+        tool_effectiveness: Dict[str, Dict[str, Any]] = {}
+        for result in self.results:
+            for tool in result.question.expected.required_tools:
+                stats = tool_effectiveness.setdefault(
+                    tool,
+                    {"questions": 0, "averageScore": 0.0},
+                )
+                stats["questions"] += 1
+                stats["averageScore"] += result.score.percentage
+        for stats in tool_effectiveness.values():
+            if stats["questions"]:
+                stats["averageScore"] = round(stats["averageScore"] / stats["questions"], 2)
+        return {
+            "overall": {
+                "percentage": (
+                    round(evaluation.percentage, 2)
+                    if evaluation
+                    else round(avg_score, 2)
+                ),
+                "level": evaluation.level.value if evaluation else ScoreLevel.FAIL.value,
+                "averageScore": round(avg_score, 2),
+                "passRate": (
+                    round((passed / total_questions) * 100, 2)
+                    if total_questions
+                    else 0.0
+                ),
+                "passThreshold": pass_threshold,
+            },
+            "byDifficulty": evaluation.by_difficulty if evaluation else {},
+            "byIntent": evaluation.by_intent if evaluation else {},
+            "perTool": tool_effectiveness,
+        }
 
     def _generate_summary(self) -> str:
         passed = sum(1 for r in self.results if r.score.percentage >= 75)
@@ -379,15 +470,21 @@ class EvaluationHarness:
 
     def save_results(self, output_path: Path) -> None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        utilization = self._build_utilization_report()
+        effectiveness = self._build_effectiveness_report(self.last_evaluation)
         results_data = {
             "timestamp": datetime.now().isoformat(),
             "summary": {
                 "total_questions": len(self.results),
                 "total_score": sum(r.score.total_score for r in self.results),
-                "percentage": sum(r.score.percentage for r in self.results) / len(self.results)
-                if self.results
-                else 0,
+                "percentage": (
+                    sum(r.score.percentage for r in self.results) / len(self.results)
+                    if self.results
+                    else 0
+                ),
             },
+            "utilization": utilization,
+            "effectiveness": effectiveness,
             "results": [
                 {
                     "question_id": r.question.id,

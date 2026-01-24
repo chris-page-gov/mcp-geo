@@ -56,17 +56,17 @@ def test_ui_tools_emit_resource_content(monkeypatch):
     monkeypatch.setenv("MCP_STDIO_RESOURCE_CONTENT", "1")
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
     assert call.get("ok") is True
-    resources = [item for item in call.get("content", []) if item.get("type") == "resource"]
+    resources = [item for item in call.get("content", []) if item.get("type") == "resource_link"]
     assert resources
-    assert resources[0]["resource"]["uri"].startswith("ui://")
+    assert resources[0]["uri"].startswith("ui://")
 
 def test_ui_tools_include_resource_content_by_default(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_RESOURCE_CONTENT", raising=False)
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
     assert call.get("ok") is True
-    resources = [item for item in call.get("content", []) if item.get("type") == "resource"]
+    resources = [item for item in call.get("content", []) if item.get("type") == "resource_link"]
     assert resources
-    assert resources[0]["resource"]["uri"].startswith("ui://")
+    assert resources[0]["uri"].startswith("ui://")
 
 def test_stdio_client_supports_ui_nested(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_UI_SUPPORTED", raising=False)

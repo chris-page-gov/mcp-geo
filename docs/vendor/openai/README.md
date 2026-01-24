@@ -3,6 +3,7 @@
 This folder is intended to hold **offline** copies of the specific OpenAI/ChatGPT docs pages needed by a code-writing assistant without web access.
 
 ## Canonical source pages (online)
+- [OpenAI MCP docs (platform)](https://platform.openai.com/docs/mcp)
 - [ChatGPT developer mode (platform docs)](https://platform.openai.com/docs/guides/developer-mode)
 - [Developer mode and MCP apps in ChatGPT (Help Centre)](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta)
 - [Apps in ChatGPT / Connectors overview (Help Centre)](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt)

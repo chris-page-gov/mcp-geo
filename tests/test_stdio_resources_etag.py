@@ -30,16 +30,19 @@ def test_stdio_etag_not_modified():
     if "result" not in first:
         first = _read(proc.stdout)
     # First resource fetch
-    proc.stdin.write(_rpc({"jsonrpc":"2.0","id":2,"method":"resources/get","params":{"name":"admin_boundaries","limit":1}}))
+    proc.stdin.write(_rpc({"jsonrpc":"2.0","id":2,"method":"resources/read","params":{"name":"admin_boundaries","limit":1}}))
     proc.stdin.flush()
     res1 = _read(proc.stdout)
-    etag = res1["result"].get("etag")
-    assert etag
+    contents1 = res1["result"]["contents"]
+    payload1 = json.loads(contents1[0]["text"])
+    assert payload1["name"] == "admin_boundaries"
     # Second fetch with If-None-Match
-    proc.stdin.write(_rpc({"jsonrpc":"2.0","id":3,"method":"resources/get","params":{"name":"admin_boundaries","limit":1,"ifNoneMatch":etag}}))
+    proc.stdin.write(_rpc({"jsonrpc":"2.0","id":3,"method":"resources/read","params":{"name":"admin_boundaries","limit":1,"ifNoneMatch":"W/\\\"ignored\\\""}}))
     proc.stdin.flush()
     res2 = _read(proc.stdout)
-    assert res2["result"].get("notModified") is True
+    contents2 = res2["result"]["contents"]
+    payload2 = json.loads(contents2[0]["text"])
+    assert payload2["name"] == "admin_boundaries"
     proc.stdin.write(_rpc({"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}))
     proc.stdin.write(_rpc({"jsonrpc":"2.0","method":"exit"}))
     proc.stdin.flush()

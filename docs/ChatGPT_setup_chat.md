@@ -1,7 +1,7 @@
-Facts about MCP Apps support (who renders text/html;profile=mcp-app)
-	•	MCP Apps is an optional extension to MCP: servers declare ui://… resources with mimeType: text/html;profile=mcp-app, and hosts may or may not render them. The spec explicitly notes hosts differ and UI support can’t be assumed.  ￼
-	•	Your map-geo server is already emitting MCP Apps UI resources. In your trace, a tool call returns a UI resource such as ui://mcp-geo/geography-selector with text/html;profile=mcp-app, which Claude Desktop didn’t render.  ￼
-	•	ChatGPT “Apps” (OpenAI’s Apps SDK) is designed to render interactive UI inside ChatGPT, built on MCP and an extension for UI.  ￼
+Facts about MCP Apps support (ext-apps vs ChatGPT Apps)
+	•	MCP Apps (ext-apps) is an optional extension to MCP: servers declare ui://… resources with mimeType: text/html;profile=mcp-app, and hosts may or may not render them. The spec explicitly notes hosts differ and UI support can’t be assumed.  ￼
+	•	ChatGPT “Apps” (OpenAI’s Apps SDK) expects ui://… resources with mimeType: text/html+skybridge and tool metadata that points to the template via openai/outputTemplate.  ￼
+	•	Your map-geo server emits both UI resource variants: ui://mcp-geo/geography-selector (mcp-app) and ui://mcp-geo/geography-selector.html (skybridge).  ￼
 	•	goose Desktop documents experimental MCP Apps rendering (useful as a sanity check client).  ￼
 
 So: if you want an “AI client that renders MCP Apps”, ChatGPT (Apps SDK / MCP apps in ChatGPT) is the primary target, and goose is a convenient second reference implementation.
@@ -85,7 +85,7 @@ Goal: end up with a public URL like https://something.example/mcp.
 	•	In Inspector:
 	•	Click List Tools
 	•	Call the tool that should return a UI (e.g. your geography selector / route planner)
-	•	Confirm you see a resource with mimeType: text/html;profile=mcp-app and a ui://… URI (your trace shows your server already does this).  ￼
+	•	Confirm you see a resource with mimeType: text/html;profile=mcp-app (ext-apps) and text/html+skybridge (ChatGPT Apps), with matching ui:// URIs.  ￼
 
 If Inspector can’t see the tools: fix this before touching ChatGPT (it will be faster).
 
@@ -147,7 +147,7 @@ Troubleshooting (the small set of failures novices actually hit)
 	•	Use MCP Inspector to verify the server responds to List Tools.  ￼
 
 2) “Tools appear, but the UI doesn’t render”
-	•	Confirm the tool response points to a ui://… resource and the resource is text/html;profile=mcp-app (Inspector is best for this).  ￼
+	•	Confirm the tool response points to a ui://… resource and the resource is text/html;profile=mcp-app for ext-apps clients or text/html+skybridge for ChatGPT Apps.  ￼
 	•	If it renders in Inspector but not ChatGPT, treat it as a client support gap (MCP Apps is optional per spec).  ￼
 
 3) “Claude Desktop works, ChatGPT doesn’t”

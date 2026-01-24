@@ -55,24 +55,24 @@ def test_invalid_params_type_branch():
     invalid = next(m for m in msgs if m.get("id") == 1 and m.get("error"))
     assert invalid["error"]["code"] == -32602
 
-def test_resources_get_not_modified_etag():
-    # First fetch resource, second with ifNoneMatch
-    req1 = {"jsonrpc":"2.0","id":1,"method":"resources/get","params":{"name":"admin_boundaries","limit":1}}
-    req2 = {"jsonrpc":"2.0","id":2,"method":"resources/get","params":{"name":"admin_boundaries","limit":1}}  # will patch etag after first response
+def test_resources_read_ignores_if_none_match():
+    req1 = {"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"name":"admin_boundaries","limit":1}}
     exit_msg = {"jsonrpc":"2.0","method":"exit"}
-    # Build combined stdin after first run to capture etag
     stdin1 = io.StringIO((make(req1)+make(exit_msg)).decode())
     stdout1 = io.StringIO()
     stdio_adapter.main(stdin=stdin1, stdout=stdout1)
     msgs1 = read_messages(io.BytesIO(stdout1.getvalue().encode()))
     res1 = next(m for m in msgs1 if m.get("id") == 1 and m.get("result"))
-    etag = res1["result"].get("etag")
-    assert etag
-    # Second sequence with ifNoneMatch
-    req2_with_etag = {"jsonrpc":"2.0","id":1,"method":"resources/get","params":{"name":"admin_boundaries","limit":1,"ifNoneMatch":etag}}
-    stdin2 = io.StringIO((make(req2_with_etag)+make(exit_msg)).decode())
+    contents1 = res1["result"]["contents"]
+    payload1 = json.loads(contents1[0]["text"])
+    assert payload1["name"] == "admin_boundaries"
+
+    req2 = {"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"name":"admin_boundaries","limit":1,"ifNoneMatch":"W/\\\"ignored\\\""}}
+    stdin2 = io.StringIO((make(req2)+make(exit_msg)).decode())
     stdout2 = io.StringIO()
     stdio_adapter.main(stdin=stdin2, stdout=stdout2)
     msgs2 = read_messages(io.BytesIO(stdout2.getvalue().encode()))
     res2 = next(m for m in msgs2 if m.get("id") == 1 and m.get("result"))
-    assert res2["result"].get("notModified") is True
+    contents2 = res2["result"]["contents"]
+    payload2 = json.loads(contents2[0]["text"])
+    assert payload2["name"] == "admin_boundaries"

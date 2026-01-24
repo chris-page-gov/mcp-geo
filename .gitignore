@@ -53,6 +53,8 @@ cover/
 
 # Local logs
 logs/
+# Local data capture (DB volumes, live API dumps)
+data/
 
 # Translations
 *.mo

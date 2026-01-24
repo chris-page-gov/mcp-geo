@@ -34,6 +34,7 @@ from server.mcp.resource_catalog import (
     resolve_skill_resource,
     resolve_ui_resource,
 )
+from tools.os_apps import build_ui_tool_meta
 from server.mcp.tool_search import get_tool_metadata, search_tools
 from server import __version__ as SERVER_VERSION
 
@@ -117,73 +118,38 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
     uri = params.get("uri")
     if not name and not uri:
         raise ValueError("Missing resource name or uri")
-    if_none_match = params.get("ifNoneMatch")
     if uri:
         if isinstance(uri, str) and uri.startswith(DATA_RESOURCE_PREFIX):
             name = uri[len(DATA_RESOURCE_PREFIX):]
         else:
             ui_entry = resolve_ui_resource(str(uri))
             if ui_entry:
-                content, etag = load_ui_content(ui_entry)
-                if if_none_match:
-                    tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-                    if etag in tokens or "*" in tokens:
-                        return {"notModified": True, "etag": etag}
-                return {
-                    "uri": ui_entry["uri"],
-                    "name": ui_entry["name"],
-                    "title": ui_entry["title"],
-                    "mimeType": ui_entry["mimeType"],
-                    "etag": etag,
-                    "content": content,
-                }
+                content, _etag = load_ui_content(ui_entry)
+                return _read_result(
+                    ui_entry["uri"],
+                    ui_entry["mimeType"],
+                    content,
+                    ui_entry.get("resourceMeta"),
+                )
             skill_entry = resolve_skill_resource(str(uri))
             if skill_entry:
-                content, etag = load_skill_content()
-                if if_none_match:
-                    tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-                    if etag in tokens or "*" in tokens:
-                        return {"notModified": True, "etag": etag}
-                return {
-                    "uri": skill_entry["uri"],
-                    "name": skill_entry["name"],
-                    "title": skill_entry["title"],
-                    "mimeType": skill_entry["mimeType"],
-                    "etag": etag,
-                    "content": content,
-                }
+                content, _etag = load_skill_content()
+                return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
             raise LookupError(f"Unknown resource '{uri}'")
     if name:
         ui_entry = resolve_ui_resource(str(name))
         if ui_entry:
-            content, etag = load_ui_content(ui_entry)
-            if if_none_match:
-                tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-                if etag in tokens or "*" in tokens:
-                    return {"notModified": True, "etag": etag}
-            return {
-                "uri": ui_entry["uri"],
-                "name": ui_entry["name"],
-                "title": ui_entry["title"],
-                "mimeType": ui_entry["mimeType"],
-                "etag": etag,
-                "content": content,
-            }
+            content, _etag = load_ui_content(ui_entry)
+            return _read_result(
+                ui_entry["uri"],
+                ui_entry["mimeType"],
+                content,
+                ui_entry.get("resourceMeta"),
+            )
         skill_entry = resolve_skill_resource(str(name))
         if skill_entry:
-            content, etag = load_skill_content()
-            if if_none_match:
-                tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-                if etag in tokens or "*" in tokens:
-                    return {"notModified": True, "etag": etag}
-            return {
-                "uri": skill_entry["uri"],
-                "name": skill_entry["name"],
-                "title": skill_entry["title"],
-                "mimeType": skill_entry["mimeType"],
-                "etag": etag,
-                "content": content,
-            }
+            content, _etag = load_skill_content()
+            return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
     if not isinstance(name, str):
         raise ValueError("Missing resource name")
     if name == "admin_boundaries":
@@ -205,11 +171,7 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
         next_page_token = str(page + 1) if end < len(features) else None
         variant_key = f"ab|{level or '*'}|{name_contains or '*'}|{limit}|{page}"
         etag = _etag_for(name, variant_key, json.dumps(raw, separators=(",", ":")).encode())
-        if if_none_match:
-            tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-            if etag in tokens or "*" in tokens:
-                return {"notModified": True, "etag": etag}
-        return {
+        payload = {
             "name": name,
             "uri": data_resource_uri(name),
             "count": len(features),
@@ -222,6 +184,11 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
                 "nextPageToken": next_page_token,
             },
         }
+        return _read_result(
+            data_resource_uri(name),
+            "application/json",
+            json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
+        )
     if name == "ons_observations":
         raw = _read_json(RESOURCES_PATH / "ons_observations.json")
         observations = raw.get("observations", [])
@@ -246,11 +213,7 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
         etag = _etag_for(
             name, variant_key, json.dumps(raw, separators=(",", ":")).encode()
         )
-        if if_none_match:
-            tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-            if etag in tokens or "*" in tokens:
-                return {"notModified": True, "etag": etag}
-        return {
+        payload = {
             "name": name,
             "uri": data_resource_uri(name),
             "count": len(observations),
@@ -269,6 +232,11 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
                 "appliedFilters": {"geography": geography, "measure": measure},
             },
         }
+        return _read_result(
+            data_resource_uri(name),
+            "application/json",
+            json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
+        )
     if name in {"address_classification_codes", "custodian_codes", "boundaries_wards"}:
         raw = _read_json(RESOURCES_PATH / f"{name}.json")
         items = raw.get("codes") or raw.get("features") or []
@@ -282,11 +250,7 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
         etag = _etag_for(
             name, variant_key, json.dumps(raw, separators=(",", ":")).encode()
         )
-        if if_none_match:
-            tokens = {t.strip() for t in str(if_none_match).split(',') if t.strip()}
-            if etag in tokens or "*" in tokens:
-                return {"notModified": True, "etag": etag}
-        return {
+        payload = {
             "name": name,
             "uri": data_resource_uri(name),
             "count": len(items),
@@ -303,6 +267,11 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
                 "nextPageToken": next_page_token,
             },
         }
+        return _read_result(
+            data_resource_uri(name),
+            "application/json",
+            json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
+        )
     raise LookupError(f"Unknown resource '{name}'")
 
 def _resolve_framing() -> Optional[str]:
@@ -437,17 +406,50 @@ def _extract_ui_resource_uris(data: Any) -> list[str]:
     return unique
 
 
+def _resource_link_from_uri(uri: str) -> Dict[str, Any]:
+    link: Dict[str, Any] = {"type": "resource_link", "uri": uri, "name": uri}
+    ui_entry = resolve_ui_resource(uri)
+    if ui_entry:
+        link["name"] = ui_entry["name"]
+        if ui_entry.get("title"):
+            link["title"] = ui_entry["title"]
+        if ui_entry.get("description"):
+            link["description"] = ui_entry["description"]
+        if ui_entry.get("mimeType"):
+            link["mimeType"] = ui_entry["mimeType"]
+        if ui_entry.get("annotations"):
+            link["annotations"] = ui_entry["annotations"]
+    return link
+
+
+def _has_resource_link(content: list[Any], uri: str) -> bool:
+    for item in content:
+        if isinstance(item, dict) and item.get("type") == "resource_link" and item.get("uri") == uri:
+            return True
+    return False
+
+
+def _inject_resource_links(
+    content: list[Any],
+    ui_uris: list[str],
+    allow_resource: bool,
+) -> list[Any]:
+    if not allow_resource or not ui_uris:
+        return list(content)
+    merged = list(content)
+    for uri in reversed(ui_uris):
+        if not _has_resource_link(merged, uri):
+            merged.insert(0, _resource_link_from_uri(uri))
+    return merged
+
+
 def _tool_content_from_data(data: Any, allow_resource: bool) -> List[Dict[str, Any]]:
     if data is None:
         return []
     content: List[Dict[str, Any]] = []
     if allow_resource:
         for uri in _extract_ui_resource_uris(data):
-            block: Dict[str, Any] = {"type": "resource", "resource": {"uri": uri}}
-            ui_entry = resolve_ui_resource(uri)
-            if ui_entry:
-                block["resource"]["mimeType"] = ui_entry["mimeType"]
-            content.append(block)
+            content.append(_resource_link_from_uri(uri))
     if isinstance(data, str):
         text = data
     else:
@@ -457,6 +459,20 @@ def _tool_content_from_data(data: Any, allow_resource: bool) -> List[Dict[str, A
             text = str(data)
     content.append({"type": "text", "text": text})
     return content
+
+
+def _read_result(
+    uri: str,
+    mime_type: Optional[str],
+    text: str,
+    meta: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    item: Dict[str, Any] = {"uri": uri, "text": text}
+    if mime_type:
+        item["mimeType"] = mime_type
+    if meta:
+        item["_meta"] = meta
+    return {"contents": [item]}
 
 
 def _extract_initial_view(payload: Dict[str, Any], data: Any) -> tuple[Optional[float], Optional[float], Optional[int]]:
@@ -562,20 +578,22 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
         annotations = dict(meta.get("annotations", {}))
         if name != t.name:
             annotations["originalName"] = t.name
-        tool_entries.append(
-            {
-                "name": name,
-                "description": t.description,
-                "version": t.version,
-                "inputSchema": t.input_schema,
-                "outputSchema": t.output_schema,
-                "annotations": annotations,
-                "category": meta.get("category"),
-                "keywords": meta.get("keywords", []),
-                "deferLoading": meta.get("defer_loading", False),
-                "defer_loading": meta.get("defer_loading", False),
-            }
-        )
+        entry: Dict[str, Any] = {
+            "name": name,
+            "description": t.description,
+            "version": t.version,
+            "inputSchema": t.input_schema,
+            "outputSchema": t.output_schema,
+            "annotations": annotations,
+            "category": meta.get("category"),
+            "keywords": meta.get("keywords", []),
+            "deferLoading": meta.get("defer_loading", False),
+            "defer_loading": meta.get("defer_loading", False),
+        }
+        ui_meta = build_ui_tool_meta(t.name)
+        if ui_meta:
+            entry["_meta"] = ui_meta
+        tool_entries.append(entry)
     return {"tools": tool_entries}
 
 
@@ -638,13 +656,25 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     result: Dict[str, Any] = {"status": status, "ok": ok, "data": data}
     ui_uris = _extract_ui_resource_uris(data)
     allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False) or bool(ui_uris)
-    result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
+    if isinstance(data, dict):
+        content_override = data.get("content")
+        if isinstance(content_override, list):
+            result["content"] = _inject_resource_links(
+                content_override,
+                ui_uris,
+                allow_resource,
+            )
+        else:
+            result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
+        if "structuredContent" in data:
+            result["structuredContent"] = data["structuredContent"]
+        meta = data.get("_meta")
+        if isinstance(meta, dict):
+            result["_meta"] = meta
+    else:
+        result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
     if ui_uris:
         result["uiResourceUris"] = ui_uris
-        if isinstance(data, dict):
-            meta = data.get("_meta")
-            if isinstance(meta, dict):
-                result["_meta"] = meta
     if not ok or (isinstance(data, dict) and data.get("isError") is True):
         result["isError"] = True
     return result
@@ -662,7 +692,7 @@ HANDLERS: Dict[str, Any] = {
     "tools/call": handle_call_tool,
     "resources/list": handle_list_resources,
     "resources/describe": lambda _p: {"resources": RESOURCE_LIST},
-    "resources/get": handle_get_resource,
+    "resources/read": handle_get_resource,
     "shutdown": handle_shutdown,
 }
 

@@ -6,9 +6,10 @@ Production-focused Model Context Protocol (MCP) server for geospatial (Ordnance 
 
 See [Latest Specification which this MUST conform to](https://modelcontextprotocol.io/specification/2025-11-25).
 This is a preview spec; tracking and review cadence live in `docs/spec_tracking.md`.
+OpenAI's MCP documentation is at https://platform.openai.com/docs/mcp (preview; tracked in `docs/spec_tracking.md`).
 
 ## Key Features
-- MCP endpoints: `/mcp` (streamable HTTP JSON-RPC), `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/get`
+- MCP endpoints: `/mcp` (streamable HTTP JSON-RPC), `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/read`
 - Uniform error envelope and pagination (`nextPageToken`)
 - Dynamic tool registration with schema introspection
 - Tool annotations + defer-loading metadata for tool search integrations
@@ -123,19 +124,16 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 The server exposes static / reference datasets under the resources API surface:
 
 - `GET /resources/list` returns an array of resource descriptors (now including provenance: version, source, license).
-- `GET /resources/get?name=admin_boundaries` returns the administrative boundaries sample dataset with optional parameters:
+- `GET /resources/read?name=admin_boundaries` returns the administrative boundaries sample dataset with optional parameters:
 	- `limit` (default 100, max 500)
 	- `page` (1-based)
 	- `level` (e.g. `OA`, `LSOA`, `MSOA`, `WARD`, `DISTRICT`, `COUNTY`, `REGION`, `NATION`)
 	- `nameContains` (case-insensitive substring filter)
-	Response includes:
-	- `etag`: Weak ETag for conditional caching (SHA-256 of file + version)
-	- `provenance`: Embedded metadata (version, source, license, retrievedAt)
-	- `count`: Total filtered feature count (across all pages)
-	- `data.features`: Current page of features
-	- `data.total`: Same as `count` (filtered total)
-	- `data.limit`, `data.page`, `data.nextPageToken`
-	- `data.features[*].bbox` retains original CRS (EPSG:4326)
+	Response uses MCP `ReadResourceResult`:
+	- `contents[0].uri` is the resource URI (e.g. `resource://mcp-geo/admin_boundaries`)
+	- `contents[0].mimeType` is `application/json`
+	- `contents[0].text` is JSON that includes `provenance`, `count`, and `data.*` pagination fields
+	- HTTP ETag is delivered via the `ETag` header for conditional caching
 
 ### Skills and MCP-Apps Resources
 In addition to data resources, MCP Geo exposes:
@@ -146,7 +144,7 @@ In addition to data resources, MCP Geo exposes:
 - `ui://mcp-geo/feature-inspector`
 - `ui://mcp-geo/route-planner`
 
-Use `GET /resources/get?uri=...` to fetch these resources. MCP-Apps widgets are
+Use `GET /resources/read?uri=...` to fetch these resources. MCP-Apps widgets are
 HTML documents with `text/html;profile=mcp-app` MIME types.
 
 MCP-Apps support varies by client. If the client does not advertise UI support,
@@ -158,7 +156,7 @@ Set `MCP_STDIO_UI_SUPPORTED=1` to force UI mode, or
 ### Conditional Requests (ETag)
 Clients should cache responses and revalidate:
 ```
-GET /resources/get?name=admin_boundaries
+GET /resources/read?name=admin_boundaries
 If-None-Match: W/"f337e5733a4b7f50"
 ```
 If unchanged, the server returns `304 Not Modified` with the same `ETag` header and an empty body.
@@ -230,7 +228,7 @@ Response shape:
 The underlying sample dataset is also exposed via the resources API:
 ```
 GET /resources/list            # includes ons_observations
-GET /resources/get?name=ons_observations&limit=2&page=1
+GET /resources/read?name=ons_observations&limit=2&page=1
 ```
 Response includes `observations`, `dimensions`, pagination metadata, provenance, and ETag for conditional requests.
 
@@ -271,7 +269,7 @@ You can override the base with `ONS_DATASET_API_BASE` or disable live search wit
 ### ons_observations Resource & Filters
 The resource endpoint now supports:
 ```
-GET /resources/get?name=ons_observations&geography=K02000001&measure=chained_volume_measure
+GET /resources/read?name=ons_observations&geography=K02000001&measure=chained_volume_measure
 ```
 Filters influence pagination and ETag variant generation (`geography`, `measure`).
 
@@ -313,14 +311,14 @@ Coverage gate (configured) requires ≥90%. Add tests for both success and error
 `os_places.by_postcode` now enriches each UPRN record with:
 - `classificationDescription` — human-readable description looked up from `address_classification_codes.json`.
 - `localCustodianName` — local authority name from `custodian_codes.json`.
-These static code lists are exposed via `/resources/get?name=address_classification_codes` and `/resources/get?name=custodian_codes`.
+These static code lists are exposed via `/resources/read?name=address_classification_codes` and `/resources/read?name=custodian_codes`.
 Other `os_places.*` endpoints will adopt the same enrichment (roadmap).
 
 ## Examples & Golden Tests
 See `docs/examples.md` for sample payloads, conversation flows, and guidance on chaining tools. Golden scenario tests (`test_golden_scenarios.py`) ensure transformation stability with deterministic mocked upstream responses.
 
 ## Resource Caching & Provenance
-All `/resources/get` responses include:
+All `/resources/read` responses include:
 - `etag` (weak) for conditional requests
 - `provenance.retrievedAt` timestamp
 - `Cache-Control` header (currently 300s for dynamic admin boundaries sample; 86400s for static code lists)
@@ -362,7 +360,7 @@ Content-Length: <bytes>\r\n
 | tools/call      | Invoke a tool (`params.tool`, optional `params.args`) |
 | resources/list  | Lists basic resource names |
 | resources/describe | Returns resource metadata (name, description, license) |
-| resources/get   | Fetch resource data (supports filters, ETag varianting) |
+| resources/read   | Fetch resource data (supports filters, ETag varianting) |
 | shutdown        | Graceful shutdown (result null) |
 | exit (notify)   | Process terminates (no response) |
 
@@ -387,7 +385,7 @@ Simpler: write a tiny Python snippet to send framed messages (see `tests/test_st
 Opening the workspace lets compatible MCP extensions discover `mcp.json` and spawn the STDIO adapter. Environment variables (`OS_API_KEY`, `ONS_LIVE_ENABLED`) are injected via the `env` block.
 
 ### Notes
-- `resources/get` now emits a weak ETag (`etag`) and supports conditional retrieval via `ifNoneMatch` param. If matched, response shape: `{ "jsonrpc":"2.0", "id": <n>, "result": { "notModified": true, "etag": "W/\"...\"" } }`.
+- `resources/read` now emits a weak ETag (`etag`) and supports conditional retrieval via `ifNoneMatch` param. If matched, response shape: `{ "jsonrpc":"2.0", "id": <n>, "result": { "notModified": true, "etag": "W/\"...\"" } }`.
 - Use the same pagination/filter parameters when revalidating or the variant key changes and a full payload is returned.
 - `resources/describe` returns the static metadata list (extend as resources grow).
 - Errors follow JSON-RPC error envelope with custom positive codes (1001-1003) for validation and -32603 for internal errors.
@@ -410,11 +408,11 @@ ONS_LIVE_ENABLED=true python scripts/mcp_client.py tools/call ons_data.dimension
 python scripts/mcp_client.py tools/call ons_data.query '{"params":{"geography":"K02000001","limit":2}}'
 
 # Fetch resource with ETag then conditional request (two approaches)
-R1=$(python scripts/mcp_client.py resources/get '{"name":"admin_boundaries","limit":1}' | jq -r '.response.result.etag')
-python scripts/mcp_client.py resources/get '{"name":"admin_boundaries","limit":1,"ifNoneMatch":"'$R1'"}'
+R1=$(python scripts/mcp_client.py resources/read '{"name":"admin_boundaries","limit":1}' | jq -r '.response.result.etag')
+python scripts/mcp_client.py resources/read '{"name":"admin_boundaries","limit":1,"ifNoneMatch":"'$R1'"}'
 
 # Or using the convenience flag (no JSON escaping needed):
-python scripts/mcp_client.py resources/get --if-none-match "$R1" '{"name":"admin_boundaries","limit":1}'
+python scripts/mcp_client.py resources/read --if-none-match "$R1" '{"name":"admin_boundaries","limit":1}'
 ```
 
 The JSON argument after the tool name is merged into the request `params` object. Include nested objects as required by each tool schema.
@@ -444,8 +442,8 @@ Interactive session:
 ```bash
 python scripts/mcp_client.py --repl
 mcp> resources/describe
-mcp> resources/get {"name":"ons_observations","geography":"K02000001","limit":2}
-mcp> resources/get {"name":"ons_observations","geography":"K02000001","limit":2,"ifNoneMatch":"W/\"abc123deadbeef00\""}
+mcp> resources/read {"name":"ons_observations","geography":"K02000001","limit":2}
+mcp> resources/read {"name":"ons_observations","geography":"K02000001","limit":2,"ifNoneMatch":"W/\"abc123deadbeef00\""}
 mcp> exit
 ```
 `notModified` responses are compacted by the client for readability.

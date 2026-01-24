@@ -13,8 +13,9 @@ Process:
 | Feature | Spec/Docs URL | Status | Owner | Last Checked | Review Cadence | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | MCP specification | https://modelcontextprotocol.io/specification/2025-11-25 | Preview | maintainers | 2026-01-21 (local logs only) | Each release | External verification required; track changes before release. |
-| MCP-Apps UI (`text/html;profile=mcp-app`) | https://modelcontextprotocol.io/specification/2025-11-25 | Preview | maintainers | 2026-01-21 (Claude logs) | Each release | Claude client did not fetch `resources/get` or render UI in current logs. |
+| MCP-Apps UI (`text/html;profile=mcp-app`) | https://modelcontextprotocol.io/specification/2025-11-25 | Preview | maintainers | 2026-01-21 (Claude logs) | Each release | Claude client did not fetch `resources/read` or render UI in current logs. |
 | MCP Streamable HTTP transport (OpenAI docs) | docs/vendor/openai/mcp_transport_streamable_http.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
 | ChatGPT Developer Mode Connectors | docs/vendor/openai/chatgpt_connectors_developer_mode.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
-| OpenAI Apps SDK (MCP-Apps UI) | docs/vendor/openai/apps_sdk_mcp_apps_ui.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
+| OpenAI Apps SDK (MCP-Apps UI) | https://developers.openai.com/apps-sdk/build/mcp-server/ | Preview | maintainers | 2026-01-24 (local snapshot) | Monthly | Local snapshot at `docs/vendor/openai/_snapshot/apps-sdk/build/mcp-server.html`. |
 | MCP Inspector CLI | docs/vendor/openai/mcp_inspector.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
+| OpenAI MCP docs (platform) | https://platform.openai.com/docs/mcp | Preview | maintainers | 2026-01-24 (link added) | Monthly | Local stub at `docs/vendor/openai/mcp_platform_docs.md`; snapshot pending. |

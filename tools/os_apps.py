@@ -16,6 +16,42 @@ _UI_URIS = {
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
 }
+_OPENAI_UI_URIS = {
+    "geography": "ui://mcp-geo/geography-selector.html",
+    "statistics": "ui://mcp-geo/statistics-dashboard.html",
+    "feature": "ui://mcp-geo/feature-inspector.html",
+    "route": "ui://mcp-geo/route-planner.html",
+}
+UI_TOOL_RESOURCES = {
+    "os_apps.render_geography_selector": {
+        "mcp": _UI_URIS["geography"],
+        "openai": _OPENAI_UI_URIS["geography"],
+    },
+    "os_apps.render_statistics_dashboard": {
+        "mcp": _UI_URIS["statistics"],
+        "openai": _OPENAI_UI_URIS["statistics"],
+    },
+    "os_apps.render_feature_inspector": {
+        "mcp": _UI_URIS["feature"],
+        "openai": _OPENAI_UI_URIS["feature"],
+    },
+    "os_apps.render_route_planner": {
+        "mcp": _UI_URIS["route"],
+        "openai": _OPENAI_UI_URIS["route"],
+    },
+}
+
+
+def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
+    entry = UI_TOOL_RESOURCES.get(tool_name)
+    if not entry:
+        return None
+    return {
+        "ui": {"resourceUri": entry["mcp"]},
+        "ui/resourceUri": entry["mcp"],
+        "openai/outputTemplate": entry["openai"],
+        "openai/widgetAccessible": True,
+    }
 _EVENT_LOG_LOCK = threading.Lock()
 _SENSITIVE_KEY_MARKERS = (
     "api_key",
@@ -33,11 +69,19 @@ def _error(message: str) -> ToolResult:
 
 
 def _build_widget_response(uri: str, config: dict[str, Any], instructions: str) -> ToolResult:
+    structured = {
+        "status": "ready",
+        "config": config,
+        "instructions": instructions,
+        "uiResourceUris": [uri],
+    }
     return 200, {
         "status": "ready",
         "config": config,
         "instructions": instructions,
         "uiResourceUris": [uri],
+        "structuredContent": structured,
+        "content": [{"type": "text", "text": instructions}],
         "_meta": {"uiResourceUris": [uri], "audience": ["user"]},
     }
 
@@ -179,6 +223,8 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
         "status": {"type": "string"},
         "config": {"type": "object"},
         "instructions": {"type": "string"},
+        "structuredContent": {"type": "object"},
+        "content": {"type": "array"},
         "uiResourceUris": {"type": "array"},
         "_meta": {"type": "object"}
       },
@@ -252,6 +298,8 @@ def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
         "status": {"type": "string"},
         "config": {"type": "object"},
         "instructions": {"type": "string"},
+        "structuredContent": {"type": "object"},
+        "content": {"type": "array"},
         "uiResourceUris": {"type": "array"},
         "_meta": {"type": "object"}
       },
@@ -302,6 +350,8 @@ def _render_feature_inspector(payload: dict[str, Any]) -> ToolResult:
         "status": {"type": "string"},
         "config": {"type": "object"},
         "instructions": {"type": "string"},
+        "structuredContent": {"type": "object"},
+        "content": {"type": "array"},
         "uiResourceUris": {"type": "array"},
         "_meta": {"type": "object"}
       },
@@ -354,6 +404,8 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
         "status": {"type": "string"},
         "config": {"type": "object"},
         "instructions": {"type": "string"},
+        "structuredContent": {"type": "object"},
+        "content": {"type": "array"},
         "uiResourceUris": {"type": "array"},
         "_meta": {"type": "object"}
       },
@@ -415,6 +467,8 @@ register(
                 "status": {"type": "string"},
                 "config": {"type": "object"},
                 "instructions": {"type": "string"},
+                "structuredContent": {"type": "object"},
+                "content": {"type": "array"},
                 "uiResourceUris": {"type": "array"},
                 "_meta": {"type": "object"},
             },
@@ -445,6 +499,8 @@ register(
                 "status": {"type": "string"},
                 "config": {"type": "object"},
                 "instructions": {"type": "string"},
+                "structuredContent": {"type": "object"},
+                "content": {"type": "array"},
                 "uiResourceUris": {"type": "array"},
                 "_meta": {"type": "object"},
             },
@@ -475,6 +531,8 @@ register(
                 "status": {"type": "string"},
                 "config": {"type": "object"},
                 "instructions": {"type": "string"},
+                "structuredContent": {"type": "object"},
+                "content": {"type": "array"},
                 "uiResourceUris": {"type": "array"},
                 "_meta": {"type": "object"},
             },
@@ -507,6 +565,8 @@ register(
                 "status": {"type": "string"},
                 "config": {"type": "object"},
                 "instructions": {"type": "string"},
+                "structuredContent": {"type": "object"},
+                "content": {"type": "array"},
                 "uiResourceUris": {"type": "array"},
                 "_meta": {"type": "object"},
             },

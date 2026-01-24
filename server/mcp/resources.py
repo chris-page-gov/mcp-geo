@@ -135,6 +135,28 @@ def _build_resource_list() -> list[dict[str, Any]]:
     return resources
 
 
+def _read_result(
+    uri: str,
+    mime_type: Optional[str],
+    text: str,
+    meta: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    item: Dict[str, Any] = {"uri": uri, "text": text}
+    if mime_type:
+        item["mimeType"] = mime_type
+    if meta:
+        item["_meta"] = meta
+    return {"contents": [item]}
+
+
+def _read_json_result(uri: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    return _read_result(
+        uri,
+        "application/json",
+        json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
+    )
+
+
 @router.get("/resources/list")
 def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
     resources = _build_resource_list()
@@ -153,8 +175,8 @@ def describe_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
     return {"resources": resources[start:end], "nextPageToken": next_page_token}
 
 
-@router.get("/resources/get")
-def get_resource(
+@router.get("/resources/read")
+def read_resource(
     response: Response,
     name: str | None = Query(default=None),
     uri: str | None = Query(default=None),
@@ -190,14 +212,12 @@ def get_resource(
                     return None
                 response.headers["ETag"] = etag
                 response.headers["Cache-Control"] = "public, max-age=300"
-                return {
-                    "uri": ui_entry["uri"],
-                    "name": ui_entry["name"],
-                    "title": ui_entry["title"],
-                    "mimeType": ui_entry["mimeType"],
-                    "etag": etag,
-                    "content": content,
-                }
+                return _read_result(
+                    ui_entry["uri"],
+                    ui_entry["mimeType"],
+                    content,
+                    ui_entry.get("resourceMeta"),
+                )
             skill_entry = resolve_skill_resource(uri)
             if skill_entry:
                 content, etag = load_skill_content()
@@ -207,14 +227,7 @@ def get_resource(
                     return None
                 response.headers["ETag"] = etag
                 response.headers["Cache-Control"] = "public, max-age=300"
-                return {
-                    "uri": skill_entry["uri"],
-                    "name": skill_entry["name"],
-                    "title": skill_entry["title"],
-                    "mimeType": skill_entry["mimeType"],
-                    "etag": etag,
-                    "content": content,
-                }
+                return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
             raise HTTPException(status_code=404, detail="Resource not found")
 
     if name:
@@ -227,14 +240,12 @@ def get_resource(
                 return None
             response.headers["ETag"] = etag
             response.headers["Cache-Control"] = "public, max-age=300"
-            return {
-                "uri": ui_entry["uri"],
-                "name": ui_entry["name"],
-                "title": ui_entry["title"],
-                "mimeType": ui_entry["mimeType"],
-                "etag": etag,
-                "content": content,
-            }
+            return _read_result(
+                ui_entry["uri"],
+                ui_entry["mimeType"],
+                content,
+                ui_entry.get("resourceMeta"),
+            )
         skill_entry = resolve_skill_resource(name)
         if skill_entry:
             content, etag = load_skill_content()
@@ -244,14 +255,7 @@ def get_resource(
                 return None
             response.headers["ETag"] = etag
             response.headers["Cache-Control"] = "public, max-age=300"
-            return {
-                "uri": skill_entry["uri"],
-                "name": skill_entry["name"],
-                "title": skill_entry["title"],
-                "mimeType": skill_entry["mimeType"],
-                "etag": etag,
-                "content": content,
-            }
+            return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
 
     if not name:
         raise HTTPException(status_code=404, detail="Resource not found")
@@ -307,7 +311,7 @@ def get_resource(
         }
         response.headers["ETag"] = etag
         response.headers["Cache-Control"] = "public, max-age=300"
-        return payload
+        return _read_json_result(data_resource_uri(name), payload)
     if name == "ons_observations":
         path = _ons_observations_path()
         if not path.exists():  # pragma: no cover
@@ -359,7 +363,7 @@ def get_resource(
         }
         response.headers["ETag"] = etag
         response.headers["Cache-Control"] = "public, max-age=300"
-        return payload  # type: ignore[return-value]
+        return _read_json_result(data_resource_uri(name), payload)  # type: ignore[return-value]
 
     # Code lists & ward boundaries (simple pagination + ETag varianting)
     def _generic_resource(path: Path, variant_key: str) -> Optional[Dict[str, Any]]:
@@ -395,7 +399,7 @@ def get_resource(
         }
         response.headers["ETag"] = etag
         response.headers["Cache-Control"] = "public, max-age=86400"
-        return payload
+        return _read_json_result(data_resource_uri(name), payload)
 
     base_path = Path(__file__).resolve().parent.parent.parent / "resources"
     if name in {"address_classification_codes", "custodian_codes", "boundaries_wards"}:

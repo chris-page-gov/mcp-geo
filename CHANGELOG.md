@@ -5,14 +5,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- (none)
+- Archived the original build backlog in `docs/build_initial_version.md`.
+- Devcontainer image now bundles `ngrok` for HTTPS tunneling during ChatGPT connector setup.
+- MCP Apps alignment note at `docs/mcp_apps_alignment.md`.
+- Skybridge UI resource variants to support OpenAI Apps SDK alongside ext-apps.
+- Live API capture test with PostgreSQL/PostGIS logging for upstream responses.
+- Devcontainer now provides a PostGIS service for live API capture runs.
 
 ### Changed
+- `docs/Build.md` now documents the current install/run/test workflow and endpoints.
+- `docs/review_codex_in_container.md` now references the Python toolchain and `pytest -q` for verification.
+- Devcontainer base packages now include `curl` to support installing tunnel helpers.
 - Docker image defaults `ONS_LIVE_ENABLED=true` so live ONS calls are available without extra flags.
 - STDIO MCP-Apps calls now include UI resource content by default; UI capability detection is more permissive.
 - OS Names and OS Places requests now ask for WGS84 output to improve coordinate availability.
 - admin_lookup tools now query live ONS Open Geography (ArcGIS) services by default.
 - ons_search now targets the live ONS beta dataset search API when enabled.
+- os_apps tool descriptors now include ext-apps + OpenAI Apps metadata; tool responses surface structured content fields for MCP UI hosts.
 
 ### Fixed
 - Docker MCP config no longer suppresses live ONS mode when `ONS_LIVE_ENABLED` is unset.
@@ -22,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Added coverage for MCP-Apps UI capability detection defaults (stdio/http).
 - Added live admin lookup + ArcGIS client branch coverage.
 - Added ONS search fallback/live edge-case coverage and cache eviction tests.
+- Added evaluation harness coverage test that exercises every registered tool.
 
 ## [0.2.5] - 2026-01-21
 ### Added
@@ -29,7 +39,7 @@ All notable changes to this project will be documented in this file.
 - HTTP trace proxy `scripts/mcp_http_trace_proxy.py` for capturing /mcp traffic.
 - Vendor snapshot tooling (`scripts/vendor_fetch.sh`, `scripts/vendor_html_nojs.py`, `scripts/vendor_package.sh`) and storage policy (`docs/vendor/README.md`).
 - Placeholder OpenAI doc stash under `docs/vendor/openai/` for ChatGPT connector references.
-- HTTP MCP tests covering initialize, tools/list, tools/call, and resources/get.
+- HTTP MCP tests covering initialize, tools/list, tools/call, and resources/read.
 - Local OS map demo server `scripts/claude_serve_map.py`.
 
 ### Changed
@@ -99,11 +109,11 @@ All notable changes to this project will be documented in this file.
 ## [0.2.1] - 2025-09-17
 
 ### Added
-- STDIO adapter: `resources/get` parity enhancements (pagination + filtering retained) now include weak ETag generation and conditional `ifNoneMatch` support returning `{ "notModified": true }` short result.
+- STDIO adapter: `resources/read` parity enhancements (pagination + filtering retained) now include weak ETag generation and conditional `ifNoneMatch` support returning `{ "notModified": true }` short result.
 - STDIO adapter: `resources/describe` method returning resource metadata (name, description, license).
 - Client: REPL mode (`--repl`) and generic JSON param parsing for any method.
 - Client: Skips initial log notifications automatically.
-- Client: `--if-none-match <etag>` convenience flag for conditional `resources/get`.
+- Client: `--if-none-match <etag>` convenience flag for conditional `resources/read`.
 
 ### Changed
 - Resource responses over STDIO now include `etag` field when not modified conditions are not met.

@@ -58,14 +58,15 @@ def test_mcp_http_resources_get_ui(client):
         headers={"mcp-session-id": session_id},
         json=_call_payload(
             "resource-1",
-            "resources/get",
+            "resources/read",
             {"uri": "ui://mcp-geo/geography-selector"},
         ),
     )
     payload = resp.json()
     result = payload["result"]
-    assert result["mimeType"] == "text/html;profile=mcp-app"
-    assert result["uri"].startswith("ui://mcp-geo/")
+    contents = result["contents"]
+    assert contents[0]["mimeType"] == "text/html;profile=mcp-app"
+    assert contents[0]["uri"].startswith("ui://mcp-geo/")
 
 
 def test_http_transport_env_parsing(monkeypatch):

@@ -1,13 +1,19 @@
 {
   "name": "os-mcp-dev",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "app",
+  "workspaceFolder": "/workspaces/mcp-geo",
   "remoteUser": "vscode",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
+      "version": "20",
+
+      // Yarn's legacy Debian APT repo regularly causes devcontainer builds to fail
+      // due to key rotations/expiry. This repo uses npm, so keep Yarn off APT.
+      "installYarnUsingApt": false
     }
   },
   "containerEnv": {
@@ -15,12 +21,14 @@
     "STDIO_KEY": "${localEnv:STDIO_KEY}",
     "BEARER_TOKENS": "${localEnv:BEARER_TOKENS}",
     "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "MCP_GEO_LIVE_DB_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
     "PYTHONPATH": "/workspaces/mcp-geo"
   },
   "forwardPorts": [
     8000,
     5173,
-    8899
+    8899,
+    5432
   ],
   "postCreateCommand": "pip install --upgrade pip && pip install .[test] && (cd frontend && npm install --no-audit --no-fund || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",

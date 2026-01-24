@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from server.mcp.tool_search import get_tool_metadata, search_tools
+from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
 
 # Explicitly import tool modules to guarantee registration
@@ -225,7 +226,7 @@ async def search_tools_endpoint(request: Request):
 
 def _describe_tool(tool: Tool) -> dict[str, Any]:
     meta = get_tool_metadata(tool)
-    return {
+    description: dict[str, Any] = {
         "name": tool.name,
         "description": tool.description,
         "version": tool.version,
@@ -239,6 +240,10 @@ def _describe_tool(tool: Tool) -> dict[str, Any]:
         "deferLoading": meta.get("defer_loading", False),
         "defer_loading": meta.get("defer_loading", False),
     }
+    ui_meta = build_ui_tool_meta(tool.name)
+    if ui_meta:
+        description["_meta"] = ui_meta
+    return description
 
 
 @router.get("/tools/describe")

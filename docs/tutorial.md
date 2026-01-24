@@ -136,8 +136,8 @@ plugins) typically accept the same `mcpServers` JSON. Paste the STDIO entry
 above and adjust `command`/`cwd` as needed.
 
 MCP-Apps widgets require a client that supports UI resources (for example,
-Claude Desktop). If your client does not render MCP-Apps, the server will still
-return data-only responses.
+Claude Desktop for ext-apps or ChatGPT Apps for skybridge). If your client does
+not render MCP-Apps, the server will still return data-only responses.
 
 ## MCP-Apps + tool search tutorial (best support: Anthropic Claude Desktop)
 
@@ -166,7 +166,8 @@ Open a map so I can select wards in Westminster.
 ```
 
 Expected: the client calls `os_apps.render_geography_selector` and opens the
-MCP-Apps UI at `ui://mcp-geo/geography-selector`.
+MCP-Apps UI at `ui://mcp-geo/geography-selector` (ext-apps) or
+`ui://mcp-geo/geography-selector.html` (ChatGPT Apps).
 
 ### 4) Use the selection in a follow-up tool call
 
@@ -179,9 +180,9 @@ Expected: the client uses the selection context and calls
 `admin_lookup.area_geometry`.
 
 Notes for other clients:
-- Microsoft/OpenAI/Google MCP-capable clients can still use tool search; if they
-  do not render MCP-Apps, they will receive `uiResourceUris` and can fall back
-  to data-only flows.
+- MCP-capable clients can still use tool search; if they do not render MCP-Apps,
+  they will receive `uiResourceUris` (ext-apps) and can fall back to data-only
+  flows. ChatGPT Apps uses `openai/outputTemplate` and the skybridge resource.
 
 ## Client tracing (tools + UI)
 
@@ -238,7 +239,7 @@ curl -sS "$BASE_URL/resources/list?limit=50&page=1"
 Fetch a resource:
 
 ```bash
-curl -sS "$BASE_URL/resources/get?name=ons_observations"
+curl -sS "$BASE_URL/resources/read?name=ons_observations"
 ```
 
 ## Basic evaluation-style questions
@@ -391,13 +392,13 @@ curl -sS "$BASE_URL/tools/call" \
 1) Fetch a resource and note the `ETag` response header:
 
 ```bash
-curl -i "$BASE_URL/resources/get?name=admin_boundaries" | sed -n '1,20p'
+curl -i "$BASE_URL/resources/read?name=admin_boundaries" | sed -n '1,20p'
 ```
 
 2) Revalidate with `If-None-Match`:
 
 ```bash
-curl -i "$BASE_URL/resources/get?name=admin_boundaries" \
+curl -i "$BASE_URL/resources/read?name=admin_boundaries" \
   -H 'If-None-Match: W/"<etag-from-previous-response>"'
 ```
 

@@ -161,13 +161,18 @@ BASIC_QUESTIONS = [
         question="List available ONS observation dimensions",
         intent=Intent.DATASET_DISCOVERY,
         difficulty=Difficulty.BASIC,
-        description="ONS dimensions listing (sample mode).",
+        description="ONS dimensions listing (sample or live mode).",
         expected=ExpectedOutcome(
             required_tools=["ons_data.dimensions"],
             max_tool_calls=2,
             required_keywords=["dimensions"],
         ),
-        tool_calls=[ToolCallSpec("ons_data.dimensions", {})],
+        tool_calls=[
+            ToolCallSpec(
+                "ons_data.dimensions",
+                {"dataset": "gdp", "edition": "time-series", "version": "1"},
+            )
+        ],
         tags=["ons"],
     ),
     EvaluationQuestion(
@@ -221,6 +226,64 @@ BASIC_QUESTIONS = [
             )
         ],
         tags=["apps", "ui", "ons"],
+    ),
+    EvaluationQuestion(
+        id="B011",
+        question="Search for Downing Street addresses",
+        intent=Intent.ADDRESS_LOOKUP,
+        difficulty=Difficulty.BASIC,
+        description="Free text address lookup via OS Places.",
+        expected=ExpectedOutcome(
+            required_tools=["os_places.search"],
+            max_tool_calls=2,
+            required_keywords=["results"],
+        ),
+        tool_calls=[ToolCallSpec("os_places.search", {"text": "Downing Street"})],
+        tags=["places", "search"],
+        requires_os_api=True,
+    ),
+    EvaluationQuestion(
+        id="B012",
+        question="Nearest named feature to 51.5034,-0.1276",
+        intent=Intent.FEATURE_SEARCH,
+        difficulty=Difficulty.BASIC,
+        description="OS Names nearest lookup.",
+        expected=ExpectedOutcome(
+            required_tools=["os_names.nearest"],
+            max_tool_calls=2,
+            required_keywords=["results"],
+        ),
+        tool_calls=[ToolCallSpec("os_names.nearest", {"lat": 51.5034, "lon": -0.1276})],
+        tags=["names", "nearest"],
+        requires_os_api=True,
+    ),
+    EvaluationQuestion(
+        id="B013",
+        question="List datasets and dimensions available",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="ONS sample code dimensions list.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_codes.list"],
+            max_tool_calls=2,
+            required_keywords=["dimensions"],
+        ),
+        tool_calls=[ToolCallSpec("ons_codes.list", {})],
+        tags=["ons", "codes"],
+    ),
+    EvaluationQuestion(
+        id="B014",
+        question="List dataset dimension options for time",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="ONS sample code options for a dimension.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_codes.options"],
+            max_tool_calls=2,
+            required_keywords=["options"],
+        ),
+        tool_calls=[ToolCallSpec("ons_codes.options", {"dimension": "time"})],
+        tags=["ons", "codes", "options"],
     ),
 ]
 
@@ -343,13 +406,24 @@ INTERMEDIATE_QUESTIONS = [
         question="Show two ONS observations for UK GDPV",
         intent=Intent.STATISTICS,
         difficulty=Difficulty.INTERMEDIATE,
-        description="ONS query over sample observations.",
+        description="ONS query over sample or live observations.",
         expected=ExpectedOutcome(
             required_tools=["ons_data.query"],
             max_tool_calls=2,
             required_keywords=["results"],
         ),
-        tool_calls=[ToolCallSpec("ons_data.query", {"geography": "K02000001", "limit": 2})],
+        tool_calls=[
+            ToolCallSpec(
+                "ons_data.query",
+                {
+                    "geography": "K02000001",
+                    "limit": 2,
+                    "dataset": "gdp",
+                    "edition": "time-series",
+                    "version": "1",
+                },
+            )
+        ],
         tags=["ons", "query"],
     ),
     EvaluationQuestion(
@@ -390,6 +464,52 @@ INTERMEDIATE_QUESTIONS = [
             )
         ],
         tags=["apps", "routing"],
+    ),
+    EvaluationQuestion(
+        id="I011",
+        question="Get GDP observation for 2023 Q1",
+        intent=Intent.STATISTICS,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="ONS single observation lookup.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_data.get_observation"],
+            max_tool_calls=2,
+            required_keywords=["observation"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_data.get_observation",
+                {
+                    "geography": "K02000001",
+                    "measure": "chained_volume_measure",
+                    "time": "2023 Q1",
+                    "dataset": "gdp",
+                    "edition": "time-series",
+                    "version": "1",
+                },
+            )
+        ],
+        tags=["ons", "observation"],
+    ),
+    EvaluationQuestion(
+        id="I012",
+        question="Export a GDP filter output as CSV",
+        intent=Intent.STATISTICS,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="ONS filter output export using CSV format.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_data.create_filter", "ons_data.get_filter_output"],
+            max_tool_calls=3,
+            required_keywords=["CSV"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_data.create_filter",
+                {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2"},
+            ),
+            ToolCallSpec("ons_data.get_filter_output", {"filterId": "$filterId", "format": "CSV"}),
+        ],
+        tags=["ons", "filter", "csv"],
     ),
 ]
 
@@ -491,18 +611,58 @@ ADVANCED_QUESTIONS = [
         difficulty=Difficulty.ADVANCED,
         description="Skills resource fetch.",
         expected=ExpectedOutcome(
-            required_tools=["resources/get"],
+            required_tools=["resources/read"],
             max_tool_calls=2,
             required_keywords=["MCP Geo Skills"],
         ),
         tool_calls=[
             ToolCallSpec(
-                "resources/get",
+                "resources/read",
                 {"uri": "skills://mcp-geo/getting-started"},
                 call_type="resource",
             )
         ],
         tags=["resources", "skills"],
+    ),
+    EvaluationQuestion(
+        id="A007",
+        question="Describe server capabilities and tool search config",
+        intent=Intent.UNKNOWN,
+        difficulty=Difficulty.ADVANCED,
+        description="Server descriptor output.",
+        expected=ExpectedOutcome(
+            required_tools=["os_mcp.descriptor"],
+            max_tool_calls=2,
+            required_keywords=["toolSearch"],
+        ),
+        tool_calls=[ToolCallSpec("os_mcp.descriptor", {})],
+        tags=["descriptor", "mcp"],
+    ),
+    EvaluationQuestion(
+        id="A008",
+        question="Log a UI event for analytics",
+        intent=Intent.UNKNOWN,
+        difficulty=Difficulty.ADVANCED,
+        description="UI event logging for MCP-Apps widgets.",
+        expected=ExpectedOutcome(
+            required_tools=["os_apps.log_event"],
+            max_tool_calls=2,
+            required_keywords=["eventId"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "os_apps.log_event",
+                {
+                    "eventType": "ui_test",
+                    "source": "evaluation",
+                    "payload": {"action": "click"},
+                    "context": {"screen": "dashboard"},
+                    "timestamp": 1710000000,
+                    "sessionId": "session-eval",
+                },
+            )
+        ],
+        tags=["apps", "log"],
     ),
 ]
 

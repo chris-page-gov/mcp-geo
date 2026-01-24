@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from server.config import settings
 from server.main import app
+from tests.helpers import resource_json
 
 
 @pytest.fixture(autouse=True)
@@ -62,8 +63,8 @@ def test_admin_find_by_name_no_match_hints():
 
 def test_resource_get_admin_boundaries():
     c = _client()
-    resp = c.get("/resources/get", params={"name": "admin_boundaries"})
+    resp = c.get("/resources/read", params={"name": "admin_boundaries"})
     assert resp.status_code == 200
-    data = resp.json()
+    data = resource_json(resp)
     assert data["name"] == "admin_boundaries"
     assert data["count"] > 0

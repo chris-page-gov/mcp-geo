@@ -1,203 +1,122 @@
-# MCP Server Description
+# Build and Run
 
-## Prompt
+This guide describes how to install, run, and validate the current MCP Geo
+server in this repository. It replaces the original planning backlog with
+repo-aligned instructions.
 
-I want to use Codex to create the MCP server described in the documents [Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP)](<Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx>) + [Documentation collection task](<Documentation collection task.docx>) and ensure coverage of all the data described in the documentation collection.
+## Requirements
 
-It seems that I need to break this down into tasks, like feature requests. Can you create a complete set of these that I can use Codex to create the application or is there a better way for me to use an agent to create it
+- Python 3.11+
+- Optional: Docker (for container runs)
+- Optional: OS API key for live Ordnance Survey tools
 
-## Response
+## Install
 
-Great idea. Here’s a clean, “drop‑in to Codex” backlog you can paste into an issue tracker (or hand to an agent) to build the MCP server end‑to‑end, plus a quick note on when a higher‑level “builder agent” is better than plain feature tickets.
+```bash
+pip install -e .[test]
+```
 
-## Recommended approach
+## Run (local dev)
 
-* **If you want maximum control:** use the ticket set below with Codex (or your fav code agent) and run sprint‑by‑sprint.
-* **If you want fastest path to working scaffolding:** kick off a “Builder Agent” that first generates the full server skeleton (MCP handshake, tool/router, auth, tests, docs) and then consumes the tickets below one by one. I’ve included a ready‑made *Bootstrapping Task 0* to do exactly that.
+```bash
+uvicorn server.main:app --reload
+```
 
----
+Alternate entrypoint:
 
-## Backlog (Epics → Stories with acceptance criteria)
+```bash
+python run.py
+```
 
-### EPIC A — Core MCP server & playground
+## Core endpoints
 
-#### **A0. Bootstrap MCP server skeleton**
+- `GET /health`
+- `POST /tools/list`
+- `POST /tools/describe`
+- `POST /tools/search`
+- `POST /tools/call`
+- `GET /resources/list`
+- `GET /resources/describe`
+- `GET /resources/read`
+- `POST /mcp` (JSON-RPC)
+- `GET /metrics` (if enabled)
 
-* **Goal:** Scaffolding for an MCP server with tools, resources, and a small playground chat (CLI or minimal web).
-* **Deliverables:**
+## Tests
 
-  * Repo layout (`/server`, `/tools`, `/resources`, `/playground`, `/tests`, `/infra`).
-  * MCP protocol handshake, `tools/list`, `tools/call`, `resources/list`, structured outputs.
-  * `.env.example` for keys; typed config loader; Dockerfile + devcontainer.
-* **Acceptance:** `npm run dev` (or `uv run`/`poetry run`) starts server; `/health` returns OK; `tools/list` shows a placeholder tool.
+```bash
+pytest -q
+```
 
-#### **A1. Observability & DX**
+## Environment variables
 
-* Structured logging, request/response tracing (with PII‑safe redaction), per‑tool latency counters; simple “tool call transcript” panel in playground.
-* **Acceptance:** Logs include correlation ID; test proves redaction; playground can show last N tool calls.
+- `OS_API_KEY`: enables live Ordnance Survey tools (Places, Names, NGD Features).
+  If unset, OS-backed tools return `501` with `{ "code": "NO_API_KEY" }`.
+- `ONS_LIVE_ENABLED`: enables live ONS API access for `ons_data.*`. If unset or
+  false, the server uses bundled sample data.
+- `UI_EVENT_LOG_PATH`: path for MCP-Apps UI event log output
+  (default: `logs/ui-events.jsonl`).
+- `DEBUG_ERRORS`: include tracebacks in error responses (development only).
+- `RATE_LIMIT_PER_MIN`: per-minute in-memory rate limit (default 120).
+- `RATE_LIMIT_BYPASS`: set to `true` to disable rate limiting (default true).
+- `METRICS_ENABLED`: enable `/metrics` (default true).
 
-#### **A2. Error model & pagination**
+You can copy `.env.example` to `.env` for local use.
 
-* Normalize errors to `{ isError: true, code, message }`.
-* Support paging/limits consistently across tools; return `nextPageToken` where applicable.
-* **Acceptance:** Contract tests verify uniform error shape and paging across tools.
+## STDIO adapter (MCP clients)
 
----
+Installed entrypoint:
 
-### EPIC B — Ordnance Survey (OS) tools (enriched)
+```bash
+mcp-geo-stdio
+```
 
-#### **B1. `os_places.*` (AddressBase geocoder)**
+Repo-local wrapper:
 
-* **Subtools:**
+```bash
+./scripts/os-mcp
+```
 
-  * `os_places.search(text)`
-  * `os_places.by_postcode(postcode)`
-  * `os_places.by_uprn(uprn)`
-  * `os_places.nearest(lat, lon)`
-  * `os_places.within(polygon|bbox|radius)`
-* **I/O:** Return **structured JSON**: `{ uprn, address, lat, lon, classification, local_custodian_code, … }`.
-* **Acceptance:** Given known inputs (incl. SW1A 2AA), returns UPRNs plus enrichment fields (`classificationDescription`, `localCustodianName`); rate‑limit handling; no secrets leak.
+The `mcp.json` file in the repo includes a ready-to-copy client configuration
+for STDIO connections.
 
-#### **B2. `os_linked_ids.get(identifier)`**
+## Docker
 
-* Input can be UPRN/USRN/TOID; auto‑detect or `type` param.
-* Output: `{ input: {...}, links: { uprns:[…], usrns:[…], toids:[…] } }`.
-* **Acceptance:** Round‑trip tests: USRN → UPRNs and UPRN → USRN for a known street.
+Build the image:
 
-#### **B3. `os_features.query(collection, filters, geometry)`**
+```bash
+docker build -t mcp-geo-server .
+```
 
-* Wrap OS NGD OGC Features.
-* Support `bbox`, `polygon`, attribute filters, limit/offset; return **GeoJSON FeatureCollection** with trimmed properties.
-* **Acceptance:** Query buildings/roads by bbox; returns valid GeoJSON; handles pagination; 100‑item default cap.
+Run HTTP transport:
 
-#### **B4. `os_names.*` (gazetteer)**
+```bash
+docker run --rm -p 8000:8000 \
+  -e OS_API_KEY=your-api-key-here \
+  -e ONS_LIVE_ENABLED=true \
+  mcp-geo-server \
+  uvicorn server.main:app --host 0.0.0.0 --port 8000
+```
 
-* `os_names.find(text)` and `os_names.nearest(lat, lon)` returning place name + coords.
-* **Acceptance:** “Downing Street” returns sensible matches with coordinates.
+Run STDIO (for MCP desktop clients):
 
-#### **B5. `os_maps.render` & `os_vector_tiles.descriptor` (utility)**
+```bash
+docker run --rm -i \
+  -e OS_API_KEY=your-api-key-here \
+  -e ONS_LIVE_ENABLED=true \
+  mcp-geo-server
+```
 
-* **Maps:** Static image render with optional overlays (points/lines/polygons/labels).
-* **Vector:** Provide a ready‑to‑use style + source descriptor for client map displays.
-* **Acceptance:** Render PNG for a bbox; vector style loads in a sample HTML viewer.
+## Smoke check
 
-#### **B6. OS downloads & code lists (resources)**
+After starting the server, confirm basic health and discovery:
 
-* Ship small **static resources**: address classification codes, custodian code → LA name, a tiny sample of boundaries if helpful.
-* **Acceptance:** `resources/list` shows code lists; tests reference them when interpreting `os_places` results.
+```bash
+curl -sS http://127.0.0.1:8000/health
+curl -sS http://127.0.0.1:8000/tools/list
+```
 
----
-
-### EPIC C — Administrative geography & lookups
-
-#### **C1. `admin_lookup.containing_areas(lat, lon)`**
-
-* Returns hierarchy (OA/LSOA/MSOA/Ward/District/County/Region/Nation) with names + codes.
-* Implementation options: fast path via cached polygons or external lookup; unify outputs.
-* **Acceptance:** Known point returns expected GSS codes; performance budget < 300ms with warm cache.
-
-#### **C2. Boundary resources**
-
-* Store key boundaries (e.g., Wards, Local Authorities) as static resources (compressed GeoJSON) with version tags and metadata.
-* **Acceptance:** `resources/list` shows boundary packs with size, SRID, vintage; smoke test to load and spatially query.
-
----
-
-### EPIC D — ONS Statistics (beta API) tools & discovery
-
-#### **D1. `ons_data.get_observation(dataset, area_code, time, dims={})`**
-
-* One‑shot observation fetch returning `{ value, unit, dataset, area, time, notes }`.
-* **Acceptance:** Works for a canonical population dataset; returns numeric value and provenance.
-
-#### **D2. `ons_data.create_filter(...)` + `ons_data.get_filter_output(filter_id, format)`**
-
-* POST filter → poll → fetch CSV/XLSX/JSON; stream large results as a **resource**.
-* **Acceptance:** Generates a small table (e.g., population by age bands for a ward) and exposes it as JSON (future: downloadable CSV/XLSX) while maintaining coverage tests.
-
-#### **D3. Discovery helpers**
-
-* `ons_search.query(term, type=dataset)`
-* `ons_codes.list(id|dimension)` & `ons_codes.options(id, edition)`
-* **Acceptance:** Searching “population estimates” surfaces the expected dataset; code‑list endpoints return valid options.
-
----
-
-### EPIC E — Conversational normalization & examples
-
-#### **E1. Normalization guide (prompt + server hints)**
-
-* Provide a **server‑side guide** the model can read: how “list”, “map”, “compare”, “nearby” map to tool calls; when to summarize large results; how to join OS (geometry) with ONS (stats).
-* **Acceptance:** Example conversations in `/examples` show the intended tool sequences.
-
-#### **E2. Worked examples & golden tests**
-
-* Scripts that assert:
-
-  * “List UPRNs in SW1A 2AA and mark residential/commercial.”
-  * “Which ward is this point in, and what’s its population?”
-  * “Show a map of roads intersecting Oxford boundary.”
-* **Acceptance:** Golden outputs updated via snapshot tests; maps rendered to `/artifacts`.
-
----
-
-### EPIC F — Security, auth, and limits
-
-#### **F1. Secrets management**
-
-* Read OS keys from env/secret store; never echo in logs; signed outbound requests where required; optional OAuth2 path.
-* **Acceptance:** Unit test proves keys redacted; secret scan (pre‑commit) blocks accidental commits.
-
-#### **F2. Usage governance**
-
-* Per‑tool rate limiting; circuit breakers; graceful degradation.
-* **Acceptance:** Hammer tests show 429 throttling; server recovers cleanly.
-
----
-
-### EPIC G — Packaging, CI, docs
-
-#### **G1. CI/CD**
-
-* Lint, type‑check, unit/integration tests, image build, SBOM; GitHub Actions badges.
-* **Acceptance:** PR triggers full pipeline; release tags publish container image.
-
-#### **G2. Developer docs**
-
-* `/docs`: quickstart, environment, tool catalog (I/O schemas), example queries, troubleshooting.
-* **Acceptance:** New dev can run the stack in <10 minutes.
-
----
-
-## Ticket templates (ready to paste)
-
-### Example tool ticket (B1 `os_places.by_postcode`)
-
-**Summary:** Implement `os_places.by_postcode(postcode)` returning `{uprn, address, lat, lon, classification, local_custodian_code}`.
-**Details:**
-
-* Validate UK postcode; normalize spacing/case.
-* Call OS Places postcode endpoint; map raw fields to our schema; include provenance (source name, timestamp).
-* Redact keys; add retry with backoff; cap results to 200 + pagination token.
-  **Acceptance Criteria:**
-
-1. `by_postcode("SW1A 2AA")` returns ≥1 UPRN with coordinates.
-2. Classification codes are present & documented via resource.
-3. Error for invalid postcode (`isError=true, code="INVALID_INPUT"`).
-4. Unit + contract tests pass.
-
-#### Example ONS ticket (D1 `ons_data.get_observation`)
-
-**Summary:** Implement one‑shot observation fetch.
-**Details:**
-
-* Inputs: `dataset`, `area_code`, `time`, optional dimension map.
-* Resolve latest edition/version; build observation query; return `{value, unit, dataset, area, time, dims, notes}`.
-* Helpful error messages when a code/time is invalid; include list of valid options in `hints`.
-  **Acceptance:**
-
-1. Population for a known ward/year returns numeric `value`.
-2. Invalid area returns `isError=true` with `hints.options` populated.
+For a deeper walkthrough (tool search, MCP-Apps, and client setup), see
+`docs/tutorial.md`.
 3. Contract test snapshot updated.
 
 ---

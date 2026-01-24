@@ -9,64 +9,78 @@ UI_DIR = ROOT / "ui"
 SKILL_PATH = ROOT / "SKILL.md"
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
+MCP_APPS_MIME = "text/html;profile=mcp-app"
+OPENAI_APPS_MIME = "text/html+skybridge"
 
 
 def data_resource_uri(name: str) -> str:
     return f"{DATA_RESOURCE_PREFIX}{name}"
 
 
-_UI_RESOURCE_DEFS: list[dict[str, Any]] = [
+_UI_RESOURCE_BASES: list[dict[str, Any]] = [
     {
-        "uri": "ui://mcp-geo/geography-selector",
+        "slug": "geography-selector",
         "name": "ui_geography_selector",
         "title": "Geography Selector",
         "description": "Interactive selector for UK administrative areas.",
         "file": "geography_selector.html",
-        "mimeType": "text/html;profile=mcp-app",
         "annotations": {
             "audience": ["user"],
             "priority": 1.0,
             "capabilities": ["search", "selection", "hierarchy", "map"],
         },
+        "csp": {
+            "connectDomains": [
+                "https://api.os.uk",
+                "https://tile.openstreetmap.org",
+            ],
+            "resourceDomains": [
+                "https://api.os.uk",
+                "https://fonts.googleapis.com",
+                "https://fonts.gstatic.com",
+                "https://tile.openstreetmap.org",
+                "https://unpkg.com",
+            ],
+        },
     },
     {
-        "uri": "ui://mcp-geo/statistics-dashboard",
+        "slug": "statistics-dashboard",
         "name": "ui_statistics_dashboard",
         "title": "Statistics Dashboard",
         "description": "Visual dashboard for ONS observations and comparisons.",
         "file": "statistics_dashboard.html",
-        "mimeType": "text/html;profile=mcp-app",
         "annotations": {
             "audience": ["user"],
             "priority": 0.9,
             "capabilities": ["charts", "comparison", "export"],
         },
+        "csp": None,
     },
     {
-        "uri": "ui://mcp-geo/feature-inspector",
+        "slug": "feature-inspector",
         "name": "ui_feature_inspector",
         "title": "Feature Inspector",
         "description": "Inspect OS NGD features and linked identifiers.",
         "file": "feature_inspector.html",
-        "mimeType": "text/html;profile=mcp-app",
         "annotations": {
             "audience": ["user"],
             "priority": 0.7,
             "capabilities": ["properties", "map", "linked-ids"],
         },
+        "csp": None,
     },
     {
-        "uri": "ui://mcp-geo/route-planner",
+        "slug": "route-planner",
         "name": "ui_route_planner",
         "title": "Route Planner",
         "description": "Plan routes with waypoints and directions.",
         "file": "route_planner.html",
-        "mimeType": "text/html;profile=mcp-app",
         "annotations": {
             "audience": ["user"],
             "priority": 0.8,
             "capabilities": ["routing", "waypoints", "directions"],
         },
+        "csp": None,
     },
 ]
 
@@ -78,6 +92,66 @@ SKILLS_RESOURCE: dict[str, Any] = {
     "mimeType": "text/markdown",
     "annotations": {"audience": ["assistant"], "priority": 1.0},
 }
+
+
+def _openai_csp(csp: dict[str, Any]) -> dict[str, Any]:
+    mapping = {
+        "connectDomains": "connect_domains",
+        "resourceDomains": "resource_domains",
+        "frameDomains": "frame_domains",
+        "baseUriDomains": "base_uri_domains",
+    }
+    converted: dict[str, Any] = {}
+    for source, dest in mapping.items():
+        if csp.get(source):
+            converted[dest] = csp[source]
+    return converted
+
+
+def _build_ui_meta(description: str, csp: Optional[dict[str, Any]]) -> dict[str, Any]:
+    meta: dict[str, Any] = {
+        "ui": {"prefersBorder": True},
+        "openai/widgetPrefersBorder": True,
+        "openai/widgetDescription": description,
+    }
+    if csp:
+        meta["ui"]["csp"] = csp
+        meta["openai/widgetCSP"] = _openai_csp(csp)
+    return meta
+
+
+def _build_ui_resource_defs() -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    for base in _UI_RESOURCE_BASES:
+        meta = _build_ui_meta(base["description"], base.get("csp"))
+        entries.append(
+            {
+                "uri": f"ui://mcp-geo/{base['slug']}",
+                "name": base["name"],
+                "title": base["title"],
+                "description": base["description"],
+                "file": base["file"],
+                "mimeType": MCP_APPS_MIME,
+                "annotations": base["annotations"],
+                "resourceMeta": meta,
+            }
+        )
+        entries.append(
+            {
+                "uri": f"ui://mcp-geo/{base['slug']}.html",
+                "name": f"{base['name']}_skybridge",
+                "title": base["title"],
+                "description": base["description"],
+                "file": base["file"],
+                "mimeType": OPENAI_APPS_MIME,
+                "annotations": base["annotations"],
+                "resourceMeta": meta,
+            }
+        )
+    return entries
+
+
+_UI_RESOURCE_DEFS: list[dict[str, Any]] = _build_ui_resource_defs()
 
 
 def list_ui_resources() -> list[dict[str, Any]]:

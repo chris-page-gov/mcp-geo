@@ -91,25 +91,10 @@ def main() -> int:
     if len(sys.argv) >= 2 and sys.argv[1] == "--repl":
         return repl()
     if len(sys.argv) < 2:
-        print("Usage: python scripts/mcp_client.py <method> [<toolName>] [<jsonParams>] [--if-none-match <etag>] or --repl")
+        print("Usage: python scripts/mcp_client.py <method> [<toolName>] [<jsonParams>] or --repl")
         return 1
-    # Extract optional flag --if-none-match <etag>
-    flag_if_none = None
-    args_iter = list(sys.argv[1:])
-    cleaned: list[str] = []
-    i = 0
-    while i < len(args_iter):
-        if args_iter[i] == "--if-none-match" and i + 1 < len(args_iter):
-            flag_if_none = args_iter[i + 1]
-            i += 2
-            continue
-        cleaned.append(args_iter[i])
-        i += 1
-    if not cleaned:
-        print("Usage: python scripts/mcp_client.py <method> [...] --if-none-match <etag>", file=sys.stderr)
-        return 1
-    method = cleaned[0]
-    sys_argv_rest = [sys.argv[0]] + cleaned
+    method = sys.argv[1]
+    sys_argv_rest = sys.argv
     params: dict[str, Any] = {}
     # Generic argument parsing: if a second arg and method == tools/call treat it as tool name unless JSON; if third (or second if not tools/call) is JSON parse into params
     arg_index = 2
@@ -139,8 +124,6 @@ def main() -> int:
             except json.JSONDecodeError:
                 print("Invalid JSON params", file=sys.stderr)
                 return 1
-    if flag_if_none:
-        params.setdefault("ifNoneMatch", flag_if_none)
     proc = subprocess.Popen([sys.executable, str(SCRIPT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     if not proc.stdin or not proc.stdout:
         print("Failed to start adapter", file=sys.stderr)
@@ -158,14 +141,7 @@ def main() -> int:
     proc.stdin.write(frame({"jsonrpc":"2.0","method":"exit"}))
     proc.stdin.flush()
     # Print results
-    # Flatten notModified convenience
     out = {"init": init_resp, "response": resp}
-    try:
-        r = resp.get("result") if isinstance(resp, dict) else None
-        if isinstance(r, dict) and r.get("notModified"):
-            out["response"] = {"notModified": True, "etag": r.get("etag")}
-    except Exception:
-        pass
     print(json.dumps(out, indent=2))
     proc.wait(timeout=5)
     return 0

@@ -83,8 +83,8 @@ POST /tools/call
 POST /tools/call
 { "tool": "os_apps.render_geography_selector", "level": "ward" }
 
-GET /resources/get?uri=skills://mcp-geo/getting-started
-GET /resources/get?uri=ui://mcp-geo/geography-selector
+GET /resources/read?uri=skills://mcp-geo/getting-started
+GET /resources/read?uri=ui://mcp-geo/geography-selector
 ```
 
 ## Error Examples

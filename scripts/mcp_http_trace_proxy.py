@@ -148,8 +148,21 @@ def build_app(upstream_url: str, log_path: Path) -> FastAPI:
         body = await request.body()
         return await _forward_request(request, "POST", upstream_url, body)
 
+    @app.get("/mcp")
+    async def proxy_mcp_info(request: Request) -> Response:
+        return Response(
+            content=json.dumps(
+                {"status": "OK", "message": "MCP endpoint expects POST requests"}
+            ),
+            media_type="application/json",
+        )
+
     @app.get("/health")
     async def proxy_health(request: Request) -> Response:
+        return await _forward_request(request, "GET", f"{base_url}/health")
+
+    @app.get("/mcp/health")
+    async def proxy_mcp_health(request: Request) -> Response:
         return await _forward_request(request, "GET", f"{base_url}/health")
 
     @app.get("/.well-known/mcp-auth")

@@ -8,7 +8,7 @@ that exercises tools through HTTP endpoints.
 
 The evaluation framework includes:
 
-1. Question suite (33 questions across basic, intermediate, advanced, edge, and ambiguous)
+1. Question suite (41 questions across basic, intermediate, advanced, edge, and ambiguous)
 2. Scoring rubric (5 dimensions, 100 points total)
 3. Test harness (runs the suite and emits JSON + audit logs)
 4. Audit logs (LLM-readable traces per question)
@@ -22,6 +22,7 @@ question-specific tool calls to validate outputs.
   Use `--include-os-api` to include these questions.
 - `ONS_LIVE_ENABLED=true` is required only for live ONS dataset checks. The bundled
   sample data covers default `ons_data.*` questions.
+- Live API capture requires a PostgreSQL + PostGIS database and `MCP_GEO_LIVE_DB_DSN`.
 
 ## Running evaluations
 
@@ -60,12 +61,48 @@ Default outputs:
 - Audit summary: `tests/evaluation/evaluation_results.audit.txt`
 - Per-question audit logs: `tests/evaluation/logs/audit/`
 
+## Live API capture (PostgreSQL + PostGIS)
+
+The live evaluation test stores upstream API responses in PostgreSQL (jsonb) so
+changes can be audited over time. The test is skipped unless explicitly enabled.
+
+If you are using the devcontainer, a PostGIS service is started automatically
+and the DSN defaults to `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo`.
+
+Environment variables:
+- `RUN_LIVE_API_TESTS=1`
+- `MCP_GEO_LIVE_DB_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
+- `OS_API_KEY=...` (required for OS-backed calls)
+
+Optional PostGIS container (uses repo-local `data/` for storage):
+
+```bash
+mkdir -p data/postgres
+docker run --rm -p 5432:5432 \\
+  -e POSTGRES_DB=mcp_geo \\
+  -e POSTGRES_USER=mcp_geo \\
+  -e POSTGRES_PASSWORD=mcp_geo \\
+  -v "$PWD/data/postgres:/var/lib/postgresql/data" \\
+  postgis/postgis:16-3.4
+```
+
+Run the live capture test:
+
+```bash
+pytest -q tests/test_evaluation_harness_live_api.py
+```
+
+Live outputs:
+- Results JSON: `data/evaluation_results_live.json`
+- Audit summary: `data/evaluation_results_live.audit.txt`
+- Per-question audit logs: `data/audit/`
+
 ## Question suite
 
 Counts by difficulty:
-- Basic: 10
-- Intermediate: 10
-- Advanced: 6
+- Basic: 14
+- Intermediate: 12
+- Advanced: 8
 - Edge: 4
 - Ambiguous: 3
 

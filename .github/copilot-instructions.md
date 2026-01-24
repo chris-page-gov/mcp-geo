@@ -1,7 +1,7 @@
 # Copilot instructions (mcp-geo)
 
 ## Big picture
-- FastAPI server in `server/main.py` exposing MCP-style HTTP endpoints: `/tools/list`, `/tools/describe`, `/tools/call`, `/resources/list`, `/resources/get`, plus `/healthz` and `/metrics`.
+- FastAPI server in `server/main.py` exposing MCP-style HTTP endpoints: `/tools/list`, `/tools/describe`, `/tools/call`, `/resources/list`, `/resources/read`, plus `/healthz` and `/metrics`.
 - Tools are implemented as modules under `tools/` and registered via side effects into the in-memory registry in `tools/registry.py`.
 - Tool registration is forced by explicit imports in `server/mcp/tools.py` (do not rely on import order).
 - There is also a JSON-RPC 2.0 STDIO adapter in `server/stdio_adapter.py` (legacy entrypoint `scripts/os_mcp.py` re-exports it).

@@ -42,15 +42,17 @@ def test_stdio_resources_get_admin_boundaries():
             {
                 "jsonrpc": "2.0",
                 "id": 2,
-                "method": "resources/get",
+                "method": "resources/read",
                 "params": {"name": "admin_boundaries", "limit": 1, "page": 1},
             }
         )
     )
     proc.stdin.flush()
     resp = _read_one(proc.stdout)
-    assert resp["result"]["name"] == "admin_boundaries"
-    assert resp["result"]["data"]["limit"] == 1
+    contents = resp["result"]["contents"]
+    payload = json.loads(contents[0]["text"])
+    assert payload["name"] == "admin_boundaries"
+    assert payload["data"]["limit"] == 1
     proc.stdin.write(
         _rpc({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": {}})
     )
@@ -77,15 +79,16 @@ def test_stdio_resources_get_skills_uri():
             {
                 "jsonrpc": "2.0",
                 "id": 2,
-                "method": "resources/get",
+                "method": "resources/read",
                 "params": {"uri": "skills://mcp-geo/getting-started"},
             }
         )
     )
     proc.stdin.flush()
     resp = _read_one(proc.stdout)
-    assert resp["result"]["mimeType"] == "text/markdown"
-    assert "MCP Geo Skills" in resp["result"]["content"]
+    contents = resp["result"]["contents"]
+    assert contents[0]["mimeType"] == "text/markdown"
+    assert "MCP Geo Skills" in contents[0]["text"]
     proc.stdin.write(
         _rpc({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": {}})
     )

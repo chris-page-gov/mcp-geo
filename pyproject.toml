@@ -25,8 +25,17 @@ dependencies = [
 mcp-geo-stdio = "scripts.os_mcp:main"
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov", "httpx", "anyio"]
-dev = ["ruff", "mypy", "types-requests", "pytest", "pytest-cov", "httpx", "anyio"]
+test = ["pytest", "pytest-cov", "httpx", "anyio", "psycopg[binary]"]
+dev = [
+    "ruff",
+    "mypy",
+    "types-requests",
+    "pytest",
+    "pytest-cov",
+    "httpx",
+    "anyio",
+    "psycopg[binary]",
+]
 
 [tool.ruff]
 line-length = 100

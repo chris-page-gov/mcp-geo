@@ -1,19 +1,19 @@
 from typing import Any, Dict, List
 from fastapi.testclient import TestClient
 from server.main import app
+from tests.helpers import resource_json
 
 
 client = TestClient(app)
 
 
 def test_admin_boundaries_get_etag_and_304():
-    r1 = client.get("/resources/get", params={"name": "admin_boundaries"})
+    r1 = client.get("/resources/read", params={"name": "admin_boundaries"})
     assert r1.status_code == 200
-    data = r1.json()
-    assert "etag" in data
-    etag = data["etag"]
+    etag = r1.headers.get("ETag")
+    assert etag
     # Now conditional
-    r2 = client.get("/resources/get", params={"name": "admin_boundaries"}, headers={"If-None-Match": etag})
+    r2 = client.get("/resources/read", params={"name": "admin_boundaries"}, headers={"If-None-Match": etag})
     assert r2.status_code == 304
     # ETag header still present
     assert r2.headers.get("ETag") == etag
@@ -36,9 +36,9 @@ def test_resources_list_includes_provenance_fields():
 
 
 def test_admin_boundaries_payload_has_provenance():
-    r = client.get("/resources/get", params={"name": "admin_boundaries"})
+    r = client.get("/resources/read", params={"name": "admin_boundaries"})
     assert r.status_code == 200
-    payload = r.json()
+    payload = resource_json(r)
     assert "provenance" in payload
     prov = payload["provenance"]
     assert prov.get("version")

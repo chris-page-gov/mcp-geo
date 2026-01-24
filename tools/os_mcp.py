@@ -470,7 +470,7 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         QueryIntent.ADDRESS_LOOKUP: ["os_places.search", "os_places.nearest"],
         QueryIntent.LINKED_IDS: ["os_places.by_uprn"],
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
-        QueryIntent.BOUNDARY_FETCH: ["resources/get"],
+        QueryIntent.BOUNDARY_FETCH: ["resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
         QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_search.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],

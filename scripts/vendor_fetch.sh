@@ -35,6 +35,7 @@ WGET_COMMON=(
 
 # We avoid crawling entire sites; we fetch only these pages and their requisites.
 OPENAI_URLS=(
+  "https://platform.openai.com/docs/mcp"
   "https://platform.openai.com/docs/guides/developer-mode"
   "https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta"
   "https://help.openai.com/en/articles/11487775-connectors-in-chatgpt"

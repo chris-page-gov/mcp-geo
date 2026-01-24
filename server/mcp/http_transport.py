@@ -154,15 +154,33 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
                 data["fallback"] = fallback
     ok = 200 <= status_code < 300
     result: Dict[str, Any] = {"status": status_code, "ok": ok, "data": data}
-    allow_resource = _bool_env("MCP_HTTP_RESOURCE_CONTENT", default=True)
-    result["content"] = stdio_adapter._tool_content_from_data(data, allow_resource=allow_resource)
     ui_uris = stdio_adapter._extract_ui_resource_uris(data)
+    allow_resource = _bool_env("MCP_HTTP_RESOURCE_CONTENT", default=True)
+    if isinstance(data, dict):
+        content_override = data.get("content")
+        if isinstance(content_override, list):
+            result["content"] = stdio_adapter._inject_resource_links(
+                content_override,
+                ui_uris,
+                allow_resource,
+            )
+        else:
+            result["content"] = stdio_adapter._tool_content_from_data(
+                data,
+                allow_resource=allow_resource,
+            )
+        if "structuredContent" in data:
+            result["structuredContent"] = data["structuredContent"]
+        meta = data.get("_meta")
+        if isinstance(meta, dict):
+            result["_meta"] = meta
+    else:
+        result["content"] = stdio_adapter._tool_content_from_data(
+            data,
+            allow_resource=allow_resource,
+        )
     if ui_uris:
         result["uiResourceUris"] = ui_uris
-        if isinstance(data, dict):
-            meta = data.get("_meta")
-            if isinstance(meta, dict):
-                result["_meta"] = meta
     if not ok or (isinstance(data, dict) and data.get("isError") is True):
         result["isError"] = True
     return result
@@ -181,7 +199,7 @@ def _dispatch(method: str, params: Dict[str, Any], session_state: Dict[str, Any]
         return stdio_adapter.handle_list_resources(params)
     if method == "resources/describe":
         return {"resources": stdio_adapter.RESOURCE_LIST}
-    if method == "resources/get":
+    if method == "resources/read":
         return stdio_adapter.handle_get_resource(params)
     if method == "shutdown":
         return None

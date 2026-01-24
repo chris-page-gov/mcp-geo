@@ -30,7 +30,7 @@ Outputs:
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Fetch boundary for unknown area id", "intent": "boundary_fetch", "confidence": 0.85, "recommended_tool": "admin_lookup.area_geometry", "recommended_parameters": {}, "explanation": "Get a bounding box for an administrative area.", "workflow_steps": ["admin_lookup.find_by_name", "admin_lookup.area_geometry"], "alternative_tools": ["resources/get"], "guidance": "Find the area id first, then call admin_lookup.area_geometry for a bbox summary."}}, {"tool": "admin_lookup.area_geometry", "response": {"isError": true, "code": "NOT_FOUND", "message": "Area not found"}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Fetch boundary for unknown area id", "intent": "boundary_fetch", "confidence": 0.85, "recommended_tool": "admin_lookup.area_geometry", "recommended_parameters": {}, "explanation": "Get a bounding box for an administrative area.", "workflow_steps": ["admin_lookup.find_by_name", "admin_lookup.area_geometry"], "alternative_tools": ["resources/read"], "guidance": "Find the area id first, then call admin_lookup.area_geometry for a bbox summary."}}, {"tool": "admin_lookup.area_geometry", "response": {"isError": true, "code": "NOT_FOUND", "message": "Area not found"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
