@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Svelte + Vite playground UI scaffold with MCP SDK client.
 - Playground event + evaluation endpoints (`/playground/events`, `/playground/evaluation/latest`).
 - Playwright smoke test for the playground UI.
+- CORS configuration for browser clients (playground).
 
 ### Changed
 - `docs/Build.md` now documents the current install/run/test workflow and endpoints.

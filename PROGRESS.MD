@@ -104,7 +104,7 @@ Low impact
 | Implement error classification, JSON logging, dataset cache scaffolding | Done | JSON log sink + dataset cache in place. |
 | Build Svelte + Vite playground (MCP client + logging hooks) | In progress | Initial UI + tool call logging + prompt capture added. |
 | Add Playwright + devcontainer updates + docs | Done | Devcontainer installs Playwright deps; docs updated. |
-| Run tests + fix regressions | Done | `pytest -q` passed (coverage 91.35%); `npm test` passed. |
+| Run tests + fix regressions | Done | `pytest -q` passed (coverage 91.35%); `npm test` passed after Playwright deps. |
 
 ## Playground UI gap map (focus on MCP-Apps tools)
 

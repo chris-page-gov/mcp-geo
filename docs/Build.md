@@ -63,6 +63,7 @@ pytest -q
 - `RATE_LIMIT_BYPASS`: set to `true` to disable rate limiting (default true).
 - `METRICS_ENABLED`: enable `/metrics` (default true).
 - `LOG_JSON`: loguru JSON output (default false).
+- `CORS_ALLOWED_ORIGINS`: comma-separated origins for browser clients (default `http://localhost:5173,http://127.0.0.1:5173`).
 
 You can copy `.env.example` to `.env` for local use.
 

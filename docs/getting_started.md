@@ -99,6 +99,9 @@ Defaults:
 - MCP server URL: `http://localhost:8000/mcp`
 - Playground API: `http://localhost:8000/playground`
 
+If you see CORS/preflight errors, ensure `CORS_ALLOWED_ORIGINS` includes the
+playground URL (default includes `http://localhost:5173`).
+
 The playground can:
 - Connect and list tools/resources/templates
 - Call tools with raw JSON arguments

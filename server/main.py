@@ -2,6 +2,7 @@ import time
 import uuid
 
 from fastapi import FastAPI, Request, Response as FastAPIResponse
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -15,6 +16,19 @@ from .config import settings
 app = FastAPI(title="MCP Geo Server")
 configure_logging()
 print("[DEBUG] server/main.py loaded", flush=True)
+cors_origins = [
+    origin.strip()
+    for origin in settings.CORS_ALLOWED_ORIGINS.split(",")
+    if origin.strip()
+]
+if cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 app.add_middleware(GZipMiddleware, minimum_size=512)
 
 # Middleware for correlation ID and request logging

@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     ONS_DATASET_CACHE_DIR: str = "data/cache/ons"
     UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"
     PLAYGROUND_EVENT_LOG_PATH: str = "logs/playground-events.jsonl"
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {
