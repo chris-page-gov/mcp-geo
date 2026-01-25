@@ -15,6 +15,11 @@ All notable changes to this project will be documented in this file.
 - Inspector setup and getting started guide at `docs/getting_started.md`.
 - Protocol helper for exposing MCP protocol version/transport metadata.
 - HTTP/STDIO support for `resources/templates/list` (empty list for now).
+- Dataset cache scaffolding for full ONS responses (`ONS_DATASET_CACHE_*`).
+- JSON logging config with redaction-aware sink + upstream error classification.
+- Svelte + Vite playground UI scaffold with MCP SDK client.
+- Playground event + evaluation endpoints (`/playground/events`, `/playground/evaluation/latest`).
+- Playwright smoke test for the playground UI.
 
 ### Changed
 - `docs/Build.md` now documents the current install/run/test workflow and endpoints.
@@ -28,6 +33,10 @@ All notable changes to this project will be documented in this file.
 - os_apps tool descriptors now include ext-apps + OpenAI Apps metadata; tool responses surface structured content fields for MCP UI hosts.
 - MCP descriptor now reports protocol version and current transport (http/stdio).
 - Live-only ONS/admin tools now require live mode; sample resources removed from MCP resource list.
+- Devcontainer now installs playground dependencies (Svelte app).
+- Devcontainer now installs Playwright browsers for playground tests.
+- Playground build docs now include Playwright dependency install step.
+- ONS codes tool paginates live options and persists cached snapshots on disk.
 
 ### Fixed
 - Docker MCP config no longer suppresses live ONS mode when `ONS_LIVE_ENABLED` is unset.
@@ -39,6 +48,7 @@ All notable changes to this project will be documented in this file.
 - Added ONS search fallback/live edge-case coverage and cache eviction tests.
 - Added evaluation harness coverage test that exercises every registered tool.
 - Updated resource and ONS tool tests to match live-only behavior and new descriptor metadata.
+- Added ons_data live filter/get_observation coverage.
 
 ## [0.2.5] - 2026-01-21
 ### Added

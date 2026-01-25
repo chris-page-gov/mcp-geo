@@ -7,11 +7,13 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from server.mcp import http_transport, playground, resources, tools
+from server.logging import configure_logging
 from server.security import mask_in_text
 
 from .config import settings
 
 app = FastAPI(title="MCP Geo Server")
+configure_logging()
 print("[DEBUG] server/main.py loaded", flush=True)
 app.add_middleware(GZipMiddleware, minimum_size=512)
 

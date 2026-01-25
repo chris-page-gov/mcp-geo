@@ -10,7 +10,7 @@ reliable guide to tool selection.
 - OS Names gazetteer searches for named features.
 - OS NGD feature queries for topographic datasets.
 - ONS dataset discovery and observation queries (live dataset search).
-- Administrative area lookups from live ONS geography (ArcGIS), with sample fallback.
+- Administrative area lookups from live ONS geography (ArcGIS).
 - MCP-Apps widgets for interactive selection and inspection.
 - Tool search metadata for large tool catalogs.
 
@@ -46,7 +46,7 @@ Administrative areas:
 
 ONS statistics:
 - Use `ons_search.query` to discover live ONS datasets.
-- Use `ons_data.query` to fetch observations (sample or live mode).
+- Use `ons_data.query` to fetch live observations.
 - Use `ons_data.dimensions` to list dimension ids and options.
 
 OS NGD features and links:
@@ -78,12 +78,12 @@ including `deferLoading` hints for MCP tool search integrations.
 
 ## Resources
 
-Use `/resources/list` or `/resources/describe` to discover available datasets.
-Fetch content with `/resources/read` using either `name` or `uri`. Example:
+Use `/resources/list` or `/resources/describe` to discover available resources.
+Fetch content with `/resources/read` using `uri`. Example:
 
 - `skills://mcp-geo/getting-started` (this document)
 - `ui://mcp-geo/geography-selector` (UI widget HTML)
-- `resource://mcp-geo/admin_boundaries` (sample boundary hierarchy)
+- `ui://mcp-geo/geography-selector` (UI widget HTML)
 
 ## Error Model
 
@@ -93,4 +93,5 @@ Errors follow this shape:
 ```
 
 Common codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,
-`OS_API_ERROR`, `UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.
+`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`,
+`UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.

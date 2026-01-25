@@ -7,7 +7,10 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | INVALID_INPUT | Input validation failed | Missing or malformed parameters (e.g. postcode format) | Re-check required fields, normalize postcode (strip spaces, uppercase) |
 | UNKNOWN_TOOL | Tool name not registered | Typo in `tool` field or outdated client cache | Call `/tools/list` or `/tools/describe` to confirm names |
 | NO_API_KEY | OS API key absent | `OS_API_KEY` env not set | Export `OS_API_KEY` or add to `.env` then restart server |
+| LIVE_DISABLED | Live data disabled | `ONS_LIVE_ENABLED` or `ADMIN_LOOKUP_LIVE_ENABLED` set to false | Enable live mode and retry |
 | OS_API_ERROR | Upstream OS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust parameters or check quota |
+| ONS_API_ERROR | Upstream ONS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust dataset/edition/version |
+| ADMIN_LOOKUP_API_ERROR | Upstream ArcGIS error | ONS Open Geography returned error | Retry; verify service availability |
 | UPSTREAM_TLS_ERROR | TLS handshake failure | Network / certificate issue | Retry later; verify container trust store and target host availability |
 | UPSTREAM_CONNECT_ERROR | Connection or timeout exhaustion | Network instability or endpoint downtime | Reduce concurrency, add backoff, confirm endpoint status |
 | INTEGRATION_ERROR | Unexpected exception during call | Unhandled edge case or library error | Capture logs with correlationId; file issue with stack trace (if DEBUG_ERRORS enabled) |

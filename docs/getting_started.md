@@ -77,7 +77,35 @@ In Inspector you can:
 - Call tools and inspect structured outputs
 - Validate MCP-Apps UI resources (if supported)
 
-## 3) What data is available
+## 3) Use the Playground (web UI)
+
+The playground is a lightweight MCP client built with Svelte + Vite. It uses
+the MCP TypeScript SDK to connect over HTTP and records tool calls and prompt
+events to the server's `/playground/*` endpoints.
+
+From the repo root:
+
+```bash
+cd playground
+npm install
+npm run dev
+```
+
+Then open:
+
+- `http://localhost:5173`
+
+Defaults:
+- MCP server URL: `http://localhost:8000/mcp`
+- Playground API: `http://localhost:8000/playground`
+
+The playground can:
+- Connect and list tools/resources/templates
+- Call tools with raw JSON arguments
+- Log prompts to help correlate with tool usage
+- Read evaluation results from the server (`/playground/evaluation/latest`)
+
+## 4) What data is available
 
 ### Ordnance Survey (OS)
 
@@ -94,6 +122,9 @@ In Inspector you can:
 - Observations and filters: `ons_data.query`, `ons_data.get_observation`,
   `ons_data.create_filter`, `ons_data.get_filter_output`
 
+Note: ONS tools are live-only and require `dataset`, `edition`, and `version`
+parameters in tool payloads.
+
 ### Administrative geography
 
 - Containment lookup: `admin_lookup.containing_areas`
@@ -107,7 +138,7 @@ In Inspector you can:
 - Feature inspector: `os_apps.render_feature_inspector`
 - Route planner: `os_apps.render_route_planner`
 
-## 4) Quick inspection examples
+## 5) Quick inspection examples
 
 List tools:
 
@@ -133,7 +164,7 @@ List resources:
 {"jsonrpc":"2.0","id":"4","method":"resources/list","params":{}}
 ```
 
-## 5) Where to go next
+## 6) Where to go next
 
 - Detailed walkthrough: `docs/tutorial.md`
 - Tool catalog: `docs/tool_catalog.md`

@@ -19,6 +19,8 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     req_exc = _ReqExc()
 
 from server.config import settings
+from server.error_taxonomy import classify_error
+from server.logging import log_upstream_error
 from tools.ons_common import TTLCache
 from tools.registry import Tool, register, ToolResult
 
@@ -134,6 +136,17 @@ class _ArcGisClient:
             try:
                 resp = requests.get(url, params=params, timeout=DEFAULT_TIMEOUT)
                 if resp.status_code != 200:
+                    resp_url = getattr(resp, "url", url)
+                    log_upstream_error(
+                        service="admin_lookup",
+                        code="ADMIN_LOOKUP_API_ERROR",
+                        status_code=resp.status_code,
+                        url=resp_url,
+                        params=params,
+                        detail=resp.text[:200],
+                        attempt=attempt,
+                        error_category=classify_error("ADMIN_LOOKUP_API_ERROR"),
+                    )
                     return resp.status_code, {
                         "isError": True,
                         "code": "ADMIN_LOOKUP_API_ERROR",
@@ -143,6 +156,15 @@ class _ArcGisClient:
                 self.cache.set(key, data)
                 return 200, data
             except req_exc.SSLError as exc:
+                log_upstream_error(
+                    service="admin_lookup",
+                    code="UPSTREAM_TLS_ERROR",
+                    url=url,
+                    params=params,
+                    detail=str(exc),
+                    attempt=attempt,
+                    error_category=classify_error("UPSTREAM_TLS_ERROR"),
+                )
                 return 501, {
                     "isError": True,
                     "code": "UPSTREAM_TLS_ERROR",
@@ -151,6 +173,15 @@ class _ArcGisClient:
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 if attempt == DEFAULT_RETRIES:
+                    log_upstream_error(
+                        service="admin_lookup",
+                        code="UPSTREAM_CONNECT_ERROR",
+                        url=url,
+                        params=params,
+                        detail=str(exc),
+                        attempt=attempt,
+                        error_category=classify_error("UPSTREAM_CONNECT_ERROR"),
+                    )
                     return 501, {
                         "isError": True,
                         "code": "UPSTREAM_CONNECT_ERROR",
@@ -158,6 +189,15 @@ class _ArcGisClient:
                     }
                 time.sleep(min(0.1 * (2 ** (attempt - 1)), 1.0))
             except Exception as exc:  # pragma: no cover
+                log_upstream_error(
+                    service="admin_lookup",
+                    code="INTEGRATION_ERROR",
+                    url=url,
+                    params=params,
+                    detail=str(exc),
+                    attempt=attempt,
+                    error_category=classify_error("INTEGRATION_ERROR"),
+                )
                 return 500, {
                     "isError": True,
                     "code": "INTEGRATION_ERROR",

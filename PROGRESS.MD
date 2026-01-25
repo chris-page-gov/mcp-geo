@@ -43,15 +43,15 @@ Legend: Done, Partial, Not started
 | OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Only bbox query exposed; no attribute filters/polygon/collection listing. |
 | OS Maps (render) | Partial | tools/os_maps.py | Returns metadata only; no server-side map rendering. |
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
-| ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Sample data + live modes; filter output formats exist but no streaming/large export pipeline. |
-| ONS dataset search | Done | tools/ons_search.py | Live search when enabled; sample fallback. |
-| Admin geography lookup | Partial | tools/admin_lookup.py | Live ArcGIS path + sample data; boundary resources still minimal. |
+| ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live-only mode; filter output formats exist but no streaming/large export pipeline. |
+| ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
+| Admin geography lookup | Partial | tools/admin_lookup.py | Live ArcGIS path only; boundary resources still minimal. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Code lists present; full boundary packs not yet shipped. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | route_query + descriptor for tool discovery. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
-| Playground UI for developers | Partial | server/mcp/playground.py | Stub only; no full UI experience. |
+| Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
 | MCP-Apps UI widgets | Done | tools/os_apps.py, docs/mcp_apps_alignment.md | Dual ext-apps + OpenAI Apps support. |
-| Observability (logs/metrics) | Partial | server/main.py, docs/client_trace_strategy.md | Basic metrics + loguru; structured JSON sink and latency histograms not added. |
+| Observability (logs/metrics) | Partial | server/main.py, server/logging.py | JSON log sink and upstream error logging added; metrics remain basic. |
 | Rate limiting + error model | Done | server/main.py, server/config.py | 429 handling + uniform error envelope. |
 | CI/CD pipeline | Not started | docs/build_initial_version.md | No GitHub Actions pipeline committed. |
 
@@ -81,7 +81,7 @@ High impact
 - Implement OS Points of Interest coverage (tool and/or resource).
 - Expand OS Features to support attribute filters, polygons, and collection listing.
 - Ship real boundary resources (wards, LSOA/MSOA, LAD, etc.) with paging + metadata.
-- Build a real playground UI (or replace stub with a documented alternative).
+- Finish the playground UI (UI resource rendering + evaluation harness orchestration).
 - Provide OAuth2 support for OS APIs where required.
 
 Medium impact
@@ -95,6 +95,16 @@ Low impact
 - Add golden fixtures for canonical postcodes and feature queries.
 - Enrich resource catalog with fuller code lists and provenance metadata.
 - Expand admin_lookup caching and performance strategy.
+
+## Active implementation plan (2026-01-24)
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| Audit error handling + logging + live-only behavior | Done | Error taxonomy + upstream logging mapped. |
+| Implement error classification, JSON logging, dataset cache scaffolding | Done | JSON log sink + dataset cache in place. |
+| Build Svelte + Vite playground (MCP client + logging hooks) | In progress | Initial UI + tool call logging + prompt capture added. |
+| Add Playwright + devcontainer updates + docs | Done | Devcontainer installs Playwright deps; docs updated. |
+| Run tests + fix regressions | Done | `pytest -q` passed (coverage 91.35%); `npm test` passed. |
 
 ## Playground UI gap map (focus on MCP-Apps tools)
 

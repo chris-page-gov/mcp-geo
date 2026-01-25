@@ -56,6 +56,10 @@ logs/
 # Local data capture (DB volumes, live API dumps)
 data/
 
+# Playground build artifacts
+playground/node_modules/
+playground/test-results/
+
 # Translations
 *.mo
 *.pot

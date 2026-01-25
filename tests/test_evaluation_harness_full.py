@@ -114,9 +114,29 @@ def _install_ons_stubs(monkeypatch) -> None:
     monkeypatch.setattr(ons_search._SEARCH_CLIENT, "get_json", fake_search_get_json)
 
 
+def _install_admin_lookup_stubs(monkeypatch) -> None:
+    from tools import admin_lookup
+
+    def fake_arcgis_get_json(url: str, params: Dict[str, Any]):  # noqa: ARG001
+        if params.get("returnExtentOnly") == "true":
+            return 200, {"extent": {"xmin": -0.2, "ymin": 51.4, "xmax": -0.1, "ymax": 51.6}}
+        attrs: Dict[str, Any] = {}
+        for source in admin_lookup.ADMIN_SOURCES:
+            attrs[source.id_field] = f"{source.level}_ID"
+            attrs[source.name_field] = f"{source.level} Name"
+            if source.lat_field:
+                attrs[source.lat_field] = 51.5
+            if source.lon_field:
+                attrs[source.lon_field] = -0.12
+        return 200, {"features": [{"attributes": attrs}]}
+
+    monkeypatch.setattr(admin_lookup._ARCGIS_CLIENT, "get_json", fake_arcgis_get_json)
+
+
 def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client):
     _install_os_handlers(mock_os_client)
     _install_ons_stubs(monkeypatch)
+    _install_admin_lookup_stubs(monkeypatch)
     from tools import os_common, os_features, os_linked_ids, os_names, os_places, os_places_extra
 
     fake_client = os_common.client
@@ -127,7 +147,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     monkeypatch.setattr(os_linked_ids, "client", fake_client)
     monkeypatch.setattr(settings, "ONS_LIVE_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "ONS_SEARCH_LIVE_ENABLED", True, raising=False)
-    monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", False, raising=False)
+    monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", True, raising=False)
     ui_log_path = tmp_path / "ui-events.jsonl"
     monkeypatch.setattr(settings, "UI_EVENT_LOG_PATH", str(ui_log_path), raising=False)
 

@@ -51,14 +51,18 @@ pytest -q
 
 - `OS_API_KEY`: enables live Ordnance Survey tools (Places, Names, NGD Features).
   If unset, OS-backed tools return `501` with `{ "code": "NO_API_KEY" }`.
-- `ONS_LIVE_ENABLED`: enables live ONS API access for `ons_data.*`. If unset or
-  false, the server uses bundled sample data.
+- `ONS_LIVE_ENABLED`: enables live ONS API access for `ons_data.*` (default true).
 - `UI_EVENT_LOG_PATH`: path for MCP-Apps UI event log output
   (default: `logs/ui-events.jsonl`).
+- `PLAYGROUND_EVENT_LOG_PATH`: path for playground prompt/tool event logs
+  (default: `logs/playground-events.jsonl`).
+- `ONS_DATASET_CACHE_ENABLED`: cache full ONS dataset responses (default true).
+- `ONS_DATASET_CACHE_DIR`: cache directory for full ONS dataset snapshots.
 - `DEBUG_ERRORS`: include tracebacks in error responses (development only).
 - `RATE_LIMIT_PER_MIN`: per-minute in-memory rate limit (default 120).
 - `RATE_LIMIT_BYPASS`: set to `true` to disable rate limiting (default true).
 - `METRICS_ENABLED`: enable `/metrics` (default true).
+- `LOG_JSON`: loguru JSON output (default false).
 
 You can copy `.env.example` to `.env` for local use.
 
@@ -78,6 +82,17 @@ Repo-local wrapper:
 
 The `mcp.json` file in the repo includes a ready-to-copy client configuration
 for STDIO connections.
+
+## Playground UI (Svelte)
+
+```bash
+cd playground
+npm install
+npx playwright install --with-deps
+npm run dev
+```
+
+Then open `http://localhost:5173` and connect to `http://localhost:8000/mcp`.
 
 ## Docker
 

@@ -15,6 +15,7 @@ OpenAI's MCP documentation is at https://platform.openai.com/docs/mcp (preview; 
 - Tool annotations + defer-loading metadata for tool search integrations
 - Agent skills resource (`skills://mcp-geo/getting-started`)
 - MCP-Apps UI resources (`ui://mcp-geo/...`) with helper `os_apps.*` tools
+- Svelte playground UI for MCP tool calls, prompt capture, and auditing
 - Routing tool `os_mcp.route_query` for intent classification and workflow guidance
 - Structured logging & correlation IDs
 - OS API client with retries and explicit upstream error codes
@@ -40,7 +41,7 @@ Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; othe
 ## Getting Started (User Guide)
 
 See `docs/getting_started.md` for a quick way to discover available data, run
-MCP Inspector, and explore tools/resources.
+MCP Inspector or the playground UI, and explore tools/resources.
 
 ## Docker (STDIO / Claude Desktop)
 Build the image:
@@ -110,14 +111,14 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
 | admin_lookup.area_geometry | Bounding box geometry for an area |
 | admin_lookup.find_by_name | Case-insensitive substring name search |
-| ons_data.query | Query sample or live ONS observations (geography / measure / time) |
-| ons_data.dimensions | List available ONS observation dimensions (sample or live) |
-| ons_data.get_observation | Retrieve a single observation (sample/live) |
-| ons_data.create_filter | Create an ONS bulk filter (sample scaffold) |
-| ons_data.get_filter_output | Retrieve filter output in JSON (sample) |
-| ons_search.query | Search live ONS datasets (beta API; falls back to sample codes) |
-| ons_codes.list | List dimension IDs (sample/live) |
-| ons_codes.options | List codes/options for a dimension (sample/live) |
+| ons_data.query | Query live ONS observations (dataset/edition/version required) |
+| ons_data.dimensions | List ONS observation dimensions for a live dataset |
+| ons_data.get_observation | Retrieve a single live observation |
+| ons_data.create_filter | Create a live ONS filter |
+| ons_data.get_filter_output | Retrieve filter output in JSON/CSV/XLSX |
+| ons_search.query | Search live ONS datasets (beta API) |
+| ons_codes.list | List live dimension IDs |
+| ons_codes.options | List live dimension options |
 | os_mcp.descriptor | Server capabilities and tool search configuration |
 | os_mcp.route_query | Intent classification and tool/workflow recommendation |
 | os_apps.render_geography_selector | Open the MCP-Apps geography selector widget |
@@ -126,19 +127,12 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | os_apps.render_route_planner | Open the MCP-Apps route planner widget |
 
 ## Resources, Filtering & Provenance
-The server exposes static / reference datasets under the resources API surface:
+The resources API currently exposes skills and UI widgets. Data resources are
+live-only and are not advertised via `/resources/*` yet.
 
-- `GET /resources/list` returns an array of resource descriptors (now including provenance: version, source, license).
-- `GET /resources/read?name=admin_boundaries` returns the administrative boundaries sample dataset with optional parameters:
-	- `limit` (default 100, max 500)
-	- `page` (1-based)
-	- `level` (e.g. `OA`, `LSOA`, `MSOA`, `WARD`, `DISTRICT`, `COUNTY`, `REGION`, `NATION`)
-	- `nameContains` (case-insensitive substring filter)
-	Response uses MCP `ReadResourceResult`:
-	- `contents[0].uri` is the resource URI (e.g. `resource://mcp-geo/admin_boundaries`)
-	- `contents[0].mimeType` is `application/json`
-	- `contents[0].text` is JSON that includes `provenance`, `count`, and `data.*` pagination fields
-	- HTTP ETag is delivered via the `ETag` header for conditional caching
+- `GET /resources/list` returns skill and UI resource descriptors (with provenance metadata).
+- `GET /resources/read?uri=skills://mcp-geo/getting-started` returns skills guidance.
+- `GET /resources/read?uri=ui://mcp-geo/geography-selector` returns MCP-Apps UI HTML.
 
 ### Skills and MCP-Apps Resources
 In addition to data resources, MCP Geo exposes:
@@ -159,12 +153,8 @@ Set `MCP_STDIO_UI_SUPPORTED=1` to force UI mode, or
 `MCP_STDIO_FALLBACK_BBOX_DEG` to control the fallback map span.
 
 ### Conditional Requests (ETag)
-Clients should cache responses and revalidate:
-```
-GET /resources/read?name=admin_boundaries
-If-None-Match: W/"f337e5733a4b7f50"
-```
-If unchanged, the server returns `304 Not Modified` with the same `ETag` header and an empty body.
+Clients should cache UI/skills responses and revalidate using `If-None-Match`.
+If unchanged, the server returns `304 Not Modified` with the same `ETag` header.
 
 ### Dataset Notes
 ## Compression (GZip)
@@ -202,50 +192,30 @@ app_request_latency_ms_bucket{le="100"} 41
 app_request_latency_ms_bucket{le="+Inf"} 42
 app_request_latency_ms_count 42
 ```
-Current `admin_boundaries` is a minimal illustrative chain (OA→LSOA→MSOA→Ward→District→County→Region→Nation) using real English geography codes (sample Westminster lineage). The admin lookup tools now call live ONS Open Geography services by default; the bundled resource remains a lightweight fallback and demo dataset.
+Admin lookup tools call the live ONS Open Geography services by default. Static
+boundary resources are not advertised in the resources API.
 
 ### ONS Observations & Discovery (Epic D)
-An initial statistical dataset (`resources/ons_observations.json`) is bundled to prototype ONS integration.
+ONS data tools are live-only and require dataset metadata on every call.
 
-Dimensions:
-- `geography`: e.g. `K02000001` (UK), `E92000001` (England)
-- `measure`: `GDPV` (illustrative)
-- `seasonalAdjustment`: `SA` (seasonally adjusted)
-- `time`: Quarterly periods (e.g. `2024 Q1`)
-
-Tool `ons_data.query` supports filters:
+Tool `ons_data.query` supports:
 - `geography` (single code)
 - `measure` (single code)
 - `timeRange` — either single period (`2024 Q2`) or inclusive range (`2024 Q1-2024 Q4`)
 - Pagination: `limit` (1–500, default 100) and `page` (1-based)
 
-Response shape:
-```json
-{
-	"results": [ { "geography": "K02000001", "measure": "GDPV", "time": "2024 Q1", "value": 100.2 } ],
-	"count": 5,
-	"data": { "limit": 2, "page": 1, "nextPageToken": "2" }
-}
-```
-`count` is total after filtering (before pagination). `nextPageToken` absent on final page. The observations dataset remains static for determinism, while dataset discovery now uses the live ONS beta API.
+### ONS Client & Dataset Caching
+`tools/ons_common.py` provides:
+- Retry + error mapping
+- In-memory TTL cache (short-lived request cache)
+- `get_all_pages` helper for full dataset paging
 
-### ONS Observations Resource
-The underlying sample dataset is also exposed via the resources API:
-```
-GET /resources/list            # includes ons_observations
-GET /resources/read?name=ons_observations&limit=2&page=1
-```
-Response includes `observations`, `dimensions`, pagination metadata, provenance, and ETag for conditional requests.
-
-### ONS Client & Discovery Scaffold
-`tools/ons_common.py` introduces `ONSClient` with:
-- Simple `get_json` wrapper (retry + error mapping)
-- In-memory TTL cache (configurable via `ONS_CACHE_TTL`, `ONS_CACHE_SIZE`)
-- Pagination helper `build_paged_params(limit, page, extra)`
-This prepares the codebase for swapping the static dataset with live ONS endpoints while keeping test determinism (cache can be tuned in tests).
+Full dataset cache snapshots are stored on disk when enabled via
+`ONS_DATASET_CACHE_ENABLED=true` and `ONS_DATASET_CACHE_DIR`.
 
 ### Live ONS Mode & Codes
-Enable live mode by setting `ONS_LIVE_ENABLED=true` and supplying `dataset`, `edition`, and `version` in tool payloads.
+Enable live mode by setting `ONS_LIVE_ENABLED=true` and supplying `dataset`,
+`edition`, and `version` in tool payloads (no sample fallback).
 
 `ons_data.query` (live):
 ```
@@ -261,9 +231,7 @@ GET https://api.ons.gov.uk/dataset/{dataset}/edition/{edition}/version/{version}
 ```
 GET https://api.ons.gov.uk/dataset/{dataset}/edition/{edition}/version/{version}/dimensions/{dimensionId}/options?limit=1000&page=1
 ```
-Provide an optional `dimension` field to retrieve only a single dimension's codes (optimization avoids extra network calls).
-
-If live mode is disabled (or parameters missing) both tools fall back to the bundled sample dataset.
+Provide an optional `dimension` field to retrieve only a single dimension's codes.
 
 `ons_search.query` (live dataset search):
 ```
@@ -271,26 +239,19 @@ GET https://api.beta.ons.gov.uk/v1/datasets?search=<term>&limit=...&offset=...
 ```
 You can override the base with `ONS_DATASET_API_BASE` or disable live search with `ONS_SEARCH_LIVE_ENABLED=false`.
 
-### ons_observations Resource & Filters
-The resource endpoint now supports:
-```
-GET /resources/read?name=ons_observations&geography=K02000001&measure=chained_volume_measure
-```
-Filters influence pagination and ETag variant generation (`geography`, `measure`).
-
 ## Error Model
 All errors conform to:
 ```json
 { "isError": true, "code": "<CODE>", "message": "..." }
 ```
-Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
 
 ## Project Structure
 ```text
 server/        FastAPI app & routers
 tools/         Tool implementations (one module per domain)
 resources/     Static datasets (future expansion)
-playground/    Transcript / UI stubs
+playground/    Svelte + Vite playground UI
 tests/         Pytest suite (≥90% coverage)
 docs/          Backlog & design notes
 .devcontainer/ Dev environment setup
@@ -313,11 +274,8 @@ Coverage gate (configured) requires ≥90%. Add tests for both success and error
 - Prefer incremental refactors; avoid unrelated changes in feature PRs.
 
 ## Enriched Address Data
-`os_places.by_postcode` now enriches each UPRN record with:
-- `classificationDescription` — human-readable description looked up from `address_classification_codes.json`.
-- `localCustodianName` — local authority name from `custodian_codes.json`.
-These static code lists are exposed via `/resources/read?name=address_classification_codes` and `/resources/read?name=custodian_codes`.
-Other `os_places.*` endpoints will adopt the same enrichment (roadmap).
+`os_places.*` currently return raw OS Places fields only. Enrichment via local
+code lists is disabled in live-only mode.
 
 ## Examples & Golden Tests
 See `docs/examples.md` for sample payloads, conversation flows, and guidance on chaining tools. Golden scenario tests (`test_golden_scenarios.py`) ensure transformation stability with deterministic mocked upstream responses.
@@ -326,7 +284,7 @@ See `docs/examples.md` for sample payloads, conversation flows, and guidance on 
 All `/resources/read` responses include:
 - `etag` (weak) for conditional requests
 - `provenance.retrievedAt` timestamp
-- `Cache-Control` header (currently 300s for dynamic admin boundaries sample; 86400s for static code lists)
+- `Cache-Control` header
 Clients should respect TTL and still perform ETag revalidation for freshness.
 
 ## Troubleshooting
@@ -363,9 +321,9 @@ Content-Length: <bytes>\r\n
 | initialize      | Returns server metadata & capabilities |
 | tools/list      | Lists tools (name, description, schemas) |
 | tools/call      | Invoke a tool (`params.tool`, optional `params.args`) |
-| resources/list  | Lists basic resource names |
+| resources/list  | Lists resource descriptors (skills + UI resources) |
 | resources/describe | Returns resource metadata (name, description, license) |
-| resources/read   | Fetch resource data (supports filters, ETag varianting) |
+| resources/read   | Fetch resource content (ETag supported) |
 | shutdown        | Graceful shutdown (result null) |
 | exit (notify)   | Process terminates (no response) |
 
@@ -403,21 +361,18 @@ Examples:
 # List tools
 python scripts/mcp_client.py tools/list
 
-# Describe available ONS dimensions (sample mode)
-python scripts/mcp_client.py tools/call ons_data.dimensions '{}'
-
-# Live mode (requires env vars); pass dataset/edition/version via params
+# Describe available ONS dimensions (live mode)
 ONS_LIVE_ENABLED=true python scripts/mcp_client.py tools/call ons_data.dimensions '{"params":{"dataset":"gdp","edition":"time-series","version":"1"}}'
 
-# Query observations (sample)
-python scripts/mcp_client.py tools/call ons_data.query '{"params":{"geography":"K02000001","limit":2}}'
+# Query observations (live)
+ONS_LIVE_ENABLED=true python scripts/mcp_client.py tools/call ons_data.query '{"params":{"dataset":"gdp","edition":"time-series","version":"1","geography":"K02000001","limit":2}}'
 
-# Fetch resource with ETag then conditional request (two approaches)
-R1=$(python scripts/mcp_client.py resources/read '{"name":"admin_boundaries","limit":1}' | jq -r '.response.result.etag')
-python scripts/mcp_client.py resources/read '{"name":"admin_boundaries","limit":1,"ifNoneMatch":"'$R1'"}'
+# Fetch resource with ETag then conditional request
+R1=$(python scripts/mcp_client.py resources/read '{"uri":"skills://mcp-geo/getting-started"}' | jq -r '.response.result.etag')
+python scripts/mcp_client.py resources/read '{"uri":"skills://mcp-geo/getting-started","ifNoneMatch":"'$R1'"}'
 
 # Or using the convenience flag (no JSON escaping needed):
-python scripts/mcp_client.py resources/read --if-none-match "$R1" '{"name":"admin_boundaries","limit":1}'
+python scripts/mcp_client.py resources/read --if-none-match "$R1" '{"uri":"skills://mcp-geo/getting-started"}'
 ```
 
 The JSON argument after the tool name is merged into the request `params` object. Include nested objects as required by each tool schema.
@@ -447,8 +402,8 @@ Interactive session:
 ```bash
 python scripts/mcp_client.py --repl
 mcp> resources/describe
-mcp> resources/read {"name":"ons_observations","geography":"K02000001","limit":2}
-mcp> resources/read {"name":"ons_observations","geography":"K02000001","limit":2,"ifNoneMatch":"W/\"abc123deadbeef00\""}
+mcp> resources/read {"uri":"skills://mcp-geo/getting-started"}
+mcp> resources/read {"uri":"skills://mcp-geo/getting-started","ifNoneMatch":"W/\"abc123deadbeef00\""}
 mcp> exit
 ```
 `notModified` responses are compacted by the client for readability.

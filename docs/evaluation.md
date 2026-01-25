@@ -21,7 +21,7 @@ question-specific tool calls to validate outputs.
 - `OS_API_KEY` is required for OS-backed questions (Places, Names, NGD Features, Linked IDs).
   Use `--include-os-api` to include these questions.
 - `ONS_LIVE_ENABLED=true` is required only for live ONS dataset checks. The bundled
-  sample data covers default `ons_data.*` questions.
+  live data covers default `ons_data.*` questions (requires `ONS_LIVE_ENABLED=true`).
 - Live API capture requires a PostgreSQL + PostGIS database and `MCP_GEO_LIVE_DB_DSN`.
 
 ## Running evaluations

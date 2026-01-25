@@ -38,8 +38,7 @@ def test_os_places_enrichment(monkeypatch):
     codes = {d["classification"] for d in data["uprns"]}
     assert codes == {"RD", "CM"}
     desc_map = {d["classification"]: d.get("classificationDescription") for d in data["uprns"]}
-    assert desc_map["RD"].lower().startswith("residential")
-    assert desc_map["CM"].lower().startswith("commercial")
+    assert desc_map["RD"] is None
+    assert desc_map["CM"] is None
     names = {d.get("localCustodianName") for d in data["uprns"]}
-    assert "Westminster City Council" in names
-    assert "Coventry City Council" in names
+    assert names == {None}

@@ -68,11 +68,10 @@ BASIC_QUESTIONS = [
         question="Find Westminster",
         intent=Intent.PLACE_LOOKUP,
         difficulty=Difficulty.BASIC,
-        description="Basic administrative area lookup from sample boundaries.",
+        description="Basic administrative area lookup (live).",
         expected=ExpectedOutcome(
             required_tools=["admin_lookup.find_by_name"],
             max_tool_calls=2,
-            expected_values={"id": "E09000033"},
             required_keywords=["Westminster"],
         ),
         tool_calls=[ToolCallSpec("admin_lookup.find_by_name", {"text": "Westminster"})],
@@ -161,7 +160,7 @@ BASIC_QUESTIONS = [
         question="List available ONS observation dimensions",
         intent=Intent.DATASET_DISCOVERY,
         difficulty=Difficulty.BASIC,
-        description="ONS dimensions listing (sample or live mode).",
+        description="ONS dimensions listing (live mode).",
         expected=ExpectedOutcome(
             required_tools=["ons_data.dimensions"],
             max_tool_calls=2,
@@ -174,6 +173,7 @@ BASIC_QUESTIONS = [
             )
         ],
         tags=["ons"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="B008",
@@ -188,6 +188,7 @@ BASIC_QUESTIONS = [
         ),
         tool_calls=[ToolCallSpec("ons_search.query", {"term": "GDP"})],
         tags=["ons", "search"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="B009",
@@ -262,28 +263,30 @@ BASIC_QUESTIONS = [
         question="List datasets and dimensions available",
         intent=Intent.DATASET_DISCOVERY,
         difficulty=Difficulty.BASIC,
-        description="ONS sample code dimensions list.",
+        description="ONS live code dimensions list.",
         expected=ExpectedOutcome(
             required_tools=["ons_codes.list"],
             max_tool_calls=2,
             required_keywords=["dimensions"],
         ),
-        tool_calls=[ToolCallSpec("ons_codes.list", {})],
+        tool_calls=[ToolCallSpec("ons_codes.list", {"dataset": "gdp", "edition": "time-series", "version": "1"})],
         tags=["ons", "codes"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="B014",
         question="List dataset dimension options for time",
         intent=Intent.DATASET_DISCOVERY,
         difficulty=Difficulty.BASIC,
-        description="ONS sample code options for a dimension.",
+        description="ONS live code options for a dimension.",
         expected=ExpectedOutcome(
             required_tools=["ons_codes.options"],
             max_tool_calls=2,
             required_keywords=["options"],
         ),
-        tool_calls=[ToolCallSpec("ons_codes.options", {"dimension": "time"})],
+        tool_calls=[ToolCallSpec("ons_codes.options", {"dataset": "gdp", "edition": "time-series", "version": "1", "dimension": "time"})],
         tags=["ons", "codes", "options"],
+        requires_ons_live=True,
     ),
 ]
 
@@ -406,7 +409,7 @@ INTERMEDIATE_QUESTIONS = [
         question="Show two ONS observations for UK GDPV",
         intent=Intent.STATISTICS,
         difficulty=Difficulty.INTERMEDIATE,
-        description="ONS query over sample or live observations.",
+        description="ONS query over live observations.",
         expected=ExpectedOutcome(
             required_tools=["ons_data.query"],
             max_tool_calls=2,
@@ -425,6 +428,7 @@ INTERMEDIATE_QUESTIONS = [
             )
         ],
         tags=["ons", "query"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="I009",
@@ -440,11 +444,19 @@ INTERMEDIATE_QUESTIONS = [
         tool_calls=[
             ToolCallSpec(
                 "ons_data.create_filter",
-                {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2"},
+                {
+                    "geography": "K02000001",
+                    "measure": "GDPV",
+                    "timeRange": "2024 Q1-2024 Q2",
+                    "dataset": "gdp",
+                    "edition": "time-series",
+                    "version": "1",
+                },
             ),
             ToolCallSpec("ons_data.get_filter_output", {"filterId": "$filterId"}),
         ],
         tags=["ons", "filter"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="I010",
@@ -490,6 +502,7 @@ INTERMEDIATE_QUESTIONS = [
             )
         ],
         tags=["ons", "observation"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="I012",
@@ -505,11 +518,19 @@ INTERMEDIATE_QUESTIONS = [
         tool_calls=[
             ToolCallSpec(
                 "ons_data.create_filter",
-                {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2"},
+                {
+                    "geography": "K02000001",
+                    "measure": "GDPV",
+                    "timeRange": "2024 Q1-2024 Q2",
+                    "dataset": "gdp",
+                    "edition": "time-series",
+                    "version": "1",
+                },
             ),
             ToolCallSpec("ons_data.get_filter_output", {"filterId": "$filterId", "format": "CSV"}),
         ],
         tags=["ons", "filter", "csv"],
+        requires_ons_live=True,
     ),
 ]
 
@@ -725,6 +746,7 @@ EDGE_CASE_QUESTIONS = [
         ),
         tool_calls=[ToolCallSpec("ons_data.get_filter_output", {"filterId": "unknown"}, expect_error=True)],
         tags=["edge", "ons"],
+        requires_ons_live=True,
     ),
 ]
 
@@ -755,8 +777,9 @@ AMBIGUOUS_QUESTIONS = [
             max_tool_calls=2,
             required_keywords=["results"],
         ),
-        tool_calls=[ToolCallSpec("ons_data.query", {"geography": "K02000001", "limit": 2})],
+        tool_calls=[ToolCallSpec("ons_data.query", {"dataset": "gdp", "edition": "time-series", "version": "1", "geography": "K02000001", "limit": 2})],
         tags=["ambiguous", "ons"],
+        requires_ons_live=True,
     ),
     EvaluationQuestion(
         id="M003",

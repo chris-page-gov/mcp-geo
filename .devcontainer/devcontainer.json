@@ -30,7 +30,7 @@
     8899,
     5432
   ],
-  "postCreateCommand": "pip install --upgrade pip && pip install .[test] && (cd frontend && npm install --no-audit --no-fund || true)",
+  "postCreateCommand": "pip install --upgrade pip && pip install .[test] && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
   "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
   "customizations": {
