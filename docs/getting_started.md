@@ -105,6 +105,13 @@ The playground can:
 - Log prompts to help correlate with tool usage
 - Read evaluation results from the server (`/playground/evaluation/latest`)
 
+For playground tests, install Playwright system deps once:
+
+```bash
+cd playground
+npx playwright install --with-deps
+```
+
 ## 4) What data is available
 
 ### Ordnance Survey (OS)
