@@ -199,7 +199,7 @@ BASIC_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_geography_selector"],
             max_tool_calls=2,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -218,7 +218,7 @@ BASIC_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_statistics_dashboard"],
             max_tool_calls=2,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -286,6 +286,36 @@ BASIC_QUESTIONS = [
         ),
         tool_calls=[ToolCallSpec("ons_codes.options", {"dataset": "gdp", "edition": "time-series", "version": "1", "dimension": "time"})],
         tags=["ons", "codes", "options"],
+        requires_ons_live=True,
+    ),
+    EvaluationQuestion(
+        id="B015",
+        question="List available editions for the GDP dataset",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="ONS live editions listing.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_data.editions"],
+            max_tool_calls=2,
+            required_keywords=["editions"],
+        ),
+        tool_calls=[ToolCallSpec("ons_data.editions", {"dataset": "gdp"})],
+        tags=["ons", "editions"],
+        requires_ons_live=True,
+    ),
+    EvaluationQuestion(
+        id="B016",
+        question="List versions for the GDP time-series edition",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="ONS live versions listing.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_data.versions"],
+            max_tool_calls=2,
+            required_keywords=["versions"],
+        ),
+        tool_calls=[ToolCallSpec("ons_data.versions", {"dataset": "gdp", "edition": "time-series"})],
+        tags=["ons", "versions"],
         requires_ons_live=True,
     ),
 ]
@@ -467,7 +497,7 @@ INTERMEDIATE_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_route_planner"],
             max_tool_calls=2,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -545,7 +575,7 @@ ADVANCED_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_statistics_dashboard"],
             max_tool_calls=3,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -564,7 +594,7 @@ ADVANCED_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_geography_selector", "admin_lookup.area_geometry"],
             max_tool_calls=4,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -584,7 +614,7 @@ ADVANCED_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_feature_inspector"],
             max_tool_calls=2,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -790,7 +820,7 @@ AMBIGUOUS_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["os_apps.render_geography_selector"],
             max_tool_calls=2,
-            required_keywords=["uiResourceUris"],
+            required_keywords=["instructions"],
         ),
         tool_calls=[
             ToolCallSpec(

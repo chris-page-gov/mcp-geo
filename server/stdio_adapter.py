@@ -25,6 +25,7 @@ from server.mcp import tools as _mcp_import  # noqa: F401
 from tools.registry import all_tools, get as get_tool
 from server.mcp.resource_catalog import (
     DATA_RESOURCE_PREFIX,
+    MCP_APPS_MIME,
     list_skill_resources,
     list_ui_resources,
     load_skill_content,
@@ -165,103 +166,23 @@ def _bool_env(name: str, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _capability_truthy(value: Any) -> bool:
-    if isinstance(value, dict):
-        for flag in ("enabled", "supported", "render", "rendering", "ui"):
-            if flag in value and bool(value[flag]):
-                return True
-        return any(_capability_truthy(v) for v in value.values())
-    if isinstance(value, list):
-        return any(_capability_truthy(v) for v in value)
-    return bool(value)
-
-
 def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
     override = _read_bool_env("MCP_STDIO_UI_SUPPORTED")
     if override is not None:
         return override
-    keys = ("uiResources", "mcpApps", "mcp_apps", "mcpAppsUi", "ui", "apps")
-    def _scan(container: Any) -> bool:
-        if not isinstance(container, dict):
-            return False
-        for key in keys:
-            if key in container and _capability_truthy(container[key]):
-                return True
-        return False
-    if _scan(capabilities):
-        return True
-    for bucket in ("experimental", "extensions", "capabilities"):
-        if _scan(capabilities.get(bucket)):
-            return True
+    extensions = capabilities.get("extensions", {}) if isinstance(capabilities, dict) else {}
+    ui_ext = extensions.get("io.modelcontextprotocol/ui")
+    if isinstance(ui_ext, dict):
+        mime_types = ui_ext.get("mimeTypes")
+        if isinstance(mime_types, list):
+            return MCP_APPS_MIME in mime_types
     return False
 
 
-def _extract_ui_resource_uris(data: Any) -> list[str]:
-    if not isinstance(data, dict):
-        return []
-    uris: list[str] = []
-    direct = data.get("uiResourceUris")
-    if isinstance(direct, list):
-        uris.extend([u for u in direct if isinstance(u, str)])
-    meta = data.get("_meta")
-    if isinstance(meta, dict):
-        meta_uris = meta.get("uiResourceUris")
-        if isinstance(meta_uris, list):
-            uris.extend([u for u in meta_uris if isinstance(u, str)])
-    seen: set[str] = set()
-    unique: list[str] = []
-    for uri in uris:
-        if uri in seen:
-            continue
-        seen.add(uri)
-        unique.append(uri)
-    return unique
-
-
-def _resource_link_from_uri(uri: str) -> Dict[str, Any]:
-    link: Dict[str, Any] = {"type": "resource_link", "uri": uri, "name": uri}
-    ui_entry = resolve_ui_resource(uri)
-    if ui_entry:
-        link["name"] = ui_entry["name"]
-        if ui_entry.get("title"):
-            link["title"] = ui_entry["title"]
-        if ui_entry.get("description"):
-            link["description"] = ui_entry["description"]
-        if ui_entry.get("mimeType"):
-            link["mimeType"] = ui_entry["mimeType"]
-        if ui_entry.get("annotations"):
-            link["annotations"] = ui_entry["annotations"]
-    return link
-
-
-def _has_resource_link(content: list[Any], uri: str) -> bool:
-    for item in content:
-        if isinstance(item, dict) and item.get("type") == "resource_link" and item.get("uri") == uri:
-            return True
-    return False
-
-
-def _inject_resource_links(
-    content: list[Any],
-    ui_uris: list[str],
-    allow_resource: bool,
-) -> list[Any]:
-    if not allow_resource or not ui_uris:
-        return list(content)
-    merged = list(content)
-    for uri in reversed(ui_uris):
-        if not _has_resource_link(merged, uri):
-            merged.insert(0, _resource_link_from_uri(uri))
-    return merged
-
-
-def _tool_content_from_data(data: Any, allow_resource: bool) -> List[Dict[str, Any]]:
+def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict[str, Any]]:
     if data is None:
         return []
     content: List[Dict[str, Any]] = []
-    if allow_resource:
-        for uri in _extract_ui_resource_uris(data):
-            content.append(_resource_link_from_uri(uri))
     if isinstance(data, str):
         text = data
     else:
@@ -371,11 +292,13 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": SERVER_VERSION},
         "capabilities": {
-            "tools": {"list": True, "call": True, "search": True},
-            "resources": {"list": True, "read": True, "describe": True},
-            "toolSearch": {"query": True},
-            "uiResources": {"list": True},
-            "skills": {"list": True},
+            "tools": {"list": True, "call": True},
+            "resources": {"list": True, "read": True},
+            "extensions": {
+                "io.modelcontextprotocol/ui": {
+                    "mimeTypes": [MCP_APPS_MIME],
+                }
+            },
         },
         "server": "mcp-geo",
         "version": SERVER_VERSION,
@@ -397,14 +320,22 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
             "inputSchema": t.input_schema,
             "outputSchema": t.output_schema,
             "annotations": annotations,
-            "category": meta.get("category"),
-            "keywords": meta.get("keywords", []),
-            "deferLoading": meta.get("defer_loading", False),
-            "defer_loading": meta.get("defer_loading", False),
         }
         ui_meta = build_ui_tool_meta(t.name)
-        if ui_meta:
-            entry["_meta"] = ui_meta
+        internal_meta: dict[str, Any] = {}
+        if meta.get("category") is not None:
+            internal_meta["category"] = meta.get("category")
+        if meta.get("keywords"):
+            internal_meta["keywords"] = meta.get("keywords", [])
+        if meta.get("defer_loading") is not None:
+            internal_meta["deferLoading"] = meta.get("defer_loading")
+        if ui_meta or internal_meta:
+            merged: dict[str, Any] = {}
+            if ui_meta:
+                merged.update(ui_meta)
+            if internal_meta:
+                merged["mcp-geo"] = internal_meta
+            entry["_meta"] = merged
         tool_entries.append(entry)
     return {"tools": tool_entries}
 
@@ -468,18 +399,11 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
                 data["fallback"] = fallback
     ok = 200 <= status < 300
     result: Dict[str, Any] = {"status": status, "ok": ok, "data": data}
-    ui_uris = _extract_ui_resource_uris(data)
-    allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False) or (
-        ui_supported and bool(ui_uris)
-    )
+    allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False)
     if isinstance(data, dict):
         content_override = data.get("content")
         if isinstance(content_override, list):
-            result["content"] = _inject_resource_links(
-                content_override,
-                ui_uris,
-                allow_resource,
-            )
+            result["content"] = content_override
         else:
             result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
         if "structuredContent" in data:
@@ -489,8 +413,6 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             result["_meta"] = meta
     else:
         result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
-    if ui_uris:
-        result["uiResourceUris"] = ui_uris
     if not ok or (isinstance(data, dict) and data.get("isError") is True):
         result["isError"] = True
     return result

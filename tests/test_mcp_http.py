@@ -2,6 +2,8 @@ import importlib
 import re
 import time
 
+from server.mcp.resource_catalog import MCP_APPS_MIME
+
 
 def _initialize_payload():
     return {"jsonrpc": "2.0", "id": "init-1", "method": "initialize", "params": {}}
@@ -102,15 +104,16 @@ def test_http_transport_client_supports_ui_override(monkeypatch):
     from server.mcp import http_transport
 
     monkeypatch.setenv("MCP_HTTP_UI_SUPPORTED", "0")
-    assert http_transport._client_supports_ui({"uiResources": {"render": True}}) is False
+    capabilities = {"extensions": {"io.modelcontextprotocol/ui": {"mimeTypes": [MCP_APPS_MIME]}}}
+    assert http_transport._client_supports_ui(capabilities) is False
     monkeypatch.delenv("MCP_HTTP_UI_SUPPORTED", raising=False)
-    assert http_transport._client_supports_ui({"uiResources": {"render": True}}) is True
+    assert http_transport._client_supports_ui(capabilities) is True
 
 def test_http_transport_client_supports_ui_nested(monkeypatch):
     from server.mcp import http_transport
 
     monkeypatch.delenv("MCP_HTTP_UI_SUPPORTED", raising=False)
-    capabilities = {"capabilities": {"ui": {"enabled": True}}}
+    capabilities = {"extensions": {"io.modelcontextprotocol/ui": {"mimeTypes": [MCP_APPS_MIME]}}}
     assert http_transport._client_supports_ui(capabilities) is True
 
 
@@ -237,8 +240,6 @@ def test_mcp_http_ui_tool_fallback_and_meta(client, monkeypatch):
     )
     result = resp.json()["result"]
     assert result["data"]["fallback"]["type"] == "static_map"
-    assert result["uiResourceUris"]
-    assert result["_meta"]["uiResourceUris"]
     resp = client.post(
         "/mcp",
         headers={"mcp-session-id": session_id},

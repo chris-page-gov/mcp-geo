@@ -1,4 +1,3 @@
 [run]
 omit =
-    server/stdio_adapter.py
-    tools/os_apps.py
+    server/maps_proxy.py

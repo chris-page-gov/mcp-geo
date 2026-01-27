@@ -6,7 +6,7 @@ from typing import Any
 
 from server import __version__ as SERVER_VERSION
 from server.protocol import PROTOCOL_VERSION
-from server.mcp.resource_catalog import SKILLS_RESOURCE, list_ui_resources
+from server.mcp.resource_catalog import MCP_APPS_MIME, SKILLS_RESOURCE
 from server.mcp.tool_search import get_tool_search_config
 from tools.registry import Tool, ToolResult, register
 
@@ -554,9 +554,7 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
         "transport": {"type": "string"},
         "capabilities": {"type": "object"},
         "toolSearch": {"type": "object"},
-        "skillsUri": {"type": "string"},
-        "uiResources": {"type": "array"},
-        "uiResourceCatalog": {"type": "array"}
+        "skillsUri": {"type": "string"}
       },
       "required": ["server", "version", "protocolVersion", "toolSearch"]
     }
@@ -576,7 +574,6 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
             "message": "includeTools must be a boolean when provided",
         }
     tool_search = get_tool_search_config(category if include_tools else None)
-    ui_catalog = list_ui_resources()
     return 200, {
         "server": "mcp-geo",
         "version": SERVER_VERSION,
@@ -584,12 +581,10 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
         "capabilities": {
             "toolSearch": True,
             "skills": True,
-            "uiResources": True,
+            "extensions": {"io.modelcontextprotocol/ui": {"mimeTypes": [MCP_APPS_MIME]}},
         },
         "toolSearch": tool_search,
         "skillsUri": SKILLS_RESOURCE["uri"],
-        "uiResources": [entry["uri"] for entry in ui_catalog],
-        "uiResourceCatalog": ui_catalog,
     }
 
 
@@ -676,8 +671,6 @@ register(
                 "capabilities": {"type": "object"},
                 "toolSearch": {"type": "object"},
                 "skillsUri": {"type": "string"},
-                "uiResources": {"type": "array"},
-                "uiResourceCatalog": {"type": "array"},
             },
             "required": ["server", "version", "protocolVersion", "toolSearch"],
         },

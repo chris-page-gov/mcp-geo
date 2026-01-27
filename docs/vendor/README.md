@@ -8,6 +8,14 @@ post-process scripts to regenerate locally, then attach a tarball to a GitHub Re
 scripts/vendor_fetch.sh
 python scripts/vendor_html_nojs.py docs/vendor/openai/_snapshot
 python scripts/vendor_html_nojs.py docs/vendor/mcp/_snapshot
+python scripts/vendor_html_nojs.py docs/vendor/os/_snapshot
+```
+
+To refresh a single vendor set (for example OS only), set `VENDOR_TARGETS`:
+
+```bash
+VENDOR_TARGETS=os scripts/vendor_fetch.sh
+python scripts/vendor_html_nojs.py docs/vendor/os/_snapshot
 ```
 
 ## Package for release

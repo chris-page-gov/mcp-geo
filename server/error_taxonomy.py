@@ -5,6 +5,8 @@ from typing import Dict
 ERROR_TAXONOMY: Dict[str, str] = {
     "INVALID_INPUT": "input",
     "NO_API_KEY": "auth",
+    "OS_API_KEY_INVALID": "auth",
+    "OS_API_KEY_EXPIRED": "auth",
     "MISSING_DEPENDENCY": "dependency",
     "LIVE_DISABLED": "config",
     "NOT_ENABLED": "config",

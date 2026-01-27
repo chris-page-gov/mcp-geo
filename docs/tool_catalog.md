@@ -845,9 +845,6 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "_meta": {
-      "type": "object"
-    },
     "content": {
       "type": "array"
     },
@@ -862,14 +859,10 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "structuredContent": {
       "type": "object"
-    },
-    "uiResourceUris": {
-      "type": "array"
     }
   },
   "required": [
-    "status",
-    "uiResourceUris"
+    "status"
   ],
   "type": "object"
 }
@@ -926,9 +919,6 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "_meta": {
-      "type": "object"
-    },
     "content": {
       "type": "array"
     },
@@ -943,14 +933,10 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "structuredContent": {
       "type": "object"
-    },
-    "uiResourceUris": {
-      "type": "array"
     }
   },
   "required": [
-    "status",
-    "uiResourceUris"
+    "status"
   ],
   "type": "object"
 }
@@ -998,9 +984,6 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "_meta": {
-      "type": "object"
-    },
     "content": {
       "type": "array"
     },
@@ -1015,14 +998,10 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "structuredContent": {
       "type": "object"
-    },
-    "uiResourceUris": {
-      "type": "array"
     }
   },
   "required": [
-    "status",
-    "uiResourceUris"
+    "status"
   ],
   "type": "object"
 }
@@ -1067,8 +1046,8 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "_meta": {
-      "type": "object"
+    "content": {
+      "type": "array"
     },
     "config": {
       "type": "object"
@@ -1079,13 +1058,12 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "status": {
       "type": "string"
     },
-    "uiResourceUris": {
-      "type": "array"
+    "structuredContent": {
+      "type": "object"
     }
   },
   "required": [
-    "status",
-    "uiResourceUris"
+    "status"
   ],
   "type": "object"
 }
@@ -1279,6 +1257,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "capabilities": {
       "type": "object"
     },
+    "protocolVersion": {
+      "type": "string"
+    },
     "server": {
       "type": "string"
     },
@@ -1288,11 +1269,8 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "toolSearch": {
       "type": "object"
     },
-    "uiResourceCatalog": {
-      "type": "array"
-    },
-    "uiResources": {
-      "type": "array"
+    "transport": {
+      "type": "string"
     },
     "version": {
       "type": "string"
@@ -1301,6 +1279,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "required": [
     "server",
     "version",
+    "protocolVersion",
     "toolSearch"
   ],
   "type": "object"

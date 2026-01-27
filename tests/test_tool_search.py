@@ -1,0 +1,36 @@
+from server.mcp.tool_search import get_tool_search_config, search_tools
+
+
+def test_get_tool_search_config_invalid_category():
+    result = get_tool_search_config("nope")
+    assert "error" in result
+
+
+def test_get_tool_search_config_filtered_category():
+    result = get_tool_search_config("places")
+    assert result.get("filtered_category") == "places"
+    tools = result.get("tools", {})
+    assert tools
+    assert all(meta.get("category") == "places" for meta in tools.values())
+
+
+def test_search_tools_regex_mode_and_schemas():
+    results = search_tools("postcode", mode="regex", include_schemas=True)
+    assert results
+    first = results[0]
+    assert "inputSchema" in first
+    assert "outputSchema" in first
+
+
+def test_search_tools_invalid_regex():
+    try:
+        search_tools("(", mode="regex")
+    except ValueError as exc:
+        assert "Invalid regex" in str(exc)
+    else:
+        raise AssertionError("Expected invalid regex error")
+
+
+def test_search_tools_empty_query():
+    results = search_tools("  ", mode="token")
+    assert results == []

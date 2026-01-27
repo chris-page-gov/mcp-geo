@@ -23,6 +23,41 @@ from server.logging import log_upstream_error
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
 
+_AUTH_MISSING_TOKENS = (
+    "missing",
+    "not provided",
+    "no api key",
+    "apikey required",
+    "api key required",
+    "key required",
+    "provide an api key",
+)
+_AUTH_EXPIRED_TOKENS = ("expired", "expiry")
+_AUTH_INVALID_TOKENS = (
+    "invalid",
+    "unauthorized",
+    "not authorized",
+    "not authorised",
+    "forbidden",
+    "access denied",
+    "not enabled",
+    "disallowed",
+)
+
+
+def classify_os_api_key_error(status_code: int, body: str | None) -> tuple[str, str] | None:
+    if status_code not in (401, 403):
+        return None
+    text = (body or "").lower()
+    if any(token in text for token in _AUTH_EXPIRED_TOKENS):
+        return "OS_API_KEY_EXPIRED", "OS API key expired."
+    if any(token in text for token in _AUTH_MISSING_TOKENS):
+        return "NO_API_KEY", "OS API key missing."
+    if any(token in text for token in _AUTH_INVALID_TOKENS):
+        return "OS_API_KEY_INVALID", "OS API key invalid or not authorized."
+    return "OS_API_KEY_INVALID", "OS API key invalid or not authorized."
+
+
 class OSClient:
     base_places = "https://api.os.uk/search/places/v1"
     base_names = "https://api.os.uk/search/names/v1"
@@ -43,7 +78,11 @@ class OSClient:
         self, url: str, params: dict[str, Any] | None = None
     ) -> tuple[int, dict[str, Any]]:
         if not self.api_key:
-            return 501, {"isError": True, "code": "NO_API_KEY", "message": "OS_API_KEY not set"}
+            return 501, {
+                "isError": True,
+                "code": "NO_API_KEY",
+                "message": "OS API key missing.",
+            }
         if requests is None:
             return 501, {
                 "isError": True,
@@ -56,6 +95,27 @@ class OSClient:
             try:
                 resp = requests.get(url, params=merged, timeout=DEFAULT_TIMEOUT)
                 if resp.status_code != 200:
+                    auth_error = classify_os_api_key_error(resp.status_code, resp.text)
+                    if auth_error:
+                        code, message = auth_error
+                        log_upstream_error(
+                            service="os",
+                            code=code,
+                            status_code=resp.status_code,
+                            url=getattr(resp, "url", url),
+                            params=merged,
+                            detail=resp.text[:200],
+                            attempt=attempt,
+                            error_category=classify_error(code),
+                        )
+                        return (
+                            resp.status_code,
+                            {
+                                "isError": True,
+                                "code": code,
+                                "message": message,
+                            },
+                        )
                     resp_url = getattr(resp, "url", url)
                     log_upstream_error(
                         service="os",

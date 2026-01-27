@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-01-24
+Last updated: 2026-01-27
 
 ## Sources reviewed
 
@@ -50,7 +50,7 @@ Legend: Done, Partial, Not started
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | route_query + descriptor for tool discovery. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
 | Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
-| MCP-Apps UI widgets | Done | tools/os_apps.py, docs/mcp_apps_alignment.md | Dual ext-apps + OpenAI Apps support. |
+| MCP-Apps UI widgets | Done | tools/os_apps.py, docs/mcp_apps_alignment.md | Aligned to MCP Apps extension (no OpenAI Apps SDK fallback). |
 | Observability (logs/metrics) | Partial | server/main.py, server/logging.py | JSON log sink and upstream error logging added; metrics remain basic. |
 | Rate limiting + error model | Done | server/main.py, server/config.py | 429 handling + uniform error envelope. |
 | CI/CD pipeline | Not started | docs/build_initial_version.md | No GitHub Actions pipeline committed. |
@@ -70,10 +70,11 @@ core tools. Current implementation coverage is incomplete for:
 ## Spec evolution milestones captured in the repo
 
 - Streamable HTTP `/mcp` endpoint added for MCP clients.
-- MCP-Apps UI support expanded to cover ext-apps and OpenAI Apps SDK.
+- MCP-Apps UI support aligned to finalized ext-apps spec (JSON-RPC `ui/initialize`, no skybridge).
 - Tool search (`/tools/search`) plus routing tool (`os_mcp.route_query`).
 - Conditional resources with weak ETags and `If-None-Match` support.
 - STDIO adapter compatibility adjustments (arguments/params, name normalization).
+- OS API auth failures now classified into missing/invalid/expired key errors.
 
 ## Outstanding work (from original proposal + newer docs)
 
@@ -96,15 +97,13 @@ Low impact
 - Enrich resource catalog with fuller code lists and provenance metadata.
 - Expand admin_lookup caching and performance strategy.
 
-## Active implementation plan (2026-01-24)
+## Active implementation plan (2026-01-27)
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| Audit error handling + logging + live-only behavior | Done | Error taxonomy + upstream logging mapped. |
-| Implement error classification, JSON logging, dataset cache scaffolding | Done | JSON log sink + dataset cache in place. |
-| Build Svelte + Vite playground (MCP client + logging hooks) | In progress | Initial UI + tool call logging + prompt capture added. |
-| Add Playwright + devcontainer updates + docs | Done | Devcontainer installs Playwright deps; docs updated. |
-| Run tests + fix regressions | Done | `pytest -q` passed (coverage 91.35%); `npm test` passed after Playwright deps. |
+| Classify OS API key failures (missing/invalid/expired) | Done | OS client + map proxy now map auth errors. |
+| Refresh docs + changelog for MCP-Apps alignment + key requirements | Done | README, Build, tutorial, troubleshooting, and release notes updated. |
+| Cut 0.2.6 release | In progress | Versions bumped + tests run; pending commit/tag. |
 
 ## Playground UI gap map (focus on MCP-Apps tools)
 
@@ -128,7 +127,7 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (92% coverage, 313 passed, 1 skipped).
+Latest full test run: `pytest -q` (90.05% coverage, 320 passed, 1 skipped).
 
 ## Claude UI fallback plan (short)
 

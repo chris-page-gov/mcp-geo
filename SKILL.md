@@ -67,7 +67,9 @@ to open them inside MCP-Apps compatible hosts.
 - `os_apps.render_feature_inspector` -> `ui://mcp-geo/feature-inspector`
 - `os_apps.render_route_planner` -> `ui://mcp-geo/route-planner`
 
-Tool results include `uiResourceUris` so hosts can launch the right widget.
+UI tools are linked via tool metadata (`_meta.ui.resourceUri`). Hosts should load
+the UI resource from `/resources/list` or `/resources/read` and use tool results
+for status/config/instructions.
 
 ## Tool Search
 
@@ -83,7 +85,7 @@ Fetch content with `/resources/read` using `uri`. Example:
 
 - `skills://mcp-geo/getting-started` (this document)
 - `ui://mcp-geo/geography-selector` (UI widget HTML)
-- `ui://mcp-geo/geography-selector` (UI widget HTML)
+- `resource://mcp-geo/admin_boundaries` (boundary dataset)
 
 ## Error Model
 

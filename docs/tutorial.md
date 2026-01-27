@@ -24,8 +24,8 @@ curl -sS -o /dev/null -w 'health=%{http_code}\n' "$BASE_URL/health"
 
 ### Environment variables
 
-- `OS_API_KEY`: enables Ordnance Survey-backed tools (Places, Names, NGD Features, Linked IDs, etc).
-  If unset, OS-backed tools return `501` with `{ "code": "NO_API_KEY" }`.
+- `OS_API_KEY`: required for Ordnance Survey-backed tools (Places, Names, NGD Features, Linked IDs, etc).
+  Missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 - `ONS_LIVE_ENABLED=true`: enables live ONS API access for `ons_data.*` when you supply `dataset`, `edition`, `version`.
   If unset/false, mcp-geo uses bundled sample data.
 - `UI_EVENT_LOG_PATH`: path to the MCP-Apps UI interaction log (default: `logs/ui-events.jsonl`).
@@ -135,9 +135,10 @@ Common MCP-capable tools (Cursor, Windsurf, Continue, Cline, Zed, Neovim MCP
 plugins) typically accept the same `mcpServers` JSON. Paste the STDIO entry
 above and adjust `command`/`cwd` as needed.
 
-MCP-Apps widgets require a client that supports UI resources (for example,
-Claude Desktop for ext-apps or ChatGPT Apps for skybridge). If your client does
-not render MCP-Apps, the server will still return data-only responses.
+MCP-Apps widgets require a client that advertises the MCP Apps extension
+(`io.modelcontextprotocol/ui`) and supports `text/html;profile=mcp-app`. If your
+client does not render MCP Apps, the server will still return data-only
+responses.
 
 ## MCP-Apps + tool search tutorial (best support: Anthropic Claude Desktop)
 
@@ -166,8 +167,7 @@ Open a map so I can select wards in Westminster.
 ```
 
 Expected: the client calls `os_apps.render_geography_selector` and opens the
-MCP-Apps UI at `ui://mcp-geo/geography-selector` (ext-apps) or
-`ui://mcp-geo/geography-selector.html` (ChatGPT Apps).
+MCP-Apps UI at `ui://mcp-geo/geography-selector`.
 
 ### 4) Use the selection in a follow-up tool call
 
@@ -180,9 +180,8 @@ Expected: the client uses the selection context and calls
 `admin_lookup.area_geometry`.
 
 Notes for other clients:
-- MCP-capable clients can still use tool search; if they do not render MCP-Apps,
-  they will receive `uiResourceUris` (ext-apps) and can fall back to data-only
-  flows. ChatGPT Apps uses `openai/outputTemplate` and the skybridge resource.
+- MCP-capable clients can still use tool search; if they do not render MCP Apps,
+  they should ignore UI metadata and fall back to data-only flows.
 
 ## Client tracing (tools + UI)
 
@@ -297,7 +296,8 @@ curl -sS "$BASE_URL/resources/list?limit=50&page=1"
 
 ## Ordnance Survey tools (require OS_API_KEY)
 
-If `OS_API_KEY` is not set, these tools return `501 NO_API_KEY`.
+If `OS_API_KEY` is missing or invalid, these tools return `NO_API_KEY`,
+`OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
 ### OS Places
 

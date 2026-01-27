@@ -238,14 +238,22 @@ def _describe_tool(tool: Tool) -> dict[str, Any]:
         "inputSchemaRef": f"#/tools/{tool.name}/inputSchema",
         "outputSchemaRef": f"#/tools/{tool.name}/outputSchema",
         "annotations": meta.get("annotations", {}),
-        "category": meta.get("category"),
-        "keywords": meta.get("keywords", []),
-        "deferLoading": meta.get("defer_loading", False),
-        "defer_loading": meta.get("defer_loading", False),
     }
     ui_meta = build_ui_tool_meta(tool.name)
-    if ui_meta:
-        description["_meta"] = ui_meta
+    internal_meta: dict[str, Any] = {}
+    if meta.get("category") is not None:
+        internal_meta["category"] = meta.get("category")
+    if meta.get("keywords"):
+        internal_meta["keywords"] = meta.get("keywords", [])
+    if meta.get("defer_loading") is not None:
+        internal_meta["deferLoading"] = meta.get("defer_loading")
+    if ui_meta or internal_meta:
+        merged: dict[str, Any] = {}
+        if ui_meta:
+            merged.update(ui_meta)
+        if internal_meta:
+            merged["mcp-geo"] = internal_meta
+        description["_meta"] = merged
     return description
 
 

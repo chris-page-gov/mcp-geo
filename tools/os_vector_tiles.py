@@ -9,9 +9,9 @@ from .os_common import client
 # Vector tiles descriptor returning style + tile URL template
 
 def _vector_tiles_descriptor(payload: dict[str, Any]):
-    style = "light"  # placeholder style name
-    tiles = f"{client.base_vector_tiles}/tiles/{{z}}/{{x}}/{{y}}.pbf?key={{API_KEY}}"
-    style_url = f"{client.base_vector_tiles}/styles/{style}.json?key={{API_KEY}}"
+    style = "OS_VTS_3857_Light.json"
+    tiles = f"{client.base_vector_tiles}/vts/tiles/{{z}}/{{x}}/{{y}}.pbf?srs=3857&key={{API_KEY}}"
+    style_url = f"{client.base_vector_tiles}/vts/resources/styles?style={style}&srs=3857&key={{API_KEY}}"
     return 200, {"vectorTiles": {"style": style, "styleUrl": style_url, "tileTemplate": tiles}}
 
 register(Tool(

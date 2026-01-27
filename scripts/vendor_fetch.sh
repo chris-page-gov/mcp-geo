@@ -10,13 +10,22 @@ set -euo pipefail
 # Output:
 #   docs/vendor/openai/_snapshot/<host>/<path>/index.html (and assets)
 #   docs/vendor/mcp/_snapshot/<host>/<path>/index.html (and assets)
+#   docs/vendor/os/_snapshot/<host>/<path>/index.html (and assets)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 OPENAI_OUT="$ROOT_DIR/docs/vendor/openai/_snapshot"
 MCP_OUT="$ROOT_DIR/docs/vendor/mcp/_snapshot"
+OS_OUT="$ROOT_DIR/docs/vendor/os/_snapshot"
 
-mkdir -p "$OPENAI_OUT" "$MCP_OUT"
+mkdir -p "$OPENAI_OUT" "$MCP_OUT" "$OS_OUT"
+
+VENDOR_TARGETS="${VENDOR_TARGETS:-openai,mcp,os}"
+
+has_target() {
+  local target="$1"
+  [[ ",${VENDOR_TARGETS}," == *",${target},"* ]]
+}
 
 # Be polite
 WGET_COMMON=(
@@ -56,12 +65,40 @@ MCP_URLS=(
   "https://blog.modelcontextprotocol.io/posts/2025-11-21-mcp-apps/"
 )
 
-echo "==> Fetching OpenAI docs pages…"
-( cd "$OPENAI_OUT" && wget "${WGET_COMMON[@]}" "${OPENAI_URLS[@]}" )
+OS_URLS=(
+  "https://labs.os.uk/public/os-data-hub-examples/resources.json"
+  "https://labs.os.uk/public/os-data-hub-examples/os-vector-tile-api/vts-3857-basic-map#maplibre-gl-js"
+  "https://labs.os.uk/public/os-data-hub-examples/os-vector-tile-api/vts-example-custom-style#maplibre-gl-js"
+  "https://labs.os.uk/public/os-data-hub-examples/os-vector-tile-api/vts-example-3d-buildings#maplibre-gl-js"
+  "https://labs.os.uk/public/os-data-hub-examples/os-vector-tile-api/vts-example-add-overlay#maplibre-gl-js"
+  "https://labs.os.uk/public/os-data-hub-examples/dist/os-vector-tile-api/maplibre-gl-js-vts-3857-basic-map.php?auth="
+  "https://labs.os.uk/public/os-data-hub-examples/dist/os-vector-tile-api/maplibre-gl-js-vts-example-custom-style.php?auth="
+  "https://labs.os.uk/public/os-data-hub-examples/dist/os-vector-tile-api/maplibre-gl-js-vts-example-3d-buildings.php?auth="
+  "https://labs.os.uk/public/os-data-hub-examples/dist/os-vector-tile-api/maplibre-gl-js-vts-example-add-overlay.php?auth="
+)
 
-echo "==> Fetching MCP docs pages…"
-( cd "$MCP_OUT" && wget "${WGET_COMMON[@]}" "${MCP_URLS[@]}" )
+if has_target "openai"; then
+  echo "==> Fetching OpenAI docs pages…"
+  ( cd "$OPENAI_OUT" && wget "${WGET_COMMON[@]}" "${OPENAI_URLS[@]}" )
+fi
+
+if has_target "mcp"; then
+  echo "==> Fetching MCP docs pages…"
+  ( cd "$MCP_OUT" && wget "${WGET_COMMON[@]}" "${MCP_URLS[@]}" )
+fi
+
+if has_target "os"; then
+  echo "==> Fetching OS docs pages…"
+  ( cd "$OS_OUT" && wget "${WGET_COMMON[@]}" "${OS_URLS[@]}" )
+fi
 
 echo "==> Done."
-echo "OpenAI snapshots: $OPENAI_OUT"
-echo "MCP snapshots:    $MCP_OUT"
+if has_target "openai"; then
+  echo "OpenAI snapshots: $OPENAI_OUT"
+fi
+if has_target "mcp"; then
+  echo "MCP snapshots:    $MCP_OUT"
+fi
+if has_target "os"; then
+  echo "OS snapshots:     $OS_OUT"
+fi

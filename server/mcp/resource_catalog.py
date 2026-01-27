@@ -10,7 +10,6 @@ SKILL_PATH = ROOT / "SKILL.md"
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
-OPENAI_APPS_MIME = "text/html+skybridge"
 
 
 def data_resource_uri(name: str) -> str:
@@ -31,10 +30,12 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
         },
         "csp": {
             "connectDomains": [
+                "self",
                 "https://api.os.uk",
                 "https://tile.openstreetmap.org",
             ],
             "resourceDomains": [
+                "self",
                 "https://api.os.uk",
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
@@ -94,29 +95,10 @@ SKILLS_RESOURCE: dict[str, Any] = {
 }
 
 
-def _openai_csp(csp: dict[str, Any]) -> dict[str, Any]:
-    mapping = {
-        "connectDomains": "connect_domains",
-        "resourceDomains": "resource_domains",
-        "frameDomains": "frame_domains",
-        "baseUriDomains": "base_uri_domains",
-    }
-    converted: dict[str, Any] = {}
-    for source, dest in mapping.items():
-        if csp.get(source):
-            converted[dest] = csp[source]
-    return converted
-
-
 def _build_ui_meta(description: str, csp: Optional[dict[str, Any]]) -> dict[str, Any]:
-    meta: dict[str, Any] = {
-        "ui": {"prefersBorder": True},
-        "openai/widgetPrefersBorder": True,
-        "openai/widgetDescription": description,
-    }
+    meta: dict[str, Any] = {"ui": {"prefersBorder": True}}
     if csp:
         meta["ui"]["csp"] = csp
-        meta["openai/widgetCSP"] = _openai_csp(csp)
     return meta
 
 
@@ -136,18 +118,6 @@ def _build_ui_resource_defs() -> list[dict[str, Any]]:
                 "resourceMeta": meta,
             }
         )
-        entries.append(
-            {
-                "uri": f"ui://mcp-geo/{base['slug']}.html",
-                "name": f"{base['name']}_skybridge",
-                "title": base["title"],
-                "description": base["description"],
-                "file": base["file"],
-                "mimeType": OPENAI_APPS_MIME,
-                "annotations": base["annotations"],
-                "resourceMeta": meta,
-            }
-        )
     return entries
 
 
@@ -163,6 +133,7 @@ def list_ui_resources() -> list[dict[str, Any]]:
             "description": entry["description"],
             "mimeType": entry["mimeType"],
             "annotations": entry["annotations"],
+            "_meta": entry.get("resourceMeta"),
             "type": "ui",
         }
         for entry in _UI_RESOURCE_DEFS

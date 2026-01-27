@@ -16,28 +16,18 @@ _UI_URIS = {
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
 }
-_OPENAI_UI_URIS = {
-    "geography": "ui://mcp-geo/geography-selector.html",
-    "statistics": "ui://mcp-geo/statistics-dashboard.html",
-    "feature": "ui://mcp-geo/feature-inspector.html",
-    "route": "ui://mcp-geo/route-planner.html",
-}
 UI_TOOL_RESOURCES = {
     "os_apps.render_geography_selector": {
         "mcp": _UI_URIS["geography"],
-        "openai": _OPENAI_UI_URIS["geography"],
     },
     "os_apps.render_statistics_dashboard": {
         "mcp": _UI_URIS["statistics"],
-        "openai": _OPENAI_UI_URIS["statistics"],
     },
     "os_apps.render_feature_inspector": {
         "mcp": _UI_URIS["feature"],
-        "openai": _OPENAI_UI_URIS["feature"],
     },
     "os_apps.render_route_planner": {
         "mcp": _UI_URIS["route"],
-        "openai": _OPENAI_UI_URIS["route"],
     },
 }
 
@@ -48,9 +38,6 @@ def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
         return None
     return {
         "ui": {"resourceUri": entry["mcp"]},
-        "ui/resourceUri": entry["mcp"],
-        "openai/outputTemplate": entry["openai"],
-        "openai/widgetAccessible": True,
     }
 _EVENT_LOG_LOCK = threading.Lock()
 _SENSITIVE_KEY_MARKERS = (
@@ -68,21 +55,18 @@ def _error(message: str) -> ToolResult:
     return 400, {"isError": True, "code": "INVALID_INPUT", "message": message}
 
 
-def _build_widget_response(uri: str, config: dict[str, Any], instructions: str) -> ToolResult:
+def _build_widget_response(config: dict[str, Any], instructions: str) -> ToolResult:
     structured = {
         "status": "ready",
         "config": config,
         "instructions": instructions,
-        "uiResourceUris": [uri],
     }
     return 200, {
         "status": "ready",
         "config": config,
         "instructions": instructions,
-        "uiResourceUris": [uri],
         "structuredContent": structured,
         "content": [{"type": "text", "text": instructions}],
-        "_meta": {"uiResourceUris": [uri], "audience": ["user"]},
     }
 
 
@@ -224,11 +208,9 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
         "config": {"type": "object"},
         "instructions": {"type": "string"},
         "structuredContent": {"type": "object"},
-        "content": {"type": "array"},
-        "uiResourceUris": {"type": "array"},
-        "_meta": {"type": "object"}
+        "content": {"type": "array"}
       },
-      "required": ["status", "uiResourceUris"]
+      "required": ["status"]
     }
     """
     config: dict[str, Any] = {}
@@ -271,7 +253,6 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
     if initial_zoom is not None:
         config["initialZoom"] = int(initial_zoom)
     return _build_widget_response(
-        _UI_URIS["geography"],
         config,
         "Open the geography selector widget to choose areas interactively.",
     )
@@ -299,11 +280,9 @@ def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
         "config": {"type": "object"},
         "instructions": {"type": "string"},
         "structuredContent": {"type": "object"},
-        "content": {"type": "array"},
-        "uiResourceUris": {"type": "array"},
-        "_meta": {"type": "object"}
+        "content": {"type": "array"}
       },
-      "required": ["status", "uiResourceUris"]
+      "required": ["status"]
     }
     """
     config: dict[str, Any] = {}
@@ -323,7 +302,6 @@ def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
     if measure:
         config["measure"] = measure
     return _build_widget_response(
-        _UI_URIS["statistics"],
         config,
         "Open the statistics dashboard to compare observations across areas.",
     )
@@ -351,11 +329,9 @@ def _render_feature_inspector(payload: dict[str, Any]) -> ToolResult:
         "config": {"type": "object"},
         "instructions": {"type": "string"},
         "structuredContent": {"type": "object"},
-        "content": {"type": "array"},
-        "uiResourceUris": {"type": "array"},
-        "_meta": {"type": "object"}
+        "content": {"type": "array"}
       },
-      "required": ["status", "uiResourceUris"]
+      "required": ["status"]
     }
     """
     config: dict[str, Any] = {}
@@ -375,7 +351,6 @@ def _render_feature_inspector(payload: dict[str, Any]) -> ToolResult:
             return _error("linkedIds must be a list of strings")
         config["linkedIds"] = linked_ids
     return _build_widget_response(
-        _UI_URIS["feature"],
         config,
         "Open the feature inspector to review properties and linked identifiers.",
     )
@@ -405,11 +380,9 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
         "config": {"type": "object"},
         "instructions": {"type": "string"},
         "structuredContent": {"type": "object"},
-        "content": {"type": "array"},
-        "uiResourceUris": {"type": "array"},
-        "_meta": {"type": "object"}
+        "content": {"type": "array"}
       },
-      "required": ["status", "uiResourceUris"]
+      "required": ["status"]
     }
     """
     config: dict[str, Any] = {}
@@ -435,7 +408,6 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
     if mode:
         config["mode"] = mode
     return _build_widget_response(
-        _UI_URIS["route"],
         config,
         "Open the route planner to set start and end points and view directions.",
     )
@@ -469,10 +441,8 @@ register(
                 "instructions": {"type": "string"},
                 "structuredContent": {"type": "object"},
                 "content": {"type": "array"},
-                "uiResourceUris": {"type": "array"},
-                "_meta": {"type": "object"},
             },
-            "required": ["status", "uiResourceUris"],
+            "required": ["status"],
         },
         handler=_render_geography_selector,
     )
@@ -501,10 +471,8 @@ register(
                 "instructions": {"type": "string"},
                 "structuredContent": {"type": "object"},
                 "content": {"type": "array"},
-                "uiResourceUris": {"type": "array"},
-                "_meta": {"type": "object"},
             },
-            "required": ["status", "uiResourceUris"],
+            "required": ["status"],
         },
         handler=_render_statistics_dashboard,
     )
@@ -533,10 +501,8 @@ register(
                 "instructions": {"type": "string"},
                 "structuredContent": {"type": "object"},
                 "content": {"type": "array"},
-                "uiResourceUris": {"type": "array"},
-                "_meta": {"type": "object"},
             },
-            "required": ["status", "uiResourceUris"],
+            "required": ["status"],
         },
         handler=_render_feature_inspector,
     )
@@ -567,10 +533,8 @@ register(
                 "instructions": {"type": "string"},
                 "structuredContent": {"type": "object"},
                 "content": {"type": "array"},
-                "uiResourceUris": {"type": "array"},
-                "_meta": {"type": "object"},
             },
-            "required": ["status", "uiResourceUris"],
+            "required": ["status"],
         },
         handler=_render_route_planner,
     )

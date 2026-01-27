@@ -86,7 +86,7 @@ def _list(payload: dict[str, Any]) -> ToolResult:
                 "live": True,
                 "cached": True,
             }
-    version_url = f"{_CLIENT.base_api}/dataset/{dataset}/edition/{edition}/version/{version}"
+    version_url = f"{_CLIENT.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
     status_meta, meta = _CLIENT.get_json(version_url, params=None)
     if status_meta != 200:
         return status_meta, meta
@@ -120,7 +120,7 @@ def _options(payload: dict[str, Any]) -> ToolResult:
                 "live": True,
                 "cached": True,
             }
-    opt_url = f"{_CLIENT.base_api}/dataset/{dataset}/edition/{edition}/version/{version}/dimensions/{dim}/options"
+    opt_url = f"{_CLIENT.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/dimensions/{dim}/options"
     status_opt, opt_data = _CLIENT.get_all_pages(opt_url, params={"limit": 1000, "page": 1})
     if status_opt != 200:
         return status_opt, opt_data

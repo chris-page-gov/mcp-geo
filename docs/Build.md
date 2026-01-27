@@ -49,8 +49,8 @@ pytest -q
 
 ## Environment variables
 
-- `OS_API_KEY`: enables live Ordnance Survey tools (Places, Names, NGD Features).
-  If unset, OS-backed tools return `501` with `{ "code": "NO_API_KEY" }`.
+- `OS_API_KEY`: required for Ordnance Survey tools (Places, Names, NGD Features).
+  Missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 - `ONS_LIVE_ENABLED`: enables live ONS API access for `ons_data.*` (default true).
 - `UI_EVENT_LOG_PATH`: path for MCP-Apps UI event log output
   (default: `logs/ui-events.jsonl`).

@@ -26,8 +26,9 @@ def test_tools_describe_all():
     assert "annotations" in bp
     assert bp["annotations"].get("readOnlyHint") is True
     assert bp["annotations"].get("openWorldHint") is True
-    assert "deferLoading" in bp
-    assert "category" in bp
+    meta = bp.get("_meta", {}).get("mcp-geo", {})
+    assert "deferLoading" in meta
+    assert "category" in meta
     create_filter = next(t for t in data["tools"] if t["name"] == "ons_data.create_filter")
     assert create_filter["annotations"].get("readOnlyHint") is not True
 

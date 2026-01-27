@@ -12,8 +12,15 @@ pip install -e .[test]
 uvicorn server.main:app --reload
 ```
 
+If you cloned without submodules, initialize them (needed for vector tile
+styles):
+
+```bash
+git submodule update --init --recursive
+```
+
 Set env vars for live data when you have keys:
-- `OS_API_KEY` for Ordnance Survey tools
+- `OS_API_KEY` (required) for Ordnance Survey tools
 - `ONS_LIVE_ENABLED=true` for live ONS datasets
 
 ## 2) Use MCP Inspector (recommended)
@@ -55,7 +62,7 @@ depending on the Inspector version).
 4) Click `Connect`.
 
 Note: for HTTP connections, Inspector does not pass environment variables.
-Set `ONS_LIVE_ENABLED=true` (and `OS_API_KEY` when needed) on the server process
+Set `ONS_LIVE_ENABLED=true` and `OS_API_KEY` on the server process
 before starting `uvicorn`.
 
 If you prefer STDIO instead, use the repo wrapper:
@@ -63,7 +70,7 @@ If you prefer STDIO instead, use the repo wrapper:
 1) Set `Transport Type` to `STDIO`.
 2) Set `Command` to `./scripts/os-mcp`.
 3) In `Environment Variables`, add:
-   - `OS_API_KEY` (optional, enables live OS tools)
+   - `OS_API_KEY` (required for OS tools)
    - `ONS_LIVE_ENABLED=true` (optional, enables live ONS tools)
 4) Click `Connect`.
 
@@ -124,6 +131,35 @@ npx playwright install --with-deps
 - Linked identifiers (UPRN/USRN/TOID): `os_linked_ids.get`
 - NGD features (bbox query): `os_features.query`
 - Maps metadata and vector tiles: `os_maps.render`, `os_vector_tiles.descriptor`
+
+#### Vector tile styles (OS VTS)
+
+Use EPSG:3857 styles for MapLibre/Mapbox clients. For live OS styles, call
+`/maps/vector/vts/resources/styles?style=<STYLE_NAME>&srs=3857` (or via
+`os_vector_tiles.descriptor`). For local styles from the submodule, use
+`/maps/vector/styles?style=<STYLE_NAME>`.
+
+Standard styles (EPSG:3857):
+- `OS_VTS_3857_Light.json`
+- `OS_VTS_3857_Dark.json`
+- `OS_VTS_3857_Road.json`
+- `OS_VTS_3857_Outdoor.json`
+- `OS_VTS_3857_Greyscale.json`
+- `OS_VTS_3857_No_Labels.json`
+- `OS_VTS_3857_Black_and_White.json`
+- `OS_VTS_3857_ESRI.json`
+- `OS_VTS_3857_3D.json`
+
+OpenData overzoom variants (EPSG:3857):
+- `OS_VTS_3857_Open_Light.json`
+- `OS_VTS_3857_Open_Dark.json`
+- `OS_VTS_3857_Open_Road.json`
+- `OS_VTS_3857_Open_Outdoor.json`
+- `OS_VTS_3857_Open_Greyscale.json`
+- `OS_VTS_3857_Open_Black_and_White.json`
+
+Reference: OS-Vector-Tile-API-Stylesheets (GitHub). This repo is also available as
+`submodules/os-vector-tile-api-stylesheets`.
 
 ### ONS statistics
 

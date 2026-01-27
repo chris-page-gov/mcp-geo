@@ -309,10 +309,36 @@ def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | Non
     return matches
 
 
-def _live_area_geometry(area_id: str) -> tuple[list[float] | None, dict[str, Any] | None]:
+def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[list[float] | None, dict[str, Any] | None, dict[str, Any] | None]:
     for source in ADMIN_SOURCES:
         url = _service_query_url(source.service)
         where = f"{source.id_field}='{_escape_like(area_id)}'"
+        if include_geometry:
+            params = {
+                "where": where,
+                "outFields": source.id_field,
+                "returnGeometry": "true",
+                "outSR": "4326",
+                "f": "json",
+            }
+            data = _fetch_arcgis(url, params)
+            if data is None:
+                return None, {"code": "ERROR"}, None
+            features = data.get("features", []) or []
+            if not features:
+                continue
+            geometry = features[0].get("geometry")
+            extent = data.get("extent") or {}
+            bbox = [
+                extent.get("xmin"),
+                extent.get("ymin"),
+                extent.get("xmax"),
+                extent.get("ymax"),
+            ]
+            meta = {"level": source.level, "source": "arcgis"}
+            if any(v is None for v in bbox):
+                bbox = None
+            return ([float(v) for v in bbox] if bbox else None), meta, geometry
         params = {
             "where": where,
             "returnExtentOnly": "true",
@@ -321,7 +347,7 @@ def _live_area_geometry(area_id: str) -> tuple[list[float] | None, dict[str, Any
         }
         data = _fetch_arcgis(url, params)
         if data is None:
-            return None, {"code": "ERROR"}
+            return None, {"code": "ERROR"}, None
         extent = data.get("extent")
         if not extent:
             continue
@@ -329,8 +355,8 @@ def _live_area_geometry(area_id: str) -> tuple[list[float] | None, dict[str, Any
         if any(v is None for v in bbox):
             continue
         meta = {"level": source.level, "source": "arcgis"}
-        return [float(v) for v in bbox], meta
-    return None, {"code": "NOT_FOUND"}
+        return [float(v) for v in bbox], meta, None
+    return None, {"code": "NOT_FOUND"}, None
 
 
 def _live_find_by_id(area_id: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
@@ -464,6 +490,7 @@ register(Tool(
 
 def _area_geometry(payload: dict[str, Any]) -> ToolResult:
     area_id = str(payload.get("id", "")).strip()
+    include_geometry = bool(payload.get("includeGeometry"))
     if not area_id:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing id"}
     if not _live_enabled():
@@ -472,9 +499,12 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
             "code": "LIVE_DISABLED",
             "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
         }
-    bbox, meta = _live_area_geometry(area_id)
+    bbox, meta, geometry = _live_area_geometry(area_id, include_geometry=include_geometry)
     if bbox is not None:
-        return 200, {"id": area_id, "bbox": bbox, "live": True, "meta": meta}
+        payload: dict[str, Any] = {"id": area_id, "bbox": bbox, "live": True, "meta": meta}
+        if geometry:
+            payload["geometry"] = geometry
+        return 200, payload
     if meta and meta.get("code") == "NOT_FOUND":
         return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
     return 502, {
@@ -492,13 +522,18 @@ register(Tool(
         "properties": {
             "tool": {"type": "string", "const": "admin_lookup.area_geometry"},
             "id": {"type": "string"},
+            "includeGeometry": {"type": "boolean"},
         },
         "required": ["id"],
         "additionalProperties": False,
     },
     output_schema={
         "type": "object",
-        "properties": {"id": {"type": "string"}, "bbox": {"type": "array"}},
+        "properties": {
+            "id": {"type": "string"},
+            "bbox": {"type": "array"},
+            "geometry": {"type": "object"},
+        },
         "required": ["id", "bbox"],
     },
     handler=_area_geometry,

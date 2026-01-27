@@ -1,6 +1,6 @@
 ============================================================
-AUDIT LOG: 3d050299
-Timestamp: 2026-01-24T16:59:37.232125
+AUDIT LOG: eaf501ab
+Timestamp: 2026-01-27T21:42:09.063868
 ============================================================
 
 ## 1. QUERY
@@ -18,8 +18,8 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: admin_lookup.find_by_name
 ········································
-Timestamp: 2026-01-24T16:59:38.960565
-Duration: 1721.6ms
+Timestamp: 2026-01-27T21:42:11.274362
+Duration: 2202.4ms
 Status: SUCCESS
 
 Inputs:
@@ -30,16 +30,16 @@ Outputs:
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Find Westminster", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Westminster"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E01004646", "level": "LSOA", "name": "Westminster 002A"}, {"id": "E01004647", "level": "LSOA", "name": "Westminster 001A"}, {"id": "E01004648", "level": "LSOA", "name": "Westminster 002B"}, {"id": "E01004649", "level": "LSOA", "name": "Westminster 001B"}, {"id": "E01004650", "level": "LSOA", "name": "Westminster 002C"}, {"id": "E01004651", "level": "LSOA", "name": "Westminster 003A"}, {"id": "E01004652", "level": "LSOA", "name": "Westminster 017A"}, {"id": "E01004653", "level": "LSOA", "name": "Westminster 014A"}, {"id": "E01004654", "level": "LSOA", "name": "Westminster 014B"}, {"id": "E01004656", "level": "LSOA", "name": "Westminster 014D"}, {"id": "E01004657", "level": "LSOA", "name": "Westminster 012A"}, {"id": "E01004658", "level": "LSOA", "name": "Westminster 012B"}, {"id": "E01004659", "level": "LSOA", "name": "Westminster 008A"}, {"id": "E01004660", "level": "LSOA", "name": "Westminster 008B"}, {"id": "E01004661", "level": "LSOA", "name": "Westminster 012C"}, {"id": "E01004662", "level": "LSOA", "name": "Westminster 012D"}, {"id": "E01004663", "level": "LSOA", "name": "Westminster 012E"}, {"id": "E01004665", "level": "LSOA", "name": "Westminster 024A"}, {"id": "E01004668", "level": "LSOA", "name": "Westminster 023D"}, {"id": "E01004669", "level": "LSOA", "name": "Westminster 024B"}, {"id": "E01004670", "level": "LSOA", "name": "Westminster 009A"}, {"id": "E01004674", "level": "LSOA", "name": "Westminster 005A"}, {"id": "E01004675", "level": "LSOA", "name": "Westminster 005B"}, {"id": "E01004676", "level": "LSOA", "name": "Westminster 006A"}, {"id": "E01004677", "level": "LSOA", "name": "Westminster 005C"}], "count": 25, "live": true}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Find Westminster", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Westminster"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E01004646", "level": "LSOA", "name": "Westminster 002A"}, {"id": "E01004647", "level": "LSOA", "name": "Westminster 001A"}, {"id": "E01004648", "level": "LSOA", "name": "Westminster 002B"}, {"id": "E01004649", "level": "LSOA", "name": "Westminster 001B"}, {"id": "E01004650", "level": "LSOA", "name": "Westminster 002C"}, {"id": "E01004651", "level": "LSOA", "name": "Westminster 003A"}, {"id": "E01004652", "level": "LSOA", "name": "Westminster 017A"}, {"id": "E01004653", "level": "LSOA", "name": "Westminster 014A"}, {"id": "E01004654", "level": "LSOA", "name": "Westminster 014B"}, {"id": "E01004656", "level": "LSOA", "name": "Westminster 014D"}, {"id": "E01004657", "level": "LSOA", "name": "Westminster 012A"}, {"id": "E01004658", "level": "LSOA", "name": "Westminster 012B"}, {"id": "E01004659", "level": "LSOA", "name": "Westminster 008A"}, {"id": "E01004660", "level": "LSOA", "name": "Westminster 008B"}, {"id": "E01004661", "level": "LSOA", "name": "Westminster 012C"}, {"id": "E01004662", "level": "LSOA", "name": "Westminster 012D"}, {"id": "E01004663", "level": "LSOA", "name": "Westminster 012E"}, {"id": "E01004665", "level": "LSOA", "name": "Westminster 024A"}, {"id": "E01004668", "level": "LSOA", "name": "Westminster 023D"}, {"id": "E01004669", "level": "LSOA", "name": "Westminster 024B"}, {"id": "E01004670", "level": "LSOA", "name": "Westminster 009A"}, {"id": "E01004674", "level": "LSOA", "name": "Westminster 005A"}, {"id": "E01004675", "level": "LSOA", "name": "Westminster 005B"}, {"id": "E01004676", "level": "LSOA", "name": "Westminster 006A"}, {"id": "E01004677", "level": "LSOA", "name": "Westminster 005C"}], "count": 25, "live": true}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 1728.6ms
+Duration: 2210.7ms
 Success: True
 
 ============================================================
-AUDIT LOG: e513bfdd
-Timestamp: 2026-01-24T16:59:38.962253
+AUDIT LOG: 36a1f020
+Timestamp: 2026-01-27T21:42:11.275577
 ============================================================
 
 ## 1. QUERY
@@ -57,28 +57,28 @@ Workflow Steps: ['os_vector_tiles.descriptor']
 ------------------------------------------------------------
 ### Tool Call 1: os_vector_tiles.descriptor
 ········································
-Timestamp: 2026-01-24T16:59:38.969926
-Duration: 3.1ms
+Timestamp: 2026-01-27T21:42:11.279618
+Duration: 1.7ms
 Status: SUCCESS
 
 Inputs:
 {}
 
 Outputs:
-{'vectorTiles': {'style': 'light', 'styleUrl': 'https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}', 'tileTemplate': 'https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}'}}
+{'vectorTiles': {'style': 'OS_VTS_3857_Light.json', 'styleUrl': 'https://api.os.uk/maps/vector/v1/vts/resources/styles?style=OS_VTS_3857_Light.json&srs=3857&key={API_KEY}', 'tileTemplate': 'https://api.os.uk/maps/vector/v1/vts/tiles/{z}/{x}/{y}.pbf?srs=3857&key={API_KEY}'}}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Vector tiles descriptor", "intent": "vector_tiles", "confidence": 0.9, "recommended_tool": "os_vector_tiles.descriptor", "recommended_parameters": {}, "explanation": "Return OS vector tiles style and template URLs.", "workflow_steps": ["os_vector_tiles.descriptor"], "alternative_tools": ["os_maps.render"], "guidance": "Use os_vector_tiles.descriptor for tile/style templates; inject OS_API_KEY client-side."}}, {"tool": "os_vector_tiles.descriptor", "response": {"vectorTiles": {"style": "light", "styleUrl": "https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}", "tileTemplate": "https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}"}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Vector tiles descriptor", "intent": "vector_tiles", "confidence": 0.9, "recommended_tool": "os_vector_tiles.descriptor", "recommended_parameters": {}, "explanation": "Return OS vector tiles style and template URLs.", "workflow_steps": ["os_vector_tiles.descriptor"], "alternative_tools": ["os_maps.render"], "guidance": "Use os_vector_tiles.descriptor for tile/style templates; inject OS_API_KEY client-side."}}, {"tool": "os_vector_tiles.descriptor", "response": {"vectorTiles": {"style": "OS_VTS_3857_Light.json", "styleUrl": "https://api.os.uk/maps/vector/v1/vts/resources/styles?style=OS_VTS_3857_Light.json&srs=3857&key={API_KEY}", "tileTemplate": "https://api.os.uk/maps/vector/v1/vts/tiles/{z}/{x}/{y}.pbf?srs=3857&key={API_KEY}"}}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 7.8ms
+Duration: 4.1ms
 Success: True
 
 ============================================================
-AUDIT LOG: 488bf71d
-Timestamp: 2026-01-24T16:59:38.971585
+AUDIT LOG: 35757a28
+Timestamp: 2026-01-27T21:42:11.280382
 ============================================================
 
 ## 1. QUERY
@@ -96,8 +96,8 @@ Workflow Steps: ['os_maps.render']
 ------------------------------------------------------------
 ### Tool Call 1: os_maps.render
 ········································
-Timestamp: 2026-01-24T16:59:38.976559
-Duration: 2.2ms
+Timestamp: 2026-01-27T21:42:11.283451
+Duration: 1.5ms
 Status: SUCCESS
 
 Inputs:
@@ -112,12 +112,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 5.1ms
+Duration: 3.1ms
 Success: True
 
 ============================================================
-AUDIT LOG: 02ac3005
-Timestamp: 2026-01-24T16:59:38.977477
+AUDIT LOG: 3d112d99
+Timestamp: 2026-01-27T21:42:11.283830
 ============================================================
 
 ## 1. QUERY
@@ -135,28 +135,29 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.dimensions
 ········································
-Timestamp: 2026-01-24T16:59:38.982221
-Duration: 2.1ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:11.464783
+Duration: 179.2ms
+Status: ERROR
 
 Inputs:
 {'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}
 
 Outputs:
-{'dimensions': {'geography': ['K02000001'], 'measure': ['chained_volume_measure'], 'seasonalAdjustment': ['seasonally_adjusted'], 'time': ['2023 Q1', '2023 Q2', '2023 Q3', '2023 Q4', '2024 Q1']}, 'live': False}
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: {"errors":[{"code":"dataset not found","description":"internal error"}]}'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "List available ONS observation dimensions", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "List"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.dimensions", "response": {"dimensions": {"geography": ["K02000001"], "measure": ["chained_volume_measure"], "seasonalAdjustment": ["seasonally_adjusted"], "time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1"]}, "live": false}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "List available ONS observation dimensions", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "List"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.dimensions", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: {\"errors\":[{\"code\":\"dataset not found\",\"description\":\"internal error\"}]}"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 4.8ms
-Success: True
+Duration: 181.0ms
+Success: False
+Error: ONS_API_ERROR
 
 ============================================================
-AUDIT LOG: c47fe279
-Timestamp: 2026-01-24T16:59:38.982850
+AUDIT LOG: 66c388e5
+Timestamp: 2026-01-27T21:42:11.466052
 ============================================================
 
 ## 1. QUERY
@@ -174,8 +175,8 @@ Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_search.query
 ········································
-Timestamp: 2026-01-24T16:59:39.214696
-Duration: 230.3ms
+Timestamp: 2026-01-27T21:42:11.695566
+Duration: 226.7ms
 Status: SUCCESS
 
 Inputs:
@@ -190,12 +191,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 232.1ms
+Duration: 230.2ms
 Success: True
 
 ============================================================
-AUDIT LOG: a3de4c53
-Timestamp: 2026-01-24T16:59:39.216592
+AUDIT LOG: fc5d153d
+Timestamp: 2026-01-27T21:42:11.698153
 ============================================================
 
 ## 1. QUERY
@@ -213,28 +214,28 @@ Workflow Steps: ['os_apps.render_geography_selector']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_geography_selector
 ········································
-Timestamp: 2026-01-24T16:59:39.223899
-Duration: 3.6ms
+Timestamp: 2026-01-27T21:42:11.702543
+Duration: 1.7ms
 Status: SUCCESS
 
 Inputs:
 {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}
 
 Outputs:
-{'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'structuredContent': {'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector']}, 'content': [{'type': 'text', 'text': 'Open the geography selector widget to choose areas interactively.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'structuredContent': {'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.'}, 'content': [{'type': 'text', 'text': 'Open the geography selector widget to choose areas interactively.'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Open a map so I can select wards", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "ward", "focusName": "Open", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"], "structuredContent": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"]}, "content": [{"type": "text", "text": "Open the geography selector widget to choose areas interactively."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/geography-selector"], "audience": ["user"]}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Open a map so I can select wards", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "ward", "focusName": "Open", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "structuredContent": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively."}, "content": [{"type": "text", "text": "Open the geography selector widget to choose areas interactively."}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 7.4ms
+Duration: 4.4ms
 Success: True
 
 ============================================================
-AUDIT LOG: 5d56113e
-Timestamp: 2026-01-24T16:59:39.225030
+AUDIT LOG: 79273354
+Timestamp: 2026-01-27T21:42:11.703113
 ============================================================
 
 ## 1. QUERY
@@ -252,28 +253,28 @@ Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_statistics_dashboard
 ········································
-Timestamp: 2026-01-24T16:59:39.230403
-Duration: 2.2ms
+Timestamp: 2026-01-27T21:42:11.706412
+Duration: 1.8ms
 Status: SUCCESS
 
 Inputs:
 {'areaCodes': ['E09000033'], 'dataset': 'gdp', 'measure': 'GDPV'}
 
 Outputs:
-{'status': 'ready', 'config': {'dataset': 'gdp', 'areaCodes': ['E09000033'], 'measure': 'GDPV'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], 'structuredContent': {'status': 'ready', 'config': {'dataset': 'gdp', 'areaCodes': ['E09000033'], 'measure': 'GDPV'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'uiResourceUris': ['ui://mcp-geo/statistics-dashboard']}, 'content': [{'type': 'text', 'text': 'Open the statistics dashboard to compare observations across areas.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'dataset': 'gdp', 'areaCodes': ['E09000033'], 'measure': 'GDPV'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'structuredContent': {'status': 'ready', 'config': {'dataset': 'gdp', 'areaCodes': ['E09000033'], 'measure': 'GDPV'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.'}, 'content': [{'type': 'text', 'text': 'Open the statistics dashboard to compare observations across areas.'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Open the statistics dashboard for Westminster", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "os_apps.render_statistics_dashboard", "response": {"status": "ready", "config": {"dataset": "gdp", "areaCodes": ["E09000033"], "measure": "GDPV"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "structuredContent": {"status": "ready", "config": {"dataset": "gdp", "areaCodes": ["E09000033"], "measure": "GDPV"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "uiResourceUris": ["ui://mcp-geo/statistics-dashboard"]}, "content": [{"type": "text", "text": "Open the statistics dashboard to compare observations across areas."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "audience": ["user"]}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Open the statistics dashboard for Westminster", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "os_apps.render_statistics_dashboard", "response": {"status": "ready", "config": {"dataset": "gdp", "areaCodes": ["E09000033"], "measure": "GDPV"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "structuredContent": {"status": "ready", "config": {"dataset": "gdp", "areaCodes": ["E09000033"], "measure": "GDPV"}, "instructions": "Open the statistics dashboard to compare observations across areas."}, "content": [{"type": "text", "text": "Open the statistics dashboard to compare observations across areas."}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 5.4ms
+Duration: 3.3ms
 Success: True
 
 ============================================================
-AUDIT LOG: 796f64a9
-Timestamp: 2026-01-24T16:59:39.231058
+AUDIT LOG: 557b5256
+Timestamp: 2026-01-27T21:42:11.706874
 ============================================================
 
 ## 1. QUERY
@@ -291,28 +292,29 @@ Workflow Steps: ['ons_data.dimensions', 'ons_search.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_codes.list
 ········································
-Timestamp: 2026-01-24T16:59:39.234638
-Duration: 1.7ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:11.831549
+Duration: 123.4ms
+Status: ERROR
 
 Inputs:
-{}
+{'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}
 
 Outputs:
-{'dimensions': ['geography', 'measure', 'seasonalAdjustment', 'time']}
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: {"errors":[{"code":"dataset not found","description":"internal error"}]}'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "List datasets and dimensions available", "intent": "dataset_discovery", "confidence": 1.0, "recommended_tool": "ons_data.dimensions", "recommended_parameters": {}, "explanation": "List ONS dimensions and search available codes.", "workflow_steps": ["ons_data.dimensions", "ons_search.query"], "alternative_tools": ["ons_search.query"], "guidance": "Use ons_data.dimensions and ons_search.query to find available datasets/dimensions."}}, {"tool": "ons_codes.list", "response": {"dimensions": ["geography", "measure", "seasonalAdjustment", "time"]}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "List datasets and dimensions available", "intent": "dataset_discovery", "confidence": 1.0, "recommended_tool": "ons_data.dimensions", "recommended_parameters": {}, "explanation": "List ONS dimensions and search available codes.", "workflow_steps": ["ons_data.dimensions", "ons_search.query"], "alternative_tools": ["ons_search.query"], "guidance": "Use ons_data.dimensions and ons_search.query to find available datasets/dimensions."}}, {"tool": "ons_codes.list", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: {\"errors\":[{\"code\":\"dataset not found\",\"description\":\"internal error\"}]}"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3.6ms
-Success: True
+Duration: 124.8ms
+Success: False
+Error: ONS_API_ERROR
 
 ============================================================
-AUDIT LOG: a8510b7f
-Timestamp: 2026-01-24T16:59:39.235131
+AUDIT LOG: 961df271
+Timestamp: 2026-01-27T21:42:11.832749
 ============================================================
 
 ## 1. QUERY
@@ -330,28 +332,109 @@ Workflow Steps: ['ons_data.dimensions', 'ons_search.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_codes.options
 ········································
-Timestamp: 2026-01-24T16:59:39.238673
-Duration: 1.8ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:11.964919
+Duration: 129.4ms
+Status: ERROR
 
 Inputs:
-{'dimension': 'time'}
+{'dataset': 'gdp', 'edition': 'time-series', 'version': '1', 'dimension': 'time'}
 
 Outputs:
-{'dimension': 'time', 'options': ['2023 Q1', '2023 Q2', '2023 Q3', '2023 Q4', '2024 Q1']}
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: version not found\n'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "List dataset dimension options for time", "intent": "dataset_discovery", "confidence": 1.0, "recommended_tool": "ons_data.dimensions", "recommended_parameters": {}, "explanation": "List ONS dimensions and search available codes.", "workflow_steps": ["ons_data.dimensions", "ons_search.query"], "alternative_tools": ["ons_search.query"], "guidance": "Use ons_data.dimensions and ons_search.query to find available datasets/dimensions."}}, {"tool": "ons_codes.options", "response": {"dimension": "time", "options": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1"]}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "List dataset dimension options for time", "intent": "dataset_discovery", "confidence": 1.0, "recommended_tool": "ons_data.dimensions", "recommended_parameters": {}, "explanation": "List ONS dimensions and search available codes.", "workflow_steps": ["ons_data.dimensions", "ons_search.query"], "alternative_tools": ["ons_search.query"], "guidance": "Use ons_data.dimensions and ons_search.query to find available datasets/dimensions."}}, {"tool": "ons_codes.options", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: version not found\n"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3.6ms
-Success: True
+Duration: 132.2ms
+Success: False
+Error: ONS_API_ERROR
 
 ============================================================
-AUDIT LOG: fda873cc
-Timestamp: 2026-01-24T16:59:39.239185
+AUDIT LOG: 47ae4813
+Timestamp: 2026-01-27T21:42:11.965603
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "List available editions for the GDP dataset"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: dataset_discovery
+Confidence: 1.0
+Recommended Tool: ons_data.dimensions
+Workflow Steps: ['ons_data.dimensions', 'ons_search.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.editions
+········································
+Timestamp: 2026-01-27T21:42:12.097906
+Duration: 130.7ms
+Status: ERROR
+
+Inputs:
+{'dataset': 'gdp'}
+
+Outputs:
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: dataset not found\n'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "List available editions for the GDP dataset", "intent": "dataset_discovery", "confidence": 1.0, "recommended_tool": "ons_data.dimensions", "recommended_parameters": {}, "explanation": "List ONS dimensions and search available codes.", "workflow_steps": ["ons_data.dimensions", "ons_search.query"], "alternative_tools": ["ons_search.query"], "guidance": "Use ons_data.dimensions and ons_search.query to find available datasets/dimensions."}}, {"tool": "ons_data.editions", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: dataset not found\n"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 132.3ms
+Success: False
+Error: ONS_API_ERROR
+
+============================================================
+AUDIT LOG: 82f771ce
+Timestamp: 2026-01-27T21:42:12.098548
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "List versions for the GDP time-series edition"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: statistics
+Confidence: 0.83
+Recommended Tool: ons_data.query
+Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.versions
+········································
+Timestamp: 2026-01-27T21:42:12.229900
+Duration: 129.7ms
+Status: ERROR
+
+Inputs:
+{'dataset': 'gdp', 'edition': 'time-series'}
+
+Outputs:
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: dataset not found\n'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "List versions for the GDP time-series edition", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.versions", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: dataset not found\n"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 131.4ms
+Success: False
+Error: ONS_API_ERROR
+
+============================================================
+AUDIT LOG: 4e770c5e
+Timestamp: 2026-01-27T21:42:12.231021
 ============================================================
 
 ## 1. QUERY
@@ -369,8 +452,8 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: admin_lookup.containing_areas
 ········································
-Timestamp: 2026-01-24T16:59:43.569238
-Duration: 4328.4ms
+Timestamp: 2026-01-27T21:42:16.133687
+Duration: 3900.5ms
 Status: SUCCESS
 
 Inputs:
@@ -381,16 +464,16 @@ Outputs:
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Which administrative areas contain 51.5010,-0.1416?", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Which"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.containing_areas", "response": {"results": [{"id": "E00023938", "level": "OA", "name": "E00023938"}, {"id": "E01004736", "level": "LSOA", "name": "Westminster 018C"}, {"id": "E02000977", "level": "MSOA", "name": "Westminster 018"}, {"id": "E05000644", "level": "WARD", "name": "St James's"}, {"id": "E09000033", "level": "DISTRICT", "name": "Westminster"}, {"id": "E09000033", "level": "COUNTY", "name": "Westminster"}, {"id": "E12000007", "level": "REGION", "name": "London"}, {"id": "E92000001", "level": "NATION", "name": "England"}], "live": true}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Which administrative areas contain 51.5010,-0.1416?", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Which"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.containing_areas", "response": {"results": [{"id": "E00023938", "level": "OA", "name": "E00023938"}, {"id": "E01004736", "level": "LSOA", "name": "Westminster 018C"}, {"id": "E02000977", "level": "MSOA", "name": "Westminster 018"}, {"id": "E05000644", "level": "WARD", "name": "St James's"}, {"id": "E09000033", "level": "DISTRICT", "name": "Westminster"}, {"id": "E09000033", "level": "COUNTY", "name": "Westminster"}, {"id": "E12000007", "level": "REGION", "name": "London"}, {"id": "E92000001", "level": "NATION", "name": "England"}], "live": true}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 4330.2ms
+Duration: 3902.8ms
 Success: True
 
 ============================================================
-AUDIT LOG: 3867d3f1
-Timestamp: 2026-01-24T16:59:43.570766
+AUDIT LOG: e12e3ee5
+Timestamp: 2026-01-27T21:42:16.134762
 ============================================================
 
 ## 1. QUERY
@@ -408,8 +491,8 @@ Workflow Steps: ['os_mcp.descriptor']
 ------------------------------------------------------------
 ### Tool Call 1: admin_lookup.reverse_hierarchy
 ········································
-Timestamp: 2026-01-24T16:59:48.685529
-Duration: 5111.2ms
+Timestamp: 2026-01-27T21:42:22.066611
+Duration: 5927.4ms
 Status: SUCCESS
 
 Inputs:
@@ -424,12 +507,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 5114.9ms
+Duration: 5931.9ms
 Success: True
 
 ============================================================
-AUDIT LOG: 5100ba0d
-Timestamp: 2026-01-24T16:59:48.687026
+AUDIT LOG: af5ae295
+Timestamp: 2026-01-27T21:42:22.067659
 ============================================================
 
 ## 1. QUERY
@@ -447,8 +530,8 @@ Workflow Steps: ['admin_lookup.find_by_name', 'admin_lookup.area_geometry']
 ------------------------------------------------------------
 ### Tool Call 1: admin_lookup.find_by_name
 ········································
-Timestamp: 2026-01-24T16:59:48.694426
-Duration: 2.9ms
+Timestamp: 2026-01-27T21:42:22.074576
+Duration: 2.2ms
 Status: SUCCESS
 
 Inputs:
@@ -459,8 +542,8 @@ Outputs:
 
 ### Tool Call 2: admin_lookup.area_geometry
 ········································
-Timestamp: 2026-01-24T16:59:50.561409
-Duration: 1867.0ms
+Timestamp: 2026-01-27T21:42:23.584275
+Duration: 1509.7ms
 Status: SUCCESS
 
 Inputs:
@@ -475,12 +558,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 1874.5ms
+Duration: 1516.7ms
 Success: True
 
 ============================================================
-AUDIT LOG: 8293fda4
-Timestamp: 2026-01-24T16:59:50.563057
+AUDIT LOG: 8fd7e6eb
+Timestamp: 2026-01-27T21:42:23.585563
 ============================================================
 
 ## 1. QUERY
@@ -498,28 +581,29 @@ Workflow Steps: ['os_mcp.descriptor']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.query
 ········································
-Timestamp: 2026-01-24T16:59:50.569046
-Duration: 2.8ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:23.757506
+Duration: 168.2ms
+Status: ERROR
 
 Inputs:
 {'geography': 'K02000001', 'limit': 2, 'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}
 
 Outputs:
-{'results': [{'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q1', 'value': 525.1}, {'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q2', 'value': 526.3}], 'count': 5, 'limit': 2, 'page': 1, 'nextPageToken': '2'}
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: dataset not found\n'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Show two ONS observations for UK GDPV", "intent": "unknown", "confidence": 0.0, "recommended_tool": "os_mcp.descriptor", "recommended_parameters": {}, "explanation": "Use the server descriptor to discover tool search defaults.", "workflow_steps": ["os_mcp.descriptor"], "alternative_tools": ["os_mcp.descriptor", "admin_lookup.find_by_name"], "guidance": "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."}}, {"tool": "ons_data.query", "response": {"results": [{"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q1", "value": 525.1}, {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q2", "value": 526.3}], "count": 5, "limit": 2, "page": 1, "nextPageToken": "2"}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Show two ONS observations for UK GDPV", "intent": "unknown", "confidence": 0.0, "recommended_tool": "os_mcp.descriptor", "recommended_parameters": {}, "explanation": "Use the server descriptor to discover tool search defaults.", "workflow_steps": ["os_mcp.descriptor"], "alternative_tools": ["os_mcp.descriptor", "admin_lookup.find_by_name"], "guidance": "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."}}, {"tool": "ons_data.query", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: dataset not found\n"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 6.1ms
-Success: True
+Duration: 172.0ms
+Success: False
+Error: ONS_API_ERROR
 
 ============================================================
-AUDIT LOG: 43d10f23
-Timestamp: 2026-01-24T16:59:50.571081
+AUDIT LOG: 1c7e65b1
+Timestamp: 2026-01-27T21:42:23.758452
 ============================================================
 
 ## 1. QUERY
@@ -537,40 +621,41 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.create_filter
 ········································
-Timestamp: 2026-01-24T16:59:50.577358
-Duration: 3.0ms
+Timestamp: 2026-01-27T21:42:23.763319
+Duration: 1.6ms
 Status: SUCCESS
 
 Inputs:
-{'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2'}
+{'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2', 'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}
 
 Outputs:
-{'filterId': 'f0001', 'params': {'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2'}}
+{'filterId': 'f0001', 'params': {'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2', 'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}}
 
 ### Tool Call 2: ons_data.get_filter_output
 ········································
-Timestamp: 2026-01-24T16:59:50.579697
-Duration: 2.3ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:23.764669
+Duration: 1.3ms
+Status: ERROR
 
 Inputs:
 {'filterId': 'f0001'}
 
 Outputs:
-{'filterId': 'f0001', 'format': 'JSON', 'data': {'results': [], 'count': 0, 'limit': 50, 'page': 1, 'nextPageToken': None}}
+{'isError': True, 'code': 'INVALID_INPUT', 'message': 'timeRange ranges are not supported in live mode; use a single time value.'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Create an ONS filter for UK GDPV 2024 Q1-Q2", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Create"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.create_filter", "response": {"filterId": "f0001", "params": {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2"}}}, {"tool": "ons_data.get_filter_output", "response": {"filterId": "f0001", "format": "JSON", "data": {"results": [], "count": 0, "limit": 50, "page": 1, "nextPageToken": null}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Create an ONS filter for UK GDPV 2024 Q1-Q2", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Create"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.create_filter", "response": {"filterId": "f0001", "params": {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2", "dataset": "gdp", "edition": "time-series", "version": "1"}}}, {"tool": "ons_data.get_filter_output", "response": {"isError": true, "code": "INVALID_INPUT", "message": "timeRange ranges are not supported in live mode; use a single time value."}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 8.6ms
-Success: True
+Duration: 6.2ms
+Success: False
+Error: INVALID_INPUT
 
 ============================================================
-AUDIT LOG: 8fe5ca77
-Timestamp: 2026-01-24T16:59:50.580300
+AUDIT LOG: e124e2f7
+Timestamp: 2026-01-27T21:42:23.765147
 ============================================================
 
 ## 1. QUERY
@@ -588,7 +673,7 @@ Workflow Steps: ['os_apps.render_route_planner']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_route_planner
 ········································
-Timestamp: 2026-01-24T16:59:50.583745
+Timestamp: 2026-01-27T21:42:23.768929
 Duration: 1.7ms
 Status: SUCCESS
 
@@ -596,20 +681,20 @@ Inputs:
 {'startLat': 52.4081, 'startLng': -1.5106, 'endLat': 51.5074, 'endLng': -0.1278}
 
 Outputs:
-{'status': 'ready', 'config': {'start': {'lat': 52.4081, 'lng': -1.5106}, 'end': {'lat': 51.5074, 'lng': -0.1278}}, 'instructions': 'Open the route planner to set start and end points and view directions.', 'uiResourceUris': ['ui://mcp-geo/route-planner'], 'structuredContent': {'status': 'ready', 'config': {'start': {'lat': 52.4081, 'lng': -1.5106}, 'end': {'lat': 51.5074, 'lng': -0.1278}}, 'instructions': 'Open the route planner to set start and end points and view directions.', 'uiResourceUris': ['ui://mcp-geo/route-planner']}, 'content': [{'type': 'text', 'text': 'Open the route planner to set start and end points and view directions.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/route-planner'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'start': {'lat': 52.4081, 'lng': -1.5106}, 'end': {'lat': 51.5074, 'lng': -0.1278}}, 'instructions': 'Open the route planner to set start and end points and view directions.', 'structuredContent': {'status': 'ready', 'config': {'start': {'lat': 52.4081, 'lng': -1.5106}, 'end': {'lat': 51.5074, 'lng': -0.1278}}, 'instructions': 'Open the route planner to set start and end points and view directions.'}, 'content': [{'type': 'text', 'text': 'Open the route planner to set start and end points and view directions.'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Plan a route from Coventry to London", "intent": "route_planning", "confidence": 1.0, "recommended_tool": "os_apps.render_route_planner", "recommended_parameters": {}, "explanation": "Open the route planner to choose start/end points.", "workflow_steps": ["os_apps.render_route_planner"], "alternative_tools": ["os_maps.render"], "guidance": "Use the route planner widget to set start/end coordinates."}}, {"tool": "os_apps.render_route_planner", "response": {"status": "ready", "config": {"start": {"lat": 52.4081, "lng": -1.5106}, "end": {"lat": 51.5074, "lng": -0.1278}}, "instructions": "Open the route planner to set start and end points and view directions.", "uiResourceUris": ["ui://mcp-geo/route-planner"], "structuredContent": {"status": "ready", "config": {"start": {"lat": 52.4081, "lng": -1.5106}, "end": {"lat": 51.5074, "lng": -0.1278}}, "instructions": "Open the route planner to set start and end points and view directions.", "uiResourceUris": ["ui://mcp-geo/route-planner"]}, "content": [{"type": "text", "text": "Open the route planner to set start and end points and view directions."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/route-planner"], "audience": ["user"]}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Plan a route from Coventry to London", "intent": "route_planning", "confidence": 1.0, "recommended_tool": "os_apps.render_route_planner", "recommended_parameters": {}, "explanation": "Open the route planner to choose start/end points.", "workflow_steps": ["os_apps.render_route_planner"], "alternative_tools": ["os_maps.render"], "guidance": "Use the route planner widget to set start/end coordinates."}}, {"tool": "os_apps.render_route_planner", "response": {"status": "ready", "config": {"start": {"lat": 52.4081, "lng": -1.5106}, "end": {"lat": 51.5074, "lng": -0.1278}}, "instructions": "Open the route planner to set start and end points and view directions.", "structuredContent": {"status": "ready", "config": {"start": {"lat": 52.4081, "lng": -1.5106}, "end": {"lat": 51.5074, "lng": -0.1278}}, "instructions": "Open the route planner to set start and end points and view directions."}, "content": [{"type": "text", "text": "Open the route planner to set start and end points and view directions."}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3.5ms
+Duration: 3.8ms
 Success: True
 
 ============================================================
-AUDIT LOG: 02b9408d
-Timestamp: 2026-01-24T16:59:50.584226
+AUDIT LOG: c2527658
+Timestamp: 2026-01-27T21:42:23.769707
 ============================================================
 
 ## 1. QUERY
@@ -627,28 +712,29 @@ Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.get_observation
 ········································
-Timestamp: 2026-01-24T16:59:50.587447
-Duration: 1.5ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:23.951735
+Duration: 180.5ms
+Status: ERROR
 
 Inputs:
 {'geography': 'K02000001', 'measure': 'chained_volume_measure', 'time': '2023 Q1', 'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}
 
 Outputs:
-{'observation': {'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q1', 'value': 525.1}, 'live': False}
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: dataset not found\n'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Get GDP observation for 2023 Q1", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.get_observation", "response": {"observation": {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q1", "value": 525.1}, "live": false}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Get GDP observation for 2023 Q1", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.get_observation", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: dataset not found\n"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3.3ms
-Success: True
+Duration: 182.1ms
+Success: False
+Error: ONS_API_ERROR
 
 ============================================================
-AUDIT LOG: 27c116b3
-Timestamp: 2026-01-24T16:59:50.588248
+AUDIT LOG: 670c9f92
+Timestamp: 2026-01-27T21:42:23.952351
 ============================================================
 
 ## 1. QUERY
@@ -666,40 +752,41 @@ Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.create_filter
 ········································
-Timestamp: 2026-01-24T16:59:50.591568
+Timestamp: 2026-01-27T21:42:23.955634
 Duration: 1.4ms
 Status: SUCCESS
 
 Inputs:
-{'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2'}
+{'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2', 'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}
 
 Outputs:
-{'filterId': 'f0002', 'params': {'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2'}}
+{'filterId': 'f0002', 'params': {'geography': 'K02000001', 'measure': 'GDPV', 'timeRange': '2024 Q1-2024 Q2', 'dataset': 'gdp', 'edition': 'time-series', 'version': '1'}}
 
 ### Tool Call 2: ons_data.get_filter_output
 ········································
-Timestamp: 2026-01-24T16:59:50.593618
-Duration: 2.0ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:23.956948
+Duration: 1.3ms
+Status: ERROR
 
 Inputs:
 {'filterId': 'f0002', 'format': 'CSV'}
 
 Outputs:
-{'filterId': 'f0002', 'format': 'CSV', 'contentType': 'text/csv', 'dataBase64': '\r\n', 'rows': 0, 'columns': 0}
+{'isError': True, 'code': 'INVALID_INPUT', 'message': 'timeRange ranges are not supported in live mode; use a single time value.'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Export a GDP filter output as CSV", "intent": "statistics", "confidence": 1.0, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.create_filter", "response": {"filterId": "f0002", "params": {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2"}}}, {"tool": "ons_data.get_filter_output", "response": {"filterId": "f0002", "format": "CSV", "contentType": "text/csv", "dataBase64": "\r\n", "rows": 0, "columns": 0}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Export a GDP filter output as CSV", "intent": "statistics", "confidence": 1.0, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.create_filter", "response": {"filterId": "f0002", "params": {"geography": "K02000001", "measure": "GDPV", "timeRange": "2024 Q1-2024 Q2", "dataset": "gdp", "edition": "time-series", "version": "1"}}}, {"tool": "ons_data.get_filter_output", "response": {"isError": true, "code": "INVALID_INPUT", "message": "timeRange ranges are not supported in live mode; use a single time value."}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 5.4ms
-Success: True
+Duration: 4.6ms
+Success: False
+Error: INVALID_INPUT
 
 ============================================================
-AUDIT LOG: 42450196
-Timestamp: 2026-01-24T16:59:50.594286
+AUDIT LOG: b8de954e
+Timestamp: 2026-01-27T21:42:23.957552
 ============================================================
 
 ## 1. QUERY
@@ -717,28 +804,28 @@ Workflow Steps: ['os_apps.render_statistics_dashboard', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_statistics_dashboard
 ········································
-Timestamp: 2026-01-24T16:59:50.597436
-Duration: 1.5ms
+Timestamp: 2026-01-27T21:42:23.961059
+Duration: 1.8ms
 Status: SUCCESS
 
 Inputs:
 {'areaCodes': ['E09000033', 'E10000014'], 'dataset': 'wellbeing', 'measure': 'life-satisfaction'}
 
 Outputs:
-{'status': 'ready', 'config': {'dataset': 'wellbeing', 'areaCodes': ['E09000033', 'E10000014'], 'measure': 'life-satisfaction'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], 'structuredContent': {'status': 'ready', 'config': {'dataset': 'wellbeing', 'areaCodes': ['E09000033', 'E10000014'], 'measure': 'life-satisfaction'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'uiResourceUris': ['ui://mcp-geo/statistics-dashboard']}, 'content': [{'type': 'text', 'text': 'Open the statistics dashboard to compare observations across areas.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/statistics-dashboard'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'dataset': 'wellbeing', 'areaCodes': ['E09000033', 'E10000014'], 'measure': 'life-satisfaction'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.', 'structuredContent': {'status': 'ready', 'config': {'dataset': 'wellbeing', 'areaCodes': ['E09000033', 'E10000014'], 'measure': 'life-satisfaction'}, 'instructions': 'Open the statistics dashboard to compare observations across areas.'}, 'content': [{'type': 'text', 'text': 'Open the statistics dashboard to compare observations across areas.'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Compare wellbeing between Westminster and Greater London", "intent": "area_comparison", "confidence": 0.9, "recommended_tool": "os_apps.render_statistics_dashboard", "recommended_parameters": {}, "explanation": "Open the statistics dashboard to compare multiple areas.", "workflow_steps": ["os_apps.render_statistics_dashboard", "ons_data.query"], "alternative_tools": ["ons_data.query"], "guidance": "Use the statistics dashboard to compare multiple areas, or query per area and compare."}}, {"tool": "os_apps.render_statistics_dashboard", "response": {"status": "ready", "config": {"dataset": "wellbeing", "areaCodes": ["E09000033", "E10000014"], "measure": "life-satisfaction"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "structuredContent": {"status": "ready", "config": {"dataset": "wellbeing", "areaCodes": ["E09000033", "E10000014"], "measure": "life-satisfaction"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "uiResourceUris": ["ui://mcp-geo/statistics-dashboard"]}, "content": [{"type": "text", "text": "Open the statistics dashboard to compare observations across areas."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/statistics-dashboard"], "audience": ["user"]}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Compare wellbeing between Westminster and Greater London", "intent": "area_comparison", "confidence": 0.9, "recommended_tool": "os_apps.render_statistics_dashboard", "recommended_parameters": {}, "explanation": "Open the statistics dashboard to compare multiple areas.", "workflow_steps": ["os_apps.render_statistics_dashboard", "ons_data.query"], "alternative_tools": ["ons_data.query"], "guidance": "Use the statistics dashboard to compare multiple areas, or query per area and compare."}}, {"tool": "os_apps.render_statistics_dashboard", "response": {"status": "ready", "config": {"dataset": "wellbeing", "areaCodes": ["E09000033", "E10000014"], "measure": "life-satisfaction"}, "instructions": "Open the statistics dashboard to compare observations across areas.", "structuredContent": {"status": "ready", "config": {"dataset": "wellbeing", "areaCodes": ["E09000033", "E10000014"], "measure": "life-satisfaction"}, "instructions": "Open the statistics dashboard to compare observations across areas."}, "content": [{"type": "text", "text": "Open the statistics dashboard to compare observations across areas."}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3.2ms
+Duration: 3.5ms
 Success: True
 
 ============================================================
-AUDIT LOG: 5321d2b9
-Timestamp: 2026-01-24T16:59:50.597931
+AUDIT LOG: 1b3c5008
+Timestamp: 2026-01-27T21:42:23.961568
 ============================================================
 
 ## 1. QUERY
@@ -756,20 +843,20 @@ Workflow Steps: ['os_apps.render_geography_selector']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_geography_selector
 ········································
-Timestamp: 2026-01-24T16:59:50.600691
-Duration: 1.4ms
+Timestamp: 2026-01-27T21:42:23.964479
+Duration: 1.5ms
 Status: SUCCESS
 
 Inputs:
 {'level': 'oa', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}
 
 Outputs:
-{'status': 'ready', 'config': {'level': 'oa', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'structuredContent': {'status': 'ready', 'config': {'level': 'oa', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector']}, 'content': [{'type': 'text', 'text': 'Open the geography selector widget to choose areas interactively.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'level': 'oa', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'structuredContent': {'status': 'ready', 'config': {'level': 'oa', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.'}, 'content': [{'type': 'text', 'text': 'Open the geography selector widget to choose areas interactively.'}]}
 
 ### Tool Call 2: admin_lookup.area_geometry
 ········································
-Timestamp: 2026-01-24T16:59:51.451320
-Duration: 850.6ms
+Timestamp: 2026-01-27T21:42:24.275234
+Duration: 310.7ms
 Status: SUCCESS
 
 Inputs:
@@ -780,16 +867,16 @@ Outputs:
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Select an OA in Westminster and fetch its boundary", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "oa", "focusName": "Westminster", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "oa", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"], "structuredContent": {"status": "ready", "config": {"level": "oa", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"]}, "content": [{"type": "text", "text": "Open the geography selector widget to choose areas interactively."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/geography-selector"], "audience": ["user"]}}}, {"tool": "admin_lookup.area_geometry", "response": {"id": "E00023939", "bbox": [-0.13969500904886403, 51.50325565362676, -0.13396428452651896, 51.509437376972365], "live": true, "meta": {"level": "OA", "source": "arcgis"}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Select an OA in Westminster and fetch its boundary", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "oa", "focusName": "Westminster", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "oa", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "structuredContent": {"status": "ready", "config": {"level": "oa", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively."}, "content": [{"type": "text", "text": "Open the geography selector widget to choose areas interactively."}]}}, {"tool": "admin_lookup.area_geometry", "response": {"id": "E00023939", "bbox": [-0.13969500904886403, 51.50325565362676, -0.13396428452651896, 51.509437376972365], "live": true, "meta": {"level": "OA", "source": "arcgis"}}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 853.6ms
+Duration: 313.7ms
 Success: True
 
 ============================================================
-AUDIT LOG: 65aa0738
-Timestamp: 2026-01-24T16:59:51.453729
+AUDIT LOG: c93c8e3e
+Timestamp: 2026-01-27T21:42:24.275833
 ============================================================
 
 ## 1. QUERY
@@ -807,28 +894,28 @@ Workflow Steps: ['os_features.query']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_feature_inspector
 ········································
-Timestamp: 2026-01-24T16:59:51.460103
-Duration: 2.7ms
+Timestamp: 2026-01-27T21:42:24.278366
+Duration: 1.0ms
 Status: SUCCESS
 
 Inputs:
 {'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}
 
 Outputs:
-{'status': 'ready', 'config': {'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}, 'instructions': 'Open the feature inspector to review properties and linked identifiers.', 'uiResourceUris': ['ui://mcp-geo/feature-inspector'], 'structuredContent': {'status': 'ready', 'config': {'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}, 'instructions': 'Open the feature inspector to review properties and linked identifiers.', 'uiResourceUris': ['ui://mcp-geo/feature-inspector']}, 'content': [{'type': 'text', 'text': 'Open the feature inspector to review properties and linked identifiers.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/feature-inspector'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}, 'instructions': 'Open the feature inspector to review properties and linked identifiers.', 'structuredContent': {'status': 'ready', 'config': {'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}, 'instructions': 'Open the feature inspector to review properties and linked identifiers.'}, 'content': [{'type': 'text', 'text': 'Open the feature inspector to review properties and linked identifiers.'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Inspect an NGD feature id", "intent": "feature_search", "confidence": 1.0, "recommended_tool": "os_features.query", "recommended_parameters": {}, "explanation": "Query OS NGD feature collections by bbox and collection.", "workflow_steps": ["os_features.query"], "alternative_tools": ["os_names.find", "os_vector_tiles.descriptor"], "guidance": "Use os_features.query with a collection and bbox. Collections map to NGD feature sets."}}, {"tool": "os_apps.render_feature_inspector", "response": {"status": "ready", "config": {"collectionId": "buildings", "featureId": "osgb1000000123456"}, "instructions": "Open the feature inspector to review properties and linked identifiers.", "uiResourceUris": ["ui://mcp-geo/feature-inspector"], "structuredContent": {"status": "ready", "config": {"collectionId": "buildings", "featureId": "osgb1000000123456"}, "instructions": "Open the feature inspector to review properties and linked identifiers.", "uiResourceUris": ["ui://mcp-geo/feature-inspector"]}, "content": [{"type": "text", "text": "Open the feature inspector to review properties and linked identifiers."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/feature-inspector"], "audience": ["user"]}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Inspect an NGD feature id", "intent": "feature_search", "confidence": 1.0, "recommended_tool": "os_features.query", "recommended_parameters": {}, "explanation": "Query OS NGD feature collections by bbox and collection.", "workflow_steps": ["os_features.query"], "alternative_tools": ["os_names.find", "os_vector_tiles.descriptor"], "guidance": "Use os_features.query with a collection and bbox. Collections map to NGD feature sets."}}, {"tool": "os_apps.render_feature_inspector", "response": {"status": "ready", "config": {"collectionId": "buildings", "featureId": "osgb1000000123456"}, "instructions": "Open the feature inspector to review properties and linked identifiers.", "structuredContent": {"status": "ready", "config": {"collectionId": "buildings", "featureId": "osgb1000000123456"}, "instructions": "Open the feature inspector to review properties and linked identifiers."}, "content": [{"type": "text", "text": "Open the feature inspector to review properties and linked identifiers."}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 6.4ms
+Duration: 2.6ms
 Success: True
 
 ============================================================
-AUDIT LOG: 163b3a1b
-Timestamp: 2026-01-24T16:59:51.461109
+AUDIT LOG: 6395d51a
+Timestamp: 2026-01-27T21:42:24.278788
 ============================================================
 
 ## 1. QUERY
@@ -846,20 +933,20 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: os_vector_tiles.descriptor
 ········································
-Timestamp: 2026-01-24T16:59:51.467241
-Duration: 1.9ms
+Timestamp: 2026-01-27T21:42:24.281587
+Duration: 1.6ms
 Status: SUCCESS
 
 Inputs:
 {}
 
 Outputs:
-{'vectorTiles': {'style': 'light', 'styleUrl': 'https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}', 'tileTemplate': 'https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}'}}
+{'vectorTiles': {'style': 'OS_VTS_3857_Light.json', 'styleUrl': 'https://api.os.uk/maps/vector/v1/vts/resources/styles?style=OS_VTS_3857_Light.json&srs=3857&key={API_KEY}', 'tileTemplate': 'https://api.os.uk/maps/vector/v1/vts/tiles/{z}/{x}/{y}.pbf?srs=3857&key={API_KEY}'}}
 
 ### Tool Call 2: os_maps.render
 ········································
-Timestamp: 2026-01-24T16:59:51.469388
-Duration: 2.1ms
+Timestamp: 2026-01-27T21:42:24.282769
+Duration: 1.2ms
 Status: SUCCESS
 
 Inputs:
@@ -870,16 +957,16 @@ Outputs:
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Build a map stack for Westminster (tiles + static)", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Westminster"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_vector_tiles.descriptor", "response": {"vectorTiles": {"style": "light", "styleUrl": "https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}", "tileTemplate": "https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}"}}}, {"tool": "os_maps.render", "response": {"render": {"urlTemplate": "https://api.os.uk/maps/v1/raster/wms?bbox=-0.15,51.49,-0.12,51.51&key={API_KEY}", "layer": "raster"}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Build a map stack for Westminster (tiles + static)", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Westminster"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_vector_tiles.descriptor", "response": {"vectorTiles": {"style": "OS_VTS_3857_Light.json", "styleUrl": "https://api.os.uk/maps/vector/v1/vts/resources/styles?style=OS_VTS_3857_Light.json&srs=3857&key={API_KEY}", "tileTemplate": "https://api.os.uk/maps/vector/v1/vts/tiles/{z}/{x}/{y}.pbf?srs=3857&key={API_KEY}"}}}, {"tool": "os_maps.render", "response": {"render": {"urlTemplate": "https://api.os.uk/maps/v1/raster/wms?bbox=-0.15,51.49,-0.12,51.51&key={API_KEY}", "layer": "raster"}}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 8.4ms
+Duration: 4.0ms
 Success: True
 
 ============================================================
-AUDIT LOG: 41fb39b3
-Timestamp: 2026-01-24T16:59:51.470242
+AUDIT LOG: 3ffad277
+Timestamp: 2026-01-27T21:42:24.283136
 ============================================================
 
 ## 1. QUERY
@@ -897,28 +984,28 @@ Workflow Steps: ['os_mcp.descriptor']
 ------------------------------------------------------------
 ### Tool Call 1: tools/search
 ········································
-Timestamp: 2026-01-24T16:59:51.476334
-Duration: 3.8ms
+Timestamp: 2026-01-27T21:42:24.287238
+Duration: 2.8ms
 Status: SUCCESS
 
 Inputs:
 {'query': 'postcode'}
 
 Outputs:
-{'tools': [{'name': 'os_places.by_postcode', 'description': 'Lookup UPRNs and addresses for a UK postcode via OS Places API', 'score': 11.2517, 'category': 'places', 'keywords': ['a', 'address', 'addresses', 'and', 'api', 'by', 'for', 'geocode', 'lookup', 'os', 'place', 'places', 'postcode', 'uk', 'uprn', 'uprns', 'via'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'os_places.search', 'description': 'Free text search in OS Places', 'score': 1.3333, 'category': 'places', 'keywords': ['address', 'free', 'geocode', 'in', 'os', 'place', 'places', 'postcode', 'search', 'text', 'uprn'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'os_places.by_uprn', 'description': 'Lookup a single address by UPRN', 'score': 1.32, 'category': 'places', 'keywords': ['a', 'address', 'by', 'geocode', 'lookup', 'os', 'place', 'places', 'postcode', 'single', 'uprn'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'os_places.within', 'description': 'Addresses within a bounding box', 'score': 1.25, 'category': 'places', 'keywords': ['a', 'address', 'addresses', 'bounding', 'box', 'geocode', 'os', 'place', 'places', 'postcode', 'uprn', 'within'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'os_places.nearest', 'description': 'Find nearest addresses to a point', 'score': 1.24, 'category': 'places', 'keywords': ['a', 'address', 'addresses', 'find', 'geocode', 'nearest', 'os', 'place', 'places', 'point', 'postcode', 'to', 'uprn'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'ons_codes.list', 'description': 'List available ONS sample dimensions.', 'score': 0.5455, 'category': 'codes', 'keywords': ['available', 'codes', 'dimension', 'dimensions', 'list', 'ons', 'options', 'sample'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'ons_codes.options', 'description': 'List codes/options for a given ONS sample dimension.', 'score': 0.48, 'category': 'codes', 'keywords': ['a', 'codes', 'dimension', 'for', 'given', 'list', 'ons', 'options', 'sample'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'os_mcp.descriptor', 'description': 'Describe server capabilities and tool search configuration.', 'score': 0.4, 'category': 'core', 'keywords': ['and', 'capabilities', 'configuration', 'describe', 'descriptor', 'intent', 'mcp', 'metadata', 'os', 'route', 'router', 'search', 'server', 'skills', 'tool', 'tool-search'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'ons_data.query', 'description': 'Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination).', 'score': 0.3636, 'category': 'statistics', 'keywords': ['and', 'api', 'bundled', 'data', 'dataset', 'edition', 'enabled', 'filters', 'geography', 'live', 'measure', 'observations', 'ons', 'otherwise', 'pagination', 'provided', 'queries', 'query', 'sample', 'statistics', 'timerange', 'uses', 'version', 'when'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'os_maps.render', 'description': 'Return metadata for rendering a map image (URL template)', 'score': 0.3636, 'category': 'maps', 'keywords': ['a', 'for', 'image', 'map', 'maps', 'metadata', 'os', 'render', 'rendering', 'return', 'static', 'template', 'url'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}], 'count': 10, 'mode': 'token'}
+{'tools': [{'name': 'os_places.by_postcode', 'description': 'Lookup UPRNs and addresses for a UK postcode via OS Places API', 'score': 11.2517, 'category': 'places', 'keywords': ['a', 'address', 'addresses', 'and', 'api', 'by', 'for', 'geocode', 'lookup', 'os', 'place', 'places', 'postcode', 'uk', 'uprn', 'uprns', 'via'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'os_places.search', 'description': 'Free text search in OS Places', 'score': 1.3333, 'category': 'places', 'keywords': ['address', 'free', 'geocode', 'in', 'os', 'place', 'places', 'postcode', 'search', 'text', 'uprn'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'os_places.by_uprn', 'description': 'Lookup a single address by UPRN', 'score': 1.32, 'category': 'places', 'keywords': ['a', 'address', 'by', 'geocode', 'lookup', 'os', 'place', 'places', 'postcode', 'single', 'uprn'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'os_places.within', 'description': 'Addresses within a bounding box', 'score': 1.25, 'category': 'places', 'keywords': ['a', 'address', 'addresses', 'bounding', 'box', 'geocode', 'os', 'place', 'places', 'postcode', 'uprn', 'within'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'os_places.nearest', 'description': 'Find nearest addresses to a point', 'score': 1.24, 'category': 'places', 'keywords': ['a', 'address', 'addresses', 'find', 'geocode', 'nearest', 'os', 'place', 'places', 'point', 'postcode', 'to', 'uprn'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'ons_codes.list', 'description': 'List available ONS dimensions for a live dataset version.', 'score': 0.5455, 'category': 'codes', 'keywords': ['a', 'available', 'codes', 'dataset', 'dimension', 'dimensions', 'for', 'list', 'live', 'ons', 'options', 'version'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'ons_codes.options', 'description': 'List codes/options for a given ONS live dimension.', 'score': 0.48, 'category': 'codes', 'keywords': ['a', 'codes', 'dimension', 'for', 'given', 'list', 'live', 'ons', 'options'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True}, 'deferLoading': True, 'defer_loading': True}, {'name': 'os_mcp.descriptor', 'description': 'Describe server capabilities and tool search configuration.', 'score': 0.4, 'category': 'core', 'keywords': ['and', 'capabilities', 'configuration', 'describe', 'descriptor', 'intent', 'mcp', 'metadata', 'os', 'route', 'router', 'search', 'server', 'skills', 'tool', 'tool-search'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'ons_data.query', 'description': 'Query live ONS observations (requires dataset/edition/version).', 'score': 0.3636, 'category': 'statistics', 'keywords': ['data', 'dataset', 'edition', 'live', 'observations', 'ons', 'query', 'requires', 'statistics', 'version'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': False, 'defer_loading': False}, {'name': 'os_maps.render', 'description': 'Return metadata for rendering a map image (URL template)', 'score': 0.3636, 'category': 'maps', 'keywords': ['a', 'for', 'image', 'map', 'maps', 'metadata', 'os', 'render', 'rendering', 'return', 'static', 'template', 'url'], 'annotations': {'readOnlyHint': True, 'idempotentHint': True, 'openWorldHint': True}, 'deferLoading': True, 'defer_loading': True}], 'count': 10, 'mode': 'token'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Find tools related to postcode search", "intent": "unknown", "confidence": 0.0, "recommended_tool": "os_mcp.descriptor", "recommended_parameters": {}, "explanation": "Use the server descriptor to discover tool search defaults.", "workflow_steps": ["os_mcp.descriptor"], "alternative_tools": ["os_mcp.descriptor", "admin_lookup.find_by_name"], "guidance": "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."}}, {"tool": "tools/search", "response": {"tools": [{"name": "os_places.by_postcode", "description": "Lookup UPRNs and addresses for a UK postcode via OS Places API", "score": 11.2517, "category": "places", "keywords": ["a", "address", "addresses", "and", "api", "by", "for", "geocode", "lookup", "os", "place", "places", "postcode", "uk", "uprn", "uprns", "via"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "os_places.search", "description": "Free text search in OS Places", "score": 1.3333, "category": "places", "keywords": ["address", "free", "geocode", "in", "os", "place", "places", "postcode", "search", "text", "uprn"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "os_places.by_uprn", "description": "Lookup a single address by UPRN", "score": 1.32, "category": "places", "keywords": ["a", "address", "by", "geocode", "lookup", "os", "place", "places", "postcode", "single", "uprn"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "os_places.within", "description": "Addresses within a bounding box", "score": 1.25, "category": "places", "keywords": ["a", "address", "addresses", "bounding", "box", "geocode", "os", "place", "places", "postcode", "uprn", "within"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "os_places.nearest", "description": "Find nearest addresses to a point", "score": 1.24, "category": "places", "keywords": ["a", "address", "addresses", "find", "geocode", "nearest", "os", "place", "places", "point", "postcode", "to", "uprn"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "ons_codes.list", "description": "List available ONS sample dimensions.", "score": 0.5455, "category": "codes", "keywords": ["available", "codes", "dimension", "dimensions", "list", "ons", "options", "sample"], "annotations": {"readOnlyHint": true, "idempotentHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "ons_codes.options", "description": "List codes/options for a given ONS sample dimension.", "score": 0.48, "category": "codes", "keywords": ["a", "codes", "dimension", "for", "given", "list", "ons", "options", "sample"], "annotations": {"readOnlyHint": true, "idempotentHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "os_mcp.descriptor", "description": "Describe server capabilities and tool search configuration.", "score": 0.4, "category": "core", "keywords": ["and", "capabilities", "configuration", "describe", "descriptor", "intent", "mcp", "metadata", "os", "route", "router", "search", "server", "skills", "tool", "tool-search"], "annotations": {"readOnlyHint": true, "idempotentHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "ons_data.query", "description": "Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination).", "score": 0.3636, "category": "statistics", "keywords": ["and", "api", "bundled", "data", "dataset", "edition", "enabled", "filters", "geography", "live", "measure", "observations", "ons", "otherwise", "pagination", "provided", "queries", "query", "sample", "statistics", "timerange", "uses", "version", "when"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "os_maps.render", "description": "Return metadata for rendering a map image (URL template)", "score": 0.3636, "category": "maps", "keywords": ["a", "for", "image", "map", "maps", "metadata", "os", "render", "rendering", "return", "static", "template", "url"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}], "count": 10, "mode": "token"}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Find tools related to postcode search", "intent": "unknown", "confidence": 0.0, "recommended_tool": "os_mcp.descriptor", "recommended_parameters": {}, "explanation": "Use the server descriptor to discover tool search defaults.", "workflow_steps": ["os_mcp.descriptor"], "alternative_tools": ["os_mcp.descriptor", "admin_lookup.find_by_name"], "guidance": "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."}}, {"tool": "tools/search", "response": {"tools": [{"name": "os_places.by_postcode", "description": "Lookup UPRNs and addresses for a UK postcode via OS Places API", "score": 11.2517, "category": "places", "keywords": ["a", "address", "addresses", "and", "api", "by", "for", "geocode", "lookup", "os", "place", "places", "postcode", "uk", "uprn", "uprns", "via"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "os_places.search", "description": "Free text search in OS Places", "score": 1.3333, "category": "places", "keywords": ["address", "free", "geocode", "in", "os", "place", "places", "postcode", "search", "text", "uprn"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "os_places.by_uprn", "description": "Lookup a single address by UPRN", "score": 1.32, "category": "places", "keywords": ["a", "address", "by", "geocode", "lookup", "os", "place", "places", "postcode", "single", "uprn"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "os_places.within", "description": "Addresses within a bounding box", "score": 1.25, "category": "places", "keywords": ["a", "address", "addresses", "bounding", "box", "geocode", "os", "place", "places", "postcode", "uprn", "within"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "os_places.nearest", "description": "Find nearest addresses to a point", "score": 1.24, "category": "places", "keywords": ["a", "address", "addresses", "find", "geocode", "nearest", "os", "place", "places", "point", "postcode", "to", "uprn"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "ons_codes.list", "description": "List available ONS dimensions for a live dataset version.", "score": 0.5455, "category": "codes", "keywords": ["a", "available", "codes", "dataset", "dimension", "dimensions", "for", "list", "live", "ons", "options", "version"], "annotations": {"readOnlyHint": true, "idempotentHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "ons_codes.options", "description": "List codes/options for a given ONS live dimension.", "score": 0.48, "category": "codes", "keywords": ["a", "codes", "dimension", "for", "given", "list", "live", "ons", "options"], "annotations": {"readOnlyHint": true, "idempotentHint": true}, "deferLoading": true, "defer_loading": true}, {"name": "os_mcp.descriptor", "description": "Describe server capabilities and tool search configuration.", "score": 0.4, "category": "core", "keywords": ["and", "capabilities", "configuration", "describe", "descriptor", "intent", "mcp", "metadata", "os", "route", "router", "search", "server", "skills", "tool", "tool-search"], "annotations": {"readOnlyHint": true, "idempotentHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "ons_data.query", "description": "Query live ONS observations (requires dataset/edition/version).", "score": 0.3636, "category": "statistics", "keywords": ["data", "dataset", "edition", "live", "observations", "ons", "query", "requires", "statistics", "version"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": false, "defer_loading": false}, {"name": "os_maps.render", "description": "Return metadata for rendering a map image (URL template)", "score": 0.3636, "category": "maps", "keywords": ["a", "for", "image", "map", "maps", "metadata", "os", "render", "rendering", "return", "static", "template", "url"], "annotations": {"readOnlyHint": true, "idempotentHint": true, "openWorldHint": true}, "deferLoading": true, "defer_loading": true}], "count": 10, "mode": "token"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 6.2ms
+Duration: 4.2ms
 Success: True
 
 ============================================================
-AUDIT LOG: 357fc237
-Timestamp: 2026-01-24T16:59:51.477137
+AUDIT LOG: 4bf12bc4
+Timestamp: 2026-01-27T21:42:24.287988
 ============================================================
 
 ## 1. QUERY
@@ -936,28 +1023,28 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: resources/read
 ········································
-Timestamp: 2026-01-24T16:59:51.485118
-Duration: 6.2ms
+Timestamp: 2026-01-27T21:42:24.292961
+Duration: 3.5ms
 Status: SUCCESS
 
 Inputs:
 {'uri': 'skills://mcp-geo/getting-started'}
 
 Outputs:
-{'contents': [{'uri': 'skills://mcp-geo/getting-started', 'text': '# MCP Geo Skills\n\nThis document describes how to use the MCP Geo server for UK geospatial and ONS\nstatistics workflows. It is intended for MCP clients and agents as a quick,\nreliable guide to tool selection.\n\n## What This Server Provides\n\n- OS Places address lookups (postcodes, UPRNs, nearest addresses).\n- OS Names gazetteer searches for named features.\n- OS NGD feature queries for topographic datasets.\n- ONS dataset discovery and observation queries (live dataset search).\n- Administrative area lookups from live ONS geography (ArcGIS), with sample fallback.\n- MCP-Apps widgets for interactive selection and inspection.\n- Tool search metadata for large tool catalogs.\n\n## Start Here: os_mcp.route_query\n\nFor any natural language request, call `os_mcp.route_query` first. It returns\nthe intent, a recommended tool, and suggested workflow steps.\n\nExample:\n```\n{ "tool": "os_mcp.route_query", "query": "Find Westminster ward boundaries" }\n```\n\nUse `recommended_tool`, `recommended_parameters`, and `workflow_steps` to pick\nthe next tool calls. When the intent is unclear, fall back to `os_mcp.descriptor`\nor `/tools/search`.\n\n## Quick Tool Selection\n\nAddresses and postcodes:\n- Use `os_places.search` for free text address search.\n- Use `os_places.by_postcode` for UPRNs and addresses by postcode.\n- Use `os_places.by_uprn` for a single address record.\n\nNamed places and features:\n- Use `os_names.find` to search named features.\n- Use `os_names.nearest` for nearest named features to a point.\n\nAdministrative areas:\n- Use `admin_lookup.find_by_name` to locate areas by name.\n- Use `admin_lookup.containing_areas` to find which areas contain a point.\n- Use `admin_lookup.reverse_hierarchy` for ancestor chains.\n\nONS statistics:\n- Use `ons_search.query` to discover live ONS datasets.\n- Use `ons_data.query` to fetch observations (sample or live mode).\n- Use `ons_data.dimensions` to list dimension ids and options.\n\nOS NGD features and links:\n- Use `os_features.query` for feature searches by collection + bbox.\n- Use `os_linked_ids.get` to resolve UPRN/USRN/TOID relationships.\n\nMaps and tiles:\n- Use `os_maps.render` for static map render descriptors.\n- Use `os_vector_tiles.descriptor` for vector tile style metadata.\n\n## MCP-Apps Widgets\n\nInteractive UI widgets are exposed as MCP resources. Use the `os_apps.*` tools\nto open them inside MCP-Apps compatible hosts.\n\n- `os_apps.render_geography_selector` -> `ui://mcp-geo/geography-selector`\n- `os_apps.render_statistics_dashboard` -> `ui://mcp-geo/statistics-dashboard`\n- `os_apps.render_feature_inspector` -> `ui://mcp-geo/feature-inspector`\n- `os_apps.render_route_planner` -> `ui://mcp-geo/route-planner`\n\nTool results include `uiResourceUris` so hosts can launch the right widget.\n\n## Tool Search\n\nIf you have a large tool catalog, use `/tools/search` (HTTP) or `tools/search`\n(stdio JSON-RPC) to discover tools by keyword or regex. The tool\n`os_mcp.descriptor` returns tool search configuration and recommended defaults,\nincluding `deferLoading` hints for MCP tool search integrations.\n\n## Resources\n\nUse `/resources/list` or `/resources/describe` to discover available datasets.\nFetch content with `/resources/read` using either `name` or `uri`. Example:\n\n- `skills://mcp-geo/getting-started` (this document)\n- `ui://mcp-geo/geography-selector` (UI widget HTML)\n- `resource://mcp-geo/admin_boundaries` (sample boundary hierarchy)\n\n## Error Model\n\nErrors follow this shape:\n```\n{ "isError": true, "code": "<CODE>", "message": "..." }\n```\n\nCommon codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,\n`OS_API_ERROR`, `UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.\n', 'mimeType': 'text/markdown'}]}
+{'contents': [{'uri': 'skills://mcp-geo/getting-started', 'text': '# MCP Geo Skills\n\nThis document describes how to use the MCP Geo server for UK geospatial and ONS\nstatistics workflows. It is intended for MCP clients and agents as a quick,\nreliable guide to tool selection.\n\n## What This Server Provides\n\n- OS Places address lookups (postcodes, UPRNs, nearest addresses).\n- OS Names gazetteer searches for named features.\n- OS NGD feature queries for topographic datasets.\n- ONS dataset discovery and observation queries (live dataset search).\n- Administrative area lookups from live ONS geography (ArcGIS).\n- MCP-Apps widgets for interactive selection and inspection.\n- Tool search metadata for large tool catalogs.\n\n## Start Here: os_mcp.route_query\n\nFor any natural language request, call `os_mcp.route_query` first. It returns\nthe intent, a recommended tool, and suggested workflow steps.\n\nExample:\n```\n{ "tool": "os_mcp.route_query", "query": "Find Westminster ward boundaries" }\n```\n\nUse `recommended_tool`, `recommended_parameters`, and `workflow_steps` to pick\nthe next tool calls. When the intent is unclear, fall back to `os_mcp.descriptor`\nor `/tools/search`.\n\n## Quick Tool Selection\n\nAddresses and postcodes:\n- Use `os_places.search` for free text address search.\n- Use `os_places.by_postcode` for UPRNs and addresses by postcode.\n- Use `os_places.by_uprn` for a single address record.\n\nNamed places and features:\n- Use `os_names.find` to search named features.\n- Use `os_names.nearest` for nearest named features to a point.\n\nAdministrative areas:\n- Use `admin_lookup.find_by_name` to locate areas by name.\n- Use `admin_lookup.containing_areas` to find which areas contain a point.\n- Use `admin_lookup.reverse_hierarchy` for ancestor chains.\n\nONS statistics:\n- Use `ons_search.query` to discover live ONS datasets.\n- Use `ons_data.query` to fetch live observations.\n- Use `ons_data.dimensions` to list dimension ids and options.\n\nOS NGD features and links:\n- Use `os_features.query` for feature searches by collection + bbox.\n- Use `os_linked_ids.get` to resolve UPRN/USRN/TOID relationships.\n\nMaps and tiles:\n- Use `os_maps.render` for static map render descriptors.\n- Use `os_vector_tiles.descriptor` for vector tile style metadata.\n\n## MCP-Apps Widgets\n\nInteractive UI widgets are exposed as MCP resources. Use the `os_apps.*` tools\nto open them inside MCP-Apps compatible hosts.\n\n- `os_apps.render_geography_selector` -> `ui://mcp-geo/geography-selector`\n- `os_apps.render_statistics_dashboard` -> `ui://mcp-geo/statistics-dashboard`\n- `os_apps.render_feature_inspector` -> `ui://mcp-geo/feature-inspector`\n- `os_apps.render_route_planner` -> `ui://mcp-geo/route-planner`\n\nUI tools are linked via tool metadata (`_meta.ui.resourceUri`). Hosts should load\nthe UI resource from `/resources/list` or `/resources/read` and use tool results\nfor status/config/instructions.\n\n## Tool Search\n\nIf you have a large tool catalog, use `/tools/search` (HTTP) or `tools/search`\n(stdio JSON-RPC) to discover tools by keyword or regex. The tool\n`os_mcp.descriptor` returns tool search configuration and recommended defaults,\nincluding `deferLoading` hints for MCP tool search integrations.\n\n## Resources\n\nUse `/resources/list` or `/resources/describe` to discover available resources.\nFetch content with `/resources/read` using `uri`. Example:\n\n- `skills://mcp-geo/getting-started` (this document)\n- `ui://mcp-geo/geography-selector` (UI widget HTML)\n- `resource://mcp-geo/admin_boundaries` (boundary dataset)\n\n## Error Model\n\nErrors follow this shape:\n```\n{ "isError": true, "code": "<CODE>", "message": "..." }\n```\n\nCommon codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,\n`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`,\n`UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.\n', 'mimeType': 'text/markdown'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Fetch the MCP Geo skills guide", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Fetch"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "resources/read", "response": {"contents": [{"uri": "skills://mcp-geo/getting-started", "text": "# MCP Geo Skills\n\nThis document describes how to use the MCP Geo server for UK geospatial and ONS\nstatistics workflows. It is intended for MCP clients and agents as a quick,\nreliable guide to tool selection.\n\n## What This Server Provides\n\n- OS Places address lookups (postcodes, UPRNs, nearest addresses).\n- OS Names gazetteer searches for named features.\n- OS NGD feature queries for topographic datasets.\n- ONS dataset discovery and observation queries (live dataset search).\n- Administrative area lookups from live ONS geography (ArcGIS), with sample fallback.\n- MCP-Apps widgets for interactive selection and inspection.\n- Tool search metadata for large tool catalogs.\n\n## Start Here: os_mcp.route_query\n\nFor any natural language request, call `os_mcp.route_query` first. It returns\nthe intent, a recommended tool, and suggested workflow steps.\n\nExample:\n```\n{ \"tool\": \"os_mcp.route_query\", \"query\": \"Find Westminster ward boundaries\" }\n```\n\nUse `recommended_tool`, `recommended_parameters`, and `workflow_steps` to pick\nthe next tool calls. When the intent is unclear, fall back to `os_mcp.descriptor`\nor `/tools/search`.\n\n## Quick Tool Selection\n\nAddresses and postcodes:\n- Use `os_places.search` for free text address search.\n- Use `os_places.by_postcode` for UPRNs and addresses by postcode.\n- Use `os_places.by_uprn` for a single address record.\n\nNamed places and features:\n- Use `os_names.find` to search named features.\n- Use `os_names.nearest` for nearest named features to a point.\n\nAdministrative areas:\n- Use `admin_lookup.find_by_name` to locate areas by name.\n- Use `admin_lookup.containing_areas` to find which areas contain a point.\n- Use `admin_lookup.reverse_hierarchy` for ancestor chains.\n\nONS statistics:\n- Use `ons_search.query` to discover live ONS datasets.\n- Use `ons_data.query` to fetch observations (sample or live mode).\n- Use `ons_data.dimensions` to list dimension ids and options.\n\nOS NGD features and links:\n- Use `os_features.query` for feature searches by collection + bbox.\n- Use `os_linked_ids.get` to resolve UPRN/USRN/TOID relationships.\n\nMaps and tiles:\n- Use `os_maps.render` for static map render descriptors.\n- Use `os_vector_tiles.descriptor` for vector tile style metadata.\n\n## MCP-Apps Widgets\n\nInteractive UI widgets are exposed as MCP resources. Use the `os_apps.*` tools\nto open them inside MCP-Apps compatible hosts.\n\n- `os_apps.render_geography_selector` -> `ui://mcp-geo/geography-selector`\n- `os_apps.render_statistics_dashboard` -> `ui://mcp-geo/statistics-dashboard`\n- `os_apps.render_feature_inspector` -> `ui://mcp-geo/feature-inspector`\n- `os_apps.render_route_planner` -> `ui://mcp-geo/route-planner`\n\nTool results include `uiResourceUris` so hosts can launch the right widget.\n\n## Tool Search\n\nIf you have a large tool catalog, use `/tools/search` (HTTP) or `tools/search`\n(stdio JSON-RPC) to discover tools by keyword or regex. The tool\n`os_mcp.descriptor` returns tool search configuration and recommended defaults,\nincluding `deferLoading` hints for MCP tool search integrations.\n\n## Resources\n\nUse `/resources/list` or `/resources/describe` to discover available datasets.\nFetch content with `/resources/read` using either `name` or `uri`. Example:\n\n- `skills://mcp-geo/getting-started` (this document)\n- `ui://mcp-geo/geography-selector` (UI widget HTML)\n- `resource://mcp-geo/admin_boundaries` (sample boundary hierarchy)\n\n## Error Model\n\nErrors follow this shape:\n```\n{ \"isError\": true, \"code\": \"<CODE>\", \"message\": \"...\" }\n```\n\nCommon codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,\n`OS_API_ERROR`, `UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.\n", "mimeType": "text/markdown"}]}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Fetch the MCP Geo skills guide", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Fetch"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "resources/read", "response": {"contents": [{"uri": "skills://mcp-geo/getting-started", "text": "# MCP Geo Skills\n\nThis document describes how to use the MCP Geo server for UK geospatial and ONS\nstatistics workflows. It is intended for MCP clients and agents as a quick,\nreliable guide to tool selection.\n\n## What This Server Provides\n\n- OS Places address lookups (postcodes, UPRNs, nearest addresses).\n- OS Names gazetteer searches for named features.\n- OS NGD feature queries for topographic datasets.\n- ONS dataset discovery and observation queries (live dataset search).\n- Administrative area lookups from live ONS geography (ArcGIS).\n- MCP-Apps widgets for interactive selection and inspection.\n- Tool search metadata for large tool catalogs.\n\n## Start Here: os_mcp.route_query\n\nFor any natural language request, call `os_mcp.route_query` first. It returns\nthe intent, a recommended tool, and suggested workflow steps.\n\nExample:\n```\n{ \"tool\": \"os_mcp.route_query\", \"query\": \"Find Westminster ward boundaries\" }\n```\n\nUse `recommended_tool`, `recommended_parameters`, and `workflow_steps` to pick\nthe next tool calls. When the intent is unclear, fall back to `os_mcp.descriptor`\nor `/tools/search`.\n\n## Quick Tool Selection\n\nAddresses and postcodes:\n- Use `os_places.search` for free text address search.\n- Use `os_places.by_postcode` for UPRNs and addresses by postcode.\n- Use `os_places.by_uprn` for a single address record.\n\nNamed places and features:\n- Use `os_names.find` to search named features.\n- Use `os_names.nearest` for nearest named features to a point.\n\nAdministrative areas:\n- Use `admin_lookup.find_by_name` to locate areas by name.\n- Use `admin_lookup.containing_areas` to find which areas contain a point.\n- Use `admin_lookup.reverse_hierarchy` for ancestor chains.\n\nONS statistics:\n- Use `ons_search.query` to discover live ONS datasets.\n- Use `ons_data.query` to fetch live observations.\n- Use `ons_data.dimensions` to list dimension ids and options.\n\nOS NGD features and links:\n- Use `os_features.query` for feature searches by collection + bbox.\n- Use `os_linked_ids.get` to resolve UPRN/USRN/TOID relationships.\n\nMaps and tiles:\n- Use `os_maps.render` for static map render descriptors.\n- Use `os_vector_tiles.descriptor` for vector tile style metadata.\n\n## MCP-Apps Widgets\n\nInteractive UI widgets are exposed as MCP resources. Use the `os_apps.*` tools\nto open them inside MCP-Apps compatible hosts.\n\n- `os_apps.render_geography_selector` -> `ui://mcp-geo/geography-selector`\n- `os_apps.render_statistics_dashboard` -> `ui://mcp-geo/statistics-dashboard`\n- `os_apps.render_feature_inspector` -> `ui://mcp-geo/feature-inspector`\n- `os_apps.render_route_planner` -> `ui://mcp-geo/route-planner`\n\nUI tools are linked via tool metadata (`_meta.ui.resourceUri`). Hosts should load\nthe UI resource from `/resources/list` or `/resources/read` and use tool results\nfor status/config/instructions.\n\n## Tool Search\n\nIf you have a large tool catalog, use `/tools/search` (HTTP) or `tools/search`\n(stdio JSON-RPC) to discover tools by keyword or regex. The tool\n`os_mcp.descriptor` returns tool search configuration and recommended defaults,\nincluding `deferLoading` hints for MCP tool search integrations.\n\n## Resources\n\nUse `/resources/list` or `/resources/describe` to discover available resources.\nFetch content with `/resources/read` using `uri`. Example:\n\n- `skills://mcp-geo/getting-started` (this document)\n- `ui://mcp-geo/geography-selector` (UI widget HTML)\n- `resource://mcp-geo/admin_boundaries` (boundary dataset)\n\n## Error Model\n\nErrors follow this shape:\n```\n{ \"isError\": true, \"code\": \"<CODE>\", \"message\": \"...\" }\n```\n\nCommon codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,\n`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`,\n`UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.\n", "mimeType": "text/markdown"}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 8.0ms
+Duration: 5.0ms
 Success: True
 
 ============================================================
-AUDIT LOG: e087551b
-Timestamp: 2026-01-24T16:59:51.485753
+AUDIT LOG: 3d63b01c
+Timestamp: 2026-01-27T21:42:24.293391
 ============================================================
 
 ## 1. QUERY
@@ -975,28 +1062,28 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: os_mcp.descriptor
 ········································
-Timestamp: 2026-01-24T16:59:51.489812
-Duration: 2.1ms
+Timestamp: 2026-01-27T21:42:24.296094
+Duration: 1.5ms
 Status: SUCCESS
 
 Inputs:
 {}
 
 Outputs:
-{'server': 'mcp-geo', 'version': '0.2.5', 'capabilities': {'toolSearch': True, 'skills': True, 'uiResources': True}, 'toolSearch': {'always_loaded': ['admin_lookup.find_by_name', 'ons_data.query', 'ons_search.query', 'os_apps.log_event', 'os_apps.render_geography_selector', 'os_mcp.descriptor', 'os_mcp.route_query', 'os_names.find', 'os_places.by_postcode', 'os_places.search'], 'deferred': ['admin_lookup.area_geometry', 'admin_lookup.containing_areas', 'admin_lookup.reverse_hierarchy', 'ons_codes.list', 'ons_codes.options', 'ons_data.create_filter', 'ons_data.dimensions', 'ons_data.get_filter_output', 'ons_data.get_observation', 'os_apps.render_feature_inspector', 'os_apps.render_route_planner', 'os_apps.render_statistics_dashboard', 'os_features.query', 'os_linked_ids.get', 'os_maps.render', 'os_names.nearest', 'os_places.by_uprn', 'os_places.nearest', 'os_places.within', 'os_vector_tiles.descriptor'], 'counts': {'always_loaded': 10, 'deferred': 20, 'total': 30}, 'categories': ['core', 'places', 'names', 'features', 'linked', 'maps', 'vector', 'admin', 'statistics', 'codes', 'apps', 'utility'], 'mcp_toolset_config': {'type': 'mcp_toolset', 'mcp_server_name': 'mcp-geo', 'default_config': {'defer_loading': True}, 'configs': {'os_apps.render_geography_selector': {'defer_loading': False}, 'os_places.search': {'defer_loading': False}, 'admin_lookup.find_by_name': {'defer_loading': False}, 'os_apps.log_event': {'defer_loading': False}, 'os_names.find': {'defer_loading': False}, 'ons_data.query': {'defer_loading': False}, 'os_places.by_postcode': {'defer_loading': False}, 'os_mcp.descriptor': {'defer_loading': False}, 'ons_search.query': {'defer_loading': False}, 'os_mcp.route_query': {'defer_loading': False}}}, 'system_prompt': 'Primary tools:\n- os_places.search: free text address search\n- os_places.by_postcode: lookup UPRNs and addresses\n- ons_search.query: discover ONS datasets\n- ons_data.query: query ONS observations\n- admin_lookup.find_by_name: find administrative areas by name\n\nUse MCP-Apps widgets for interactive workflows (os_apps.* tools).\nSpecialized OS feature tools are for NGD feature collections, not place lookups.'}, 'skillsUri': 'skills://mcp-geo/getting-started', 'uiResources': ['ui://mcp-geo/geography-selector', 'ui://mcp-geo/geography-selector.html', 'ui://mcp-geo/statistics-dashboard', 'ui://mcp-geo/statistics-dashboard.html', 'ui://mcp-geo/feature-inspector', 'ui://mcp-geo/feature-inspector.html', 'ui://mcp-geo/route-planner', 'ui://mcp-geo/route-planner.html'], 'uiResourceCatalog': [{'uri': 'ui://mcp-geo/geography-selector', 'name': 'ui_geography_selector', 'title': 'Geography Selector', 'description': 'Interactive selector for UK administrative areas.', 'mimeType': 'text/html;profile=mcp-app', 'annotations': {'audience': ['user'], 'priority': 1.0, 'capabilities': ['search', 'selection', 'hierarchy', 'map']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/geography-selector.html', 'name': 'ui_geography_selector_skybridge', 'title': 'Geography Selector', 'description': 'Interactive selector for UK administrative areas.', 'mimeType': 'text/html+skybridge', 'annotations': {'audience': ['user'], 'priority': 1.0, 'capabilities': ['search', 'selection', 'hierarchy', 'map']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/statistics-dashboard', 'name': 'ui_statistics_dashboard', 'title': 'Statistics Dashboard', 'description': 'Visual dashboard for ONS observations and comparisons.', 'mimeType': 'text/html;profile=mcp-app', 'annotations': {'audience': ['user'], 'priority': 0.9, 'capabilities': ['charts', 'comparison', 'export']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/statistics-dashboard.html', 'name': 'ui_statistics_dashboard_skybridge', 'title': 'Statistics Dashboard', 'description': 'Visual dashboard for ONS observations and comparisons.', 'mimeType': 'text/html+skybridge', 'annotations': {'audience': ['user'], 'priority': 0.9, 'capabilities': ['charts', 'comparison', 'export']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/feature-inspector', 'name': 'ui_feature_inspector', 'title': 'Feature Inspector', 'description': 'Inspect OS NGD features and linked identifiers.', 'mimeType': 'text/html;profile=mcp-app', 'annotations': {'audience': ['user'], 'priority': 0.7, 'capabilities': ['properties', 'map', 'linked-ids']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/feature-inspector.html', 'name': 'ui_feature_inspector_skybridge', 'title': 'Feature Inspector', 'description': 'Inspect OS NGD features and linked identifiers.', 'mimeType': 'text/html+skybridge', 'annotations': {'audience': ['user'], 'priority': 0.7, 'capabilities': ['properties', 'map', 'linked-ids']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/route-planner', 'name': 'ui_route_planner', 'title': 'Route Planner', 'description': 'Plan routes with waypoints and directions.', 'mimeType': 'text/html;profile=mcp-app', 'annotations': {'audience': ['user'], 'priority': 0.8, 'capabilities': ['routing', 'waypoints', 'directions']}, 'type': 'ui'}, {'uri': 'ui://mcp-geo/route-planner.html', 'name': 'ui_route_planner_skybridge', 'title': 'Route Planner', 'description': 'Plan routes with waypoints and directions.', 'mimeType': 'text/html+skybridge', 'annotations': {'audience': ['user'], 'priority': 0.8, 'capabilities': ['routing', 'waypoints', 'directions']}, 'type': 'ui'}]}
+{'server': 'mcp-geo', 'version': '0.2.5', 'protocolVersion': '2025-06-18', 'capabilities': {'toolSearch': True, 'skills': True, 'extensions': {'io.modelcontextprotocol/ui': {'mimeTypes': ['text/html;profile=mcp-app']}}}, 'toolSearch': {'always_loaded': ['admin_lookup.find_by_name', 'ons_data.query', 'ons_search.query', 'os_apps.log_event', 'os_apps.render_geography_selector', 'os_mcp.descriptor', 'os_mcp.route_query', 'os_names.find', 'os_places.by_postcode', 'os_places.search'], 'deferred': ['admin_lookup.area_geometry', 'admin_lookup.containing_areas', 'admin_lookup.reverse_hierarchy', 'ons_codes.list', 'ons_codes.options', 'ons_data.create_filter', 'ons_data.dimensions', 'ons_data.editions', 'ons_data.get_filter_output', 'ons_data.get_observation', 'ons_data.versions', 'os_apps.render_feature_inspector', 'os_apps.render_route_planner', 'os_apps.render_statistics_dashboard', 'os_features.query', 'os_linked_ids.get', 'os_maps.render', 'os_names.nearest', 'os_places.by_uprn', 'os_places.nearest', 'os_places.within', 'os_vector_tiles.descriptor'], 'counts': {'always_loaded': 10, 'deferred': 22, 'total': 32}, 'categories': ['core', 'places', 'names', 'features', 'linked', 'maps', 'vector', 'admin', 'statistics', 'codes', 'apps', 'utility'], 'mcp_toolset_config': {'type': 'mcp_toolset', 'mcp_server_name': 'mcp-geo', 'default_config': {'defer_loading': True}, 'configs': {'ons_search.query': {'defer_loading': False}, 'admin_lookup.find_by_name': {'defer_loading': False}, 'os_mcp.route_query': {'defer_loading': False}, 'os_places.search': {'defer_loading': False}, 'os_mcp.descriptor': {'defer_loading': False}, 'os_places.by_postcode': {'defer_loading': False}, 'os_apps.render_geography_selector': {'defer_loading': False}, 'os_apps.log_event': {'defer_loading': False}, 'os_names.find': {'defer_loading': False}, 'ons_data.query': {'defer_loading': False}}}, 'system_prompt': 'Primary tools:\n- os_places.search: free text address search\n- os_places.by_postcode: lookup UPRNs and addresses\n- ons_search.query: discover ONS datasets\n- ons_data.query: query ONS observations\n- admin_lookup.find_by_name: find administrative areas by name\n\nUse MCP-Apps widgets for interactive workflows (os_apps.* tools).\nSpecialized OS feature tools are for NGD feature collections, not place lookups.'}, 'skillsUri': 'skills://mcp-geo/getting-started', 'transport': 'http'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Describe server capabilities and tool search config", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Describe"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_mcp.descriptor", "response": {"server": "mcp-geo", "version": "0.2.5", "capabilities": {"toolSearch": true, "skills": true, "uiResources": true}, "toolSearch": {"always_loaded": ["admin_lookup.find_by_name", "ons_data.query", "ons_search.query", "os_apps.log_event", "os_apps.render_geography_selector", "os_mcp.descriptor", "os_mcp.route_query", "os_names.find", "os_places.by_postcode", "os_places.search"], "deferred": ["admin_lookup.area_geometry", "admin_lookup.containing_areas", "admin_lookup.reverse_hierarchy", "ons_codes.list", "ons_codes.options", "ons_data.create_filter", "ons_data.dimensions", "ons_data.get_filter_output", "ons_data.get_observation", "os_apps.render_feature_inspector", "os_apps.render_route_planner", "os_apps.render_statistics_dashboard", "os_features.query", "os_linked_ids.get", "os_maps.render", "os_names.nearest", "os_places.by_uprn", "os_places.nearest", "os_places.within", "os_vector_tiles.descriptor"], "counts": {"always_loaded": 10, "deferred": 20, "total": 30}, "categories": ["core", "places", "names", "features", "linked", "maps", "vector", "admin", "statistics", "codes", "apps", "utility"], "mcp_toolset_config": {"type": "mcp_toolset", "mcp_server_name": "mcp-geo", "default_config": {"defer_loading": true}, "configs": {"os_apps.render_geography_selector": {"defer_loading": false}, "os_places.search": {"defer_loading": false}, "admin_lookup.find_by_name": {"defer_loading": false}, "os_apps.log_event": {"defer_loading": false}, "os_names.find": {"defer_loading": false}, "ons_data.query": {"defer_loading": false}, "os_places.by_postcode": {"defer_loading": false}, "os_mcp.descriptor": {"defer_loading": false}, "ons_search.query": {"defer_loading": false}, "os_mcp.route_query": {"defer_loading": false}}}, "system_prompt": "Primary tools:\n- os_places.search: free text address search\n- os_places.by_postcode: lookup UPRNs and addresses\n- ons_search.query: discover ONS datasets\n- ons_data.query: query ONS observations\n- admin_lookup.find_by_name: find administrative areas by name\n\nUse MCP-Apps widgets for interactive workflows (os_apps.* tools).\nSpecialized OS feature tools are for NGD feature collections, not place lookups."}, "skillsUri": "skills://mcp-geo/getting-started", "uiResources": ["ui://mcp-geo/geography-selector", "ui://mcp-geo/geography-selector.html", "ui://mcp-geo/statistics-dashboard", "ui://mcp-geo/statistics-dashboard.html", "ui://mcp-geo/feature-inspector", "ui://mcp-geo/feature-inspector.html", "ui://mcp-geo/route-planner", "ui://mcp-geo/route-planner.html"], "uiResourceCatalog": [{"uri": "ui://mcp-geo/geography-selector", "name": "ui_geography_selector", "title": "Geography Selector", "description": "Interactive selector for UK administrative areas.", "mimeType": "text/html;profile=mcp-app", "annotations": {"audience": ["user"], "priority": 1.0, "capabilities": ["search", "selection", "hierarchy", "map"]}, "type": "ui"}, {"uri": "ui://mcp-geo/geography-selector.html", "name": "ui_geography_selector_skybridge", "title": "Geography Selector", "description": "Interactive selector for UK administrative areas.", "mimeType": "text/html+skybridge", "annotations": {"audience": ["user"], "priority": 1.0, "capabilities": ["search", "selection", "hierarchy", "map"]}, "type": "ui"}, {"uri": "ui://mcp-geo/statistics-dashboard", "name": "ui_statistics_dashboard", "title": "Statistics Dashboard", "description": "Visual dashboard for ONS observations and comparisons.", "mimeType": "text/html;profile=mcp-app", "annotations": {"audience": ["user"], "priority": 0.9, "capabilities": ["charts", "comparison", "export"]}, "type": "ui"}, {"uri": "ui://mcp-geo/statistics-dashboard.html", "name": "ui_statistics_dashboard_skybridge", "title": "Statistics Dashboard", "description": "Visual dashboard for ONS observations and comparisons.", "mimeType": "text/html+skybridge", "annotations": {"audience": ["user"], "priority": 0.9, "capabilities": ["charts", "comparison", "export"]}, "type": "ui"}, {"uri": "ui://mcp-geo/feature-inspector", "name": "ui_feature_inspector", "title": "Feature Inspector", "description": "Inspect OS NGD features and linked identifiers.", "mimeType": "text/html;profile=mcp-app", "annotations": {"audience": ["user"], "priority": 0.7, "capabilities": ["properties", "map", "linked-ids"]}, "type": "ui"}, {"uri": "ui://mcp-geo/feature-inspector.html", "name": "ui_feature_inspector_skybridge", "title": "Feature Inspector", "description": "Inspect OS NGD features and linked identifiers.", "mimeType": "text/html+skybridge", "annotations": {"audience": ["user"], "priority": 0.7, "capabilities": ["properties", "map", "linked-ids"]}, "type": "ui"}, {"uri": "ui://mcp-geo/route-planner", "name": "ui_route_planner", "title": "Route Planner", "description": "Plan routes with waypoints and directions.", "mimeType": "text/html;profile=mcp-app", "annotations": {"audience": ["user"], "priority": 0.8, "capabilities": ["routing", "waypoints", "directions"]}, "type": "ui"}, {"uri": "ui://mcp-geo/route-planner.html", "name": "ui_route_planner_skybridge", "title": "Route Planner", "description": "Plan routes with waypoints and directions.", "mimeType": "text/html+skybridge", "annotations": {"audience": ["user"], "priority": 0.8, "capabilities": ["routing", "waypoints", "directions"]}, "type": "ui"}]}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Describe server capabilities and tool search config", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Describe"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_mcp.descriptor", "response": {"server": "mcp-geo", "version": "0.2.5", "protocolVersion": "2025-06-18", "capabilities": {"toolSearch": true, "skills": true, "extensions": {"io.modelcontextprotocol/ui": {"mimeTypes": ["text/html;profile=mcp-app"]}}}, "toolSearch": {"always_loaded": ["admin_lookup.find_by_name", "ons_data.query", "ons_search.query", "os_apps.log_event", "os_apps.render_geography_selector", "os_mcp.descriptor", "os_mcp.route_query", "os_names.find", "os_places.by_postcode", "os_places.search"], "deferred": ["admin_lookup.area_geometry", "admin_lookup.containing_areas", "admin_lookup.reverse_hierarchy", "ons_codes.list", "ons_codes.options", "ons_data.create_filter", "ons_data.dimensions", "ons_data.editions", "ons_data.get_filter_output", "ons_data.get_observation", "ons_data.versions", "os_apps.render_feature_inspector", "os_apps.render_route_planner", "os_apps.render_statistics_dashboard", "os_features.query", "os_linked_ids.get", "os_maps.render", "os_names.nearest", "os_places.by_uprn", "os_places.nearest", "os_places.within", "os_vector_tiles.descriptor"], "counts": {"always_loaded": 10, "deferred": 22, "total": 32}, "categories": ["core", "places", "names", "features", "linked", "maps", "vector", "admin", "statistics", "codes", "apps", "utility"], "mcp_toolset_config": {"type": "mcp_toolset", "mcp_server_name": "mcp-geo", "default_config": {"defer_loading": true}, "configs": {"ons_search.query": {"defer_loading": false}, "admin_lookup.find_by_name": {"defer_loading": false}, "os_mcp.route_query": {"defer_loading": false}, "os_places.search": {"defer_loading": false}, "os_mcp.descriptor": {"defer_loading": false}, "os_places.by_postcode": {"defer_loading": false}, "os_apps.render_geography_selector": {"defer_loading": false}, "os_apps.log_event": {"defer_loading": false}, "os_names.find": {"defer_loading": false}, "ons_data.query": {"defer_loading": false}}}, "system_prompt": "Primary tools:\n- os_places.search: free text address search\n- os_places.by_postcode: lookup UPRNs and addresses\n- ons_search.query: discover ONS datasets\n- ons_data.query: query ONS observations\n- admin_lookup.find_by_name: find administrative areas by name\n\nUse MCP-Apps widgets for interactive workflows (os_apps.* tools).\nSpecialized OS feature tools are for NGD feature collections, not place lookups."}, "skillsUri": "skills://mcp-geo/getting-started", "transport": "http"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 4.1ms
+Duration: 2.7ms
 Success: True
 
 ============================================================
-AUDIT LOG: 85daf59f
-Timestamp: 2026-01-24T16:59:51.490424
+AUDIT LOG: f5b2d99a
+Timestamp: 2026-01-27T21:42:24.296571
 ============================================================
 
 ## 1. QUERY
@@ -1014,28 +1101,28 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.log_event
 ········································
-Timestamp: 2026-01-24T16:59:51.493723
-Duration: 1.9ms
+Timestamp: 2026-01-27T21:42:24.299487
+Duration: 1.6ms
 Status: SUCCESS
 
 Inputs:
 {'eventType': 'ui_test', 'source': 'evaluation', 'payload': {'action': 'click'}, 'context': {'screen': 'dashboard'}, 'timestamp': 1710000000, 'sessionId': 'session-eval'}
 
 Outputs:
-{'status': 'logged', 'eventId': 'd16d79799f67405f99bbd43e2577989b', 'timestamp': 1710000000.0, 'logPath': 'logs/ui-events.jsonl'}
+{'status': 'logged', 'eventId': '8cabc45b30594f9d9af7d12b0bdd0186', 'timestamp': 1710000000.0, 'logPath': 'logs/ui-events.jsonl'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Log a UI event for analytics", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Log"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_apps.log_event", "response": {"status": "logged", "eventId": "d16d79799f67405f99bbd43e2577989b", "timestamp": 1710000000.0, "logPath": "logs/ui-events.jsonl"}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Log a UI event for analytics", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Log"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_apps.log_event", "response": {"status": "logged", "eventId": "8cabc45b30594f9d9af7d12b0bdd0186", "timestamp": 1710000000.0, "logPath": "logs/ui-events.jsonl"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3.3ms
+Duration: 2.9ms
 Success: True
 
 ============================================================
-AUDIT LOG: e30e1e72
-Timestamp: 2026-01-24T16:59:51.494198
+AUDIT LOG: 9fe315d9
+Timestamp: 2026-01-27T21:42:24.299812
 ============================================================
 
 ## 1. QUERY
@@ -1053,28 +1140,28 @@ Workflow Steps: ['os_places.by_postcode']
 ------------------------------------------------------------
 ### Tool Call 1: os_places.by_postcode
 ········································
-Timestamp: 2026-01-24T16:59:52.069780
-Duration: 573.8ms
+Timestamp: 2026-01-27T21:42:24.531052
+Duration: 230.0ms
 Status: SUCCESS
 
 Inputs:
 {'postcode': 'ZZ99ZZ'}
 
 Outputs:
-{'uprns': [], 'provenance': {'source': 'os_places', 'timestamp': 1769273992.067099}}
+{'uprns': [], 'provenance': {'source': 'os_places', 'timestamp': 1769550144.5293763}}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Lookup postcode ZZ99ZZ", "intent": "address_lookup", "confidence": 0.95, "recommended_tool": "os_places.by_postcode", "recommended_parameters": {"postcode": "ZZ99ZZ"}, "explanation": "Lookup addresses and UPRNs for a postcode using OS Places.", "workflow_steps": ["os_places.by_postcode"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.by_postcode", "response": {"uprns": [], "provenance": {"source": "os_places", "timestamp": 1769273992.067099}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Lookup postcode ZZ99ZZ", "intent": "address_lookup", "confidence": 0.95, "recommended_tool": "os_places.by_postcode", "recommended_parameters": {"postcode": "ZZ99ZZ"}, "explanation": "Lookup addresses and UPRNs for a postcode using OS Places.", "workflow_steps": ["os_places.by_postcode"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.by_postcode", "response": {"uprns": [], "provenance": {"source": "os_places", "timestamp": 1769550144.5293763}}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 575.7ms
+Duration: 231.3ms
 Success: True
 
 ============================================================
-AUDIT LOG: c2a17fc4
-Timestamp: 2026-01-24T16:59:52.072485
+AUDIT LOG: a9de1055
+Timestamp: 2026-01-27T21:42:24.532058
 ============================================================
 
 ## 1. QUERY
@@ -1092,8 +1179,8 @@ Workflow Steps: ['os_maps.render']
 ------------------------------------------------------------
 ### Tool Call 1: os_maps.render
 ········································
-Timestamp: 2026-01-24T16:59:52.080114
-Duration: 3.1ms
+Timestamp: 2026-01-27T21:42:24.535982
+Duration: 1.9ms
 Status: ERROR
 
 Inputs:
@@ -1108,12 +1195,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 7.7ms
+Duration: 4.0ms
 Success: True
 
 ============================================================
-AUDIT LOG: e979abc8
-Timestamp: 2026-01-24T16:59:52.081708
+AUDIT LOG: c2117254
+Timestamp: 2026-01-27T21:42:24.536699
 ============================================================
 
 ## 1. QUERY
@@ -1131,8 +1218,8 @@ Workflow Steps: ['admin_lookup.find_by_name', 'admin_lookup.area_geometry']
 ------------------------------------------------------------
 ### Tool Call 1: admin_lookup.area_geometry
 ········································
-Timestamp: 2026-01-24T16:59:55.222751
-Duration: 3136.9ms
+Timestamp: 2026-01-27T21:42:27.188398
+Duration: 2649.7ms
 Status: ERROR
 
 Inputs:
@@ -1147,12 +1234,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3141.2ms
+Duration: 2651.8ms
 Success: True
 
 ============================================================
-AUDIT LOG: 90a92910
-Timestamp: 2026-01-24T16:59:55.224553
+AUDIT LOG: 4bdf40d8
+Timestamp: 2026-01-27T21:42:27.190117
 ============================================================
 
 ## 1. QUERY
@@ -1170,8 +1257,8 @@ Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.get_filter_output
 ········································
-Timestamp: 2026-01-24T16:59:55.231899
-Duration: 3.9ms
+Timestamp: 2026-01-27T21:42:27.194308
+Duration: 1.4ms
 Status: ERROR
 
 Inputs:
@@ -1186,12 +1273,12 @@ Outputs:
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 7.4ms
+Duration: 4.2ms
 Success: True
 
 ============================================================
-AUDIT LOG: 193aa33d
-Timestamp: 2026-01-24T16:59:55.232935
+AUDIT LOG: 4b2783d8
+Timestamp: 2026-01-27T21:42:27.195090
 ============================================================
 
 ## 1. QUERY
@@ -1209,8 +1296,8 @@ Workflow Steps: ['admin_lookup.find_by_name']
 ------------------------------------------------------------
 ### Tool Call 1: admin_lookup.find_by_name
 ········································
-Timestamp: 2026-01-24T16:59:58.727890
-Duration: 3491.9ms
+Timestamp: 2026-01-27T21:42:30.596377
+Duration: 3398.9ms
 Status: SUCCESS
 
 Inputs:
@@ -1221,16 +1308,16 @@ Outputs:
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "St James's", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "St James"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E05000411", "level": "WARD", "name": "St James"}, {"id": "E05000644", "level": "WARD", "name": "St James's"}, {"id": "E05000734", "level": "WARD", "name": "St James'"}, {"id": "E05000955", "level": "WARD", "name": "Bidston and St James"}, {"id": "E05001254", "level": "WARD", "name": "St James's"}, {"id": "E05004092", "level": "WARD", "name": "St James"}, {"id": "E05005144", "level": "WARD", "name": "St James'"}, {"id": "E05008847", "level": "WARD", "name": "St James"}, {"id": "E05009891", "level": "WARD", "name": "Priory & St James'"}, {"id": "E05010156", "level": "WARD", "name": "Deeping St James"}, {"id": "E05011012", "level": "WARD", "name": "Duryard and St James"}, {"id": "E05011229", "level": "WARD", "name": "St Mary's & St James"}, {"id": "E05011953", "level": "WARD", "name": "St James"}, {"id": "E05012187", "level": "WARD", "name": "Bushey St James"}], "count": 14, "live": true}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "St James's", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "St James"}, "explanation": "Find administrative areas by name using admin_lookup.find_by_name.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E05000411", "level": "WARD", "name": "St James"}, {"id": "E05000644", "level": "WARD", "name": "St James's"}, {"id": "E05000734", "level": "WARD", "name": "St James'"}, {"id": "E05000955", "level": "WARD", "name": "Bidston and St James"}, {"id": "E05001254", "level": "WARD", "name": "St James's"}, {"id": "E05004092", "level": "WARD", "name": "St James"}, {"id": "E05005144", "level": "WARD", "name": "St James'"}, {"id": "E05008847", "level": "WARD", "name": "St James"}, {"id": "E05009891", "level": "WARD", "name": "Priory & St James'"}, {"id": "E05010156", "level": "WARD", "name": "Deeping St James"}, {"id": "E05011012", "level": "WARD", "name": "Duryard and St James"}, {"id": "E05011229", "level": "WARD", "name": "St Mary's & St James"}, {"id": "E05011953", "level": "WARD", "name": "St James"}, {"id": "E05012187", "level": "WARD", "name": "Bushey St James"}], "count": 14, "live": true}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 3495.1ms
+Duration: 3401.3ms
 Success: True
 
 ============================================================
-AUDIT LOG: 8847f547
-Timestamp: 2026-01-24T16:59:58.729351
+AUDIT LOG: ec2dad7c
+Timestamp: 2026-01-27T21:42:30.597062
 ============================================================
 
 ## 1. QUERY
@@ -1248,28 +1335,29 @@ Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
 ------------------------------------------------------------
 ### Tool Call 1: ons_data.query
 ········································
-Timestamp: 2026-01-24T16:59:58.735797
-Duration: 3.6ms
-Status: SUCCESS
+Timestamp: 2026-01-27T21:42:30.712048
+Duration: 113.6ms
+Status: ERROR
 
 Inputs:
-{'geography': 'K02000001', 'limit': 2}
+{'dataset': 'gdp', 'edition': 'time-series', 'version': '1', 'geography': 'K02000001', 'limit': 2}
 
 Outputs:
-{'results': [{'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q1', 'value': 525.1}, {'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q2', 'value': 526.3}], 'count': 5, 'limit': 2, 'page': 1, 'nextPageToken': '2'}
+{'isError': True, 'code': 'ONS_API_ERROR', 'message': 'ONS API error: dataset not found\n'}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Westminster data", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.query", "response": {"results": [{"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q1", "value": 525.1}, {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q2", "value": 526.3}], "count": 5, "limit": 2, "page": 1, "nextPageToken": "2"}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Westminster data", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.query", "response": {"isError": true, "code": "ONS_API_ERROR", "message": "ONS API error: dataset not found\n"}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 6.5ms
-Success: True
+Duration: 115.0ms
+Success: False
+Error: ONS_API_ERROR
 
 ============================================================
-AUDIT LOG: c5498426
-Timestamp: 2026-01-24T16:59:58.736821
+AUDIT LOG: 185f2359
+Timestamp: 2026-01-27T21:42:30.712726
 ============================================================
 
 ## 1. QUERY
@@ -1287,21 +1375,21 @@ Workflow Steps: ['os_apps.render_geography_selector']
 ------------------------------------------------------------
 ### Tool Call 1: os_apps.render_geography_selector
 ········································
-Timestamp: 2026-01-24T16:59:58.741949
-Duration: 2.7ms
+Timestamp: 2026-01-27T21:42:30.715691
+Duration: 1.2ms
 Status: SUCCESS
 
 Inputs:
 {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}
 
 Outputs:
-{'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'structuredContent': {'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector']}, 'content': [{'type': 'text', 'text': 'Open the geography selector widget to choose areas interactively.'}], '_meta': {'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'audience': ['user']}}
+{'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'structuredContent': {'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.'}, 'content': [{'type': 'text', 'text': 'Open the geography selector widget to choose areas interactively.'}]}
 
 ## 4. RESPONSE
 ------------------------------------------------------------
-[{"tool": "os_mcp.route_query", "response": {"query": "Select Westminster ward", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"], "structuredContent": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"]}, "content": [{"type": "text", "text": "Open the geography selector widget to choose areas interactively."}], "_meta": {"uiResourceUris": ["ui://mcp-geo/geography-selector"], "audience": ["user"]}}}]
+[{"tool": "os_mcp.route_query", "response": {"query": "Select Westminster ward", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "structuredContent": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively."}, "content": [{"type": "text", "text": "Open the geography selector widget to choose areas interactively."}]}}]
 
 ## 5. METRICS
 ------------------------------------------------------------
-Duration: 5.2ms
+Duration: 3.0ms
 Success: True

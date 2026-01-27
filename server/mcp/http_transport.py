@@ -11,6 +11,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse, Response
 
 from server import stdio_adapter
+from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.protocol import PROTOCOL_VERSION
 from tools.registry import get as get_tool
 
@@ -71,34 +72,16 @@ def _bool_env(name: str, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _capability_truthy(value: Any) -> bool:
-    if isinstance(value, dict):
-        for flag in ("enabled", "supported", "render", "rendering", "ui"):
-            if flag in value and bool(value[flag]):
-                return True
-        return any(_capability_truthy(v) for v in value.values())
-    if isinstance(value, list):
-        return any(_capability_truthy(v) for v in value)
-    return bool(value)
-
-
 def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
     override = _read_bool_env("MCP_HTTP_UI_SUPPORTED")
     if override is not None:
         return override
-    keys = ("uiResources", "mcpApps", "mcp_apps", "mcpAppsUi", "ui", "apps")
-    def _scan(container: Any) -> bool:
-        if not isinstance(container, dict):
-            return False
-        for key in keys:
-            if key in container and _capability_truthy(container[key]):
-                return True
-        return False
-    if _scan(capabilities):
-        return True
-    for bucket in ("experimental", "extensions", "capabilities"):
-        if _scan(capabilities.get(bucket)):
-            return True
+    extensions = capabilities.get("extensions", {}) if isinstance(capabilities, dict) else {}
+    ui_ext = extensions.get("io.modelcontextprotocol/ui")
+    if isinstance(ui_ext, dict):
+        mime_types = ui_ext.get("mimeTypes")
+        if isinstance(mime_types, list):
+            return MCP_APPS_MIME in mime_types
     return False
 
 
@@ -122,11 +105,13 @@ def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[s
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": stdio_adapter.SERVER_VERSION},
         "capabilities": {
-            "tools": {"list": True, "call": True, "search": True},
-            "resources": {"list": True, "read": True, "describe": True},
-            "toolSearch": {"query": True},
-            "uiResources": {"list": True},
-            "skills": {"list": True},
+            "tools": {"list": True, "call": True},
+            "resources": {"list": True, "read": True},
+            "extensions": {
+                "io.modelcontextprotocol/ui": {
+                    "mimeTypes": [MCP_APPS_MIME],
+                }
+            },
         },
         "server": "mcp-geo",
         "version": stdio_adapter.SERVER_VERSION,
@@ -156,16 +141,11 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
                 data["fallback"] = fallback
     ok = 200 <= status_code < 300
     result: Dict[str, Any] = {"status": status_code, "ok": ok, "data": data}
-    ui_uris = stdio_adapter._extract_ui_resource_uris(data)
     allow_resource = _bool_env("MCP_HTTP_RESOURCE_CONTENT", default=True)
     if isinstance(data, dict):
         content_override = data.get("content")
         if isinstance(content_override, list):
-            result["content"] = stdio_adapter._inject_resource_links(
-                content_override,
-                ui_uris,
-                allow_resource,
-            )
+            result["content"] = content_override
         else:
             result["content"] = stdio_adapter._tool_content_from_data(
                 data,
@@ -181,8 +161,6 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
             data,
             allow_resource=allow_resource,
         )
-    if ui_uris:
-        result["uiResourceUris"] = ui_uris
     if not ok or (isinstance(data, dict) and data.get("isError") is True):
         result["isError"] = True
     return result

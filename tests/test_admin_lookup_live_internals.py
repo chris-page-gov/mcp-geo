@@ -102,9 +102,10 @@ def test_live_area_geometry_returns_bbox(monkeypatch):
         return {"extent": {"xmin": 0, "ymin": 1, "xmax": 2, "ymax": 3}}
 
     monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
-    bbox, meta = admin_lookup._live_area_geometry("X3")
+    bbox, meta, geometry = admin_lookup._live_area_geometry("X3")
     assert bbox == [0.0, 1.0, 2.0, 3.0]
     assert meta == {"level": "TEST", "source": "arcgis"}
+    assert geometry is None
 
 
 def test_live_find_by_id_returns_match(monkeypatch):

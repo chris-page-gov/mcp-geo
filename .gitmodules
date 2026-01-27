@@ -15,3 +15,6 @@
 [submodule "docs/vendor/openai/repos/openai-apps-sdk-examples"]
 	path = docs/vendor/openai/repos/openai-apps-sdk-examples
 	url = https://github.com/openai/openai-apps-sdk-examples.git
+[submodule "submodules/os-vector-tile-api-stylesheets"]
+	path = submodules/os-vector-tile-api-stylesheets
+	url = https://github.com/OrdnanceSurvey/OS-Vector-Tile-API-Stylesheets.git

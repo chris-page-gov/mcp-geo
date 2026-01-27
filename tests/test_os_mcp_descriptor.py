@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from server.mcp.resource_catalog import MCP_APPS_MIME
+
 from server.main import app
 
 client = TestClient(app)
@@ -12,7 +14,9 @@ def test_os_mcp_descriptor_tool():
     assert body.get("server") == "mcp-geo"
     assert "toolSearch" in body
     assert body.get("skillsUri") == "skills://mcp-geo/getting-started"
-    assert "ui://mcp-geo/geography-selector" in body.get("uiResources", [])
+    extensions = body.get("capabilities", {}).get("extensions", {})
+    ui_ext = extensions.get("io.modelcontextprotocol/ui", {})
+    assert MCP_APPS_MIME in ui_ext.get("mimeTypes", [])
 
 
 def test_os_mcp_descriptor_invalid_category():

@@ -36,7 +36,7 @@ Then visit:
 - `POST /tools/call` with `{ "tool": "os_places.by_postcode", "postcode": "SW1A1AA" }`
 - `POST /mcp` with `{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}`
 
-Set `OS_API_KEY` in environment (or `.env`) for live Ordnance Survey calls; otherwise tools return graceful `501 NO_API_KEY` responses.
+Set `OS_API_KEY` in the environment (or `.env`) for all Ordnance Survey calls. The server assumes it is present; missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
 ## Getting Started (User Guide)
 
@@ -244,7 +244,7 @@ All errors conform to:
 ```json
 { "isError": true, "code": "<CODE>", "message": "..." }
 ```
-Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
 
 ## Project Structure
 ```text
@@ -288,7 +288,7 @@ All `/resources/read` responses include:
 Clients should respect TTL and still perform ETag revalidation for freshness.
 
 ## Troubleshooting
-See `docs/troubleshooting.md` for a table of common error codes (`INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, etc.) and remediation steps.
+See `docs/troubleshooting.md` for a table of common error codes (`INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, etc.) and remediation steps.
 
 ## Configuration
 Copy `.env.example` → `.env` and set `OS_API_KEY`. Optional flags:

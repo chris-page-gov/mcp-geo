@@ -7,6 +7,8 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | INVALID_INPUT | Input validation failed | Missing or malformed parameters (e.g. postcode format) | Re-check required fields, normalize postcode (strip spaces, uppercase) |
 | UNKNOWN_TOOL | Tool name not registered | Typo in `tool` field or outdated client cache | Call `/tools/list` or `/tools/describe` to confirm names |
 | NO_API_KEY | OS API key absent | `OS_API_KEY` env not set | Export `OS_API_KEY` or add to `.env` then restart server |
+| OS_API_KEY_INVALID | OS API key invalid or unauthorized | Wrong key, not enabled for API, or revoked | Verify key in OS Data Hub; ensure APIs are enabled |
+| OS_API_KEY_EXPIRED | OS API key expired | Key has expired or is no longer active | Rotate the key in OS Data Hub and update `OS_API_KEY` |
 | LIVE_DISABLED | Live data disabled | `ONS_LIVE_ENABLED` or `ADMIN_LOOKUP_LIVE_ENABLED` set to false | Enable live mode and retry |
 | OS_API_ERROR | Upstream OS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust parameters or check quota |
 | ONS_API_ERROR | Upstream ONS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust dataset/edition/version |

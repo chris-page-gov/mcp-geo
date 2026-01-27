@@ -13,7 +13,7 @@ Process:
 | Feature | Spec/Docs URL | Status | Owner | Last Checked | Review Cadence | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | MCP specification | https://modelcontextprotocol.io/specification/2025-11-25 | Preview | maintainers | 2026-01-21 (local logs only) | Each release | External verification required; track changes before release. |
-| MCP-Apps UI (`text/html;profile=mcp-app`) | https://modelcontextprotocol.io/specification/2025-11-25 | Preview | maintainers | 2026-01-21 (Claude logs) | Each release | Claude client did not fetch `resources/read` or render UI in current logs. |
+| MCP-Apps UI (`text/html;profile=mcp-app`) | docs/vendor/mcp/repos/ext-apps/specification/2026-01-26/apps.mdx | Stable | maintainers | 2026-01-27 (final spec sync) | Each release | Finalized MCP Apps spec; UI now uses JSON-RPC `ui/initialize` and no skybridge fallback. |
 | MCP Streamable HTTP transport (OpenAI docs) | docs/vendor/openai/mcp_transport_streamable_http.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
 | ChatGPT Developer Mode Connectors | docs/vendor/openai/chatgpt_connectors_developer_mode.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
 | OpenAI Apps SDK (MCP-Apps UI) | https://developers.openai.com/apps-sdk/build/mcp-server/ | Preview | maintainers | 2026-01-24 (local snapshot) | Monthly | Local snapshot at `docs/vendor/openai/_snapshot/apps-sdk/build/mcp-server.html`. |

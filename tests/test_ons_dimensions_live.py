@@ -14,7 +14,7 @@ def test_ons_dimensions_live_all(monkeypatch: MonkeyPatch):
     calls: dict[str, Any] = {"meta": 0, "opts": []}
 
     def fake_get_json(url: str, params=None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # type: ignore[override]
-        if url.endswith('/version/1'):
+        if url.endswith('/versions/1'):
             calls["meta"] += 1
             return 200, {"dimensions": [
                 {"id": "geography"},
@@ -48,7 +48,7 @@ def test_ons_dimensions_live_single(monkeypatch: MonkeyPatch):
     calls: dict[str, Any] = {"meta": 0, "opts": []}
 
     def fake_get_json(url: str, params=None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # type: ignore[override]
-        if url.endswith('/version/1'):
+        if url.endswith('/versions/1'):
             calls["meta"] += 1
             return 200, {"dimensions": [
                 {"id": "geography"},

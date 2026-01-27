@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from server.mcp import http_transport, playground, resources, tools
+from server import maps_proxy
 from server.logging import configure_logging
 from server.security import mask_in_text
 
@@ -130,6 +131,7 @@ app.include_router(tools.router)
 app.include_router(resources.router)
 app.include_router(playground.router)
 app.include_router(http_transport.router)
+app.include_router(maps_proxy.router)
 
 
 @app.get("/metrics")

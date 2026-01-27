@@ -12,6 +12,6 @@ def test_os_apps_render_geography_selector():
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert "uiResourceUris" in body
-    assert "ui://mcp-geo/geography-selector" in body["uiResourceUris"]
+    assert "uiResourceUris" not in body
+    assert body["status"] == "ready"
     assert body["config"]["level"] == "ward"

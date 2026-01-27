@@ -51,7 +51,7 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         params["measure"] = measure
     if time_range:
         params["time"] = time_range
-    url = f"{ons_client.base_api}/dataset/{dataset}/edition/{edition}/version/{version}/observations"
+    url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/observations"
     status, data = ons_client.get_json(url, params=params)
     if status != 200:
         return status, data
@@ -110,7 +110,7 @@ def _dimensions(payload: dict[str, Any]) -> ToolResult:
                     codes.append(val)
         return codes
 
-    version_url = f"{ons_client.base_api}/dataset/{dataset}/edition/{edition}/version/{version}"
+    version_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
     status_meta, meta = ons_client.get_json(version_url, params=None)
     if status_meta != 200:
         return status_meta, meta
@@ -121,7 +121,7 @@ def _dimensions(payload: dict[str, Any]) -> ToolResult:
         dim_ids = [only]
     result_map: dict[str, list[str]] = {}
     for dim_id in dim_ids:
-        opt_url = f"{ons_client.base_api}/dataset/{dataset}/edition/{edition}/version/{version}/dimensions/{dim_id}/options"
+        opt_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/dimensions/{dim_id}/options"
         status_opt, opt_data = ons_client.get_json(opt_url, params={"limit": 1000, "page": 1})
         if status_opt != 200:
             return status_opt, opt_data
@@ -132,6 +132,88 @@ def _dimensions(payload: dict[str, Any]) -> ToolResult:
         "dataset": dataset,
         "edition": edition,
         "version": version,
+    }
+
+def _editions(payload: dict[str, Any]) -> ToolResult:
+    dataset = payload.get("dataset")
+    if not settings.ONS_LIVE_ENABLED:
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "ONS live mode is disabled. Set ONS_LIVE_ENABLED=true.",
+        }
+    if not isinstance(dataset, str) or not dataset:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset is required"}
+    url = f"{ons_client.base_api}/datasets/{dataset}/editions"
+    status, items = ons_client.get_all_pages(url, params={"limit": 1000, "page": 1})
+    if status != 200:
+        return status, items
+    if not isinstance(items, list):
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "Expected editions list from ONS API",
+        }
+    editions: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        edition_id = item.get("edition") or item.get("id")
+        if isinstance(edition_id, int):
+            edition_id = str(edition_id)
+        if not isinstance(edition_id, str):
+            continue
+        editions.append({
+            "id": edition_id,
+            "title": item.get("edition") or item.get("title"),
+            "state": item.get("state"),
+        })
+    return 200, {"dataset": dataset, "editions": editions, "count": len(editions), "live": True}
+
+
+def _versions(payload: dict[str, Any]) -> ToolResult:
+    dataset = payload.get("dataset")
+    edition = payload.get("edition")
+    if not settings.ONS_LIVE_ENABLED:
+        return 501, {
+            "isError": True,
+            "code": "LIVE_DISABLED",
+            "message": "ONS live mode is disabled. Set ONS_LIVE_ENABLED=true.",
+        }
+    if not isinstance(dataset, str) or not dataset:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset is required"}
+    if not isinstance(edition, str) or not edition:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "edition is required"}
+    url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions"
+    status, items = ons_client.get_all_pages(url, params={"limit": 1000, "page": 1})
+    if status != 200:
+        return status, items
+    if not isinstance(items, list):
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "Expected versions list from ONS API",
+        }
+    versions: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        version_id = item.get("version") or item.get("id")
+        if isinstance(version_id, int):
+            version_id = str(version_id)
+        if not isinstance(version_id, str):
+            continue
+        versions.append({
+            "id": version_id,
+            "state": item.get("state"),
+            "releaseDate": item.get("release_date"),
+        })
+    return 200, {
+        "dataset": dataset,
+        "edition": edition,
+        "versions": versions,
+        "count": len(versions),
+        "live": True,
     }
 
 
@@ -194,6 +276,58 @@ register(Tool(
     handler=_dimensions,
 ))
 
+register(Tool(
+    name="ons_data.editions",
+    description="List live editions for an ONS dataset.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "ons_data.editions"},
+            "dataset": {"type": "string"},
+        },
+        "required": ["dataset"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "dataset": {"type": "string"},
+            "editions": {"type": "array"},
+            "count": {"type": "integer"},
+            "live": {"type": "boolean"},
+        },
+        "required": ["dataset", "editions", "count", "live"],
+    },
+    handler=_editions,
+))
+
+register(Tool(
+    name="ons_data.versions",
+    description="List live versions for an ONS dataset edition.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "ons_data.versions"},
+            "dataset": {"type": "string"},
+            "edition": {"type": "string"},
+        },
+        "required": ["dataset", "edition"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "dataset": {"type": "string"},
+            "edition": {"type": "string"},
+            "versions": {"type": "array"},
+            "count": {"type": "integer"},
+            "live": {"type": "boolean"},
+        },
+        "required": ["dataset", "edition", "versions", "count", "live"],
+    },
+    handler=_versions,
+))
+
 # --- Additional ONS Tools (D1 & D2) -------------------------------------------------
 
 _FILTER_STORE: dict[str, dict[str, Any]] = {}
@@ -213,7 +347,7 @@ def _get_observation(payload: dict[str, Any]) -> ToolResult:
     if not (geography and measure and time):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "geography, measure, time required"}
     params = {"geography": geography, "measure": measure, "time": time}
-    url = f"{ons_client.base_api}/dataset/{dataset}/edition/{edition}/version/{version}/observations"
+    url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/observations"
     status, data = ons_client.get_json(url, params=params)
     if status != 200:
         return status, data

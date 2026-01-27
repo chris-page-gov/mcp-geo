@@ -1,63 +1,32 @@
-# MCP Apps Alignment (ext-apps + OpenAI Apps SDK)
+# MCP Apps Alignment (2026-01-26)
 
-This note summarizes how the ext-apps MCP UI standard and the OpenAI Apps SDK
-spec diverge, plus how this repo now supports both paths.
+This note summarizes how the repo aligns with the finalized MCP Apps spec and
+removes legacy OpenAI Apps (skybridge) compatibility.
 
 ## Sources
-- ext-apps spec: `docs/vendor/mcp/repos/ext-apps/specification/draft/apps.mdx`
-- OpenAI Apps SDK: `docs/vendor/openai/_snapshot/apps-sdk/build/mcp-server.html`
-- OpenAI MCP docs: `docs/vendor/openai/_snapshot/docs/mcp.html`
+- MCP Apps spec: `docs/vendor/mcp/repos/ext-apps/specification/2026-01-26/apps.mdx`
+- MCP core spec: `docs/vendor/mcp/repos/modelcontextprotocol/docs/specification/2025-11-25/`
 
-## Key Differences
-- MIME type
-  - ext-apps: `text/html;profile=mcp-app`
-  - OpenAI Apps: `text/html+skybridge`
-- Tool metadata for UI templates
-  - ext-apps: `_meta.ui.resourceUri` (legacy `_meta["ui/resourceUri"]`)
-  - OpenAI Apps: `_meta["openai/outputTemplate"]` plus optional
-    `_meta["openai/widgetAccessible"]`
-- Resource metadata
-  - ext-apps: `_meta.ui.csp`, `_meta.ui.permissions`, `_meta.ui.prefersBorder`
-  - OpenAI Apps: `_meta["openai/widgetCSP"]`, `_meta["openai/widgetPrefersBorder"]`,
-    `_meta["openai/widgetDescription"]`
-- Tool response semantics
-  - ext-apps: `content` for model context, `structuredContent` for UI, `_meta` for
-    non-model metadata
-  - OpenAI Apps: `structuredContent` is model-visible; `_meta` is widget-only
+## Alignment Summary
+- UI resources are exposed as `ui://mcp-geo/<slug>` with
+  `mimeType: text/html;profile=mcp-app`.
+- Tool metadata uses `_meta.ui.resourceUri` only (no `openai/*` keys).
+- Tool results return standard MCP `content` and optional `structuredContent`.
+  The legacy `uiResourceUris` field is removed.
+- UI host/view communication uses JSON-RPC 2.0 over `postMessage` with
+  `ui/initialize` → `ui/notifications/initialized`, and the UI uses standard
+  MCP methods like `tools/call` and `resources/read`.
 
-## Dual-path Implementation (this repo)
-- Two UI resources per widget
-  - ext-apps URI (no extension): `ui://mcp-geo/<slug>`
-  - OpenAI Apps URI: `ui://mcp-geo/<slug>.html`
-  - Both URIs serve the same HTML file; MIME type differs by URI.
-- Tool descriptors
-  - `os_apps.render_*` tools include:
-    - `_meta.ui.resourceUri` (ext-apps)
-    - `_meta["ui/resourceUri"]` (legacy ext-apps)
-    - `_meta["openai/outputTemplate"]` (OpenAI Apps)
-    - `_meta["openai/widgetAccessible"]` (OpenAI Apps)
-- Tool results
-  - Render tools return `structuredContent` and `content` alongside the existing
-    `status/config/instructions/uiResourceUris` shape.
-  - The stdio + HTTP MCP adapters promote `structuredContent` and `_meta` to the
-    top-level MCP result while preserving `content` and `resource_link` output.
-- Resource reads
-  - UI resources return `_meta` inside `contents[]` with both ext-apps `ui` and
-    OpenAI `openai/*` keys.
-
-## CSP Allowlist (geography selector)
-These domains are allowed for the map UI:
-- `https://api.os.uk`
-- `https://tile.openstreetmap.org`
-- `https://unpkg.com`
-- `https://fonts.googleapis.com`
-- `https://fonts.gstatic.com`
+## CSP Allowlist (Geography Selector)
+The geography selector declares:
+- `connectDomains`: `self`, `https://api.os.uk`, `https://tile.openstreetmap.org`
+- `resourceDomains`: `self`, `https://api.os.uk`, `https://fonts.googleapis.com`,
+  `https://fonts.gstatic.com`, `https://tile.openstreetmap.org`, `https://unpkg.com`
 
 ## Quick Validation
-- `resources/read` returns:
-  - `ui://mcp-geo/geography-selector` with `text/html;profile=mcp-app`
-  - `ui://mcp-geo/geography-selector.html` with `text/html+skybridge`
-- `tools/describe` for `os_apps.render_geography_selector` includes both
-  `_meta.ui.resourceUri` and `_meta["openai/outputTemplate"]`.
-- `tools/call` (MCP JSON-RPC) includes `content`, `structuredContent`, and `_meta`
-  for render tools, plus `resource_link` entries when UI is referenced.
+- `resources/read` returns `ui://mcp-geo/geography-selector` with
+  `text/html;profile=mcp-app` and `_meta.ui.csp`.
+- `tools/describe` for `os_apps.render_geography_selector` includes
+  `_meta.ui.resourceUri`.
+- The playground host responds to `ui/initialize` and bridges `tools/call` /
+  `resources/read` for the UI.
