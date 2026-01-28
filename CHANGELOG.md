@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Documented that the Svelte playground is served by Vite and `playground/app.py` is legacy.
 - Playground request logging now records redacted summaries for debugging.
+- Geography selector debug badges now show card count and MapLibre status.
 
 ### Fixed
 - Playground connect button now disables when connected.

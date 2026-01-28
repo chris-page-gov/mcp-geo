@@ -573,6 +573,7 @@
         addressResults: [],
         boundaryFeatures: [],
         addressPointCount: 0,
+        resultCount: 0,
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
@@ -709,20 +710,26 @@
         }
         const mode = state.mode?.label || state.mode?.id || "unknown";
         const addrCount = state.addressResults.length;
+        const cardCount = state.resultCount || 0;
         const pointCount = state.addressPointCount || 0;
         const boundaryCount = state.boundaryFeatures.length;
+        const maplibreStatus = window.maplibregl ? (state.map ? "ready" : "loaded") : "missing";
         const sources = state.sourcesReady
           ? "ready"
           : state.sourcesInitializing
           ? "loading"
+          : maplibreStatus === "missing"
+          ? "blocked"
           : "idle";
         const style = mapStyleSelect?.value || "n/a";
         debugBadgesEl.innerHTML = `
           <span class="debug-badge">Mode: ${mode}</span>
-          <span class="debug-badge">Results: ${addrCount}</span>
+          <span class="debug-badge">Cards: ${cardCount}</span>
+          <span class="debug-badge">Addresses: ${addrCount}</span>
           <span class="debug-badge">UPRN dots: ${pointCount}</span>
           <span class="debug-badge">Boundaries: ${boundaryCount}</span>
           <span class="debug-badge">Sources: ${sources}</span>
+          <span class="debug-badge">MapLibre: ${maplibreStatus}</span>
           <span class="debug-badge">Style: ${style}</span>
         `;
       }
@@ -1168,8 +1175,10 @@
 
       function renderResults(items) {
         resultsEl.innerHTML = "";
+        state.resultCount = items.length;
         if (!items.length) {
           resultsEl.innerHTML = '<div class="result-meta">No results yet.</div>';
+          updateDebugBadges();
           return;
         }
         items.forEach((item) => {
@@ -1179,6 +1188,7 @@
           card.addEventListener("click", (event) => selectResult(item, event));
           resultsEl.appendChild(card);
         });
+        updateDebugBadges();
       }
 
       function previewResults(items) {
@@ -1307,6 +1317,8 @@
 
       function renderError(message) {
         resultsEl.innerHTML = `<div class="result-error">${message}</div>`;
+        state.resultCount = 0;
+        updateDebugBadges();
       }
 
       function renderSelectionSummary() {
