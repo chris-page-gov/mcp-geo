@@ -33,6 +33,7 @@ from server.mcp.resource_catalog import (
     resolve_skill_resource,
     resolve_ui_resource,
 )
+from server.mcp.prompts import get_prompt as get_prompt_def, list_prompts as list_prompt_defs
 from tools.os_apps import build_ui_tool_meta
 from server.mcp.tool_search import get_tool_metadata, search_tools
 from server import __version__ as SERVER_VERSION
@@ -294,6 +295,7 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
         "capabilities": {
             "tools": {"list": True, "call": True},
             "resources": {"list": True, "read": True},
+            "prompts": {"list": True, "get": True},
             "extensions": {
                 "io.modelcontextprotocol/ui": {
                     "mimeTypes": [MCP_APPS_MIME],
@@ -423,6 +425,18 @@ def handle_list_resources(_params: Dict[str, Any]) -> Any:
 def handle_list_resource_templates(_params: Dict[str, Any]) -> Any:
     return {"resourceTemplates": []}
 
+def handle_list_prompts(_params: Dict[str, Any]) -> Any:
+    return {"prompts": list_prompt_defs()}
+
+def handle_get_prompt(params: Dict[str, Any]) -> Any:
+    name = params.get("name")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Missing prompt name")
+    prompt = get_prompt_def(name)
+    if prompt is None:
+        raise LookupError(f"Unknown prompt '{name}'")
+    return prompt
+
 def handle_shutdown(_params: Dict[str, Any]) -> Any:
     return None
 
@@ -435,6 +449,8 @@ HANDLERS: Dict[str, Any] = {
     "resources/templates/list": handle_list_resource_templates,
     "resources/describe": lambda _p: {"resources": RESOURCE_LIST},
     "resources/read": handle_get_resource,
+    "prompts/list": handle_list_prompts,
+    "prompts/get": handle_get_prompt,
     "shutdown": handle_shutdown,
 }
 

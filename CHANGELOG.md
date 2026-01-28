@@ -6,16 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - Playground debug tab with runtime snapshot, HMR status, and redacted logs.
+- MCP prompts list/get backed by evaluation prompt examples.
 
 ### Changed
 - Documented that the Svelte playground is served by Vite and `playground/app.py` is legacy.
 - Playground request logging now records redacted summaries for debugging.
-- Geography selector debug badges now show card count and MapLibre status.
+- Geography selector debug badges now show card counts, layer visibility, and MapLibre status.
 
 ### Fixed
 - Playground connect button now disables when connected.
 - Playground UI bridge now honors JSON-RPC id `0` and logs unsupported methods.
 - Playground tool-call logging failures no longer mask successful tool responses.
+- MCP prompts/list no longer returns method-not-found for the playground.
 
 ### Tests
 - (none)

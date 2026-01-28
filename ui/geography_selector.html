@@ -574,6 +574,12 @@
         boundaryFeatures: [],
         addressPointCount: 0,
         resultCount: 0,
+        lastMapError: null,
+        layerVisibility: {
+          boundaries: true,
+          addresses: true,
+          highways: true,
+        },
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
@@ -695,12 +701,22 @@
           const input = document.createElement("input");
           input.type = "checkbox";
           input.checked = true;
+          state.layerVisibility[layer.id] = true;
           input.addEventListener("change", () => toggleLayer(layer.id, input.checked));
           const span = document.createElement("span");
           span.textContent = layer.label;
           wrapper.appendChild(input);
           wrapper.appendChild(span);
           layerListEl.appendChild(wrapper);
+        });
+      }
+
+      function applyLayerVisibility() {
+        if (!state.map) {
+          return;
+        }
+        Object.entries(state.layerVisibility).forEach(([layerId, isVisible]) => {
+          toggleLayer(layerId, Boolean(isVisible));
         });
       }
 
@@ -721,6 +737,15 @@
           : maplibreStatus === "missing"
           ? "blocked"
           : "idle";
+        const addressLayer = state.map?.getLayer?.("addresses-circle")
+          ? state.map.getLayoutProperty("addresses-circle", "visibility") || "visible"
+          : "missing";
+        const boundaryLayer = state.map?.getLayer?.("boundaries-fill")
+          ? state.map.getLayoutProperty("boundaries-fill", "visibility") || "visible"
+          : "missing";
+        const errorLabel = state.lastMapError
+          ? `Error: ${String(state.lastMapError).slice(0, 40)}`
+          : null;
         const style = mapStyleSelect?.value || "n/a";
         debugBadgesEl.innerHTML = `
           <span class="debug-badge">Mode: ${mode}</span>
@@ -730,6 +755,9 @@
           <span class="debug-badge">Boundaries: ${boundaryCount}</span>
           <span class="debug-badge">Sources: ${sources}</span>
           <span class="debug-badge">MapLibre: ${maplibreStatus}</span>
+          <span class="debug-badge">Addr layer: ${addressLayer}</span>
+          <span class="debug-badge">Boundary layer: ${boundaryLayer}</span>
+          ${errorLabel ? `<span class="debug-badge">${errorLabel}</span>` : ""}
           <span class="debug-badge">Style: ${style}</span>
         `;
       }
@@ -783,6 +811,18 @@
         state.map.on("load", () => {
           addSourcesAndLayers();
           updateZoomLadder(state.map.getZoom());
+          state.map.resize();
+        });
+        state.map.on("error", (event) => {
+          if (event?.error) {
+            state.lastMapError = event.error.message || "Map error";
+            updateDebugBadges();
+          }
+        });
+        state.map.on("style.load", () => {
+          state.lastMapError = null;
+          state.map.resize();
+          updateDebugBadges();
         });
         state.map.on("zoom", () => updateZoomLadder(state.map.getZoom()));
         state.map.on("mousemove", (event) => {
@@ -979,6 +1019,7 @@
         state.sourcesReady = true;
         state.sourcesInitializing = false;
         updateBaseMapOpacity();
+        applyLayerVisibility();
         if (state.addressResults.length) {
           setAddresses(state.addressResults);
           updateSelectedAddressesLayer();
@@ -1005,6 +1046,7 @@
         if (!state.map) {
           return;
         }
+        state.layerVisibility[layerId] = isVisible;
         const mapping = {
           boundaries: ["boundaries-fill", "boundaries-line"],
           addresses: ["addresses-circle"],
@@ -1665,6 +1707,7 @@
         const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${vectorSrs}&key=${apiKey}`;
         if (styleUrl) {
           state.sourcesReady = false;
+          state.sourcesInitializing = true;
           state.map.setStyle(styleUrl);
           state.map.once("style.load", () => {
             addSourcesAndLayers();
@@ -1701,6 +1744,7 @@
           layers: [{ id: "osm", type: "raster", source: "osm" }],
         };
         state.sourcesReady = false;
+        state.sourcesInitializing = true;
         state.map.setStyle(fallbackStyle);
         state.map.once("style.load", () => {
           addSourcesAndLayers();

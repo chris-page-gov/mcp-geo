@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse, Response
 
 from server import stdio_adapter
 from server.mcp.resource_catalog import MCP_APPS_MIME
+from server.mcp.prompts import get_prompt, list_prompts
 from server.protocol import PROTOCOL_VERSION
 from tools.registry import get as get_tool
 
@@ -107,6 +108,7 @@ def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[s
         "capabilities": {
             "tools": {"list": True, "call": True},
             "resources": {"list": True, "read": True},
+            "prompts": {"list": True, "get": True},
             "extensions": {
                 "io.modelcontextprotocol/ui": {
                     "mimeTypes": [MCP_APPS_MIME],
@@ -183,6 +185,16 @@ def _dispatch(method: str, params: Dict[str, Any], session_state: Dict[str, Any]
         return {"resources": stdio_adapter.RESOURCE_LIST}
     if method == "resources/read":
         return stdio_adapter.handle_get_resource(params)
+    if method == "prompts/list":
+        return {"prompts": list_prompts()}
+    if method == "prompts/get":
+        name = params.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Missing prompt name")
+        prompt = get_prompt(name)
+        if prompt is None:
+            raise LookupError(f"Unknown prompt '{name}'")
+        return prompt
     if method == "shutdown":
         return None
     raise MethodNotFound(f"Method not found: {method}")

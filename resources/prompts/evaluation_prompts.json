@@ -1,0 +1,181 @@
+{
+  "prompts": [
+    {
+      "name": "eval_address_lookup",
+      "title": "Eval: Address Lookup",
+      "description": "Postcode lookup via OS Places.",
+      "question": "UPRNs for SW1A 1AA",
+      "intent": "address_lookup",
+      "difficulty": "basic",
+      "requires_os_api": true,
+      "requires_ons_live": false,
+      "tags": [
+        "postcode",
+        "uprn"
+      ]
+    },
+    {
+      "name": "eval_area_comparison",
+      "title": "Eval: Area Comparison",
+      "description": "Multi-area comparison workflow.",
+      "question": "Compare wellbeing between Westminster and Greater London",
+      "intent": "area_comparison",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "comparison"
+      ]
+    },
+    {
+      "name": "eval_boundary_fetch",
+      "title": "Eval: Boundary Fetch",
+      "description": "Two-step boundary bbox lookup.",
+      "question": "Get the boundary bbox for Westminster",
+      "intent": "boundary_fetch",
+      "difficulty": "intermediate",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "boundary"
+      ]
+    },
+    {
+      "name": "eval_dataset_discovery",
+      "title": "Eval: Dataset Discovery",
+      "description": "ONS dimensions listing (live mode).",
+      "question": "List available ONS observation dimensions",
+      "intent": "dataset_discovery",
+      "difficulty": "basic",
+      "requires_os_api": false,
+      "requires_ons_live": true,
+      "tags": [
+        "ons"
+      ]
+    },
+    {
+      "name": "eval_feature_search",
+      "title": "Eval: Feature Search",
+      "description": "Feature inspector widget.",
+      "question": "Inspect an NGD feature id",
+      "intent": "feature_search",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "apps",
+        "features"
+      ]
+    },
+    {
+      "name": "eval_interactive_selection",
+      "title": "Eval: Interactive Selection",
+      "description": "Interactive selection + boundary lookup.",
+      "question": "Select an OA in Westminster and fetch its boundary",
+      "intent": "interactive_selection",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "apps",
+        "boundary"
+      ]
+    },
+    {
+      "name": "eval_linked_ids",
+      "title": "Eval: Linked Ids",
+      "description": "Linked identifiers lookup.",
+      "question": "Resolve linked IDs for UPRN 100021892956",
+      "intent": "linked_ids",
+      "difficulty": "intermediate",
+      "requires_os_api": true,
+      "requires_ons_live": false,
+      "tags": [
+        "linked",
+        "ids"
+      ]
+    },
+    {
+      "name": "eval_map_render",
+      "title": "Eval: Map Render",
+      "description": "Vector tiles + static map descriptors.",
+      "question": "Build a map stack for Westminster (tiles + static)",
+      "intent": "map_render",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "map",
+        "tiles"
+      ]
+    },
+    {
+      "name": "eval_place_lookup",
+      "title": "Eval: Place Lookup",
+      "description": "Basic administrative area lookup (live).",
+      "question": "Find Westminster",
+      "intent": "place_lookup",
+      "difficulty": "basic",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "place",
+        "admin"
+      ]
+    },
+    {
+      "name": "eval_route_planning",
+      "title": "Eval: Route Planning",
+      "description": "Route planner widget.",
+      "question": "Plan a route from Coventry to London",
+      "intent": "route_planning",
+      "difficulty": "intermediate",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "apps",
+        "routing"
+      ]
+    },
+    {
+      "name": "eval_statistics",
+      "title": "Eval: Statistics",
+      "description": "ONS query over live observations.",
+      "question": "Show two ONS observations for UK GDPV",
+      "intent": "statistics",
+      "difficulty": "intermediate",
+      "requires_os_api": false,
+      "requires_ons_live": true,
+      "tags": [
+        "ons",
+        "query"
+      ]
+    },
+    {
+      "name": "eval_unknown",
+      "title": "Eval: Unknown",
+      "description": "Tool search endpoint validation.",
+      "question": "Find tools related to postcode search",
+      "intent": "unknown",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "tool-search"
+      ]
+    },
+    {
+      "name": "eval_vector_tiles",
+      "title": "Eval: Vector Tiles",
+      "description": "Vector tiles descriptor output for OS base map.",
+      "question": "Vector tiles descriptor",
+      "intent": "vector_tiles",
+      "difficulty": "basic",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "tiles"
+      ]
+    }
+  ]
+}
