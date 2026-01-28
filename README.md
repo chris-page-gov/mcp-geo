@@ -20,7 +20,7 @@ OpenAI's MCP documentation is at https://platform.openai.com/docs/mcp (preview; 
 - Structured logging & correlation IDs
 - OS API client with retries and explicit upstream error codes
 - High coverage test suite exercising success + failure paths
- - Evaluation harness with question suite and scoring rubric
+- Evaluation harness with question suite and scoring rubric
 
 ## Quickstart
 ```bash
@@ -256,6 +256,8 @@ tests/         Pytest suite (≥90% coverage)
 docs/          Backlog & design notes
 .devcontainer/ Dev environment setup
 ```
+Note: The Svelte playground is served by Vite (`npm run dev`). The legacy
+`playground/app.py` stub does not serve the UI.
 
 ## Dynamic Tool Registration
 `server/mcp/tools.py` explicitly imports each `tools.*` module at startup to guarantee registration in environments where implicit side-effect imports are skipped (e.g. selective packaging or lazy loaders). This ensures `/tools/describe` always reflects the full catalog without relying on import order.

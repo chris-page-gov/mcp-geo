@@ -49,13 +49,37 @@
   let uiIframe = null;
   let uiPreviewReady = false;
   let uiInstructionsVisible = false;
+  let uiInstructionsTimer = null;
   let uiResourceHtml = "";
   let uiIframeSandbox = "allow-scripts";
   let uiIframeAllow = "";
   let uiAppInitialized = false;
+  let debugEnabled = false;
+  let debugEntries = [];
+  let traceRedact = true;
+  let lastRequestAt = "";
+  let lastResponseAt = "";
+  let lastErrorAt = "";
+  let lastErrorMessage = "";
+  let lastErrorDetail = null;
+  let debugSnapshot = null;
+  let debugSnapshotText = "";
+  let hmrUpdateCount = 0;
+  let hmrLastUpdate = "";
+  let hmrStatus = "disabled";
 
   const UI_PROTOCOL_VERSION = "2026-01-26";
   const UI_RESOURCE_MIME = "text/html;profile=mcp-app";
+  const UI_BOOT_AT = new Date().toISOString();
+  const BUILD_INFO = {
+    mode: import.meta?.env?.MODE || "unknown",
+    dev: Boolean(import.meta?.env?.DEV),
+    prod: Boolean(import.meta?.env?.PROD)
+  };
+  const DEBUG_LOG_LIMIT = 150;
+  const DEBUG_DEPTH_LIMIT = 5;
+  const DEBUG_ARRAY_LIMIT = 20;
+  const DEBUG_STRING_LIMIT = 2000;
 
   const uiToolMap = [
     {
@@ -86,6 +110,129 @@
 
   const recordHistory = (entry) => {
     history = [entry, ...history].slice(0, 50);
+  };
+
+  const shouldRedactKey = (key) => {
+    if (!key) {
+      return false;
+    }
+    const normalized = String(key).toLowerCase();
+    if (normalized === "authorization" || normalized === "proxy-authorization") {
+      return true;
+    }
+    if (
+      normalized === "api_key" ||
+      normalized === "apikey" ||
+      normalized === "x-api-key"
+    ) {
+      return true;
+    }
+    if (normalized.endsWith("_key") || normalized.endsWith("apikey")) {
+      return true;
+    }
+    return (
+      normalized.includes("token") ||
+      normalized.includes("secret") ||
+      normalized.includes("password") ||
+      normalized.includes("bearer")
+    );
+  };
+
+  const redactValue = (value, depth = 0) => {
+    if (depth > DEBUG_DEPTH_LIMIT) {
+      return "[Truncated]";
+    }
+    if (value === null || value === undefined) {
+      return value;
+    }
+    if (Array.isArray(value)) {
+      const slice = value.slice(0, DEBUG_ARRAY_LIMIT).map((entry) =>
+        redactValue(entry, depth + 1)
+      );
+      if (value.length > DEBUG_ARRAY_LIMIT) {
+        slice.push(`[${value.length - DEBUG_ARRAY_LIMIT} more items]`);
+      }
+      return slice;
+    }
+    if (typeof value === "object") {
+      const output = {};
+      Object.entries(value).forEach(([key, entry]) => {
+        if (shouldRedactKey(key)) {
+          output[key] = "[REDACTED]";
+        } else {
+          output[key] = redactValue(entry, depth + 1);
+        }
+      });
+      return output;
+    }
+    if (typeof value === "string" && value.length > DEBUG_STRING_LIMIT) {
+      return `${value.slice(0, DEBUG_STRING_LIMIT)}…`;
+    }
+    return value;
+  };
+
+  const logDebug = (message, detail = null, level = "info") => {
+    const entry = {
+      at: new Date().toISOString(),
+      level,
+      message,
+      detail: detail ? redactValue(detail) : null
+    };
+    debugEntries = [entry, ...debugEntries].slice(0, DEBUG_LOG_LIMIT);
+    if (debugEnabled && typeof console !== "undefined") {
+      const payload = entry.detail ? entry.detail : "";
+      if (level === "error") {
+        console.error("[playground]", message, payload);
+      } else if (level === "warn") {
+        console.warn("[playground]", message, payload);
+      } else {
+        console.debug("[playground]", message, payload);
+      }
+    }
+  };
+
+  const setLastError = (message, detail = null) => {
+    lastErrorAt = new Date().toISOString();
+    lastErrorMessage = message;
+    lastErrorDetail = redactValue(detail ?? { error: message });
+  };
+
+  const formatTracePayload = (payload) => {
+    const safePayload = traceRedact ? redactValue(payload) : payload;
+    if (safePayload === undefined) {
+      return "undefined";
+    }
+    return JSON.stringify(safePayload, null, 2);
+  };
+
+  if (import.meta?.hot) {
+    hmrStatus = "listening";
+    import.meta.hot.on("vite:afterUpdate", (payload) => {
+      hmrUpdateCount += 1;
+      hmrLastUpdate = new Date().toISOString();
+      logDebug("HMR update applied", { updates: payload?.updates?.length || 0 });
+    });
+    import.meta.hot.on("vite:beforeFullReload", () => {
+      hmrUpdateCount += 1;
+      hmrLastUpdate = new Date().toISOString();
+      logDebug("HMR full reload triggered", null, "warn");
+    });
+  }
+
+  const clearUiInstructionsTimer = () => {
+    if (uiInstructionsTimer) {
+      clearTimeout(uiInstructionsTimer);
+      uiInstructionsTimer = null;
+    }
+  };
+
+  const scheduleUiInstructions = () => {
+    clearUiInstructionsTimer();
+    uiInstructionsTimer = setTimeout(() => {
+      if (!uiPreviewReady && uiResourceText) {
+        uiInstructionsVisible = true;
+      }
+    }, 2000);
   };
 
   const normalizeDomains = (domains) => {
@@ -123,6 +270,20 @@
     const resourceDomains = normalizeDomains(csp.resourceDomains).map(normalizeCspSource);
     const frameDomains = normalizeDomains(csp.frameDomains).map(normalizeCspSource);
     const baseUriDomains = normalizeDomains(csp.baseUriDomains).map(normalizeCspSource);
+    const workerDomains = normalizeDomains(csp.workerDomains || csp.workerSrc).map(
+      normalizeCspSource
+    );
+
+    let serverOrigin = "";
+    try {
+      serverOrigin = new URL(serverUrl).origin;
+    } catch (err) {
+      serverOrigin = "";
+    }
+    const connectSet = new Set(connectDomains);
+    if (serverOrigin) {
+      connectSet.add(serverOrigin);
+    }
 
     const scriptSources = ["'unsafe-inline'", ...resourceDomains];
     const styleSources = ["'unsafe-inline'", ...resourceDomains];
@@ -130,9 +291,10 @@
     const mediaSources = ["data:", ...resourceDomains];
     const fontSources = [...resourceDomains];
 
-    const connectSrc = connectDomains.length ? connectDomains.join(" ") : "'none'";
+    const connectSrc = connectSet.size ? Array.from(connectSet).join(" ") : "'none'";
     const frameSrc = frameDomains.length ? frameDomains.join(" ") : "'none'";
     const baseSrc = baseUriDomains.length ? baseUriDomains.join(" ") : "'self'";
+    const workerSrc = workerDomains.length ? `worker-src ${workerDomains.join(" ")}` : "";
 
     return [
       "default-src 'none'",
@@ -142,10 +304,13 @@
       `font-src 'self' ${fontSources.join(" ")}`.trim(),
       `media-src 'self' ${mediaSources.join(" ")}`.trim(),
       `connect-src ${connectSrc}`,
+      workerSrc,
       `frame-src ${frameSrc}`,
       `base-uri ${baseSrc}`,
       "object-src 'none'"
-    ].join("; ");
+    ]
+      .filter((line) => line && line.trim().length)
+      .join("; ");
   };
 
   const injectCsp = (html, meta) => {
@@ -163,13 +328,21 @@
     if (html.includes("</head>")) {
       return html.replace("</head>", `${metaTag}</head>`);
     }
-    if (html.includes("<head")) {
-      return html.replace("<head>", `<head>${metaTag}`);
+    const headMatch = html.match(/<head\b[^>]*>/i);
+    if (headMatch) {
+      return html.replace(headMatch[0], `${headMatch[0]}${metaTag}`);
     }
     return `${metaTag}${html}`;
   };
 
-  const buildSandbox = () => "allow-scripts";
+  const buildSandbox = (meta) => {
+    const permissions = meta?.ui?.permissions || {};
+    const flags = ["allow-scripts"];
+    if (permissions.sameOrigin || permissions.allowSameOrigin) {
+      flags.push("allow-same-origin");
+    }
+    return flags.join(" ");
+  };
 
   const buildAllow = (meta) => {
     const permissions = meta?.ui?.permissions || {};
@@ -193,9 +366,37 @@
     if (!client) {
       throw new Error("MCP client not connected");
     }
-    const response = await client.request(request, schema);
-    recordHistory({ request, response, at: new Date().toISOString() });
-    return response;
+    lastRequestAt = new Date().toISOString();
+    logDebug("MCP request", { method: request?.method, params: request?.params });
+    try {
+      const response = await client.request(request, schema);
+      lastResponseAt = new Date().toISOString();
+      logDebug(
+        "MCP response",
+        {
+          method: request?.method,
+          status: response?.status,
+          ok: response?.ok,
+          isError: response?.isError
+        },
+        response?.isError ? "warn" : "info"
+      );
+      recordHistory({ request, response, at: new Date().toISOString() });
+      return response;
+    } catch (err) {
+      const detail =
+        err && typeof err === "object" && "message" in err
+          ? { message: err?.message, stack: err?.stack }
+          : err;
+      const message = err?.message || String(err);
+      setLastError(message, detail);
+      logDebug(
+        "MCP request failed",
+        { method: request?.method, error: message },
+        "error"
+      );
+      throw err;
+    }
   };
 
   const sendRequestSafe = async (request, schema) => {
@@ -208,6 +409,10 @@
 
   const connect = async () => {
     error = "";
+    if (status === "connected" && client) {
+      logDebug("Connect requested while already connected", null, "warn");
+      return;
+    }
     status = "connecting";
     try {
       client = new Client(
@@ -230,11 +435,14 @@
       await refreshLists();
       await fetchDescriptor();
       activeTab = "setup";
+      logDebug("Connected to MCP server", { serverUrl });
     } catch (err) {
       status = "error";
       error = err?.message || String(err);
       client = null;
       transport = null;
+      setLastError(error, err);
+      logDebug("Failed to connect", { serverUrl, error }, "error");
     }
   };
 
@@ -245,43 +453,59 @@
     status = "disconnected";
     client = null;
     transport = null;
+    capabilities = null;
+    logDebug("Disconnected from MCP server");
   };
 
   const refreshLists = async () => {
     if (!client) {
+      logDebug("Refresh requested without an active client", null, "warn");
       return;
     }
-    const toolsResponse = await sendRequest(
-      { method: "tools/list", params: {} },
-      ListToolsResultSchema
-    );
-    tools = toolsResponse.tools || [];
+    error = "";
+    try {
+      const toolsResponse = await sendRequest(
+        { method: "tools/list", params: {} },
+        ListToolsResultSchema
+      );
+      tools = toolsResponse.tools || [];
 
-    const resourcesResponse = await sendRequest(
-      { method: "resources/list", params: {} },
-      ListResourcesResultSchema
-    );
-    resources = resourcesResponse.resources || [];
+      const resourcesResponse = await sendRequest(
+        { method: "resources/list", params: {} },
+        ListResourcesResultSchema
+      );
+      resources = resourcesResponse.resources || [];
 
-    const templatesResponse = await sendRequest(
-      { method: "resources/templates/list", params: {} },
-      ListResourceTemplatesResultSchema
-    );
-    resourceTemplates = templatesResponse.resourceTemplates || [];
+      const templatesResponse = await sendRequest(
+        { method: "resources/templates/list", params: {} },
+        ListResourceTemplatesResultSchema
+      );
+      resourceTemplates = templatesResponse.resourceTemplates || [];
 
-    const promptResponse = await sendRequestSafe(
-      { method: "prompts/list", params: {} },
-      AnySchema
-    );
-    if (promptResponse && Array.isArray(promptResponse.prompts)) {
-      prompts = promptResponse.prompts;
-      promptsError = "";
-    } else if (promptResponse) {
-      prompts = [];
-      promptsError = "Prompts response missing 'prompts'";
-    } else {
-      prompts = [];
-      promptsError = "Prompts not supported";
+      const promptResponse = await sendRequestSafe(
+        { method: "prompts/list", params: {} },
+        AnySchema
+      );
+      if (promptResponse && Array.isArray(promptResponse.prompts)) {
+        prompts = promptResponse.prompts;
+        promptsError = "";
+      } else if (promptResponse) {
+        prompts = [];
+        promptsError = "Prompts response missing 'prompts'";
+      } else {
+        prompts = [];
+        promptsError = "Prompts not supported";
+      }
+      logDebug("Refreshed tools/resources/prompts", {
+        tools: tools.length,
+        resources: resources.length,
+        templates: resourceTemplates.length,
+        prompts: prompts.length
+      });
+    } catch (err) {
+      error = err?.message || String(err);
+      setLastError(error, err);
+      logDebug("Failed to refresh lists", { error }, "error");
     }
   };
 
@@ -289,15 +513,25 @@
     if (!client) {
       return;
     }
-    const response = await sendRequest(
-      {
-        method: "tools/call",
-        params: { name: "os_mcp_descriptor", arguments: { tool: "os_mcp.descriptor" } }
-      },
-      CompatibilityCallToolResultSchema
-    );
-    descriptorRaw = response;
-    descriptorMeta = response?.data ?? null;
+    try {
+      const response = await sendRequest(
+        {
+          method: "tools/call",
+          params: { name: "os_mcp_descriptor", arguments: { tool: "os_mcp.descriptor" } }
+        },
+        CompatibilityCallToolResultSchema
+      );
+      descriptorRaw = response;
+      descriptorMeta = response?.data ?? null;
+      logDebug("Descriptor fetched", {
+        server: response?.data?.server,
+        version: response?.data?.version
+      });
+    } catch (err) {
+      error = err?.message || String(err);
+      setLastError(error, err);
+      logDebug("Failed to fetch descriptor", { error }, "error");
+    }
   };
 
   const buildTemplateFromSchema = (schema) => {
@@ -356,6 +590,7 @@
     const template = buildTemplateFromSchema(tool.inputSchema || tool.input_schema);
     toolArgs = JSON.stringify(template, null, 2);
     toolResult = "";
+    logDebug("Tool selected", { tool: tool?.name });
   };
 
   const selectResource = (resource) => {
@@ -371,18 +606,30 @@
     uiPreviewReady = false;
     uiInstructionsVisible = false;
     uiAppInitialized = false;
+    logDebug("Resource selected", { uri: resource?.uri });
   };
 
   const selectPrompt = (prompt) => {
     selectedPrompt = prompt;
     selectedTool = null;
     selectedResource = null;
+    logDebug("Prompt selected", { prompt: prompt?.name });
   };
 
   const callTool = async () => {
     error = "";
+    let parsedArgs = {};
+    if (toolArgs) {
+      try {
+        parsedArgs = JSON.parse(toolArgs);
+      } catch (err) {
+        error = err?.message || String(err);
+        setLastError(error, { error });
+        logDebug("Tool args JSON parse failed", { error }, "error");
+        return;
+      }
+    }
     try {
-      const parsedArgs = toolArgs ? JSON.parse(toolArgs) : {};
       const response = await sendRequest(
         {
           method: "tools/call",
@@ -391,17 +638,27 @@
         CompatibilityCallToolResultSchema
       );
       toolResult = JSON.stringify(response, null, 2);
-      await fetch(`${playgroundUrl}/tool_call`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tool: toolName,
-          input: parsedArgs,
-          output: response
-        })
-      });
+      try {
+        await fetch(`${playgroundUrl}/tool_call`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tool: toolName,
+            input: parsedArgs,
+            output: response
+          })
+        });
+      } catch (err) {
+        logDebug(
+          "Failed to record tool call event",
+          { error: err?.message || String(err) },
+          "warn"
+        );
+      }
     } catch (err) {
       error = err?.message || String(err);
+      setLastError(error, err);
+      logDebug("Tool call failed", { tool: toolName, error }, "error");
     }
   };
 
@@ -409,19 +666,26 @@
     if (!promptText.trim()) {
       return;
     }
-    await fetch(`${playgroundUrl}/events`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "prompt",
-        payload: {
-          text: promptText,
-          context: promptContext
-        }
-      })
-    });
-    promptText = "";
-    promptContext = "";
+    try {
+      await fetch(`${playgroundUrl}/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType: "prompt",
+          payload: {
+            text: promptText,
+            context: promptContext
+          }
+        })
+      });
+      logDebug("Prompt logged", { length: promptText.length });
+      promptText = "";
+      promptContext = "";
+    } catch (err) {
+      error = err?.message || String(err);
+      setLastError(error, err);
+      logDebug("Failed to log prompt", { error }, "error");
+    }
   };
 
   const copyText = async (value) => {
@@ -460,14 +724,17 @@
       if (uiAppInitialized) {
         sendUiNotification("ui/notifications/tool-result", response);
       }
+      logDebug("Suggested UI tool run", { tool: uiToolName });
     } catch (err) {
       error = err?.message || String(err);
       uiToolResult = "";
+      setLastError(error, err);
       if (uiAppInitialized) {
         sendUiNotification("ui/notifications/tool-cancelled", {
           reason: err?.message || String(err)
         });
       }
+      logDebug("Suggested UI tool failed", { tool: uiToolName, error }, "error");
     }
   };
 
@@ -478,6 +745,7 @@
     uiResourceError = "";
     uiPreviewReady = false;
     uiInstructionsVisible = false;
+    clearUiInstructionsTimer();
     uiAppInitialized = false;
     try {
       const response = await sendRequest(
@@ -492,10 +760,13 @@
       if (!uiResourceText) {
         uiResourceError = "No HTML payload returned for this UI resource.";
       } else {
-        uiInstructionsVisible = true;
+        scheduleUiInstructions();
       }
+      logDebug("UI resource loaded", { uri: selectedResource.uri, mime: uiResourceMime });
     } catch (err) {
       uiResourceError = err?.message || String(err);
+      setLastError(uiResourceError, err);
+      logDebug("Failed to load UI resource", { uri: selectedResource.uri, error: uiResourceError }, "error");
     }
   };
 
@@ -562,8 +833,11 @@
 
   const handleUiRequest = async (message) => {
     const { id, method, params } = message;
-    if (!id) {
+    if (id === undefined || id === null) {
       return;
+    }
+    if (debugEnabled) {
+      logDebug("UI request received", { method });
     }
     if (method === "ui/initialize") {
       respondToUi(id, {
@@ -590,6 +864,9 @@
         window.open(url, "_blank", "noopener,noreferrer");
       }
       respondToUi(id, {});
+      if (debugEnabled) {
+        logDebug("UI open-link handled", { url });
+      }
       return;
     }
     if (method === "ui/message") {
@@ -609,6 +886,9 @@
           CompatibilityCallToolResultSchema
         );
         respondToUi(id, response);
+        if (debugEnabled) {
+          logDebug("UI tools/call bridged", { tool: params?.name || params?.tool });
+        }
       } catch (err) {
         respondToUi(id, null, { code: -32000, message: err?.message || String(err) });
       }
@@ -618,6 +898,9 @@
       try {
         const response = await sendRequest({ method: "resources/read", params }, AnySchema);
         respondToUi(id, response);
+        if (debugEnabled) {
+          logDebug("UI resources/read bridged", { uri: params?.uri || params?.name });
+        }
       } catch (err) {
         respondToUi(id, null, { code: -32000, message: err?.message || String(err) });
       }
@@ -628,6 +911,7 @@
       return;
     }
     respondToUi(id, null, { code: -32601, message: `Method not found: ${method}` });
+    logDebug("UI method not found", { method }, "warn");
   };
 
   const notifyHostContextChange = () => {
@@ -650,6 +934,8 @@
         if (message.method === "ui/notifications/initialized") {
           uiAppInitialized = true;
           uiPreviewReady = true;
+          uiInstructionsVisible = false;
+          clearUiInstructionsTimer();
           return;
         }
         if (message.method === "ui/notifications/size-changed") {
@@ -669,6 +955,9 @@
       }
     };
     window.addEventListener("message", handler);
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("mcp-playground-ready"));
+    });
     return () => window.removeEventListener("message", handler);
   });
 
@@ -718,6 +1007,32 @@
   $: uiExampleCall = uiGuidance?.tool
     ? JSON.stringify({ name: uiToolName, arguments: uiGuidance.args }, null, 2)
     : "";
+  $: debugSnapshot = redactValue({
+    status,
+    serverUrl,
+    playgroundUrl,
+    capabilities,
+    selectedTool: selectedTool?.name,
+    selectedResource: selectedResource?.uri,
+    selectedPrompt: selectedPrompt?.name,
+    lastRequestAt,
+    lastResponseAt,
+    lastErrorAt,
+    lastErrorMessage,
+    ui: {
+      previewExpanded: uiPreviewExpanded,
+      previewReady: uiPreviewReady,
+      resourceMime: uiResourceMime
+    },
+    hmr: {
+      status: hmrStatus,
+      updates: hmrUpdateCount,
+      lastUpdate: hmrLastUpdate
+    },
+    build: BUILD_INFO,
+    bootedAt: UI_BOOT_AT
+  });
+  $: debugSnapshotText = debugSnapshot ? JSON.stringify(debugSnapshot, null, 2) : "";
 </script>
 
 <svelte:head>
@@ -746,6 +1061,7 @@
     <button class:active={activeTab === "setup"} on:click={() => (activeTab = "setup")}>Setup</button>
     <button class:active={activeTab === "test"} on:click={() => (activeTab = "test")}>Test</button>
     <button class:active={activeTab === "trace"} on:click={() => (activeTab = "trace")}>Trace</button>
+    <button class:active={activeTab === "debug"} on:click={() => (activeTab = "debug")}>Debug</button>
   </nav>
 
   {#if activeTab === "setup"}
@@ -761,7 +1077,7 @@
           <input type="url" bind:value={playgroundUrl} />
         </label>
         <div class="actions">
-          <button class="primary" on:click={connect} disabled={status === "connecting"}>
+          <button class="primary" on:click={connect} disabled={status === "connecting" || status === "connected"}>
             Connect
           </button>
           <button class="ghost" on:click={disconnect} disabled={status !== "connected"}>
@@ -1113,7 +1429,12 @@
             <strong>How to use Trace</strong>
             <p>Log prompts before tool runs to capture intent and context.</p>
             <p>The history pane shows every MCP request/response while connected.</p>
+            <p class="muted">Avoid pasting secrets here; history stores raw payloads locally.</p>
           </div>
+          <label class="toggle">
+            <input type="checkbox" bind:checked={traceRedact} />
+            <span>Redact trace payloads</span>
+          </label>
           <label>
             Prompt
             <textarea rows="6" bind:value={promptText}></textarea>
@@ -1137,11 +1458,93 @@
           {#each history as entry}
             <div class="history">
               <strong>{entry.at}</strong>
-              <pre>{JSON.stringify(entry.request, null, 2)}</pre>
-              <pre>{JSON.stringify(entry.response, null, 2)}</pre>
+              <pre>{formatTracePayload(entry.request)}</pre>
+              <pre>{formatTracePayload(entry.response)}</pre>
             </div>
           {/each}
         </div>
+      </div>
+    </section>
+  {/if}
+
+  {#if activeTab === "debug"}
+    <section class="grid">
+      <div class="card">
+        <h2>Runtime</h2>
+        <div class="meta-grid debug-meta">
+          <div>
+            <div class="label">Booted at</div>
+            <div class="value">{UI_BOOT_AT}</div>
+          </div>
+          <div>
+            <div class="label">Build mode</div>
+            <div class="value">{BUILD_INFO.mode}</div>
+          </div>
+          <div>
+            <div class="label">HMR status</div>
+            <div class="value">{hmrStatus}</div>
+          </div>
+          <div>
+            <div class="label">HMR updates</div>
+            <div class="value">{hmrUpdateCount}</div>
+          </div>
+          <div>
+            <div class="label">Last HMR update</div>
+            <div class="value">{hmrLastUpdate || "n/a"}</div>
+          </div>
+          <div>
+            <div class="label">Last request</div>
+            <div class="value">{lastRequestAt || "n/a"}</div>
+          </div>
+          <div>
+            <div class="label">Last response</div>
+            <div class="value">{lastResponseAt || "n/a"}</div>
+          </div>
+          <div>
+            <div class="label">Last error</div>
+            <div class="value">{lastErrorAt || "n/a"}</div>
+          </div>
+        </div>
+        <div class="actions">
+          <label class="toggle">
+            <input type="checkbox" bind:checked={debugEnabled} />
+            <span>Enable console debug</span>
+          </label>
+          <button class="ghost" on:click={() => (debugEntries = [])}>Clear debug log</button>
+          <button class="ghost" on:click={() => (history = [])}>Clear request history</button>
+        </div>
+        {#if lastErrorMessage}
+          <div class="error">Last error: {lastErrorMessage}</div>
+        {/if}
+      </div>
+
+      <div class="card">
+        <h2>Connection snapshot</h2>
+        <p class="muted">Redacted view of live state for debugging connection issues.</p>
+        <pre>{debugSnapshotText}</pre>
+        {#if lastErrorDetail}
+          <details class="details-block">
+            <summary>Last error detail (redacted)</summary>
+            <pre>{JSON.stringify(lastErrorDetail, null, 2)}</pre>
+          </details>
+        {/if}
+      </div>
+
+      <div class="card">
+        <h2>Debug log</h2>
+        {#if debugEntries.length === 0}
+          <p class="muted">No debug entries yet.</p>
+        {:else}
+          {#each debugEntries as entry}
+            <div class="history">
+              <strong>{entry.at} · {entry.level}</strong>
+              <div class="list-sub">{entry.message}</div>
+              {#if entry.detail}
+                <pre>{JSON.stringify(entry.detail, null, 2)}</pre>
+              {/if}
+            </div>
+          {/each}
+        {/if}
       </div>
     </section>
   {/if}
@@ -1352,6 +1755,18 @@
     color: #34424a;
   }
 
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #34424a;
+  }
+
+  .toggle input {
+    accent-color: #2e7d6b;
+  }
+
   input,
   textarea {
     border: 1px solid #d7d0c5;
@@ -1491,6 +1906,14 @@
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
     margin: 12px 0;
+  }
+
+  .debug-meta .label {
+    color: #4b3b2d;
+  }
+
+  .debug-meta .value {
+    font-size: 0.95rem;
   }
 
   pre {

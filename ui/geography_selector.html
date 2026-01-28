@@ -357,6 +357,22 @@
         accent-color: var(--accent);
       }
 
+      .debug-badges {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .debug-badge {
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(26, 155, 139, 0.12);
+        color: var(--accent);
+        font-size: 11px;
+        letter-spacing: 0.02em;
+      }
+
       .payload {
         padding: 12px;
         border-radius: 12px;
@@ -392,8 +408,8 @@
         <div>
           <div class="title">Geography Selector</div>
           <div class="subtitle">
-            Progressive disclosure for UK geographies. Search by postcode, UPRN, or area name and
-            surface the right boundaries as you zoom.
+            Progressive disclosure for UK geographies. Search by free text, postcode, UPRN, or area
+            name and surface the right boundaries as you zoom.
           </div>
         </div>
         <div class="status-pill" id="status">Awaiting host</div>
@@ -510,6 +526,7 @@
           <div class="section">
             <h3>Layers</h3>
             <div class="layer-list" id="layerList"></div>
+            <div class="debug-badges" id="debugBadges"></div>
           </div>
         </div>
       </section>
@@ -518,11 +535,11 @@
     <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
     <script>
       const modes = [
+        { id: "free", label: "Free text", tool: "os_places.search" },
         { id: "area", label: "Area name", tool: "admin_lookup.find_by_name" },
         { id: "postcode", label: "Postcode", tool: "os_places.by_postcode" },
         { id: "uprn", label: "UPRN", tool: "os_places.by_uprn" },
         { id: "gss", label: "GSS code", tool: "admin_lookup.area_geometry" },
-        { id: "free", label: "Free text", tool: "os_places.search" },
       ];
 
       const zoomSteps = [
@@ -540,11 +557,14 @@
         { id: "highways", label: "Highways", color: "#1c4f6d" },
       ];
       const vectorSrs = "3857";
+      const POSTCODE_REGEX = /^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$/;
 
+      const defaultMode = modes.find((mode) => mode.id === "free") || modes[0];
       const state = {
-        mode: modes[0],
+        mode: defaultMode,
         map: null,
         sourcesReady: false,
+        sourcesInitializing: false,
         selection: null,
         hostReady: false,
         vectorTiles: null,
@@ -552,6 +572,7 @@
         selectedAreas: new Map(),
         addressResults: [],
         boundaryFeatures: [],
+        addressPointCount: 0,
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
@@ -566,6 +587,7 @@
       const payloadEl = document.getElementById("payload");
       const zoomLadderEl = document.getElementById("zoomLadder");
       const layerListEl = document.getElementById("layerList");
+      const debugBadgesEl = document.getElementById("debugBadges");
       const apiKeyInput = document.getElementById("apiKeyInput");
       const mapStyleSelect = document.getElementById("mapStyleSelect");
       const mapOpacity = document.getElementById("mapOpacity");
@@ -613,6 +635,7 @@
             document.querySelectorAll(".segment button").forEach((b) => b.classList.remove("active"));
             btn.classList.add("active");
             logUiEvent("mode_change", { mode: mode.id });
+            updateDebugBadges();
           });
           if (mode === state.mode) {
             btn.classList.add("active");
@@ -680,6 +703,30 @@
         });
       }
 
+      function updateDebugBadges() {
+        if (!debugBadgesEl) {
+          return;
+        }
+        const mode = state.mode?.label || state.mode?.id || "unknown";
+        const addrCount = state.addressResults.length;
+        const pointCount = state.addressPointCount || 0;
+        const boundaryCount = state.boundaryFeatures.length;
+        const sources = state.sourcesReady
+          ? "ready"
+          : state.sourcesInitializing
+          ? "loading"
+          : "idle";
+        const style = mapStyleSelect?.value || "n/a";
+        debugBadgesEl.innerHTML = `
+          <span class="debug-badge">Mode: ${mode}</span>
+          <span class="debug-badge">Results: ${addrCount}</span>
+          <span class="debug-badge">UPRN dots: ${pointCount}</span>
+          <span class="debug-badge">Boundaries: ${boundaryCount}</span>
+          <span class="debug-badge">Sources: ${sources}</span>
+          <span class="debug-badge">Style: ${style}</span>
+        `;
+      }
+
       function rewriteOsRequest(url) {
         const apiKey = apiKeyInput.value.trim();
         const proxyBase = state.proxyBase || "http://localhost:8000";
@@ -709,14 +756,8 @@
         }
         const fallbackStyle = {
           version: 8,
-          sources: {
-            osm: {
-              type: "raster",
-              tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-              tileSize: 256,
-            },
-          },
-          layers: [{ id: "osm", type: "raster", source: "osm" }],
+          sources: {},
+          layers: [{ id: "background", type: "background", paint: { "background-color": "#f3f0e9" } }],
         };
         state.map = new maplibregl.Map({
           container: "map",
@@ -848,6 +889,10 @@
         if (!state.map) {
           return;
         }
+        if (state.sourcesInitializing) {
+          return;
+        }
+        state.sourcesInitializing = true;
         try {
           if (!state.map.getSource("boundaries")) {
             state.map.addSource("boundaries", { type: "geojson", data: featureCollection([]) });
@@ -920,10 +965,12 @@
             });
           }
         } catch (err) {
+          state.sourcesInitializing = false;
           return;
         }
 
         state.sourcesReady = true;
+        state.sourcesInitializing = false;
         updateBaseMapOpacity();
         if (state.addressResults.length) {
           setAddresses(state.addressResults);
@@ -932,6 +979,19 @@
         if (state.boundaryFeatures.length) {
           state.map.getSource("boundaries").setData(featureCollection(state.boundaryFeatures));
         }
+        updateDebugBadges();
+      }
+
+      function ensureOverlaySources() {
+        if (!state.map) {
+          return false;
+        }
+        const boundariesReady = state.map.getSource("boundaries");
+        const addressesReady = state.map.getSource("addresses");
+        if ((!state.sourcesReady || !boundariesReady || !addressesReady) && !state.sourcesInitializing) {
+          addSourcesAndLayers();
+        }
+        return state.sourcesReady;
       }
 
       function toggleLayer(layerId, isVisible) {
@@ -995,11 +1055,15 @@
       }
 
       function setBoundaries(features) {
+        if (!ensureOverlaySources()) {
+          return;
+        }
         const polygons = features.map((f) => ({
           ...bboxToPolygon(f.bbox),
           properties: { name: f.name, level: f.level, id: f.id, bbox: f.bbox },
         }));
         state.boundaryFeatures = polygons;
+        updateDebugBadges();
         if (!state.map || !state.sourcesReady) {
           return;
         }
@@ -1019,7 +1083,8 @@
           return;
         }
         state.boundaryFeatures = [feature];
-        if (!state.map || !state.sourcesReady) {
+        updateDebugBadges();
+        if (!ensureOverlaySources()) {
           return;
         }
         state.map.getSource("boundaries").setData(featureCollection([feature]));
@@ -1050,16 +1115,25 @@
 
       function setAddresses(addresses) {
         state.addressResults = addresses;
-        if (!state.map || !state.sourcesReady) {
+        if (!ensureOverlaySources()) {
           return;
         }
         const points = addresses
-          .filter((a) => a.lat && a.lon)
-          .map((a) => ({
-            type: "Feature",
-            properties: a,
-            geometry: { type: "Point", coordinates: [a.lon, a.lat] },
-          }));
+          .map((a) => {
+            const lat = Number(a.lat ?? a.latitude);
+            const lon = Number(a.lon ?? a.longitude ?? a.lng);
+            if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+              return null;
+            }
+            return {
+              type: "Feature",
+              properties: a,
+              geometry: { type: "Point", coordinates: [lon, lat] },
+            };
+          })
+          .filter(Boolean);
+        state.addressPointCount = points.length;
+        updateDebugBadges();
         state.map.getSource("addresses").setData(featureCollection(points));
         if (points.length) {
           const bounds = points.reduce(
@@ -1071,17 +1145,25 @@
       }
 
       function updateSelectedAddressesLayer() {
-        if (!state.map || !state.sourcesReady) {
+        if (!ensureOverlaySources()) {
           return;
         }
         const points = [...state.selectedAddresses.values()]
-          .filter((a) => a.lat && a.lon)
-          .map((a) => ({
-            type: "Feature",
-            properties: a,
-            geometry: { type: "Point", coordinates: [a.lon, a.lat] },
-          }));
+          .map((a) => {
+            const lat = Number(a.lat ?? a.latitude);
+            const lon = Number(a.lon ?? a.longitude ?? a.lng);
+            if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+              return null;
+            }
+            return {
+              type: "Feature",
+              properties: a,
+              geometry: { type: "Point", coordinates: [lon, lat] },
+            };
+          })
+          .filter(Boolean);
         state.map.getSource("addresses-selected").setData(featureCollection(points));
+        updateDebugBadges();
       }
 
       function renderResults(items) {
@@ -1155,6 +1237,7 @@
         if (!addresses.length || !state.map) {
           return;
         }
+        ensureOverlaySources();
         const zoom = state.map.getZoom();
         if (zoom < 8) {
           return;
@@ -1317,6 +1400,14 @@
         return raw.replace(/\s+/g, "").toUpperCase();
       }
 
+      function isLikelyGss(value) {
+        return /^[EWNS][0-9]{8}$/i.test(value.trim());
+      }
+
+      function isLikelyUprn(value) {
+        return /^[0-9]{6,12}$/.test(value.trim());
+      }
+
       async function runSearch() {
         const query = queryInput.value.trim();
         if (!query) {
@@ -1372,14 +1463,60 @@
               },
             ];
           } else if (mode === "free") {
-            const data = await safeToolCall("os_places.search", { text: query });
-            const entries = (data.results || []).map((entry) => ({
-              title: entry.address || "Address",
-              subtitle: entry.classificationDescription || entry.classification || "Address",
-              meta: entry.uprn,
-              addresses: [entry],
-            }));
-            results = entries;
+            const trimmed = query.trim();
+            if (isLikelyGss(trimmed)) {
+              const data = await safeToolCall("admin_lookup.area_geometry", { id: trimmed, includeGeometry: true });
+              if (data && data.bbox) {
+                results = [
+                  {
+                    id: trimmed,
+                    name: trimmed,
+                    level,
+                    title: trimmed,
+                    subtitle: "Boundary bbox",
+                    bbox: data.bbox,
+                    geometry: data.geometry,
+                  },
+                ];
+              } else {
+                renderError("No geometry returned for that code.");
+                return;
+              }
+            } else if (isLikelyUprn(trimmed)) {
+              const data = await safeToolCall("os_places.by_uprn", { uprn: trimmed });
+              const item = data.result || data;
+              if (!item) {
+                renderError("No UPRN match found.");
+                return;
+              }
+              results = [
+                {
+                  title: item.address || `UPRN ${trimmed}`,
+                  subtitle: item.classificationDescription || "Address",
+                  meta: item.uprn || trimmed,
+                  addresses: [item],
+                },
+              ];
+            } else if (POSTCODE_REGEX.test(normalizePostcode(trimmed))) {
+              const postcode = normalizePostcode(trimmed);
+              const data = await safeToolCall("os_places.by_postcode", { postcode });
+              const uprns = (data.uprns || []).map((entry) => ({
+                title: entry.address || `UPRN ${entry.uprn}`,
+                subtitle: entry.classificationDescription || entry.classification || "Address",
+                meta: entry.uprn,
+                addresses: [entry],
+              }));
+              results = uprns;
+            } else {
+              const data = await safeToolCall("os_places.search", { text: trimmed });
+              const entries = (data.results || []).map((entry) => ({
+                title: entry.address || "Address",
+                subtitle: entry.classificationDescription || entry.classification || "Address",
+                meta: entry.uprn,
+                addresses: [entry],
+              }));
+              results = entries;
+            }
           } else {
             const data = await safeToolCall("admin_lookup.find_by_name", { text: query });
             results = (data.results || [])
@@ -1401,6 +1538,7 @@
         if (results.length) {
           drawFocusBoundariesForAddresses(results.flatMap((item) => item.addresses || []));
         }
+        updateDebugBadges();
         statusEl.textContent = "Ready";
         if (results.length === 1) {
           selectResult(results[0]);
@@ -1536,6 +1674,7 @@
             return applyMapStyle("osm");
           }
           applyVectorTiles();
+          updateDebugBadges();
           return;
         }
         const fallbackStyle = {
@@ -1556,6 +1695,7 @@
           updateBaseMapOpacity();
           updateSelectedAddressesLayer();
         });
+        updateDebugBadges();
       }
 
       function updateBaseMapOpacity() {
@@ -1634,6 +1774,7 @@
           state.selectedAreas.clear();
           state.addressResults = [];
           state.boundaryFeatures = [];
+          state.addressPointCount = 0;
           renderSelectionSummary();
           if (state.map && state.sourcesReady) {
             state.map.getSource("boundaries").setData(featureCollection([]));
@@ -1641,6 +1782,7 @@
             state.map.getSource("addresses-selected").setData(featureCollection([]));
           setHoverBoundary(null);
         }
+          updateDebugBadges();
       });
       apiKeyInput.addEventListener("change", applyVectorTiles);
       apiKeyInput.addEventListener("copy", (event) => event.preventDefault());
@@ -1696,6 +1838,7 @@
       initMap();
       renderResults([]);
       renderSelectionSummary();
+      updateDebugBadges();
 
       if (window.ResizeObserver) {
         const resizeObserver = new ResizeObserver(() => {

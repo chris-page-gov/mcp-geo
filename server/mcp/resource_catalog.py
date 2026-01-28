@@ -33,6 +33,9 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "self",
                 "https://api.os.uk",
                 "https://tile.openstreetmap.org",
+                "https://unpkg.com",
+                "http://localhost:8000",
+                "http://127.0.0.1:8000",
             ],
             "resourceDomains": [
                 "self",
@@ -42,7 +45,9 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "https://tile.openstreetmap.org",
                 "https://unpkg.com",
             ],
+            "workerDomains": ["self", "blob:"],
         },
+        "permissions": {"sameOrigin": True},
     },
     {
         "slug": "statistics-dashboard",
@@ -95,17 +100,27 @@ SKILLS_RESOURCE: dict[str, Any] = {
 }
 
 
-def _build_ui_meta(description: str, csp: Optional[dict[str, Any]]) -> dict[str, Any]:
+def _build_ui_meta(
+    description: str,
+    csp: Optional[dict[str, Any]],
+    permissions: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
     meta: dict[str, Any] = {"ui": {"prefersBorder": True}}
     if csp:
         meta["ui"]["csp"] = csp
+    if permissions:
+        meta["ui"]["permissions"] = permissions
     return meta
 
 
 def _build_ui_resource_defs() -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for base in _UI_RESOURCE_BASES:
-        meta = _build_ui_meta(base["description"], base.get("csp"))
+        meta = _build_ui_meta(
+            base["description"],
+            base.get("csp"),
+            base.get("permissions"),
+        )
         entries.append(
             {
                 "uri": f"ui://mcp-geo/{base['slug']}",

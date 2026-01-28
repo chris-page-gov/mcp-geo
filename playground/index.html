@@ -14,97 +14,9 @@
         background: radial-gradient(circle at top, #f9f5ef 0%, #efe5d7 45%, #e1d4c5 100%);
         color: #1c1c1c;
       }
-      #boot-screen {
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 32px;
-      }
-      .boot-card {
-        max-width: 720px;
-        background: #0b1f21;
-        color: #f7f4ef;
-        border-radius: 24px;
-        padding: 28px 32px;
-        box-shadow: 0 18px 40px rgba(11, 31, 33, 0.25);
-      }
-      .boot-eyebrow {
-        font-size: 0.75rem;
-        letter-spacing: 0.3em;
-        text-transform: uppercase;
-        color: #7fdac9;
-      }
-      .boot-title {
-        margin: 12px 0;
-        font-size: 2rem;
-      }
-      .boot-sub {
-        margin: 0 0 16px;
-        font-size: 1rem;
-        line-height: 1.5;
-      }
-      .boot-list {
-        display: grid;
-        gap: 6px;
-        padding-left: 18px;
-        margin: 0;
-      }
-      .boot-footer {
-        margin-top: 16px;
-        font-size: 0.9rem;
-        color: rgba(247, 244, 239, 0.75);
-      }
-      .boot-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 16px;
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        font-size: 0.85rem;
-      }
-      .boot-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #f4c95d;
-        animation: pulse 1.5s ease-in-out infinite;
-      }
-      @keyframes pulse {
-        0% {
-          opacity: 0.4;
-        }
-        50% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0.4;
-        }
-      }
     </style>
   </head>
   <body>
-    <div id="boot-screen">
-      <div class="boot-card">
-        <div class="boot-eyebrow">MCP Geo Playground</div>
-        <div class="boot-title">Preparing the workspace</div>
-        <p class="boot-sub">
-          The playground compiles on first load. This can take a moment while Vite builds
-          the UI bundle.
-        </p>
-        <ul class="boot-list">
-          <li>Test MCP tools and resources.</li>
-          <li>Preview MCP App UIs and log tool calls.</li>
-          <li>Capture prompts + trace requests.</li>
-        </ul>
-        <div class="boot-pill">
-          <span class="boot-dot"></span>
-          Loading interface…
-        </div>
-        <div class="boot-footer">This splash disappears once the UI is ready.</div>
-      </div>
-    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

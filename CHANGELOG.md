@@ -5,13 +5,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- (none)
+- Playground debug tab with runtime snapshot, HMR status, and redacted logs.
 
 ### Changed
-- (none)
+- Documented that the Svelte playground is served by Vite and `playground/app.py` is legacy.
+- Playground request logging now records redacted summaries for debugging.
 
 ### Fixed
-- (none)
+- Playground connect button now disables when connected.
+- Playground UI bridge now honors JSON-RPC id `0` and logs unsupported methods.
+- Playground tool-call logging failures no longer mask successful tool responses.
 
 ### Tests
 - (none)

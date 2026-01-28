@@ -106,6 +106,8 @@ Defaults:
 - MCP server URL: `http://localhost:8000/mcp`
 - Playground API: `http://localhost:8000/playground`
 
+Note: `playground/app.py` is a legacy stub and does not serve the Svelte UI.
+
 If you see CORS/preflight errors, ensure `CORS_ALLOWED_ORIGINS` includes the
 playground URL (default includes `http://localhost:5173`).
 

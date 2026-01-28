@@ -485,6 +485,7 @@
         hostReady: false,
         datasets: [],
         dimensions: [],
+        dimensionGroups: { geography: [], measure: [], time: [] },
         selectedAreas: new Set(),
         editions: [],
         versions: [],
@@ -588,6 +589,58 @@
           option.textContent = value;
           selectEl.appendChild(option);
         });
+      }
+
+      function classifyDimensionId(id) {
+        const value = String(id || "").toLowerCase();
+        if (!value) {
+          return "measure";
+        }
+        const timeHints = ["time", "date", "year", "quarter", "month", "week", "day", "yyyy", "yy", "q1", "q2", "q3", "q4"];
+        const geoHints = [
+          "geo",
+          "geography",
+          "region",
+          "area",
+          "nuts",
+          "lsoa",
+          "msoa",
+          "oa",
+          "ward",
+          "local",
+          "authority",
+          "lad",
+          "gss",
+          "pcon",
+          "country",
+          "nation",
+        ];
+        const measureHints = [
+          "measure",
+          "metric",
+          "indicator",
+          "variable",
+          "type",
+          "price",
+          "index",
+          "category",
+          "unit",
+          "sex",
+          "age",
+          "industry",
+          "sic",
+          "occupation",
+        ];
+        if (timeHints.some((hint) => value.includes(hint))) {
+          return "time";
+        }
+        if (geoHints.some((hint) => value.includes(hint))) {
+          return "geography";
+        }
+        if (measureHints.some((hint) => value.includes(hint))) {
+          return "measure";
+        }
+        return "measure";
       }
 
       function renderGeoOptions(options) {
@@ -701,10 +754,33 @@
         try {
           const response = await requestToolStrict("ons_codes.list", { dataset, edition, version });
           state.dimensions = response?.data?.dimensions || response?.dimensions || [];
-          dimensionMeta.textContent = `${state.dimensions.length} dimension(s) available.`;
-          populateSelect(geoDimSelect, state.dimensions, "Select geography dimension");
-          populateSelect(measureDimSelect, state.dimensions, "Select measure dimension");
-          populateSelect(timeDimSelect, state.dimensions, "Select time dimension");
+          const groups = { geography: [], measure: [], time: [] };
+          state.dimensions.forEach((dim) => {
+            groups[classifyDimensionId(dim)].push(dim);
+          });
+          if (!groups.geography.length) {
+            groups.geography = state.dimensions.slice();
+          }
+          if (!groups.time.length) {
+            groups.time = state.dimensions.slice();
+          }
+          if (!groups.measure.length) {
+            groups.measure = state.dimensions.slice();
+          }
+          state.dimensionGroups = groups;
+          dimensionMeta.textContent = `Dimensions: ${state.dimensions.length}. Geography: ${groups.geography.length}, Measure: ${groups.measure.length}, Time: ${groups.time.length}.`;
+          populateSelect(geoDimSelect, groups.geography, "Select geography dimension");
+          populateSelect(measureDimSelect, groups.measure, "Select measure dimension");
+          populateSelect(timeDimSelect, groups.time, "Select time dimension");
+          if (groups.geography.length === 1) {
+            geoDimSelect.value = groups.geography[0];
+          }
+          if (groups.measure.length === 1) {
+            measureDimSelect.value = groups.measure[0];
+          }
+          if (groups.time.length === 1) {
+            timeDimSelect.value = groups.time[0];
+          }
         } catch (err) {
           dimensionMeta.textContent = err?.message || "Failed to load dimensions.";
         }
