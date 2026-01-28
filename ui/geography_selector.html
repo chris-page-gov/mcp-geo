@@ -940,6 +940,14 @@
           return;
         }
         state.sourcesInitializing = true;
+        state.lastMapError = null;
+        if (typeof state.map.isStyleLoaded === "function" && !state.map.isStyleLoaded()) {
+          state.sourcesInitializing = false;
+          state.lastMapError = "Style not loaded";
+          updateDebugBadges();
+          state.map.once("style.load", addSourcesAndLayers);
+          return;
+        }
         try {
           if (!state.map.getSource("boundaries")) {
             state.map.addSource("boundaries", { type: "geojson", data: featureCollection([]) });
@@ -1013,6 +1021,8 @@
           }
         } catch (err) {
           state.sourcesInitializing = false;
+          state.lastMapError = err?.message || "Layer add failed";
+          updateDebugBadges();
           return;
         }
 
@@ -1321,13 +1331,20 @@
         const features = [];
         for (const id of ids) {
           try {
-            const geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: true });
-            if (geo.geometry) {
+            let geo = null;
+            try {
+              geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: true });
+            } catch (err) {
+              state.lastMapError = err?.message || "Boundary geometry fetch failed";
+              updateDebugBadges();
+              geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: false });
+            }
+            if (geo && geo.geometry) {
               const feature = arcgisGeometryToGeoJson(geo.geometry);
               if (feature) {
                 features.push(feature);
               }
-            } else if (geo.bbox) {
+            } else if (geo && geo.bbox) {
               features.push({
                 ...bboxToPolygon(geo.bbox),
                 properties: { id },
@@ -1707,7 +1724,7 @@
         const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${vectorSrs}&key=${apiKey}`;
         if (styleUrl) {
           state.sourcesReady = false;
-          state.sourcesInitializing = true;
+          state.sourcesInitializing = false;
           state.map.setStyle(styleUrl);
           state.map.once("style.load", () => {
             addSourcesAndLayers();
@@ -1728,6 +1745,7 @@
             mapStyleSelect.value = "osm";
             return applyMapStyle("osm");
           }
+          state.lastMapError = null;
           applyVectorTiles();
           updateDebugBadges();
           return;
@@ -1744,7 +1762,8 @@
           layers: [{ id: "osm", type: "raster", source: "osm" }],
         };
         state.sourcesReady = false;
-        state.sourcesInitializing = true;
+        state.sourcesInitializing = false;
+        state.lastMapError = null;
         state.map.setStyle(fallbackStyle);
         state.map.once("style.load", () => {
           addSourcesAndLayers();

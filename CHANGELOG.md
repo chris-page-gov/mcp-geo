@@ -12,12 +12,14 @@ All notable changes to this project will be documented in this file.
 - Documented that the Svelte playground is served by Vite and `playground/app.py` is legacy.
 - Playground request logging now records redacted summaries for debugging.
 - Geography selector debug badges now show card counts, layer visibility, and MapLibre status.
+ - Geography selector overlay initialization now waits for style readiness.
 
 ### Fixed
 - Playground connect button now disables when connected.
 - Playground UI bridge now honors JSON-RPC id `0` and logs unsupported methods.
 - Playground tool-call logging failures no longer mask successful tool responses.
 - MCP prompts/list no longer returns method-not-found for the playground.
+ - Geography selector boundary fallback now retries without geometry on 5xx.
 
 ### Tests
 - (none)
