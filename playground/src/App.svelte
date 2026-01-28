@@ -317,7 +317,7 @@
     if (!html) {
       return "";
     }
-    if (html.includes("Content-Security-Policy")) {
+    if (/<meta\b[^>]*(http-equiv\s*=\s*["']content-security-policy["']|content-security-policy)[^>]*>/i.test(html)) {
       return html;
     }
     const csp = buildCsp(meta);
