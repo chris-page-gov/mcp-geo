@@ -384,6 +384,16 @@
         white-space: pre-wrap;
       }
 
+      .diagnostics {
+        margin-top: 12px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .diagnostics-output {
+        height: 160px;
+      }
+
       @keyframes floatIn {
         from {
           opacity: 0;
@@ -527,6 +537,10 @@
             <h3>Layers</h3>
             <div class="layer-list" id="layerList"></div>
             <div class="debug-badges" id="debugBadges"></div>
+            <div class="diagnostics">
+              <div class="result-meta">Diagnostics</div>
+              <pre id="diagnostics" class="payload diagnostics-output">Waiting for map diagnostics...</pre>
+            </div>
           </div>
         </div>
       </section>
@@ -554,7 +568,6 @@
       const layerDefinitions = [
         { id: "boundaries", label: "Boundaries", color: "#1a9b8b" },
         { id: "addresses", label: "Address Points", color: "#f0a868" },
-        { id: "highways", label: "Highways", color: "#1c4f6d" },
       ];
       const vectorSrs = "3857";
       const POSTCODE_REGEX = /^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$/;
@@ -575,10 +588,15 @@
         addressPointCount: 0,
         resultCount: 0,
         lastMapError: null,
+        lastMapErrorDetail: null,
+        lastSourceEvent: null,
+        sourceLoaded: {
+          boundaries: null,
+          addresses: null,
+        },
         layerVisibility: {
           boundaries: true,
           addresses: true,
-          highways: true,
         },
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -595,6 +613,7 @@
       const zoomLadderEl = document.getElementById("zoomLadder");
       const layerListEl = document.getElementById("layerList");
       const debugBadgesEl = document.getElementById("debugBadges");
+      const diagnosticsEl = document.getElementById("diagnostics");
       const apiKeyInput = document.getElementById("apiKeyInput");
       const mapStyleSelect = document.getElementById("mapStyleSelect");
       const mapOpacity = document.getElementById("mapOpacity");
@@ -760,6 +779,187 @@
           ${errorLabel ? `<span class="debug-badge">${errorLabel}</span>` : ""}
           <span class="debug-badge">Style: ${style}</span>
         `;
+        updateDiagnostics();
+      }
+
+      function redactSecrets(text) {
+        if (!text) {
+          return text;
+        }
+        let out = String(text);
+        out = out.replace(
+          /([?&](?:key|api_key|apikey|token|access_token|authorization)=)[^&#\s]+/gi,
+          "$1REDACTED"
+        );
+        out = out.replace(/\b(Bearer)\s+[A-Za-z0-9\-._~+/]+=*/gi, "$1 REDACTED");
+        out = out.replace(/\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
+        return out;
+      }
+
+      function getSourceFeatureCount(source) {
+        if (!source) {
+          return null;
+        }
+        const data = source._data || source._options?.data;
+        if (data && Array.isArray(data.features)) {
+          return data.features.length;
+        }
+        return null;
+      }
+
+      function getRenderedFeatureCount(layerId) {
+        if (!state.map || !state.map.getLayer(layerId)) {
+          return null;
+        }
+        const canvas = state.map.getCanvas();
+        const width = canvas?.width || 0;
+        const height = canvas?.height || 0;
+        if (!width || !height) {
+          return null;
+        }
+        try {
+          const bbox = [
+            [0, 0],
+            [width, height],
+          ];
+          return state.map.queryRenderedFeatures(bbox, { layers: [layerId] }).length;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function summarizeCoordinates(addresses) {
+        let minLat = Infinity;
+        let maxLat = -Infinity;
+        let minLon = Infinity;
+        let maxLon = -Infinity;
+        let valid = 0;
+        let invalid = 0;
+        addresses.forEach((entry) => {
+          const lat = Number(entry.lat ?? entry.latitude);
+          const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            invalid += 1;
+            return;
+          }
+          valid += 1;
+          minLat = Math.min(minLat, lat);
+          maxLat = Math.max(maxLat, lat);
+          minLon = Math.min(minLon, lon);
+          maxLon = Math.max(maxLon, lon);
+        });
+        if (!valid) {
+          return { valid, invalid, range: null };
+        }
+        const outOfRange =
+          Math.abs(minLat) > 90 ||
+          Math.abs(maxLat) > 90 ||
+          Math.abs(minLon) > 180 ||
+          Math.abs(maxLon) > 180;
+        return {
+          valid,
+          invalid,
+          range: {
+            lat: [Number(minLat.toFixed(6)), Number(maxLat.toFixed(6))],
+            lon: [Number(minLon.toFixed(6)), Number(maxLon.toFixed(6))],
+          },
+          outOfRange,
+        };
+      }
+
+      function countPointsInView(addresses, bounds) {
+        if (!bounds) {
+          return null;
+        }
+        let inView = 0;
+        addresses.forEach((entry) => {
+          const lat = Number(entry.lat ?? entry.latitude);
+          const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            return;
+          }
+          if (lon >= bounds.west && lon <= bounds.east && lat >= bounds.south && lat <= bounds.north) {
+            inView += 1;
+          }
+        });
+        return inView;
+      }
+
+      function updateDiagnostics() {
+        if (!diagnosticsEl) {
+          return;
+        }
+        const map = state.map;
+        let center = null;
+        let bounds = null;
+        let styleLoaded = null;
+        let mapLoaded = null;
+        let tilesLoaded = null;
+        if (map) {
+          try {
+            const c = map.getCenter();
+            center = { lng: Number(c.lng.toFixed(6)), lat: Number(c.lat.toFixed(6)) };
+          } catch (err) {
+            center = null;
+          }
+          try {
+            const b = map.getBounds();
+            bounds = {
+              west: Number(b.getWest().toFixed(6)),
+              south: Number(b.getSouth().toFixed(6)),
+              east: Number(b.getEast().toFixed(6)),
+              north: Number(b.getNorth().toFixed(6)),
+            };
+          } catch (err) {
+            bounds = null;
+          }
+          if (typeof map.isStyleLoaded === "function") {
+            styleLoaded = map.isStyleLoaded();
+          }
+          if (typeof map.loaded === "function") {
+            mapLoaded = map.loaded();
+          }
+          if (typeof map.areTilesLoaded === "function") {
+            tilesLoaded = map.areTilesLoaded();
+          }
+        }
+        const coordsSummary = summarizeCoordinates(state.addressResults);
+        const inViewCount = countPointsInView(state.addressResults, bounds);
+        const diagnostics = {
+          timestamp: new Date().toISOString(),
+          mode: state.mode?.id || "unknown",
+          style: mapStyleSelect?.value || "n/a",
+          maplibre: window.maplibregl ? (map ? "ready" : "loaded") : "missing",
+          workerUrl: window.maplibregl?.workerUrl || null,
+          styleLoaded,
+          mapLoaded,
+          tilesLoaded,
+          center,
+          bounds,
+          zoom: map ? Number(map.getZoom().toFixed(2)) : null,
+          sources: {
+            ready: state.sourcesReady,
+            initializing: state.sourcesInitializing,
+            boundaries: getSourceFeatureCount(map?.getSource("boundaries")),
+            addresses: getSourceFeatureCount(map?.getSource("addresses")),
+          },
+          sourceLoaded: state.sourceLoaded,
+          lastSourceEvent: state.lastSourceEvent,
+          rendered: {
+            boundaries: getRenderedFeatureCount("boundaries-fill"),
+            addresses: getRenderedFeatureCount("addresses-circle"),
+          },
+          data: {
+            addressCount: state.addressResults.length,
+            addressPoints: state.addressPointCount,
+            boundaryCount: state.boundaryFeatures.length,
+            coordinates: coordsSummary,
+            inView: inViewCount,
+          },
+          lastMapError: state.lastMapError || null,
+          lastMapErrorDetail: state.lastMapErrorDetail || null,
+        };
+        diagnosticsEl.textContent = JSON.stringify(diagnostics, null, 2);
       }
 
       function rewriteOsRequest(url) {
@@ -773,7 +973,8 @@
           if (!isOsApi && !isProxy) {
             return null;
           }
-          if (apiKey && !resolved.searchParams.has("key")) {
+          const isVectorProxy = isProxy && resolved.pathname.startsWith("/maps/vector/");
+          if (apiKey && !resolved.searchParams.has("key") && (isOsApi || isVectorProxy)) {
             resolved.searchParams.set("key", apiKey);
           }
           if (resolved.pathname.includes("/maps/vector/vts") && !resolved.searchParams.has("srs")) {
@@ -789,6 +990,7 @@
         if (!window.maplibregl) {
           return;
         }
+        maplibregl.workerUrl = "https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl-csp-worker.js";
         const fallbackStyle = {
           version: 8,
           sources: {},
@@ -812,18 +1014,53 @@
           addSourcesAndLayers();
           updateZoomLadder(state.map.getZoom());
           state.map.resize();
+          updateDiagnostics();
         });
         state.map.on("error", (event) => {
           if (event?.error) {
-            state.lastMapError = event.error.message || "Map error";
+            state.lastMapError = redactSecrets(event.error.message || "Map error");
+            state.lastMapErrorDetail = {
+              message: redactSecrets(event.error.message || "Map error"),
+              name: event.error.name || null,
+              sourceId: event.sourceId || null,
+              resourceType: event.resourceType || null,
+              tile: event.tile
+                ? { x: event.tile.x, y: event.tile.y, z: event.tile.z }
+                : null,
+            };
             updateDebugBadges();
           }
         });
+        state.map.on("sourcedata", (event) => {
+          if (!event || !event.sourceId) {
+            return;
+          }
+          if (event.sourceId === "boundaries" || event.sourceId === "addresses") {
+            try {
+              state.sourceLoaded[event.sourceId] = state.map.isSourceLoaded(event.sourceId);
+            } catch (err) {
+              state.sourceLoaded[event.sourceId] = null;
+            }
+          }
+          state.lastSourceEvent = {
+            sourceId: event.sourceId,
+            type: event.type,
+            isSourceLoaded: event.isSourceLoaded ?? null,
+            dataType: event.dataType || null,
+            sourceDataType: event.sourceDataType || null,
+            time: new Date().toISOString(),
+          };
+          updateDiagnostics();
+        });
         state.map.on("style.load", () => {
           state.lastMapError = null;
+          state.lastMapErrorDetail = null;
           state.map.resize();
           updateDebugBadges();
+          updateDiagnostics();
         });
+        state.map.on("moveend", () => updateDiagnostics());
+        state.map.on("idle", () => updateDiagnostics());
         state.map.on("zoom", () => updateZoomLadder(state.map.getZoom()));
         state.map.on("mousemove", (event) => {
           if (!state.map.getLayer("boundaries-fill")) {
@@ -1008,17 +1245,6 @@
             });
           }
 
-          if (!state.map.getSource("highways")) {
-            state.map.addSource("highways", { type: "geojson", data: featureCollection([]) });
-          }
-          if (!state.map.getLayer("highways-line")) {
-            state.map.addLayer({
-              id: "highways-line",
-              type: "line",
-              source: "highways",
-              paint: { "line-color": "#1c4f6d", "line-width": 3 },
-            });
-          }
         } catch (err) {
           state.sourcesInitializing = false;
           state.lastMapError = err?.message || "Layer add failed";
@@ -1035,7 +1261,12 @@
           updateSelectedAddressesLayer();
         }
         if (state.boundaryFeatures.length) {
-          state.map.getSource("boundaries").setData(featureCollection(state.boundaryFeatures));
+          const boundarySource = state.map.getSource("boundaries");
+          if (boundarySource) {
+            boundarySource.setData(featureCollection(state.boundaryFeatures));
+          } else {
+            state.sourcesReady = false;
+          }
         }
         updateDebugBadges();
       }
@@ -1046,10 +1277,17 @@
         }
         const boundariesReady = state.map.getSource("boundaries");
         const addressesReady = state.map.getSource("addresses");
-        if ((!state.sourcesReady || !boundariesReady || !addressesReady) && !state.sourcesInitializing) {
+        const selectedReady = state.map.getSource("addresses-selected");
+        if (!boundariesReady || !addressesReady || !selectedReady) {
+          state.sourcesReady = false;
+        }
+        if (
+          (!state.sourcesReady || !boundariesReady || !addressesReady || !selectedReady) &&
+          !state.sourcesInitializing
+        ) {
           addSourcesAndLayers();
         }
-        return state.sourcesReady;
+        return Boolean(state.sourcesReady && boundariesReady && addressesReady && selectedReady);
       }
 
       function toggleLayer(layerId, isVisible) {
@@ -1060,7 +1298,6 @@
         const mapping = {
           boundaries: ["boundaries-fill", "boundaries-line"],
           addresses: ["addresses-circle"],
-          highways: ["highways-line"],
         };
         (mapping[layerId] || []).forEach((id) => {
           if (state.map.getLayer(id)) {
@@ -1117,6 +1354,11 @@
         if (!ensureOverlaySources()) {
           return;
         }
+        const boundarySource = state.map?.getSource("boundaries");
+        if (!boundarySource) {
+          state.sourcesReady = false;
+          return;
+        }
         const polygons = features.map((f) => ({
           ...bboxToPolygon(f.bbox),
           properties: { name: f.name, level: f.level, id: f.id, bbox: f.bbox },
@@ -1126,7 +1368,7 @@
         if (!state.map || !state.sourcesReady) {
           return;
         }
-        state.map.getSource("boundaries").setData(featureCollection(polygons));
+        boundarySource.setData(featureCollection(polygons));
         if (polygons.length) {
           const bounds = polygons.reduce((acc, poly) => {
             const coords = poly.geometry.coordinates[0];
@@ -1146,7 +1388,12 @@
         if (!ensureOverlaySources()) {
           return;
         }
-        state.map.getSource("boundaries").setData(featureCollection([feature]));
+        const boundarySource = state.map?.getSource("boundaries");
+        if (!boundarySource) {
+          state.sourcesReady = false;
+          return;
+        }
+        boundarySource.setData(featureCollection([feature]));
         if (feature.geometry.type === "Polygon") {
           const coords = feature.geometry.coordinates[0];
           const bounds = coords.reduce(
@@ -1177,6 +1424,11 @@
         if (!ensureOverlaySources()) {
           return;
         }
+        const addressesSource = state.map?.getSource("addresses");
+        if (!addressesSource) {
+          state.sourcesReady = false;
+          return;
+        }
         const points = addresses
           .map((a) => {
             const lat = Number(a.lat ?? a.latitude);
@@ -1193,7 +1445,7 @@
           .filter(Boolean);
         state.addressPointCount = points.length;
         updateDebugBadges();
-        state.map.getSource("addresses").setData(featureCollection(points));
+        addressesSource.setData(featureCollection(points));
         if (points.length) {
           const bounds = points.reduce(
             (acc, feature) => acc.extend(feature.geometry.coordinates),
@@ -1205,6 +1457,11 @@
 
       function updateSelectedAddressesLayer() {
         if (!ensureOverlaySources()) {
+          return;
+        }
+        const selectedSource = state.map?.getSource("addresses-selected");
+        if (!selectedSource) {
+          state.sourcesReady = false;
           return;
         }
         const points = [...state.selectedAddresses.values()]
@@ -1221,7 +1478,7 @@
             };
           })
           .filter(Boolean);
-        state.map.getSource("addresses-selected").setData(featureCollection(points));
+        selectedSource.setData(featureCollection(points));
         updateDebugBadges();
       }
 
@@ -1299,7 +1556,9 @@
         if (!addresses.length || !state.map) {
           return;
         }
-        ensureOverlaySources();
+        if (!ensureOverlaySources()) {
+          return;
+        }
         const zoom = state.map.getZoom();
         if (zoom < 8) {
           return;
@@ -1315,9 +1574,9 @@
               lat: address.lat,
               lon: address.lon,
             });
-          const match = (data.results || []).find(
-            (entry) => String(entry.level || "").toLowerCase() === focusLevel.toLowerCase()
-          );
+            const match = (data.results || []).find(
+              (entry) => String(entry.level || "").toLowerCase() === focusLevel.toLowerCase()
+            );
             if (match && match.id) {
               ids.add(match.id);
             }
@@ -1356,7 +1615,13 @@
         }
         if (features.length && state.map) {
           state.boundaryFeatures = features;
-          state.map.getSource("boundaries").setData(featureCollection(features));
+          const boundarySource = state.map.getSource("boundaries");
+          if (!boundarySource) {
+            state.sourcesReady = false;
+            updateDebugBadges();
+            return;
+          }
+          boundarySource.setData(featureCollection(features));
         }
       }
 
@@ -1433,6 +1698,11 @@
             state.selectedAddresses.set(uprn, entry);
           }
           updateSelectedAddressesLayer();
+          const lat = Number(entry.lat ?? entry.latitude);
+          const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
+          if (state.map && Number.isFinite(lat) && Number.isFinite(lon)) {
+            state.map.flyTo({ center: [lon, lat], zoom: Math.max(state.map.getZoom(), 16), duration: 600 });
+          }
         }
         if (item.bbox && typeof item.bbox === "string") {
           try {
@@ -1750,12 +2020,13 @@
           updateDebugBadges();
           return;
         }
+        const proxyBase = state.proxyBase || "http://localhost:8000";
         const fallbackStyle = {
           version: 8,
           sources: {
             osm: {
               type: "raster",
-              tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+              tiles: [`${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`],
               tileSize: 256,
             },
           },
@@ -1843,21 +2114,34 @@
         }
       });
 
-        clearSelectionButton.addEventListener("click", () => {
-          state.selection = null;
-          state.selectedAddresses.clear();
-          state.selectedAreas.clear();
-          state.addressResults = [];
-          state.boundaryFeatures = [];
-          state.addressPointCount = 0;
-          renderSelectionSummary();
-          if (state.map && state.sourcesReady) {
-            state.map.getSource("boundaries").setData(featureCollection([]));
-            state.map.getSource("addresses").setData(featureCollection([]));
-            state.map.getSource("addresses-selected").setData(featureCollection([]));
+      clearSelectionButton.addEventListener("click", () => {
+        state.selection = null;
+        state.selectedAddresses.clear();
+        state.selectedAreas.clear();
+        state.addressResults = [];
+        state.boundaryFeatures = [];
+        state.addressPointCount = 0;
+        renderSelectionSummary();
+        if (state.map) {
+          if (!ensureOverlaySources()) {
+            updateDebugBadges();
+            return;
+          }
+          const boundarySource = state.map.getSource("boundaries");
+          const addressSource = state.map.getSource("addresses");
+          const selectedSource = state.map.getSource("addresses-selected");
+          if (boundarySource) {
+            boundarySource.setData(featureCollection([]));
+          }
+          if (addressSource) {
+            addressSource.setData(featureCollection([]));
+          }
+          if (selectedSource) {
+            selectedSource.setData(featureCollection([]));
+          }
           setHoverBoundary(null);
         }
-          updateDebugBadges();
+        updateDebugBadges();
       });
       apiKeyInput.addEventListener("change", applyVectorTiles);
       apiKeyInput.addEventListener("copy", (event) => event.preventDefault());

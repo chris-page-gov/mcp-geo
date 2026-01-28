@@ -7,19 +7,34 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Playground debug tab with runtime snapshot, HMR status, and redacted logs.
 - MCP prompts list/get backed by evaluation prompt examples.
+- Geography selector diagnostics panel with source/render counts and coordinate ranges.
+- Geography selector diagnostics now include map/tile loaded state and in-view counts.
+- Map handling review report at `docs/map_handling_review.md`.
 
 ### Changed
 - Documented that the Svelte playground is served by Vite and `playground/app.py` is legacy.
 - Playground request logging now records redacted summaries for debugging.
+- Playground audit history now scrubs secrets from URLs and headers.
+- Playground debug tab now surfaces a secret audit indicator.
 - Geography selector debug badges now show card counts, layer visibility, and MapLibre status.
- - Geography selector overlay initialization now waits for style readiness.
+- Geography selector overlay initialization now waits for style readiness.
+- Geography selector now uses MapLibre CSP worker for sandboxed hosting.
+- Geography selector now reports the active MapLibre worker URL in diagnostics.
+- Geography selector diagnostics now include source load status and last source event.
+- Geography selector now proxies OSM raster tiles through the server for CSP-safe loading.
+- Geography selector no longer adds the unused highways overlay layer.
+- Geography selector now guards against missing overlay sources after style reloads.
+- Geography selector overlay checks now include the selected-addresses layer.
+- Geography selector diagnostics now update on map load and style load events.
+- Geography selector address selection now fly-to centers on the clicked address.
+- Geography selector redacts secrets from MapLibre error messages and avoids adding OS keys to non-vector proxy requests.
 
 ### Fixed
 - Playground connect button now disables when connected.
 - Playground UI bridge now honors JSON-RPC id `0` and logs unsupported methods.
 - Playground tool-call logging failures no longer mask successful tool responses.
 - MCP prompts/list no longer returns method-not-found for the playground.
- - Geography selector boundary fallback now retries without geometry on 5xx.
+- Geography selector boundary fallback now retries without geometry on 5xx.
 
 ### Tests
 - (none)

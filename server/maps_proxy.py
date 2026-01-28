@@ -17,6 +17,7 @@ router = APIRouter()
 _OS_BASE = OSClient.base_vector_tiles
 _STYLE_INDEX_PATH = "vts/resources/styles"
 _DEFAULT_STYLE_NAME = "OS_VTS_3857_Light.json"
+_OSM_TILE_BASE = "https://tile.openstreetmap.org"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _LOCAL_STYLE_DIR = _REPO_ROOT / "submodules" / "os-vector-tile-api-stylesheets"
 
@@ -308,4 +309,23 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
             )
         rewritten = _rewrite_style_urls(payload, key, srs, str(request.base_url).rstrip("/"))
         return JSONResponse(content=rewritten)
+    return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
+
+
+@router.get("/maps/raster/osm/{z}/{x}/{y}.png")
+def proxy_osm_tiles(z: int, x: int, y: int) -> Response:
+    if requests is None:
+        raise HTTPException(status_code=501, detail="requests is not installed")
+    url = f"{_OSM_TILE_BASE}/{z}/{x}/{y}.png"
+    try:
+        resp = requests.get(
+            url,
+            timeout=DEFAULT_TIMEOUT,
+            headers={"User-Agent": "mcp-geo-playground"},
+        )
+    except (req_exc.ConnectionError, req_exc.Timeout) as exc:
+        raise HTTPException(status_code=502, detail=f"OSM proxy error: {exc}") from exc
+    content_type = resp.headers.get("content-type", "image/png")
+    if resp.status_code != 200:
+        return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
     return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)

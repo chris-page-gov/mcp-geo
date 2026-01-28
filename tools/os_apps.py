@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 import time
 import uuid
@@ -92,6 +93,27 @@ def _redact_payload(payload: Any) -> Any:
         return redacted
     if isinstance(payload, list):
         return [_redact_payload(item) for item in payload]
+    if isinstance(payload, str):
+        redacted = payload
+        redacted = re.sub(
+            r"([?&](?:key|api_key|apikey|token|access_token|authorization)=)[^&#\s]+",
+            r"\1REDACTED",
+            redacted,
+            flags=re.IGNORECASE,
+        )
+        redacted = re.sub(
+            r"\b(Bearer)\s+[A-Za-z0-9\-._~+/]+=*",
+            r"\1 REDACTED",
+            redacted,
+            flags=re.IGNORECASE,
+        )
+        redacted = re.sub(
+            r"\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*[^\s,;]+",
+            r"\1=[REDACTED]",
+            redacted,
+            flags=re.IGNORECASE,
+        )
+        return redacted
     return payload
 
 

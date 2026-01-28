@@ -45,7 +45,7 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "https://tile.openstreetmap.org",
                 "https://unpkg.com",
             ],
-            "workerDomains": ["self", "blob:"],
+            "workerDomains": ["self", "blob:", "https://unpkg.com"],
         },
         "permissions": {"sameOrigin": True},
     },

@@ -78,6 +78,7 @@
   };
   const DEBUG_LOG_LIMIT = 150;
   const DEBUG_DEPTH_LIMIT = 5;
+  const SECRET_SCAN_LIMIT = 20;
   const DEBUG_ARRAY_LIMIT = 20;
   const DEBUG_STRING_LIMIT = 2000;
 
@@ -109,7 +110,7 @@
   ];
 
   const recordHistory = (entry) => {
-    history = [entry, ...history].slice(0, 50);
+    history = [scrubSecretsValue(entry), ...history].slice(0, 50);
   };
 
   const shouldRedactKey = (key) => {
@@ -136,6 +137,113 @@
       normalized.includes("password") ||
       normalized.includes("bearer")
     );
+  };
+
+  const redactStringSecrets = (value) => {
+    if (value === null || value === undefined) {
+      return value;
+    }
+    let out = String(value);
+    out = out.replace(
+      /([?&](?:key|api_key|apikey|token|access_token|authorization)=)[^&#\s]+/gi,
+      "$1REDACTED"
+    );
+    out = out.replace(/\b(Bearer)\s+[A-Za-z0-9\-._~+/]+=*/gi, "$1 REDACTED");
+    out = out.replace(/\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
+    return out;
+  };
+
+  const SECRET_PATTERNS = [
+    /([?&](?:key|api_key|apikey|token|access_token|authorization)=)(?!REDACTED)[^&#\s]+/i,
+    /\b(Bearer)\s+(?!REDACTED)[A-Za-z0-9\-._~+/]+=*/i,
+    /\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*(?!\[REDACTED\]|REDACTED)[^\s,;]+/i
+  ];
+
+  const containsSecretString = (value) => {
+    if (value === null || value === undefined) {
+      return false;
+    }
+    const text = String(value);
+    return SECRET_PATTERNS.some((pattern) => pattern.test(text));
+  };
+
+  const scanSecrets = (value, path, findings, depth = 0) => {
+    if (findings.length >= SECRET_SCAN_LIMIT) {
+      return;
+    }
+    if (value === null || value === undefined) {
+      return;
+    }
+    if (depth > DEBUG_DEPTH_LIMIT) {
+      return;
+    }
+    if (typeof value === "string") {
+      if (containsSecretString(value)) {
+        findings.push(path || "root");
+      }
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => {
+        if (findings.length >= SECRET_SCAN_LIMIT) {
+          return;
+        }
+        scanSecrets(entry, `${path}[${index}]`, findings, depth + 1);
+      });
+      return;
+    }
+    if (typeof value === "object") {
+      Object.entries(value).forEach(([key, entry]) => {
+        if (findings.length >= SECRET_SCAN_LIMIT) {
+          return;
+        }
+        scanSecrets(entry, path ? `${path}.${key}` : key, findings, depth + 1);
+      });
+    }
+  };
+
+  const buildSecretAudit = () => {
+    const findings = [];
+    scanSecrets(debugEntries, "debugEntries", findings);
+    scanSecrets(history, "history", findings);
+    scanSecrets(lastErrorMessage, "lastErrorMessage", findings);
+    scanSecrets(lastErrorDetail, "lastErrorDetail", findings);
+    scanSecrets(error, "error", findings);
+    scanSecrets(uiResourceError, "uiResourceError", findings);
+    return {
+      count: findings.length,
+      paths: findings.slice(0, 6),
+      truncated: findings.length >= SECRET_SCAN_LIMIT
+    };
+  };
+
+  const redactErrorMessage = (message) => redactStringSecrets(message || "");
+
+  const scrubSecretsValue = (value, depth = 0) => {
+    if (depth > DEBUG_DEPTH_LIMIT) {
+      return "[Truncated]";
+    }
+    if (value === null || value === undefined) {
+      return value;
+    }
+    if (Array.isArray(value)) {
+      return value.map((entry) => scrubSecretsValue(entry, depth + 1));
+    }
+    if (typeof value === "object") {
+      const output = {};
+      Object.entries(value).forEach(([key, entry]) => {
+        if (shouldRedactKey(key)) {
+          output[key] = "[REDACTED]";
+        } else {
+          output[key] = scrubSecretsValue(entry, depth + 1);
+        }
+      });
+      return output;
+    }
+    if (typeof value === "string") {
+      return redactStringSecrets(value);
+    }
+    return value;
   };
 
   const redactValue = (value, depth = 0) => {
@@ -165,8 +273,12 @@
       });
       return output;
     }
-    if (typeof value === "string" && value.length > DEBUG_STRING_LIMIT) {
-      return `${value.slice(0, DEBUG_STRING_LIMIT)}…`;
+    if (typeof value === "string") {
+      const scrubbed = redactStringSecrets(value);
+      if (scrubbed.length > DEBUG_STRING_LIMIT) {
+        return `${scrubbed.slice(0, DEBUG_STRING_LIMIT)}…`;
+      }
+      return scrubbed;
     }
     return value;
   };
@@ -175,25 +287,25 @@
     const entry = {
       at: new Date().toISOString(),
       level,
-      message,
+      message: redactStringSecrets(message),
       detail: detail ? redactValue(detail) : null
     };
     debugEntries = [entry, ...debugEntries].slice(0, DEBUG_LOG_LIMIT);
     if (debugEnabled && typeof console !== "undefined") {
       const payload = entry.detail ? entry.detail : "";
       if (level === "error") {
-        console.error("[playground]", message, payload);
+        console.error("[playground]", entry.message, payload);
       } else if (level === "warn") {
-        console.warn("[playground]", message, payload);
+        console.warn("[playground]", entry.message, payload);
       } else {
-        console.debug("[playground]", message, payload);
+        console.debug("[playground]", entry.message, payload);
       }
     }
   };
 
   const setLastError = (message, detail = null) => {
     lastErrorAt = new Date().toISOString();
-    lastErrorMessage = message;
+    lastErrorMessage = redactErrorMessage(message);
     lastErrorDetail = redactValue(detail ?? { error: message });
   };
 
@@ -388,7 +500,7 @@
         err && typeof err === "object" && "message" in err
           ? { message: err?.message, stack: err?.stack }
           : err;
-      const message = err?.message || String(err);
+      const message = redactErrorMessage(err?.message || String(err));
       setLastError(message, detail);
       logDebug(
         "MCP request failed",
@@ -438,7 +550,7 @@
       logDebug("Connected to MCP server", { serverUrl });
     } catch (err) {
       status = "error";
-      error = err?.message || String(err);
+      error = redactErrorMessage(err?.message || String(err));
       client = null;
       transport = null;
       setLastError(error, err);
@@ -503,7 +615,7 @@
         prompts: prompts.length
       });
     } catch (err) {
-      error = err?.message || String(err);
+      error = redactErrorMessage(err?.message || String(err));
       setLastError(error, err);
       logDebug("Failed to refresh lists", { error }, "error");
     }
@@ -528,7 +640,7 @@
         version: response?.data?.version
       });
     } catch (err) {
-      error = err?.message || String(err);
+      error = redactErrorMessage(err?.message || String(err));
       setLastError(error, err);
       logDebug("Failed to fetch descriptor", { error }, "error");
     }
@@ -623,7 +735,7 @@
       try {
         parsedArgs = JSON.parse(toolArgs);
       } catch (err) {
-        error = err?.message || String(err);
+        error = redactErrorMessage(err?.message || String(err));
         setLastError(error, { error });
         logDebug("Tool args JSON parse failed", { error }, "error");
         return;
@@ -656,7 +768,7 @@
         );
       }
     } catch (err) {
-      error = err?.message || String(err);
+      error = redactErrorMessage(err?.message || String(err));
       setLastError(error, err);
       logDebug("Tool call failed", { tool: toolName, error }, "error");
     }
@@ -682,7 +794,7 @@
       promptText = "";
       promptContext = "";
     } catch (err) {
-      error = err?.message || String(err);
+      error = redactErrorMessage(err?.message || String(err));
       setLastError(error, err);
       logDebug("Failed to log prompt", { error }, "error");
     }
@@ -726,7 +838,7 @@
       }
       logDebug("Suggested UI tool run", { tool: uiToolName });
     } catch (err) {
-      error = err?.message || String(err);
+      error = redactErrorMessage(err?.message || String(err));
       uiToolResult = "";
       setLastError(error, err);
       if (uiAppInitialized) {
@@ -764,7 +876,7 @@
       }
       logDebug("UI resource loaded", { uri: selectedResource.uri, mime: uiResourceMime });
     } catch (err) {
-      uiResourceError = err?.message || String(err);
+      uiResourceError = redactErrorMessage(err?.message || String(err));
       setLastError(uiResourceError, err);
       logDebug("Failed to load UI resource", { uri: selectedResource.uri, error: uiResourceError }, "error");
     }
@@ -1033,6 +1145,7 @@
     bootedAt: UI_BOOT_AT
   });
   $: debugSnapshotText = debugSnapshot ? JSON.stringify(debugSnapshot, null, 2) : "";
+  $: secretAudit = buildSecretAudit();
 </script>
 
 <svelte:head>
@@ -1519,6 +1632,22 @@
       </div>
 
       <div class="card">
+        <h2>Secret audit</h2>
+        <p class="muted">Scans debug output and request history for unredacted keys or tokens.</p>
+        <div class="list-badges">
+          {#if secretAudit.count === 0}
+            <span class="badge badge-ok">No secrets detected</span>
+          {:else}
+            <span class="badge badge-warn">{secretAudit.count} potential secrets</span>
+          {/if}
+          <span class="badge badge-ghost">Trace redaction: {traceRedact ? "on" : "off"}</span>
+        </div>
+        {#if secretAudit.count > 0}
+          <pre>{JSON.stringify(secretAudit.paths, null, 2)}{secretAudit.truncated ? "\n…truncated" : ""}</pre>
+        {/if}
+      </div>
+
+      <div class="card">
         <h2>Connection snapshot</h2>
         <p class="muted">Redacted view of live state for debugging connection issues.</p>
         <pre>{debugSnapshotText}</pre>
@@ -1893,6 +2022,14 @@
     color: #f7f4ef;
     padding: 2px 8px;
     border-radius: 999px;
+  }
+
+  .badge-ok {
+    background: #1f7a4f;
+  }
+
+  .badge-warn {
+    background: #b84b4b;
   }
 
   .badge-ghost {
