@@ -53,6 +53,7 @@
   let uiResourceHtml = "";
   let uiIframeSandbox = "allow-scripts";
   let uiIframeAllow = "";
+  let uiAllowSameOrigin = false;
   let uiAppInitialized = false;
   let debugEnabled = false;
   let debugEntries = [];
@@ -76,6 +77,9 @@
     dev: Boolean(import.meta?.env?.DEV),
     prod: Boolean(import.meta?.env?.PROD)
   };
+  if (BUILD_INFO.dev) {
+    uiAllowSameOrigin = true;
+  }
   const DEBUG_LOG_LIMIT = 150;
   const DEBUG_DEPTH_LIMIT = 5;
   const SECRET_SCAN_LIMIT = 20;
@@ -447,10 +451,28 @@
     return `${metaTag}${html}`;
   };
 
-  const buildSandbox = (meta) => {
+  const wantsSameOrigin = (permissions) =>
+    Boolean(permissions?.sameOrigin || permissions?.allowSameOrigin);
+
+  const allowSameOrigin = (permissions, allowSameOriginFlag) =>
+    wantsSameOrigin(permissions) && Boolean(allowSameOriginFlag);
+
+  const sanitizeSandboxPermissions = (permissions, allowSameOriginFlag) => {
+    if (!permissions || typeof permissions !== "object") {
+      return {};
+    }
+    const next = { ...permissions };
+    if (!allowSameOrigin(permissions, allowSameOriginFlag)) {
+      delete next.sameOrigin;
+      delete next.allowSameOrigin;
+    }
+    return next;
+  };
+
+  const buildSandbox = (meta, allowSameOriginFlag) => {
     const permissions = meta?.ui?.permissions || {};
     const flags = ["allow-scripts"];
-    if (permissions.sameOrigin || permissions.allowSameOrigin) {
+    if (allowSameOrigin(permissions, allowSameOriginFlag)) {
       flags.push("allow-same-origin");
     }
     return flags.join(" ");
@@ -922,7 +944,10 @@
   };
 
   const buildHostCapabilities = () => {
-    const permissions = uiResourceMeta?.ui?.permissions || {};
+    const permissions = sanitizeSandboxPermissions(
+      uiResourceMeta?.ui?.permissions || {},
+      uiAllowSameOrigin
+    );
     const csp = uiResourceMeta?.ui?.csp || {};
     const sandbox = {};
     if (Object.keys(permissions).length) {
@@ -1078,8 +1103,9 @@
   }
 
   $: uiResourceHtml = uiResourceText ? injectCsp(uiResourceText, uiResourceMeta) : "";
-  $: uiIframeSandbox = buildSandbox(uiResourceMeta);
+  $: uiIframeSandbox = buildSandbox(uiResourceMeta, uiAllowSameOrigin);
   $: uiIframeAllow = buildAllow(uiResourceMeta);
+  $: uiSameOriginRequested = wantsSameOrigin(uiResourceMeta?.ui?.permissions || {});
 
   $: descriptorJson = descriptorRaw ? JSON.stringify(descriptorRaw, null, 2) : "";
   $: descriptorSizeBytes = descriptorRaw
@@ -1440,6 +1466,22 @@
                     <p class="muted">No tool mapping available for this UI resource yet.</p>
                   {/if}
                 </div>
+                {#if uiSameOriginRequested}
+                  <div class="info-card">
+                    <h4>Sandbox warning</h4>
+                    <p>
+                      Allowing <code>allow-same-origin</code> lets the UI access the host origin and
+                      weakens iframe isolation. Enable only for trusted widgets.
+                    </p>
+                    <label class="toggle">
+                      <input type="checkbox" bind:checked={uiAllowSameOrigin} />
+                      <span>Allow same-origin for this UI (unsafe)</span>
+                    </label>
+                    {#if BUILD_INFO.dev}
+                      <p class="muted">Dev mode defaults this on; disable it to test prod behavior.</p>
+                    {/if}
+                  </div>
+                {/if}
                 <div class="detail-block">
                   <h4>UI content preview</h4>
                   <div class="actions">

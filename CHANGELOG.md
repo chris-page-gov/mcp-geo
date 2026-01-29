@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 - Geography selector address selection now fly-to centers on the clicked address.
 - Geography selector redacts secrets from MapLibre error messages and avoids adding OS keys to non-vector proxy requests.
 - OSM tile proxy now caches tiles and supports configurable base URL + contactable user agent settings.
+- Playground sandbox now requires explicit allow-same-origin opt-in outside dev mode.
 
 ### Fixed
 - Playground connect button now disables when connected.
