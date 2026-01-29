@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Tests
+- Fixed Playwright geography selector spec ESM path handling.
 
 ## [0.2.7] - 2026-01-29
 ### Added

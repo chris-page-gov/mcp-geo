@@ -1,9 +1,11 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
-import { pathToFileURL } from "url";
+import { pathToFileURL, fileURLToPath } from "url";
 
 test("geography selector keeps dots after style switch", async ({ page }) => {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
   await page.addInitScript(() => {
     const addressResults = [
       {
