@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 - Geography selector boundary fallback now retries without geometry on 5xx.
 
 ### Tests
-- (none)
+- Added prompt and tool-search validation coverage to restore 90% gate.
 
 ## [0.2.6] - 2026-01-27
 ### Added
