@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import threading
+import time
+from collections import OrderedDict
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from typing import Any
@@ -20,6 +24,95 @@ _DEFAULT_STYLE_NAME = "OS_VTS_3857_Light.json"
 _OSM_TILE_BASE = "https://tile.openstreetmap.org"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _LOCAL_STYLE_DIR = _REPO_ROOT / "submodules" / "os-vector-tile-api-stylesheets"
+_OSM_CACHE_LOCK = threading.Lock()
+_OSM_CACHE: "OrderedDict[str, dict[str, Any]]" = OrderedDict()
+_OSM_CACHE_KEY_SEP = "/"
+
+
+def _osm_tile_base() -> str:
+    base = getattr(settings, "OSM_TILE_BASE", "") or _OSM_TILE_BASE
+    return base.rstrip("/")
+
+
+def _osm_cache_ttl() -> float:
+    ttl = getattr(settings, "OSM_TILE_CACHE_TTL", 0.0)
+    try:
+        ttl = float(ttl)
+    except (TypeError, ValueError):
+        ttl = 0.0
+    return max(ttl, 0.0)
+
+
+def _osm_cache_size() -> int:
+    size = getattr(settings, "OSM_TILE_CACHE_SIZE", 0)
+    try:
+        size = int(size)
+    except (TypeError, ValueError):
+        size = 0
+    return max(size, 0)
+
+
+def _osm_cache_enabled() -> bool:
+    return _osm_cache_ttl() > 0 and _osm_cache_size() > 0
+
+
+def _osm_cache_key(z: int, x: int, y: int) -> str:
+    return f"{z}{_OSM_CACHE_KEY_SEP}{x}{_OSM_CACHE_KEY_SEP}{y}"
+
+
+def _osm_cache_headers(etag: str | None = None) -> dict[str, str]:
+    headers = {"Cache-Control": f"public, max-age={int(_osm_cache_ttl())}"}
+    if etag:
+        headers["ETag"] = etag
+    return headers
+
+
+def _get_cached_osm_tile(key: str) -> dict[str, Any] | None:
+    if not _osm_cache_enabled():
+        return None
+    now = time.time()
+    with _OSM_CACHE_LOCK:
+        entry = _OSM_CACHE.get(key)
+        if not entry:
+            return None
+        if now - entry["stored_at"] > _osm_cache_ttl():
+            _OSM_CACHE.pop(key, None)
+            return None
+        _OSM_CACHE.move_to_end(key)
+        return entry
+
+
+def _store_osm_tile(key: str, content: bytes, content_type: str) -> str | None:
+    if not _osm_cache_enabled():
+        return None
+    etag_hash = hashlib.sha256(content).hexdigest()[:16]
+    entry = {
+        "content": content,
+        "content_type": content_type,
+        "etag": f'W/"{etag_hash}"',
+        "stored_at": time.time(),
+    }
+    with _OSM_CACHE_LOCK:
+        _OSM_CACHE[key] = entry
+        _OSM_CACHE.move_to_end(key)
+        while len(_OSM_CACHE) > _osm_cache_size():
+            _OSM_CACHE.popitem(last=False)
+    return entry["etag"]
+
+
+def _osm_user_agent() -> str:
+    user_agent = (getattr(settings, "OSM_TILE_USER_AGENT", "") or "").strip() or "mcp-geo"
+    contact = (getattr(settings, "OSM_TILE_CONTACT", "") or "").strip()
+    if contact and contact not in user_agent:
+        return f"{user_agent} ({contact})"
+    return user_agent
+
+
+def _osm_tile_url(z: int, x: int, y: int) -> str:
+    base = _osm_tile_base()
+    if "{z}" in base or "{x}" in base or "{y}" in base:
+        return base.format(z=z, x=x, y=y)
+    return f"{base}/{z}/{x}/{y}.png"
 
 
 def _get_api_key(request: Request) -> str:
@@ -313,19 +406,41 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
 
 
 @router.get("/maps/raster/osm/{z}/{x}/{y}.png")
-def proxy_osm_tiles(z: int, x: int, y: int) -> Response:
+def proxy_osm_tiles(z: int, x: int, y: int, request: Request) -> Response:
     if requests is None:
         raise HTTPException(status_code=501, detail="requests is not installed")
-    url = f"{_OSM_TILE_BASE}/{z}/{x}/{y}.png"
+    cache_key = _osm_cache_key(z, x, y)
+    cached = _get_cached_osm_tile(cache_key)
+    if cached:
+        if_none_match = request.headers.get("if-none-match")
+        if if_none_match and if_none_match == cached.get("etag"):
+            return Response(status_code=304, headers=_osm_cache_headers(cached.get("etag")))
+        headers = _osm_cache_headers(cached.get("etag"))
+        headers["X-Cache"] = "HIT"
+        return Response(
+            content=cached.get("content", b""),
+            status_code=200,
+            media_type=cached.get("content_type", "image/png"),
+            headers=headers,
+        )
+    url = _osm_tile_url(z, x, y)
     try:
         resp = requests.get(
             url,
             timeout=DEFAULT_TIMEOUT,
-            headers={"User-Agent": "mcp-geo-playground"},
+            headers={"User-Agent": _osm_user_agent()},
         )
     except (req_exc.ConnectionError, req_exc.Timeout) as exc:
         raise HTTPException(status_code=502, detail=f"OSM proxy error: {exc}") from exc
     content_type = resp.headers.get("content-type", "image/png")
     if resp.status_code != 200:
         return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
-    return Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
+    etag = _store_osm_tile(cache_key, resp.content, content_type)
+    headers = _osm_cache_headers(etag)
+    headers["X-Cache"] = "MISS"
+    return Response(
+        content=resp.content,
+        status_code=resp.status_code,
+        media_type=content_type,
+        headers=headers,
+    )

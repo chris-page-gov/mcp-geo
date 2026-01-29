@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"
     PLAYGROUND_EVENT_LOG_PATH: str = "logs/playground-events.jsonl"
     CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
+    OSM_TILE_BASE: str = "https://tile.openstreetmap.org"
+    OSM_TILE_CACHE_TTL: float = 3600.0
+    OSM_TILE_CACHE_SIZE: int = 512
+    OSM_TILE_USER_AGENT: str = "mcp-geo-playground"
+    OSM_TILE_CONTACT: str = "https://github.com/chris-page-gov/mcp-geo"
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

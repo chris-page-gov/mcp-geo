@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-01-27
+Last updated: 2026-01-29
 
 ## Sources reviewed
 
@@ -104,6 +104,22 @@ Low impact
 | Classify OS API key failures (missing/invalid/expired) | Done | OS client + map proxy now map auth errors. |
 | Refresh docs + changelog for MCP-Apps alignment + key requirements | Done | README, Build, tutorial, troubleshooting, and release notes updated. |
 | Cut 0.2.6 release | In progress | Versions bumped + tests run; pending commit/tag. |
+
+## Map handling review follow-ups (2026-01-28)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Add OSM tile proxy caching + UA/contact + configurable base | Done | server/maps_proxy.py, server/config.py, .env.example |
+| Gate allow-same-origin in playground sandbox | Pending | playground/src/App.svelte |
+| Parallelize + cache focus boundary enrichment | Pending | ui/geography_selector.html |
+| Add overlay update queue for style transitions | Pending | ui/geography_selector.html |
+| Tighten CSP allowlist for geography selector | Pending | server/mcp/resource_catalog.py, docs/mcp_apps_alignment.md |
+| Vendor MapLibre CSP worker locally | Pending | ui/vendor, server/maps_proxy.py, ui/geography_selector.html |
+| Centralize diagnostics + debug badge updates | Pending | ui/geography_selector.html |
+| Extract MapLibre adapter module | Pending | ui/ |
+| Introduce async map mutation queue | Pending | ui/ |
+| Split UI tool-call services from controller | Pending | ui/ |
+| Add map proxy + UI style switch tests | Pending | tests/, playground/tests/ |
 
 ## Playground UI gap map (focus on MCP-Apps tools)
 
