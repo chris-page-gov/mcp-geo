@@ -115,7 +115,7 @@ Low impact
 | Add overlay update queue for style transitions | Done | ui/geography_selector.html |
 | Tighten CSP allowlist for geography selector | Done | server/mcp/resource_catalog.py, docs/mcp_apps_alignment.md |
 | Vendor MapLibre CSP worker locally | Done | ui/vendor, server/maps_proxy.py, ui/geography_selector.html |
-| Centralize diagnostics + debug badge updates | Pending | ui/geography_selector.html |
+| Centralize diagnostics + debug badge updates | Done | ui/geography_selector.html |
 | Extract MapLibre adapter module | Pending | ui/ |
 | Introduce async map mutation queue | Pending | ui/ |
 | Split UI tool-call services from controller | Pending | ui/ |

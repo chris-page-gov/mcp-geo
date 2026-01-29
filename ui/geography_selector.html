@@ -625,6 +625,7 @@
 
       const pendingCalls = new Map();
       let rpcId = 0;
+      let diagnosticsFrame = null;
 
       function postToHost(message) {
         if (window.parent) {
@@ -664,7 +665,7 @@
             document.querySelectorAll(".segment button").forEach((b) => b.classList.remove("active"));
             btn.classList.add("active");
             logUiEvent("mode_change", { mode: mode.id });
-            updateDebugBadges();
+            scheduleDiagnosticsUpdate();
           });
           if (mode === state.mode) {
             btn.classList.add("active");
@@ -742,6 +743,22 @@
         });
       }
 
+      function scheduleDiagnosticsUpdate() {
+        if (diagnosticsFrame) {
+          return;
+        }
+        const run = () => {
+          diagnosticsFrame = null;
+          updateDebugBadges();
+          updateDiagnostics();
+        };
+        if (typeof requestAnimationFrame === "function") {
+          diagnosticsFrame = requestAnimationFrame(run);
+        } else {
+          diagnosticsFrame = setTimeout(run, 0);
+        }
+      }
+
       function updateDebugBadges() {
         if (!debugBadgesEl) {
           return;
@@ -782,7 +799,6 @@
           ${errorLabel ? `<span class="debug-badge">${errorLabel}</span>` : ""}
           <span class="debug-badge">Style: ${style}</span>
         `;
-        updateDiagnostics();
       }
 
       function redactSecrets(text) {
@@ -1079,7 +1095,7 @@
           addSourcesAndLayers();
           updateZoomLadder(state.map.getZoom());
           state.map.resize();
-          updateDiagnostics();
+          scheduleDiagnosticsUpdate();
         });
         state.map.on("error", (event) => {
           if (event?.error) {
@@ -1093,7 +1109,7 @@
                 ? { x: event.tile.x, y: event.tile.y, z: event.tile.z }
                 : null,
             };
-            updateDebugBadges();
+            scheduleDiagnosticsUpdate();
           }
         });
         state.map.on("sourcedata", (event) => {
@@ -1115,7 +1131,7 @@
             sourceDataType: event.sourceDataType || null,
             time: new Date().toISOString(),
           };
-          updateDiagnostics();
+          scheduleDiagnosticsUpdate();
         });
         state.map.on("style.load", () => {
           state.lastMapError = null;
@@ -1123,11 +1139,10 @@
           addSourcesAndLayers();
           flushOverlayQueue();
           state.map.resize();
-          updateDebugBadges();
-          updateDiagnostics();
+          scheduleDiagnosticsUpdate();
         });
-        state.map.on("moveend", () => updateDiagnostics());
-        state.map.on("idle", () => updateDiagnostics());
+        state.map.on("moveend", () => scheduleDiagnosticsUpdate());
+        state.map.on("idle", () => scheduleDiagnosticsUpdate());
         state.map.on("zoom", () => updateZoomLadder(state.map.getZoom()));
         state.map.on("mousemove", (event) => {
           if (!state.map.getLayer("boundaries-fill")) {
@@ -1248,7 +1263,7 @@
         if (typeof state.map.isStyleLoaded === "function" && !state.map.isStyleLoaded()) {
           state.sourcesInitializing = false;
           state.lastMapError = "Style not loaded";
-          updateDebugBadges();
+          scheduleDiagnosticsUpdate();
           state.map.once("style.load", addSourcesAndLayers);
           return;
         }
@@ -1315,7 +1330,7 @@
         } catch (err) {
           state.sourcesInitializing = false;
           state.lastMapError = err?.message || "Layer add failed";
-          updateDebugBadges();
+          scheduleDiagnosticsUpdate();
           return;
         }
 
@@ -1336,7 +1351,7 @@
             state.sourcesReady = false;
           }
         }
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
       }
 
       function ensureOverlaySources() {
@@ -1446,7 +1461,7 @@
           properties: { name: f.name, level: f.level, id: f.id, bbox: f.bbox },
         }));
         state.boundaryFeatures = polygons;
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
         if (!ensureOverlaySources()) {
           queueOverlayUpdate("boundaries", () => setBoundaries(features));
           return;
@@ -1475,7 +1490,7 @@
           return;
         }
         state.boundaryFeatures = [feature];
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
         if (!ensureOverlaySources()) {
           queueOverlayUpdate("boundary-geometry", () => setBoundaryGeometry(geometry));
           return;
@@ -1529,7 +1544,7 @@
           })
           .filter(Boolean);
         state.addressPointCount = points.length;
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
         if (!ensureOverlaySources()) {
           queueOverlayUpdate("addresses", () => setAddresses(addresses));
           return;
@@ -1574,7 +1589,7 @@
           })
           .filter(Boolean);
         selectedSource.setData(featureCollection(points));
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
       }
 
       function renderResults(items) {
@@ -1582,7 +1597,7 @@
         state.resultCount = items.length;
         if (!items.length) {
           resultsEl.innerHTML = '<div class="result-meta">No results yet.</div>';
-          updateDebugBadges();
+          scheduleDiagnosticsUpdate();
           return;
         }
         items.forEach((item) => {
@@ -1592,7 +1607,7 @@
           card.addEventListener("click", (event) => selectResult(item, event));
           resultsEl.appendChild(card);
         });
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
       }
 
       function previewResults(items) {
@@ -1713,7 +1728,7 @@
           const boundarySource = state.map.getSource("boundaries");
           if (!boundarySource) {
             state.sourcesReady = false;
-            updateDebugBadges();
+            scheduleDiagnosticsUpdate();
             return;
           }
           boundarySource.setData(featureCollection(features));
@@ -1737,7 +1752,7 @@
       function renderError(message) {
         resultsEl.innerHTML = `<div class="result-error">${message}</div>`;
         state.resultCount = 0;
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
       }
 
       function renderSelectionSummary() {
@@ -1974,7 +1989,7 @@
         if (results.length) {
           drawFocusBoundariesForAddresses(results.flatMap((item) => item.addresses || []));
         }
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
         statusEl.textContent = "Ready";
         if (results.length === 1) {
           selectResult(results[0]);
@@ -2116,7 +2131,7 @@
           }
           state.lastMapError = null;
           applyVectorTiles();
-          updateDebugBadges();
+          scheduleDiagnosticsUpdate();
           return;
         }
         const proxyBase = state.proxyBase || "http://localhost:8000";
@@ -2141,7 +2156,7 @@
           updateBaseMapOpacity();
           updateSelectedAddressesLayer();
         });
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
       }
 
       function updateBaseMapOpacity() {
@@ -2224,7 +2239,7 @@
         renderSelectionSummary();
         if (state.map) {
           if (!ensureOverlaySources()) {
-            updateDebugBadges();
+            scheduleDiagnosticsUpdate();
             return;
           }
           const boundarySource = state.map.getSource("boundaries");
@@ -2241,7 +2256,7 @@
           }
           setHoverBoundary(null);
         }
-        updateDebugBadges();
+        scheduleDiagnosticsUpdate();
       });
       apiKeyInput.addEventListener("change", applyVectorTiles);
       apiKeyInput.addEventListener("copy", (event) => event.preventDefault());
@@ -2297,7 +2312,7 @@
       initMap();
       renderResults([]);
       renderSelectionSummary();
-      updateDebugBadges();
+      scheduleDiagnosticsUpdate();
 
       if (window.ResizeObserver) {
         const resizeObserver = new ResizeObserver(() => {
