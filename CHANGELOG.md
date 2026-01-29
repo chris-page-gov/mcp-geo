@@ -48,6 +48,7 @@ All notable changes to this project will be documented in this file.
 
 ### Tests
 - Added prompt and tool-search validation coverage to restore 90% gate.
+- Added map proxy unit coverage and a geography selector style-switch Playwright flow.
 
 ## [0.2.6] - 2026-01-27
 ### Added

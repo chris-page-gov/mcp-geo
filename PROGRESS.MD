@@ -119,7 +119,7 @@ Low impact
 | Extract MapLibre adapter module | Done | ui/geography_selector.html |
 | Introduce async map mutation queue | Done | ui/geography_selector.html |
 | Split UI tool-call services from controller | Done | ui/geography_selector.html |
-| Add map proxy + UI style switch tests | Pending | tests/, playground/tests/ |
+| Add map proxy + UI style switch tests | Done | tests/, playground/tests/ |
 
 ## Playground UI gap map (focus on MCP-Apps tools)
 
