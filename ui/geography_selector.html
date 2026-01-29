@@ -931,7 +931,7 @@
         if (state.containingAreasCache.has(key)) {
           return state.containingAreasCache.get(key) || [];
         }
-        const data = await safeToolCall("admin_lookup.containing_areas", { lat, lon });
+        const data = await adminLookupService.containingAreas(lat, lon);
         const results = Array.isArray(data?.results) ? data.results : [];
         state.containingAreasCache.set(key, results);
         return results;
@@ -946,10 +946,10 @@
         }
         let geo = null;
         try {
-          geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: true });
+          geo = await adminLookupService.areaGeometry(id, true);
         } catch (err) {
           state.lastMapError = err?.message || "Boundary geometry fetch failed";
-          geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: false });
+          geo = await adminLookupService.areaGeometry(id, false);
         }
         const record = geo
           ? {
@@ -1889,7 +1889,7 @@
         try {
           if (mode === "postcode") {
             const postcode = normalizePostcode(query);
-            const data = await safeToolCall("os_places.by_postcode", { postcode });
+            const data = await placesService.byPostcode(postcode);
             const uprns = (data.uprns || []).map((entry) => ({
               title: entry.address || `UPRN ${entry.uprn}`,
               subtitle: entry.classificationDescription || entry.classification || "Address",
@@ -1898,7 +1898,7 @@
             }));
             results = uprns;
           } else if (mode === "uprn") {
-            const data = await safeToolCall("os_places.by_uprn", { uprn: query });
+            const data = await placesService.byUprn(query);
             const item = data.result || data;
             if (!item) {
               renderError("No UPRN match found.");
@@ -1913,7 +1913,7 @@
               },
             ];
           } else if (mode === "gss") {
-            const data = await safeToolCall("admin_lookup.area_geometry", { id: query, includeGeometry: true });
+            const data = await adminLookupService.areaGeometry(query, true);
             if (!data || !data.bbox) {
               renderError("No geometry returned for that code.");
               return;
@@ -1932,7 +1932,7 @@
           } else if (mode === "free") {
             const trimmed = query.trim();
             if (isLikelyGss(trimmed)) {
-              const data = await safeToolCall("admin_lookup.area_geometry", { id: trimmed, includeGeometry: true });
+              const data = await adminLookupService.areaGeometry(trimmed, true);
               if (data && data.bbox) {
                 results = [
                   {
@@ -1950,7 +1950,7 @@
                 return;
               }
             } else if (isLikelyUprn(trimmed)) {
-              const data = await safeToolCall("os_places.by_uprn", { uprn: trimmed });
+              const data = await placesService.byUprn(trimmed);
               const item = data.result || data;
               if (!item) {
                 renderError("No UPRN match found.");
@@ -1966,7 +1966,7 @@
               ];
             } else if (POSTCODE_REGEX.test(normalizePostcode(trimmed))) {
               const postcode = normalizePostcode(trimmed);
-              const data = await safeToolCall("os_places.by_postcode", { postcode });
+              const data = await placesService.byPostcode(postcode);
               const uprns = (data.uprns || []).map((entry) => ({
                 title: entry.address || `UPRN ${entry.uprn}`,
                 subtitle: entry.classificationDescription || entry.classification || "Address",
@@ -1975,7 +1975,7 @@
               }));
               results = uprns;
             } else {
-              const data = await safeToolCall("os_places.search", { text: trimmed });
+              const data = await placesService.search(trimmed);
               const entries = (data.results || []).map((entry) => ({
                 title: entry.address || "Address",
                 subtitle: entry.classificationDescription || entry.classification || "Address",
@@ -1985,7 +1985,7 @@
               results = entries;
             }
           } else {
-            const data = await safeToolCall("admin_lookup.find_by_name", { text: query });
+            const data = await adminLookupService.findByName(query);
             results = (data.results || [])
               .filter((area) => !level || area.level?.toLowerCase().includes(level) || true)
               .map((area) => ({
@@ -2026,6 +2026,19 @@
         }
         throw new Error("Tool call failed.");
       }
+
+      const placesService = {
+        search: (text) => safeToolCall("os_places.search", { text }),
+        byPostcode: (postcode) => safeToolCall("os_places.by_postcode", { postcode }),
+        byUprn: (uprn) => safeToolCall("os_places.by_uprn", { uprn }),
+      };
+
+      const adminLookupService = {
+        findByName: (text) => safeToolCall("admin_lookup.find_by_name", { text }),
+        containingAreas: (lat, lon) => safeToolCall("admin_lookup.containing_areas", { lat, lon }),
+        areaGeometry: (id, includeGeometry) =>
+          safeToolCall("admin_lookup.area_geometry", { id, includeGeometry }),
+      };
 
       function summarizeSelection(item) {
         if (!item) {
