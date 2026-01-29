@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Geography selector CSP allowlist now removes unused direct OSM tile domains.
 - Geography selector now serves the MapLibre CSP worker locally via the map proxy.
 - Geography selector diagnostics now refresh through a single scheduled updater.
+- Geography selector map operations now route through a MapLibre adapter module.
 
 ### Fixed
 - Playground connect button now disables when connected.

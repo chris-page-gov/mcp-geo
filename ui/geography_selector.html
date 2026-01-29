@@ -1616,12 +1616,12 @@
         }
         const areas = items.filter((item) => item.bbox);
         if (areas.length) {
-          setBoundaries(areas);
+          mapAdapter.setBoundaries(areas);
         }
         const addresses = items.flatMap((item) => item.addresses || []);
         if (addresses.length) {
           state.addressResults = addresses;
-          setAddresses(addresses);
+          mapAdapter.setAddresses(addresses);
         }
       }
 
@@ -1645,9 +1645,9 @@
           }
           const geo = await fetchAreaGeometry(match.id);
           if (geo?.geometry) {
-            setBoundaryGeometry(geo.geometry);
+            mapAdapter.setBoundaryGeometry(geo.geometry);
           } else if (geo?.bbox) {
-            setBoundaries([{ id: match.id, name: match.name, level: match.level, bbox: geo.bbox }]);
+            mapAdapter.setBoundaries([{ id: match.id, name: match.name, level: match.level, bbox: geo.bbox }]);
           }
         } catch (err) {
           return;
@@ -1807,7 +1807,7 @@
           } else {
             state.selectedAddresses.set(uprn, entry);
           }
-          updateSelectedAddressesLayer();
+          mapAdapter.setSelection();
           const lat = Number(entry.lat ?? entry.latitude);
           const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
           if (state.map && Number.isFinite(lat) && Number.isFinite(lon)) {
@@ -1840,9 +1840,9 @@
         }
         renderSelectionSummary();
         if (item.geometry) {
-          setBoundaryGeometry(item.geometry);
+          mapAdapter.setBoundaryGeometry(item.geometry);
         } else if (item.bbox) {
-          setBoundaries([item]);
+          mapAdapter.setBoundaries([item]);
         }
         logUiEvent("select_result", summarizeSelection(item));
       }
@@ -2195,6 +2195,21 @@
         });
       }
 
+      function createMapAdapter() {
+        return {
+          init: initMap,
+          setStyle: applyMapStyle,
+          setAddresses,
+          setBoundaries,
+          setBoundaryGeometry,
+          setSelection: updateSelectedAddressesLayer,
+          setOpacity: updateBaseMapOpacity,
+          setHoverBoundary,
+        };
+      }
+
+      const mapAdapter = createMapAdapter();
+
       async function bootstrapTiles() {
         return;
       }
@@ -2224,7 +2239,7 @@
         if (kind === "area") {
           const entry = state.selectedAreas.get(key);
           if (entry && entry.bbox) {
-            setBoundaries([entry]);
+            mapAdapter.setBoundaries([entry]);
           }
         }
       });
@@ -2254,17 +2269,17 @@
           if (selectedSource) {
             selectedSource.setData(featureCollection([]));
           }
-          setHoverBoundary(null);
+          mapAdapter.setHoverBoundary(null);
         }
         scheduleDiagnosticsUpdate();
       });
-      apiKeyInput.addEventListener("change", applyVectorTiles);
+      apiKeyInput.addEventListener("change", () => mapAdapter.setStyle(mapStyleSelect.value));
       apiKeyInput.addEventListener("copy", (event) => event.preventDefault());
       apiKeyInput.addEventListener("cut", (event) => event.preventDefault());
       apiKeyInput.addEventListener("contextmenu", (event) => event.preventDefault());
       apiKeyInput.addEventListener("selectstart", (event) => event.preventDefault());
-      mapStyleSelect.addEventListener("change", () => applyMapStyle(mapStyleSelect.value));
-      mapOpacity.addEventListener("input", updateBaseMapOpacity);
+      mapStyleSelect.addEventListener("change", () => mapAdapter.setStyle(mapStyleSelect.value));
+      mapOpacity.addEventListener("input", () => mapAdapter.setOpacity());
       levelSelect.addEventListener("change", () => {
         if (state.addressResults.length) {
           drawFocusBoundariesForAddresses(state.addressResults);
@@ -2295,7 +2310,7 @@
         if (message.method === "ui/notifications/tool-input") {
           applyConfig(message.params?.arguments || {});
           if (state.hostReady) {
-            applyMapStyle(mapStyleSelect.value);
+            mapAdapter.setStyle(mapStyleSelect.value);
           }
           return;
         }
@@ -2309,7 +2324,7 @@
       buildSelectionModeButtons();
       buildZoomLadder();
       buildLayerToggles();
-      initMap();
+      mapAdapter.init();
       renderResults([]);
       renderSelectionSummary();
       scheduleDiagnosticsUpdate();
@@ -2332,7 +2347,7 @@
           state.hostReady = true;
           statusEl.textContent = "Host connected";
           applyHostContext(result?.hostContext || {});
-          applyMapStyle(mapStyleSelect.value);
+          mapAdapter.setStyle(mapStyleSelect.value);
           logUiEvent("host_ready", { name: "geography-selector" });
           rpcNotify("ui/notifications/initialized", {});
         } catch (err) {
