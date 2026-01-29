@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - OSM tile proxy now caches tiles and supports configurable base URL + contactable user agent settings.
 - Playground sandbox now requires explicit allow-same-origin opt-in outside dev mode.
 - Geography selector now batches focus-boundary lookups and caches admin results per session.
+- Geography selector now queues overlay updates during style transitions to avoid missing sources.
 
 ### Fixed
 - Playground connect button now disables when connected.

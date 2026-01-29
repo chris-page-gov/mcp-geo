@@ -578,6 +578,7 @@
         map: null,
         sourcesReady: false,
         sourcesInitializing: false,
+        overlayQueue: new Map(),
         selection: null,
         hostReady: false,
         vectorTiles: null,
@@ -1118,6 +1119,8 @@
         state.map.on("style.load", () => {
           state.lastMapError = null;
           state.lastMapErrorDetail = null;
+          addSourcesAndLayers();
+          flushOverlayQueue();
           state.map.resize();
           updateDebugBadges();
           updateDiagnostics();
@@ -1319,6 +1322,7 @@
         state.sourcesInitializing = false;
         updateBaseMapOpacity();
         applyLayerVisibility();
+        flushOverlayQueue();
         if (state.addressResults.length) {
           setAddresses(state.addressResults);
           updateSelectedAddressesLayer();
@@ -1351,6 +1355,28 @@
           addSourcesAndLayers();
         }
         return Boolean(state.sourcesReady && boundariesReady && addressesReady && selectedReady);
+      }
+
+      function queueOverlayUpdate(key, handler) {
+        if (!state.overlayQueue) {
+          state.overlayQueue = new Map();
+        }
+        state.overlayQueue.set(key, handler);
+      }
+
+      function flushOverlayQueue() {
+        if (!state.map || !state.sourcesReady || !state.overlayQueue?.size) {
+          return;
+        }
+        const pending = new Map(state.overlayQueue);
+        state.overlayQueue.clear();
+        pending.forEach((handler) => {
+          try {
+            handler();
+          } catch (err) {
+            return;
+          }
+        });
       }
 
       function toggleLayer(layerId, isVisible) {
@@ -1414,7 +1440,14 @@
       }
 
       function setBoundaries(features) {
+        const polygons = features.map((f) => ({
+          ...bboxToPolygon(f.bbox),
+          properties: { name: f.name, level: f.level, id: f.id, bbox: f.bbox },
+        }));
+        state.boundaryFeatures = polygons;
+        updateDebugBadges();
         if (!ensureOverlaySources()) {
+          queueOverlayUpdate("boundaries", () => setBoundaries(features));
           return;
         }
         const boundarySource = state.map?.getSource("boundaries");
@@ -1422,12 +1455,6 @@
           state.sourcesReady = false;
           return;
         }
-        const polygons = features.map((f) => ({
-          ...bboxToPolygon(f.bbox),
-          properties: { name: f.name, level: f.level, id: f.id, bbox: f.bbox },
-        }));
-        state.boundaryFeatures = polygons;
-        updateDebugBadges();
         if (!state.map || !state.sourcesReady) {
           return;
         }
@@ -1449,6 +1476,7 @@
         state.boundaryFeatures = [feature];
         updateDebugBadges();
         if (!ensureOverlaySources()) {
+          queueOverlayUpdate("boundary-geometry", () => setBoundaryGeometry(geometry));
           return;
         }
         const boundarySource = state.map?.getSource("boundaries");
@@ -1469,6 +1497,7 @@
 
       function setHoverBoundary(feature) {
         if (!state.map || !state.sourcesReady) {
+          queueOverlayUpdate("boundary-hover", () => setHoverBoundary(feature));
           return;
         }
         const source = state.map.getSource("boundaries-hover");
@@ -1484,14 +1513,6 @@
 
       function setAddresses(addresses) {
         state.addressResults = addresses;
-        if (!ensureOverlaySources()) {
-          return;
-        }
-        const addressesSource = state.map?.getSource("addresses");
-        if (!addressesSource) {
-          state.sourcesReady = false;
-          return;
-        }
         const points = addresses
           .map((a) => {
             const lat = Number(a.lat ?? a.latitude);
@@ -1508,6 +1529,15 @@
           .filter(Boolean);
         state.addressPointCount = points.length;
         updateDebugBadges();
+        if (!ensureOverlaySources()) {
+          queueOverlayUpdate("addresses", () => setAddresses(addresses));
+          return;
+        }
+        const addressesSource = state.map?.getSource("addresses");
+        if (!addressesSource) {
+          state.sourcesReady = false;
+          return;
+        }
         addressesSource.setData(featureCollection(points));
         if (points.length) {
           const bounds = points.reduce(
@@ -1520,6 +1550,7 @@
 
       function updateSelectedAddressesLayer() {
         if (!ensureOverlaySources()) {
+          queueOverlayUpdate("addresses-selected", () => updateSelectedAddressesLayer());
           return;
         }
         const selectedSource = state.map?.getSource("addresses-selected");
@@ -2061,6 +2092,7 @@
           state.map.setStyle(styleUrl);
           state.map.once("style.load", () => {
             addSourcesAndLayers();
+            flushOverlayQueue();
             updateBaseMapOpacity();
             updateSelectedAddressesLayer();
           });
@@ -2101,6 +2133,7 @@
         state.map.setStyle(fallbackStyle);
         state.map.once("style.load", () => {
           addSourcesAndLayers();
+          flushOverlayQueue();
           updateBaseMapOpacity();
           updateSelectedAddressesLayer();
         });
