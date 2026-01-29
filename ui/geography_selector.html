@@ -578,7 +578,7 @@
         map: null,
         sourcesReady: false,
         sourcesInitializing: false,
-        overlayQueue: new Map(),
+        mapMutationQueue: new Map(),
         selection: null,
         hostReady: false,
         vectorTiles: null,
@@ -626,6 +626,7 @@
       const pendingCalls = new Map();
       let rpcId = 0;
       let diagnosticsFrame = null;
+      let mapMutationFlushScheduled = false;
 
       function postToHost(message) {
         if (window.parent) {
@@ -1137,7 +1138,7 @@
           state.lastMapError = null;
           state.lastMapErrorDetail = null;
           addSourcesAndLayers();
-          flushOverlayQueue();
+          scheduleMapMutationFlush();
           state.map.resize();
           scheduleDiagnosticsUpdate();
         });
@@ -1338,7 +1339,7 @@
         state.sourcesInitializing = false;
         updateBaseMapOpacity();
         applyLayerVisibility();
-        flushOverlayQueue();
+        scheduleMapMutationFlush();
         if (state.addressResults.length) {
           setAddresses(state.addressResults);
           updateSelectedAddressesLayer();
@@ -1373,26 +1374,41 @@
         return Boolean(state.sourcesReady && boundariesReady && addressesReady && selectedReady);
       }
 
-      function queueOverlayUpdate(key, handler) {
-        if (!state.overlayQueue) {
-          state.overlayQueue = new Map();
+      function enqueueMapMutation(key, handler) {
+        if (!state.mapMutationQueue) {
+          state.mapMutationQueue = new Map();
         }
-        state.overlayQueue.set(key, handler);
+        return new Promise((resolve) => {
+          state.mapMutationQueue.set(key, { handler, resolve });
+          scheduleMapMutationFlush();
+        });
       }
 
-      function flushOverlayQueue() {
-        if (!state.map || !state.sourcesReady || !state.overlayQueue?.size) {
+      function scheduleMapMutationFlush() {
+        if (mapMutationFlushScheduled) {
           return;
         }
-        const pending = new Map(state.overlayQueue);
-        state.overlayQueue.clear();
-        pending.forEach((handler) => {
-          try {
-            handler();
-          } catch (err) {
-            return;
-          }
+        mapMutationFlushScheduled = true;
+        Promise.resolve().then(() => {
+          mapMutationFlushScheduled = false;
+          void flushMapMutations();
         });
+      }
+
+      async function flushMapMutations() {
+        if (!state.map || !state.sourcesReady || !state.mapMutationQueue?.size) {
+          return;
+        }
+        const pending = new Map(state.mapMutationQueue);
+        state.mapMutationQueue.clear();
+        for (const entry of pending.values()) {
+          try {
+            await entry.handler();
+            entry.resolve(true);
+          } catch (err) {
+            entry.resolve(false);
+          }
+        }
       }
 
       function toggleLayer(layerId, isVisible) {
@@ -1463,7 +1479,7 @@
         state.boundaryFeatures = polygons;
         scheduleDiagnosticsUpdate();
         if (!ensureOverlaySources()) {
-          queueOverlayUpdate("boundaries", () => setBoundaries(features));
+          void enqueueMapMutation("boundaries", () => setBoundaries(features));
           return;
         }
         const boundarySource = state.map?.getSource("boundaries");
@@ -1492,7 +1508,7 @@
         state.boundaryFeatures = [feature];
         scheduleDiagnosticsUpdate();
         if (!ensureOverlaySources()) {
-          queueOverlayUpdate("boundary-geometry", () => setBoundaryGeometry(geometry));
+          void enqueueMapMutation("boundary-geometry", () => setBoundaryGeometry(geometry));
           return;
         }
         const boundarySource = state.map?.getSource("boundaries");
@@ -1513,7 +1529,7 @@
 
       function setHoverBoundary(feature) {
         if (!state.map || !state.sourcesReady) {
-          queueOverlayUpdate("boundary-hover", () => setHoverBoundary(feature));
+          void enqueueMapMutation("boundary-hover", () => setHoverBoundary(feature));
           return;
         }
         const source = state.map.getSource("boundaries-hover");
@@ -1546,7 +1562,7 @@
         state.addressPointCount = points.length;
         scheduleDiagnosticsUpdate();
         if (!ensureOverlaySources()) {
-          queueOverlayUpdate("addresses", () => setAddresses(addresses));
+          void enqueueMapMutation("addresses", () => setAddresses(addresses));
           return;
         }
         const addressesSource = state.map?.getSource("addresses");
@@ -1566,7 +1582,7 @@
 
       function updateSelectedAddressesLayer() {
         if (!ensureOverlaySources()) {
-          queueOverlayUpdate("addresses-selected", () => updateSelectedAddressesLayer());
+          void enqueueMapMutation("addresses-selected", () => updateSelectedAddressesLayer());
           return;
         }
         const selectedSource = state.map?.getSource("addresses-selected");
@@ -2111,7 +2127,7 @@
           state.map.setStyle(styleUrl);
           state.map.once("style.load", () => {
             addSourcesAndLayers();
-            flushOverlayQueue();
+            scheduleMapMutationFlush();
             updateBaseMapOpacity();
             updateSelectedAddressesLayer();
           });
@@ -2152,7 +2168,7 @@
         state.map.setStyle(fallbackStyle);
         state.map.once("style.load", () => {
           addSourcesAndLayers();
-          flushOverlayQueue();
+          scheduleMapMutationFlush();
           updateBaseMapOpacity();
           updateSelectedAddressesLayer();
         });
