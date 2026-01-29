@@ -1054,7 +1054,8 @@
         if (!window.maplibregl) {
           return;
         }
-        maplibregl.workerUrl = "https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl-csp-worker.js";
+        const proxyBase = state.proxyBase || "http://localhost:8000";
+        maplibregl.workerUrl = `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
         const fallbackStyle = {
           version: 8,
           sources: {},
@@ -2068,6 +2069,9 @@
         }
         if (mcpGeo.vectorTiles) {
           state.vectorTiles = mcpGeo.vectorTiles;
+        }
+        if (state.map && window.maplibregl && state.proxyBase) {
+          maplibregl.workerUrl = `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
         }
       }
 

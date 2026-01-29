@@ -43,7 +43,7 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "https://fonts.gstatic.com",
                 "https://unpkg.com",
             ],
-            "workerDomains": ["self", "blob:", "https://unpkg.com"],
+            "workerDomains": ["self", "blob:"],
         },
         "permissions": {"sameOrigin": True},
     },

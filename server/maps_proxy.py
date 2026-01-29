@@ -24,6 +24,7 @@ _DEFAULT_STYLE_NAME = "OS_VTS_3857_Light.json"
 _OSM_TILE_BASE = "https://tile.openstreetmap.org"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _LOCAL_STYLE_DIR = _REPO_ROOT / "submodules" / "os-vector-tile-api-stylesheets"
+_MAPLIBRE_WORKER_PATH = _REPO_ROOT / "ui" / "vendor" / "maplibre-gl-csp-worker.js"
 _OSM_CACHE_LOCK = threading.Lock()
 _OSM_CACHE: "OrderedDict[str, dict[str, Any]]" = OrderedDict()
 _OSM_CACHE_KEY_SEP = "/"
@@ -331,6 +332,17 @@ def _get_upstream_style(style_name: str | None, params: dict[str, Any], key: str
             return resp
         last_resp = resp
     return last_resp if last_resp is not None else resp
+
+
+@router.get("/maps/worker/maplibre-gl-csp-worker.js")
+def serve_maplibre_worker() -> Response:
+    if not _MAPLIBRE_WORKER_PATH.is_file():
+        raise HTTPException(status_code=404, detail="MapLibre worker not found")
+    return Response(
+        content=_MAPLIBRE_WORKER_PATH.read_bytes(),
+        media_type="application/javascript",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 @router.get("/maps/vector/{path:path}")

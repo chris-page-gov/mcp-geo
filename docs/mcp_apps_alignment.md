@@ -16,6 +16,7 @@ removes legacy OpenAI Apps (skybridge) compatibility.
 - UI host/view communication uses JSON-RPC 2.0 over `postMessage` with
   `ui/initialize` → `ui/notifications/initialized`, and the UI uses standard
   MCP methods like `tools/call` and `resources/read`.
+- The MapLibre CSP worker is served locally at `/maps/worker/maplibre-gl-csp-worker.js`.
 
 ## CSP Allowlist (Geography Selector)
 The geography selector declares:

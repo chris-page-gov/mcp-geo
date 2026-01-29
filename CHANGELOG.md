@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - Geography selector now batches focus-boundary lookups and caches admin results per session.
 - Geography selector now queues overlay updates during style transitions to avoid missing sources.
 - Geography selector CSP allowlist now removes unused direct OSM tile domains.
+- Geography selector now serves the MapLibre CSP worker locally via the map proxy.
 
 ### Fixed
 - Playground connect button now disables when connected.
