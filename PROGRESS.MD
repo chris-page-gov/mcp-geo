@@ -111,7 +111,7 @@ Low impact
 | --- | --- | --- |
 | Add OSM tile proxy caching + UA/contact + configurable base | Done | server/maps_proxy.py, server/config.py, .env.example |
 | Gate allow-same-origin in playground sandbox | Done | playground/src/App.svelte |
-| Parallelize + cache focus boundary enrichment | Pending | ui/geography_selector.html |
+| Parallelize + cache focus boundary enrichment | Done | ui/geography_selector.html |
 | Add overlay update queue for style transitions | Pending | ui/geography_selector.html |
 | Tighten CSP allowlist for geography selector | Pending | server/mcp/resource_catalog.py, docs/mcp_apps_alignment.md |
 | Vendor MapLibre CSP worker locally | Pending | ui/vendor, server/maps_proxy.py, ui/geography_selector.html |

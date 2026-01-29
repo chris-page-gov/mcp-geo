@@ -583,6 +583,8 @@
         vectorTiles: null,
         selectedAddresses: new Map(),
         selectedAreas: new Map(),
+        containingAreasCache: new Map(),
+        areaGeometryCache: new Map(),
         addressResults: [],
         boundaryFeatures: [],
         addressPointCount: 0,
@@ -883,6 +885,67 @@
           }
         });
         return inView;
+      }
+
+      function coordinateCacheKey(lat, lon) {
+        const latNum = Number(lat);
+        const lonNum = Number(lon);
+        if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
+          return null;
+        }
+        return `${latNum.toFixed(5)},${lonNum.toFixed(5)}`;
+      }
+
+      function findFocusMatch(results, focusLevel) {
+        if (!Array.isArray(results) || !focusLevel) {
+          return null;
+        }
+        return results.find(
+          (entry) => String(entry.level || "").toLowerCase() === focusLevel.toLowerCase()
+        );
+      }
+
+      async function fetchContainingAreas(lat, lon) {
+        const key = coordinateCacheKey(lat, lon);
+        if (!key) {
+          return [];
+        }
+        if (state.containingAreasCache.has(key)) {
+          return state.containingAreasCache.get(key) || [];
+        }
+        const data = await safeToolCall("admin_lookup.containing_areas", { lat, lon });
+        const results = Array.isArray(data?.results) ? data.results : [];
+        state.containingAreasCache.set(key, results);
+        return results;
+      }
+
+      async function fetchAreaGeometry(id) {
+        if (!id) {
+          return null;
+        }
+        if (state.areaGeometryCache.has(id)) {
+          return state.areaGeometryCache.get(id);
+        }
+        let geo = null;
+        try {
+          geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: true });
+        } catch (err) {
+          state.lastMapError = err?.message || "Boundary geometry fetch failed";
+          geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: false });
+        }
+        const record = geo
+          ? {
+              id,
+              name: geo.name || null,
+              level: geo.level || null,
+              geometry: geo.geometry || null,
+              bbox: geo.bbox || null,
+            }
+          : null;
+        if (record && (record.geometry || record.bbox)) {
+          state.areaGeometryCache.set(id, record);
+        }
+        return record;
       }
 
       function updateDiagnostics() {
@@ -1528,23 +1591,15 @@
           return;
         }
         try {
-          const data = await safeToolCall("admin_lookup.containing_areas", {
-            lat: address.lat,
-            lon: address.lon,
-          });
-          const match = (data.results || []).find(
-            (entry) => String(entry.level || "").toLowerCase() === focusLevel.toLowerCase()
-          );
+          const results = await fetchContainingAreas(address.lat, address.lon);
+          const match = findFocusMatch(results, focusLevel);
           if (!match || !match.id) {
             return;
           }
-          const geo = await safeToolCall("admin_lookup.area_geometry", {
-            id: match.id,
-            includeGeometry: true,
-          });
-          if (geo.geometry) {
+          const geo = await fetchAreaGeometry(match.id);
+          if (geo?.geometry) {
             setBoundaryGeometry(geo.geometry);
-          } else if (geo.bbox) {
+          } else if (geo?.bbox) {
             setBoundaries([{ id: match.id, name: match.name, level: match.level, bbox: geo.bbox }]);
           }
         } catch (err) {
@@ -1568,51 +1623,59 @@
           return;
         }
         const ids = new Set();
-        for (const address of addresses.slice(0, 5)) {
-          try {
-            const data = await safeToolCall("admin_lookup.containing_areas", {
-              lat: address.lat,
-              lon: address.lon,
-            });
-            const match = (data.results || []).find(
-              (entry) => String(entry.level || "").toLowerCase() === focusLevel.toLowerCase()
-            );
-            if (match && match.id) {
-              ids.add(match.id);
-            }
-          } catch (err) {
+        const uniqueAddresses = [];
+        const seenCoords = new Set();
+        for (const address of addresses) {
+          const key = coordinateCacheKey(address.lat, address.lon);
+          if (!key || seenCoords.has(key)) {
             continue;
           }
+          seenCoords.add(key);
+          uniqueAddresses.push(address);
+          if (uniqueAddresses.length >= 5) {
+            break;
+          }
         }
+        const containmentResults = await Promise.allSettled(
+          uniqueAddresses.map((address) => fetchContainingAreas(address.lat, address.lon))
+        );
+        containmentResults.forEach((result) => {
+          if (result.status !== "fulfilled") {
+            return;
+          }
+          const match = findFocusMatch(result.value, focusLevel);
+          if (match && match.id) {
+            ids.add(match.id);
+          }
+        });
         if (!ids.size) {
           return;
         }
         const features = [];
-        for (const id of ids) {
-          try {
-            let geo = null;
-            try {
-              geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: true });
-            } catch (err) {
-              state.lastMapError = err?.message || "Boundary geometry fetch failed";
-              updateDebugBadges();
-              geo = await safeToolCall("admin_lookup.area_geometry", { id, includeGeometry: false });
-            }
-            if (geo && geo.geometry) {
-              const feature = arcgisGeometryToGeoJson(geo.geometry);
-              if (feature) {
-                features.push(feature);
-              }
-            } else if (geo && geo.bbox) {
-              features.push({
-                ...bboxToPolygon(geo.bbox),
-                properties: { id },
-              });
-            }
-          } catch (err) {
-            continue;
+        const geometryResults = await Promise.allSettled(
+          [...ids].map((id) => fetchAreaGeometry(id))
+        );
+        geometryResults.forEach((result) => {
+          if (result.status !== "fulfilled") {
+            return;
           }
-        }
+          const geo = result.value;
+          if (!geo) {
+            return;
+          }
+          if (geo.geometry) {
+            const feature = arcgisGeometryToGeoJson(geo.geometry);
+            if (feature) {
+              feature.properties = { id: geo.id, name: geo.name, level: geo.level };
+              features.push(feature);
+            }
+          } else if (geo.bbox) {
+            features.push({
+              ...bboxToPolygon(geo.bbox),
+              properties: { id: geo.id, name: geo.name, level: geo.level },
+            });
+          }
+        });
         if (features.length && state.map) {
           state.boundaryFeatures = features;
           const boundarySource = state.map.getSource("boundaries");
@@ -1675,11 +1738,11 @@
         const multi = event && (event.ctrlKey || event.metaKey);
         if (item.id && !item.bbox) {
           try {
-            const data = await safeToolCall("admin_lookup.area_geometry", { id: item.id, includeGeometry: true });
-            if (data.bbox) {
+            const data = await fetchAreaGeometry(item.id);
+            if (data?.bbox) {
               item.bbox = data.bbox;
             }
-            if (data.geometry) {
+            if (data?.geometry) {
               item.geometry = data.geometry;
             }
           } catch (err) {
