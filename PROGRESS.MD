@@ -113,7 +113,7 @@ Low impact
 | Gate allow-same-origin in playground sandbox | Done | playground/src/App.svelte |
 | Parallelize + cache focus boundary enrichment | Done | ui/geography_selector.html |
 | Add overlay update queue for style transitions | Done | ui/geography_selector.html |
-| Tighten CSP allowlist for geography selector | Pending | server/mcp/resource_catalog.py, docs/mcp_apps_alignment.md |
+| Tighten CSP allowlist for geography selector | Done | server/mcp/resource_catalog.py, docs/mcp_apps_alignment.md |
 | Vendor MapLibre CSP worker locally | Pending | ui/vendor, server/maps_proxy.py, ui/geography_selector.html |
 | Centralize diagnostics + debug badge updates | Pending | ui/geography_selector.html |
 | Extract MapLibre adapter module | Pending | ui/ |

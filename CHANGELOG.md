@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
 - Playground sandbox now requires explicit allow-same-origin opt-in outside dev mode.
 - Geography selector now batches focus-boundary lookups and caches admin results per session.
 - Geography selector now queues overlay updates during style transitions to avoid missing sources.
+- Geography selector CSP allowlist now removes unused direct OSM tile domains.
 
 ### Fixed
 - Playground connect button now disables when connected.

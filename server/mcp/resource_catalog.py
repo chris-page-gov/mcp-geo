@@ -32,7 +32,6 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
             "connectDomains": [
                 "self",
                 "https://api.os.uk",
-                "https://tile.openstreetmap.org",
                 "https://unpkg.com",
                 "http://localhost:8000",
                 "http://127.0.0.1:8000",
@@ -42,7 +41,6 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "https://api.os.uk",
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
-                "https://tile.openstreetmap.org",
                 "https://unpkg.com",
             ],
             "workerDomains": ["self", "blob:", "https://unpkg.com"],

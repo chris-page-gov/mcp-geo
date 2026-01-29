@@ -19,9 +19,11 @@ removes legacy OpenAI Apps (skybridge) compatibility.
 
 ## CSP Allowlist (Geography Selector)
 The geography selector declares:
-- `connectDomains`: `self`, `https://api.os.uk`, `https://tile.openstreetmap.org`
+- `connectDomains`: `self`, `https://api.os.uk`
 - `resourceDomains`: `self`, `https://api.os.uk`, `https://fonts.googleapis.com`,
-  `https://fonts.gstatic.com`, `https://tile.openstreetmap.org`, `https://unpkg.com`
+  `https://fonts.gstatic.com`, `https://unpkg.com`
+OSM tiles are proxied through the server (`/maps/raster/osm`), so direct tile
+host access is not required.
 
 ## Quick Validation
 - `resources/read` returns `ui://mcp-geo/geography-selector` with
