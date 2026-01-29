@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Fixed
+
+### Tests
+
+## [0.2.7] - 2026-01-29
+### Added
 - Playground debug tab with runtime snapshot, HMR status, and redacted logs.
 - MCP prompts list/get backed by evaluation prompt examples.
 - Geography selector diagnostics panel with source/render counts and coordinate ranges.

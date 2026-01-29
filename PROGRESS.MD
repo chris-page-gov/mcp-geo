@@ -103,7 +103,7 @@ Low impact
 | --- | --- | --- |
 | Classify OS API key failures (missing/invalid/expired) | Done | OS client + map proxy now map auth errors. |
 | Refresh docs + changelog for MCP-Apps alignment + key requirements | Done | README, Build, tutorial, troubleshooting, and release notes updated. |
-| Cut 0.2.6 release | In progress | Versions bumped + tests run; pending commit/tag. |
+| Cut 0.2.7 release | Done | Release cut on 2026-01-29 with map handling follow-ups. |
 
 ## Map handling review follow-ups (2026-01-28)
 
