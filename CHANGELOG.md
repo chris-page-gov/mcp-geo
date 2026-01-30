@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - PostGIS boundary cache module with schema + ingestion helper for admin boundaries.
 - Boundary cache documentation and environment configuration guidance.
+- Boundary ingestion pipeline script driven by `docs/Boundaries.json` + completion checklist.
 
 ### Changed
 - admin_lookup now prefers local boundary cache when enabled and accepts an optional zoom hint.
