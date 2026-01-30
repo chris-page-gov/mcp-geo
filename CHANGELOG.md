@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Map proxy now adds CORS headers for map assets to support ui:// (null-origin) fetches.
 
 ### Tests
 - Fixed Playwright geography selector spec ESM path handling.
