@@ -249,6 +249,7 @@ def _extract_attrs(feature: dict[str, Any]) -> dict[str, Any]:
 
 def _live_find_by_name(text: str, limit: int) -> list[dict[str, Any]] | None:
     results: list[dict[str, Any]] = []
+    failures = 0
     needle = _escape_like(text.upper())
     for source in ADMIN_SOURCES:
         url = _service_query_url(source.service)
@@ -262,7 +263,8 @@ def _live_find_by_name(text: str, limit: int) -> list[dict[str, Any]] | None:
         }
         data = _fetch_arcgis(url, params)
         if data is None:
-            return None
+            failures += 1
+            continue
         for feat in data.get("features", []) or []:
             attrs = _extract_attrs(feat)
             area_id = attrs.get(source.id_field)
@@ -276,11 +278,14 @@ def _live_find_by_name(text: str, limit: int) -> list[dict[str, Any]] | None:
             })
             if len(results) >= limit:
                 return results
+    if not results and failures == len(ADMIN_SOURCES):
+        return None
     return results
 
 
 def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | None:
     matches: list[dict[str, Any]] = []
+    failures = 0
     for source in ADMIN_SOURCES:
         url = _service_query_url(source.service)
         params = {
@@ -294,7 +299,8 @@ def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | Non
         }
         data = _fetch_arcgis(url, params)
         if data is None:
-            return None
+            failures += 1
+            continue
         for feat in data.get("features", []) or []:
             attrs = _extract_attrs(feat)
             area_id = attrs.get(source.id_field)
@@ -307,10 +313,13 @@ def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | Non
                 "name": str(name),
             })
     matches.sort(key=lambda item: LEVEL_INDEX.get(item.get("level", ""), 999))
+    if not matches and failures == len(ADMIN_SOURCES):
+        return None
     return matches
 
 
 def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[list[float] | None, dict[str, Any] | None, dict[str, Any] | None]:
+    failures = 0
     for source in ADMIN_SOURCES:
         url = _service_query_url(source.service)
         where = f"{source.id_field}='{_escape_like(area_id)}'"
@@ -324,7 +333,8 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
             }
             data = _fetch_arcgis(url, params)
             if data is None:
-                return None, {"code": "ERROR"}, None
+                failures += 1
+                continue
             features = data.get("features", []) or []
             if not features:
                 continue
@@ -348,7 +358,8 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
         }
         data = _fetch_arcgis(url, params)
         if data is None:
-            return None, {"code": "ERROR"}, None
+            failures += 1
+            continue
         extent = data.get("extent")
         if not extent:
             continue
@@ -357,6 +368,8 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
             continue
         meta = {"level": source.level, "source": "arcgis"}
         return [float(v) for v in bbox], meta, None
+    if failures == len(ADMIN_SOURCES):
+        return None, {"code": "ERROR"}, None
     return None, {"code": "NOT_FOUND"}, None
 
 

@@ -28,6 +28,35 @@ def _patch_admin_sources(monkeypatch):
     return source
 
 
+def _patch_admin_sources_multi(monkeypatch):
+    sources = [
+        admin_lookup.AdminSource(
+            level="TEST_A",
+            service="ExampleServiceA",
+            id_field="ID_A",
+            name_field="NAME_A",
+            lat_field="LAT",
+            lon_field="LON",
+        ),
+        admin_lookup.AdminSource(
+            level="TEST_B",
+            service="ExampleServiceB",
+            id_field="ID_B",
+            name_field="NAME_B",
+            lat_field="LAT",
+            lon_field="LON",
+        ),
+    ]
+    monkeypatch.setattr(admin_lookup, "ADMIN_SOURCES", sources)
+    monkeypatch.setattr(admin_lookup, "LEVEL_ORDER", [source.level for source in sources])
+    monkeypatch.setattr(
+        admin_lookup,
+        "LEVEL_INDEX",
+        {source.level: idx for idx, source in enumerate(sources)},
+    )
+    return sources
+
+
 def test_arcgis_client_caches_success(monkeypatch):
     client = admin_lookup._ArcGisClient()
     calls = {"count": 0}
@@ -106,6 +135,56 @@ def test_live_area_geometry_returns_bbox(monkeypatch):
     assert bbox == [0.0, 1.0, 2.0, 3.0]
     assert meta == {"level": "TEST", "source": "arcgis"}
     assert geometry is None
+
+
+def test_live_find_by_name_skips_failed_sources(monkeypatch):
+    _patch_admin_sources_multi(monkeypatch)
+    calls = {"count": 0}
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        calls["count"] += 1
+        if "ExampleServiceA" in url:
+            return None
+        return {"features": [{"attributes": {"ID_B": "X5", "NAME_B": "Example Name"}}]}
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    results = admin_lookup._live_find_by_name("Example", limit=5)
+    assert results == [{"id": "X5", "level": "TEST_B", "name": "Example Name"}]
+    assert calls["count"] == 2
+
+
+def test_live_containing_areas_skips_failed_sources(monkeypatch):
+    _patch_admin_sources_multi(monkeypatch)
+    calls = {"count": 0}
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        calls["count"] += 1
+        if "ExampleServiceA" in url:
+            return None
+        return {"features": [{"attributes": {"ID_B": "X6", "NAME_B": "Example Area"}}]}
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    results = admin_lookup._live_containing_areas(51.5, -0.1)
+    assert results == [{"id": "X6", "level": "TEST_B", "name": "Example Area"}]
+    assert calls["count"] == 2
+
+
+def test_live_area_geometry_skips_failed_sources(monkeypatch):
+    _patch_admin_sources_multi(monkeypatch)
+    calls = {"count": 0}
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        calls["count"] += 1
+        if "ExampleServiceA" in url:
+            return None
+        return {"extent": {"xmin": 1, "ymin": 2, "xmax": 3, "ymax": 4}}
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    bbox, meta, geometry = admin_lookup._live_area_geometry("X7")
+    assert bbox == [1.0, 2.0, 3.0, 4.0]
+    assert meta == {"level": "TEST_B", "source": "arcgis"}
+    assert geometry is None
+    assert calls["count"] == 2
 
 
 def test_live_find_by_id_returns_match(monkeypatch):

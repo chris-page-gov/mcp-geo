@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - (none)
 
 ### Fixed
-- (none)
+- Admin lookup live calls now tolerate per-source failures and return partial results when available.
 
 ### Tests
 - (none)
