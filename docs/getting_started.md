@@ -23,6 +23,12 @@ Set env vars for live data when you have keys:
 - `OS_API_KEY` (required) for Ordnance Survey tools
 - `ONS_LIVE_ENABLED=true` for live ONS datasets
 
+Optional: enable the PostGIS boundary cache for full admin boundaries:
+- `BOUNDARY_CACHE_ENABLED=true`
+- `BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
+
+See `docs/boundary_cache.md` for ingest + validation steps.
+
 ## 2) Use MCP Inspector (recommended)
 
 MCP Inspector is the fastest way to browse tools and try calls without writing

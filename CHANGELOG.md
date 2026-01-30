@@ -5,14 +5,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- PostGIS boundary cache module with schema + ingestion helper for admin boundaries.
+- Boundary cache documentation and environment configuration guidance.
 
 ### Changed
+- admin_lookup now prefers local boundary cache when enabled and accepts an optional zoom hint.
+- Geography selector now sends map zoom for boundary fetches and handles GeoJSON boundaries.
 
 ### Fixed
 - Map proxy now adds CORS headers for map assets to support ui:// (null-origin) fetches.
 
 ### Tests
 - Fixed Playwright geography selector spec ESM path handling.
+- Added admin_lookup boundary cache coverage.
 
 ## [0.2.7] - 2026-01-29
 ### Added

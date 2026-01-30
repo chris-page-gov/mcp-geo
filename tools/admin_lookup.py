@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     req_exc = _ReqExc()
 
 from server.config import settings
+from server.boundary_cache import get_boundary_cache
 from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
 from tools.ons_common import TTLCache
@@ -399,6 +400,12 @@ def _containing_areas(payload: dict[str, Any]) -> ToolResult:
         lon = float(raw_lon)
     except Exception:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "lat/lon must be numeric"}
+    cache = get_boundary_cache()
+    if cache:
+        cached = cache.containing_areas(lat, lon)
+        if cached is not None:
+            cached.sort(key=lambda item: LEVEL_INDEX.get(item.get("level", ""), 999))
+            return 200, {"results": cached, "live": False, "meta": {"source": "cache"}}
     if not _live_enabled():
         return 501, {
             "isError": True,
@@ -443,6 +450,20 @@ def _reverse_hierarchy(payload: dict[str, Any]) -> ToolResult:
     area_id = str(payload.get("id", "")).strip()
     if not area_id:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing id"}
+    cache = get_boundary_cache()
+    if cache:
+        hit = cache.find_by_id(area_id)
+        if hit:
+            lat = hit.get("lat")
+            lon = hit.get("lon")
+            if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
+                cached_chain = cache.containing_areas(float(lat), float(lon))
+                if cached_chain is not None:
+                    cached_chain.sort(
+                        key=lambda item: LEVEL_INDEX.get(item.get("level", ""), 999)
+                    )
+                    return 200, {"chain": cached_chain, "live": False, "meta": {"source": "cache"}}
+            return 200, {"chain": [hit], "live": False, "meta": {"source": "cache"}}
     if not _live_enabled():
         return 501, {
             "isError": True,
@@ -491,8 +512,38 @@ register(Tool(
 def _area_geometry(payload: dict[str, Any]) -> ToolResult:
     area_id = str(payload.get("id", "")).strip()
     include_geometry = bool(payload.get("includeGeometry"))
+    zoom_raw = payload.get("zoom")
+    zoom: float | None = None
+    if zoom_raw is not None:
+        try:
+            zoom = float(zoom_raw)
+        except Exception:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "zoom must be numeric",
+            }
     if not area_id:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing id"}
+    cache = get_boundary_cache()
+    if cache:
+        cached = cache.area_geometry(area_id, include_geometry=include_geometry, zoom=zoom)
+        if cached and cached.bbox is not None:
+            payload: dict[str, Any] = {
+                "id": area_id,
+                "bbox": cached.bbox,
+                "live": False,
+                "meta": {**(cached.meta or {}), "geometryFormat": "geojson"},
+            }
+            if cached.name:
+                payload["name"] = cached.name
+            if cached.level:
+                payload["level"] = cached.level
+            if cached.geometry:
+                payload["geometry"] = cached.geometry
+            return 200, payload
+        if not bool(getattr(settings, "BOUNDARY_CACHE_FALLBACK_LIVE", True)):
+            return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
     if not _live_enabled():
         return 501, {
             "isError": True,
@@ -502,6 +553,7 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
     bbox, meta, geometry = _live_area_geometry(area_id, include_geometry=include_geometry)
     if bbox is not None:
         payload: dict[str, Any] = {"id": area_id, "bbox": bbox, "live": True, "meta": meta}
+        payload["meta"]["geometryFormat"] = "arcgis"
         if geometry:
             payload["geometry"] = geometry
         return 200, payload
@@ -523,6 +575,7 @@ register(Tool(
             "tool": {"type": "string", "const": "admin_lookup.area_geometry"},
             "id": {"type": "string"},
             "includeGeometry": {"type": "boolean"},
+            "zoom": {"type": "number"},
         },
         "required": ["id"],
         "additionalProperties": False,
@@ -533,6 +586,10 @@ register(Tool(
             "id": {"type": "string"},
             "bbox": {"type": "array"},
             "geometry": {"type": "object"},
+            "name": {"type": "string"},
+            "level": {"type": "string"},
+            "live": {"type": "boolean"},
+            "meta": {"type": "object"},
         },
         "required": ["id", "bbox"],
     },

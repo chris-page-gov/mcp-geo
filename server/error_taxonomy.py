@@ -18,6 +18,7 @@ ERROR_TAXONOMY: Dict[str, str] = {
     "OS_API_ERROR": "upstream",
     "ONS_API_ERROR": "upstream",
     "ADMIN_LOOKUP_API_ERROR": "upstream",
+    "BOUNDARY_CACHE_ERROR": "dependency",
     "UPSTREAM_TLS_ERROR": "upstream",
     "UPSTREAM_CONNECT_ERROR": "upstream",
     "INTEGRATION_ERROR": "integration",

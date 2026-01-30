@@ -8,14 +8,16 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | admin_lookup.containing_areas | 0.1.0 | Return containing administrative areas for a point (lat/lon) |
 | admin_lookup.find_by_name | 0.1.0 | Substring case-insensitive search by area name |
 | admin_lookup.reverse_hierarchy | 0.1.0 | Return ancestor chain for a given area id |
-| ons_codes.list | 0.1.0 | List available ONS sample dimensions. |
-| ons_codes.options | 0.1.0 | List codes/options for a given ONS sample dimension. |
-| ons_data.create_filter | 0.1.0 | Create a filter for ONS observations (sample subset). Returns filterId. |
-| ons_data.dimensions | 0.1.0 | List available ONS observation dimensions (sample or live dataset metadata). Optionally restrict to one dimension via 'dimension' field. |
+| ons_codes.list | 0.1.0 | List available ONS dimensions for a live dataset version. |
+| ons_codes.options | 0.1.0 | List codes/options for a given ONS live dimension. |
+| ons_data.create_filter | 0.1.0 | Create a filter for live ONS observations. Returns filterId. |
+| ons_data.dimensions | 0.1.0 | List available ONS observation dimensions from the live API. |
+| ons_data.editions | 0.1.0 | List live editions for an ONS dataset. |
 | ons_data.get_filter_output | 0.1.0 | Retrieve data for a previously created filter (formats: JSON, CSV, XLSX). |
-| ons_data.get_observation | 0.1.0 | Fetch a single observation by geography, measure, time (live or sample). |
-| ons_data.query | 0.1.0 | Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination). |
-| ons_search.query | 0.1.0 | Search live ONS datasets by term; falls back to sample dimension codes when live search is disabled or unavailable. |
+| ons_data.get_observation | 0.1.0 | Fetch a single observation by geography, measure, time from the live ONS API. |
+| ons_data.query | 0.1.0 | Query live ONS observations (requires dataset/edition/version). |
+| ons_data.versions | 0.1.0 | List live versions for an ONS dataset edition. |
+| ons_search.query | 0.1.0 | Search live ONS datasets by term. |
 | os_apps.log_event | 0.1.0 | Log MCP-Apps UI interaction events for tracing. |
 | os_apps.render_feature_inspector | 0.1.0 | Open the MCP-Apps feature inspector widget. |
 | os_apps.render_geography_selector | 0.1.0 | Open the MCP-Apps geography selector widget. |
@@ -52,9 +54,15 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "id": {
       "type": "string"
     },
+    "includeGeometry": {
+      "type": "boolean"
+    },
     "tool": {
       "const": "admin_lookup.area_geometry",
       "type": "string"
+    },
+    "zoom": {
+      "type": "number"
     }
   },
   "required": [
@@ -71,7 +79,22 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "bbox": {
       "type": "array"
     },
+    "geometry": {
+      "type": "object"
+    },
     "id": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "meta": {
+      "type": "object"
+    },
+    "name": {
       "type": "string"
     }
   },
@@ -227,7 +250,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_codes.list
 
-**Description:** List available ONS sample dimensions.
+**Description:** List available ONS dimensions for a live dataset version.
 
 **Version:** 0.1.0
 
@@ -237,12 +260,25 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 {
   "additionalProperties": false,
   "properties": {
+    "dataset": {
+      "type": "string"
+    },
+    "edition": {
+      "type": "string"
+    },
     "tool": {
       "const": "ons_codes.list",
       "type": "string"
+    },
+    "version": {
+      "type": "string"
     }
   },
-  "required": [],
+  "required": [
+    "dataset",
+    "edition",
+    "version"
+  ],
   "type": "object"
 }
 ```
@@ -251,12 +287,19 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
+    "cached": {
+      "type": "boolean"
+    },
     "dimensions": {
       "type": "array"
+    },
+    "live": {
+      "type": "boolean"
     }
   },
   "required": [
-    "dimensions"
+    "dimensions",
+    "live"
   ],
   "type": "object"
 }
@@ -265,7 +308,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_codes.options
 
-**Description:** List codes/options for a given ONS sample dimension.
+**Description:** List codes/options for a given ONS live dimension.
 
 **Version:** 0.1.0
 
@@ -275,15 +318,27 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 {
   "additionalProperties": false,
   "properties": {
+    "dataset": {
+      "type": "string"
+    },
     "dimension": {
+      "type": "string"
+    },
+    "edition": {
       "type": "string"
     },
     "tool": {
       "const": "ons_codes.options",
       "type": "string"
+    },
+    "version": {
+      "type": "string"
     }
   },
   "required": [
+    "dataset",
+    "edition",
+    "version",
     "dimension"
   ],
   "type": "object"
@@ -294,8 +349,14 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
+    "cached": {
+      "type": "boolean"
+    },
     "dimension": {
       "type": "string"
+    },
+    "live": {
+      "type": "boolean"
     },
     "options": {
       "type": "array"
@@ -303,7 +364,8 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   },
   "required": [
     "dimension",
-    "options"
+    "options",
+    "live"
   ],
   "type": "object"
 }
@@ -312,7 +374,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_data.create_filter
 
-**Description:** Create a filter for ONS observations (sample subset). Returns filterId.
+**Description:** Create a filter for live ONS observations. Returns filterId.
 
 **Version:** 0.1.0
 
@@ -322,6 +384,12 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 {
   "additionalProperties": false,
   "properties": {
+    "dataset": {
+      "type": "string"
+    },
+    "edition": {
+      "type": "string"
+    },
     "geography": {
       "type": "string"
     },
@@ -334,9 +402,16 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "tool": {
       "const": "ons_data.create_filter",
       "type": "string"
+    },
+    "version": {
+      "type": "string"
     }
   },
-  "required": [],
+  "required": [
+    "dataset",
+    "edition",
+    "version"
+  ],
   "type": "object"
 }
 ```
@@ -363,7 +438,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_data.dimensions
 
-**Description:** List available ONS observation dimensions (sample or live dataset metadata). Optionally restrict to one dimension via 'dimension' field.
+**Description:** List available ONS observation dimensions from the live API.
 
 **Version:** 0.1.0
 
@@ -391,7 +466,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
       "type": "string"
     }
   },
-  "required": [],
+  "required": [
+    "dataset",
+    "edition",
+    "version"
+  ],
   "type": "object"
 }
 ```
@@ -409,6 +488,61 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   },
   "required": [
     "dimensions",
+    "live"
+  ],
+  "type": "object"
+}
+```
+
+
+## ons_data.editions
+
+**Description:** List live editions for an ONS dataset.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "ons_data.editions",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset"
+  ],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "count": {
+      "type": "integer"
+    },
+    "dataset": {
+      "type": "string"
+    },
+    "editions": {
+      "type": "array"
+    },
+    "live": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "dataset",
+    "editions",
+    "count",
     "live"
   ],
   "type": "object"
@@ -506,7 +640,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_data.get_observation
 
-**Description:** Fetch a single observation by geography, measure, time (live or sample).
+**Description:** Fetch a single observation by geography, measure, time from the live ONS API.
 
 **Version:** 0.1.0
 
@@ -540,6 +674,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     }
   },
   "required": [
+    "dataset",
+    "edition",
+    "version",
     "geography",
     "measure",
     "time"
@@ -570,7 +707,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_data.query
 
-**Description:** Query ONS observations. Uses live ONS API when ONS_LIVE_ENABLED and dataset/edition/version provided; otherwise queries bundled sample (filters: geography, measure, timeRange; pagination).
+**Description:** Query live ONS observations (requires dataset/edition/version).
 
 **Version:** 0.1.0
 
@@ -616,7 +753,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
       "type": "string"
     }
   },
-  "required": [],
+  "required": [
+    "dataset",
+    "edition",
+    "version"
+  ],
   "type": "object"
 }
 ```
@@ -658,9 +799,72 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```
 
 
+## ons_data.versions
+
+**Description:** List live versions for an ONS dataset edition.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string"
+    },
+    "edition": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "ons_data.versions",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset",
+    "edition"
+  ],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "count": {
+      "type": "integer"
+    },
+    "dataset": {
+      "type": "string"
+    },
+    "edition": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "versions": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset",
+    "edition",
+    "versions",
+    "count",
+    "live"
+  ],
+  "type": "object"
+}
+```
+
+
 ## ons_search.query
 
-**Description:** Search live ONS datasets by term; falls back to sample dimension codes when live search is disabled or unavailable.
+**Description:** Search live ONS datasets by term.
 
 **Version:** 0.1.0
 
@@ -845,11 +1049,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "content": {
-      "type": "array"
-    },
     "config": {
       "type": "object"
+    },
+    "content": {
+      "type": "array"
     },
     "instructions": {
       "type": "string"
@@ -919,11 +1123,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "content": {
-      "type": "array"
-    },
     "config": {
       "type": "object"
+    },
+    "content": {
+      "type": "array"
     },
     "instructions": {
       "type": "string"
@@ -984,11 +1188,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "content": {
-      "type": "array"
-    },
     "config": {
       "type": "object"
+    },
+    "content": {
+      "type": "array"
     },
     "instructions": {
       "type": "string"
@@ -1046,11 +1250,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 ```json
 {
   "properties": {
-    "content": {
-      "type": "array"
-    },
     "config": {
       "type": "object"
+    },
+    "content": {
+      "type": "array"
     },
     "instructions": {
       "type": "string"
@@ -1777,3 +1981,5 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "type": "object"
 }
 ```
+
+

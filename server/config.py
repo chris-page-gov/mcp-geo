@@ -39,6 +39,13 @@ class Settings(BaseSettings):
     OSM_TILE_CACHE_SIZE: int = 512
     OSM_TILE_USER_AGENT: str = "mcp-geo-playground"
     OSM_TILE_CONTACT: str = "https://github.com/chris-page-gov/mcp-geo"
+    BOUNDARY_CACHE_ENABLED: bool = False
+    BOUNDARY_CACHE_DSN: str = ""
+    BOUNDARY_CACHE_SCHEMA: str = "public"
+    BOUNDARY_CACHE_TABLE: str = "admin_boundaries"
+    BOUNDARY_DATASET_TABLE: str = "boundary_datasets"
+    BOUNDARY_CACHE_MAX_AGE_DAYS: int = 180
+    BOUNDARY_CACHE_FALLBACK_LIVE: bool = True
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

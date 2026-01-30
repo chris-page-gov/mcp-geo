@@ -946,10 +946,12 @@
         }
         let geo = null;
         try {
-          geo = await adminLookupService.areaGeometry(id, true);
+          const zoom = state.map ? state.map.getZoom() : null;
+          geo = await adminLookupService.areaGeometry(id, true, zoom);
         } catch (err) {
           state.lastMapError = err?.message || "Boundary geometry fetch failed";
-          geo = await adminLookupService.areaGeometry(id, false);
+          const zoom = state.map ? state.map.getZoom() : null;
+          geo = await adminLookupService.areaGeometry(id, false, zoom);
         }
         const record = geo
           ? {
@@ -1454,6 +1456,17 @@
         if (!geometry) {
           return null;
         }
+        if (geometry.type) {
+          if (geometry.type === "Feature") {
+            return geometry;
+          }
+          if (geometry.type === "FeatureCollection") {
+            return geometry.features && geometry.features.length ? geometry.features[0] : null;
+          }
+          if (geometry.coordinates) {
+            return { type: "Feature", properties: {}, geometry };
+          }
+        }
         if (geometry.rings) {
           return {
             type: "Feature",
@@ -1467,6 +1480,27 @@
             properties: {},
             geometry: { type: "Point", coordinates: [geometry.x, geometry.y] },
           };
+        }
+        return null;
+      }
+
+      function geometryBounds(geometry) {
+        if (!geometry || !geometry.coordinates) {
+          return null;
+        }
+        const bounds = new maplibregl.LngLatBounds();
+        const extendCoords = (coords) => {
+          coords.forEach((coord) => bounds.extend(coord));
+        };
+        if (geometry.type === "Polygon") {
+          extendCoords(geometry.coordinates[0] || []);
+          return bounds;
+        }
+        if (geometry.type === "MultiPolygon") {
+          geometry.coordinates.forEach((polygon) => {
+            extendCoords(polygon[0] || []);
+          });
+          return bounds;
         }
         return null;
       }
@@ -1517,12 +1551,8 @@
           return;
         }
         boundarySource.setData(featureCollection([feature]));
-        if (feature.geometry.type === "Polygon") {
-          const coords = feature.geometry.coordinates[0];
-          const bounds = coords.reduce(
-            (acc, coord) => acc.extend(coord),
-            new maplibregl.LngLatBounds(coords[0], coords[0])
-          );
+        const bounds = geometryBounds(feature.geometry);
+        if (bounds) {
           state.map.fitBounds(bounds, { padding: 50, duration: 800 });
         }
       }
@@ -1913,7 +1943,8 @@
               },
             ];
           } else if (mode === "gss") {
-            const data = await adminLookupService.areaGeometry(query, true);
+            const zoom = state.map ? state.map.getZoom() : null;
+            const data = await adminLookupService.areaGeometry(query, true, zoom);
             if (!data || !data.bbox) {
               renderError("No geometry returned for that code.");
               return;
@@ -1932,7 +1963,8 @@
           } else if (mode === "free") {
             const trimmed = query.trim();
             if (isLikelyGss(trimmed)) {
-              const data = await adminLookupService.areaGeometry(trimmed, true);
+              const zoom = state.map ? state.map.getZoom() : null;
+              const data = await adminLookupService.areaGeometry(trimmed, true, zoom);
               if (data && data.bbox) {
                 results = [
                   {
@@ -2036,8 +2068,13 @@
       const adminLookupService = {
         findByName: (text) => safeToolCall("admin_lookup.find_by_name", { text }),
         containingAreas: (lat, lon) => safeToolCall("admin_lookup.containing_areas", { lat, lon }),
-        areaGeometry: (id, includeGeometry) =>
-          safeToolCall("admin_lookup.area_geometry", { id, includeGeometry }),
+        areaGeometry: (id, includeGeometry, zoom) => {
+          const payload = { id, includeGeometry };
+          if (Number.isFinite(zoom)) {
+            payload.zoom = Number(zoom.toFixed(2));
+          }
+          return safeToolCall("admin_lookup.area_geometry", payload);
+        },
       };
 
       function summarizeSelection(item) {
