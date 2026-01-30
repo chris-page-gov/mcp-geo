@@ -293,6 +293,208 @@ class BoundaryCache:
             "lon": row.get("lon"),
         }
 
+    def status(self) -> dict[str, Any] | None:
+        if not self.enabled():
+            return None
+        if psycopg is None or sql is None:
+            log_upstream_error(
+                service="boundary_cache",
+                code="BOUNDARY_CACHE_ERROR",
+                detail="psycopg not installed",
+                error_category=classify_error("BOUNDARY_CACHE_ERROR"),
+            )
+            return None
+        table_ident = sql.Identifier(self._schema, self._table)
+        dataset_ident = sql.Identifier(self._schema, self._dataset_table)
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        sql.SQL(
+                            """
+                            SELECT level,
+                                   COUNT(*) AS total,
+                                   COUNT(*) FILTER (WHERE geom IS NOT NULL) AS geom_count
+                            FROM {table}
+                            GROUP BY level
+                            ORDER BY level;
+                            """
+                        ).format(table=table_ident)
+                    )
+                    per_level = cur.fetchall() or []
+                    cur.execute(
+                        sql.SQL(
+                            """
+                            SELECT COUNT(*) AS total,
+                                   COUNT(*) FILTER (WHERE geom IS NOT NULL) AS geom_count
+                            FROM {table};
+                            """
+                        ).format(table=table_ident)
+                    )
+                    totals = cur.fetchone() or {}
+                    cur.execute(
+                        sql.SQL(
+                            """
+                            SELECT
+                                dataset_id,
+                                source,
+                                title,
+                                release_date,
+                                ingested_at,
+                                resolution,
+                                coverage,
+                                record_count,
+                                license
+                            FROM {dataset}
+                            ORDER BY ingested_at DESC NULLS LAST, release_date DESC NULLS LAST
+                            LIMIT 200;
+                            """
+                        ).format(dataset=dataset_ident)
+                    )
+                    datasets = cur.fetchall() or []
+        except Exception as exc:
+            log_upstream_error(
+                service="boundary_cache",
+                code="BOUNDARY_CACHE_ERROR",
+                detail=str(exc),
+                error_category=classify_error("BOUNDARY_CACHE_ERROR"),
+            )
+            return None
+        per_level_stats = []
+        for row in per_level:
+            total = int(row.get("total") or 0)
+            geom_count = int(row.get("geom_count") or 0)
+            per_level_stats.append(
+                {
+                    "level": row.get("level"),
+                    "total": total,
+                    "geomCount": geom_count,
+                    "geomPct": (geom_count / total) if total else None,
+                }
+            )
+        total = int(totals.get("total") or 0)
+        geom_total = int(totals.get("geom_count") or 0)
+        dataset_rows = []
+        for row in datasets:
+            dataset_rows.append(
+                {
+                    "datasetId": row.get("dataset_id"),
+                    "source": row.get("source"),
+                    "title": row.get("title"),
+                    "releaseDate": row.get("release_date").isoformat()
+                    if row.get("release_date")
+                    else None,
+                    "ingestedAt": row.get("ingested_at").isoformat()
+                    if row.get("ingested_at")
+                    else None,
+                    "resolution": row.get("resolution"),
+                    "coverage": row.get("coverage"),
+                    "recordCount": row.get("record_count"),
+                    "license": row.get("license"),
+                }
+            )
+        return {
+            "enabled": True,
+            "schema": self._schema,
+            "table": self._table,
+            "datasetTable": self._dataset_table,
+            "total": total,
+            "geomCount": geom_total,
+            "geomPct": (geom_total / total) if total else None,
+            "levels": per_level_stats,
+            "datasets": dataset_rows,
+            "maxAgeDays": self._max_age_days,
+        }
+
+    def search(
+        self,
+        *,
+        query: str | None = None,
+        level: str | None = None,
+        limit: int = 25,
+        include_geometry: bool = False,
+    ) -> list[dict[str, Any]] | None:
+        if not self.enabled():
+            return None
+        if psycopg is None or sql is None:
+            log_upstream_error(
+                service="boundary_cache",
+                code="BOUNDARY_CACHE_ERROR",
+                detail="psycopg not installed",
+                error_category=classify_error("BOUNDARY_CACHE_ERROR"),
+            )
+            return None
+        table_ident = sql.Identifier(self._schema, self._table)
+        geom_expr = (
+            sql.SQL("ST_AsGeoJSON(b.geom)")
+            if include_geometry
+            else sql.SQL("NULL")
+        )
+        clauses = []
+        params: list[Any] = []
+        if level:
+            clauses.append(sql.SQL("b.level = %s"))
+            params.append(level)
+        if query:
+            clauses.append(sql.SQL("(b.area_id ILIKE %s OR b.name ILIKE %s)"))
+            like = f"%{query}%"
+            params.extend([like, like])
+        where_sql = sql.SQL("WHERE ") + sql.SQL(" AND ").join(clauses) if clauses else sql.SQL("")
+        params.append(limit)
+        query_sql = sql.SQL(
+            """
+            SELECT
+                b.area_id,
+                b.name,
+                b.level,
+                b.dataset_id,
+                ST_XMin(COALESCE(b.bbox, ST_Envelope(b.geom))) AS minx,
+                ST_YMin(COALESCE(b.bbox, ST_Envelope(b.geom))) AS miny,
+                ST_XMax(COALESCE(b.bbox, ST_Envelope(b.geom))) AS maxx,
+                ST_YMax(COALESCE(b.bbox, ST_Envelope(b.geom))) AS maxy,
+                {geom_expr} AS geometry
+            FROM {table} b
+            {where}
+            ORDER BY b.level, b.area_id
+            LIMIT %s;
+            """
+        ).format(table=table_ident, where=where_sql, geom_expr=geom_expr)
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(query_sql, params)
+                    rows = cur.fetchall() or []
+        except Exception as exc:
+            log_upstream_error(
+                service="boundary_cache",
+                code="BOUNDARY_CACHE_ERROR",
+                detail=str(exc),
+                error_category=classify_error("BOUNDARY_CACHE_ERROR"),
+            )
+            return None
+        results = []
+        for row in rows:
+            bbox_values = [row.get("minx"), row.get("miny"), row.get("maxx"), row.get("maxy")]
+            bbox = None if any(v is None for v in bbox_values) else [float(v) for v in bbox_values]
+            geometry = None
+            raw_geometry = row.get("geometry")
+            if raw_geometry:
+                try:
+                    geometry = json.loads(raw_geometry)
+                except (TypeError, json.JSONDecodeError):
+                    geometry = None
+            results.append(
+                {
+                    "id": row.get("area_id"),
+                    "name": row.get("name"),
+                    "level": row.get("level"),
+                    "datasetId": row.get("dataset_id"),
+                    "bbox": bbox,
+                    "geometry": geometry if include_geometry else None,
+                }
+            )
+        return results
+
 
 _CACHE: BoundaryCache | None = None
 

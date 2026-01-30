@@ -394,6 +394,22 @@
         height: 160px;
       }
 
+      .cache-panel .cache-controls,
+      .cache-panel .cache-search {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+      }
+
+      .cache-panel input {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(15, 22, 21, 0.12);
+        font-size: 12px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.85);
+      }
+
       @keyframes floatIn {
         from {
           opacity: 0;
@@ -541,6 +557,20 @@
               <div class="result-meta">Diagnostics</div>
               <pre id="diagnostics" class="payload diagnostics-output">Waiting for map diagnostics...</pre>
             </div>
+            <div class="diagnostics cache-panel">
+              <div class="result-meta">Cache status</div>
+              <div class="cache-controls">
+                <button id="cacheStatusButton" class="primary-outline">Load cache status</button>
+                <button id="cacheRefreshButton" class="primary-outline">Refresh cache</button>
+              </div>
+              <div class="cache-search">
+                <input id="cacheSearchInput" type="text" placeholder="Search cache (name or id)" />
+                <input id="cacheLevelInput" type="text" placeholder="Level (optional)" />
+                <button id="cacheSearchButton" class="primary-outline">Search cache</button>
+              </div>
+              <pre id="cacheStatus" class="payload diagnostics-output">Cache status not loaded.</pre>
+              <pre id="cacheSearchResults" class="payload diagnostics-output">Cache search results will appear here.</pre>
+            </div>
           </div>
         </div>
       </section>
@@ -620,6 +650,13 @@
       const layerListEl = document.getElementById("layerList");
       const debugBadgesEl = document.getElementById("debugBadges");
       const diagnosticsEl = document.getElementById("diagnostics");
+      const cacheStatusEl = document.getElementById("cacheStatus");
+      const cacheSearchResultsEl = document.getElementById("cacheSearchResults");
+      const cacheStatusButton = document.getElementById("cacheStatusButton");
+      const cacheRefreshButton = document.getElementById("cacheRefreshButton");
+      const cacheSearchButton = document.getElementById("cacheSearchButton");
+      const cacheSearchInput = document.getElementById("cacheSearchInput");
+      const cacheLevelInput = document.getElementById("cacheLevelInput");
       const apiKeyInput = document.getElementById("apiKeyInput");
       const mapStyleSelect = document.getElementById("mapStyleSelect");
       const mapOpacity = document.getElementById("mapOpacity");
@@ -857,6 +894,10 @@
           setAdminLookupStatus("partial_live_results", "Partial live results", meta);
           return;
         }
+        if (meta.geometryMissing) {
+          setAdminLookupStatus("bbox_fallback", "Geometry missing, using bbox", meta);
+          return;
+        }
         setAdminLookupStatus("live_ok", "Live sources ok", meta);
       }
 
@@ -1087,6 +1128,47 @@
           lastMapErrorDetail: state.lastMapErrorDetail || null,
         };
         diagnosticsEl.textContent = JSON.stringify(diagnostics, null, 2);
+      }
+
+      async function loadCacheStatus(refresh = false) {
+        if (!cacheStatusEl) {
+          return;
+        }
+        cacheStatusEl.textContent = "Loading cache status...";
+        try {
+          const data = await safeToolCall("admin_lookup.get_cache_status", { refresh });
+          cacheStatusEl.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          cacheStatusEl.textContent = JSON.stringify(
+            { error: err?.message || "Cache status failed", details: err?.details || null },
+            null,
+            2
+          );
+        }
+      }
+
+      async function searchCache() {
+        if (!cacheSearchResultsEl) {
+          return;
+        }
+        const query = cacheSearchInput?.value?.trim() || "";
+        const level = cacheLevelInput?.value?.trim() || "";
+        cacheSearchResultsEl.textContent = "Searching cache...";
+        try {
+          const data = await safeToolCall("admin_lookup.search_cache", {
+            query: query || undefined,
+            level: level || undefined,
+            limit: 25,
+            includeGeometry: false,
+          });
+          cacheSearchResultsEl.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          cacheSearchResultsEl.textContent = JSON.stringify(
+            { error: err?.message || "Cache search failed", details: err?.details || null },
+            null,
+            2
+          );
+        }
       }
 
       function rewriteOsRequest(url) {
@@ -2398,6 +2480,15 @@
           drawFocusBoundariesForAddresses(state.addressResults);
         }
       });
+      if (cacheStatusButton) {
+        cacheStatusButton.addEventListener("click", () => loadCacheStatus(false));
+      }
+      if (cacheRefreshButton) {
+        cacheRefreshButton.addEventListener("click", () => loadCacheStatus(true));
+      }
+      if (cacheSearchButton) {
+        cacheSearchButton.addEventListener("click", () => searchCache());
+      }
 
       window.addEventListener("message", (event) => {
         if (!event || !event.data || typeof event.data !== "object") {

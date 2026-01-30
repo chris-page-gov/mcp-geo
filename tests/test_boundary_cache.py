@@ -42,6 +42,44 @@ class _FakeConn:
         return False
 
 
+class _SeqCursor:
+    def __init__(self, responses):
+        self._responses = responses
+        self._index = -1
+
+    def execute(self, query, params=None):  # noqa: ARG002
+        self._index += 1
+        return None
+
+    def fetchone(self):
+        resp = self._responses[self._index]
+        return resp.get("one")
+
+    def fetchall(self):
+        resp = self._responses[self._index]
+        return resp.get("all", [])
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):  # noqa: ARG002
+        return False
+
+
+class _SeqConn:
+    def __init__(self, responses):
+        self._responses = responses
+
+    def cursor(self):
+        return _SeqCursor(self._responses)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):  # noqa: ARG002
+        return False
+
+
 def test_boundary_cache_disabled_returns_none(monkeypatch):
     reset_boundary_cache()
     monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", False, raising=False)
@@ -426,3 +464,182 @@ def test_boundary_cache_freshness_disabled():
     fresh, age_days = cache._freshness(dt.date.today(), None)
     assert fresh is None
     assert age_days is None
+
+
+def test_boundary_cache_status(monkeypatch):
+    responses = [
+        {"all": [{"level": "OA", "total": 2, "geom_count": 2}]},
+        {"one": {"total": 2, "geom_count": 2}},
+        {
+            "all": [
+                {
+                    "dataset_id": "ons_oa_2021_bgc",
+                    "source": "ONS",
+                    "title": "OA 2021",
+                    "release_date": dt.date.today(),
+                    "ingested_at": dt.datetime.now(dt.timezone.utc),
+                    "resolution": "BGC",
+                    "coverage": "EW",
+                    "record_count": 2,
+                    "license": "OGL",
+                }
+            ]
+        },
+    ]
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(cache, "_connect", lambda: _SeqConn(responses))
+    status = cache.status()
+    assert status["enabled"] is True
+    assert status["levels"][0]["level"] == "OA"
+    assert status["datasets"][0]["datasetId"] == "ons_oa_2021_bgc"
+
+
+def test_boundary_cache_search(monkeypatch):
+    rows = [
+        {
+            "area_id": "E00000001",
+            "name": "Test",
+            "level": "OA",
+            "dataset_id": "ons_oa_2021_bgc",
+            "minx": -0.2,
+            "miny": 51.4,
+            "maxx": -0.1,
+            "maxy": 51.6,
+            "geometry": '{"type":"Polygon","coordinates":[[[-0.2,51.4],[-0.1,51.4],[-0.1,51.6],[-0.2,51.6],[-0.2,51.4]]]}',
+        }
+    ]
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(cache, "_connect", lambda: _FakeConn(rows=rows))
+    results = cache.search(query="Test", level="OA", limit=5, include_geometry=True)
+    assert results and results[0]["id"] == "E00000001"
+
+
+def test_boundary_cache_status_psycopg_missing(monkeypatch):
+    from server import boundary_cache
+
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(boundary_cache, "psycopg", None)
+    monkeypatch.setattr(boundary_cache, "sql", None)
+    assert cache.status() is None
+
+
+def test_boundary_cache_status_disabled(monkeypatch):
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", False, raising=False)
+    assert cache.status() is None
+
+
+def test_boundary_cache_status_error(monkeypatch):
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+
+    def _boom():
+        raise RuntimeError("db down")
+
+    monkeypatch.setattr(cache, "_connect", _boom)
+    assert cache.status() is None
+
+
+def test_boundary_cache_search_psycopg_missing(monkeypatch):
+    from server import boundary_cache
+
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(boundary_cache, "psycopg", None)
+    monkeypatch.setattr(boundary_cache, "sql", None)
+    assert cache.search(query="Test") is None
+
+
+def test_boundary_cache_search_disabled(monkeypatch):
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", False, raising=False)
+    assert cache.search(query="Test") is None
+
+
+def test_boundary_cache_search_error(monkeypatch):
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+
+    def _boom():
+        raise RuntimeError("db down")
+
+    monkeypatch.setattr(cache, "_connect", _boom)
+    assert cache.search(query="Test") is None
+
+
+def test_boundary_cache_search_invalid_json(monkeypatch):
+    rows = [
+        {
+            "area_id": "E00000002",
+            "name": "Bad Geometry",
+            "level": "OA",
+            "dataset_id": "ons_oa_2021_bgc",
+            "minx": -0.2,
+            "miny": 51.4,
+            "maxx": -0.1,
+            "maxy": 51.6,
+            "geometry": "{bad-json}",
+        }
+    ]
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(cache, "_connect", lambda: _FakeConn(rows=rows))
+    results = cache.search(query="Bad", limit=1, include_geometry=True)
+    assert results and results[0]["geometry"] is None

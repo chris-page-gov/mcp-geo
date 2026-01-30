@@ -69,3 +69,37 @@ def test_admin_lookup_containing_areas_uses_cache(monkeypatch):
     body = resp.json()
     assert body["live"] is False
     assert body["results"]
+
+
+def test_admin_lookup_cache_status(monkeypatch):
+    from tools import admin_lookup
+
+    class StubCache:
+        def status(self):
+            return {"enabled": True, "total": 10, "geomCount": 10}
+
+    monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: StubCache())
+    c = _client()
+    resp = c.post("/tools/call", json={"tool": "admin_lookup.get_cache_status"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["enabled"] is True
+    assert body["total"] == 10
+
+
+def test_admin_lookup_cache_search(monkeypatch):
+    from tools import admin_lookup
+
+    class StubCache:
+        def search(self, *, query=None, level=None, limit=25, include_geometry=False):  # noqa: ARG002
+            return [{"id": "E00000001", "name": "Test", "level": "OA", "bbox": [0, 0, 1, 1]}]
+
+    monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: StubCache())
+    c = _client()
+    resp = c.post(
+        "/tools/call",
+        json={"tool": "admin_lookup.search_cache", "query": "Test", "limit": 5},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 1

@@ -102,3 +102,12 @@ SELECT level, COUNT(*) FROM admin_boundaries GROUP BY level ORDER BY level;
 -- Dataset metadata
 SELECT dataset_id, release_date, ingested_at, record_count FROM boundary_datasets;
 ```
+
+## Cache audit tools
+
+The MCP server exposes simple cache auditing helpers:
+
+- `admin_lookup.get_cache_status` reports dataset coverage, counts, and geometry availability.
+- `admin_lookup.search_cache` searches cached areas by name/id/level (useful to confirm OA/LSOA polygons).
+
+These are surfaced in the geography selector “Cache status” panel for quick checks.

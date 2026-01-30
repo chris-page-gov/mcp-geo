@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     req_exc = _ReqExc()
 
 from server.config import settings
-from server.boundary_cache import get_boundary_cache
+from server.boundary_cache import get_boundary_cache, reset_boundary_cache
 from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
 from tools.ons_common import TTLCache
@@ -364,8 +364,11 @@ def _live_area_geometry(
                 "failedSources": failures or None,
                 "allFailed": False,
             }
+            geometry_missing = include_geometry and not geometry
             if any(v is None for v in bbox):
                 bbox = None
+            if geometry_missing:
+                meta["geometryMissing"] = True
             return ([float(v) for v in bbox] if bbox else None), meta, geometry
         params = {
             "where": where,
@@ -390,6 +393,8 @@ def _live_area_geometry(
             "failedSources": failures or None,
             "allFailed": False,
         }
+        if include_geometry:
+            meta["geometryMissing"] = True
         return [float(v) for v in bbox], meta, None
     if len(failures) == len(ADMIN_SOURCES):
         return None, {"code": "ERROR", "allFailed": True, "failedSources": failures}, None
@@ -588,6 +593,8 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
                 payload["level"] = cached.level
             if cached.geometry:
                 payload["geometry"] = cached.geometry
+            elif include_geometry:
+                payload["meta"]["geometryMissing"] = True
             return 200, payload
         if not bool(getattr(settings, "BOUNDARY_CACHE_FALLBACK_LIVE", True)):
             return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
@@ -603,6 +610,14 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
         payload["meta"]["geometryFormat"] = "arcgis"
         if geometry:
             payload["geometry"] = geometry
+        elif include_geometry:
+            payload["meta"]["geometryMissing"] = True
+            log_upstream_error(
+                service="admin_lookup",
+                code="ADMIN_LOOKUP_GEOMETRY_MISSING",
+                detail=f"Live geometry missing for {area_id}",
+                error_category=classify_error("INTEGRATION_ERROR"),
+            )
         return 200, payload
     if meta and meta.get("code") == "NOT_FOUND":
         return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
@@ -693,4 +708,115 @@ register(Tool(
         "required": ["results"],
     },
     handler=_find_by_name,
+))
+
+
+def _cache_status(payload: dict[str, Any]) -> ToolResult:
+    refresh = bool(payload.get("refresh"))
+    if refresh:
+        reset_boundary_cache()
+    cache = get_boundary_cache()
+    configured = bool(getattr(settings, "BOUNDARY_CACHE_ENABLED", False))
+    dsn_set = bool(getattr(settings, "BOUNDARY_CACHE_DSN", ""))
+    if not cache:
+        return 200, {
+            "enabled": False,
+            "configured": configured,
+            "dsnSet": dsn_set,
+            "reloadHint": "Run scripts/boundary_cache_ingest.py to populate PostGIS.",
+        }
+    status = cache.status()
+    if status is None:
+        return 502, {
+            "isError": True,
+            "code": "BOUNDARY_CACHE_ERROR",
+            "message": "Boundary cache status query failed.",
+        }
+    status["configured"] = configured
+    status["dsnSet"] = dsn_set
+    status["reloadHint"] = "Run scripts/boundary_cache_ingest.py to populate PostGIS."
+    return 200, status
+
+
+register(Tool(
+    name="admin_lookup.get_cache_status",
+    description="Return boundary cache status (levels, datasets, counts).",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "admin_lookup.get_cache_status"},
+            "refresh": {"type": "boolean"},
+        },
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "enabled": {"type": "boolean"},
+            "configured": {"type": "boolean"},
+            "dsnSet": {"type": "boolean"},
+            "total": {"type": "integer"},
+            "geomCount": {"type": "integer"},
+            "levels": {"type": "array"},
+            "datasets": {"type": "array"},
+            "reloadHint": {"type": "string"},
+        },
+        "required": ["enabled"],
+    },
+    handler=_cache_status,
+))
+
+
+def _cache_search(payload: dict[str, Any]) -> ToolResult:
+    query = str(payload.get("query", "")).strip() or None
+    level = str(payload.get("level", "")).strip() or None
+    limit = payload.get("limit", 25)
+    if not isinstance(limit, int) or limit < 1 or limit > 200:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be 1-200"}
+    include_geometry = bool(payload.get("includeGeometry"))
+    cache = get_boundary_cache()
+    if not cache:
+        return 501, {
+            "isError": True,
+            "code": "BOUNDARY_CACHE_DISABLED",
+            "message": "Boundary cache is not enabled.",
+        }
+    results = cache.search(query=query, level=level, limit=limit, include_geometry=include_geometry)
+    if results is None:
+        return 502, {
+            "isError": True,
+            "code": "BOUNDARY_CACHE_ERROR",
+            "message": "Boundary cache search failed.",
+        }
+    return 200, {
+        "results": results,
+        "count": len(results),
+        "meta": {"query": query, "level": level, "limit": limit, "includeGeometry": include_geometry},
+    }
+
+
+register(Tool(
+    name="admin_lookup.search_cache",
+    description="Search the boundary cache by id/name/level.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "admin_lookup.search_cache"},
+            "query": {"type": "string"},
+            "level": {"type": "string"},
+            "limit": {"type": "integer", "minimum": 1, "maximum": 200},
+            "includeGeometry": {"type": "boolean"},
+        },
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "results": {"type": "array"},
+            "count": {"type": "integer"},
+            "meta": {"type": "object"},
+        },
+        "required": ["results"],
+    },
+    handler=_cache_search,
 ))
