@@ -592,6 +592,9 @@
         resultCount: 0,
         lastMapError: null,
         lastMapErrorDetail: null,
+        adminLookupStatus: null,
+        adminLookupDetail: null,
+        adminLookupMeta: null,
         lastSourceEvent: null,
         sourceLoaded: {
           boundaries: null,
@@ -786,6 +789,9 @@
         const errorLabel = state.lastMapError
           ? `Error: ${String(state.lastMapError).slice(0, 40)}`
           : null;
+        const adminLookupLabel = state.adminLookupStatus
+          ? `Admin lookup: ${state.adminLookupStatus.replace(/_/g, " ")}`
+          : null;
         const style = mapStyleSelect?.value || "n/a";
         debugBadgesEl.innerHTML = `
           <span class="debug-badge">Mode: ${mode}</span>
@@ -797,6 +803,7 @@
           <span class="debug-badge">MapLibre: ${maplibreStatus}</span>
           <span class="debug-badge">Addr layer: ${addressLayer}</span>
           <span class="debug-badge">Boundary layer: ${boundaryLayer}</span>
+          ${adminLookupLabel ? `<span class="debug-badge">${adminLookupLabel}</span>` : ""}
           ${errorLabel ? `<span class="debug-badge">${errorLabel}</span>` : ""}
           <span class="debug-badge">Style: ${style}</span>
         `;
@@ -825,6 +832,32 @@
           return data.features.length;
         }
         return null;
+      }
+
+      function setAdminLookupStatus(status, detail, meta) {
+        state.adminLookupStatus = status;
+        state.adminLookupDetail = detail || null;
+        state.adminLookupMeta = meta || null;
+        scheduleDiagnosticsUpdate();
+      }
+
+      function updateAdminLookupStatusFromMeta(meta) {
+        if (!meta || typeof meta !== "object") {
+          return;
+        }
+        if (meta.source === "cache" || meta.fallback) {
+          setAdminLookupStatus("fallback_path", "Using cached boundaries", meta);
+          return;
+        }
+        if (meta.allFailed) {
+          setAdminLookupStatus("all_sources_failed", "All live sources failed", meta);
+          return;
+        }
+        if (meta.partial) {
+          setAdminLookupStatus("partial_live_results", "Partial live results", meta);
+          return;
+        }
+        setAdminLookupStatus("live_ok", "Live sources ok", meta);
       }
 
       function getRenderedFeatureCount(layerId) {
@@ -932,6 +965,7 @@
           return state.containingAreasCache.get(key) || [];
         }
         const data = await adminLookupService.containingAreas(lat, lon);
+        updateAdminLookupStatusFromMeta(data?.meta);
         const results = Array.isArray(data?.results) ? data.results : [];
         state.containingAreasCache.set(key, results);
         return results;
@@ -948,10 +982,15 @@
         try {
           const zoom = state.map ? state.map.getZoom() : null;
           geo = await adminLookupService.areaGeometry(id, true, zoom);
+          updateAdminLookupStatusFromMeta(geo?.meta);
         } catch (err) {
           state.lastMapError = err?.message || "Boundary geometry fetch failed";
+          if (err?.code === "ADMIN_LOOKUP_API_ERROR") {
+            updateAdminLookupStatusFromMeta(err?.details?.meta || { allFailed: true });
+          }
           const zoom = state.map ? state.map.getZoom() : null;
           geo = await adminLookupService.areaGeometry(id, false, zoom);
+          updateAdminLookupStatusFromMeta(geo?.meta);
         }
         const record = geo
           ? {
@@ -1038,6 +1077,11 @@
             boundaryCount: state.boundaryFeatures.length,
             coordinates: coordsSummary,
             inView: inViewCount,
+          },
+          adminLookup: {
+            status: state.adminLookupStatus || null,
+            detail: state.adminLookupDetail || null,
+            meta: state.adminLookupMeta || null,
           },
           lastMapError: state.lastMapError || null,
           lastMapErrorDetail: state.lastMapErrorDetail || null,
@@ -2051,7 +2095,10 @@
         const result = await requestTool(tool, args);
         const payload = result && result.data ? result.data : result;
         if (payload && payload.isError) {
-          throw new Error(payload.message || "Tool call failed.");
+          const err = new Error(payload.message || "Tool call failed.");
+          err.code = payload.code;
+          err.details = payload;
+          throw err;
         }
         if (payload) {
           return payload;

@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 - (none)
 
 ### Changed
-- (none)
+- Geography selector diagnostics now surface admin lookup status (live/partial/cache/all failed).
 
 ### Fixed
 - Admin lookup live calls now tolerate per-source failures and return partial results when available.

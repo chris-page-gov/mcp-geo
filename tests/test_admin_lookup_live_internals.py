@@ -120,8 +120,14 @@ def test_live_containing_areas_builds_chain(monkeypatch):
         }
 
     monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
-    results = admin_lookup._live_containing_areas(51.5, -0.1)
+    results, meta = admin_lookup._live_containing_areas(51.5, -0.1)
     assert results == [{"id": "X2", "level": "TEST", "name": "Example Area"}]
+    assert meta == {
+        "source": "arcgis",
+        "partial": False,
+        "failedSources": None,
+        "allFailed": False,
+    }
 
 
 def test_live_area_geometry_returns_bbox(monkeypatch):
@@ -133,7 +139,13 @@ def test_live_area_geometry_returns_bbox(monkeypatch):
     monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
     bbox, meta, geometry = admin_lookup._live_area_geometry("X3")
     assert bbox == [0.0, 1.0, 2.0, 3.0]
-    assert meta == {"level": "TEST", "source": "arcgis"}
+    assert meta == {
+        "level": "TEST",
+        "source": "arcgis",
+        "partial": False,
+        "failedSources": None,
+        "allFailed": False,
+    }
     assert geometry is None
 
 
@@ -164,8 +176,10 @@ def test_live_containing_areas_skips_failed_sources(monkeypatch):
         return {"features": [{"attributes": {"ID_B": "X6", "NAME_B": "Example Area"}}]}
 
     monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
-    results = admin_lookup._live_containing_areas(51.5, -0.1)
+    results, meta = admin_lookup._live_containing_areas(51.5, -0.1)
     assert results == [{"id": "X6", "level": "TEST_B", "name": "Example Area"}]
+    assert meta["partial"] is True
+    assert meta["failedSources"] == ["ExampleServiceA"]
     assert calls["count"] == 2
 
 
@@ -182,9 +196,43 @@ def test_live_area_geometry_skips_failed_sources(monkeypatch):
     monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
     bbox, meta, geometry = admin_lookup._live_area_geometry("X7")
     assert bbox == [1.0, 2.0, 3.0, 4.0]
-    assert meta == {"level": "TEST_B", "source": "arcgis"}
+    assert meta == {
+        "level": "TEST_B",
+        "source": "arcgis",
+        "partial": True,
+        "failedSources": ["ExampleServiceA"],
+        "allFailed": False,
+    }
     assert geometry is None
     assert calls["count"] == 2
+
+
+def test_live_containing_areas_all_failed(monkeypatch):
+    _patch_admin_sources_multi(monkeypatch)
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        return None
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    results, meta = admin_lookup._live_containing_areas(51.5, -0.1)
+    assert results is None
+    assert meta["allFailed"] is True
+    assert meta["failedSources"] == ["ExampleServiceA", "ExampleServiceB"]
+
+
+def test_live_area_geometry_all_failed(monkeypatch):
+    _patch_admin_sources_multi(monkeypatch)
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        return None
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    bbox, meta, geometry = admin_lookup._live_area_geometry("X8")
+    assert bbox is None
+    assert geometry is None
+    assert meta["code"] == "ERROR"
+    assert meta["allFailed"] is True
+    assert meta["failedSources"] == ["ExampleServiceA", "ExampleServiceB"]
 
 
 def test_live_find_by_id_returns_match(monkeypatch):

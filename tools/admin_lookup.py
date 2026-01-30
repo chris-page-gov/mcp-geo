@@ -283,9 +283,11 @@ def _live_find_by_name(text: str, limit: int) -> list[dict[str, Any]] | None:
     return results
 
 
-def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | None:
+def _live_containing_areas(
+    lat: float, lon: float
+) -> tuple[list[dict[str, Any]] | None, dict[str, Any]]:
     matches: list[dict[str, Any]] = []
-    failures = 0
+    failures: list[str] = []
     for source in ADMIN_SOURCES:
         url = _service_query_url(source.service)
         params = {
@@ -299,7 +301,7 @@ def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | Non
         }
         data = _fetch_arcgis(url, params)
         if data is None:
-            failures += 1
+            failures.append(source.service)
             continue
         for feat in data.get("features", []) or []:
             attrs = _extract_attrs(feat)
@@ -313,13 +315,22 @@ def _live_containing_areas(lat: float, lon: float) -> list[dict[str, Any]] | Non
                 "name": str(name),
             })
     matches.sort(key=lambda item: LEVEL_INDEX.get(item.get("level", ""), 999))
-    if not matches and failures == len(ADMIN_SOURCES):
-        return None
-    return matches
+    all_failed = len(failures) == len(ADMIN_SOURCES)
+    meta: dict[str, Any] = {
+        "source": "arcgis",
+        "partial": bool(failures) and not all_failed,
+        "failedSources": failures or None,
+        "allFailed": all_failed,
+    }
+    if not matches and all_failed:
+        return None, meta
+    return matches, meta
 
 
-def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[list[float] | None, dict[str, Any] | None, dict[str, Any] | None]:
-    failures = 0
+def _live_area_geometry(
+    area_id: str, include_geometry: bool = False
+) -> tuple[list[float] | None, dict[str, Any] | None, dict[str, Any] | None]:
+    failures: list[str] = []
     for source in ADMIN_SOURCES:
         url = _service_query_url(source.service)
         where = f"{source.id_field}='{_escape_like(area_id)}'"
@@ -333,7 +344,7 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
             }
             data = _fetch_arcgis(url, params)
             if data is None:
-                failures += 1
+                failures.append(source.service)
                 continue
             features = data.get("features", []) or []
             if not features:
@@ -346,7 +357,13 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
                 extent.get("xmax"),
                 extent.get("ymax"),
             ]
-            meta = {"level": source.level, "source": "arcgis"}
+            meta = {
+                "level": source.level,
+                "source": "arcgis",
+                "partial": bool(failures),
+                "failedSources": failures or None,
+                "allFailed": False,
+            }
             if any(v is None for v in bbox):
                 bbox = None
             return ([float(v) for v in bbox] if bbox else None), meta, geometry
@@ -358,7 +375,7 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
         }
         data = _fetch_arcgis(url, params)
         if data is None:
-            failures += 1
+            failures.append(source.service)
             continue
         extent = data.get("extent")
         if not extent:
@@ -366,10 +383,16 @@ def _live_area_geometry(area_id: str, include_geometry: bool = False) -> tuple[l
         bbox = [extent.get("xmin"), extent.get("ymin"), extent.get("xmax"), extent.get("ymax")]
         if any(v is None for v in bbox):
             continue
-        meta = {"level": source.level, "source": "arcgis"}
+        meta = {
+            "level": source.level,
+            "source": "arcgis",
+            "partial": bool(failures),
+            "failedSources": failures or None,
+            "allFailed": False,
+        }
         return [float(v) for v in bbox], meta, None
-    if failures == len(ADMIN_SOURCES):
-        return None, {"code": "ERROR"}, None
+    if len(failures) == len(ADMIN_SOURCES):
+        return None, {"code": "ERROR", "allFailed": True, "failedSources": failures}, None
     return None, {"code": "NOT_FOUND"}, None
 
 
@@ -418,21 +441,26 @@ def _containing_areas(payload: dict[str, Any]) -> ToolResult:
         cached = cache.containing_areas(lat, lon)
         if cached is not None:
             cached.sort(key=lambda item: LEVEL_INDEX.get(item.get("level", ""), 999))
-            return 200, {"results": cached, "live": False, "meta": {"source": "cache"}}
+            return 200, {
+                "results": cached,
+                "live": False,
+                "meta": {"source": "cache", "fallback": True},
+            }
     if not _live_enabled():
         return 501, {
             "isError": True,
             "code": "LIVE_DISABLED",
             "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
         }
-    live = _live_containing_areas(lat, lon)
+    live, meta = _live_containing_areas(lat, lon)
     if live is None:
         return 502, {
             "isError": True,
             "code": "ADMIN_LOOKUP_API_ERROR",
-            "message": "Admin lookup live query failed.",
+            "message": "Admin lookup live query failed (all sources failed).",
+            "meta": meta,
         }
-    return 200, {"results": live, "live": True}
+    return 200, {"results": live, "live": True, "meta": meta}
 
 
 register(Tool(
@@ -452,6 +480,8 @@ register(Tool(
         "type": "object",
         "properties": {
             "results": {"type": "array", "items": {"type": "object"}},
+            "live": {"type": "boolean"},
+            "meta": {"type": "object"},
         },
         "required": ["results"],
     },
@@ -475,8 +505,12 @@ def _reverse_hierarchy(payload: dict[str, Any]) -> ToolResult:
                     cached_chain.sort(
                         key=lambda item: LEVEL_INDEX.get(item.get("level", ""), 999)
                     )
-                    return 200, {"chain": cached_chain, "live": False, "meta": {"source": "cache"}}
-            return 200, {"chain": [hit], "live": False, "meta": {"source": "cache"}}
+                    return 200, {
+                        "chain": cached_chain,
+                        "live": False,
+                        "meta": {"source": "cache", "fallback": True},
+                    }
+            return 200, {"chain": [hit], "live": False, "meta": {"source": "cache", "fallback": True}}
     if not _live_enabled():
         return 501, {
             "isError": True,
@@ -488,9 +522,9 @@ def _reverse_hierarchy(payload: dict[str, Any]) -> ToolResult:
         lat = hit.get("lat")
         lon = hit.get("lon")
         if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
-            live = _live_containing_areas(float(lat), float(lon))
+            live, meta = _live_containing_areas(float(lat), float(lon))
             if live is not None:
-                return 200, {"chain": live, "live": True}
+                return 200, {"chain": live, "live": True, "meta": meta}
         return 200, {"chain": [hit], "live": True}
     if err and err.get("code") == "NOT_FOUND":
         return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
@@ -546,7 +580,7 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
                 "id": area_id,
                 "bbox": cached.bbox,
                 "live": False,
-                "meta": {**(cached.meta or {}), "geometryFormat": "geojson"},
+                "meta": {**(cached.meta or {}), "geometryFormat": "geojson", "fallback": True},
             }
             if cached.name:
                 payload["name"] = cached.name
@@ -572,6 +606,13 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
         return 200, payload
     if meta and meta.get("code") == "NOT_FOUND":
         return 404, {"isError": True, "code": "NOT_FOUND", "message": "Area not found"}
+    if meta and meta.get("code") == "ERROR":
+        return 502, {
+            "isError": True,
+            "code": "ADMIN_LOOKUP_API_ERROR",
+            "message": "Admin lookup live query failed (all sources failed).",
+            "meta": meta,
+        }
     return 502, {
         "isError": True,
         "code": "ADMIN_LOOKUP_API_ERROR",
