@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import sys
+import time
 import zipfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -142,22 +143,126 @@ def _resource_matches(resource: dict[str, Any], preference: list[dict[str, Any]]
         formats = [f.lower() for f in rule.get("format_any_of", [])]
         must_contain = str(rule.get("must_contain", "")).lower()
         if any(f in fmt for f in formats):
-            if not must_contain or must_contain in name or must_contain in desc:
-                return len(preference) - score + 1
+            base_score = len(preference) - score + 1
+            if not must_contain:
+                return base_score
+            if must_contain in name or must_contain in desc:
+                return base_score
+            return max(1, base_score - 1)
     return 0
 
 
-def _download(url: str, dest: Path) -> tuple[int, str]:
+def _clean_query(text: str) -> str:
+    return re.sub(r"\s+", " ", text or "").strip()
+
+
+def _strip_after_boundaries(text: str) -> str:
+    match = re.search(r"\bBoundaries\b", text, flags=re.IGNORECASE)
+    if not match:
+        return text
+    return text[: match.end()].strip()
+
+
+def _build_ckan_query_candidates(query: str) -> list[str]:
+    base = _clean_query(query).replace('"', "")
+    if not base:
+        return []
+    stripped = _strip_after_boundaries(base)
+    candidates: list[str] = []
+
+    def _add(q: str | None) -> None:
+        if not q:
+            return
+        q = _clean_query(q)
+        if q and q not in candidates:
+            candidates.append(q)
+
+    if re.search(r"\bBoundaries\b", stripped, flags=re.IGNORECASE):
+        _add(f'title:"{stripped}"')
+    else:
+        _add(f'title:"{stripped}" AND title:Boundaries')
+
+    if stripped != base:
+        if re.search(r"\bBoundaries\b", base, flags=re.IGNORECASE):
+            _add(f'title:"{base}"')
+        else:
+            _add(f'title:"{base}" AND title:Boundaries')
+
+    _add(f'"{stripped}"' if stripped else f'"{base}"')
+    if "boundaries" not in base.lower():
+        _add(f'"{base}" Boundaries')
+        _add(f"{base} Boundaries")
+    _add(base)
+    return candidates
+
+
+def _format_allowlist(preference: list[dict[str, Any]]) -> set[str]:
+    allowed = set()
+    for rule in preference:
+        for fmt in rule.get("format_any_of", []) or []:
+            allowed.add(str(fmt).lower())
+    allowed.update(
+        {
+            "geopackage",
+            "gpkg",
+            "shapefile",
+            "shp",
+            "geojson",
+            "json",
+            "gml",
+            "filegdb",
+            "fgdb",
+        }
+    )
+    return allowed
+
+
+def _is_geospatial_resource(resource: dict[str, Any], allowed_formats: set[str]) -> bool:
+    fmt = str(resource.get("format", "")).lower()
+    name = str(resource.get("name", "")).lower()
+    desc = str(resource.get("description", "")).lower()
+    for token in allowed_formats:
+        if token and (token in fmt or token in name or token in desc):
+            return True
+    return False
+
+
+def _filter_packages(packages: list[dict[str, Any]], allowed_formats: set[str]) -> list[dict[str, Any]]:
+    filtered: list[dict[str, Any]] = []
+    for pkg in packages:
+        resources = pkg.get("resources", []) or []
+        if any(_is_geospatial_resource(resource, allowed_formats) for resource in resources):
+            filtered.append(pkg)
+    return filtered
+
+
+def _download(url: str, dest: Path, *, max_attempts: int = 6, wait_seconds: float = 10.0) -> tuple[int, str]:
     _require_requests()
     if dest.exists():
         return dest.stat().st_size, _sha256_path(dest)
-    with requests.get(url, stream=True, timeout=120) as resp:
-        resp.raise_for_status()
-        with dest.open("wb") as handle:
-            for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                if chunk:
-                    handle.write(chunk)
-    return dest.stat().st_size, _sha256_path(dest)
+    attempt = 0
+    while attempt < max_attempts:
+        attempt += 1
+        with requests.get(url, stream=True, timeout=120) as resp:
+            resp.raise_for_status()
+            content_type = resp.headers.get("Content-Type", "").lower()
+            if "application/json" in content_type:
+                payload = resp.json()
+                status = str(payload.get("status", "")).lower()
+                download_url = payload.get("downloadUrl") or payload.get("url")
+                if download_url and download_url != url:
+                    url = download_url
+                    continue
+                if status in {"pending", "inprogress", "in_progress"} and attempt < max_attempts:
+                    time.sleep(wait_seconds * attempt)
+                    continue
+                raise RuntimeError(f"download_not_ready:{status or 'unknown'}")
+            with dest.open("wb") as handle:
+                for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                    if chunk:
+                        handle.write(chunk)
+        return dest.stat().st_size, _sha256_path(dest)
+    raise RuntimeError("download_not_ready:max_attempts_exceeded")
 
 
 def _list_archive(path: Path) -> list[str]:
@@ -176,17 +281,28 @@ def _extract_archive(path: Path, dest_dir: Path) -> list[Path]:
     return list(dest_dir.rglob("*"))
 
 
-def _pick_dataset_file(files: Iterable[Path]) -> Path | None:
-    gpkg = [f for f in files if f.suffix.lower() == ".gpkg"]
+def _pick_dataset_files(files: Iterable[Path]) -> list[Path]:
+    gpkg = [
+        f
+        for f in files
+        if f.is_file()
+        and (
+            f.suffix.lower() == ".gpkg"
+            or f.name.lower() in {"geopackage", "geo_package", "geo-package"}
+            or "geopackage" in f.name.lower()
+        )
+    ]
     if gpkg:
-        return gpkg[0]
-    shp = [f for f in files if f.suffix.lower() == ".shp"]
+        return gpkg
+    shp = [f for f in files if f.is_file() and f.suffix.lower() == ".shp"]
     if shp:
-        return shp[0]
-    geojson = [f for f in files if f.suffix.lower() in {".geojson", ".json"}]
+        return shp
+    geojson = [
+        f for f in files if f.is_file() and f.suffix.lower() in {".geojson", ".json"}
+    ]
     if geojson:
-        return geojson[0]
-    return None
+        return geojson
+    return []
 
 
 def _ensure_postgis(conn) -> None:
@@ -254,6 +370,11 @@ def _geom_column_name(df) -> str:
     if hasattr(df, "geometry"):
         return df.geometry.name
     return "geometry"
+
+
+def _sanitize_identifier(value: str) -> str:
+    safe = re.sub(r"[^a-zA-Z0-9_]+", "_", value).strip("_").lower()
+    return safe or "layer"
 
 
 def _ingest_dataframe(
@@ -366,6 +487,23 @@ def _validation_queries(conn, schema: str, table: str, code_col: str | None, row
     return validations
 
 
+def _ckan_search(
+    session,
+    *,
+    family_id: str,
+    api_url: str,
+    params: dict[str, Any],
+    paths: RunPaths,
+    attempt: int,
+) -> tuple[dict[str, Any], Path]:
+    resp = session.get(api_url, params=params, timeout=60)
+    resp.raise_for_status()
+    data = resp.json()
+    evidence_path = paths.evidence_ckan / f"{family_id}_package_search_{attempt:02d}.json"
+    _write_json(evidence_path, {"request": params, "response": data})
+    return data, evidence_path
+
+
 def resolve_downloads(
     family: dict[str, Any],
     template: dict[str, Any],
@@ -456,31 +594,71 @@ def resolve_downloads(
     if discovery.get("method") == "ckan_package_search":
         _require_requests()
         query = discovery.get("query") or family.get("discovery_overrides", {}).get("query") or ""
+        organisation = discovery.get("ckan_organisation") or template.get("discovery", {}).get(
+            "ckan_organisation"
+        )
         tags_any = (
             family.get("discovery_overrides", {}).get("tags_any")
             or discovery.get("tags_any")
             or []
         )
-        fq = ""
+        fq_parts = []
+        if organisation:
+            fq_parts.append(f"organization:{organisation}")
+        fq_org = " AND ".join(fq_parts)
+        fq_with_tags = fq_org
         if tags_any:
             tag_query = " OR ".join([f"tags:{tag}" for tag in tags_any])
-            fq = f"({tag_query})"
-        params = {"q": query, "rows": 200, "fq": fq, "sort": "metadata_modified desc"}
-        resp = session.get(source["api"]["package_search"], params=params, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        evidence_path = paths.evidence_ckan / f"{family['family_id']}_package_search.json"
-        _write_json(evidence_path, data)
-        packages = data.get("result", {}).get("results", []) or []
+            fq_with_tags = " AND ".join([fq_org, f"({tag_query})"]) if fq_org else f"({tag_query})"
+        query_candidates = _build_ckan_query_candidates(query)
+        if not query_candidates and query:
+            query_candidates = [query]
+        preference = template.get("discovery", {}).get("resource_preference", [])
+        allowed_formats = _format_allowlist(preference)
+        packages: list[dict[str, Any]] = []
+        evidence_path = None
+        attempt = 0
+        fq_candidates = []
+        if fq_with_tags:
+            fq_candidates.append(fq_with_tags)
+        if fq_org and fq_org not in fq_candidates:
+            fq_candidates.append(fq_org)
+        if not fq_candidates:
+            fq_candidates.append("")
+        for candidate in query_candidates:
+            for fq in fq_candidates:
+                attempt += 1
+                params = {"q": candidate, "rows": 200, "sort": "metadata_modified desc"}
+                if fq:
+                    params["fq"] = fq
+                data, attempt_path = _ckan_search(
+                    session,
+                    family_id=family["family_id"],
+                    api_url=source["api"]["package_search"],
+                    params=params,
+                    paths=paths,
+                    attempt=attempt,
+                )
+                candidate_packages = data.get("result", {}).get("results", []) or []
+                candidate_packages = _filter_packages(candidate_packages, allowed_formats)
+                if candidate_packages:
+                    packages = candidate_packages
+                    evidence_path = attempt_path
+                    break
+            if packages:
+                break
+        if evidence_path is None and attempt:
+            evidence_path = paths.evidence_ckan / f"{family['family_id']}_package_search_{attempt:02d}.json"
         variant_regex = template.get("variant_policy", {}).get("variant_detection", {}).get(
             "from_title_regex",
             r"\\b(BFC|BFE|BGC|BUC|BSC)\\b",
         )
-        preference = template.get("discovery", {}).get("resource_preference", [])
         for pkg in packages:
             pkg_title = pkg.get("title", "")
             vintage = _extract_vintage(pkg_title)
             for resource in pkg.get("resources", []) or []:
+                if not _is_geospatial_resource(resource, allowed_formats):
+                    continue
                 resource_name = resource.get("name") or ""
                 resource_desc = resource.get("description") or ""
                 variant = _extract_variant(resource_name, variant_regex)
@@ -508,7 +686,7 @@ def resolve_downloads(
                     "format": resource.get("format"),
                     "score": score,
                     "vintage_id": vintage,
-                    "evidence_ref": str(evidence_path.relative_to(paths.root)),
+                    "evidence_ref": str(evidence_path.relative_to(paths.root)) if evidence_path else None,
                 }
         for variant in required_variants:
             if variant not in resolved:
@@ -571,8 +749,22 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
                 if download_entry.get("download_status") != "ok":
                     family_errors.append(f"download_failed:{variant}")
                 ingest_entry = ingestions.get(variant, {})
-                if isinstance(ingest_entry, dict) and ingest_entry.get("ingest_status") == "error":
+                if not ingest_entry:
                     family_errors.append(f"ingest_failed:{variant}")
+                elif isinstance(ingest_entry, dict):
+                    if ingest_entry.get("ingest_status") == "error":
+                        family_errors.append(f"ingest_failed:{variant}")
+                    else:
+                        statuses = [
+                            entry.get("ingest_status")
+                            for entry in ingest_entry.values()
+                            if isinstance(entry, dict)
+                        ]
+                        if statuses:
+                            if any(status == "error" for status in statuses):
+                                family_errors.append(f"ingest_failed:{variant}")
+                            elif not any(status == "ok" for status in statuses):
+                                family_errors.append(f"ingest_failed:{variant}")
                 if validations.get(variant):
                     for table_name, val in validations[variant].items():
                         row_check = val.get("row_count", {})
@@ -653,7 +845,40 @@ def main() -> None:
                 filename = Path(url).name.split("?")[0]
                 dest = run_paths.downloads / family_id / variant / filename
                 dest.parent.mkdir(parents=True, exist_ok=True)
-                size, checksum = _download(url, dest)
+                try:
+                    size, checksum = _download(url, dest)
+                except Exception as exc:
+                    status_code = None
+                    response_text = None
+                    if requests is not None and hasattr(exc, "response") and exc.response is not None:
+                        status_code = exc.response.status_code
+                        response_text = exc.response.text[:2000]
+                    evidence_path = (
+                        run_paths.evidence_meta / f"{family_id}_{variant}_download_error.json"
+                    )
+                    _write_json(
+                        evidence_path,
+                        {
+                            "family_id": family_id,
+                            "variant": variant,
+                            "url": url,
+                            "status_code": status_code,
+                            "error": str(exc),
+                            "response_snippet": response_text,
+                        },
+                    )
+                    report["downloads"][family_id][variant] = {
+                        "download_status": "error",
+                        "error": str(exc),
+                        "status_code": status_code,
+                        "evidence_ref": str(evidence_path.relative_to(run_paths.root)),
+                    }
+                    if status_code in {400, 404}:
+                        report["resolved_resources"][family_id][variant] = {
+                            "status": "not_published",
+                            "evidence_ref": str(evidence_path.relative_to(run_paths.root)),
+                        }
+                    continue
                 checksum_path = run_paths.evidence_checksums / f"{family_id}_{variant}.sha256"
                 checksum_path.write_text(checksum, encoding="utf-8")
                 file_list = _list_archive(dest)
@@ -673,85 +898,120 @@ def main() -> None:
                     }
                     continue
                 extracted = _extract_archive(dest, run_paths.extracts / family_id / variant)
-                dataset_file = _pick_dataset_file(extracted)
-                if dataset_file is None:
+                dataset_files = _pick_dataset_files(extracted)
+                if not dataset_files:
                     report["ingestions"][family_id][variant] = {
                         "ingest_status": "error",
                         "error": "no_supported_dataset_file_found",
                     }
                     continue
-                layers = _list_layers(dataset_file)
                 strategy = (family.get("ingest") or template.get("ingest") or {}).get("strategy")
-                layer_targets = layers if strategy == "split_layers_to_tables" and layers else [None]
                 table_results: dict[str, Any] = {}
                 with psycopg.connect(args.dsn, autocommit=True) as conn:
                     _ensure_postgis(conn)
                     schema = (family.get("ingest") or {}).get("target_schema") or manifest["postgis_defaults"]["schema"]
                     _ensure_schema(conn, schema)
-                    for layer in layer_targets:
-                        df = _read_dataframe(dataset_file, layer=layer)
-                        if df is None:
-                            table_results[layer or "default"] = {
+                    include_dataset_suffix = len(dataset_files) > 1
+                    for dataset_file in dataset_files:
+                        try:
+                            layers = _list_layers(dataset_file)
+                        except Exception as exc:
+                            table_results[dataset_file.name] = {
                                 "ingest_status": "error",
-                                "error": "pyogrio_unavailable",
+                                "error": f"layer_read_failed:{exc}",
                             }
                             continue
-                        geom_col = _geom_column_name(df)
-                        if geom_col not in df.columns:
-                            table_results[layer or "default"] = {
-                                "ingest_status": "error",
-                                "error": "missing_geometry_column",
-                            }
-                            continue
-                        table_base = manifest["postgis_defaults"]["table_naming"]
-                        vintage = resolved_entry.get("vintage_id") or _extract_vintage(dataset_file.name) or "unknown"
-                        variant_name = variant.lower()
-                        table_name = table_base.format(
-                            family_id=family_id,
-                            variant=variant_name,
-                            vintage_id=vintage,
-                        )
-                        if layer:
-                            table_name = f"{table_name}__{layer}"
-                        ingest_result = _ingest_dataframe(
-                            conn,
-                            df=df,
-                            schema=schema,
-                            table=table_name,
-                            target_srid=manifest["postgis_defaults"]["target_srid"],
-                        )
-                        table_results[layer or "default"] = {
-                            "schema": schema,
-                            "table": table_name,
-                            **ingest_result,
-                        }
-                        code_regex = family.get("validation_overrides", {}).get("code_column_regex")
-                        name_regex = family.get("validation_overrides", {}).get("name_column_regex")
-                        columns = list(df.columns)
-                        code_col = _detect_fields(columns, code_regex)
-                        name_col = _detect_fields(columns, name_regex)
-                        validations = {
-                            "schema": {
-                                "code_field_present": bool(code_col),
-                                "name_field_present": bool(name_col) if name_regex else True,
-                                "detected_code_field": code_col,
-                                "detected_name_field": name_col,
-                            }
-                        }
-                        validations.update(
-                            _validation_queries(
-                                conn,
-                                schema,
-                                table_name,
-                                code_col,
-                                family.get("validation_overrides", {})
-                                .get("row_count_sanity", {})
-                                .get("min", 1),
+                        layer_targets = layers if strategy == "split_layers_to_tables" and layers else [None]
+                        dataset_suffix = _sanitize_identifier(dataset_file.stem) if include_dataset_suffix else ""
+                        for layer in layer_targets:
+                            try:
+                                df = _read_dataframe(dataset_file, layer=layer)
+                            except Exception as exc:
+                                result_key = layer or dataset_suffix or "default"
+                                table_results[result_key] = {
+                                    "ingest_status": "error",
+                                    "error": f"dataset_read_failed:{exc}",
+                                }
+                                continue
+                            result_key = layer or dataset_suffix or "default"
+                            if df is None:
+                                table_results[result_key] = {
+                                    "ingest_status": "error",
+                                    "error": "pyogrio_unavailable",
+                                }
+                                continue
+                            geom_col = _geom_column_name(df)
+                            if geom_col not in df.columns:
+                                table_results[result_key] = {
+                                    "ingest_status": "error",
+                                    "error": "missing_geometry_column",
+                                }
+                                continue
+                            geom_types = set(
+                                t for t in df[geom_col].geom_type.dropna().unique().tolist()
                             )
-                        )
-                        report["validations"][family_id].setdefault(variant, {})[
-                            table_name
-                        ] = validations
+                            if geom_types and not geom_types.issubset({"Polygon", "MultiPolygon"}):
+                                table_results[result_key] = {
+                                    "ingest_status": "skipped",
+                                    "reason": "unsupported_geometry_type",
+                                    "geometry_types": sorted(geom_types),
+                                }
+                                continue
+                            table_base = manifest["postgis_defaults"]["table_naming"]
+                            vintage = (
+                                resolved_entry.get("vintage_id")
+                                or _extract_vintage(dataset_file.name)
+                                or "unknown"
+                            )
+                            variant_name = variant.lower()
+                            table_name = table_base.format(
+                                family_id=family_id,
+                                variant=variant_name,
+                                vintage_id=vintage,
+                            )
+                            if dataset_suffix:
+                                table_name = f"{table_name}__{dataset_suffix}"
+                            if layer:
+                                table_name = f"{table_name}__{_sanitize_identifier(layer)}"
+                            ingest_result = _ingest_dataframe(
+                                conn,
+                                df=df,
+                                schema=schema,
+                                table=table_name,
+                                target_srid=manifest["postgis_defaults"]["target_srid"],
+                            )
+                            table_results[result_key] = {
+                                "schema": schema,
+                                "table": table_name,
+                                **ingest_result,
+                            }
+                            code_regex = family.get("validation_overrides", {}).get("code_column_regex")
+                            name_regex = family.get("validation_overrides", {}).get("name_column_regex")
+                            columns = list(df.columns)
+                            code_col = _detect_fields(columns, code_regex)
+                            name_col = _detect_fields(columns, name_regex)
+                            validations = {
+                                "schema": {
+                                    "code_field_present": bool(code_col),
+                                    "name_field_present": bool(name_col) if name_regex else True,
+                                    "detected_code_field": code_col,
+                                    "detected_name_field": name_col,
+                                }
+                            }
+                            validations.update(
+                                _validation_queries(
+                                    conn,
+                                    schema,
+                                    table_name,
+                                    code_col,
+                                    family.get("validation_overrides", {})
+                                    .get("row_count_sanity", {})
+                                    .get("min", 1),
+                                )
+                            )
+                            report["validations"][family_id].setdefault(variant, {})[
+                                table_name
+                            ] = validations
                 report["ingestions"][family_id][variant] = table_results
             report["family_status"][family_id] = "processed"
         except Exception as exc:  # pragma: no cover - runtime safety

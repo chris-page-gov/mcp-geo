@@ -27,7 +27,10 @@ NISRA (for example Data Zones / Super Data Zones (Census 2021) and Small Areas /
 Pipeline entrypoint:
 
 ```bash
+pip install -e .[boundaries]
 python scripts/boundary_pipeline.py --mode resolve
+# For a full download + ingest + validation pass:
+python scripts/boundary_pipeline.py --mode all
 ```
 
 Run reports are written under `data/boundary_runs/<timestamp>/run_report.json`.

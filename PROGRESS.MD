@@ -46,7 +46,7 @@ Legend: Done, Partial, Not started
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live-only mode; filter output formats exist but no streaming/large export pipeline. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; boundary dataset ingestion still needed. |
-| Boundary ingest pipeline | Partial | scripts/boundary_pipeline.py, docs/Boundaries.json | Pipeline exists; full dataset ingest still pending. |
+| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Code lists present; full boundary packs not yet shipped. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | route_query + descriptor for tool discovery. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |

@@ -5,16 +5,32 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- (none)
+
+### Changed
+- (none)
+
+### Fixed
+- (none)
+
+### Tests
+- (none)
+
+## [0.2.8] - 2026-01-30
+### Added
 - PostGIS boundary cache module with schema + ingestion helper for admin boundaries.
 - Boundary cache documentation and environment configuration guidance.
 - Boundary ingestion pipeline script driven by `docs/Boundaries.json` + completion checklist.
+- Optional `boundaries` dependency set for ingest tooling (pyogrio/pandas/pyproj/shapely).
 
 ### Changed
 - admin_lookup now prefers local boundary cache when enabled and accepts an optional zoom hint.
 - Geography selector now sends map zoom for boundary fetches and handles GeoJSON boundaries.
+- Boundary ingest pipeline now refines CKAN title searches and filters to geospatial resources.
 
 ### Fixed
 - Map proxy now adds CORS headers for map assets to support ui:// (null-origin) fetches.
+- Boundary ingest pipeline now handles multi-file archives, ArcGIS Hub pending downloads, and skips non-polygon layers safely.
 
 ### Tests
 - Fixed Playwright geography selector spec ESM path handling.

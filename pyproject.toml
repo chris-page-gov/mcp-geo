@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-geo"
-version = "0.2.7"
+version = "0.2.8"
 description = "MCP server for geospatial and ONS tools"
 authors = [ { name = "DCMS-TECH" } ]
 readme = "README.md"
@@ -36,6 +36,7 @@ dev = [
     "anyio",
     "psycopg[binary]",
 ]
+boundaries = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely"]
 
 [tool.ruff]
 line-length = 100
