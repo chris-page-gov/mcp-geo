@@ -35,6 +35,12 @@ def _write_json(path: Path, payload: Any) -> None:
 def _cache_status() -> dict[str, Any] | None:
     if BoundaryCache is None:
         return None
+    if os.getenv("boundary_cache_enabled") or os.getenv("boundary_cache_dsn"):
+        if not os.getenv("BOUNDARY_CACHE_ENABLED") and not os.getenv("BOUNDARY_CACHE_DSN"):
+            print(
+                "Warning: lowercase boundary_cache_* env vars detected; "
+                "use BOUNDARY_CACHE_ENABLED/BOUNDARY_CACHE_DSN instead."
+            )
     cache = BoundaryCache.from_settings()
     if not cache.enabled():
         return {
