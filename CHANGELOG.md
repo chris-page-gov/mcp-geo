@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Admin lookup live calls now tolerate per-source failures and return partial results when available.
 - latest_reports helper now warns when lowercase boundary cache env vars are set.
+- latest_reports helper now emits cache-disabled guidance and suppresses noisy loguru warnings.
+- latest_reports helper now reports cache query failures with a clear hint.
 
 ### Tests
 - (none)

@@ -13,6 +13,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+try:  # Suppress loguru default sink during report runs.
+    from loguru import logger
+
+    logger.remove()
+except Exception:  # pragma: no cover - loguru not installed
+    logger = None  # type: ignore[assignment]
+
 try:
     from server.boundary_cache import BoundaryCache
 except ImportError:  # pragma: no cover - optional dependency fallback
@@ -37,9 +44,17 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
 
 
-def _cache_status() -> dict[str, Any] | None:
+def _cache_status() -> dict[str, Any]:
+    configured = bool(os.getenv("BOUNDARY_CACHE_ENABLED", ""))
+    dsn_set = bool(os.getenv("BOUNDARY_CACHE_DSN", ""))
     if BoundaryCache is None:
-        return None
+        return {
+            "enabled": False,
+            "configured": configured,
+            "dsnSet": dsn_set,
+            "error": "Boundary cache module unavailable.",
+            "hint": "Ensure repo imports are used and optional boundary deps are installed.",
+        }
     if os.getenv("boundary_cache_enabled") or os.getenv("boundary_cache_dsn"):
         if not os.getenv("BOUNDARY_CACHE_ENABLED") and not os.getenv("BOUNDARY_CACHE_DSN"):
             print(
@@ -50,10 +65,21 @@ def _cache_status() -> dict[str, Any] | None:
     if not cache.enabled():
         return {
             "enabled": False,
-            "configured": bool(os.getenv("BOUNDARY_CACHE_ENABLED", "")),
-            "dsnSet": bool(os.getenv("BOUNDARY_CACHE_DSN", "")),
+            "configured": configured,
+            "dsnSet": dsn_set,
+            "message": "Boundary cache is disabled.",
+            "hint": "Set BOUNDARY_CACHE_ENABLED=true and BOUNDARY_CACHE_DSN=postgresql://...",
         }
-    return cache.status()
+    status = cache.status()
+    if status is None:
+        return {
+            "enabled": True,
+            "configured": configured,
+            "dsnSet": dsn_set,
+            "error": "Boundary cache query failed.",
+            "hint": "Ensure psycopg is installed and PostGIS is reachable.",
+        }
+    return status
 
 
 def parse_args() -> argparse.Namespace:
@@ -81,11 +107,8 @@ def main() -> None:
         cache_root = Path(args.cache_out)
         timestamp = _timestamp_slug()
         cache_path = cache_root / timestamp / "cache_status.json"
-        if cache_status is not None:
-            _write_json(cache_path, cache_status)
-            output["cache_status_latest"] = str(cache_path)
-        else:
-            output["cache_status_latest"] = None
+        _write_json(cache_path, cache_status)
+        output["cache_status_latest"] = str(cache_path)
 
     print(json.dumps(output, indent=2, ensure_ascii=True))
 
