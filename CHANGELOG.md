@@ -157,6 +157,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - (none)
+- Settings now ignore unexpected environment keys to avoid startup failures when stray vars are present.
 
 ## [0.2.4] - 2026-01-21
 ### Added
