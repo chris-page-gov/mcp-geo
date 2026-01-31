@@ -102,6 +102,7 @@ def main() -> None:
         latest = _latest_run_report(run_root)
         output["boundary_pipeline_latest"] = str(latest) if latest else None
 
+    cache_status = None
     if include_cache:
         cache_status = _cache_status()
         cache_root = Path(args.cache_out)
@@ -111,6 +112,15 @@ def main() -> None:
         output["cache_status_latest"] = str(cache_path)
 
     print(json.dumps(output, indent=2, ensure_ascii=True))
+    if include_cache:
+        if cache_status:
+            message = cache_status.get("message") or cache_status.get("error")
+            hint = cache_status.get("hint")
+            if message or hint:
+                summary = message or "Cache status available."
+                if hint:
+                    summary = f"{summary} Hint: {hint}"
+                print(summary)
 
 
 if __name__ == "__main__":

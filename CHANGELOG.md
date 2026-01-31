@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - latest_reports helper now warns when lowercase boundary cache env vars are set.
 - latest_reports helper now emits cache-disabled guidance and suppresses noisy loguru warnings.
 - latest_reports helper now reports cache query failures with a clear hint.
+- latest_reports helper now prints cache status hints inline.
 
 ### Tests
 - (none)
