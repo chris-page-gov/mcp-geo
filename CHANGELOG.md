@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - latest_reports helper now emits cache-disabled guidance and suppresses noisy loguru warnings.
 - latest_reports helper now reports cache query failures with a clear hint.
 - latest_reports helper now prints cache status hints inline.
+- Boundary cache optional deps now include psycopg for PostGIS connectivity.
 
 ### Tests
 - (none)

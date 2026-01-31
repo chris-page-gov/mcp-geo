@@ -36,7 +36,7 @@ dev = [
     "anyio",
     "psycopg[binary]",
 ]
-boundaries = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely"]
+boundaries = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely", "psycopg[binary]"]
 
 [tool.ruff]
 line-length = 100
