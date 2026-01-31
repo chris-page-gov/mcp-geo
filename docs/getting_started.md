@@ -123,6 +123,18 @@ The playground can:
 - Log prompts to help correlate with tool usage
 - Read evaluation results from the server (`/playground/evaluation/latest`)
 
+## Latest report helper
+
+Use the helper script to find the latest boundary pipeline run report and emit
+the current boundary cache status:
+
+```bash
+python scripts/latest_reports.py
+```
+
+Pass `--boundary` or `--cache` to limit output. Cache status is written to
+`data/cache_reports/<timestamp>/cache_status.json`.
+
 For playground tests, install Playwright system deps once:
 
 ```bash

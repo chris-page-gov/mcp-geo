@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - Cache audit tools (`admin_lookup.get_cache_status`, `admin_lookup.search_cache`) to inspect PostGIS boundary coverage.
+- Latest report helper script (`scripts/latest_reports.py`) for boundary pipeline + cache status.
 
 ### Changed
 - Geography selector diagnostics now surface admin lookup status (live/partial/cache/all failed) and cache status panel.
