@@ -5,11 +5,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- (none)
+
+### Changed
+- (none)
+
+### Fixed
+- (none)
+
+### Tests
+- (none)
+
+## [0.2.9] - 2026-02-01
+### Added
 - Cache audit tools (`admin_lookup.get_cache_status`, `admin_lookup.search_cache`) to inspect PostGIS boundary coverage.
 - Latest report helper script (`scripts/latest_reports.py`) for boundary pipeline + cache status.
+- Boundary run effectiveness tracker (`scripts/boundary_run_tracker.py`) with summary output and docs.
+- Boundary pipeline selective retry flags (`--family`, `--variant`) and tracker baseline comparison.
+- Post-run checklist mapping boundary pipeline validation errors to next actions in `docs/Boundaries.md`.
+- Boundary cache status now reports dataset freshness metadata (`fresh`, `ageDays`).
+- Boundary status ticker (`scripts/boundary_status_ticker.py`) for progress + error counts.
+- Boundary validation triage helper (`scripts/boundary_triage.py`) with cause/fix mapping.
+- Boundary auto-fix loop (`scripts/boundary_autofix.py`) to rerun failing families until stable.
 
 ### Changed
 - Geography selector diagnostics now surface admin lookup status (live/partial/cache/all failed) and cache status panel.
+- Boundary pipeline now retries multiple download candidates per variant and surfaces schema validation failures in pipeline status.
+- Boundary manifest refreshed with NISRA download URLs and BUASD direct downloads; glossary added to boundary docs.
+- Boundary manifest validation regex updated to match observed column names across ONS/NRS/NISRA/OS datasets.
+- Boundary pipeline reports download/extract/table sizes; tracker summary now totals byte counts.
+- Boundary manifest validation overrides updated for NI LGD fallback + TTWA duplicate codes.
 
 ### Fixed
 - Admin lookup live calls now tolerate per-source failures and return partial results when available.

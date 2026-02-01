@@ -6,7 +6,17 @@ RUN rm -f /etc/apt/sources.list.d/yarn.list || true && \
 		-exec grep -l "dl.yarnpkg.com" {} + 2>/dev/null \
 		| xargs -r rm -f || true && \
 	apt-get update && \
-	apt-get install -y --no-install-recommends ca-certificates curl && \
+	apt-get install -y --no-install-recommends \
+		ca-certificates \
+		curl \
+		build-essential \
+		libpq-dev \
+		pkg-config \
+		gdal-bin \
+		libgdal-dev \
+		libgeos-dev \
+		proj-bin \
+		libproj-dev && \
 	update-ca-certificates && \
 	rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +25,7 @@ WORKDIR /workspaces/mcp-geo
 
 
 # Install Python dependencies globally (for CI and dev reliability)
-RUN pip install fastapi uvicorn python-dotenv pydantic-settings --upgrade certifi
+RUN pip install fastapi uvicorn python-dotenv pydantic-settings psycopg[binary] --upgrade certifi
 
 # Ensure requests uses certifi's CA bundle (set to actual path, no shell expansion)
 ENV REQUESTS_CA_BUNDLE=/usr/local/lib/python3.11/site-packages/certifi/cacert.pem

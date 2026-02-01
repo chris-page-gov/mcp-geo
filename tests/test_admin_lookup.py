@@ -16,6 +16,7 @@ def _enable_admin_lookup_live(monkeypatch):
         return 200, {"features": [{"attributes": attrs}]}
 
     monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", False, raising=False)
     monkeypatch.setattr(admin_lookup._ARCGIS_CLIENT, "get_json", fake_arcgis_get_json)
 
 def test_admin_lookup_success():

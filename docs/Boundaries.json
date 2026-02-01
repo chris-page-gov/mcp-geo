@@ -224,6 +224,10 @@
         "target_srid": 27700,
         "promote_to_multi": true
       },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
+      },
       "validation": {
         "geometry_checks": {
           "st_isvalid": true
@@ -244,6 +248,10 @@
         "target_srid": 27700,
         "promote_to_multi": true
       },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
+      },
       "validation": {
         "geometry_checks": {
           "st_isvalid": true
@@ -263,6 +271,10 @@
         "geometry_type": "MULTIPOLYGON",
         "target_srid": 27700,
         "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
       },
       "validation": {
         "geometry_checks": {
@@ -330,8 +342,7 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^OA21CD$",
-        "name_column_regex": "$^"
+        "code_column_regex": "^(OA21CD|LSOA21CD)$"
       }
     },
     {
@@ -491,8 +502,8 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^CTYUA\\d{2}CD$",
-        "name_column_regex": "^CTYUA\\d{2}NM$"
+        "code_column_regex": "^(CTYUA\\d{2}CD|UTLA\\d{2}CD)$",
+        "name_column_regex": "^(CTYUA\\d{2}NM|UTLA\\d{2}NM)$"
       }
     },
     {
@@ -544,8 +555,8 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^PAR\\d{2}CD$|^E04\\d{6}$|^W04\\d{6}$",
-        "name_column_regex": "^PAR\\d{2}NM$|.*NM$|.*NAME$"
+        "code_column_regex": "^PAR\\d{2}CD$|^PARNCP\\d{2}CD$|^E04\\d{6}$|^W04\\d{6}$",
+        "name_column_regex": "^PAR\\d{2}NM$|^PARNCP\\d{2}NM$|.*NM$|.*NAME$"
       }
     },
     {
@@ -693,12 +704,18 @@
         ]
       },
       "description": "Built-up Area Sub-divisions (BUASDs).",
-      "discovery_overrides": {
-        "query": "Built-up Area Sub-divisions (December 2022) Boundaries UK",
-        "tags_any": [
-          "BDY_BUA"
-        ]
-      },
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "GPKG",
+          "url": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/491d04adbefa4ae494b96c69b7f80083/geoPackage?layers=0"
+        },
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/491d04adbefa4ae494b96c69b7f80083/shapefile?layers=0"
+        }
+      ],
       "validation_overrides": {
         "code_column_regex": "^BUASD\\d{2}CD$",
         "name_column_regex": "^BUASD\\d{2}NM$"
@@ -726,8 +743,9 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^TTWA11CD$",
-        "name_column_regex": "^TTWA11NM$"
+        "code_column_regex": "^(TTWA11CD|TTWA01CD|id)$",
+        "name_column_regex": "^(TTWA11NM|TTWA01NM|city_nm)$",
+        "allow_duplicate_codes": true
       }
     },
     {
@@ -781,8 +799,8 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^PCC\\d{2}CD$",
-        "name_column_regex": "^PCC\\d{2}NM$"
+        "code_column_regex": "^(PCC\\d{2}CD|PFA\\d{2}CD)$",
+        "name_column_regex": "^(PCC\\d{2}NM|PFA\\d{2}NM)$"
       }
     },
     {
@@ -860,8 +878,8 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^CCA\\d{2}CD$|^E4[89]\\d{5}$",
-        "name_column_regex": "^CCA\\d{2}NM$|.*NM$|.*NAME$"
+        "code_column_regex": "^CCA\\d{2}CD$|^E4[89]\\d{5}$|^UTLA\\d{2}CD$",
+        "name_column_regex": "^CCA\\d{2}NM$|^UTLA\\d{2}NM$|.*NM$|.*NAME$"
       }
     },
     {
@@ -913,8 +931,8 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^ICB\\d{2}CD$|^E54\\d{6}$",
-        "name_column_regex": "^ICB\\d{2}NM$|.*NM$|.*NAME$"
+        "code_column_regex": "^ICB\\d{2}CD$|^E54\\d{6}$|^SICBL\\d{2}CD$",
+        "name_column_regex": "^ICB\\d{2}NM$|^SICBL\\d{2}NM$|.*NM$|.*NAME$"
       }
     },
     {
@@ -1029,6 +1047,7 @@
         }
       ],
       "validation_overrides": {
+        "code_column_regex": "^(OA22CD|OA_CODE|code)$",
         "row_count_sanity": {
           "min": 1000
         }
@@ -1057,7 +1076,11 @@
           "format": "SHP_ZIP",
           "url": "https://www.nrscotland.gov.uk/media/c3xbhayl/census-settlement-2022-mhw.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(SETT22CD|SETT_CODE|code)$",
+        "name_column_regex": "^(SETT22NM|SETT_NAME|name)$"
+      }
     },
     {
       "family_id": "localities_2022_scotland",
@@ -1082,7 +1105,11 @@
           "format": "SHP_ZIP",
           "url": "https://www.nrscotland.gov.uk/media/im2nqu55/censuslocality2022_mhw.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(LOC22CD|LOC_CODE|code)$",
+        "name_column_regex": "^(LOC22NM|LOC_NAME|name)$"
+      }
     },
     {
       "family_id": "island_groups_2022_scotland",
@@ -1107,7 +1134,11 @@
           "format": "SHP_ZIP",
           "url": "https://www.nrscotland.gov.uk/media/1o4ioj5n/island-groups-2022-mhw.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(IG22CD|IG_CODE|code)$",
+        "name_column_regex": "^(IG22NM|IG_NAME|name)$"
+      }
     },
     {
       "family_id": "data_zones_2022_scotland",
@@ -1130,6 +1161,7 @@
         }
       ],
       "validation_overrides": {
+        "code_column_regex": "^(DataZone|dzcode)$",
         "row_count_sanity": {
           "min": 1000
         }
@@ -1154,11 +1186,16 @@
           "format": "SHP_ZIP",
           "url": "https://maps.gov.scot/ATOM/shapefiles/SG_IntermediateZoneBdry_2022.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(IntermediateZone|IZCode)$",
+        "name_column_regex": "^(IZName)$"
+      }
     },
     {
       "family_id": "small_areas_2011_ni",
       "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
       "coverage": [
         "Northern Ireland"
       ],
@@ -1166,10 +1203,6 @@
         "code_fields": [
           "SA2011",
           "SA_Code"
-        ],
-        "name_fields": [
-          "SA2011_Name",
-          "SA_Name"
         ]
       },
       "description": "Northern Ireland Census 2011 Small Areas.",
@@ -1177,23 +1210,22 @@
         {
           "variant": "BFC",
           "format": "SHP_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/sa2011_bua_shp.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SA2011_Esri_Shapefile_0.zip"
         },
         {
           "variant": "BFC",
-          "format": "GEOJSON_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/sa2011_bua_geojson.zip"
-        },
-        {
-          "variant": "BFC",
-          "format": "FGDB_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/sa2011_bua_fgbd.zip"
+          "format": "MAPINFO_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SA2011_MapInfo_Tab_0.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(SA2011|SA_CODE)$"
+      }
     },
     {
       "family_id": "super_output_areas_2011_ni",
       "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
       "coverage": [
         "Northern Ireland"
       ],
@@ -1201,10 +1233,6 @@
         "code_fields": [
           "SOA2011",
           "SOA_Code"
-        ],
-        "name_fields": [
-          "SOA2011_Name",
-          "SOA_Name"
         ]
       },
       "description": "Northern Ireland Census 2011 Super Output Areas (SOA).",
@@ -1212,23 +1240,22 @@
         {
           "variant": "BFC",
           "format": "SHP_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/soa2011_bua_shp.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SOA2011_Esri_Shapefile_0.zip"
         },
         {
           "variant": "BFC",
-          "format": "GEOJSON_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/soa2011_bua_geojson.zip"
-        },
-        {
-          "variant": "BFC",
-          "format": "FGDB_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/soa2011_bua_fgbd.zip"
+          "format": "MAPINFO_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SOA2011_MapInfo_Tab_0.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(SOA2011|SOA_CODE)$"
+      }
     },
     {
       "family_id": "data_zones_2021_ni",
       "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
       "coverage": [
         "Northern Ireland"
       ],
@@ -1247,19 +1274,23 @@
         {
           "variant": "BFC",
           "format": "SHP_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/dz2021_bua_shp.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-dz2021-esri-shapefile.zip"
         },
         {
           "variant": "BFC",
           "format": "GEOJSON_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/dz2021_bua_geojson.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-dz2021-geojson.zip"
         },
         {
           "variant": "BFC",
           "format": "FGDB_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/dz2021_bua_fgbd.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-dz2021-geodatabase.zip"
         }
       ],
+      "validation_overrides": {
+        "code_column_regex": "^DZ2021_CD$",
+        "name_column_regex": "^DZ2021_NM$"
+      },
       "notes": [
         "NISRA states Data Zones nest within Super Data Zones, which nest within LGDs and Parliamentary Constituencies."
       ]
@@ -1267,6 +1298,7 @@
     {
       "family_id": "super_data_zones_2021_ni",
       "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
       "coverage": [
         "Northern Ireland"
       ],
@@ -1285,19 +1317,23 @@
         {
           "variant": "BFC",
           "format": "SHP_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/sdz2021_bua_shp.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-sdz2021-esri-shapefile.zip"
         },
         {
           "variant": "BFC",
           "format": "GEOJSON_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/sdz2021_bua_geojson.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-sdz2021-geojson.zip"
         },
         {
           "variant": "BFC",
           "format": "FGDB_ZIP",
-          "url": "https://www.nisra.gov.uk/sites/nisra.gov.uk/files/publications/sdz2021_bua_fgbd.zip"
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-sdz2021-geodatabase.zip"
         }
-      ]
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^SDZ2021_CD$",
+        "name_column_regex": "^SDZ2021_NM$"
+      }
     },
     {
       "family_id": "ni_lgd_fallback",
@@ -1319,6 +1355,10 @@
         "geometry_type": "MULTIPOLYGON",
         "target_srid": 27700,
         "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
       },
       "validation": {
         "geometry_checks": {
@@ -1350,6 +1390,10 @@
         "target_srid": 27700,
         "promote_to_multi": true
       },
+      "validation_overrides": {
+        "code_column_regex": "^DEA$",
+        "name_column_regex": "^Area$"
+      },
       "validation": {
         "geometry_checks": {
           "st_isvalid": true
@@ -1379,6 +1423,11 @@
         "strategy": "split_layers_to_tables",
         "target_srid": 27700,
         "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^(Area_Code|Census_Code|PD_ID|Name)$",
+        "name_column_regex": "^(Name|County|Distric_Bo|Ward|Parish)$",
+        "allow_duplicate_codes": true
       },
       "validation": {
         "geometry_checks": {

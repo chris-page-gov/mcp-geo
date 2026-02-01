@@ -34,6 +34,74 @@ python scripts/boundary_pipeline.py --mode all
 ```
 
 Run reports are written under `data/boundary_runs/<timestamp>/run_report.json`.
+To summarize effectiveness, run:
+
+```bash
+python scripts/boundary_run_tracker.py
+```
+
+## Size summary (downloads + ingest)
+
+The pipeline report now captures byte sizes for downloads, extracted archives, and
+PostGIS tables. After a run, check `run_tracker.json`:
+
+```bash
+cat data/boundary_runs/<timestamp>/run_tracker.json | jq '.summary | {download_bytes, archive_uncompressed_bytes, extracted_bytes, ingested_table_bytes}'
+```
+
+This helps estimate storage needs and monitor growth over time.
+
+## Status ticker (progress + error counts)
+
+For a quick progress readout (families ok, downloads/ingest/validation coverage,
+and error counts), run:
+
+```bash
+python scripts/boundary_status_ticker.py
+```
+
+To emit a ticker update every minute while a run is finishing:
+
+```bash
+python scripts/boundary_status_ticker.py --watch --interval 60
+```
+
+## Validation triage (cause + fix mapping)
+
+To list validation failures that occurred after successful download + ingest,
+along with generic fix guidance:
+
+```bash
+python scripts/boundary_triage.py > data/boundary_runs/<timestamp>/triage_report.json
+```
+
+## Auto-fix loop (full run + targeted reruns)
+
+To run the pipeline end-to-end, then rerun only failing families until the
+error set stops changing:
+
+```bash
+python scripts/boundary_autofix.py
+```
+
+Optional flags:
+
+```bash
+python scripts/boundary_autofix.py --max-iterations 5 --sleep 2
+```
+
+Selective retries:
+
+```bash
+python scripts/boundary_pipeline.py --family oa_2021_ew --variant BFC --mode all
+```
+
+Compare tracker output to a baseline run:
+
+```bash
+python scripts/boundary_run_tracker.py \
+  --compare data/boundary_runs/<previous>/run_report.json
+```
 
 ## Completion / Done Definition (for Codex)
 
@@ -75,7 +143,56 @@ If all five conditions hold, mark the pipeline status as: COMPLETE_BOUNDARIES_IN
 
 Here’s a JSON completion_checklist object Codex can execute and emit as a structured pass/fail report (you can paste this into the manifest under completion_definition.completion_checklist, or keep it as a separate file like completion_checklist.json): [Boundaries Completion Checklist](boundaries_completion_checklist.json)
 
+## Post-run checklist (validation error -> next action)
+
+Use this section after a full pipeline run to resolve any errors emitted in
+`run_report.json` under `errors[].errors[]`.
+
+| Validation error | Recommended next action |
+| --- | --- |
+| `missing_resolved:<variant>` | Confirm the family exists in `docs/Boundaries.json`, then rerun `--mode resolve` for that family. If the source does not publish the variant, record a `not_published` evidence entry in the run report. |
+| `invalid_resolved_status:<variant>` | Inspect the `resolved_resources` entry for the variant and fix the resolution logic (bad status string or malformed payload). Re-run `--mode resolve`. |
+| `missing_not_published_evidence:<variant>` | Add a CKAN package_show JSON or source page metadata file under `evidence/source_page_metadata/` and set `evidence_ref`. Re-run `--mode resolve`. |
+| `download_failed:<variant>` | Re-run `--mode download` for the family/variant. If the download is still failing, capture the failing URL + HTTP status in evidence and verify required headers (user-agent, redirects). |
+| `ingest_failed:<variant>` | Check `ingestions` for the variant to see the error string (missing deps, bad layer, unsupported geometry). Ensure GDAL/pyogrio + psycopg are installed and re-run `--mode ingest`. |
+| `code_field_missing:<variant>:<table>` | Update the manifest `validation.must_be_unique` and/or `code_field_regex` to the correct code column name, then re-run `--mode validate`. |
+| `name_field_missing:<variant>:<table>` | Update the manifest `validation.name_field_regex` (or mark name as optional for that family) and re-run `--mode validate`. |
+| `row_count_low:<variant>:<table>` | Verify the correct layer is being ingested (GPKG layer index or layer name). Update `ingest.layer_selection` or minimum row count if the dataset changed. |
+| `invalid_geometry:<variant>:<table>` | Inspect invalid geometries using `ST_IsValidReason`. If failures persist after `ST_MakeValid`, switch to a different variant or source, or exclude the problematic layer. |
+| `duplicate_codes:<variant>:<table>` | Check for multi-part rows or stale code columns. If duplicates are legit, update validation rules; otherwise, fix the ingest selection or de-duplicate upstream. |
+
 ------------------- Other notes --------------------
+
+## Glossary (pipeline terms and acronyms)
+
+- ArcGIS Hub: ArcGIS-hosted dataset portal used by ONS for downloads.
+- BBOX: Bounding box, [minLon, minLat, maxLon, maxLat].
+- BFC/BFE/BGC/BUC: ONS boundary variants (Full/Extent/Generalised/Ultra generalised, clipped or extent).
+- BNG: British National Grid (EPSG:27700).
+- CKAN: Open data catalog API (data.gov.uk uses CKAN).
+- EPSG/SRID: Coordinate reference identifiers used by PostGIS.
+- FGDB: ESRI File Geodatabase download format.
+- GDAL/OGR: Geospatial library used to read shapefiles/GPKG/GeoJSON.
+- GPKG: GeoPackage file format.
+- ONS: Office for National Statistics (Open Geography Portal).
+- OS: Ordnance Survey (Boundary-Line, OS APIs).
+- NISRA: Northern Ireland Statistics and Research Agency.
+- PostGIS: PostgreSQL geospatial extension used as the boundary cache.
+- SHP: ESRI Shapefile format.
+- Validation errors:
+  - code_field_missing/name_field_missing: expected ID/name columns not found.
+  - row_count_low: ingested row count below minimum threshold.
+  - invalid_geometry: geometry invalid after ST_MakeValid repair.
+  - duplicate_codes: non-unique geography codes.
+- Download errors:
+  - download_not_ready: ArcGIS Hub export still processing.
+  - not_published: variant not available; must include evidence.
+  - ingest_status=skipped: unsupported geometry type (e.g., lines) intentionally skipped.
+
+Alternative strategies referenced:
+- CKAN discovery (data.gov.uk) for ONS datasets.
+- Direct download URLs (NISRA, OS Boundary-Line).
+- Fallback to OpenDataNI CKAN if NISRA links change.
 
 1. Facts: authoritative sources and scope
 2. Full boundary catalogue (by class)

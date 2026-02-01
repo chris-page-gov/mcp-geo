@@ -376,6 +376,7 @@ class BoundaryCache:
         geom_total = int(totals.get("geom_count") or 0)
         dataset_rows = []
         for row in datasets:
+            fresh, age_days = self._freshness(row.get("release_date"), row.get("ingested_at"))
             dataset_rows.append(
                 {
                     "datasetId": row.get("dataset_id"),
@@ -391,6 +392,8 @@ class BoundaryCache:
                     "coverage": row.get("coverage"),
                     "recordCount": row.get("record_count"),
                     "license": row.get("license"),
+                    "fresh": fresh,
+                    "ageDays": age_days,
                 }
             )
         return {

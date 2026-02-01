@@ -111,3 +111,18 @@ The MCP server exposes simple cache auditing helpers:
 - `admin_lookup.search_cache` searches cached areas by name/id/level (useful to confirm OA/LSOA polygons).
 
 These are surfaced in the geography selector “Cache status” panel for quick checks.
+
+## Run effectiveness tracker (automated pipeline)
+
+If you use the automated pipeline (`scripts/boundary_pipeline.py`), generate a quick
+summary of how much completed successfully:
+
+```bash
+python scripts/boundary_run_tracker.py
+```
+
+This reads the latest `data/boundary_runs/<timestamp>/run_report.json` and writes
+`run_tracker.json` next to it with counts/percentages for resolution, download,
+ingest, and validation.
+
+For terminology and acronyms used by the pipeline, see `docs/Boundaries.md`.

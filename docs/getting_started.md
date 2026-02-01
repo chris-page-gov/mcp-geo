@@ -22,10 +22,20 @@ git submodule update --init --recursive
 Set env vars for live data when you have keys:
 - `OS_API_KEY` (required) for Ordnance Survey tools
 - `ONS_LIVE_ENABLED=true` for live ONS datasets
+- `LOG_JSON=true` to force JSON logs (now default)
 
 Optional: enable the PostGIS boundary cache for full admin boundaries:
 - `BOUNDARY_CACHE_ENABLED=true`
 - `BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
+
+```bash
+export BOUNDARY_CACHE_ENABLED=true
+export BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo
+
+
+echo BOUNDARY_CACHE_ENABLED
+echo BOUNDARY_CACHE_DSN
+```
 
 See `docs/boundary_cache.md` for ingest + validation steps.
 

@@ -236,14 +236,28 @@ def _filter_packages(packages: list[dict[str, Any]], allowed_formats: set[str]) 
     return filtered
 
 
-def _download(url: str, dest: Path, *, max_attempts: int = 6, wait_seconds: float = 10.0) -> tuple[int, str]:
+def _download(
+    url: str,
+    dest: Path,
+    *,
+    headers: dict[str, str] | None = None,
+    allow_redirects: bool = True,
+    max_attempts: int = 6,
+    wait_seconds: float = 10.0,
+) -> tuple[int, str]:
     _require_requests()
     if dest.exists():
         return dest.stat().st_size, _sha256_path(dest)
     attempt = 0
     while attempt < max_attempts:
         attempt += 1
-        with requests.get(url, stream=True, timeout=120) as resp:
+        with requests.get(
+            url,
+            stream=True,
+            timeout=120,
+            headers=headers,
+            allow_redirects=allow_redirects,
+        ) as resp:
             resp.raise_for_status()
             content_type = resp.headers.get("Content-Type", "").lower()
             if "application/json" in content_type:
@@ -270,6 +284,31 @@ def _list_archive(path: Path) -> list[str]:
         with zipfile.ZipFile(path) as zf:
             return zf.namelist()
     return [path.name]
+
+
+def _archive_uncompressed_bytes(path: Path) -> int:
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as zf:
+            return sum(info.file_size for info in zf.infolist())
+    return path.stat().st_size
+
+
+def _download_looks_valid(path: Path) -> bool:
+    if zipfile.is_zipfile(path):
+        return True
+    name = path.name.lower()
+    try:
+        with path.open("rb") as handle:
+            header = handle.read(256)
+    except OSError:
+        return False
+    if b"Redirecting" in header or b"redirecting" in header:
+        return False
+    if path.suffix.lower() == ".zip" or "shapefile" in name:
+        return False
+    if path.suffix.lower() == ".gpkg" or "geopackage" in name:
+        return b"SQLite format 3" in header
+    return True
 
 
 def _extract_archive(path: Path, dest_dir: Path) -> list[Path]:
@@ -335,6 +374,34 @@ def _detect_fields(columns: list[str], regex: str | None) -> str | None:
         if pattern.match(col):
             return col
     return None
+
+
+def _regex_from_fields(fields: list[str] | None) -> str | None:
+    if not fields:
+        return None
+    escaped = [re.escape(field) for field in fields if field]
+    if not escaped:
+        return None
+    return "^(" + "|".join(escaped) + ")$"
+
+
+def _source_hints(manifest: dict[str, Any], source_id: str | None) -> dict[str, Any]:
+    if not source_id:
+        return {}
+    sources = manifest.get("catalogue_sources", [])
+    source = next((s for s in sources if s.get("source_id") == source_id), None)
+    if not source:
+        return {}
+    hints = source.get("http_hints", {}) or {}
+    headers = {}
+    user_agent = hints.get("user_agent")
+    if user_agent:
+        headers["User-Agent"] = user_agent
+    allow_redirects = hints.get("follow_redirects")
+    return {
+        "headers": headers,
+        "allow_redirects": True if allow_redirects is None else bool(allow_redirects),
+    }
 
 
 def _coerce_multipolygon(geom):
@@ -437,7 +504,15 @@ def _ingest_dataframe(
     return {"ingest_status": "ok"}
 
 
-def _validation_queries(conn, schema: str, table: str, code_col: str | None, row_min: int) -> dict[str, Any]:
+def _validation_queries(
+    conn,
+    schema: str,
+    table: str,
+    code_col: str | None,
+    row_min: int,
+    *,
+    allow_duplicate_codes: bool = False,
+) -> dict[str, Any]:
     validations: dict[str, Any] = {}
     with conn.cursor() as cur:
         cur.execute(
@@ -457,7 +532,7 @@ def _validation_queries(conn, schema: str, table: str, code_col: str | None, row
         "srid": srid,
         "row_count": row_count,
     }
-    if code_col:
+    if code_col and not allow_duplicate_codes:
         with conn.cursor() as cur:
             cur.execute(
                 f'SELECT COUNT(*) FROM (SELECT "{code_col}", COUNT(*) c FROM "{schema}"."{table}" GROUP BY "{code_col}" HAVING COUNT(*) > 1) t;'
@@ -485,6 +560,21 @@ def _validation_queries(conn, schema: str, table: str, code_col: str | None, row
         }
     validations["row_count"] = {"row_count": validations["ingest"]["row_count"], "row_count_min": row_min}
     return validations
+
+
+def _table_size_bytes(conn, schema: str, table: str) -> int | None:
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT pg_total_relation_size(%s::regclass);",
+                (f"{schema}.{table}",),
+            )
+            row = cur.fetchone()
+    except Exception:
+        return None
+    if not row:
+        return None
+    return int(row[0]) if row[0] is not None else None
 
 
 def _ckan_search(
@@ -515,14 +605,26 @@ def resolve_downloads(
     resolved: dict[str, Any] = {}
     downloads = family.get("downloads")
     if downloads:
+        source_id = family.get("source_id") or family.get("category")
+        http_hints = _source_hints(manifest, source_id)
         for variant in required_variants:
-            match = next((d for d in downloads if d.get("variant") == variant), None)
-            if match:
+            matches = [d for d in downloads if d.get("variant") == variant]
+            if matches:
                 resolved[variant] = {
                     "status": "resolved",
-                    "download_url": match.get("url"),
-                    "source_id": family.get("category", "direct_download"),
-                    "format": match.get("format"),
+                    "download_url": matches[0].get("url"),
+                    "download_candidates": [
+                        {
+                            "url": m.get("url"),
+                            "format": m.get("format"),
+                            "http_hints": http_hints,
+                        }
+                        for m in matches
+                        if m.get("url")
+                    ],
+                    "source_id": source_id or "direct_download",
+                    "format": matches[0].get("format"),
+                    "http_hints": http_hints,
                 }
             else:
                 evidence_path = paths.evidence_meta / f"{family['family_id']}_{variant}_not_published.json"
@@ -717,6 +819,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dsn", default=os.getenv("BOUNDARY_CACHE_DSN", DEFAULT_DSN))
     parser.add_argument("--workdir", default="data/boundary_runs")
     parser.add_argument("--mode", choices=["all", "resolve", "download", "ingest", "validate"], default="all")
+    parser.add_argument("--family", action="append", help="Limit to one or more family_id values.")
+    parser.add_argument("--variant", action="append", help="Limit to one or more variant values.")
     return parser.parse_args()
 
 
@@ -763,10 +867,15 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
                         if statuses:
                             if any(status == "error" for status in statuses):
                                 family_errors.append(f"ingest_failed:{variant}")
-                            elif not any(status == "ok" for status in statuses):
+                            elif not any(status in {"ok", "skipped"} for status in statuses):
                                 family_errors.append(f"ingest_failed:{variant}")
                 if validations.get(variant):
                     for table_name, val in validations[variant].items():
+                        schema_check = val.get("schema", {})
+                        if schema_check.get("code_field_present") is False:
+                            family_errors.append(f"code_field_missing:{variant}:{table_name}")
+                        if schema_check.get("name_field_present") is False:
+                            family_errors.append(f"name_field_missing:{variant}:{table_name}")
                         row_check = val.get("row_count", {})
                         if row_check and row_check.get("row_count", 0) < row_check.get("row_count_min", 1):
                             family_errors.append(f"row_count_low:{variant}:{table_name}")
@@ -814,8 +923,12 @@ def main() -> None:
         "pipeline_status": None,
     }
     session = requests.Session() if requests else None
+    allowed_families = set(args.family or [])
+    allowed_variants = {v.upper() for v in (args.variant or [])}
     for family in manifest.get("boundary_families", []):
         family_id = family.get("family_id")
+        if allowed_families and family_id not in allowed_families:
+            continue
         template_id = family.get("template")
         template = manifest.get("templates", {}).get(template_id, {})
         report["resolved_resources"][family_id] = {}
@@ -829,65 +942,113 @@ def main() -> None:
                 report["family_status"][family_id] = "resolved"
                 continue
             for variant, resolved_entry in resolved.items():
+                if allowed_variants and variant not in allowed_variants:
+                    continue
                 if resolved_entry.get("status") != "resolved":
                     report["downloads"][family_id][variant] = {
                         "download_status": resolved_entry.get("status"),
                         "evidence_ref": resolved_entry.get("evidence_ref"),
                     }
                     continue
-                url = resolved_entry.get("download_url")
-                if not url:
+                candidates = resolved_entry.get("download_candidates") or []
+                if not candidates and resolved_entry.get("download_url"):
+                    candidates = [{"url": resolved_entry.get("download_url"), "format": resolved_entry.get("format")}]
+                if not candidates:
                     report["downloads"][family_id][variant] = {
                         "download_status": "error",
                         "error": "missing_download_url",
                     }
                     continue
-                filename = Path(url).name.split("?")[0]
-                dest = run_paths.downloads / family_id / variant / filename
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                try:
-                    size, checksum = _download(url, dest)
-                except Exception as exc:
-                    status_code = None
-                    response_text = None
-                    if requests is not None and hasattr(exc, "response") and exc.response is not None:
-                        status_code = exc.response.status_code
-                        response_text = exc.response.text[:2000]
-                    evidence_path = (
-                        run_paths.evidence_meta / f"{family_id}_{variant}_download_error.json"
+                attempts = []
+                download_success = False
+                size = None
+                checksum = None
+                url = None
+                for idx, candidate in enumerate(candidates, start=1):
+                    url = candidate.get("url")
+                    if not url:
+                        attempts.append({"attempt": idx, "status": "error", "error": "missing_url"})
+                        continue
+                    hints = candidate.get("http_hints") or resolved_entry.get("http_hints") or {}
+                    headers = hints.get("headers") if isinstance(hints, dict) else None
+                    allow_redirects = (
+                        hints.get("allow_redirects", True)
+                        if isinstance(hints, dict)
+                        else True
                     )
-                    _write_json(
-                        evidence_path,
-                        {
-                            "family_id": family_id,
-                            "variant": variant,
-                            "url": url,
-                            "status_code": status_code,
-                            "error": str(exc),
-                            "response_snippet": response_text,
-                        },
-                    )
+                    filename = Path(url).name.split("?")[0] or f"{variant.lower()}_{idx}"
+                    dest = run_paths.downloads / family_id / variant / filename
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    try:
+                        size, checksum = _download(
+                            url,
+                            dest,
+                            headers=headers,
+                            allow_redirects=bool(allow_redirects),
+                        )
+                        if not _download_looks_valid(dest):
+                            attempts.append(
+                                {
+                                    "attempt": idx,
+                                    "status": "error",
+                                    "url": url,
+                                    "error": "download_validation_failed",
+                                    "path": str(dest),
+                                }
+                            )
+                            continue
+                        download_success = True
+                        attempts.append({"attempt": idx, "status": "ok", "url": url, "path": str(dest)})
+                        break
+                    except Exception as exc:
+                        status_code = None
+                        response_text = None
+                        if requests is not None and hasattr(exc, "response") and exc.response is not None:
+                            status_code = exc.response.status_code
+                            response_text = exc.response.text[:2000]
+                        evidence_path = (
+                            run_paths.evidence_meta / f"{family_id}_{variant}_download_error_{idx:02d}.json"
+                        )
+                        _write_json(
+                            evidence_path,
+                            {
+                                "family_id": family_id,
+                                "variant": variant,
+                                "url": url,
+                                "status_code": status_code,
+                                "error": str(exc),
+                                "response_snippet": response_text,
+                            },
+                        )
+                        attempts.append(
+                            {
+                                "attempt": idx,
+                                "status": "error",
+                                "url": url,
+                                "status_code": status_code,
+                                "error": str(exc),
+                                "evidence_ref": str(evidence_path.relative_to(run_paths.root)),
+                            }
+                        )
+                if not download_success:
                     report["downloads"][family_id][variant] = {
                         "download_status": "error",
-                        "error": str(exc),
-                        "status_code": status_code,
-                        "evidence_ref": str(evidence_path.relative_to(run_paths.root)),
+                        "error": "all_candidates_failed",
+                        "attempts": attempts,
                     }
-                    if status_code in {400, 404}:
-                        report["resolved_resources"][family_id][variant] = {
-                            "status": "not_published",
-                            "evidence_ref": str(evidence_path.relative_to(run_paths.root)),
-                        }
                     continue
                 checksum_path = run_paths.evidence_checksums / f"{family_id}_{variant}.sha256"
                 checksum_path.write_text(checksum, encoding="utf-8")
                 file_list = _list_archive(dest)
+                uncompressed_bytes = _archive_uncompressed_bytes(dest)
                 report["downloads"][family_id][variant] = {
                     "download_status": "ok",
                     "bytes": size,
+                    "archiveUncompressedBytes": uncompressed_bytes,
                     "sha256": checksum,
                     "file_list": file_list,
                     "gdal_readable": pyogrio is not None,
+                    "attempts": attempts,
                 }
                 if args.mode in {"download"}:
                     continue
@@ -898,6 +1059,10 @@ def main() -> None:
                     }
                     continue
                 extracted = _extract_archive(dest, run_paths.extracts / family_id / variant)
+                extracted_bytes = sum(
+                    path.stat().st_size for path in extracted if path.is_file()
+                )
+                report["downloads"][family_id][variant]["extractedBytes"] = extracted_bytes
                 dataset_files = _pick_dataset_files(extracted)
                 if not dataset_files:
                     report["ingestions"][family_id][variant] = {
@@ -980,13 +1145,23 @@ def main() -> None:
                                 table=table_name,
                                 target_srid=manifest["postgis_defaults"]["target_srid"],
                             )
+                            table_bytes = None
+                            if ingest_result.get("ingest_status") == "ok":
+                                table_bytes = _table_size_bytes(conn, schema, table_name)
                             table_results[result_key] = {
                                 "schema": schema,
                                 "table": table_name,
+                                "tableBytes": table_bytes,
                                 **ingest_result,
                             }
-                            code_regex = family.get("validation_overrides", {}).get("code_column_regex")
-                            name_regex = family.get("validation_overrides", {}).get("name_column_regex")
+                            overrides = family.get("validation_overrides", {})
+                            gk = family.get("geography_key", {}) or {}
+                            code_regex = overrides.get("code_column_regex") or _regex_from_fields(
+                                gk.get("code_fields")
+                            )
+                            name_regex = overrides.get("name_column_regex") or _regex_from_fields(
+                                gk.get("name_fields")
+                            )
                             columns = list(df.columns)
                             code_col = _detect_fields(columns, code_regex)
                             name_col = _detect_fields(columns, name_regex)
@@ -996,6 +1171,7 @@ def main() -> None:
                                     "name_field_present": bool(name_col) if name_regex else True,
                                     "detected_code_field": code_col,
                                     "detected_name_field": name_col,
+                                    "columns": columns,
                                 }
                             }
                             validations.update(
@@ -1004,9 +1180,8 @@ def main() -> None:
                                     schema,
                                     table_name,
                                     code_col,
-                                    family.get("validation_overrides", {})
-                                    .get("row_count_sanity", {})
-                                    .get("min", 1),
+                                    overrides.get("row_count_sanity", {}).get("min", 1),
+                                    allow_duplicate_codes=bool(overrides.get("allow_duplicate_codes")),
                                 )
                             )
                             report["validations"][family_id].setdefault(variant, {})[

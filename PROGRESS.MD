@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-01-30
+Last updated: 2026-02-01
 
 ## Sources reviewed
 
@@ -113,6 +113,7 @@ Low impact
 | Add PostGIS boundary cache + ingestion scaffolding | Done | server/boundary_cache.py, scripts/boundary_cache_* |
 | Wire admin_lookup to cache with zoom-aware geometry | Done | tools/admin_lookup.py, ui/geography_selector.html |
 | Document cache setup + validation | Done | docs/boundary_cache.md, docs/getting_started.md |
+| Add post-run checklist for pipeline validation errors | Done | docs/Boundaries.md |
 
 ## Map handling review follow-ups (2026-01-28)
 
