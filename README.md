@@ -48,6 +48,14 @@ MCP Inspector or the playground UI, and explore tools/resources.
 For a complete design specification (aims, personas, architecture, scenarios,
 diagrams, backlog), see `docs/spec_package/README.md`.
 
+## Codex Context (Mac App)
+
+- Use `CONTEXT.md` as the durable project context for Codex across environments.
+- If you use the Codex Mac app, open this repo as a project and read `CONTEXT.md`
+  at session start.
+- Codex app documentation: https://developers.openai.com/codex/app/
+- Codex app features: https://developers.openai.com/codex/app/features
+
 ## Docker (STDIO / Claude Desktop)
 Build the image:
 ```bash

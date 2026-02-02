@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added upstream circuit breaker with jittered retries.
 - Added `CONTEXT.md` as the durable Codex context template for this repo.
 - Added Codex Mac app guidance and external references in `CONTEXT.md`.
+- Added README note for Codex Mac app usage and context.
 
 ### Changed
 - Relaxed boundary validation to treat pre-repair invalid geometries as warnings.

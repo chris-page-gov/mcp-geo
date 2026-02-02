@@ -130,6 +130,7 @@ Low impact
 | Update agent guidance to read/update repo context | Done | AGENTS.md |
 | Persist Codex home across devcontainer rebuilds | Done | .devcontainer/devcontainer.json |
 | Add Mac App guidance + external references | Done | CONTEXT.md |
+| Add README note for Codex Mac app usage | Done | README.md |
 
 ## Map handling review follow-ups (2026-01-28)
 
