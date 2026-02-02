@@ -19,6 +19,8 @@ operational behaviors, and the user experience expected from MCP tools and MCP-A
 11. Scenario walkthroughs: `docs/spec_package/11_walkthroughs.md`
 12. Backlog & completion plan: `docs/spec_package/12_backlog_and_plan.md`
 13. Screenshots & capture checklist: `docs/spec_package/screenshots.md`
+14. Sequence diagrams: `docs/spec_package/13_sequence_diagrams.md`
+15. Export instructions: `docs/spec_package/export.md`
 
 ## Current scope snapshot (prototype)
 
@@ -34,4 +36,4 @@ operational behaviors, and the user experience expected from MCP tools and MCP-A
 - Read in order for a full specification.
 - Use `12_backlog_and_plan.md` as the roadmap to reach production-grade completeness.
 - Use `screenshots.md` to capture missing images when running the UI and inspector.
-
+- Use `export.md` to produce a DOCX/PDF deliverable.

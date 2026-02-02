@@ -46,3 +46,8 @@ Expected outcome:
 Expected outcome:
 - Cache tables populated and validation OK.
 
+## Reference screenshots (pending)
+
+![Inspector connected to MCP Geo](images/inspector-tools-resources.png)
+
+![Boundary status ticker](images/boundary-status-ticker.png)

@@ -24,9 +24,24 @@ Existing images are included where available; missing captures are listed below.
 6. **Boundary pipeline status ticker**
    - Terminal output of `scripts/boundary_status_ticker.py`.
 
+## Suggested filenames (place under docs/spec_package/images/)
+
+- `inspector-tools-resources.png`
+- `ui-geography-selector.png`
+- `ui-route-planner.png`
+- `ui-feature-inspector.png`
+- `ui-statistics-dashboard.png`
+- `boundary-status-ticker.png`
+
+## Where to capture
+
+1. **Claude Desktop (preferred)**: if the MCP-Apps UI opens in Claude Desktop,
+   capture the widget view directly after calling `os_apps.render_*`.
+2. **MCP Inspector (fallback)**: use the Inspector UI resource renderer. Capture
+   the widget after selecting the MCP Geo server and loading the `ui://` resource.
+
 ## Capture instructions
 
 - Use a 1440px wide window (or full screen) for consistency.
 - Save files under `docs/spec_package/images/` with descriptive names.
 - Update the markdown references in the spec files once captured.
-

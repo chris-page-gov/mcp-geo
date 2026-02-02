@@ -41,3 +41,13 @@ Each render tool returns:
 Example map render (external reference image captured from Claude):
 
 ![Example map render](../MasterMap%20from%20Claude.png)
+
+### UI captures (pending)
+
+![Geography selector UI](images/ui-geography-selector.png)
+
+![Route planner UI](images/ui-route-planner.png)
+
+![Feature inspector UI](images/ui-feature-inspector.png)
+
+![Statistics dashboard UI](images/ui-statistics-dashboard.png)
