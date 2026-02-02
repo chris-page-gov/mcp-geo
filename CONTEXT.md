@@ -1,0 +1,93 @@
+# MCP Geo Context
+
+Last updated: 2026-02-02
+Owner: @chris-page-gov
+
+## Purpose
+
+This file is the durable, repo-scoped context for Codex across environments.
+Read it at the start of a session and update it whenever priorities or key
+assumptions change.
+
+## Project Snapshot
+
+- FastAPI MCP server for Ordnance Survey and ONS geospatial tooling.
+- Primary entrypoints: `server/main.py` (HTTP) and `server/stdio_adapter.py` (JSON-RPC).
+- Tooling and resources live under `tools/` and `resources/`.
+
+## Spec Package Map
+
+- The spec package is the end-to-end prototype specification for test readiness and demos.
+- Primary entry: `docs/spec_package/README.md`; roadmap: `docs/spec_package/12_backlog_and_plan.md`.
+- Use chapter references for detail: aims (`01_aims_objectives.md`), personas
+  (`02_personas_user_stories.md`), architecture (`03_architecture.md`),
+  system design (`04_system_design.md`), data flow/cache (`05_data_flow_and_cache.md`),
+  API contracts (`06_api_contracts.md`), security (`07_security_privacy.md`),
+  observability (`08_observability_ops.md`), testing (`09_testing_quality.md`),
+  MCP-Apps UI (`10_mcp_apps_ui.md`), walkthroughs (`11_walkthroughs.md`),
+  backlog/plan (`12_backlog_and_plan.md`), screenshots (`screenshots.md`),
+  sequence diagrams (`13_sequence_diagrams.md`), export instructions (`export.md`).
+- Quick guidance: use `03_architecture.md`/`04_system_design.md` for system understanding,
+  `06_api_contracts.md` for interface details, `10_mcp_apps_ui.md` for UI behaviors, and
+  `12_backlog_and_plan.md` for delivery sequencing.
+- Current scope snapshot: HTTP and STDIO MCP server; OS Places/Names/NGD/linked IDs/maps/
+  admin lookup/ONS tools; boundary cache pipeline; MCP-Apps UI resources via `ui://`.
+
+## Current Focus
+
+- Ensuring reliable MCP-Apps performance and client compatibility.
+
+## Active Work
+
+- Documentation pack and preparation for workshop/demo.
+- Track delivery work in `docs/spec_package/12_backlog_and_plan.md` and `PROGRESS.MD`.
+
+## Status Snapshot (from PROGRESS.MD)
+
+- Done: core server, stdio adapter, tool registry, OS Places/Names/Linked IDs/Vector Tiles,
+  route_query tool, baseline tests, boundary cache ingestion pipeline.
+- Partial: OS Features, OS Maps render, ONS data tooling, admin lookup caching, resources
+  population, playground UI, observability.
+- Not started: CI pipeline.
+
+## Backlog Priorities (from spec package)
+
+- High: CI pipeline; MCP-Apps client compatibility validation and docs.
+- Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
+  admin cache staleness policy; performance regression tests.
+- Low: UI polish; CLI/Playground UX; documentation cross-links.
+
+## Completion Plan (phased)
+
+- Phase 1 (Reliability and CI, 2-3 weeks): GitHub Actions pipeline; release automation;
+  structured JSON logging option.
+- Phase 2 (Data correctness, 2-4 weeks): pagination; dataset caching with TTL/invalidation;
+  boundary pipeline validation rules.
+- Phase 3 (UI fidelity, 2-4 weeks): fix MCP-Apps init flow for Claude/Inspector; produce
+  screenshots.
+- Phase 4 (Resources and observability, 4-6 weeks): populate resources; add latency/cache
+  metrics; alerting guidance.
+
+## Verification Status
+
+- Latest full test run: `pytest -q` (90.13% coverage, 386 passed, 1 skipped).
+
+## Key Conventions
+
+- Follow `AGENTS.md` for repo rules.
+- Track plan status in `PROGRESS.MD`.
+- Track release notes in `CHANGELOG.md`.
+
+## Decisions Log
+
+- 2026-02-02: Added persistent Codex context file and devcontainer Codex home mount.
+- 2026-02-02: Expanded CONTEXT.md with PROGRESS and spec package summary to preserve context.
+
+## Open Questions
+
+- (add open risks, unknowns, or decisions needed)
+
+## Run and Test Notes
+
+- `uvicorn server.main:app --reload`
+- `pytest -q`

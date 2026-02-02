@@ -24,8 +24,12 @@
     "MCP_GEO_LIVE_DB_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
     "BOUNDARY_CACHE_ENABLED": "true",
     "BOUNDARY_CACHE_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
-    "PYTHONPATH": "/workspaces/mcp-geo"
+    "PYTHONPATH": "/workspaces/mcp-geo",
+    "CODEX_HOME": "/home/vscode/.codex"
   },
+  "mounts": [
+    "source=mcp-geo-codex,target=/home/vscode/.codex,type=volume"
+  ],
   "forwardPorts": [
     8000,
     5173,

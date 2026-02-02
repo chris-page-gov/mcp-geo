@@ -122,6 +122,14 @@ Low impact
 | Add full specification package | Done | docs/spec_package/* |
 | Align README + getting_started with ONS cache behavior | Done | README.md, docs/getting_started.md |
 
+## Codex context persistence (2026-02-02)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Add durable repo context template | Done | CONTEXT.md |
+| Update agent guidance to read/update repo context | Done | AGENTS.md |
+| Persist Codex home across devcontainer rebuilds | Done | .devcontainer/devcontainer.json |
+
 ## Map handling review follow-ups (2026-01-28)
 
 | Item | Status | Notes |

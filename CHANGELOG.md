@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added OSM-backed static map render endpoint and wiring for `os_maps.render`.
 - Added data resources for boundary manifest, cache status, and ONS cache entries.
 - Added upstream circuit breaker with jittered retries.
+- Added `CONTEXT.md` as the durable Codex context template for this repo.
 
 ### Changed
 - Relaxed boundary validation to treat pre-repair invalid geometries as warnings.
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Updated `docs/vendor/mcp/repos/ext-apps` submodule.
 - Updated README and getting started docs for current ONS cache behavior.
 - Updated PROGRESS.MD with documentation refresh.
+- Persisted Codex home across devcontainer rebuilds and documented context workflow in AGENTS.
 
 ### Fixed
 - (none)

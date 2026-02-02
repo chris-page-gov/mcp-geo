@@ -109,6 +109,8 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 ## Agent Execution Rules
 
+- Read `CONTEXT.md` at the start of each session and update it when priorities,
+  decisions, or active work items change.
 - Do not introduce new dependencies without updating `pyproject.toml` and rationale in PR.
 - Prefer incremental refactors (extract functions before rewriting blocks).
 - If adding a tool: include JSON schema for request/response in docstring.
