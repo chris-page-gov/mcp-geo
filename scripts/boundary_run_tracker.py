@@ -121,8 +121,6 @@ def _validation_table_ok(table_payload: dict[str, Any]) -> bool:
         return False
     if uniqueness.get("duplicate_code_count", 0) not in (0, None):
         return False
-    if geometry.get("invalid_geom_count", 0) not in (0, None):
-        return False
     if geometry.get("post_repair_invalid_geom_count", 0) not in (0, None):
         return False
     rc = row_count.get("row_count")

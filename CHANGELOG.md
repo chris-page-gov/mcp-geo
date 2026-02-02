@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- (none)
+- Added `mcp-geo` stdio profile in `mcp.json` with MCP-Apps UI env defaults.
 
 ### Changed
-- (none)
+- Relaxed boundary validation to treat pre-repair invalid geometries as warnings.
+- Tuned `.dockerignore` to keep large data/logs out of Docker build context.
+- Updated `docs/vendor/mcp/repos/ext-apps` submodule.
 
 ### Fixed
 - (none)

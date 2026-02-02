@@ -10,6 +10,18 @@
       },
       "autoApprove": ["tools", "resources"]
     },
+    "mcp-geo": {
+      "command": "./scripts/os-mcp",
+      "args": [],
+      "env": {
+        "OS_API_KEY": "${env:OS_API_KEY}",
+        "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
+        "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_STDIO_FRAMING": "line",
+        "UI_EVENT_LOG_PATH": "logs/ui-events.jsonl"
+      },
+      "autoApprove": ["tools", "resources"]
+    },
     "mcp-geo-docker": {
       "command": "docker",
       "args": [
