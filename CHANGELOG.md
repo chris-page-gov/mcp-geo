@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added data resources for boundary manifest, cache status, and ONS cache entries.
 - Added upstream circuit breaker with jittered retries.
 - Added `CONTEXT.md` as the durable Codex context template for this repo.
+- Added Codex Mac app guidance and external references in `CONTEXT.md`.
 
 ### Changed
 - Relaxed boundary validation to treat pre-repair invalid geometries as warnings.

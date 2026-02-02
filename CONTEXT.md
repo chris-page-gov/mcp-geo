@@ -33,6 +33,18 @@ assumptions change.
 - Current scope snapshot: HTTP and STDIO MCP server; OS Places/Names/NGD/linked IDs/maps/
   admin lookup/ONS tools; boundary cache pipeline; MCP-Apps UI resources via `ui://`.
 
+## Codex Usage (Mac App + Devcontainer)
+
+- `CONTEXT.md` is the durable, cross-surface source of truth; read and update it at session start.
+- Devcontainer persistence: `CODEX_HOME` is mounted to the named volume `mcp-geo-codex`
+  in `.devcontainer/devcontainer.json`, so Codex local state survives rebuilds.
+- Spec package exports are ignored in git: `docs/spec_package/build/`.
+- External ref (Codex app overview/install): `https://developers.openai.com/codex/app/`.
+- External ref (Codex app features): `https://developers.openai.com/codex/app/features`.
+- External ref (Codex app announcement): `https://openai.com/index/introducing-the-codex-app/`.
+- External ref (VS Code devcontainer mounts): `https://code.visualstudio.com/remote/advancedcontainers/add-local-file-mount`.
+- External ref (Docker volumes reference): `https://docs.docker.com/engine/storage/volumes/`.
+
 ## Current Focus
 
 - Ensuring reliable MCP-Apps performance and client compatibility.
