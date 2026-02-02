@@ -198,8 +198,10 @@ Reference: OS-Vector-Tile-API-Stylesheets (GitHub). This repo is also available 
 - Observations and filters: `ons_data.query`, `ons_data.get_observation`,
   `ons_data.create_filter`, `ons_data.get_filter_output`
 
-Note: ONS tools are live-only and require `dataset`, `edition`, and `version`
-parameters in tool payloads.
+Note: ONS tools require live mode (`ONS_LIVE_ENABLED=true`) and `dataset`,
+`edition`, and `version` parameters for observation/dimension calls.
+`ons_codes.*` supports optional on-disk caching via
+`ONS_DATASET_CACHE_ENABLED=true`.
 
 ### Administrative geography
 

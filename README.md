@@ -43,6 +43,11 @@ Set `OS_API_KEY` in the environment (or `.env`) for all Ordnance Survey calls. T
 See `docs/getting_started.md` for a quick way to discover available data, run
 MCP Inspector or the playground UI, and explore tools/resources.
 
+## Full Specification Package
+
+For a complete design specification (aims, personas, architecture, scenarios,
+diagrams, backlog), see `docs/spec_package/README.md`.
+
 ## Docker (STDIO / Claude Desktop)
 Build the image:
 ```bash
@@ -196,7 +201,9 @@ Admin lookup tools call the live ONS Open Geography services by default. Static
 boundary resources are not advertised in the resources API.
 
 ### ONS Observations & Discovery (Epic D)
-ONS data tools are live-only and require dataset metadata on every call.
+ONS data tools require live mode (`ONS_LIVE_ENABLED=true`) and dataset metadata
+(`dataset`, `edition`, `version`) on calls that query observations or dimensions.
+`ons_codes.*` supports an optional on-disk cache via `ONS_DATASET_CACHE_ENABLED`.
 
 Tool `ons_data.query` supports:
 - `geography` (single code)
@@ -277,7 +284,7 @@ Coverage gate (configured) requires ≥90%. Add tests for both success and error
 
 ## Enriched Address Data
 `os_places.*` currently return raw OS Places fields only. Enrichment via local
-code lists is disabled in live-only mode.
+code lists is not implemented yet.
 
 ## Examples & Golden Tests
 See `docs/examples.md` for sample payloads, conversation flows, and guidance on chaining tools. Golden scenario tests (`test_golden_scenarios.py`) ensure transformation stability with deterministic mocked upstream responses.
