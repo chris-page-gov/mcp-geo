@@ -54,7 +54,7 @@ OS NGD features and links:
 - Use `os_linked_ids.get` to resolve UPRN/USRN/TOID relationships.
 
 Maps and tiles:
-- Use `os_maps.render` for static map render descriptors.
+- Use `os_maps.render` for static map image URLs (served by MCP Geo proxy).
 - Use `os_vector_tiles.descriptor` for vector tile style metadata.
 
 ## MCP-Apps Widgets
@@ -85,7 +85,8 @@ Fetch content with `/resources/read` using `uri`. Example:
 
 - `skills://mcp-geo/getting-started` (this document)
 - `ui://mcp-geo/geography-selector` (UI widget HTML)
-- `resource://mcp-geo/admin_boundaries` (boundary dataset)
+- `resource://mcp-geo/boundary-manifest` (boundary dataset manifest)
+- `resource://mcp-geo/boundary-latest-report` (latest pipeline report)
 
 ## Error Model
 

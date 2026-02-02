@@ -27,3 +27,9 @@ def mock_os_client(monkeypatch):
 @pytest.fixture(scope="session")
 def client():
     return TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def disable_circuit_breaker(monkeypatch):
+    from server.config import settings
+    monkeypatch.setattr(settings, "CIRCUIT_BREAKER_ENABLED", False, raising=False)

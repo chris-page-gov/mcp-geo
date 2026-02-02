@@ -23,6 +23,7 @@ class DummyResp:
 def patch_requests(
     monkeypatch: MonkeyPatch, mappings: list[tuple[str, tuple[int, dict[str, Any]]]]
 ):
+    monkeypatch.setattr("tools.os_common.client.api_key", "test-key", raising=False)
     def fake_get(url: str, params: dict[str, Any] | None = None, timeout: int = 5):
         for pattern, response in mappings:
             if pattern in url:

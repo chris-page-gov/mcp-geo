@@ -25,7 +25,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | os_apps.render_statistics_dashboard | 0.1.0 | Open the MCP-Apps statistics dashboard widget. |
 | os_features.query | 0.1.0 | Query features by bbox |
 | os_linked_ids.get | 0.1.0 | Resolve linked identifiers (UPRN/TOID etc) |
-| os_maps.render | 0.1.0 | Return metadata for rendering a map image (URL template) |
+| os_maps.render | 0.1.0 | Return metadata for rendering a static map image (proxy URL) |
 | os_mcp.descriptor | 0.1.0 | Describe server capabilities and tool search configuration. |
 | os_mcp.route_query | 0.1.0 | Classify a query and recommend the right tool/workflow. |
 | os_names.find | 0.1.0 | Find place names |
@@ -1377,7 +1377,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## os_maps.render
 
-**Description:** Return metadata for rendering a map image (URL template)
+**Description:** Return metadata for rendering a static map image (proxy URL)
 
 **Version:** 0.1.0
 
@@ -1981,5 +1981,3 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "type": "object"
 }
 ```
-
-

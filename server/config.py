@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     OSM_TILE_CACHE_SIZE: int = 512
     OSM_TILE_USER_AGENT: str = "mcp-geo-playground"
     OSM_TILE_CONTACT: str = "https://github.com/chris-page-gov/mcp-geo"
+    CIRCUIT_BREAKER_ENABLED: bool = True
+    CIRCUIT_BREAKER_FAILURE_THRESHOLD: int = 5
+    CIRCUIT_BREAKER_RESET_SECONDS: float = 30.0
+    CIRCUIT_BREAKER_HALF_OPEN_SUCCESSES: int = 1
     BOUNDARY_CACHE_ENABLED: bool = False
     BOUNDARY_CACHE_DSN: str = ""
     BOUNDARY_CACHE_SCHEMA: str = "public"

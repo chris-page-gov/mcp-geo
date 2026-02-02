@@ -110,7 +110,7 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | os_names.nearest | Nearest named features |
 | os_features.query | NGD features by bbox & collection |
 | os_linked_ids.get | Relationship lookup between UPRN/USRN/TOID |
-| os_maps.render | Static map render metadata (stub/descriptor) |
+| os_maps.render | Static map render metadata (proxy URL) |
 | os_vector_tiles.descriptor | Vector tiles style/source descriptor |
 | admin_lookup.containing_areas | Administrative area containment for a point |
 | admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
@@ -132,12 +132,13 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | os_apps.render_route_planner | Open the MCP-Apps route planner widget |
 
 ## Resources, Filtering & Provenance
-The resources API currently exposes skills and UI widgets. Data resources are
-live-only and are not advertised via `/resources/*` yet.
+The resources API exposes skills, UI widgets, and data resources (boundary
+manifest, cache status, and local ONS code cache entries).
 
-- `GET /resources/list` returns skill and UI resource descriptors (with provenance metadata).
+- `GET /resources/list` returns skill, UI, and data resource descriptors (with provenance metadata).
 - `GET /resources/read?uri=skills://mcp-geo/getting-started` returns skills guidance.
 - `GET /resources/read?uri=ui://mcp-geo/geography-selector` returns MCP-Apps UI HTML.
+- `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources
 In addition to data resources, MCP Geo exposes:
@@ -302,6 +303,8 @@ See `docs/troubleshooting.md` for a table of common error codes (`INVALID_INPUT`
 ## Configuration
 Copy `.env.example` → `.env` and set `OS_API_KEY`. Optional flags:
 - `DEBUG_ERRORS` (if present / truthy) enables traceback in error responses; otherwise stack traces are suppressed.
+- `CIRCUIT_BREAKER_ENABLED`, `CIRCUIT_BREAKER_FAILURE_THRESHOLD`,
+  `CIRCUIT_BREAKER_RESET_SECONDS` to control upstream circuit breaker behavior.
 
 ## SSL & Certificates
 Container and dev setup ensure current CA bundle (certifi) for stable TLS to OS APIs.

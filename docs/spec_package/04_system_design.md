@@ -19,7 +19,7 @@
 - **OS Names**: gazetteer name search (`os_names.*`).
 - **OS NGD**: features by bbox (`os_features.query`).
 - **Linked IDs**: resolve UPRN/USRN/TOID (`os_linked_ids.get`).
-- **Maps**: `os_maps.render` descriptor; `os_vector_tiles.descriptor`.
+- **Maps**: `os_maps.render` returns a static map proxy URL; `os_vector_tiles.descriptor`.
 - **Admin lookup**: cache-backed area geometry, containment, hierarchy.
 - **ONS**: dataset search, dimensions, codes, observations, filter output.
 - **MCP-Apps**: UI render tools that return a UI resource + structured payload.
@@ -40,3 +40,6 @@
 - Consistent error envelope (`isError`, `code`, `message`, `correlationId?`).
 - Upstream errors mapped with explicit taxonomy.
 
+## Resilience
+
+- Circuit breaker + jittered retries for OS/ONS upstream calls.

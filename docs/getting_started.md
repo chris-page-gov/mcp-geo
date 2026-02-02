@@ -242,6 +242,12 @@ List resources:
 {"jsonrpc":"2.0","id":"4","method":"resources/list","params":{}}
 ```
 
+Read the boundary manifest resource:
+
+```json
+{"jsonrpc":"2.0","id":"5","method":"resources/read","params":{"uri":"resource://mcp-geo/boundary-manifest"}}
+```
+
 ## 6) Where to go next
 
 - Detailed walkthrough: `docs/tutorial.md`

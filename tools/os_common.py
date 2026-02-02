@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import time
 from typing import Any
 
@@ -19,6 +20,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 from server.config import settings
 from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
+from server.circuit_breaker import get_circuit_breaker
 
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
@@ -68,6 +70,7 @@ class OSClient:
     def __init__(self, api_key: str | None = None, retries: int = DEFAULT_RETRIES):
         self.api_key = api_key or getattr(settings, "OS_API_KEY", "")
         self.retries = retries
+        self._breaker = get_circuit_breaker("os")
 
     def _auth_params(self) -> dict[str, Any]:
         if not self.api_key:
@@ -90,11 +93,19 @@ class OSClient:
                 "message": "requests is not installed",
             }
         merged = {**(params or {}), **self._auth_params()}
+        if not self._breaker.allow():
+            return 503, {
+                "isError": True,
+                "code": "CIRCUIT_OPEN",
+                "message": "OS upstream circuit breaker is open.",
+            }
         last_exc: Exception | None = None
         for attempt in range(1, self.retries + 1):
             try:
                 resp = requests.get(url, params=merged, timeout=DEFAULT_TIMEOUT)
                 if resp.status_code != 200:
+                    if resp.status_code >= 500:
+                        self._breaker.record_failure()
                     auth_error = classify_os_api_key_error(resp.status_code, resp.text)
                     if auth_error:
                         code, message = auth_error
@@ -135,8 +146,10 @@ class OSClient:
                             "message": f"OS API error: {resp.text[:200]}",
                         },
                     )
+                self._breaker.record_success()
                 return 200, resp.json()
             except req_exc.SSLError as exc:
+                self._breaker.record_failure()
                 log_upstream_error(
                     service="os",
                     code="UPSTREAM_TLS_ERROR",
@@ -149,6 +162,7 @@ class OSClient:
                 return 501, {"isError": True, "code": "UPSTREAM_TLS_ERROR", "message": str(exc)}
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
+                self._breaker.record_failure()
                 if attempt == self.retries:
                     log_upstream_error(
                         service="os",
@@ -164,8 +178,9 @@ class OSClient:
                         "code": "UPSTREAM_CONNECT_ERROR",
                         "message": str(exc),
                     }
-                time.sleep(min(0.1 * (2 ** (attempt - 1)), 1.0))
+                _sleep_with_jitter(attempt, base=0.1, cap=1.0)
             except Exception as exc:  # pragma: no cover
+                self._breaker.record_failure()
                 log_upstream_error(
                     service="os",
                     code="INTEGRATION_ERROR",
@@ -185,5 +200,11 @@ class OSClient:
             "code": "UPSTREAM_CONNECT_ERROR",
             "message": f"Failed after retries: {last_exc}",
         }
+
+
+def _sleep_with_jitter(attempt: int, base: float, cap: float) -> None:
+    delay = min(base * (2 ** (attempt - 1)), cap)
+    jitter = random.uniform(0, delay * 0.25)
+    time.sleep(delay + jitter)
 
 client = OSClient()

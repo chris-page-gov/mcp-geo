@@ -26,7 +26,7 @@ interactive discovery and decision-making.
 
 - Full offline ONS dataset mirroring (only on-disk cache for codes).
 - Multi-tenant auth and role-based access control.
-- Full static map rendering pipeline (maps tool is a descriptor/stub).
+- Full-featured static map rendering (beyond the current OSM tile proxy).
 - CI/CD pipeline and release automation (still backlog).
 
 ## Success criteria
@@ -36,4 +36,3 @@ interactive discovery and decision-making.
 - MCP-Apps UI resources are served and can be opened by a UI-capable client.
 - No unhandled exceptions in pipeline runs; validation covers schema and geometry.
 - Observability and error taxonomy available to support diagnosis.
-

@@ -2,12 +2,14 @@
 
 ## Backlog (issues discovered)
 
+### Recently completed
+- **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy).
+- **Resources catalog**: expanded `/resources/*` with boundary manifest, latest report, cache status, and ONS cache index.
+- **Circuit breaker**: added upstream circuit breaker with jittered retries for OS/ONS calls.
+
 ### High priority
 1. **CI pipeline**: add lint/type/test/coverage CI with badges.
 2. **MCP-Apps client compatibility**: validate UI initialization across Claude and Inspector; document required client steps.
-3. **Map render tool**: `os_maps.render` is a descriptor stub; implement or proxy real static maps.
-4. **Resources catalog**: expand `/resources/*` with real datasets (admin, code lists, boundary sets).
-5. **Circuit breaker**: add upstream circuit breaker and jittered retries.
 
 ### Medium priority
 6. **Pagination for large tool results**: token-based paging for OS features and large datasets.
@@ -34,12 +36,10 @@
 - Extend validation rules for boundary pipeline (explicit overrides).
 
 ### Phase 3 - UI fidelity (2-4 weeks)
-- Implement map render tool (static map or proxy to OS services).
 - Fix MCP-Apps initialization flow for Claude and Inspector.
 - Produce real UI screenshots and update docs.
 
 ### Phase 4 - Resources & observability (4-6 weeks)
-- Populate resources with admin datasets and code lists.
+- Populate resources with admin datasets and code lists (beyond current manifests).
 - Add metrics for tool latency and cache hit rates.
 - Add alerting guidance (Prometheus rules).
-

@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added `mcp-geo` stdio profile in `mcp.json` with MCP-Apps UI env defaults.
 - Added full specification documentation package under `docs/spec_package/`.
+- Added OSM-backed static map render endpoint and wiring for `os_maps.render`.
+- Added data resources for boundary manifest, cache status, and ONS cache entries.
+- Added upstream circuit breaker with jittered retries.
 
 ### Changed
 - Relaxed boundary validation to treat pre-repair invalid geometries as warnings.
@@ -19,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - (none)
 
 ### Tests
-- (none)
+- Added coverage for map proxy, data resources, and circuit breaker behavior.
 
 ## [0.2.9] - 2026-02-01
 ### Added

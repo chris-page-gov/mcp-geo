@@ -21,6 +21,7 @@ ERROR_TAXONOMY: Dict[str, str] = {
     "BOUNDARY_CACHE_ERROR": "dependency",
     "UPSTREAM_TLS_ERROR": "upstream",
     "UPSTREAM_CONNECT_ERROR": "upstream",
+    "CIRCUIT_OPEN": "availability",
     "INTEGRATION_ERROR": "integration",
     "INTERNAL_ERROR": "internal",
 }

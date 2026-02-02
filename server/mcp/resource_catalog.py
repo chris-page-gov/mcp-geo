@@ -2,13 +2,19 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+import json
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 UI_DIR = ROOT / "ui"
 SKILL_PATH = ROOT / "SKILL.md"
+BOUNDARY_MANIFEST_PATH = ROOT / "docs" / "Boundaries.json"
+BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
+ONS_CACHE_DIR = ROOT / "data" / "cache" / "ons"
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
+ONS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-cache/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
 
 
@@ -97,6 +103,18 @@ SKILLS_RESOURCE: dict[str, Any] = {
     "annotations": {"audience": ["assistant"], "priority": 1.0},
 }
 
+DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
+    {
+        "slug": "boundary-manifest",
+        "name": "data_boundary_manifest",
+        "title": "Boundary Manifest",
+        "description": "Boundary dataset manifest driving the ingestion pipeline.",
+        "path": BOUNDARY_MANIFEST_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "dataset", "domain": "boundaries"},
+    },
+]
+
 
 def _build_ui_meta(
     description: str,
@@ -167,6 +185,93 @@ def list_skill_resources() -> list[dict[str, Any]]:
     ]
 
 
+def _latest_run_report_path() -> Optional[Path]:
+    if not BOUNDARY_RUNS_DIR.exists():
+        return None
+    candidates = sorted(BOUNDARY_RUNS_DIR.glob("*/run_report.json"))
+    if not candidates:
+        return None
+    return candidates[-1]
+
+
+def _ons_cache_files() -> list[Path]:
+    if not ONS_CACHE_DIR.exists():
+        return []
+    return sorted(path for path in ONS_CACHE_DIR.glob("*.json") if path.is_file())
+
+
+def list_data_resources() -> list[dict[str, Any]]:
+    resources: list[dict[str, Any]] = []
+    for entry in DATA_RESOURCE_DEFS:
+        path = entry.get("path")
+        if isinstance(path, Path) and not path.exists():
+            continue
+        resources.append(
+            {
+                "uri": data_resource_uri(entry["slug"]),
+                "name": entry["name"],
+                "title": entry["title"],
+                "description": entry["description"],
+                "mimeType": entry["mimeType"],
+                "annotations": entry.get("annotations"),
+                "type": "data",
+            }
+        )
+
+    latest_report = _latest_run_report_path()
+    if latest_report:
+        resources.append(
+            {
+                "uri": data_resource_uri("boundary-latest-report"),
+                "name": "data_boundary_latest_report",
+                "title": "Boundary Pipeline Latest Report",
+                "description": "Most recent boundary pipeline run report.",
+                "mimeType": "application/json",
+                "annotations": {"type": "report", "domain": "boundaries"},
+                "type": "data",
+            }
+        )
+
+    resources.append(
+        {
+            "uri": data_resource_uri("boundary-cache-status"),
+            "name": "data_boundary_cache_status",
+            "title": "Boundary Cache Status",
+            "description": "Live status summary for the PostGIS boundary cache.",
+            "mimeType": "application/json",
+            "annotations": {"type": "status", "domain": "boundaries"},
+            "type": "data",
+        }
+    )
+
+    cache_files = _ons_cache_files()
+    if cache_files:
+        resources.append(
+            {
+                "uri": data_resource_uri("ons-cache-index"),
+                "name": "data_ons_cache_index",
+                "title": "ONS Codes Cache Index",
+                "description": "Index of locally cached ONS code list responses.",
+                "mimeType": "application/json",
+                "annotations": {"type": "index", "domain": "ons"},
+                "type": "data",
+            }
+        )
+        for path in cache_files:
+            resources.append(
+                {
+                    "uri": f"{ONS_CACHE_PREFIX}{path.name}",
+                    "name": f"data_ons_cache_{path.stem}",
+                    "title": f"ONS Cache: {path.name}",
+                    "description": "Cached ONS code list response.",
+                    "mimeType": "application/json",
+                    "annotations": {"type": "dataset", "domain": "ons"},
+                    "type": "data",
+                }
+            )
+    return resources
+
+
 def _etag_from_bytes(content: bytes, variant: str = "") -> str:
     base = content + variant.encode()
     h = hashlib.sha256(base).hexdigest()[:16]
@@ -186,6 +291,26 @@ def resolve_skill_resource(identifier: str) -> Optional[dict[str, Any]]:
     return None
 
 
+def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
+    if identifier.startswith(DATA_RESOURCE_PREFIX):
+        slug = identifier[len(DATA_RESOURCE_PREFIX):]
+    else:
+        slug = identifier
+
+    for entry in DATA_RESOURCE_DEFS:
+        if slug in (entry["slug"], entry["name"]):
+            return {**entry, "slug": entry["slug"]}
+    if slug == "boundary-latest-report":
+        return {"slug": slug}
+    if slug == "boundary-cache-status":
+        return {"slug": slug}
+    if slug == "ons-cache-index":
+        return {"slug": slug}
+    if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
+        return {"slug": slug}
+    return None
+
+
 def load_ui_content(entry: dict[str, Any]) -> tuple[str, str]:
     path = UI_DIR / entry["file"]
     content = path.read_text(encoding="utf-8")
@@ -199,16 +324,97 @@ def load_skill_content() -> tuple[str, str]:
     return content, etag
 
 
+def _load_json_file(path: Path) -> tuple[str, str]:
+    content = path.read_text(encoding="utf-8")
+    etag = _etag_from_bytes(content.encode("utf-8"), str(path))
+    return content, etag
+
+
+def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] | None]:
+    slug = entry.get("slug")
+    if slug == "boundary-manifest":
+        return (*_load_json_file(BOUNDARY_MANIFEST_PATH), None)
+    if slug == "boundary-latest-report":
+        latest = _latest_run_report_path()
+        if not latest:
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "No run report found."}
+            )
+            return content, _etag_from_bytes(b"missing", "boundary-latest-report"), None
+        content, etag = _load_json_file(latest)
+        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat()}
+    if slug == "boundary-cache-status":
+        try:
+            from server.boundary_cache import get_boundary_cache
+            from server.config import settings
+            cache = get_boundary_cache()
+            configured = bool(getattr(settings, "BOUNDARY_CACHE_ENABLED", False))
+            dsn_set = bool(getattr(settings, "BOUNDARY_CACHE_DSN", ""))
+        except Exception:
+            cache = None
+            configured = False
+            dsn_set = False
+        if not cache:
+            payload = {
+                "enabled": False,
+                "configured": configured,
+                "dsnSet": dsn_set,
+                "reloadHint": "Run scripts/boundary_cache_ingest.py to populate PostGIS.",
+            }
+        else:
+            status = cache.status() or {}
+            if "enabled" not in status:
+                status["enabled"] = True
+            status["configured"] = configured
+            status["dsnSet"] = dsn_set
+            status["reloadHint"] = "Run scripts/boundary_cache_ingest.py to populate PostGIS."
+            payload = status
+        content = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "boundary-cache-status"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
+    if slug == "ons-cache-index":
+        items = []
+        for path in _ons_cache_files():
+            items.append({"name": path.name, "uri": f"{ONS_CACHE_PREFIX}{path.name}", "bytes": path.stat().st_size})
+        content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "ons-cache-index"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
+    if isinstance(slug, str) and slug.startswith("ons-cache/"):
+        filename = slug.split("/", 1)[1]
+        path = ONS_CACHE_DIR / filename
+        if not path.exists():
+            content = json.dumps({"isError": True, "code": "NOT_FOUND", "message": "ONS cache file not found."})
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        return (*_load_json_file(path), None)
+    if isinstance(slug, str) and slug.startswith("ons-cache"):
+        filename = slug.split("ons-cache", 1)[-1].lstrip("/")
+        path = ONS_CACHE_DIR / filename
+        if path.exists():
+            return (*_load_json_file(path), None)
+    content = json.dumps({"isError": True, "code": "NOT_FOUND", "message": "Resource not found."})
+    return content, _etag_from_bytes(content.encode("utf-8"), "missing"), None
+
+
 __all__ = [
     "DATA_RESOURCE_PREFIX",
+    "ONS_CACHE_PREFIX",
     "SKILL_PATH",
     "SKILLS_RESOURCE",
     "UI_DIR",
     "data_resource_uri",
+    "list_data_resources",
     "list_skill_resources",
     "list_ui_resources",
+    "load_data_content",
     "load_skill_content",
     "load_ui_content",
+    "resolve_data_resource",
     "resolve_skill_resource",
     "resolve_ui_resource",
 ]

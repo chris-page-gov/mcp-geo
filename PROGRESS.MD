@@ -41,13 +41,13 @@ Legend: Done, Partial, Not started
 | OS Names (gazetteer) | Done | tools/os_names.py | find + nearest. |
 | OS Linked Identifiers | Done | tools/os_linked_ids.py | UPRN/USRN/TOID resolution. |
 | OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Only bbox query exposed; no attribute filters/polygon/collection listing. |
-| OS Maps (render) | Partial | tools/os_maps.py | Returns metadata only; no server-side map rendering. |
+| OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL now available; full rendering/overlays still pending. |
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; no streaming/large export pipeline. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; boundary dataset ingestion still needed. |
 | Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
-| Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Code lists present; full boundary packs not yet shipped. |
+| Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Boundary manifest + cache status exposed; full boundary packs not yet shipped. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | route_query + descriptor for tool discovery. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
 | Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
@@ -160,7 +160,7 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (90.05% coverage, 320 passed, 1 skipped).
+Latest full test run: `pytest -q` (90.13% coverage, 386 passed, 1 skipped).
 
 ## Claude UI fallback plan (short)
 
@@ -170,7 +170,7 @@ MCP-Apps UI for clients that render it.
 | Task | Status | Notes |
 | --- | --- | --- |
 | Gate UI resources by client capability and only emit UI content when supported | Not started | Keep `resource_link` blocks out for non-UI clients; use data-only + fallback guidance. |
-| Provide a static map image endpoint/tool | Not started | Return a renderable image URL (server-side) for Claude. |
+| Provide a static map image endpoint/tool | Done | Return a renderable image URL (server-side) for Claude. |
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
 | Update docs + skills to guide Claude to map fallback flow | Not started | Explicit “use os_maps.render + image link” guidance. |
 | Add tests for Claude fallback behavior | Not started | STDIO response shape + tool behavior. |

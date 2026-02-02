@@ -248,7 +248,7 @@ In **mcp-geo**, closest equivalents are:
 
 - admin areas: `admin_lookup.*` (bundled sample boundaries)
 - datasets/resources: `/resources/*` and `ons_data.*`
-- “open a map”: `os_maps.render` (descriptor) + `admin_lookup.containing_areas` (point containment)
+- “open a map”: `os_maps.render` (static map proxy URL) + `admin_lookup.containing_areas` (point containment)
 
 ### Find Westminster
 

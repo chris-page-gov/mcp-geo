@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 import threading
 import time
 from typing import Any, Dict, Tuple
@@ -22,6 +23,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 from server.config import settings
 from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
+from server.circuit_breaker import get_circuit_breaker
 
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
@@ -82,6 +84,7 @@ class ONSClient:
         ttl = cache_ttl if cache_ttl is not None else getattr(settings, "ONS_CACHE_TTL", 60.0)
         size = cache_size if cache_size is not None else getattr(settings, "ONS_CACHE_SIZE", 256)
         self.cache = TTLCache(maxsize=size, ttl=ttl)
+        self._breaker = get_circuit_breaker("ons")
 
     def _cache_key(self, url: str, params: dict[str, Any] | None) -> str:
         return json.dumps([url, params], sort_keys=True)
@@ -103,12 +106,20 @@ class ONSClient:
             cached = self.cache.get(key)
             if cached is not None:
                 return 200, cached
+        if not self._breaker.allow():
+            return 503, {
+                "isError": True,
+                "code": "CIRCUIT_OPEN",
+                "message": "ONS upstream circuit breaker is open.",
+            }
         merged = params or {}
         last_exc: Exception | None = None
         for attempt in range(1, self.retries + 1):
             try:
                 resp = requests.get(url, params=merged, timeout=DEFAULT_TIMEOUT)
                 if resp.status_code != 200:
+                    if resp.status_code >= 500:
+                        self._breaker.record_failure()
                     resp_url = getattr(resp, "url", url)
                     log_upstream_error(
                         service="ons",
@@ -128,8 +139,10 @@ class ONSClient:
                 data = resp.json()
                 if use_cache:
                     self.cache.set(key, data)
+                self._breaker.record_success()
                 return 200, data
             except req_exc.SSLError as exc:
+                self._breaker.record_failure()
                 log_upstream_error(
                     service="ons",
                     code="UPSTREAM_TLS_ERROR",
@@ -146,6 +159,7 @@ class ONSClient:
                 }
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
+                self._breaker.record_failure()
                 if attempt == self.retries:
                     log_upstream_error(
                         service="ons",
@@ -161,8 +175,9 @@ class ONSClient:
                         "code": "UPSTREAM_CONNECT_ERROR",
                         "message": str(exc),
                     }
-                time.sleep(min(0.1 * (2 ** (attempt - 1)), 1.0))
+                _sleep_with_jitter(attempt, base=0.1, cap=1.0)
             except Exception as exc:  # pragma: no cover
+                self._breaker.record_failure()
                 log_upstream_error(
                     service="ons",
                     code="INTEGRATION_ERROR",
@@ -240,6 +255,12 @@ class ONSClient:
             merged["page"] = page
             merged["limit"] = limit
         return 200, results
+
+
+def _sleep_with_jitter(attempt: int, base: float, cap: float) -> None:
+    delay = min(base * (2 ** (attempt - 1)), cap)
+    jitter = random.uniform(0, delay * 0.25)
+    time.sleep(delay + jitter)
 
 
 client = ONSClient()
