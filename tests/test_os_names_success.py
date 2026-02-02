@@ -45,7 +45,7 @@ def test_os_names_nearest_success(monkeypatch):
     assert len(data["results"]) == 2
     ids = {r["id"] for r in data["results"]}
     assert ids == {"1", "2"}
-    assert captured["output_srs"] == "WGS84"
+    assert "output_srs" not in captured
 
 
 def test_os_names_find_requests_wgs84(monkeypatch):
@@ -66,4 +66,4 @@ def test_os_names_find_requests_wgs84(monkeypatch):
     client = TestClient(app)
     resp = client.post("/tools/call", json={"tool": "os_names.find", "text": "London"})
     assert resp.status_code == 200
-    assert captured["output_srs"] == "WGS84"
+    assert "output_srs" not in captured

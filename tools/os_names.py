@@ -47,7 +47,7 @@ def _names_find(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing text"}
     status, raw = client.get_json(
         f"{client.base_names}/find",
-        {"query": text, "output_srs": "WGS84"},
+        {"query": text},
     )
     if status != 200:
         return 501, raw
@@ -86,7 +86,7 @@ def _names_nearest(payload: dict[str, Any]) -> ToolResult:
     lon = parse_float(raw_lon)
     status, raw = client.get_json(
         f"{client.base_names}/nearest",
-        {"point": f"{lon},{lat}", "output_srs": "WGS84"},
+        {"point": f"{lon},{lat}"},
     )
     if status != 200:
         return 501, raw
