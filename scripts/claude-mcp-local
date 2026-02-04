@@ -12,6 +12,7 @@ POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-5432}"
 DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
 PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
 TRACE_LOG="${MCP_STDIO_TRACE_LOG:-}"
+BUILD_MODE="${MCP_GEO_DOCKER_BUILD:-missing}"
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
@@ -65,7 +66,26 @@ else
     "$POSTGIS_IMAGE" >/dev/null
 fi
 
-if ! "$DOCKER_BIN" image inspect "$IMAGE" >/dev/null 2>&1; then
+should_build=false
+case "$BUILD_MODE" in
+  always)
+    should_build=true
+    ;;
+  missing)
+    if ! "$DOCKER_BIN" image inspect "$IMAGE" >/dev/null 2>&1; then
+      should_build=true
+    fi
+    ;;
+  never)
+    should_build=false
+    ;;
+  *)
+    log "unknown MCP_GEO_DOCKER_BUILD mode: $BUILD_MODE (use always|missing|never)"
+    exit 1
+    ;;
+esac
+
+if [[ "$should_build" == "true" ]]; then
   log "building image: $IMAGE"
   "$DOCKER_BIN" build -t "$IMAGE" "$REPO_ROOT" >&2
 fi

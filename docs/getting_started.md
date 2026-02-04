@@ -305,6 +305,11 @@ Claude Desktop config example:
 The wrapper starts PostGIS in Docker, builds the image if needed, and uses
 `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` for the cache.
 
+Control rebuilds with `MCP_GEO_DOCKER_BUILD`:
+- `missing` (default): build only when the image is absent.
+- `always`: run `docker build` each time (still uses cache).
+- `never`: skip building even if the image is missing.
+
 If Claude Desktop can't find Docker on macOS (GUI apps sometimes have a minimal
 PATH), set the Docker binary explicitly:
 
