@@ -67,21 +67,19 @@ Claude Desktop config example (STDIO transport):
 {
   "mcpServers": {
     "mcp-geo": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "-e",
-        "OS_API_KEY=your-api-key-here",
-        "-e",
-        "ONS_LIVE_ENABLED=true",
-        "mcp-geo-server"
-      ]
+      "command": "/absolute/path/to/mcp-geo/scripts/claude-mcp-local",
+      "env": {
+        "OS_API_KEY": "your-api-key-here",
+        "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_STDIO_FRAMING": "line"
+      }
     }
   }
 }
 ```
+
+The wrapper script starts PostGIS locally (Docker), builds the image if needed,
+and runs STDIO with the boundary cache enabled.
 
 Optional HTTP transport:
 ```bash

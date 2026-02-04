@@ -39,6 +39,7 @@ def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
         return None
     return {
         "ui": {"resourceUri": entry["mcp"]},
+        "openai/outputTemplate": entry["mcp"],
     }
 _EVENT_LOG_LOCK = threading.Lock()
 _SENSITIVE_KEY_MARKERS = (

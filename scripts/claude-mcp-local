@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+IMAGE="${MCP_GEO_IMAGE:-mcp-geo-server}"
+NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo}"
+POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis}"
+POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-postgis/postgis:16-3.4}"
+DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
+LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
+PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-/usr/bin/python3}"
+TRACE_LOG="${MCP_STDIO_TRACE_LOG:-}"
+
+log() {
+  printf "[mcp-geo] %s\n" "$*" >&2
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+  log "docker is required but was not found on PATH."
+  exit 1
+fi
+
+mkdir -p "$DATA_DIR" "$LOG_DIR"
+
+if ! docker network inspect "$NETWORK" >/dev/null 2>&1; then
+  log "creating docker network: $NETWORK"
+  docker network create "$NETWORK" >/dev/null
+fi
+
+if docker inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
+  if [[ "$(docker inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
+    log "starting existing PostGIS container: $POSTGIS_CONTAINER"
+    docker start "$POSTGIS_CONTAINER" >/dev/null
+  fi
+else
+  log "starting PostGIS container: $POSTGIS_CONTAINER"
+  docker run -d --name "$POSTGIS_CONTAINER" --network "$NETWORK" \
+    -e POSTGRES_DB=mcp_geo \
+    -e POSTGRES_USER=mcp_geo \
+    -e POSTGRES_PASSWORD=mcp_geo \
+    -v "$DATA_DIR:/var/lib/postgresql/data" \
+    -p 5432:5432 \
+    "$POSTGIS_IMAGE" >/dev/null
+fi
+
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  log "building image: $IMAGE"
+  docker build -t "$IMAGE" "$REPO_ROOT" >&2
+fi
+
+env_args=(
+  -e "BOUNDARY_CACHE_ENABLED=true"
+  -e "BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
+  -e "MCP_STDIO_UI_SUPPORTED=${MCP_STDIO_UI_SUPPORTED:-1}"
+  -e "MCP_STDIO_FRAMING=${MCP_STDIO_FRAMING:-line}"
+  -e "ONS_LIVE_ENABLED=${ONS_LIVE_ENABLED:-true}"
+  -e "UI_EVENT_LOG_PATH=${UI_EVENT_LOG_PATH:-/logs/ui-events.jsonl}"
+)
+
+for var in OS_API_KEY ONS_API_KEY STDIO_KEY BEARER_TOKENS; do
+  value="${!var:-}"
+  if [[ -n "$value" ]]; then
+    env_args+=(-e "$var=$value")
+  fi
+done
+
+docker_args=(
+  run --rm -i
+  --network "$NETWORK"
+  -v "$LOG_DIR:/logs"
+  "${env_args[@]}"
+  "$IMAGE"
+)
+
+if [[ -n "$TRACE_LOG" ]]; then
+  if [[ ! -x "$PYTHON_BIN" ]]; then
+    log "python not found at $PYTHON_BIN (set MCP_GEO_PYTHON_BIN to override)."
+    exit 1
+  fi
+  exec "$PYTHON_BIN" "$REPO_ROOT/scripts/mcp_stdio_trace_proxy.py" --log "$TRACE_LOG" -- \
+    docker "${docker_args[@]}"
+fi
+
+exec docker "${docker_args[@]}"

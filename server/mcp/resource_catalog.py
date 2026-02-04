@@ -6,6 +6,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
+from server.config import settings
 ROOT = Path(__file__).resolve().parent.parent.parent
 UI_DIR = ROOT / "ui"
 SKILL_PATH = ROOT / "SKILL.md"
@@ -116,6 +117,23 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
 ]
 
 
+def _build_openai_widget_csp(csp: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    if not csp:
+        return None
+    mapping = {
+        "connectDomains": "connect_domains",
+        "resourceDomains": "resource_domains",
+        "frameDomains": "frame_domains",
+        "redirectDomains": "redirect_domains",
+    }
+    converted: dict[str, Any] = {}
+    for source, target in mapping.items():
+        value = csp.get(source)
+        if value:
+            converted[target] = value
+    return converted or None
+
+
 def _build_ui_meta(
     description: str,
     csp: Optional[dict[str, Any]],
@@ -126,6 +144,17 @@ def _build_ui_meta(
         meta["ui"]["csp"] = csp
     if permissions:
         meta["ui"]["permissions"] = permissions
+    widget_domain = getattr(settings, "OPENAI_WIDGET_DOMAIN", "")
+    if widget_domain:
+        meta["ui"]["domain"] = widget_domain
+    openai_csp = _build_openai_widget_csp(csp)
+    if openai_csp:
+        meta["openai/widgetCSP"] = openai_csp
+    meta["openai/widgetPrefersBorder"] = True
+    if description:
+        meta["openai/widgetDescription"] = description
+    if widget_domain:
+        meta["openai/widgetDomain"] = widget_domain
     return meta
 
 

@@ -275,3 +275,52 @@ docker run --rm -i \
   -e ONS_LIVE_ENABLED=true \
   mcp-geo-server
 ```
+
+## Appendix: Claude Desktop local wrapper (PostGIS + cache)
+
+For Claude Desktop, use the local wrapper script so PostGIS starts automatically
+and the STDIO server runs with the cache enabled:
+
+```bash
+./scripts/claude-mcp-local
+```
+
+Claude Desktop config example:
+
+```json
+{
+  "mcpServers": {
+    "mcp-geo": {
+      "command": "/absolute/path/to/mcp-geo/scripts/claude-mcp-local",
+      "env": {
+        "OS_API_KEY": "your-api-key-here",
+        "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_STDIO_FRAMING": "line"
+      }
+    }
+  }
+}
+```
+
+The wrapper starts PostGIS in Docker, builds the image if needed, and uses
+`postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` for the cache.
+
+## Appendix: ChatGPT local dev (HTTPS tunnel)
+
+ChatGPT requires the MCP server to be reachable over HTTPS. For local
+development, use a tunnel and set `OPENAI_WIDGET_DOMAIN` to the public domain.
+
+Example with `cloudflared`:
+
+```bash
+cloudflared tunnel --url http://localhost:8000
+export OPENAI_WIDGET_DOMAIN="<your-tunnel-domain>"
+uvicorn server.main:app --reload
+```
+
+Alternatively, `ngrok` works similarly:
+
+```bash
+ngrok http 8000
+export OPENAI_WIDGET_DOMAIN="<your-ngrok-domain>"
+```
