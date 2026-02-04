@@ -17,8 +17,9 @@ dependencies = [
     "python-dotenv",
     "loguru",
     "requests",
-    "httpx"  # required by starlette.testclient used in tests
-    ,"openpyxl"  # XLSX generation for filter output
+    "httpx",  # required by starlette.testclient used in tests
+    "openpyxl",  # XLSX generation for filter output
+    "pyproj",  # WGS84 -> BNG conversion for os_names.nearest
 ]
 
 [project.scripts]

@@ -7,6 +7,11 @@ from tools.registry import Tool, ToolResult, register
 from tools.typing_utils import parse_float
 from tools.types import NamesResponse
 
+try:
+    from pyproj import Transformer
+except ImportError:  # pragma: no cover - optional dependency fallback
+    Transformer = None  # type: ignore[assignment]
+
 # OS Names API basic handlers
 
 def _parse_number(value: Any) -> float | None:
@@ -41,6 +46,33 @@ def _extract_lat_lon(geometry: Any) -> tuple[float | None, float | None]:
     return None, None
 
 
+_BNG_TRANSFORMER: Any = None
+
+
+def _wgs84_to_bng(lat: float, lon: float) -> tuple[float, float] | None:
+    if Transformer is None:
+        return None
+    global _BNG_TRANSFORMER
+    if _BNG_TRANSFORMER is None:
+        _BNG_TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
+    try:
+        easting, northing = _BNG_TRANSFORMER.transform(lon, lat)
+    except Exception:
+        return None
+    return float(easting), float(northing)
+
+
+def _normalize_coord_system(value: Any) -> str:
+    if value is None:
+        return "EPSG:4326"
+    text = str(value).strip().upper().replace(" ", "")
+    if text in {"WGS84", "EPSG:4326", "4326"}:
+        return "EPSG:4326"
+    if text in {"BNG", "OSGB36", "EPSG:27700", "27700"}:
+        return "EPSG:27700"
+    return text
+
+
 def _names_find(payload: dict[str, Any]) -> ToolResult:
     text = str(payload.get("text", "")).strip()
     if not text:
@@ -72,21 +104,35 @@ def _names_find(payload: dict[str, Any]) -> ToolResult:
 def _names_nearest(payload: dict[str, Any]) -> ToolResult:
     raw_lat = payload.get("lat")
     raw_lon = payload.get("lon")
-    # Basic validation: must be int/float or numeric string
-    for raw in (raw_lat, raw_lon):
-        if isinstance(raw, (int, float)):
-            continue
-        if not (isinstance(raw, str) and raw.strip() and raw.strip().replace(".", "", 1).isdigit()):
-            return 400, {
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "lat/lon must be numeric",
-            }
     lat = parse_float(raw_lat)
     lon = parse_float(raw_lon)
+    if lat is None or lon is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "lat/lon must be numeric",
+        }
+    coord_system = _normalize_coord_system(payload.get("coordSystem"))
+    if coord_system == "EPSG:27700":
+        easting, northing = lon, lat
+    elif coord_system == "EPSG:4326":
+        converted = _wgs84_to_bng(lat, lon)
+        if not converted:
+            return 501, {
+                "isError": True,
+                "code": "MISSING_DEPENDENCY",
+                "message": "pyproj is required to convert WGS84 lat/lon to British National Grid",
+            }
+        easting, northing = converted
+    else:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "coordSystem must be EPSG:4326 or EPSG:27700",
+        }
     status, raw = client.get_json(
         f"{client.base_names}/nearest",
-        {"point": f"{lon},{lat}"},
+        {"point": f"{easting:.2f},{northing:.2f}"},
     )
     if status != 200:
         return 501, raw
@@ -119,7 +165,7 @@ register(Tool(
 register(Tool(
     name="os_names.nearest",
     description="Nearest named features",
-    input_schema={"type":"object","properties":{"tool":{"type":"string","const":"os_names.nearest"},"lat":{"type":"number"},"lon":{"type":"number"}},"required":["lat","lon"],"additionalProperties":False},
+    input_schema={"type":"object","properties":{"tool":{"type":"string","const":"os_names.nearest"},"lat":{"type":"number"},"lon":{"type":"number"},"coordSystem":{"type":"string","enum":["EPSG:4326","EPSG:27700"],"default":"EPSG:4326"}},"required":["lat","lon"],"additionalProperties":False},
     output_schema={"type":"object","properties":{"results":{"type":"array"}},"required":["results"]},
     handler=_names_nearest
 ))

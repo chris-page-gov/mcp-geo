@@ -216,6 +216,10 @@ Note: ONS tools require live mode (`ONS_LIVE_ENABLED=true`) and `dataset`,
 - Feature inspector: `os_apps.render_feature_inspector`
 - Route planner: `os_apps.render_route_planner`
 
+Note: `os_names.nearest` accepts WGS84 lat/lon (`EPSG:4326`) and converts to
+British National Grid automatically. Use `coordSystem: "EPSG:27700"` if you
+already have BNG eastings/northings.
+
 ## 5) Quick inspection examples
 
 List tools:

@@ -25,9 +25,10 @@ All notable changes to this project will be documented in this file.
 - Updated PROGRESS.MD with documentation refresh.
 - Persisted Codex home across devcontainer rebuilds and documented context workflow in AGENTS.
 - Updated getting started and README docs for Claude local wrapper and ChatGPT HTTPS tunnel guidance.
+- Added WGS84 → British National Grid conversion for `os_names.nearest`.
 
 ### Fixed
-- (none)
+- `os_names.nearest` now accepts WGS84 lat/lon and converts to British National Grid.
 
 ### Tests
 - Added coverage for map proxy, data resources, and circuit breaker behavior.
