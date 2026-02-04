@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file.
 - Added `CONTEXT.md` as the durable Codex context template for this repo.
 - Added Codex Mac app guidance and external references in `CONTEXT.md`.
 - Added README note for Codex Mac app usage and context.
+- Added trace session runner (`scripts/trace_session.py`) and artifact reporter (`scripts/trace_report.py`) for Claude debugging workflows.
+- Added Claude Desktop local wrapper script for PostGIS + cached STDIO runs (`scripts/claude-mcp-local`).
+- Added OpenAI widget metadata and configurable widget domain for ChatGPT Apps compatibility.
 
 ### Changed
 - Relaxed boundary validation to treat pre-repair invalid geometries as warnings.
@@ -21,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Updated README and getting started docs for current ONS cache behavior.
 - Updated PROGRESS.MD with documentation refresh.
 - Persisted Codex home across devcontainer rebuilds and documented context workflow in AGENTS.
+- Updated getting started and README docs for Claude local wrapper and ChatGPT HTTPS tunnel guidance.
 
 ### Fixed
 - (none)

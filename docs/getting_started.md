@@ -305,6 +305,25 @@ Claude Desktop config example:
 The wrapper starts PostGIS in Docker, builds the image if needed, and uses
 `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` for the cache.
 
+If Claude Desktop can't find Docker on macOS (GUI apps sometimes have a minimal
+PATH), set the Docker binary explicitly:
+
+```json
+{
+  "mcpServers": {
+    "mcp-geo": {
+      "command": "/absolute/path/to/mcp-geo/scripts/claude-mcp-local",
+      "env": {
+        "MCP_GEO_DOCKER_BIN": "/opt/homebrew/bin/docker"
+      }
+    }
+  }
+}
+```
+
+If port `5432` is already in use, set `MCP_GEO_POSTGIS_PUBLISH_PORT` to another
+port or `0` to disable host publishing.
+
 ## Appendix: ChatGPT local dev (HTTPS tunnel)
 
 ChatGPT requires the MCP server to be reachable over HTTPS. For local

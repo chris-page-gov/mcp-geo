@@ -81,6 +81,9 @@ Claude Desktop config example (STDIO transport):
 The wrapper script starts PostGIS locally (Docker), builds the image if needed,
 and runs STDIO with the boundary cache enabled.
 
+If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
+Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
+
 Optional HTTP transport:
 ```bash
 docker run --rm -p 8000:8000 \

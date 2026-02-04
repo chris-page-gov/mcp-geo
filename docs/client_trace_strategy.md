@@ -105,3 +105,49 @@ Use the proxy and UI event logging together:
 - `tools/search` calls in `logs/mcp-trace.jsonl` confirm tool search usage.
 - `os_apps.log_event` entries in `logs/ui-events.jsonl` confirm UI actions.
 - Use timestamps to correlate MCP tool calls with UI events.
+
+## 6) One-command trace sessions (recommended)
+
+If you want a single workflow that captures artifacts and generates a report:
+
+STDIO (Claude Desktop / Claude Code):
+```bash
+python scripts/trace_session.py stdio
+```
+
+HTTP (Inspector / web clients):
+```bash
+python scripts/trace_session.py http
+```
+
+Each run creates a session directory under `logs/sessions/<timestamp>/` containing:
+- `mcp-stdio-trace.jsonl` or `mcp-http-trace.jsonl`
+- `ui-events.jsonl`
+- `upstream.log`
+- `session.json`
+- `report.md`
+- `bundle.zip`
+
+To regenerate the report from an existing session:
+```bash
+python scripts/trace_report.py logs/sessions/<session-id>
+```
+
+To make STDIO capture automatic in Claude Desktop, set your MCP server command
+to the trace session wrapper:
+
+```json
+{
+  "mcpServers": {
+    "mcp-geo": {
+      "command": "python",
+      "args": [
+        "/path/to/mcp-geo/scripts/trace_session.py",
+        "stdio",
+        "--",
+        "mcp-geo-stdio"
+      ]
+    }
+  }
+}
+```

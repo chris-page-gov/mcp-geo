@@ -184,3 +184,4 @@ MCP-Apps UI for clients that render it.
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
 | Update docs + skills to guide Claude to map fallback flow | Not started | Explicit “use os_maps.render + image link” guidance. |
 | Add tests for Claude fallback behavior | Not started | STDIO response shape + tool behavior. |
+| Add trace session + artifact bundle workflow | Done | `scripts/trace_session.py` + `scripts/trace_report.py` and docs update. |

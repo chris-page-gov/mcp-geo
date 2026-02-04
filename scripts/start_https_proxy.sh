@@ -7,6 +7,8 @@ UPSTREAM_PORT="8000"
 PROXY_HOST="127.0.0.1"
 PROXY_PORT_START="8899"
 PROXY_PORT_END="8909"
+TRACE_LOG="${MCP_HTTP_TRACE_LOG:-logs/mcp-http-trace.jsonl}"
+UPSTREAM_LOG="${MCP_UPSTREAM_LOG:-/tmp/mcp-geo-upstream.log}"
 NGROK_START="${NGROK_START:-1}"
 NGROK_DOMAIN="${NGROK_DOMAIN:-}"
 NGROK_AUTHTOKEN="${NGROK_AUTHTOKEN:-}"
@@ -50,12 +52,15 @@ fi
 echo "Working dir: ${WORKDIR}"
 cd "$WORKDIR"
 
+mkdir -p "$(dirname "$TRACE_LOG")"
+mkdir -p "$(dirname "$UPSTREAM_LOG")"
+
 if port_in_use "$UPSTREAM_PORT"; then
   echo "Upstream already running on ${UPSTREAM_HOST}:${UPSTREAM_PORT}"
   upstream_pid=""
 else
   echo "Starting upstream server on ${UPSTREAM_HOST}:${UPSTREAM_PORT}..."
-  uvicorn server.main:app --host 0.0.0.0 --port "$UPSTREAM_PORT" --reload >/tmp/mcp-geo-upstream.log 2>&1 &
+  uvicorn server.main:app --host 0.0.0.0 --port "$UPSTREAM_PORT" --reload >"$UPSTREAM_LOG" 2>&1 &
   upstream_pid="$!"
   sleep 1
 fi
@@ -111,5 +116,6 @@ fi
 
 python scripts/mcp_http_trace_proxy.py \
   --upstream "http://${UPSTREAM_HOST}:${UPSTREAM_PORT}/mcp" \
+  --log "${TRACE_LOG}" \
   --host "${PROXY_HOST}" \
   --port "${proxy_port}"

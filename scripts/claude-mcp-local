@@ -8,44 +8,66 @@ POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis}"
 POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-postgis/postgis:16-3.4}"
 DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
-PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-/usr/bin/python3}"
+POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-5432}"
+DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
+PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
 TRACE_LOG="${MCP_STDIO_TRACE_LOG:-}"
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
 }
 
-if ! command -v docker >/dev/null 2>&1; then
-  log "docker is required but was not found on PATH."
+if [[ -z "$DOCKER_BIN" ]]; then
+  for candidate in /usr/local/bin/docker /opt/homebrew/bin/docker /usr/bin/docker; do
+    if [[ -x "$candidate" ]]; then
+      DOCKER_BIN="$candidate"
+      break
+    fi
+  done
+fi
+if [[ -z "$DOCKER_BIN" ]] && command -v docker >/dev/null 2>&1; then
+  DOCKER_BIN="$(command -v docker)"
+fi
+if [[ -z "$DOCKER_BIN" || ! -x "$DOCKER_BIN" ]]; then
+  log "docker is required but was not found (set MCP_GEO_DOCKER_BIN to its path)."
+  exit 1
+fi
+
+if ! "$DOCKER_BIN" info >/dev/null 2>&1; then
+  log "docker is installed but not running. Start Docker Desktop and retry."
   exit 1
 fi
 
 mkdir -p "$DATA_DIR" "$LOG_DIR"
 
-if ! docker network inspect "$NETWORK" >/dev/null 2>&1; then
+if ! "$DOCKER_BIN" network inspect "$NETWORK" >/dev/null 2>&1; then
   log "creating docker network: $NETWORK"
-  docker network create "$NETWORK" >/dev/null
+  "$DOCKER_BIN" network create "$NETWORK" >/dev/null
 fi
 
-if docker inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
-  if [[ "$(docker inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
+if "$DOCKER_BIN" inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
+  if [[ "$("$DOCKER_BIN" inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
     log "starting existing PostGIS container: $POSTGIS_CONTAINER"
-    docker start "$POSTGIS_CONTAINER" >/dev/null
+    "$DOCKER_BIN" start "$POSTGIS_CONTAINER" >/dev/null
   fi
 else
   log "starting PostGIS container: $POSTGIS_CONTAINER"
-  docker run -d --name "$POSTGIS_CONTAINER" --network "$NETWORK" \
+  port_args=()
+  if [[ -n "$POSTGIS_PUBLISH_PORT" && "$POSTGIS_PUBLISH_PORT" != "0" ]]; then
+    port_args=(-p "$POSTGIS_PUBLISH_PORT:5432")
+  fi
+  "$DOCKER_BIN" run -d --name "$POSTGIS_CONTAINER" --network "$NETWORK" \
     -e POSTGRES_DB=mcp_geo \
     -e POSTGRES_USER=mcp_geo \
     -e POSTGRES_PASSWORD=mcp_geo \
     -v "$DATA_DIR:/var/lib/postgresql/data" \
-    -p 5432:5432 \
+    "${port_args[@]}" \
     "$POSTGIS_IMAGE" >/dev/null
 fi
 
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+if ! "$DOCKER_BIN" image inspect "$IMAGE" >/dev/null 2>&1; then
   log "building image: $IMAGE"
-  docker build -t "$IMAGE" "$REPO_ROOT" >&2
+  "$DOCKER_BIN" build -t "$IMAGE" "$REPO_ROOT" >&2
 fi
 
 env_args=(
@@ -73,12 +95,23 @@ docker_args=(
 )
 
 if [[ -n "$TRACE_LOG" ]]; then
-  if [[ ! -x "$PYTHON_BIN" ]]; then
-    log "python not found at $PYTHON_BIN (set MCP_GEO_PYTHON_BIN to override)."
+  if [[ -z "$PYTHON_BIN" ]]; then
+    for candidate in /usr/bin/python3 /opt/homebrew/bin/python3 /usr/local/bin/python3; do
+      if [[ -x "$candidate" ]]; then
+        PYTHON_BIN="$candidate"
+        break
+      fi
+    done
+  fi
+  if [[ -z "$PYTHON_BIN" ]] && command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="$(command -v python3)"
+  fi
+  if [[ -z "$PYTHON_BIN" || ! -x "$PYTHON_BIN" ]]; then
+    log "python3 not found (set MCP_GEO_PYTHON_BIN to override)."
     exit 1
   fi
   exec "$PYTHON_BIN" "$REPO_ROOT/scripts/mcp_stdio_trace_proxy.py" --log "$TRACE_LOG" -- \
-    docker "${docker_args[@]}"
+    "$DOCKER_BIN" "${docker_args[@]}"
 fi
 
-exec docker "${docker_args[@]}"
+exec "$DOCKER_BIN" "${docker_args[@]}"
