@@ -6,7 +6,10 @@
       "args": [],
       "env": {
         "OS_API_KEY": "${env:OS_API_KEY}",
-        "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}"
+        "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
+        "NOMIS_LIVE_ENABLED": "${env:NOMIS_LIVE_ENABLED}",
+        "NOMIS_UID": "${env:NOMIS_UID}",
+        "NOMIS_SIGNATURE": "${env:NOMIS_SIGNATURE}"
       },
       "autoApprove": ["tools", "resources"]
     },
@@ -16,6 +19,9 @@
       "env": {
         "OS_API_KEY": "${env:OS_API_KEY}",
         "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
+        "NOMIS_LIVE_ENABLED": "${env:NOMIS_LIVE_ENABLED}",
+        "NOMIS_UID": "${env:NOMIS_UID}",
+        "NOMIS_SIGNATURE": "${env:NOMIS_SIGNATURE}",
         "MCP_STDIO_UI_SUPPORTED": "1",
         "MCP_STDIO_FRAMING": "line",
         "UI_EVENT_LOG_PATH": "logs/ui-events.jsonl"

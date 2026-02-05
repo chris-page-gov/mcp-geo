@@ -231,6 +231,59 @@ def _escape_like(text: str) -> str:
     return text.replace("'", "''")
 
 
+def _bbox_from_geometry(geometry: dict[str, Any] | None) -> list[float] | None:
+    if not geometry or not isinstance(geometry, dict):
+        return None
+    minx = miny = maxx = maxy = None
+
+    def _update(x: Any, y: Any) -> None:
+        nonlocal minx, miny, maxx, maxy
+        try:
+            xf = float(x)
+            yf = float(y)
+        except (TypeError, ValueError):
+            return
+        if minx is None or xf < minx:
+            minx = xf
+        if maxx is None or xf > maxx:
+            maxx = xf
+        if miny is None or yf < miny:
+            miny = yf
+        if maxy is None or yf > maxy:
+            maxy = yf
+
+    rings = geometry.get("rings")
+    if isinstance(rings, list):
+        for ring in rings:
+            if not isinstance(ring, list):
+                continue
+            for coord in ring:
+                if isinstance(coord, (list, tuple)) and len(coord) >= 2:
+                    _update(coord[0], coord[1])
+
+    paths = geometry.get("paths")
+    if isinstance(paths, list):
+        for path in paths:
+            if not isinstance(path, list):
+                continue
+            for coord in path:
+                if isinstance(coord, (list, tuple)) and len(coord) >= 2:
+                    _update(coord[0], coord[1])
+
+    points = geometry.get("points")
+    if isinstance(points, list):
+        for coord in points:
+            if isinstance(coord, (list, tuple)) and len(coord) >= 2:
+                _update(coord[0], coord[1])
+
+    if "x" in geometry and "y" in geometry:
+        _update(geometry.get("x"), geometry.get("y"))
+
+    if minx is None or miny is None or maxx is None or maxy is None:
+        return None
+    return [minx, miny, maxx, maxy]
+
+
 def _fetch_arcgis(url: str, params: dict[str, Any]) -> dict[str, Any] | None:
     status, data = _ARCGIS_CLIENT.get_json(url, params)
     if status != 200:
@@ -366,7 +419,7 @@ def _live_area_geometry(
             }
             geometry_missing = include_geometry and not geometry
             if any(v is None for v in bbox):
-                bbox = None
+                bbox = _bbox_from_geometry(geometry)
             if geometry_missing:
                 meta["geometryMissing"] = True
             return ([float(v) for v in bbox] if bbox else None), meta, geometry

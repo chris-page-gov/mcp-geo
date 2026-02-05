@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     ONS_LIVE_ENABLED: bool = True
     ONS_SEARCH_LIVE_ENABLED: bool = True
     ONS_DATASET_API_BASE: str = "https://api.beta.ons.gov.uk/v1"
+    NOMIS_LIVE_ENABLED: bool = True
+    NOMIS_API_BASE: str = "https://www.nomisweb.co.uk/api/v01"
+    NOMIS_UID: str = ""
+    NOMIS_SIGNATURE: str = ""
     ONS_DATASET_CACHE_ENABLED: bool = True
     ONS_DATASET_CACHE_DIR: str = "data/cache/ons"
     UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"

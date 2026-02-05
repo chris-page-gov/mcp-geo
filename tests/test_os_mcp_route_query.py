@@ -72,6 +72,12 @@ def test_route_query_map_render():
     assert body["recommended_tool"] == "os_maps.render"
 
 
+def test_route_query_statistics_nomis():
+    body = _route("Unemployment rate for LSOA in Warwick")
+    assert body["intent"] == "statistics"
+    assert body["recommended_tool"] == "nomis.query"
+
+
 def test_route_query_address_search():
     body = _route("Find address 10 Downing Street")
     assert body["intent"] == "address_lookup"
@@ -82,3 +88,14 @@ def test_route_query_unknown():
     body = _route("asdfghjkl qwertyuiop")
     assert body["intent"] == "unknown"
     assert body["recommended_tool"] == "os_mcp.descriptor"
+
+
+def test_stats_routing_tool():
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.stats_routing", "query": "Employment rate for LSOA in Leeds"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["provider"] == "nomis"
+    assert body["recommendedTool"] == "nomis.query"

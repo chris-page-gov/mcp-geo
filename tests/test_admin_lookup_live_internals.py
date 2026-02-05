@@ -149,6 +149,26 @@ def test_live_area_geometry_returns_bbox(monkeypatch):
     assert geometry is None
 
 
+def test_live_area_geometry_computes_bbox_from_geometry(monkeypatch):
+    _patch_admin_sources(monkeypatch)
+    geometry = {"rings": [[[0, 0], [2, 0], [2, 1], [0, 1], [0, 0]]]}
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        return {"features": [{"geometry": geometry}]}
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    bbox, meta, returned_geometry = admin_lookup._live_area_geometry("X3", include_geometry=True)
+    assert bbox == [0.0, 0.0, 2.0, 1.0]
+    assert meta == {
+        "level": "TEST",
+        "source": "arcgis",
+        "partial": False,
+        "failedSources": None,
+        "allFailed": False,
+    }
+    assert returned_geometry == geometry
+
+
 def test_live_find_by_name_skips_failed_sources(monkeypatch):
     _patch_admin_sources_multi(monkeypatch)
     calls = {"count": 0}

@@ -1,6 +1,8 @@
 # MCP Geo Skills
 
-This document describes how to use the MCP Geo server for UK geospatial and ONS
+This document describes how to use the MCP Geo server for UK geospatial, ONS,
+and NOMIS statistics workflows. It is intended for MCP clients and agents as a
+quick, reliable guide to tool selection.
 statistics workflows. It is intended for MCP clients and agents as a quick,
 reliable guide to tool selection.
 
@@ -10,6 +12,7 @@ reliable guide to tool selection.
 - OS Names gazetteer searches for named features.
 - OS NGD feature queries for topographic datasets.
 - ONS dataset discovery and observation queries (live dataset search).
+- NOMIS labour/census statistics (deep local geographies).
 - Administrative area lookups from live ONS geography (ArcGIS).
 - MCP-Apps widgets for interactive selection and inspection.
 - Tool search metadata for large tool catalogs.
@@ -28,6 +31,9 @@ Use `recommended_tool`, `recommended_parameters`, and `workflow_steps` to pick
 the next tool calls. When the intent is unclear, fall back to `os_mcp.descriptor`
 or `/tools/search`.
 
+If you need to understand whether a statistics query will route to ONS or NOMIS,
+use `os_mcp.stats_routing`.
+
 ## Quick Tool Selection
 
 Addresses and postcodes:
@@ -44,10 +50,12 @@ Administrative areas:
 - Use `admin_lookup.containing_areas` to find which areas contain a point.
 - Use `admin_lookup.reverse_hierarchy` for ancestor chains.
 
-ONS statistics:
+Statistics:
 - Use `ons_search.query` to discover live ONS datasets.
-- Use `ons_data.query` to fetch live observations.
-- Use `ons_data.dimensions` to list dimension ids and options.
+- Use `ons_data.query` to fetch live ONS observations.
+- Use `ons_data.dimensions` to list ONS dimension ids and options.
+- Use `nomis.datasets` to discover NOMIS datasets for labour/census.
+- Use `nomis.query` for NOMIS observations (JSON-stat/SDMX).
 
 OS NGD features and links:
 - Use `os_features.query` for feature searches by collection + bbox.
@@ -96,5 +104,5 @@ Errors follow this shape:
 ```
 
 Common codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,
-`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`,
+`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`,
 `UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.

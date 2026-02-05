@@ -49,6 +49,40 @@ STATISTICS_PATTERNS = [
     r"\bfilter ?id\b",
 ]
 
+NOMIS_PATTERNS = [
+    r"\bcensus\b",
+    r"\blabou?r\b",
+    r"\bemployment\b",
+    r"\bunemployment\b",
+    r"\bclaimant\b",
+    r"\bjobseeker\b",
+    r"\bearnings?\b",
+    r"\baps\b",
+    r"\bashe\b",
+    r"\bqualification(s)?\b",
+    r"\beconomic activity\b",
+]
+
+
+def _build_stats_routing_explanation(query_lower: str, level_mentions: list[str]) -> dict[str, Any]:
+    matched = [pattern for pattern in NOMIS_PATTERNS if re.search(pattern, query_lower)]
+    matched_levels = [level for level in level_mentions if level in {"oa", "lsoa", "msoa"}]
+    nomis_preferred = bool(matched or matched_levels)
+    reasons: list[str] = []
+    if matched:
+        reasons.append("Matched labour/census keyword(s).")
+    if matched_levels:
+        reasons.append("Detected deep local geography (OA/LSOA/MSOA).")
+    if not reasons:
+        reasons.append("Defaulted to ONS (no labour/census keywords or deep local geographies).")
+    return {
+        "provider": "nomis" if nomis_preferred else "ons",
+        "nomisPreferred": nomis_preferred,
+        "reasons": reasons,
+        "matchedPatterns": matched,
+        "matchedLevels": matched_levels,
+    }
+
 COMPARISON_PATTERNS = [
     r"\bcompare\b",
     r"\bcomparison\b",
@@ -245,6 +279,14 @@ def _pick_largest_level(levels: list[str]) -> str | None:
     return max(levels, key=lambda level: LEVEL_RANK.get(level, -1))
 
 
+def _should_route_nomis(query_lower: str, level_mentions: list[str]) -> bool:
+    if any(re.search(pattern, query_lower) for pattern in NOMIS_PATTERNS):
+        return True
+    if any(level in {"oa", "lsoa", "msoa"} for level in level_mentions):
+        return True
+    return False
+
+
 def _build_interactive_params(query: str, place_name: str | None) -> dict[str, Any]:
     query_lower = query.lower()
     level_mentions = _find_level_mentions(query_lower)
@@ -281,6 +323,9 @@ def _detect_feature_collection(query_lower: str) -> str | None:
 def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dict[str, Any]]:
     query_lower = query.lower()
     context: dict[str, Any] = {}
+    level_mentions = _find_level_mentions(query_lower)
+    if level_mentions:
+        context["levels"] = level_mentions
 
     postcode = _extract_postcode(query)
     if postcode:
@@ -313,6 +358,9 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if re.search(r"\b(select|choose|pick)\b", query_lower) and _find_level_mentions(query_lower):
         params = _build_interactive_params(query, place_name)
         return QueryIntent.INTERACTIVE_SELECTION, 0.9, params, context
+
+    if _should_route_nomis(query_lower, level_mentions):
+        context["nomis_preferred"] = True
 
     scores = {
         QueryIntent.PLACE_LOOKUP: _match_patterns(query, PLACE_LOOKUP_PATTERNS),
@@ -418,6 +466,12 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "Query OS NGD feature collections by bbox and collection.",
         )
     if intent == QueryIntent.STATISTICS:
+        if context.get("nomis_preferred"):
+            return (
+                "nomis.query",
+                ["nomis.datasets", "nomis.concepts", "nomis.query"],
+                "Query NOMIS labour/census statistics; use datasets/concepts for discovery.",
+            )
         return (
             "ons_data.query",
             ["ons_data.dimensions", "ons_data.query"],
@@ -442,6 +496,12 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "Open the route planner to choose start/end points.",
         )
     if intent == QueryIntent.DATASET_DISCOVERY:
+        if context.get("nomis_preferred"):
+            return (
+                "nomis.datasets",
+                ["nomis.datasets", "nomis.codelists"],
+                "List NOMIS datasets and related code lists.",
+            )
         return (
             "ons_data.dimensions",
             ["ons_data.dimensions", "ons_search.query"],
@@ -473,11 +533,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
         QueryIntent.BOUNDARY_FETCH: ["resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
-        QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_search.query"],
+        QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_search.query", "nomis.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],
         QueryIntent.INTERACTIVE_SELECTION: ["admin_lookup.find_by_name"],
         QueryIntent.ROUTE_PLANNING: ["os_maps.render"],
-        QueryIntent.DATASET_DISCOVERY: ["ons_search.query"],
+        QueryIntent.DATASET_DISCOVERY: ["ons_search.query", "nomis.datasets"],
         QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],
         QueryIntent.VECTOR_TILES: ["os_maps.render"],
         QueryIntent.UNKNOWN: ["os_mcp.descriptor", "admin_lookup.find_by_name"],
@@ -504,7 +564,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use os_features.query with a collection and bbox. Collections map to NGD feature sets."
         ),
         QueryIntent.STATISTICS: (
-            "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."
+            "Use NOMIS for labour/census or deep local geographies; otherwise use ONS datasets. "
+            "ONS flow: ons_data.dimensions to find filters, then ons_data.query for observations."
         ),
         QueryIntent.AREA_COMPARISON: (
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
@@ -516,7 +577,7 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use the route planner widget to set start/end coordinates."
         ),
         QueryIntent.DATASET_DISCOVERY: (
-            "Use ons_data.dimensions and ons_search.query to find available datasets/dimensions."
+            "Use ons_data.dimensions/ons_search.query for ONS datasets or nomis.datasets for labour/census."
         ),
         QueryIntent.MAP_RENDER: (
             "Use os_maps.render with a bbox to obtain a static map URL template."
@@ -640,6 +701,56 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     }
 
 
+def _stats_routing(payload: dict[str, Any]) -> ToolResult:
+    """Explain whether statistics queries route to ONS or NOMIS.
+
+    Request schema:
+    {
+      "type": "object",
+      "properties": {
+        "query": {"type": "string"}
+      },
+      "required": ["query"]
+    }
+
+    Response schema:
+    {
+      "type": "object",
+      "properties": {
+        "query": {"type": "string"},
+        "provider": {"type": "string"},
+        "nomisPreferred": {"type": "boolean"},
+        "reasons": {"type": "array"},
+        "matchedPatterns": {"type": "array"},
+        "matchedLevels": {"type": "array"},
+        "recommendedTool": {"type": "string"}
+      },
+      "required": ["provider", "nomisPreferred", "reasons", "recommendedTool"]
+    }
+    """
+    query = payload.get("query")
+    if not isinstance(query, str) or not query.strip():
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "query must be a non-empty string",
+        }
+    query = query.strip()
+    query_lower = query.lower()
+    level_mentions = _find_level_mentions(query_lower)
+    details = _build_stats_routing_explanation(query_lower, level_mentions)
+    recommended_tool = "nomis.query" if details["nomisPreferred"] else "ons_data.query"
+    return 200, {
+        "query": query,
+        "provider": details["provider"],
+        "nomisPreferred": details["nomisPreferred"],
+        "reasons": details["reasons"],
+        "matchedPatterns": details["matchedPatterns"],
+        "matchedLevels": details["matchedLevels"],
+        "recommendedTool": recommended_tool,
+    }
+
+
 register(
     Tool(
         name="os_mcp.descriptor",
@@ -707,5 +818,35 @@ register(
             "required": ["intent", "confidence", "recommended_tool", "workflow_steps"],
         },
         handler=_route_query,
+    )
+)
+
+register(
+    Tool(
+        name="os_mcp.stats_routing",
+        description="Explain whether stats queries route to ONS or NOMIS.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_mcp.stats_routing"},
+                "query": {"type": "string"},
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string"},
+                "provider": {"type": "string"},
+                "nomisPreferred": {"type": "boolean"},
+                "reasons": {"type": "array"},
+                "matchedPatterns": {"type": "array"},
+                "matchedLevels": {"type": "array"},
+                "recommendedTool": {"type": "string"},
+            },
+            "required": ["provider", "nomisPreferred", "reasons", "recommendedTool"],
+        },
+        handler=_stats_routing,
     )
 )

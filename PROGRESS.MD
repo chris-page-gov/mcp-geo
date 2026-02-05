@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-02
+Last updated: 2026-02-05
 
 ## Sources reviewed
 
@@ -45,10 +45,12 @@ Legend: Done, Partial, Not started
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; no streaming/large export pipeline. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
+| NOMIS statistics | Partial | tools/nomis_data.py | Added discovery/query tools; needs coverage for dataset-specific workflows. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; boundary dataset ingestion still needed. |
 | Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Boundary manifest + cache status exposed; full boundary packs not yet shipped. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | route_query + descriptor for tool discovery. |
+| Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
 | Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
 | MCP-Apps UI widgets | Done | tools/os_apps.py, docs/mcp_apps_alignment.md | Aligned to MCP Apps extension (no OpenAI Apps SDK fallback). |

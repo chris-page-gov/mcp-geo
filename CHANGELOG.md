@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+
+## [0.2.10] - 2026-02-05
 ### Added
 - Added `mcp-geo` stdio profile in `mcp.json` with MCP-Apps UI env defaults.
 - Added full specification documentation package under `docs/spec_package/`.
@@ -16,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - Added trace session runner (`scripts/trace_session.py`) and artifact reporter (`scripts/trace_report.py`) for Claude debugging workflows.
 - Added Claude Desktop local wrapper script for PostGIS + cached STDIO runs (`scripts/claude-mcp-local`).
 - Added OpenAI widget metadata and configurable widget domain for ChatGPT Apps compatibility.
+- Added NOMIS tools (`nomis.datasets`, `nomis.concepts`, `nomis.codelists`, `nomis.query`) for labour/census stats.
+- Added `os_mcp.stats_routing` to explain NOMIS vs ONS routing decisions.
 
 ### Changed
 - Relaxed boundary validation to treat pre-repair invalid geometries as warnings.
@@ -26,9 +30,11 @@ All notable changes to this project will be documented in this file.
 - Persisted Codex home across devcontainer rebuilds and documented context workflow in AGENTS.
 - Updated getting started and README docs for Claude local wrapper and ChatGPT HTTPS tunnel guidance.
 - Added WGS84 → British National Grid conversion for `os_names.nearest`.
+- `ons_data.query` now supports term-based auto-resolution and expands time ranges into discrete time queries.
 
 ### Fixed
 - `os_names.nearest` now accepts WGS84 lat/lon and converts to British National Grid.
+- `admin_lookup.area_geometry` now computes bbox from ArcGIS geometry when extent is missing.
 
 ### Tests
 - Added coverage for map proxy, data resources, and circuit breaker behavior.

@@ -34,6 +34,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "ons_data": ToolCategory.STATISTICS,
     "ons_search": ToolCategory.STATISTICS,
     "ons_codes": ToolCategory.CODES,
+    "nomis": ToolCategory.STATISTICS,
     "os_apps": ToolCategory.APPS,
     "os_mcp": ToolCategory.CORE,
 }
@@ -49,17 +50,20 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "ons_data": ["ons", "statistics", "observations", "dataset"],
     "ons_search": ["ons", "search", "dataset", "discover"],
     "ons_codes": ["codes", "dimension", "options"],
+    "nomis": ["nomis", "labour", "employment", "census", "dataset", "statistics"],
     "os_apps": ["ui", "widget", "interactive", "mcp-apps", "event", "log", "telemetry"],
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
 
 ALWAYS_LOADED_TOOLS: Set[str] = {
     "os_mcp.route_query",
+    "os_mcp.stats_routing",
     "os_places.search",
     "os_places.by_postcode",
     "os_names.find",
     "ons_search.query",
     "ons_data.query",
+    "nomis.query",
     "admin_lookup.find_by_name",
     "os_mcp.descriptor",
     "os_apps.render_geography_selector",
@@ -75,6 +79,7 @@ EXTERNAL_PREFIXES: Set[str] = {
     "os_vector_tiles",
     "ons_data",
     "ons_search",
+    "nomis",
 }
 
 STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter"}
@@ -130,6 +135,7 @@ def get_tool_search_system_prompt() -> str:
         "- os_places.by_postcode: lookup UPRNs and addresses\n"
         "- ons_search.query: discover ONS datasets\n"
         "- ons_data.query: query ONS observations\n"
+        "- nomis.query: query NOMIS labour and census statistics\n"
         "- admin_lookup.find_by_name: find administrative areas by name\n\n"
         "Use MCP-Apps widgets for interactive workflows (os_apps.* tools).\n"
         "Specialized OS feature tools are for NGD feature collections, not place lookups."

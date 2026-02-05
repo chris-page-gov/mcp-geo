@@ -126,7 +126,7 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
 | admin_lookup.area_geometry | Bounding box geometry for an area |
 | admin_lookup.find_by_name | Case-insensitive substring name search |
-| ons_data.query | Query live ONS observations (dataset/edition/version required) |
+| ons_data.query | Query live ONS observations (dataset/edition/version or term) |
 | ons_data.dimensions | List ONS observation dimensions for a live dataset |
 | ons_data.get_observation | Retrieve a single live observation |
 | ons_data.create_filter | Create a live ONS filter |
@@ -134,6 +134,10 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | ons_search.query | Search live ONS datasets (beta API) |
 | ons_codes.list | List live dimension IDs |
 | ons_codes.options | List live dimension options |
+| nomis.datasets | List NOMIS datasets or dataset definitions |
+| nomis.concepts | List NOMIS concepts |
+| nomis.codelists | List NOMIS code lists |
+| nomis.query | Query NOMIS datasets (JSON-stat/SDMX) |
 | os_mcp.descriptor | Server capabilities and tool search configuration |
 | os_mcp.route_query | Intent classification and tool/workflow recommendation |
 | os_apps.render_geography_selector | Open the MCP-Apps geography selector widget |
@@ -212,8 +216,9 @@ Admin lookup tools call the live ONS Open Geography services by default. Static
 boundary resources are not advertised in the resources API.
 
 ### ONS Observations & Discovery (Epic D)
-ONS data tools require live mode (`ONS_LIVE_ENABLED=true`) and dataset metadata
-(`dataset`, `edition`, `version`) on calls that query observations or dimensions.
+ONS data tools require live mode (`ONS_LIVE_ENABLED=true`). You can supply
+`dataset`, `edition`, and `version` directly, or provide a `term` and let
+`ons_data.query` auto-resolve the latest version.
 `ons_codes.*` supports an optional on-disk cache via `ONS_DATASET_CACHE_ENABLED`.
 
 Tool `ons_data.query` supports:
@@ -232,8 +237,9 @@ Full dataset cache snapshots are stored on disk when enabled via
 `ONS_DATASET_CACHE_ENABLED=true` and `ONS_DATASET_CACHE_DIR`.
 
 ### Live ONS Mode & Codes
-Enable live mode by setting `ONS_LIVE_ENABLED=true` and supplying `dataset`,
-`edition`, and `version` in tool payloads (no sample fallback).
+Enable live mode by setting `ONS_LIVE_ENABLED=true`. If you do not supply
+dataset metadata, `ons_data.query` will attempt to resolve the latest edition
+and version using `term`.
 
 `ons_data.query` (live):
 ```
@@ -257,12 +263,21 @@ GET https://api.beta.ons.gov.uk/v1/datasets?search=<term>&limit=...&offset=...
 ```
 You can override the base with `ONS_DATASET_API_BASE` or disable live search with `ONS_SEARCH_LIVE_ENABLED=false`.
 
+### NOMIS Labour & Census Statistics
+Enable live mode with `NOMIS_LIVE_ENABLED=true` (default). Optional credentials
+may be provided via `NOMIS_UID` and `NOMIS_SIGNATURE` if you need higher limits.
+
+Use:
+- `nomis.datasets` for dataset discovery
+- `nomis.concepts` / `nomis.codelists` for metadata
+- `nomis.query` for JSON-stat or SDMX JSON observations
+
 ## Error Model
 All errors conform to:
 ```json
 { "isError": true, "code": "<CODE>", "message": "..." }
 ```
-Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
 
 ## Project Structure
 ```text

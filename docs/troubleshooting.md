@@ -12,6 +12,7 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | LIVE_DISABLED | Live data disabled | `ONS_LIVE_ENABLED` or `ADMIN_LOOKUP_LIVE_ENABLED` set to false | Enable live mode and retry |
 | OS_API_ERROR | Upstream OS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust parameters or check quota |
 | ONS_API_ERROR | Upstream ONS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust dataset/edition/version |
+| NOMIS_API_ERROR | Upstream NOMIS error | NOMIS API returned error or blocked request | Inspect message snippet; adjust parameters or check API availability |
 | ADMIN_LOOKUP_API_ERROR | Upstream ArcGIS error | ONS Open Geography returned error | Retry; verify service availability |
 | UPSTREAM_TLS_ERROR | TLS handshake failure | Network / certificate issue | Retry later; verify container trust store and target host availability |
 | UPSTREAM_CONNECT_ERROR | Connection or timeout exhaustion | Network instability or endpoint downtime | Reduce concurrency, add backoff, confirm endpoint status |
@@ -28,6 +29,12 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 4. If the tool list is large, use `/tools/search` to locate the right tool quickly.
 5. Validate network connectivity (e.g., container DNS) if upstream errors persist.
 6. Monitor rate limiting metrics (if enabled) to tune client request pacing.
+
+## ArcGIS Geometry Notes
+Some ArcGIS services omit `extent` when returning geometry. The server now computes
+bboxes from geometry when needed; if you see `ADMIN_LOOKUP_API_ERROR` for
+`admin_lookup.area_geometry` with `includeGeometry=true`, upgrade to a build that
+includes this fix.
 
 ## Conditional Requests & Caching
 If receiving repeated full payloads for static resources, ensure you supply the prior `etag` via `ifNoneMatch` (HTTP) or `ifNoneMatch` param (STDIO) for efficient `304`/`notModified` responses.

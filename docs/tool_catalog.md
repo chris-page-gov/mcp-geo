@@ -8,6 +8,10 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | admin_lookup.containing_areas | 0.1.0 | Return containing administrative areas for a point (lat/lon) |
 | admin_lookup.find_by_name | 0.1.0 | Substring case-insensitive search by area name |
 | admin_lookup.reverse_hierarchy | 0.1.0 | Return ancestor chain for a given area id |
+| nomis.codelists | 0.1.0 | List NOMIS codelists or return a codelist definition. |
+| nomis.concepts | 0.1.0 | List NOMIS concepts or return a concept definition. |
+| nomis.datasets | 0.1.0 | List NOMIS datasets or return a dataset definition. |
+| nomis.query | 0.1.0 | Query NOMIS datasets (JSON-stat or SDMX JSON). |
 | ons_codes.list | 0.1.0 | List available ONS dimensions for a live dataset version. |
 | ons_codes.options | 0.1.0 | List codes/options for a given ONS live dimension. |
 | ons_data.create_filter | 0.1.0 | Create a filter for live ONS observations. Returns filterId. |
@@ -28,6 +32,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | os_maps.render | 0.1.0 | Return metadata for rendering a static map image (proxy URL) |
 | os_mcp.descriptor | 0.1.0 | Describe server capabilities and tool search configuration. |
 | os_mcp.route_query | 0.1.0 | Classify a query and recommend the right tool/workflow. |
+| os_mcp.stats_routing | 0.1.0 | Explain whether stats queries route to ONS or NOMIS. |
 | os_names.find | 0.1.0 | Find place names |
 | os_names.nearest | 0.1.0 | Nearest named features |
 | os_places.by_postcode | 0.1.0 | Lookup UPRNs and addresses for a UK postcode via OS Places API |
@@ -147,6 +152,18 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
         "type": "object"
       },
       "type": "array"
+    },
+    "timeRange": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timeValues": {
+      "type": [
+        "array",
+        "null"
+      ]
     }
   },
   "required": [
@@ -242,6 +259,258 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   },
   "required": [
     "chain"
+  ],
+  "type": "object"
+}
+```
+
+
+## nomis.datasets
+
+**Description:** List NOMIS datasets or return a dataset definition.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "description": "Optional dataset id",
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "sdmx",
+        "json"
+      ],
+      "type": "string"
+    },
+    "tool": {
+      "const": "nomis.datasets",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "data": {
+      "type": "object"
+    },
+    "dataset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "format": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "live",
+    "format",
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+
+## nomis.concepts
+
+**Description:** List NOMIS concepts or return a concept definition.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "concept": {
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "sdmx",
+        "json"
+      ],
+      "type": "string"
+    },
+    "tool": {
+      "const": "nomis.concepts",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "concept": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "data": {
+      "type": "object"
+    },
+    "format": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "live",
+    "format",
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+
+## nomis.codelists
+
+**Description:** List NOMIS codelists or return a codelist definition.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "codelist": {
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "sdmx",
+        "json"
+      ],
+      "type": "string"
+    },
+    "tool": {
+      "const": "nomis.codelists",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "codelist": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "data": {
+      "type": "object"
+    },
+    "format": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "live",
+    "format",
+    "data"
+  ],
+  "type": "object"
+}
+```
+
+
+## nomis.query
+
+**Description:** Query NOMIS datasets (JSON-stat or SDMX JSON).
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "jsonstat",
+        "sdmx"
+      ],
+      "type": "string"
+    },
+    "params": {
+      "type": "object"
+    },
+    "tool": {
+      "const": "nomis.query",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset"
+  ],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "data": {
+      "type": "object"
+    },
+    "dataset": {
+      "type": "string"
+    },
+    "format": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "live",
+    "dataset",
+    "format",
+    "data"
   ],
   "type": "object"
 }
@@ -707,7 +976,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 
 ## ons_data.query
 
-**Description:** Query live ONS observations (requires dataset/edition/version).
+**Description:** Query live ONS observations (dataset/edition/version or search term).
 
 **Version:** 0.1.0
 
@@ -744,8 +1013,16 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
       "description": "Format 'YYYY Qn-YYYY Qn' or single period 'YYYY Qn'",
       "type": "string"
     },
+    "term": {
+      "description": "Search term for auto-resolving dataset/edition/version",
+      "type": "string"
+    },
     "tool": {
       "const": "ons_data.query",
+      "type": "string"
+    },
+    "query": {
+      "description": "Alias for term",
       "type": "string"
     },
     "version": {
@@ -753,11 +1030,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
       "type": "string"
     }
   },
-  "required": [
-    "dataset",
-    "edition",
-    "version"
-  ],
+  "required": [],
   "type": "object"
 }
 ```
@@ -1555,6 +1828,70 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "confidence",
     "recommended_tool",
     "workflow_steps"
+  ],
+  "type": "object"
+}
+```
+
+
+## os_mcp.stats_routing
+
+**Description:** Explain whether stats queries route to ONS or NOMIS.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "os_mcp.stats_routing",
+      "type": "string"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "matchedLevels": {
+      "type": "array"
+    },
+    "matchedPatterns": {
+      "type": "array"
+    },
+    "nomisPreferred": {
+      "type": "boolean"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "query": {
+      "type": "string"
+    },
+    "reasons": {
+      "type": "array"
+    },
+    "recommendedTool": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "provider",
+    "nomisPreferred",
+    "reasons",
+    "recommendedTool"
   ],
   "type": "object"
 }
