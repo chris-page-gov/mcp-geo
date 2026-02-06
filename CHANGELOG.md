@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Changed
+- `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.
+- Statistics routing guidance now prioritizes direct `nomis.query`/`ons_data.query` comparison flows and explicitly advises filtered dataset discovery.
+
+### Tests
+- Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.
 
 ## [0.2.11] - 2026-02-06
 ### Added

@@ -155,3 +155,73 @@ def test_nomis_query_requires_dataset(monkeypatch):
     monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
     resp = client.post("/tools/call", json={"tool": "nomis.query", "dataset": ""})
     assert resp.status_code == 400
+
+
+def test_nomis_datasets_summary_limit_and_filter(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    payload = {
+        "structure": {
+            "keyfamilies": {
+                "keyfamily": [
+                    {"id": "NM_1_1", "name": {"value": "Population estimates"}},
+                    {"id": "NM_2_2", "name": {"value": "Employment by industry"}},
+                    {"id": "NM_3_3", "name": {"value": "Population by age"}},
+                ]
+            }
+        }
+    }
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        return 200, payload
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "limit": 2})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 3
+    assert body["returned"] == 2
+    assert body["truncated"] is True
+    assert len(body["datasets"]) == 2
+
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "q": "population", "limit": 10})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 2
+    assert body["returned"] == 2
+    assert body["truncated"] is False
+    assert all("population" in item["name"].lower() for item in body["datasets"])
+
+
+def test_nomis_datasets_include_raw(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    payload = {"structure": {"keyfamilies": {"keyfamily": [{"id": "NM_1_1", "name": "Population"}]}}}
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        return 200, payload
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.datasets", "limit": 1, "includeRaw": True},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["raw"] == payload
+
+
+def test_nomis_datasets_limit_validation(monkeypatch):
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "limit": 0})
+    assert resp.status_code == 400
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "includeRaw": "yes"})
+    assert resp.status_code == 400

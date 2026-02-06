@@ -503,8 +503,11 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
         if context.get("nomis_preferred"):
             return (
                 "nomis.query",
-                ["nomis.datasets", "nomis.concepts", "nomis.query"],
-                "Query NOMIS labour/census statistics; use datasets/concepts for discovery.",
+                ["nomis.query", "nomis.datasets", "nomis.concepts"],
+                (
+                    "Query NOMIS labour/census statistics directly. "
+                    "If dataset id is unknown, use nomis.datasets with q and limit."
+                ),
             )
         return (
             "ons_data.query",
@@ -534,7 +537,7 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             return (
                 "nomis.datasets",
                 ["nomis.datasets", "nomis.codelists"],
-                "List NOMIS datasets and related code lists.",
+                "List NOMIS datasets with q+limit, then inspect code lists if needed.",
             )
         return (
             "ons_data.dimensions",
@@ -600,7 +603,9 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         ),
         QueryIntent.STATISTICS: (
             "Use NOMIS for labour/census or deep local geographies; otherwise use ONS datasets. "
-            "ONS flow: ons_data.dimensions to find filters, then ons_data.query for observations."
+            "Prefer nomis.query directly when dataset is known. If you need discovery, call "
+            "nomis.datasets with q and limit to avoid large payloads. ONS flow: "
+            "ons_data.dimensions to find filters, then ons_data.query for observations."
         ),
         QueryIntent.AREA_COMPARISON: (
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
@@ -612,7 +617,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use the route planner widget to set start/end coordinates."
         ),
         QueryIntent.DATASET_DISCOVERY: (
-            "Use ons_data.dimensions/ons_search.query for ONS datasets or nomis.datasets for labour/census."
+            "Use ons_data.dimensions/ons_search.query for ONS datasets or "
+            "nomis.datasets with q and limit for labour/census."
         ),
         QueryIntent.MAP_RENDER: (
             "Use os_maps.render with a bbox to obtain a static map URL template."
@@ -796,8 +802,19 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
             "If both locations fall under the same local authority, ONS datasets may not "
             "differentiate them."
         )
+        next_steps.append({
+            "tool": "nomis.query" if details["nomisPreferred"] else "ons_data.query",
+            "note": (
+                "Run direct area comparison queries after selecting area codes "
+                "(avoid unfiltered dataset listing calls)."
+            ),
+        })
     if details["nomisPreferred"]:
         notes.append("NOMIS is best for labour/census and small-area (OA/LSOA/MSOA) stats.")
+        notes.append(
+            "If dataset discovery is needed, call nomis.datasets with q and limit "
+            "(for example q='employment', limit=10)."
+        )
     return 200, {
         "query": query,
         "provider": details["provider"],

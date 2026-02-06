@@ -172,7 +172,7 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (90.18% coverage, 439 passed, 1 skipped).
+Latest full test run: `pytest -q` (90.07% coverage, 442 passed, 1 skipped).
 
 ## Claude UI fallback plan (short)
 

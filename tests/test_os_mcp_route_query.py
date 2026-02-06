@@ -110,3 +110,8 @@ def test_stats_routing_comparison_recommendations():
     body = resp.json()
     assert body["comparisonRecommended"] is True
     assert body["nextSteps"]
+    step_tools = [step.get("tool") for step in body["nextSteps"] if isinstance(step, dict)]
+    assert "admin_lookup.find_by_name" in step_tools
+    assert "os_apps.render_statistics_dashboard" in step_tools
+    assert "nomis.query" in step_tools
+    assert any("q and limit" in note for note in body.get("notes", []))
