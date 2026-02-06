@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Added
+- Added admin lookup level filtering, match modes, and live fallback for cache search.
+- Added NOMIS query error detection for non-JSON and upstream error payloads.
+- Added stats routing guidance for comparisons and small-area caveats.
+- Added STDIO schema normalization for sanitized tool names and UI fallbacks for stats dashboard.
+
+### Changed
+- Prioritized admin lookup search ordering to reduce noisy LSOA matches for town queries.
+- Updated tool search prompt guidance to favor `os_mcp.route_query` and level-filtered admin lookups.
+
+### Tests
+- Added coverage for admin lookup level filtering and NOMIS query error handling.
 
 ## [0.2.10] - 2026-02-05
 ### Added

@@ -46,7 +46,7 @@ Named places and features:
 - Use `os_names.nearest` for nearest named features to a point.
 
 Administrative areas:
-- Use `admin_lookup.find_by_name` to locate areas by name.
+- Use `admin_lookup.find_by_name` to locate areas by name (pass `level`/`levels` to reduce noisy matches).
 - Use `admin_lookup.containing_areas` to find which areas contain a point.
 - Use `admin_lookup.reverse_hierarchy` for ancestor chains.
 
@@ -56,6 +56,11 @@ Statistics:
 - Use `ons_data.dimensions` to list ONS dimension ids and options.
 - Use `nomis.datasets` to discover NOMIS datasets for labour/census.
 - Use `nomis.query` for NOMIS observations (JSON-stat/SDMX).
+
+Tips for admin lookups:
+- For towns that collide with larger areas (e.g., "Warwick" vs "North Warwickshire"), pass `level: "WARD"` or `levels: ["WARD"]`.
+- Use `match: "starts_with"` or `match: "exact"` when you know the prefix.
+- `admin_lookup.search_cache` accepts `fallbackLive` to automatically use live ArcGIS when cache is disabled.
 
 OS NGD features and links:
 - Use `os_features.query` for feature searches by collection + bbox.

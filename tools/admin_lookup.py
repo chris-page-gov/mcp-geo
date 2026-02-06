@@ -111,6 +111,68 @@ ADMIN_SOURCES: list[AdminSource] = [
 LEVEL_ORDER = [source.level for source in ADMIN_SOURCES]
 LEVEL_INDEX = {level: idx for idx, level in enumerate(LEVEL_ORDER)}
 
+SEARCH_PRIORITY_LEVELS = [
+    "WARD",
+    "DISTRICT",
+    "COUNTY",
+    "REGION",
+    "NATION",
+    "MSOA",
+    "LSOA",
+    "OA",
+]
+SEARCH_PRIORITY_INDEX = {level: idx for idx, level in enumerate(SEARCH_PRIORITY_LEVELS)}
+_MATCH_TYPES = {"contains", "starts_with", "exact"}
+
+
+def _normalize_levels(value: Any) -> list[str] | None:
+    if value is None:
+        return None
+    raw: list[str] = []
+    if isinstance(value, str):
+        raw = [part.strip() for part in value.split(",") if part.strip()]
+    elif isinstance(value, list):
+        raw = [str(item).strip() for item in value if item is not None]
+    else:
+        return None
+    levels: list[str] = []
+    for item in raw:
+        upper = item.upper()
+        if upper in LEVEL_INDEX:
+            levels.append(upper)
+    return levels or None
+
+
+def _infer_levels_from_text(text: str) -> list[str] | None:
+    lowered = text.lower()
+    if "lsoa" in lowered:
+        return ["LSOA"]
+    if "msoa" in lowered:
+        return ["MSOA"]
+    if "oa" in lowered or "output area" in lowered:
+        return ["OA"]
+    if "ward" in lowered:
+        return ["WARD"]
+    if "district" in lowered or "borough" in lowered or "council" in lowered:
+        return ["DISTRICT"]
+    if "county" in lowered:
+        return ["COUNTY"]
+    if "region" in lowered:
+        return ["REGION"]
+    if "nation" in lowered or "country" in lowered:
+        return ["NATION"]
+    return None
+
+
+def _ordered_sources(levels: list[str] | None) -> list[AdminSource]:
+    sources = [source for source in ADMIN_SOURCES if not levels or source.level in levels]
+    if not sources:
+        return []
+    if levels:
+        order = {level: idx for idx, level in enumerate(levels)}
+        return sorted(sources, key=lambda source: order.get(source.level, 999))
+    return sorted(sources, key=lambda source: SEARCH_PRIORITY_INDEX.get(source.level, 999))
+
 
 class _ArcGisClient:
     def __init__(self) -> None:
@@ -300,18 +362,50 @@ def _extract_attrs(feature: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
-def _live_find_by_name(text: str, limit: int) -> list[dict[str, Any]] | None:
+def _build_match_clause(field: str, needle: str, match: str) -> str:
+    if match == "exact":
+        return f"UPPER({field}) = '{needle}'"
+    if match == "starts_with":
+        return f"UPPER({field}) LIKE '{needle}%'"
+    return f"UPPER({field}) LIKE '%{needle}%'"
+
+
+def _score_match(name: str, needle: str, level: str) -> tuple[int, int, int, str]:
+    name_upper = name.upper()
+    idx = name_upper.find(needle)
+    if idx < 0:
+        idx = 999
+    level_rank = SEARCH_PRIORITY_INDEX.get(level, 999)
+    return (idx, level_rank, len(name_upper), name_upper)
+
+
+def _live_find_by_name(
+    text: str,
+    limit: int,
+    *,
+    levels: list[str] | None = None,
+    match: str = "contains",
+    limit_per_level: int | None = None,
+) -> list[dict[str, Any]] | None:
     results: list[dict[str, Any]] = []
     failures = 0
     needle = _escape_like(text.upper())
-    for source in ADMIN_SOURCES:
+    match = match if match in _MATCH_TYPES else "contains"
+    sources = _ordered_sources(levels)
+    if not sources:
+        return []
+    per_level = limit_per_level or min(limit, 10)
+    if per_level < 1:
+        per_level = 1
+    seen_ids: set[str] = set()
+    for source in sources:
         url = _service_query_url(source.service)
-        where = f"UPPER({source.name_field}) LIKE '%{needle}%'"
+        where = _build_match_clause(source.name_field, needle, match)
         params = {
             "where": where,
             "outFields": f"{source.id_field},{source.name_field}",
             "returnGeometry": "false",
-            "resultRecordCount": str(limit),
+            "resultRecordCount": str(per_level),
             "f": "json",
         }
         data = _fetch_arcgis(url, params)
@@ -323,17 +417,20 @@ def _live_find_by_name(text: str, limit: int) -> list[dict[str, Any]] | None:
             area_id = attrs.get(source.id_field)
             if area_id is None:
                 continue
-            name = attrs.get(source.name_field) or area_id
+            area_id_str = str(area_id)
+            if area_id_str in seen_ids:
+                continue
+            name = attrs.get(source.name_field) or area_id_str
+            seen_ids.add(area_id_str)
             results.append({
-                "id": str(area_id),
+                "id": area_id_str,
                 "level": source.level,
                 "name": str(name),
             })
-            if len(results) >= limit:
-                return results
-    if not results and failures == len(ADMIN_SOURCES):
+    if not results and failures == len(sources):
         return None
-    return results
+    results.sort(key=lambda item: _score_match(item.get("name", ""), needle, item.get("level", "")))
+    return results[:limit]
 
 
 def _live_containing_areas(
@@ -726,20 +823,49 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
     limit = payload.get("limit", 25)
     if not isinstance(limit, int) or limit < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be >= 1"}
+    match = payload.get("match") or payload.get("matchType") or "contains"
+    if not isinstance(match, str):
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "match must be a string"}
+    levels = _normalize_levels(payload.get("levels")) or _normalize_levels(payload.get("level"))
+    if levels is None:
+        levels = _infer_levels_from_text(text)
+    limit_per_level = payload.get("limitPerLevel")
+    if limit_per_level is not None:
+        if not isinstance(limit_per_level, int) or limit_per_level < 1:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "limitPerLevel must be >= 1",
+            }
     if not _live_enabled():
         return 501, {
             "isError": True,
             "code": "LIVE_DISABLED",
             "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
         }
-    live = _live_find_by_name(text, limit)
+    live = _live_find_by_name(
+        text,
+        limit,
+        levels=levels,
+        match=match,
+        limit_per_level=limit_per_level,
+    )
     if live is None:
         return 502, {
             "isError": True,
             "code": "ADMIN_LOOKUP_API_ERROR",
             "message": "Admin lookup live query failed.",
         }
-    return 200, {"results": live, "count": len(live), "live": True}
+    return 200, {
+        "results": live,
+        "count": len(live),
+        "live": True,
+        "meta": {
+            "match": match,
+            "levels": levels,
+            "limitPerLevel": limit_per_level,
+        },
+    }
 
 
 register(Tool(
@@ -751,13 +877,22 @@ register(Tool(
             "tool": {"type": "string", "const": "admin_lookup.find_by_name"},
             "text": {"type": "string"},
             "limit": {"type": "integer", "minimum": 1, "maximum": 200},
+            "level": {"type": "string", "description": "Optional single level (WARD/LSOA/etc)."},
+            "levels": {"type": "array", "items": {"type": "string"}},
+            "match": {"type": "string", "enum": ["contains", "starts_with", "exact"]},
+            "limitPerLevel": {"type": "integer", "minimum": 1, "maximum": 200},
         },
         "required": ["text"],
         "additionalProperties": False,
     },
     output_schema={
         "type": "object",
-        "properties": {"results": {"type": "array"}},
+        "properties": {
+            "results": {"type": "array"},
+            "count": {"type": "integer"},
+            "live": {"type": "boolean"},
+            "meta": {"type": "object"},
+        },
         "required": ["results"],
     },
     handler=_find_by_name,
@@ -826,9 +961,37 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
     limit = payload.get("limit", 25)
     if not isinstance(limit, int) or limit < 1 or limit > 200:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be 1-200"}
+    fallback_live = payload.get("fallbackLive", True)
+    if not isinstance(fallback_live, bool):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "fallbackLive must be a boolean",
+        }
     include_geometry = bool(payload.get("includeGeometry"))
     cache = get_boundary_cache()
     if not cache:
+        if fallback_live and _live_enabled() and query:
+            live = _live_find_by_name(query, limit, levels=_normalize_levels(level), match="contains")
+            if live is None:
+                return 502, {
+                    "isError": True,
+                    "code": "ADMIN_LOOKUP_API_ERROR",
+                    "message": "Boundary cache unavailable and live lookup failed.",
+                }
+            return 200, {
+                "results": live,
+                "count": len(live),
+                "live": True,
+                "meta": {
+                    "source": "arcgis",
+                    "fallback": True,
+                    "cache": "disabled",
+                    "query": query,
+                    "level": level,
+                    "limit": limit,
+                },
+            }
         return 501, {
             "isError": True,
             "code": "BOUNDARY_CACHE_DISABLED",
@@ -836,6 +999,27 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
         }
     results = cache.search(query=query, level=level, limit=limit, include_geometry=include_geometry)
     if results is None:
+        if fallback_live and _live_enabled() and query:
+            live = _live_find_by_name(query, limit, levels=_normalize_levels(level), match="contains")
+            if live is None:
+                return 502, {
+                    "isError": True,
+                    "code": "ADMIN_LOOKUP_API_ERROR",
+                    "message": "Boundary cache failed and live lookup failed.",
+                }
+            return 200, {
+                "results": live,
+                "count": len(live),
+                "live": True,
+                "meta": {
+                    "source": "arcgis",
+                    "fallback": True,
+                    "cacheError": True,
+                    "query": query,
+                    "level": level,
+                    "limit": limit,
+                },
+            }
         return 502, {
             "isError": True,
             "code": "BOUNDARY_CACHE_ERROR",
@@ -844,7 +1028,13 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
     return 200, {
         "results": results,
         "count": len(results),
-        "meta": {"query": query, "level": level, "limit": limit, "includeGeometry": include_geometry},
+        "live": False,
+        "meta": {
+            "query": query,
+            "level": level,
+            "limit": limit,
+            "includeGeometry": include_geometry,
+        },
     }
 
 
@@ -859,6 +1049,10 @@ register(Tool(
             "level": {"type": "string"},
             "limit": {"type": "integer", "minimum": 1, "maximum": 200},
             "includeGeometry": {"type": "boolean"},
+            "fallbackLive": {
+                "type": "boolean",
+                "description": "Fallback to live lookup if cache unavailable.",
+            },
         },
         "additionalProperties": False,
     },
@@ -867,6 +1061,7 @@ register(Tool(
         "properties": {
             "results": {"type": "array"},
             "count": {"type": "integer"},
+            "live": {"type": "boolean"},
             "meta": {"type": "object"},
         },
         "required": ["results"],

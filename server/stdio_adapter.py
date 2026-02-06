@@ -133,6 +133,35 @@ def _resolve_tool_name(name: str) -> str:
     return sanitized_to_original.get(name, name)
 
 
+def _rewrite_tool_schema(
+    schema: Dict[str, Any],
+    *,
+    sanitized_name: str,
+    original_name: str,
+) -> Dict[str, Any]:
+    if not isinstance(schema, dict):
+        return schema
+    props = schema.get("properties")
+    if not isinstance(props, dict):
+        return schema
+    tool_prop = props.get("tool")
+    if not isinstance(tool_prop, dict):
+        return schema
+    updated_tool = dict(tool_prop)
+    if "const" in updated_tool:
+        updated_tool["const"] = sanitized_name
+    if "enum" in updated_tool and isinstance(updated_tool["enum"], list):
+        updated_tool["enum"] = [
+            sanitized_name if item == original_name else item
+            for item in updated_tool["enum"]
+        ]
+    new_props = dict(props)
+    new_props["tool"] = updated_tool
+    new_schema = dict(schema)
+    new_schema["properties"] = new_props
+    return new_schema
+
+
 def _write_message(payload: Dict[str, Any], framing: str) -> None:
     data = json.dumps(payload, separators=(",", ":"))
     try:
@@ -209,7 +238,10 @@ def _read_result(
     return {"contents": [item]}
 
 
-def _extract_initial_view(payload: Dict[str, Any], data: Any) -> tuple[Optional[float], Optional[float], Optional[int]]:
+def _extract_initial_view(
+    payload: Dict[str, Any],
+    data: Any,
+) -> tuple[Optional[float], Optional[float], Optional[int]]:
     lat = payload.get("initialLat")
     lng = payload.get("initialLng")
     zoom = payload.get("initialZoom")
@@ -283,6 +315,28 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
     return fallback
 
 
+def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    area_codes = payload.get("areaCodes")
+    dataset = payload.get("dataset")
+    measure = payload.get("measure")
+    if area_codes is not None and not isinstance(area_codes, list):
+        area_codes = None
+    return {
+        "type": "statistics_dashboard",
+        "note": "Client does not support MCP-Apps UI. Use data tools directly.",
+        "areaCodes": area_codes or [],
+        "dataset": dataset,
+        "measure": measure,
+        "suggestedTools": [
+            "ons_search.query",
+            "ons_data.dimensions",
+            "ons_data.query",
+            "nomis.datasets",
+            "nomis.query",
+        ],
+    }
+
+
 def handle_initialize(params: Dict[str, Any]) -> Any:
     requested = params.get("protocolVersion")
     protocol_version = requested if isinstance(requested, str) else PROTOCOL_VERSION
@@ -315,11 +369,18 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
         annotations = dict(meta.get("annotations", {}))
         if name != t.name:
             annotations["originalName"] = t.name
+        input_schema = t.input_schema
+        if name != t.name:
+            input_schema = _rewrite_tool_schema(
+                t.input_schema,
+                sanitized_name=name,
+                original_name=t.name,
+            )
         entry: Dict[str, Any] = {
             "name": name,
             "description": t.description,
             "version": t.version,
-            "inputSchema": t.input_schema,
+            "inputSchema": input_schema,
             "outputSchema": t.output_schema,
             "annotations": annotations,
         }
@@ -375,6 +436,12 @@ def handle_search_tools(params: Dict[str, Any]) -> Any:
             annotations = dict(entry.get("annotations", {}) or {})
             annotations["originalName"] = original
             entry["annotations"] = annotations
+            if include_schemas and isinstance(entry.get("inputSchema"), dict):
+                entry["inputSchema"] = _rewrite_tool_schema(
+                    entry["inputSchema"],
+                    sanitized_name=sanitized,
+                    original_name=original,
+                )
         entry["name"] = sanitized
     return {"tools": results, "count": len(results), "mode": mode}
 
@@ -396,9 +463,12 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             data.setdefault("transport", "stdio")
         ui_supported = _client_supports_ui(CLIENT_CAPABILITIES)
         if resolved_name.startswith("os_apps.render_") and not ui_supported:
-            fallback = _build_static_map_fallback(payload, data)
-            if fallback:
-                data["fallback"] = fallback
+            if resolved_name == "os_apps.render_statistics_dashboard":
+                data["fallback"] = _build_stats_dashboard_fallback(payload)
+            else:
+                fallback = _build_static_map_fallback(payload, data)
+                if fallback:
+                    data["fallback"] = fallback
     ok = 200 <= status < 300
     result: Dict[str, Any] = {"status": status, "ok": ok, "data": data}
     allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False)

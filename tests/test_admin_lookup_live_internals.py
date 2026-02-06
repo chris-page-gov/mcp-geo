@@ -108,6 +108,27 @@ def test_live_find_by_name_builds_results(monkeypatch):
     assert "UPPER(TEST_NAME) LIKE '%EXAMPLE%'" in captured["where"]
 
 
+def test_live_find_by_name_with_levels_and_match(monkeypatch):
+    _patch_admin_sources_multi(monkeypatch)
+    captured = []
+
+    def fake_fetch(url, params):  # noqa: ARG001
+        captured.append(params.get("where"))
+        if "ExampleServiceA" in url:
+            return {"features": [{"attributes": {"ID_A": "X1", "NAME_A": "Warwick"}}]}
+        return {"features": [{"attributes": {"ID_B": "X2", "NAME_B": "North Warwickshire"}}]}
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    results = admin_lookup._live_find_by_name(
+        "Warwick",
+        limit=5,
+        levels=["TEST_A"],
+        match="starts_with",
+    )
+    assert results == [{"id": "X1", "level": "TEST_A", "name": "Warwick"}]
+    assert captured and "LIKE 'WARWICK%'" in captured[0]
+
+
 def test_live_containing_areas_builds_chain(monkeypatch):
     _patch_admin_sources(monkeypatch)
 

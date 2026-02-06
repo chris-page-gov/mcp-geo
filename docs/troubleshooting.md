@@ -13,9 +13,11 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | OS_API_ERROR | Upstream OS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust parameters or check quota |
 | ONS_API_ERROR | Upstream ONS API non-200 response | External API returned error (quota, bad request) | Inspect message snippet; adjust dataset/edition/version |
 | NOMIS_API_ERROR | Upstream NOMIS error | NOMIS API returned error or blocked request | Inspect message snippet; adjust parameters or check API availability |
+| NOMIS_QUERY_ERROR | NOMIS rejected query | Invalid or unsupported query parameters | Simplify params, verify dataset/codelists, retry with known-good examples |
 | ADMIN_LOOKUP_API_ERROR | Upstream ArcGIS error | ONS Open Geography returned error | Retry; verify service availability |
 | UPSTREAM_TLS_ERROR | TLS handshake failure | Network / certificate issue | Retry later; verify container trust store and target host availability |
 | UPSTREAM_CONNECT_ERROR | Connection or timeout exhaustion | Network instability or endpoint downtime | Reduce concurrency, add backoff, confirm endpoint status |
+| UPSTREAM_INVALID_RESPONSE | Upstream returned invalid JSON | Non-JSON or truncated upstream response | Retry; check upstream service status and authentication |
 | INTEGRATION_ERROR | Unexpected exception during call | Unhandled edge case or library error | Capture logs with correlationId; file issue with stack trace (if DEBUG_ERRORS enabled) |
 | RATE_LIMITED | In-memory rate limit exceeded | High request volume to same path | Slow down; implement client-side rate limiting/backoff; raise limit if safe |
 | UNKNOWN_FILTER | Referenced filter id not found | Expired or incorrect filter identifier | Recreate filter via `ons_data.create_filter` and use returned `filterId` |

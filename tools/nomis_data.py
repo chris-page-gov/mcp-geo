@@ -17,6 +17,17 @@ def _require_live() -> ToolResult | None:
     return None
 
 
+def _extract_nomis_error(data: Any) -> str | None:
+    if not isinstance(data, dict):
+        return None
+    err = data.get("error") or data.get("errors")
+    if not err:
+        return None
+    if isinstance(err, list):
+        return "; ".join(str(item) for item in err if item)[:200]
+    return str(err)
+
+
 def _build_url(path: str) -> str:
     base = nomis_client.base_api.rstrip("/")
     return f"{base}/{path.lstrip('/')}"
@@ -37,6 +48,9 @@ def _datasets(payload: dict[str, Any]) -> ToolResult:
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
         return status, data
+    err = _extract_nomis_error(data)
+    if err:
+        return 502, {"isError": True, "code": "NOMIS_API_ERROR", "message": err}
     return 200, {"live": True, "dataset": dataset, "format": fmt, "data": data}
 
 
@@ -55,6 +69,9 @@ def _concepts(payload: dict[str, Any]) -> ToolResult:
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
         return status, data
+    err = _extract_nomis_error(data)
+    if err:
+        return 502, {"isError": True, "code": "NOMIS_API_ERROR", "message": err}
     return 200, {"live": True, "concept": concept, "format": fmt, "data": data}
 
 
@@ -73,6 +90,9 @@ def _codelists(payload: dict[str, Any]) -> ToolResult:
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
         return status, data
+    err = _extract_nomis_error(data)
+    if err:
+        return 502, {"isError": True, "code": "NOMIS_API_ERROR", "message": err}
     return 200, {"live": True, "codelist": codelist, "format": fmt, "data": data}
 
 
@@ -86,7 +106,11 @@ def _query(payload: dict[str, Any]) -> ToolResult:
     if not isinstance(dataset, str) or not dataset:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset is required"}
     if fmt not in {"jsonstat", "sdmx"}:
-        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "format must be 'jsonstat' or 'sdmx'"}
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "format must be 'jsonstat' or 'sdmx'",
+        }
     if params is not None and not isinstance(params, dict):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "params must be an object"}
     suffix = "jsonstat.json" if fmt == "jsonstat" else "generic.sdmx.json"
@@ -94,6 +118,9 @@ def _query(payload: dict[str, Any]) -> ToolResult:
     status, data = nomis_client.get_json(_build_url(path), params=params or {})
     if status != 200:
         return status, data
+    err = _extract_nomis_error(data)
+    if err:
+        return 400, {"isError": True, "code": "NOMIS_QUERY_ERROR", "message": err}
     return 200, {"live": True, "dataset": dataset, "format": fmt, "data": data}
 
 

@@ -34,7 +34,10 @@ POSTCODE_REGEX = re.compile(
 UPRN_REGEX = re.compile(r"\b\d{8,13}\b")
 
 PLACE_LOOKUP_PATTERNS = [
-    r"\b(find|search|locate|where is|look up|get|show me)\b.*\b(city|town|borough|district|county|region|ward|area)\b",
+    (
+        r"\b(find|search|locate|where is|look up|get|show me)\b.*"
+        r"\b(city|town|borough|district|county|region|ward|area)\b"
+    ),
     r"\barea code\b",
     r"\bgss code\b",
     r"\bwhat is the code for\b",
@@ -43,7 +46,10 @@ PLACE_LOOKUP_PATTERNS = [
 ]
 
 STATISTICS_PATTERNS = [
-    r"\b(statistics|stats|data|wellbeing|population|house prices?|gdp|life expectancy|census|employment|health)\b",
+    (
+        r"\b(statistics|stats|data|wellbeing|population|house prices?|gdp|life expectancy|"
+        r"census|employment|health)\b"
+    ),
     r"\bhow (many|much)\b.*\b(in|for)\b",
     r"\bfilter output\b",
     r"\bfilter ?id\b",
@@ -92,7 +98,10 @@ COMPARISON_PATTERNS = [
 ]
 
 FEATURE_SEARCH_PATTERNS = [
-    r"\b(buildings?|roads?|streets?|railway|station|cinema|school|hospital|park|shop|restaurant|pub|church|museum|library|hotel)\b",
+    (
+        r"\b(buildings?|roads?|streets?|railway|station|cinema|school|hospital|park|shop|"
+        r"restaurant|pub|church|museum|library|hotel)\b"
+    ),
     r"\bfeatures?\b",
     r"\bngd\b",
 ]
@@ -171,6 +180,17 @@ LEVEL_RANK = {
     "local_auth": 5,
     "built_up_area": 6,
     "postcode": 7,
+}
+
+ADMIN_LEVEL_MAP = {
+    "oa": "OA",
+    "lsoa": "LSOA",
+    "msoa": "MSOA",
+    "ward": "WARD",
+    "local_auth": "DISTRICT",
+    "parl_const": None,
+    "built_up_area": None,
+    "postcode": None,
 }
 
 FEATURE_COLLECTIONS = {
@@ -277,6 +297,17 @@ def _pick_largest_level(levels: list[str]) -> str | None:
     if not levels:
         return None
     return max(levels, key=lambda level: LEVEL_RANK.get(level, -1))
+
+
+def _pick_admin_level(levels: list[str]) -> str | None:
+    if not levels:
+        return None
+    ordered = sorted(levels, key=lambda level: LEVEL_RANK.get(level, 99))
+    for level in ordered:
+        mapped = ADMIN_LEVEL_MAP.get(level)
+        if mapped:
+            return mapped
+    return None
 
 
 def _should_route_nomis(query_lower: str, level_mentions: list[str]) -> bool:
@@ -414,6 +445,9 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     params: dict[str, Any] = {}
     if best_intent == QueryIntent.PLACE_LOOKUP and place_name:
         params = {"text": place_name}
+        admin_level = _pick_admin_level(level_mentions)
+        if admin_level:
+            params["level"] = admin_level
     elif best_intent == QueryIntent.INTERACTIVE_SELECTION:
         params = _build_interactive_params(query, place_name)
     elif best_intent == QueryIntent.FEATURE_SEARCH and feature_collection:
@@ -555,7 +589,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use os_linked_ids.get when the query mentions UPRN/USRN/TOID relationships."
         ),
         QueryIntent.PLACE_LOOKUP: (
-            "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."
+            "Use admin_lookup.find_by_name for administrative areas, "
+            "and pass level/levels (WARD/DISTRICT/etc) to reduce noisy matches."
         ),
         QueryIntent.BOUNDARY_FETCH: (
             "Find the area id first, then call admin_lookup.area_geometry for a bbox summary."
@@ -723,7 +758,10 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
         "reasons": {"type": "array"},
         "matchedPatterns": {"type": "array"},
         "matchedLevels": {"type": "array"},
-        "recommendedTool": {"type": "string"}
+        "recommendedTool": {"type": "string"},
+        "comparisonRecommended": {"type": "boolean"},
+        "nextSteps": {"type": "array"},
+        "notes": {"type": "array"}
       },
       "required": ["provider", "nomisPreferred", "reasons", "recommendedTool"]
     }
@@ -740,6 +778,26 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
     level_mentions = _find_level_mentions(query_lower)
     details = _build_stats_routing_explanation(query_lower, level_mentions)
     recommended_tool = "nomis.query" if details["nomisPreferred"] else "ons_data.query"
+    comparison = any(re.search(pattern, query_lower) for pattern in COMPARISON_PATTERNS) or (
+        " between " in query_lower
+    )
+    next_steps: list[dict[str, Any]] = []
+    notes: list[str] = []
+    if comparison:
+        next_steps.append({
+            "tool": "admin_lookup.find_by_name",
+            "note": "Use level=WARD (or LSOA/MSOA) to target specific town wards.",
+        })
+        next_steps.append({
+            "tool": "os_apps.render_statistics_dashboard",
+            "note": "Use the dashboard for multi-area comparisons.",
+        })
+        notes.append(
+            "If both locations fall under the same local authority, ONS datasets may not "
+            "differentiate them."
+        )
+    if details["nomisPreferred"]:
+        notes.append("NOMIS is best for labour/census and small-area (OA/LSOA/MSOA) stats.")
     return 200, {
         "query": query,
         "provider": details["provider"],
@@ -748,6 +806,9 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
         "matchedPatterns": details["matchedPatterns"],
         "matchedLevels": details["matchedLevels"],
         "recommendedTool": recommended_tool,
+        "comparisonRecommended": comparison,
+        "nextSteps": next_steps,
+        "notes": notes,
     }
 
 
@@ -844,6 +905,9 @@ register(
                 "matchedPatterns": {"type": "array"},
                 "matchedLevels": {"type": "array"},
                 "recommendedTool": {"type": "string"},
+                "comparisonRecommended": {"type": "boolean"},
+                "nextSteps": {"type": "array"},
+                "notes": {"type": "array"},
             },
             "required": ["provider", "nomisPreferred", "reasons", "recommendedTool"],
         },

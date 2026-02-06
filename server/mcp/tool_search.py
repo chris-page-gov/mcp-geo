@@ -130,13 +130,14 @@ def get_tool_metadata(tool: Tool) -> Dict[str, Any]:
 
 def get_tool_search_system_prompt() -> str:
     return (
+        "Start with os_mcp.route_query for natural-language requests.\n"
         "Primary tools:\n"
         "- os_places.search: free text address search\n"
         "- os_places.by_postcode: lookup UPRNs and addresses\n"
+        "- admin_lookup.find_by_name: find administrative areas by name (use level/levels to reduce noise)\n"
         "- ons_search.query: discover ONS datasets\n"
         "- ons_data.query: query ONS observations\n"
-        "- nomis.query: query NOMIS labour and census statistics\n"
-        "- admin_lookup.find_by_name: find administrative areas by name\n\n"
+        "- nomis.query: query NOMIS labour and census statistics\n\n"
         "Use MCP-Apps widgets for interactive workflows (os_apps.* tools).\n"
         "Specialized OS feature tools are for NGD feature collections, not place lookups."
     )
