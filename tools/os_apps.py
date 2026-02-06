@@ -115,7 +115,7 @@ def _build_widget_response(
             "uiResourceUris": [resource_uri],
         },
         "structuredContent": structured,
-        "content": [resource_link, {"type": "text", "text": instructions}],
+        "content": [{"type": "text", "text": instructions}, resource_link],
     }
 
 
