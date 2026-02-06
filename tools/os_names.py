@@ -4,7 +4,6 @@ from typing import Any, cast
 from tools.accessors import get_gaz
 from tools.os_common import client
 from tools.registry import Tool, ToolResult, register
-from tools.typing_utils import parse_float
 from tools.types import NamesResponse
 
 try:
@@ -104,8 +103,8 @@ def _names_find(payload: dict[str, Any]) -> ToolResult:
 def _names_nearest(payload: dict[str, Any]) -> ToolResult:
     raw_lat = payload.get("lat")
     raw_lon = payload.get("lon")
-    lat = parse_float(raw_lat)
-    lon = parse_float(raw_lon)
+    lat = _parse_number(raw_lat)
+    lon = _parse_number(raw_lon)
     if lat is None or lon is None:
         return 400, {
             "isError": True,

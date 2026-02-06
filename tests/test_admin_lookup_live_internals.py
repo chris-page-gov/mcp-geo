@@ -206,6 +206,36 @@ def test_live_find_by_name_skips_failed_sources(monkeypatch):
     assert calls["count"] == 2
 
 
+def test_normalize_levels_and_infer():
+    assert admin_lookup._normalize_levels("ward, lsoa, nope") == ["WARD", "LSOA"]
+    assert admin_lookup._normalize_levels(["msoa", "WARD"]) == ["MSOA", "WARD"]
+    assert admin_lookup._normalize_levels(123) is None
+    assert admin_lookup._infer_levels_from_text("LSOA unemployment rate") == ["LSOA"]
+    assert admin_lookup._infer_levels_from_text("MSOA population") == ["MSOA"]
+    assert admin_lookup._infer_levels_from_text("OA boundary") == ["OA"]
+    assert admin_lookup._infer_levels_from_text("Ward boundary") == ["WARD"]
+    assert admin_lookup._infer_levels_from_text("District council list") == ["DISTRICT"]
+    assert admin_lookup._infer_levels_from_text("County services") == ["COUNTY"]
+    assert admin_lookup._infer_levels_from_text("UK region data") == ["REGION"]
+    assert admin_lookup._infer_levels_from_text("Nationwide statistics") == ["NATION"]
+
+
+def test_ordered_sources_respects_levels(monkeypatch):
+    sources = _patch_admin_sources_multi(monkeypatch)
+    ordered = admin_lookup._ordered_sources(["TEST_B", "TEST_A"])
+    assert [source.level for source in ordered] == ["TEST_B", "TEST_A"]
+    filtered = admin_lookup._ordered_sources(["TEST_A"])
+    assert [source.level for source in filtered] == ["TEST_A"]
+    monkeypatch.setattr(admin_lookup, "ADMIN_SOURCES", [])
+    assert admin_lookup._ordered_sources(["TEST_A"]) == []
+
+
+def test_score_match_prioritizes_exact_name():
+    exact = admin_lookup._score_match("Warwick", "WARWICK", "WARD")
+    partial = admin_lookup._score_match("North Warwickshire", "WARWICK", "DISTRICT")
+    assert exact < partial
+
+
 def test_live_containing_areas_skips_failed_sources(monkeypatch):
     _patch_admin_sources_multi(monkeypatch)
     calls = {"count": 0}

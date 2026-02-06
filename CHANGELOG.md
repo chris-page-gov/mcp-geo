@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 
 ### Tests
 - Added coverage for admin lookup level filtering and NOMIS query error handling.
+- Expanded evaluation harness coverage for NOMIS tooling and stats routing.
+- Added coverage for NOMIS client error handling, admin cache fallback, and stdio UI fallbacks.
 
 ## [0.2.10] - 2026-02-05
 ### Added

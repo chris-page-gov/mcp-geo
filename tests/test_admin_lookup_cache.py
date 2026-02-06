@@ -103,3 +103,55 @@ def test_admin_lookup_cache_search(monkeypatch):
     assert resp.status_code == 200
     body = resp.json()
     assert body["count"] == 1
+
+
+def test_admin_lookup_cache_search_fallback_live_when_disabled(monkeypatch):
+    from tools import admin_lookup
+
+    monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: None)
+    monkeypatch.setattr(admin_lookup, "_live_enabled", lambda: True)
+    monkeypatch.setattr(
+        admin_lookup,
+        "_live_find_by_name",
+        lambda query, limit, **kwargs: [  # noqa: ARG005
+            {"id": "E00000001", "name": "Example Ward", "level": "WARD"}
+        ],
+    )
+    c = _client()
+    resp = c.post(
+        "/tools/call",
+        json={"tool": "admin_lookup.search_cache", "query": "Example", "limit": 5},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["live"] is True
+    assert body["meta"]["fallback"] is True
+    assert body["meta"]["cache"] == "disabled"
+
+
+def test_admin_lookup_cache_search_fallback_live_when_error(monkeypatch):
+    from tools import admin_lookup
+
+    class StubCache:
+        def search(self, *, query=None, level=None, limit=25, include_geometry=False):  # noqa: ARG002
+            return None
+
+    monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: StubCache())
+    monkeypatch.setattr(admin_lookup, "_live_enabled", lambda: True)
+    monkeypatch.setattr(
+        admin_lookup,
+        "_live_find_by_name",
+        lambda query, limit, **kwargs: [  # noqa: ARG005
+            {"id": "E00000002", "name": "Example District", "level": "DISTRICT"}
+        ],
+    )
+    c = _client()
+    resp = c.post(
+        "/tools/call",
+        json={"tool": "admin_lookup.search_cache", "query": "Example", "limit": 5},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["live"] is True
+    assert body["meta"]["fallback"] is True
+    assert body["meta"]["cacheError"] is True

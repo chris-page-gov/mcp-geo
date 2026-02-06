@@ -40,3 +40,25 @@ def test_os_places_by_postcode_success(monkeypatch):
     assert len(data["uprns"]) == 2
     assert {d["uprn"] for d in data["uprns"]} == {"100", "101"}
     assert captured["output_srs"] == "WGS84"
+
+
+def test_os_places_by_postcode_skips_invalid(monkeypatch):
+    fake_raw = {
+        "results": [
+            "not-a-dict",
+            {"DPA": "not-a-dict"},
+            {"DPA": {"UPRN": "102", "ADDRESS": "12 High St", "LAT": "bad", "LNG": "bad"}},
+        ]
+    }
+
+    def fake_get_json(url, params=None):  # noqa: ARG001
+        return 200, fake_raw
+
+    monkeypatch.setattr(os_places.client, "get_json", fake_get_json)
+    client = TestClient(app)
+    resp = client.post("/tools/call", json={"tool": "os_places.by_postcode", "postcode": "SW1A1AA"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["uprns"]) == 1
+    assert data["uprns"][0]["lat"] == 0.0
+    assert data["uprns"][0]["lon"] == 0.0

@@ -114,6 +114,28 @@ def _install_ons_stubs(monkeypatch) -> None:
     monkeypatch.setattr(ons_search._SEARCH_CLIENT, "get_json", fake_search_get_json)
 
 
+def _install_nomis_stubs(monkeypatch) -> None:
+    from tools import nomis_common
+
+    def fake_nomis_get_json(
+        url: str,
+        params: dict[str, Any] | None = None,  # noqa: ARG001
+        use_cache: bool = True,  # noqa: ARG001
+    ):
+        if url.endswith(("def.sdmx.json", "def.json")):
+            if "/dataset/" in url:
+                return 200, {"datasets": [{"id": "NM_1", "name": "Nomis Dataset"}]}
+            if "/concept/" in url:
+                return 200, {"concepts": [{"id": "C001", "name": "Nomis Concept"}]}
+            if "/codelist/" in url:
+                return 200, {"codelists": [{"id": "CL_1", "name": "Nomis Codelist"}]}
+        if url.endswith(("jsonstat.json", "generic.sdmx.json")):
+            return 200, {"dataset": "NM_1", "value": [1, 2]}
+        return 200, {}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_nomis_get_json)
+
+
 def _install_admin_lookup_stubs(monkeypatch) -> None:
     from tools import admin_lookup
 
@@ -136,6 +158,7 @@ def _install_admin_lookup_stubs(monkeypatch) -> None:
 def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client):
     _install_os_handlers(mock_os_client)
     _install_ons_stubs(monkeypatch)
+    _install_nomis_stubs(monkeypatch)
     _install_admin_lookup_stubs(monkeypatch)
     from tools import os_common, os_features, os_linked_ids, os_names, os_places, os_places_extra
 
@@ -147,6 +170,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     monkeypatch.setattr(os_linked_ids, "client", fake_client)
     monkeypatch.setattr(settings, "ONS_LIVE_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "ONS_SEARCH_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", True, raising=False)
     ui_log_path = tmp_path / "ui-events.jsonl"
     monkeypatch.setattr(settings, "UI_EVENT_LOG_PATH", str(ui_log_path), raising=False)

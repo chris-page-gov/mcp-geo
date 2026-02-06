@@ -99,3 +99,14 @@ def test_stats_routing_tool():
     body = resp.json()
     assert body["provider"] == "nomis"
     assert body["recommendedTool"] == "nomis.query"
+
+
+def test_stats_routing_comparison_recommendations():
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.stats_routing", "query": "Compare unemployment between Leeds and Manchester"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["comparisonRecommended"] is True
+    assert body["nextSteps"]

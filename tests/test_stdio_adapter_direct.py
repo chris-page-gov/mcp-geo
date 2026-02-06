@@ -96,6 +96,33 @@ def test_ui_tools_fallback_to_static_map(monkeypatch):
     assert "render" in fallback
 
 
+def test_ui_tools_fallback_stats_dashboard(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_UI_SUPPORTED", "0")
+    call = stdio_adapter.handle_call_tool(
+        {
+            "name": "os_apps_render_statistics_dashboard",
+            "arguments": {
+                "areaCodes": ["E09000033"],
+                "dataset": "gdp",
+                "measure": "GDPV",
+            },
+        }
+    )
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    fallback = data.get("fallback")
+    assert isinstance(fallback, dict)
+    assert fallback.get("type") == "statistics_dashboard"
+    assert "nomis.query" in fallback.get("suggestedTools", [])
+
+
+def test_tool_schema_const_is_sanitized():
+    result = stdio_adapter.handle_list_tools({})
+    tool = next(t for t in result["tools"] if t["name"] == "os_places_by_postcode")
+    const = tool.get("inputSchema", {}).get("properties", {}).get("tool", {}).get("const")
+    assert const == "os_places_by_postcode"
+
+
 def test_read_headers_invalid_content_length():
     buf = io.StringIO("Content-Length: nope\r\n\r\n")
     length, error = stdio_adapter._read_headers(buf)

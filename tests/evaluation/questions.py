@@ -318,6 +318,36 @@ BASIC_QUESTIONS = [
         tags=["ons", "versions"],
         requires_ons_live=True,
     ),
+    EvaluationQuestion(
+        id="B017",
+        question="List NOMIS datasets",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="NOMIS dataset list for labour/census stats.",
+        expected=ExpectedOutcome(
+            required_tools=["nomis.datasets"],
+            max_tool_calls=2,
+            required_keywords=["dataset"],
+        ),
+        tool_calls=[ToolCallSpec("nomis.datasets", {})],
+        tags=["nomis", "datasets"],
+        requires_ons_live=True,
+    ),
+    EvaluationQuestion(
+        id="B018",
+        question="List NOMIS codelists",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="NOMIS codelist discovery.",
+        expected=ExpectedOutcome(
+            required_tools=["nomis.codelists"],
+            max_tool_calls=2,
+            required_keywords=["codelist"],
+        ),
+        tool_calls=[ToolCallSpec("nomis.codelists", {})],
+        tags=["nomis", "codelists"],
+        requires_ons_live=True,
+    ),
 ]
 
 
@@ -562,6 +592,40 @@ INTERMEDIATE_QUESTIONS = [
         tags=["ons", "filter", "csv"],
         requires_ons_live=True,
     ),
+    EvaluationQuestion(
+        id="I013",
+        question="List NOMIS concepts",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="NOMIS concept discovery.",
+        expected=ExpectedOutcome(
+            required_tools=["nomis.concepts"],
+            max_tool_calls=2,
+            required_keywords=["concept"],
+        ),
+        tool_calls=[ToolCallSpec("nomis.concepts", {})],
+        tags=["nomis", "concepts"],
+        requires_ons_live=True,
+    ),
+    EvaluationQuestion(
+        id="I014",
+        question="Should LSOA unemployment rate use NOMIS or ONS?",
+        intent=Intent.STATISTICS,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="Stats routing explanation tool.",
+        expected=ExpectedOutcome(
+            required_tools=["os_mcp.stats_routing"],
+            max_tool_calls=2,
+            required_keywords=["provider", "recommendedTool"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "os_mcp.stats_routing",
+                {"query": "Unemployment rate for LSOA in Leeds"},
+            )
+        ],
+        tags=["routing", "stats"],
+    ),
 ]
 
 
@@ -714,6 +778,29 @@ ADVANCED_QUESTIONS = [
             )
         ],
         tags=["apps", "log"],
+    ),
+    EvaluationQuestion(
+        id="A009",
+        question="Query NOMIS for unemployment count in Westminster",
+        intent=Intent.STATISTICS,
+        difficulty=Difficulty.ADVANCED,
+        description="NOMIS query workflow.",
+        expected=ExpectedOutcome(
+            required_tools=["nomis.query"],
+            max_tool_calls=2,
+            required_keywords=["dataset"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "nomis.query",
+                {
+                    "dataset": "NM_1",
+                    "params": {"geography": "E09000033", "measures": "20100"},
+                },
+            )
+        ],
+        tags=["nomis", "query"],
+        requires_ons_live=True,
     ),
 ]
 

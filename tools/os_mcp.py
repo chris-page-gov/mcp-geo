@@ -48,7 +48,7 @@ PLACE_LOOKUP_PATTERNS = [
 STATISTICS_PATTERNS = [
     (
         r"\b(statistics|stats|data|wellbeing|population|house prices?|gdp|life expectancy|"
-        r"census|employment|health)\b"
+        r"census|employment|unemployment|health)\b"
     ),
     r"\bhow (many|much)\b.*\b(in|for)\b",
     r"\bfilter output\b",
