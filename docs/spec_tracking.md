@@ -13,6 +13,7 @@ Process:
 | Feature | Spec/Docs URL | Status | Owner | Last Checked | Review Cadence | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | MCP specification | https://modelcontextprotocol.io/specification/2025-11-25 | Preview | maintainers | 2026-01-21 (local logs only) | Each release | External verification required; track changes before release. |
+| MCP elicitation (form mode) | https://modelcontextprotocol.io/specification/2025-11-25/client/elicitation | Preview | maintainers | 2026-02-06 (local trace + schema review) | Each release | Implemented for `os_mcp.stats_routing` in stdio when client advertises `elicitation.form`. |
 | MCP-Apps UI (`text/html;profile=mcp-app`) | docs/vendor/mcp/repos/ext-apps/specification/2026-01-26/apps.mdx | Stable | maintainers | 2026-01-27 (final spec sync) | Each release | Finalized MCP Apps spec; UI now uses JSON-RPC `ui/initialize` and no skybridge fallback. |
 | MCP Streamable HTTP transport (OpenAI docs) | docs/vendor/openai/mcp_transport_streamable_http.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |
 | ChatGPT Developer Mode Connectors | docs/vendor/openai/chatgpt_connectors_developer_mode.md | Preview | maintainers | 2026-01-21 (pending vendor drop) | Monthly | Local copy pending; source URL needed for verification. |

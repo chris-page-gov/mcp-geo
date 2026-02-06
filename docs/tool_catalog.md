@@ -479,6 +479,22 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 {
   "additionalProperties": false,
   "properties": {
+    "comparisonLevel": {
+      "enum": [
+        "WARD",
+        "LSOA",
+        "MSOA"
+      ],
+      "type": "string"
+    },
+    "providerPreference": {
+      "enum": [
+        "AUTO",
+        "NOMIS",
+        "ONS"
+      ],
+      "type": "string"
+    },
     "query": {
       "type": "string"
     },
@@ -597,6 +613,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "recommendedTool": {
       "type": "string"
+    },
+    "userSelections": {
+      "type": "object"
     }
   },
   "required": [
@@ -608,5 +627,4 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "type": "object"
 }
 ```
-
 

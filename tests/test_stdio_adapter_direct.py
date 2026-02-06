@@ -1,4 +1,4 @@
-import io, json, re, os
+import io, json, re
 
 from server import stdio_adapter
 from server.mcp.resource_catalog import MCP_APPS_MIME
@@ -21,6 +21,26 @@ def read_one(buf: io.BytesIO) -> dict:
     length = int(headers.get("content-length", 0))
     body = buf.read(length)
     return json.loads(body.decode())
+
+
+def read_all(buf: io.BytesIO) -> list[dict]:
+    messages: list[dict] = []
+    while buf.tell() < len(buf.getvalue()):
+        headers = {}
+        while True:
+            line = buf.readline()
+            if not line:
+                return messages
+            if line in (b"\r\n", b"\n"):
+                break
+            key, value = line.decode().split(":", 1)
+            headers[key.lower()] = value.strip()
+        length = int(headers.get("content-length", 0))
+        body = buf.read(length)
+        if not body:
+            break
+        messages.append(json.loads(body.decode()))
+    return messages
 
 def test_direct_main_initialize_and_exit():
     stdin_bytes = frame({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}) + frame({"jsonrpc":"2.0","method":"exit"})
@@ -156,3 +176,157 @@ def test_stdio_main_reports_errors_line(monkeypatch):
     assert 1002 in error_codes
     assert -32601 in error_codes
     assert -32602 in error_codes
+
+
+def test_stats_routing_elicitation_applies_choices(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(
+        lambda _params: {
+            "action": "accept",
+            "content": {"comparisonLevel": "msoa", "providerPreference": "ons"},
+        }
+    )
+    try:
+        call = stdio_adapter.handle_call_tool(
+            {
+                "name": "os_mcp.stats_routing",
+                "arguments": {"query": "Compare life in Leamington Spa and Warwick"},
+            }
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    assert data.get("provider") == "ons"
+    selections = data.get("userSelections", {})
+    assert selections.get("comparisonLevel") == "MSOA"
+    assert selections.get("providerPreference") == "ONS"
+
+
+def test_stats_routing_elicitation_cancel_returns_error(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(lambda _params: {"action": "cancel"})
+    try:
+        call = stdio_adapter.handle_call_tool(
+            {
+                "name": "os_mcp.stats_routing",
+                "arguments": {"query": "Compare life in Leamington Spa and Warwick"},
+            }
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+    assert call.get("ok") is False
+    assert call.get("status") == 409
+    data = call.get("data", {})
+    assert data.get("code") == "ELICITATION_CANCELLED"
+
+
+def test_client_supports_elicitation_form_variants():
+    assert stdio_adapter._client_supports_elicitation_form({}) is False
+    assert stdio_adapter._client_supports_elicitation_form({"elicitation": {}}) is True
+    assert stdio_adapter._client_supports_elicitation_form({"elicitation": {"form": {}}}) is True
+    assert stdio_adapter._client_supports_elicitation_form({"elicitation": {"url": {}}}) is False
+
+
+def test_build_stats_routing_elicitation_defaults_from_payload():
+    params = stdio_adapter._build_stats_routing_elicitation_params(
+        "Compare life in Leamington Spa and Warwick",
+        {"comparisonLevel": "msoa", "providerPreference": "ons"},
+    )
+    properties = params["requestedSchema"]["properties"]
+    assert properties["comparisonLevel"]["default"] == "MSOA"
+    assert properties["providerPreference"]["default"] == "ONS"
+
+
+def test_apply_stats_routing_elicitation_invalid_action():
+    payload = {}
+    ok, error = stdio_adapter._apply_stats_routing_elicitation_choices(payload, {"action": "unexpected"})
+    assert ok is False
+    assert error and error.get("code") == "ELICITATION_INVALID_RESULT"
+
+
+def test_is_stats_comparison_query_between_keyword():
+    assert stdio_adapter._is_stats_comparison_query(
+        "Difference between Leamington Spa and Warwick"
+    ) is True
+
+
+def test_maybe_elicit_stats_routing_unavailable_response(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(lambda _params: None)
+    try:
+        ok, error = stdio_adapter._maybe_elicit_stats_routing(
+            {"query": "Compare life in Leamington Spa and Warwick"}
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+    assert ok is False
+    assert error and error.get("code") == "ELICITATION_UNAVAILABLE"
+
+
+def test_stdio_main_round_trip_with_elicitation(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    initialize = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {"capabilities": {"elicitation": {"form": {}}}},
+    }
+    tool_call = {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/call",
+        "params": {
+            "tool": "os_mcp.stats_routing",
+            "args": {"query": "Compare life in Leamington Spa and Warwick"},
+        },
+    }
+    interleaved_request = {
+        "jsonrpc": "2.0",
+        "id": 77,
+        "method": "tools/list",
+        "params": {},
+    }
+    elicitation_result = {
+        "jsonrpc": "2.0",
+        "id": "elicitation-1",
+        "result": {
+            "action": "accept",
+            "content": {"comparisonLevel": "LSOA", "providerPreference": "NOMIS"},
+        },
+    }
+    exit_msg = {"jsonrpc": "2.0", "method": "exit"}
+    stdin_bytes = (
+        frame(initialize)
+        + frame(tool_call)
+        + frame(interleaved_request)
+        + frame(elicitation_result)
+        + frame(exit_msg)
+    )
+    stdin = io.StringIO(stdin_bytes.decode())
+    stdout = io.StringIO()
+    stdio_adapter.main(stdin=stdin, stdout=stdout)
+
+    messages = read_all(io.BytesIO(stdout.getvalue().encode()))
+    elicitation = next(m for m in messages if m.get("method") == "elicitation/create")
+    assert elicitation.get("id") == "elicitation-1"
+    params = elicitation.get("params", {})
+    assert params.get("mode") == "form"
+    schema = params.get("requestedSchema", {})
+    properties = schema.get("properties", {})
+    assert "comparisonLevel" in properties
+    assert "providerPreference" in properties
+
+    tool_response = next(
+        m for m in messages if m.get("id") == 2 and isinstance(m.get("result"), dict)
+    )
+    result = tool_response["result"]
+    assert result.get("ok") is True
+    data = result.get("data", {})
+    assert data.get("provider") == "nomis"
+    assert data.get("userSelections", {}).get("comparisonLevel") == "LSOA"
+    busy_error = next(m for m in messages if m.get("id") == 77 and isinstance(m.get("error"), dict))
+    assert busy_error["error"]["code"] == -32001

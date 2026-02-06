@@ -23,6 +23,9 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | UNKNOWN_FILTER | Referenced filter id not found | Expired or incorrect filter identifier | Recreate filter via `ons_data.create_filter` and use returned `filterId` |
 | NO_OBSERVATION | Observation not found | Invalid combination (geography / measure / time) | List dimensions (`ons_data.dimensions`), verify codes before querying |
 | NOT_FOUND | Resource or area id missing | Invalid admin boundary id | Use `admin_lookup.find_by_name` or `reverse_hierarchy` to locate valid ids |
+| ELICITATION_CANCELLED | User declined/cancelled elicitation prompt | Comparison routing prompt was dismissed | Re-run stats routing with explicit `comparisonLevel`/`providerPreference` or accept prompt |
+| ELICITATION_INVALID_RESULT | Client returned malformed elicitation result | Client bug or unsupported elicitation response shape | Update client MCP support or disable elicitation (`MCP_STDIO_ELICITATION_ENABLED=0`) |
+| ELICITATION_UNAVAILABLE | No elicitation response arrived | Client announced support but did not answer prompt | Retry, verify client capability handling, or disable elicitation for deterministic flow |
 
 ## General Debug Steps
 1. Capture correlationId from response headers/logs for traceability.

@@ -71,7 +71,8 @@ Claude Desktop config example (STDIO transport):
       "env": {
         "OS_API_KEY": "your-api-key-here",
         "MCP_STDIO_UI_SUPPORTED": "1",
-        "MCP_STDIO_FRAMING": "line"
+        "MCP_STDIO_FRAMING": "line",
+        "MCP_STDIO_ELICITATION_ENABLED": "1"
       }
     }
   }
@@ -171,6 +172,8 @@ the stdio adapter injects a `fallback` static map payload for
 `os_apps.render_geography_selector` (computed via `os_maps.render`).
 Set `MCP_STDIO_UI_SUPPORTED=1` to force UI mode, or
 `MCP_STDIO_FALLBACK_BBOX_DEG` to control the fallback map span.
+Set `MCP_STDIO_ELICITATION_ENABLED=0` to disable comparison elicitation in
+`os_mcp.stats_routing`.
 
 ### Conditional Requests (ETag)
 Clients should cache UI/skills responses and revalidate using `If-None-Match`.

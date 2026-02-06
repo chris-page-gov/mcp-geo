@@ -12,7 +12,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TextIO
+from typing import Any, Callable, Dict, List, Optional, TextIO
 
 from loguru import logger
 
@@ -99,6 +99,8 @@ def _resolve_framing() -> Optional[str]:
     return None
 
 CLIENT_CAPABILITIES: Dict[str, Any] = {}
+_ELICITATION_HANDLER: Optional[Callable[[Dict[str, Any]], Dict[str, Any] | None]] = None
+_ELICITATION_REQUEST_SEQ = 0
 
 
 def _sanitize_tool_name(name: str, seen: Dict[str, str]) -> str:
@@ -209,6 +211,147 @@ def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
         if isinstance(mime_types, list):
             return MCP_APPS_MIME in mime_types
     return False
+
+
+def _client_supports_elicitation_form(capabilities: Dict[str, Any]) -> bool:
+    if not isinstance(capabilities, dict):
+        return False
+    elicitation = capabilities.get("elicitation")
+    if elicitation is None:
+        return False
+    if not isinstance(elicitation, dict):
+        return False
+    # Spec compatibility: empty object implies form support.
+    if not elicitation:
+        return True
+    return isinstance(elicitation.get("form"), dict)
+
+
+def _set_elicitation_handler(
+    handler: Optional[Callable[[Dict[str, Any]], Dict[str, Any] | None]],
+) -> None:
+    global _ELICITATION_HANDLER
+    _ELICITATION_HANDLER = handler
+
+
+def _next_elicitation_request_id() -> str:
+    global _ELICITATION_REQUEST_SEQ
+    _ELICITATION_REQUEST_SEQ += 1
+    return f"elicitation-{_ELICITATION_REQUEST_SEQ}"
+
+
+def _is_stats_comparison_query(query: str) -> bool:
+    query_lower = query.lower()
+    if " between " in query_lower:
+        return True
+    patterns = [r"\bcompare\b", r"\bcomparison\b", r"\bvs\.?\b", r"\bversus\b"]
+    return any(re.search(pattern, query_lower) for pattern in patterns)
+
+
+def _build_stats_routing_elicitation_params(
+    query: str,
+    payload: Dict[str, Any],
+) -> Dict[str, Any]:
+    comparison_level_default = "WARD"
+    provider_preference_default = "AUTO"
+    comparison_level = payload.get("comparisonLevel")
+    if isinstance(comparison_level, str):
+        normalized_level = comparison_level.strip().upper()
+        if normalized_level in {"WARD", "LSOA", "MSOA"}:
+            comparison_level_default = normalized_level
+    provider_preference = payload.get("providerPreference")
+    if isinstance(provider_preference, str):
+        normalized_provider = provider_preference.strip().upper()
+        if normalized_provider in {"AUTO", "NOMIS", "ONS"}:
+            provider_preference_default = normalized_provider
+    return {
+        "mode": "form",
+        "message": (
+            "Choose how to compare these locations before statistics routing continues."
+        ),
+        "requestedSchema": {
+            "type": "object",
+            "properties": {
+                "comparisonLevel": {
+                    "type": "string",
+                    "title": "Comparison level",
+                    "description": "Pick the area granularity used for comparison.",
+                    "enum": ["WARD", "LSOA", "MSOA"],
+                    "default": comparison_level_default,
+                },
+                "providerPreference": {
+                    "type": "string",
+                    "title": "Statistics provider",
+                    "description": "Choose provider preference for this routing call.",
+                    "enum": ["AUTO", "NOMIS", "ONS"],
+                    "default": provider_preference_default,
+                },
+            },
+            "required": [],
+        },
+        "_meta": {"reason": "stats_routing_comparison", "query": query},
+    }
+
+
+def _apply_stats_routing_elicitation_choices(
+    payload: Dict[str, Any],
+    response: Dict[str, Any],
+) -> tuple[bool, Dict[str, Any] | None]:
+    action = response.get("action")
+    if action in {"cancel", "decline"}:
+        return False, {
+            "isError": True,
+            "code": "ELICITATION_CANCELLED",
+            "message": "User cancelled or declined comparison settings.",
+            "action": action,
+        }
+    if action != "accept":
+        return False, {
+            "isError": True,
+            "code": "ELICITATION_INVALID_RESULT",
+            "message": "Client returned an invalid elicitation result.",
+        }
+    content = response.get("content")
+    if not isinstance(content, dict):
+        return True, None
+    level = content.get("comparisonLevel")
+    if isinstance(level, str):
+        level_norm = level.strip().upper()
+        if level_norm in {"WARD", "LSOA", "MSOA"}:
+            payload["comparisonLevel"] = level_norm
+    provider = content.get("providerPreference")
+    if isinstance(provider, str):
+        provider_norm = provider.strip().upper()
+        if provider_norm in {"AUTO", "NOMIS", "ONS"}:
+            payload["providerPreference"] = provider_norm
+    return True, None
+
+
+def _maybe_elicit_stats_routing(payload: Dict[str, Any]) -> tuple[bool, Dict[str, Any] | None]:
+    if not _bool_env("MCP_STDIO_ELICITATION_ENABLED", default=True):
+        return True, None
+    if not _client_supports_elicitation_form(CLIENT_CAPABILITIES):
+        return True, None
+    if _ELICITATION_HANDLER is None:
+        return True, None
+    query = payload.get("query")
+    if not isinstance(query, str) or not query.strip():
+        return True, None
+    if not _is_stats_comparison_query(query):
+        return True, None
+    if (
+        payload.get("comparisonLevel") is not None
+        and payload.get("providerPreference") is not None
+    ):
+        return True, None
+    response = _ELICITATION_HANDLER(_build_stats_routing_elicitation_params(query, payload))
+    if not isinstance(response, dict):
+        return False, {
+            "isError": True,
+            "code": "ELICITATION_UNAVAILABLE",
+            "message": "No elicitation response received from client.",
+        }
+    return _apply_stats_routing_elicitation_choices(payload, response)
 
 
 def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict[str, Any]]:
@@ -462,6 +605,19 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     payload = params.get("args") or params.get("arguments") or params.get("payload") or {}
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
+    payload = dict(payload)
+    if resolved_name == "os_mcp.stats_routing":
+        should_continue, elicitation_error = _maybe_elicit_stats_routing(payload)
+        if not should_continue:
+            status = 409
+            data = elicitation_error or {
+                "isError": True,
+                "code": "ELICITATION_CANCELLED",
+                "message": "Elicitation cancelled.",
+            }
+            result: Dict[str, Any] = {"status": status, "ok": False, "data": data, "isError": True}
+            result["content"] = _tool_content_from_data(data, allow_resource=False)
+            return result
     status, data = tool.call(payload)
     if isinstance(data, dict):
         data = dict(data)
@@ -626,6 +782,37 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
     try:
         framing = _resolve_framing()
         startup_log_pending = _bool_env("MCP_STDIO_LOG_STARTUP")
+        global _ELICITATION_REQUEST_SEQ
+        _ELICITATION_REQUEST_SEQ = 0
+
+        def _request_elicitation(params: Dict[str, Any]) -> Dict[str, Any] | None:
+            nonlocal framing
+            if not framing:
+                return None
+            req_id = _next_elicitation_request_id()
+            _write_message(
+                {"jsonrpc": JSONRPC, "id": req_id, "method": "elicitation/create", "params": params},
+                framing,
+            )
+            while True:
+                msg, framing, error = _read_message(stdin, framing)
+                if msg is None:
+                    if error:
+                        continue
+                    return {"action": "cancel"}
+                if msg.get("jsonrpc") != JSONRPC:
+                    continue
+                if msg.get("id") == req_id:
+                    result = msg.get("result")
+                    return result if isinstance(result, dict) else {"action": "cancel"}
+                incoming_id = msg.get("id")
+                if incoming_id is not None and framing:
+                    _write_message(
+                        _resp_error(incoming_id, -32001, "Server busy awaiting elicitation response"),
+                        framing,
+                    )
+
+        _set_elicitation_handler(_request_elicitation)
         while True:
             msg, framing, error = _read_message(stdin, framing)
             if msg is None:
@@ -714,6 +901,7 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
         except Exception:  # pragma: no cover
             pass
     finally:
+        _set_elicitation_handler(None)
         sys.stdout = orig_stdout  # type: ignore
 
 if __name__ == "__main__":  # pragma: no cover

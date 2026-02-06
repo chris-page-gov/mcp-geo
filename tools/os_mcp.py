@@ -779,10 +779,47 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "query must be a non-empty string",
         }
+    comparison_level = payload.get("comparisonLevel")
+    if comparison_level is not None:
+        if not isinstance(comparison_level, str):
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "comparisonLevel must be a string",
+            }
+        comparison_level = comparison_level.strip().upper()
+        if comparison_level not in {"WARD", "LSOA", "MSOA"}:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "comparisonLevel must be one of WARD, LSOA, MSOA",
+            }
+    provider_preference = payload.get("providerPreference", "AUTO")
+    if not isinstance(provider_preference, str):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "providerPreference must be a string",
+        }
+    provider_preference = provider_preference.strip().upper()
+    if provider_preference not in {"AUTO", "NOMIS", "ONS"}:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "providerPreference must be one of AUTO, NOMIS, ONS",
+        }
     query = query.strip()
     query_lower = query.lower()
     level_mentions = _find_level_mentions(query_lower)
     details = _build_stats_routing_explanation(query_lower, level_mentions)
+    if provider_preference == "NOMIS":
+        details["provider"] = "nomis"
+        details["nomisPreferred"] = True
+        details["reasons"] = [*details["reasons"], "User selected NOMIS provider preference."]
+    elif provider_preference == "ONS":
+        details["provider"] = "ons"
+        details["nomisPreferred"] = False
+        details["reasons"] = [*details["reasons"], "User selected ONS provider preference."]
     recommended_tool = "nomis.query" if details["nomisPreferred"] else "ons_data.query"
     comparison = any(re.search(pattern, query_lower) for pattern in COMPARISON_PATTERNS) or (
         " between " in query_lower
@@ -790,9 +827,10 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
     next_steps: list[dict[str, Any]] = []
     notes: list[str] = []
     if comparison:
+        selected_level = comparison_level or "WARD"
         next_steps.append({
             "tool": "admin_lookup.find_by_name",
-            "note": "Use level=WARD (or LSOA/MSOA) to target specific town wards.",
+            "note": f"Use level={selected_level} to target specific comparison areas.",
         })
         next_steps.append({
             "tool": "os_apps.render_statistics_dashboard",
@@ -819,6 +857,10 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
         "query": query,
         "provider": details["provider"],
         "nomisPreferred": details["nomisPreferred"],
+        "userSelections": {
+            "comparisonLevel": comparison_level,
+            "providerPreference": provider_preference,
+        },
         "reasons": details["reasons"],
         "matchedPatterns": details["matchedPatterns"],
         "matchedLevels": details["matchedLevels"],
@@ -908,6 +950,8 @@ register(
             "properties": {
                 "tool": {"type": "string", "const": "os_mcp.stats_routing"},
                 "query": {"type": "string"},
+                "comparisonLevel": {"type": "string", "enum": ["WARD", "LSOA", "MSOA"]},
+                "providerPreference": {"type": "string", "enum": ["AUTO", "NOMIS", "ONS"]},
             },
             "required": ["query"],
             "additionalProperties": False,
@@ -918,6 +962,7 @@ register(
                 "query": {"type": "string"},
                 "provider": {"type": "string"},
                 "nomisPreferred": {"type": "boolean"},
+                "userSelections": {"type": "object"},
                 "reasons": {"type": "array"},
                 "matchedPatterns": {"type": "array"},
                 "matchedLevels": {"type": "array"},

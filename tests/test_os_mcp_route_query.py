@@ -115,3 +115,54 @@ def test_stats_routing_comparison_recommendations():
     assert "os_apps.render_statistics_dashboard" in step_tools
     assert "nomis.query" in step_tools
     assert any("q and limit" in note for note in body.get("notes", []))
+
+
+def test_stats_routing_respects_provider_preference_and_level():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare life in Leamington Spa and Warwick",
+            "providerPreference": "ONS",
+            "comparisonLevel": "LSOA",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["provider"] == "ons"
+    assert body["recommendedTool"] == "ons_data.query"
+    assert body["userSelections"]["comparisonLevel"] == "LSOA"
+    assert body["userSelections"]["providerPreference"] == "ONS"
+    next_steps = body.get("nextSteps", [])
+    admin_step = next(
+        step for step in next_steps if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
+    )
+    assert "level=LSOA" in admin_step.get("note", "")
+
+
+def test_stats_routing_rejects_invalid_provider_preference():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare life in Leamington Spa and Warwick",
+            "providerPreference": "BAD_PROVIDER",
+        },
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+
+
+def test_stats_routing_rejects_invalid_comparison_level():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare life in Leamington Spa and Warwick",
+            "comparisonLevel": "TOWN",
+        },
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"

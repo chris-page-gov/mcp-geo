@@ -170,9 +170,17 @@ Common playground capabilities still required:
 - Context panel to track selections (areas, features, routes) across calls.
 - Audit/log view to correlate tool calls with UI events and trace logs.
 
+## Stats routing elicitation rollout (2026-02-06)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Add stdio MCP elicitation support for comparison stats routing | Done | `server/stdio_adapter.py` now issues `elicitation/create` when clients advertise form elicitation capability and query looks comparative. |
+| Apply elicitation selections to routing guidance | Done | `tools/os_mcp.py` accepts `comparisonLevel` and `providerPreference`, returns `userSelections`, and adjusts recommendations accordingly. |
+| Add direct + round-trip tests | Done | Added helper-path coverage and stdio wire round-trip tests in `tests/test_stdio_adapter_direct.py` plus stats-routing validation in `tests/test_os_mcp_route_query.py`. |
+
 ## Verification status
 
-Latest full test run: `pytest -q` (90.07% coverage, 442 passed, 1 skipped).
+Latest full test run: `pytest -q` (90.00% coverage, 453 passed, 1 skipped) on 2026-02-06.
 
 ## Claude UI fallback plan (short)
 
