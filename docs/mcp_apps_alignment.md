@@ -12,7 +12,8 @@ removes legacy OpenAI Apps (skybridge) compatibility.
   `mimeType: text/html;profile=mcp-app`.
 - Tool metadata uses `_meta.ui.resourceUri` only (no `openai/*` keys).
 - Tool results return standard MCP `content` and optional `structuredContent`.
-  The legacy `uiResourceUris` field is removed.
+  A legacy `uiResourceUris` field is included as a compatibility shim for
+  hosts that still expect it (canonical field remains `_meta.ui.resourceUri`).
 - UI host/view communication uses JSON-RPC 2.0 over `postMessage` with
   `ui/initialize` → `ui/notifications/initialized`, and the UI uses standard
   MCP methods like `tools/call` and `resources/read`.
