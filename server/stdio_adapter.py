@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TextIO
 
+from loguru import logger
+
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -343,6 +345,10 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
     global CLIENT_CAPABILITIES
     capabilities = params.get("capabilities")
     CLIENT_CAPABILITIES = capabilities if isinstance(capabilities, dict) else {}
+    logger.info(
+        "MCP initialize (stdio) capabilities={capabilities}",
+        capabilities=CLIENT_CAPABILITIES,
+    )
     return {
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": SERVER_VERSION},

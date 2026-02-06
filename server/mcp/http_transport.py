@@ -7,6 +7,8 @@ import time
 import uuid
 from typing import Any, Dict, Optional, Tuple
 
+from loguru import logger
+
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse, Response
 
@@ -102,6 +104,10 @@ def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[s
     protocol_version = requested if isinstance(requested, str) else PROTOCOL_VERSION
     capabilities = params.get("capabilities")
     session_state["capabilities"] = capabilities if isinstance(capabilities, dict) else {}
+    logger.info(
+        "MCP initialize (http) capabilities={capabilities}",
+        capabilities=session_state["capabilities"],
+    )
     return {
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": stdio_adapter.SERVER_VERSION},
