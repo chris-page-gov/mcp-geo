@@ -18,3 +18,10 @@ def test_os_apps_render_geography_selector():
     assert body["resourceUri"] == "ui://mcp-geo/geography-selector"
     assert body["_meta"]["ui"]["resourceUri"] == "ui://mcp-geo/geography-selector"
     assert body["_meta"]["uiResourceUris"] == ["ui://mcp-geo/geography-selector"]
+    resource_links = [
+        block
+        for block in body.get("content", [])
+        if isinstance(block, dict) and block.get("type") == "resource_link"
+    ]
+    assert resource_links
+    assert resource_links[0]["uri"] == "ui://mcp-geo/geography-selector"

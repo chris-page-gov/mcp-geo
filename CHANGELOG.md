@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Prioritized admin lookup search ordering to reduce noisy LSOA matches for town queries.
 - Updated tool search prompt guidance to favor `os_mcp.route_query` and level-filtered admin lookups.
-- MCP-Apps render tools now include `resourceUri` + `uiResourceUris` + `_meta.ui.resourceUri` in responses for host compatibility.
+- MCP-Apps render tools now include `resourceUri` + `uiResourceUris` + `_meta.ui.resourceUri`, plus a `resource_link` content block for host compatibility.
 - Log MCP client capabilities during initialize for UI debugging (stdio + HTTP).
 
 ### Tests

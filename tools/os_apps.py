@@ -17,6 +17,29 @@ _UI_URIS = {
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
 }
+_MCP_APPS_MIME = "text/html;profile=mcp-app"
+_UI_RESOURCE_LINKS = {
+    _UI_URIS["geography"]: {
+        "name": "ui_geography_selector",
+        "title": "Geography Selector",
+        "description": "Interactive selector for UK administrative areas.",
+    },
+    _UI_URIS["statistics"]: {
+        "name": "ui_statistics_dashboard",
+        "title": "Statistics Dashboard",
+        "description": "Visual dashboard for ONS observations and comparisons.",
+    },
+    _UI_URIS["feature"]: {
+        "name": "ui_feature_inspector",
+        "title": "Feature Inspector",
+        "description": "Inspect OS NGD features and linked identifiers.",
+    },
+    _UI_URIS["route"]: {
+        "name": "ui_route_planner",
+        "title": "Route Planner",
+        "description": "Plan routes with waypoints and directions.",
+    },
+}
 UI_TOOL_RESOURCES = {
     "os_apps.render_geography_selector": {
         "mcp": _UI_URIS["geography"],
@@ -63,6 +86,16 @@ def _build_widget_response(
     *,
     resource_uri: str,
 ) -> ToolResult:
+    link_meta = _UI_RESOURCE_LINKS.get(resource_uri)
+    resource_link = {
+        "type": "resource_link",
+        "name": link_meta["name"] if link_meta else resource_uri,
+        "uri": resource_uri,
+        "mimeType": _MCP_APPS_MIME,
+    }
+    if link_meta:
+        resource_link["title"] = link_meta["title"]
+        resource_link["description"] = link_meta["description"]
     structured = {
         "status": "ready",
         "config": config,
@@ -82,7 +115,7 @@ def _build_widget_response(
             "uiResourceUris": [resource_uri],
         },
         "structuredContent": structured,
-        "content": [{"type": "text", "text": instructions}],
+        "content": [resource_link, {"type": "text", "text": instructions}],
     }
 
 
