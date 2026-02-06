@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Statistics routing guidance now prioritizes direct `nomis.query`/`ons_data.query` comparison flows and explicitly advises filtered dataset discovery.
 - STDIO now uses MCP `elicitation/create` for `os_mcp.stats_routing` comparison queries when clients advertise form elicitation support (`MCP_STDIO_ELICITATION_ENABLED=1` by default).
 - `os_mcp.stats_routing` now accepts optional `comparisonLevel` and `providerPreference` overrides and returns applied `userSelections`.
+- Claude Desktop wrapper now passes `MCP_APPS_RESOURCE_LINK` (default `1`) so MCP-Apps UI resources open reliably.
 
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.
