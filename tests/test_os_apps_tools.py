@@ -1,11 +1,13 @@
 from fastapi.testclient import TestClient
 
+from server.config import settings
 from server.main import app
 
 client = TestClient(app)
 
 
-def test_os_apps_render_geography_selector():
+def test_os_apps_render_geography_selector(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_RESOURCE_LINK", True, raising=False)
     resp = client.post(
         "/tools/call",
         json={"tool": "os_apps.render_geography_selector", "level": "ward"},

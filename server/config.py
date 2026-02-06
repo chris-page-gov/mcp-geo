@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     BOUNDARY_CACHE_MAX_AGE_DAYS: int = 180
     BOUNDARY_CACHE_FALLBACK_LIVE: bool = True
     OPENAI_WIDGET_DOMAIN: str = ""
+    MCP_APPS_RESOURCE_LINK: bool = False
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

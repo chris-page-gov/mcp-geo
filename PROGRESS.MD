@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-05
+Last updated: 2026-02-06
 
 ## Sources reviewed
 
@@ -172,7 +172,7 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (90.13% coverage, 386 passed, 1 skipped).
+Latest full test run: `pytest -q` (90.18% coverage, 439 passed, 1 skipped).
 
 ## Claude UI fallback plan (short)
 
@@ -181,7 +181,7 @@ MCP-Apps UI for clients that render it.
 
 | Task | Status | Notes |
 | --- | --- | --- |
-| Gate UI resources by client capability and only emit UI content when supported | Not started | Keep `resource_link` blocks out for non-UI clients; use data-only + fallback guidance. |
+| Gate UI resources by client capability and only emit UI content when supported | Partial | `resource_link` blocks are now opt-in via `MCP_APPS_RESOURCE_LINK`; default path remains data-only with `_meta.ui.resourceUri`. |
 | Provide a static map image endpoint/tool | Done | Return a renderable image URL (server-side) for Claude. |
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
 | Update docs + skills to guide Claude to map fallback flow | Not started | Explicit “use os_maps.render + image link” guidance. |

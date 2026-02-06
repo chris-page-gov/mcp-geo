@@ -14,7 +14,8 @@ removes legacy OpenAI Apps (skybridge) compatibility.
 - Tool results return standard MCP `content` and optional `structuredContent`.
   Compatibility shims:
   - Legacy `uiResourceUris` field.
-  - `resource_link` content block pointing at the UI resource.
+  - Optional `resource_link` content block pointing at the UI resource when
+    `MCP_APPS_RESOURCE_LINK=1` (disabled by default to avoid unsupported format warnings).
   Canonical field remains `_meta.ui.resourceUri`.
 - UI host/view communication uses JSON-RPC 2.0 over `postMessage` with
   `ui/initialize` → `ui/notifications/initialized`, and the UI uses standard

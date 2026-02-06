@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+
+## [0.2.11] - 2026-02-06
 ### Added
 - Added admin lookup level filtering, match modes, and live fallback for cache search.
 - Added NOMIS query error detection for non-JSON and upstream error payloads.
@@ -13,7 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Prioritized admin lookup search ordering to reduce noisy LSOA matches for town queries.
 - Updated tool search prompt guidance to favor `os_mcp.route_query` and level-filtered admin lookups.
-- MCP-Apps render tools now include `resourceUri` + `uiResourceUris` + `_meta.ui.resourceUri`, plus a `resource_link` content block for host compatibility.
+- MCP-Apps render tools now include `resourceUri` + `uiResourceUris` + `_meta.ui.resourceUri`; `resource_link` content blocks are now opt-in via `MCP_APPS_RESOURCE_LINK` to avoid unsupported format warnings in Claude.
 - Log MCP client capabilities during initialize for UI debugging (stdio + HTTP).
 
 ### Tests

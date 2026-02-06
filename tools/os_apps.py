@@ -86,16 +86,19 @@ def _build_widget_response(
     *,
     resource_uri: str,
 ) -> ToolResult:
-    link_meta = _UI_RESOURCE_LINKS.get(resource_uri)
-    resource_link = {
-        "type": "resource_link",
-        "name": link_meta["name"] if link_meta else resource_uri,
-        "uri": resource_uri,
-        "mimeType": _MCP_APPS_MIME,
-    }
-    if link_meta:
-        resource_link["title"] = link_meta["title"]
-        resource_link["description"] = link_meta["description"]
+    content = [{"type": "text", "text": instructions}]
+    if settings.MCP_APPS_RESOURCE_LINK:
+        link_meta = _UI_RESOURCE_LINKS.get(resource_uri)
+        resource_link = {
+            "type": "resource_link",
+            "name": link_meta["name"] if link_meta else resource_uri,
+            "uri": resource_uri,
+            "mimeType": _MCP_APPS_MIME,
+        }
+        if link_meta:
+            resource_link["title"] = link_meta["title"]
+            resource_link["description"] = link_meta["description"]
+        content.append(resource_link)
     structured = {
         "status": "ready",
         "config": config,
@@ -115,7 +118,7 @@ def _build_widget_response(
             "uiResourceUris": [resource_uri],
         },
         "structuredContent": structured,
-        "content": [{"type": "text", "text": instructions}, resource_link],
+        "content": content,
     }
 
 

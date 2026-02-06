@@ -82,9 +82,8 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (90.15% coverage, 439 passed, 1 skipped) on 2026-02-06.
-- Latest test attempt: `devcontainer exec` failed with Docker socket permission error on 2026-02-06.
-- Latest test attempt: `devcontainer exec` failed with Docker socket permission error on 2026-02-06.
+- Latest full test run: `pytest -q` (90.18% coverage, 439 passed, 1 skipped) on 2026-02-06.
+- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` succeeded on 2026-02-06.
 
 ## Key Conventions
 
@@ -98,6 +97,7 @@ assumptions change.
 - 2026-02-02: Expanded CONTEXT.md with PROGRESS and spec package summary to preserve context.
 - 2026-02-06: Added legacy `uiResourceUris` fields in MCP-Apps tool responses to improve Claude Desktop compatibility.
 - 2026-02-06: Added `resource_link` content blocks in MCP-Apps tool responses for UI host compatibility.
+- 2026-02-06: Defaulted `resource_link` content to opt-in (`MCP_APPS_RESOURCE_LINK=1`) to avoid unsupported format warnings in Claude.
 
 ## Open Questions
 
