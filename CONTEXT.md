@@ -82,7 +82,7 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (90.10% coverage, 439 passed, 1 skipped) on 2026-02-06.
+- Latest full test run: `pytest -q` (90.15% coverage, 439 passed, 1 skipped) on 2026-02-06.
 
 ## Key Conventions
 

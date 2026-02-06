@@ -15,3 +15,5 @@ def test_os_apps_render_geography_selector():
     assert "uiResourceUris" not in body
     assert body["status"] == "ready"
     assert body["config"]["level"] == "ward"
+    assert body["resourceUri"] == "ui://mcp-geo/geography-selector"
+    assert body["_meta"]["ui"]["resourceUri"] == "ui://mcp-geo/geography-selector"

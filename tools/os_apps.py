@@ -57,16 +57,27 @@ def _error(message: str) -> ToolResult:
     return 400, {"isError": True, "code": "INVALID_INPUT", "message": message}
 
 
-def _build_widget_response(config: dict[str, Any], instructions: str) -> ToolResult:
+def _build_widget_response(
+    config: dict[str, Any],
+    instructions: str,
+    *,
+    resource_uri: str,
+) -> ToolResult:
     structured = {
         "status": "ready",
         "config": config,
         "instructions": instructions,
+        "resourceUri": resource_uri,
     }
     return 200, {
         "status": "ready",
         "config": config,
         "instructions": instructions,
+        "resourceUri": resource_uri,
+        "_meta": {
+            "ui": {"resourceUri": resource_uri},
+            "ui/resourceUri": resource_uri,
+        },
         "structuredContent": structured,
         "content": [{"type": "text", "text": instructions}],
     }
@@ -278,6 +289,7 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
     return _build_widget_response(
         config,
         "Open the geography selector widget to choose areas interactively.",
+        resource_uri=_UI_URIS["geography"],
     )
 
 
@@ -327,6 +339,7 @@ def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
     return _build_widget_response(
         config,
         "Open the statistics dashboard to compare observations across areas.",
+        resource_uri=_UI_URIS["statistics"],
     )
 
 
@@ -376,6 +389,7 @@ def _render_feature_inspector(payload: dict[str, Any]) -> ToolResult:
     return _build_widget_response(
         config,
         "Open the feature inspector to review properties and linked identifiers.",
+        resource_uri=_UI_URIS["feature"],
     )
 
 
@@ -433,6 +447,7 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
     return _build_widget_response(
         config,
         "Open the route planner to set start and end points and view directions.",
+        resource_uri=_UI_URIS["route"],
     )
 
 

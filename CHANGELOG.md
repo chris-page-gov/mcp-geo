@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Prioritized admin lookup search ordering to reduce noisy LSOA matches for town queries.
 - Updated tool search prompt guidance to favor `os_mcp.route_query` and level-filtered admin lookups.
+- MCP-Apps render tools now include `resourceUri` + `_meta.ui.resourceUri` in responses for host compatibility.
 
 ### Tests
 - Added coverage for admin lookup level filtering and NOMIS query error handling.
