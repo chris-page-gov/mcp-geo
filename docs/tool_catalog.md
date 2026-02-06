@@ -9,6 +9,7 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
 | os_apps.render_geography_selector | 0.1.0 | Open the MCP-Apps geography selector widget. |
 | os_apps.render_route_planner | 0.1.0 | Open the MCP-Apps route planner widget. |
 | os_apps.render_statistics_dashboard | 0.1.0 | Open the MCP-Apps statistics dashboard widget. |
+| os_apps.render_ui_probe | 0.1.0 | Probe MCP-Apps UI rendering support. |
 | os_maps.render | 0.1.0 | Return metadata for rendering a static map image (proxy URL) |
 | os_mcp.descriptor | 0.1.0 | Describe server capabilities and tool search configuration. |
 | os_mcp.route_query | 0.1.0 | Classify a query and recommend the right tool/workflow. |
@@ -103,6 +104,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "collectionId": {
       "type": "string"
     },
+    "contentMode": {
+      "type": "string"
+    },
     "featureId": {
       "type": "string"
     },
@@ -166,6 +170,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
       "type": "string"
     },
     "focusName": {
+      "type": "string"
+    },
+    "contentMode": {
       "type": "string"
     },
     "initialLat": {
@@ -242,6 +249,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "endLng": {
       "type": "number"
     },
+    "contentMode": {
+      "type": "string"
+    },
     "mode": {
       "type": "string"
     },
@@ -253,6 +263,61 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "tool": {
       "const": "os_apps.render_route_planner",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}
+```
+### Output Schema
+
+```json
+{
+  "properties": {
+    "config": {
+      "type": "object"
+    },
+    "content": {
+      "type": "array"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "structuredContent": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "type": "object"
+}
+```
+
+## os_apps.render_ui_probe
+
+**Description:** Probe MCP-Apps UI rendering support.
+
+**Version:** 0.1.0
+
+### Input Schema
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "contentMode": {
+      "type": "string"
+    },
+    "resourceUri": {
+      "type": "string"
+    },
+    "tool": {
+      "const": "os_apps.render_ui_probe",
       "type": "string"
     }
   },
@@ -306,6 +371,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
         "type": "string"
       },
       "type": "array"
+    },
+    "contentMode": {
+      "type": "string"
     },
     "dataset": {
       "type": "string"
@@ -627,4 +695,3 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "type": "object"
 }
 ```
-

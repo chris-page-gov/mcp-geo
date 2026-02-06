@@ -18,11 +18,17 @@ MCP Geo exposes UI resources that can be opened by MCP clients that support
 - `os_apps.render_route_planner`
 - `os_apps.render_feature_inspector`
 - `os_apps.render_statistics_dashboard`
+- `os_apps.render_ui_probe`
 
 Each render tool returns:
 - `status` + `instructions`
 - a UI resource URI
 - a structured payload for the host client
+
+UI content blocks are controlled by `MCP_APPS_CONTENT_MODE`:
+- `resource_link` emits a `resource_link` content block pointing at `ui://` resources.
+- `embedded` embeds UI HTML as a `resource` content block.
+- `text` emits text-only content.
 
 ## STDIO UI fallback behavior
 

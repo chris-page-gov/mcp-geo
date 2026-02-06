@@ -180,7 +180,7 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (90.00% coverage, 453 passed, 1 skipped) on 2026-02-06.
+Latest full test run: `pytest -q` (90.20% coverage, 464 passed, 1 skipped) on 2026-02-06.
 
 ## Claude UI fallback plan (short)
 
@@ -189,9 +189,10 @@ MCP-Apps UI for clients that render it.
 
 | Task | Status | Notes |
 | --- | --- | --- |
-| Gate UI resources by client capability and only emit UI content when supported | Partial | `resource_link` blocks are now opt-in via `MCP_APPS_RESOURCE_LINK`; default path remains data-only with `_meta.ui.resourceUri`. |
+| Gate UI resources by client capability and only emit UI content when supported | Partial | `resource_link` blocks are opt-in (`MCP_APPS_RESOURCE_LINK=1`); `scripts/claude-mcp-local` now defaults to `MCP_APPS_RESOURCE_LINK=0` and `MCP_APPS_CONTENT_MODE=embedded` to avoid Claude unsupported-format failures. |
+| Add UI content-mode switch for MCP-Apps render tools | Done | `MCP_APPS_CONTENT_MODE` supports `resource_link`, embedded `resource`, or text-only content blocks; `os_apps.render_ui_probe` added for verification. |
 | Provide a static map image endpoint/tool | Done | Return a renderable image URL (server-side) for Claude. |
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
 | Update docs + skills to guide Claude to map fallback flow | Not started | Explicit “use os_maps.render + image link” guidance. |
-| Add tests for Claude fallback behavior | Not started | STDIO response shape + tool behavior. |
+| Add tests for Claude fallback behavior | Partial | Added MCP-Apps content-mode + metadata compatibility tests and `os_apps.render_ui_probe` assertions; still need end-to-end host render verification tests. |
 | Add trace session + artifact bundle workflow | Done | `scripts/trace_session.py` + `scripts/trace_report.py` and docs update. |

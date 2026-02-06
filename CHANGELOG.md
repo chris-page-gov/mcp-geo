@@ -4,12 +4,22 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Added
+- Added `os_apps.render_ui_probe` to verify MCP-Apps UI rendering and content-mode support.
+- Added `scripts/mcp_ui_mode_probe.py` to validate STDIO UI payload content types by mode.
+
 ### Changed
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.
+- `nomis.datasets` now returns a compact summary for `dataset=<id>` lookups by default; full definitions require `includeRaw=true` to prevent oversized tool responses in Claude traces.
+- `nomis.datasets` multi-term search now uses token scoring (with light synonym expansion for multi-word queries) so terms like `population census 2021` rank relevant datasets instead of relying on exact phrase matches.
 - Statistics routing guidance now prioritizes direct `nomis.query`/`ons_data.query` comparison flows and explicitly advises filtered dataset discovery.
 - STDIO now uses MCP `elicitation/create` for `os_mcp.stats_routing` comparison queries when clients advertise form elicitation support (`MCP_STDIO_ELICITATION_ENABLED=1` by default).
 - `os_mcp.stats_routing` now accepts optional `comparisonLevel` and `providerPreference` overrides and returns applied `userSelections`.
-- Claude Desktop wrapper now passes `MCP_APPS_RESOURCE_LINK` (default `1`) so MCP-Apps UI resources open reliably.
+- Claude Desktop wrapper now keeps `MCP_APPS_RESOURCE_LINK` disabled by default (`0`) so `resource_link` blocks remain opt-in and avoid Claude “unsupported format” failures.
+- Claude Desktop wrapper now defaults `MCP_APPS_CONTENT_MODE=embedded` so UI calls emit embedded `resource` blocks by default (safer than `resource_link` in current Claude behavior).
+- MCP-Apps tools now support `MCP_APPS_CONTENT_MODE` to control UI content blocks (`resource_link`, embedded `resource`, or `text` only), and UI tool metadata now includes both nested `ui.resourceUri` and flat `ui/resourceUri` keys for compatibility.
+- Trace proxy parsing now only attempts JSON decode on client/server JSON-RPC lines, reducing false parse errors from Docker/build stderr noise.
+- Troubleshooting docs now include `parent_message_uuid` UUID failures as Claude host/session issues (not MCP server payload errors), with concrete recovery steps.
 
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.

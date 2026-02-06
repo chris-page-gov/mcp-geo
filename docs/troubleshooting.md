@@ -27,6 +27,44 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | ELICITATION_INVALID_RESULT | Client returned malformed elicitation result | Client bug or unsupported elicitation response shape | Update client MCP support or disable elicitation (`MCP_STDIO_ELICITATION_ENABLED=0`) |
 | ELICITATION_UNAVAILABLE | No elicitation response arrived | Client announced support but did not answer prompt | Retry, verify client capability handling, or disable elicitation for deterministic flow |
 
+## MCP-Apps UI "unsupported format"
+If the client reports an unsupported format error after calling an `os_apps.render_*`
+tool, it is usually rejecting the `resource_link` content block.
+
+Remediation:
+- Set `MCP_APPS_CONTENT_MODE=embedded` to embed UI HTML as a `resource` content block.
+- Or set `MCP_APPS_CONTENT_MODE=text` to emit text-only tool content.
+- Keep `MCP_APPS_RESOURCE_LINK=0` for Claude Desktop unless trace evidence shows
+  `resource_link` rendering works in your current Claude build.
+- Use `os_apps.render_ui_probe` to test which modes the client renders.
+- Use `python3 scripts/mcp_ui_mode_probe.py --save logs/ui-probe.json -- ./scripts/claude-mcp-local`
+  to verify STDIO payload shapes for `resource_link`, `embedded`, and `text`.
+
+Notes:
+- `scripts/claude-mcp-local` now defaults to `MCP_APPS_RESOURCE_LINK=0` and
+  `MCP_APPS_CONTENT_MODE=embedded`.
+- JSON trace lines with `direction=server->stderr` are diagnostics; they are not
+  MCP JSON-RPC payloads.
+
+## Claude error: `parent_message_uuid` must be a UUID
+If Claude shows an error like:
+
+`parent_message_uuid: Input should be a valid UUID ... found 'n' at 1`
+
+this is a Claude host/session metadata error, not an `mcp-geo` tool payload
+validation error.
+
+How to confirm:
+- Check MCP trace logs (`logs/claude-trace.jsonl`) for `parent_message_uuid`.
+- If it does not appear in `client->server`/`server->client` JSON-RPC payloads,
+  the failure is outside MCP tool exchange.
+
+Remediation:
+- Start a new Claude chat (do not reuse the failing thread).
+- Restart Claude Desktop.
+- Retry with `MCP_APPS_CONTENT_MODE=embedded` and `MCP_APPS_RESOURCE_LINK=0`.
+- If reproducible, report to Anthropic with timestamp and screenshot.
+
 ## General Debug Steps
 1. Capture correlationId from response headers/logs for traceability.
 2. Reproduce with minimal payload and add parameters progressively.

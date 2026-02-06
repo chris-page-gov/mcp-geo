@@ -111,6 +111,41 @@ def test_nomis_extract_error_list():
     assert nomis_data._extract_nomis_error("bad") is None
 
 
+def test_nomis_extract_text_variants():
+    from tools import nomis_data
+
+    assert nomis_data._extract_text(123) == "123"
+    assert nomis_data._extract_text([None, {"value": "  value "}, "ignored"]) == "value"
+
+
+def test_nomis_dataset_summary_falls_back_to_first_keyfamily():
+    from tools import nomis_data
+
+    payload = {
+        "structure": {
+            "keyfamilies": {
+                "keyfamily": [
+                    {
+                        "id": "NM_1111_1",
+                        "name": {"value": "Fallback Name"},
+                        "annotations": {
+                            "annotation": {
+                                "annotationtitle": "MetadataText0",
+                                "annotationtext": "Fallback Description",
+                            }
+                        },
+                    }
+                ]
+            }
+        }
+    }
+
+    summary = nomis_data._extract_dataset_definition_summary("NM_UNKNOWN_1", payload)
+    assert summary["id"] == "NM_UNKNOWN_1"
+    assert summary["name"] == "Fallback Name"
+    assert summary["description"] == "Fallback Description"
+
+
 def test_nomis_upstream_error_passthrough(monkeypatch):
     from tools import nomis_common
     from server.config import settings
@@ -196,6 +231,38 @@ def test_nomis_datasets_summary_limit_and_filter(monkeypatch):
     assert all("population" in item["name"].lower() for item in body["datasets"])
 
 
+def test_nomis_datasets_multi_term_filter_uses_token_scoring(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    payload = {
+        "structure": {
+            "keyfamilies": {
+                "keyfamily": [
+                    {"id": "NM_2021_1", "name": {"value": "TS001 - Usual resident population"}},
+                    {"id": "NM_127_1", "name": {"value": "Model-based estimates of unemployment"}},
+                    {"id": "NM_2402_1", "name": {"value": "Residential property sales"}},
+                ]
+            }
+        }
+    }
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        return 200, payload
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.datasets", "q": "population census 2021", "limit": 10},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] >= 1
+    assert body["datasets"][0]["id"] == "NM_2021_1"
+
+
 def test_nomis_datasets_include_raw(monkeypatch):
     from tools import nomis_common
     from server.config import settings
@@ -214,6 +281,82 @@ def test_nomis_datasets_include_raw(monkeypatch):
     )
     assert resp.status_code == 200
     body = resp.json()
+    assert body["raw"] == payload
+
+
+def test_nomis_dataset_definition_compact_by_default(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    payload = {
+        "structure": {
+            "keyfamilies": {
+                "keyfamily": [
+                    {
+                        "id": "NM_2055_1",
+                        "name": {"value": "TS037 - General health"},
+                        "annotations": {
+                            "annotation": [
+                                {"annotationtitle": "Status", "annotationtext": "Current"},
+                                {
+                                    "annotationtitle": "SubDescription",
+                                    "annotationtext": "All usual residents",
+                                },
+                            ]
+                        },
+                        "components": {
+                            "dimension": [
+                                {"conceptref": "GEOGRAPHY"},
+                                {"conceptref": "C2021_HEALTH_6"},
+                            ],
+                            "primarymeasure": {"conceptref": "OBS_VALUE"},
+                        },
+                    }
+                ]
+            }
+        }
+    }
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        return 200, payload
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.datasets", "dataset": "NM_2055_1"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["dataset"] == "NM_2055_1"
+    assert body["summary"]["id"] == "NM_2055_1"
+    assert body["summary"]["name"] == "TS037 - General health"
+    assert body["summary"]["primaryMeasure"] == "OBS_VALUE"
+    assert body["data"]["dataset"]["id"] == "NM_2055_1"
+    assert "structure" not in body["data"]
+    assert "hints" in body
+
+
+def test_nomis_dataset_definition_include_raw(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    payload = {"structure": {"keyfamilies": {"keyfamily": [{"id": "NM_2055_1"}]}}}
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        return 200, payload
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.datasets", "dataset": "NM_2055_1", "includeRaw": True},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"] == payload
     assert body["raw"] == payload
 
 

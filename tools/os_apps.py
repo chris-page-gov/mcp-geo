@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from server.config import settings
+from server.mcp.resource_catalog import MCP_APPS_MIME, load_ui_content, resolve_ui_resource
 from tools.registry import Tool, ToolResult, register
 
 _UI_URIS = {
@@ -17,7 +18,6 @@ _UI_URIS = {
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
 }
-_MCP_APPS_MIME = "text/html;profile=mcp-app"
 _UI_RESOURCE_LINKS = {
     _UI_URIS["geography"]: {
         "name": "ui_geography_selector",
@@ -53,6 +53,9 @@ UI_TOOL_RESOURCES = {
     "os_apps.render_route_planner": {
         "mcp": _UI_URIS["route"],
     },
+    "os_apps.render_ui_probe": {
+        "mcp": _UI_URIS["statistics"],
+    },
 }
 
 
@@ -62,6 +65,7 @@ def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
         return None
     return {
         "ui": {"resourceUri": entry["mcp"]},
+        "ui/resourceUri": entry["mcp"],
         "openai/outputTemplate": entry["mcp"],
     }
 _EVENT_LOG_LOCK = threading.Lock()
@@ -79,26 +83,74 @@ _SENSITIVE_KEY_MARKERS = (
 def _error(message: str) -> ToolResult:
     return 400, {"isError": True, "code": "INVALID_INPUT", "message": message}
 
+def _normalize_content_mode(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    norm = value.strip().lower()
+    if not norm or norm == "auto":
+        return None
+    if norm in {"resource_link", "link"}:
+        return "resource_link"
+    if norm in {"resource", "embedded", "embed", "inline"}:
+        return "embedded"
+    if norm in {"text", "plain"}:
+        return "text"
+    return None
+
+
+def _resolve_content_mode(override: Any) -> str | None:
+    mode = _normalize_content_mode(override)
+    if mode:
+        return mode
+    env_mode = _normalize_content_mode(getattr(settings, "MCP_APPS_CONTENT_MODE", ""))
+    if env_mode:
+        return env_mode
+    if settings.MCP_APPS_RESOURCE_LINK:
+        return "resource_link"
+    return None
+
+
+def _build_embedded_resource(resource_uri: str) -> dict[str, Any] | None:
+    entry = resolve_ui_resource(resource_uri)
+    if not entry:
+        return None
+    text, _etag = load_ui_content(entry)
+    resource: dict[str, Any] = {
+        "uri": entry["uri"],
+        "mimeType": entry.get("mimeType", MCP_APPS_MIME),
+        "text": text,
+    }
+    meta = entry.get("resourceMeta")
+    if meta:
+        resource["_meta"] = meta
+    return {"type": "resource", "resource": resource}
+
 
 def _build_widget_response(
     config: dict[str, Any],
     instructions: str,
     *,
     resource_uri: str,
+    content_mode: str | None = None,
 ) -> ToolResult:
     content = [{"type": "text", "text": instructions}]
-    if settings.MCP_APPS_RESOURCE_LINK:
+    mode = _resolve_content_mode(content_mode)
+    if mode == "resource_link":
         link_meta = _UI_RESOURCE_LINKS.get(resource_uri)
         resource_link = {
             "type": "resource_link",
             "name": link_meta["name"] if link_meta else resource_uri,
             "uri": resource_uri,
-            "mimeType": _MCP_APPS_MIME,
+            "mimeType": MCP_APPS_MIME,
         }
         if link_meta:
             resource_link["title"] = link_meta["title"]
             resource_link["description"] = link_meta["description"]
         content.append(resource_link)
+    elif mode == "embedded":
+        embedded = _build_embedded_resource(resource_uri)
+        if embedded:
+            content.append(embedded)
     structured = {
         "status": "ready",
         "config": config,
@@ -214,7 +266,10 @@ def _log_event(payload: dict[str, Any]) -> ToolResult:
     if context is not None and not isinstance(context, dict):
         return _error("context must be an object")
     event_payload = payload.get("payload")
-    if event_payload is not None and not isinstance(event_payload, (dict, list, str, int, float, bool)):
+    if event_payload is not None and not isinstance(
+        event_payload,
+        (dict, list, str, int, float, bool),
+    ):
         return _error("payload must be JSON-serializable")
     session_id = payload.get("sessionId")
     if session_id is not None and not isinstance(session_id, str):
@@ -325,10 +380,14 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
         config["initialView"] = {"lat": float(initial_lat), "lng": float(initial_lng)}
     if initial_zoom is not None:
         config["initialZoom"] = int(initial_zoom)
+    content_mode = payload.get("contentMode")
+    if content_mode is not None and not isinstance(content_mode, str):
+        return _error("contentMode must be a string")
     return _build_widget_response(
         config,
         "Open the geography selector widget to choose areas interactively.",
         resource_uri=_UI_URIS["geography"],
+        content_mode=content_mode,
     )
 
 
@@ -375,10 +434,14 @@ def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
         return _error("measure must be a string")
     if measure:
         config["measure"] = measure
+    content_mode = payload.get("contentMode")
+    if content_mode is not None and not isinstance(content_mode, str):
+        return _error("contentMode must be a string")
     return _build_widget_response(
         config,
         "Open the statistics dashboard to compare observations across areas.",
         resource_uri=_UI_URIS["statistics"],
+        content_mode=content_mode,
     )
 
 
@@ -425,10 +488,14 @@ def _render_feature_inspector(payload: dict[str, Any]) -> ToolResult:
         if not isinstance(linked_ids, list) or not all(isinstance(x, str) for x in linked_ids):
             return _error("linkedIds must be a list of strings")
         config["linkedIds"] = linked_ids
+    content_mode = payload.get("contentMode")
+    if content_mode is not None and not isinstance(content_mode, str):
+        return _error("contentMode must be a string")
     return _build_widget_response(
         config,
         "Open the feature inspector to review properties and linked identifiers.",
         resource_uri=_UI_URIS["feature"],
+        content_mode=content_mode,
     )
 
 
@@ -483,10 +550,57 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
         return _error("mode must be a string")
     if mode:
         config["mode"] = mode
+    content_mode = payload.get("contentMode")
+    if content_mode is not None and not isinstance(content_mode, str):
+        return _error("contentMode must be a string")
     return _build_widget_response(
         config,
         "Open the route planner to set start and end points and view directions.",
         resource_uri=_UI_URIS["route"],
+        content_mode=content_mode,
+    )
+
+
+def _render_ui_probe(payload: dict[str, Any]) -> ToolResult:
+    """Probe MCP-Apps UI rendering support.
+
+    Request schema:
+    {
+      "type": "object",
+      "properties": {
+        "resourceUri": {"type": "string"},
+        "contentMode": {"type": "string"}
+      },
+      "required": []
+    }
+
+    Response schema:
+    {
+      "type": "object",
+      "properties": {
+        "status": {"type": "string"},
+        "config": {"type": "object"},
+        "instructions": {"type": "string"},
+        "structuredContent": {"type": "object"},
+        "content": {"type": "array"}
+      },
+      "required": ["status"]
+    }
+    """
+    resource_uri = payload.get("resourceUri") or _UI_URIS["statistics"]
+    if not isinstance(resource_uri, str):
+        return _error("resourceUri must be a string")
+    if not resource_uri.startswith("ui://"):
+        return _error("resourceUri must be a ui:// URI")
+    content_mode = payload.get("contentMode")
+    if content_mode is not None and not isinstance(content_mode, str):
+        return _error("contentMode must be a string")
+    config = {"resourceUri": resource_uri}
+    return _build_widget_response(
+        config,
+        "Open the UI probe widget to verify MCP-Apps rendering support.",
+        resource_uri=resource_uri,
+        content_mode=content_mode,
     )
 
 
@@ -506,6 +620,7 @@ register(
                 "initialLat": {"type": "number"},
                 "initialLng": {"type": "number"},
                 "initialZoom": {"type": "integer"},
+                "contentMode": {"type": "string"},
             },
             "required": [],
             "additionalProperties": False,
@@ -539,6 +654,7 @@ register(
                 "dataset": {"type": "string"},
                 "areaCodes": {"type": "array", "items": {"type": "string"}},
                 "measure": {"type": "string"},
+                "contentMode": {"type": "string"},
             },
             "required": [],
             "additionalProperties": False,
@@ -572,6 +688,7 @@ register(
                 "collectionId": {"type": "string"},
                 "featureId": {"type": "string"},
                 "linkedIds": {"type": "array", "items": {"type": "string"}},
+                "contentMode": {"type": "string"},
             },
             "required": [],
             "additionalProperties": False,
@@ -607,6 +724,7 @@ register(
                 "endLat": {"type": "number"},
                 "endLng": {"type": "number"},
                 "mode": {"type": "string"},
+                "contentMode": {"type": "string"},
             },
             "required": [],
             "additionalProperties": False,
@@ -626,6 +744,38 @@ register(
             "required": ["status", "uiResourceUris"],
         },
         handler=_render_route_planner,
+    )
+)
+
+register(
+    Tool(
+        name="os_apps.render_ui_probe",
+        description="Probe MCP-Apps UI rendering support.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_apps.render_ui_probe"},
+                "resourceUri": {"type": "string"},
+                "contentMode": {"type": "string"},
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "status": {"type": "string"},
+                "config": {"type": "object"},
+                "instructions": {"type": "string"},
+                "resourceUri": {"type": "string"},
+                "uiResourceUris": {"type": "array", "items": {"type": "string"}},
+                "_meta": {"type": "object"},
+                "structuredContent": {"type": "object"},
+                "content": {"type": "array"},
+            },
+            "required": ["status", "uiResourceUris"],
+        },
+        handler=_render_ui_probe,
     )
 )
 

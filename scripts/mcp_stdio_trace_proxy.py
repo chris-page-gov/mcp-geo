@@ -24,8 +24,15 @@ def build_record(direction: str, raw_line: str) -> Dict[str, Any]:
         "direction": direction,
         "raw": raw_line,
     }
+    text = raw_line.strip()
+    if not text:
+        return record
+    if direction not in {"client->server", "server->client"}:
+        return record
+    if not text.startswith("{"):
+        return record
     try:
-        payload = json.loads(raw_line)
+        payload = json.loads(text)
         record["json"] = payload
         if isinstance(payload, dict):
             record["method"] = payload.get("method")

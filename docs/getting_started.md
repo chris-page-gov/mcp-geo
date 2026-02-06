@@ -215,6 +215,12 @@ Note: ONS tools require live mode (`ONS_LIVE_ENABLED=true`) and `dataset`,
 - Statistics dashboard: `os_apps.render_statistics_dashboard`
 - Feature inspector: `os_apps.render_feature_inspector`
 - Route planner: `os_apps.render_route_planner`
+- UI probe: `os_apps.render_ui_probe`
+
+Set `MCP_APPS_CONTENT_MODE` to control how UI tools emit content blocks:
+- `resource_link`: emit a `resource_link` block pointing at `ui://` resources.
+- `embedded`: embed UI HTML as a `resource` content block.
+- `text`: emit text only (no UI content blocks).
 
 Note: `os_names.nearest` accepts WGS84 lat/lon (`EPSG:4326`) and converts to
 British National Grid automatically. Use `coordSystem: "EPSG:27700"` if you

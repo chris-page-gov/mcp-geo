@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     BOUNDARY_CACHE_FALLBACK_LIVE: bool = True
     OPENAI_WIDGET_DOMAIN: str = ""
     MCP_APPS_RESOURCE_LINK: bool = False
+    MCP_APPS_CONTENT_MODE: str = ""
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

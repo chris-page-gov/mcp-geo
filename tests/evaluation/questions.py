@@ -348,6 +348,25 @@ BASIC_QUESTIONS = [
         tags=["nomis", "codelists"],
         requires_ons_live=True,
     ),
+    EvaluationQuestion(
+        id="B019",
+        question="Probe MCP-Apps UI rendering mode support",
+        intent=Intent.INTERACTIVE_SELECTION,
+        difficulty=Difficulty.BASIC,
+        description="Verify UI probe tool returns render instructions.",
+        expected=ExpectedOutcome(
+            required_tools=["os_apps.render_ui_probe"],
+            max_tool_calls=2,
+            required_keywords=["instructions"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "os_apps.render_ui_probe",
+                {"resourceUri": "ui://mcp-geo/statistics-dashboard", "contentMode": "text"},
+            )
+        ],
+        tags=["apps", "ui", "probe"],
+    ),
 ]
 
 

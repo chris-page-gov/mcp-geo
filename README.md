@@ -145,6 +145,7 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | os_apps.render_statistics_dashboard | Open the MCP-Apps statistics dashboard widget |
 | os_apps.render_feature_inspector | Open the MCP-Apps feature inspector widget |
 | os_apps.render_route_planner | Open the MCP-Apps route planner widget |
+| os_apps.render_ui_probe | Probe MCP-Apps UI rendering support |
 
 ## Resources, Filtering & Provenance
 The resources API exposes skills, UI widgets, and data resources (boundary
@@ -172,6 +173,9 @@ the stdio adapter injects a `fallback` static map payload for
 `os_apps.render_geography_selector` (computed via `os_maps.render`).
 Set `MCP_STDIO_UI_SUPPORTED=1` to force UI mode, or
 `MCP_STDIO_FALLBACK_BBOX_DEG` to control the fallback map span.
+Set `MCP_APPS_CONTENT_MODE=embedded` to embed UI HTML as a `resource` content
+block, or `MCP_APPS_CONTENT_MODE=resource_link` to emit a `resource_link`
+content block. Use `MCP_APPS_CONTENT_MODE=text` to suppress UI content blocks.
 Set `MCP_STDIO_ELICITATION_ENABLED=0` to disable comparison elicitation in
 `os_mcp.stats_routing`.
 
