@@ -66,6 +66,11 @@ Default outputs:
 The live evaluation test stores upstream API responses in PostgreSQL (jsonb) so
 changes can be audited over time. The test is skipped unless explicitly enabled.
 
+## Live Run Reports
+
+- ONS catalog live validation run report: `docs/reports/ons_catalog_live_run_2026-02-07.md`
+- Reports index: `docs/reports/README.md`
+
 If you are using the devcontainer, a PostGIS service is started automatically
 and the DSN defaults to `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo`.
 
