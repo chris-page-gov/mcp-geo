@@ -27,6 +27,15 @@ This guide lists common error codes emitted by the MCP Geo server and suggested 
 | ELICITATION_INVALID_RESULT | Client returned malformed elicitation result | Client bug or unsupported elicitation response shape | Update client MCP support or disable elicitation (`MCP_STDIO_ELICITATION_ENABLED=0` / `MCP_HTTP_ELICITATION_ENABLED=0`) |
 | ELICITATION_UNAVAILABLE | No elicitation response arrived | Client announced support but did not answer prompt | Retry, verify client capability handling, or disable elicitation for deterministic flow |
 
+## `os_features.query` returns an XML `ExceptionReport`
+If `os_features.query` returns an `OS_API_ERROR` whose message starts with XML (for example `<?xml ... <ExceptionReport ...>`),
+it usually means the upstream OS endpoint rejected the request (wrong endpoint, unknown collection id, or missing entitlement).
+
+Remediation:
+- Ensure you are running a build that targets OS NGD OGC API Features (`features/ngd/ofa/v1/collections/{collection}/items`).
+  If using `scripts/claude-mcp-local`, set `MCP_GEO_DOCKER_BUILD=always` at least once so the Docker image is rebuilt.
+- Confirm the `collection` id is valid and enabled for your OS Data Hub key.
+
 ## MCP-Apps UI "unsupported format"
 If the client reports an unsupported format error after calling an `os_apps.render_*`
 tool, it is usually rejecting the `resource_link` content block.
