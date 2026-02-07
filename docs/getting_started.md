@@ -193,6 +193,7 @@ Reference: OS-Vector-Tile-API-Stylesheets (GitHub). This repo is also available 
 
 ### ONS statistics
 
+- Ranked dataset selection: `ons_select.search`
 - Dataset search: `ons_search.query`
 - Dimensions and codes: `ons_data.dimensions`, `ons_codes.*`
 - Observations and filters: `ons_data.query`, `ons_data.get_observation`,

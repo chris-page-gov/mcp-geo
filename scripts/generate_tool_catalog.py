@@ -26,6 +26,7 @@ for _mod in [
     "tools.admin_lookup",
     "tools.ons_data",
     "tools.ons_search",
+    "tools.ons_select",
     "tools.ons_codes",
     "tools.nomis_data",
     "tools.os_mcp",

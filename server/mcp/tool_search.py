@@ -33,6 +33,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "admin_lookup": ToolCategory.ADMIN,
     "ons_data": ToolCategory.STATISTICS,
     "ons_search": ToolCategory.STATISTICS,
+    "ons_select": ToolCategory.STATISTICS,
     "ons_codes": ToolCategory.CODES,
     "nomis": ToolCategory.STATISTICS,
     "os_apps": ToolCategory.APPS,
@@ -49,6 +50,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "admin_lookup": ["admin", "boundary", "hierarchy", "areas"],
     "ons_data": ["ons", "statistics", "observations", "dataset"],
     "ons_search": ["ons", "search", "dataset", "discover"],
+    "ons_select": ["ons", "dataset", "selection", "ranking", "discover"],
     "ons_codes": ["codes", "dimension", "options"],
     "nomis": ["nomis", "labour", "employment", "census", "dataset", "statistics"],
     "os_apps": ["ui", "widget", "interactive", "mcp-apps", "event", "log", "telemetry"],
@@ -62,6 +64,7 @@ ALWAYS_LOADED_TOOLS: Set[str] = {
     "os_places.by_postcode",
     "os_names.find",
     "ons_search.query",
+    "ons_select.search",
     "ons_data.query",
     "nomis.query",
     "admin_lookup.find_by_name",
@@ -79,6 +82,7 @@ EXTERNAL_PREFIXES: Set[str] = {
     "os_vector_tiles",
     "ons_data",
     "ons_search",
+    "ons_select",
     "nomis",
 }
 
@@ -135,7 +139,8 @@ def get_tool_search_system_prompt() -> str:
         "- os_places.search: free text address search\n"
         "- os_places.by_postcode: lookup UPRNs and addresses\n"
         "- admin_lookup.find_by_name: find administrative areas by name (use level/levels to reduce noise)\n"
-        "- ons_search.query: discover ONS datasets\n"
+        "- ons_select.search: rank ONS datasets with explainability\n"
+        "- ons_search.query: discover ONS datasets (live API search)\n"
         "- ons_data.query: query ONS observations\n"
         "- nomis.query: query NOMIS labour and census statistics\n\n"
         "Use MCP-Apps widgets for interactive workflows (os_apps.* tools).\n"

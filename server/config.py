@@ -28,7 +28,9 @@ class Settings(BaseSettings):
     ONS_CACHE_SIZE: int = 256
     ONS_LIVE_ENABLED: bool = True
     ONS_SEARCH_LIVE_ENABLED: bool = True
+    ONS_SELECT_LIVE_ENABLED: bool = True
     ONS_DATASET_API_BASE: str = "https://api.beta.ons.gov.uk/v1"
+    ONS_CATALOG_PATH: str = "resources/ons_catalog.json"
     NOMIS_LIVE_ENABLED: bool = True
     NOMIS_API_BASE: str = "https://www.nomisweb.co.uk/api/v01"
     NOMIS_UID: str = ""

@@ -138,6 +138,7 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 | ons_data.get_observation | Retrieve a single live observation |
 | ons_data.create_filter | Create a live ONS filter |
 | ons_data.get_filter_output | Retrieve filter output in JSON/CSV/XLSX |
+| ons_select.search | Rank ONS datasets with explainable scoring |
 | ons_search.query | Search live ONS datasets (beta API) |
 | ons_codes.list | List live dimension IDs |
 | ons_codes.options | List live dimension options |

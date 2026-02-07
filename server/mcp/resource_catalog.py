@@ -13,6 +13,7 @@ SKILL_PATH = ROOT / "SKILL.md"
 BOUNDARY_MANIFEST_PATH = ROOT / "docs" / "Boundaries.json"
 BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
 ONS_CACHE_DIR = ROOT / "data" / "cache" / "ons"
+ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
 ONS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-cache/"
@@ -113,6 +114,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": BOUNDARY_MANIFEST_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "dataset", "domain": "boundaries"},
+    },
+    {
+        "slug": "ons-catalog",
+        "name": "data_ons_catalog",
+        "title": "ONS Dataset Catalog",
+        "description": "Curated ONS dataset catalog index for selection and ranking.",
+        "path": ONS_CATALOG_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "ons"},
     },
 ]
 
@@ -363,6 +373,13 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
     slug = entry.get("slug")
     if slug == "boundary-manifest":
         return (*_load_json_file(BOUNDARY_MANIFEST_PATH), None)
+    if slug == "ons-catalog":
+        if not ONS_CATALOG_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "ONS catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "ons-catalog"), None
+        return (*_load_json_file(ONS_CATALOG_PATH), None)
     if slug == "boundary-latest-report":
         latest = _latest_run_report_path()
         if not latest:

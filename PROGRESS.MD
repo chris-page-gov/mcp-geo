@@ -137,11 +137,11 @@ Low impact
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| Build cached ONS/Nomis catalogue resource | Not started | Store dataset/edition/version + dimension metadata with ETag support. |
-| Add selection ranking tool with explainability | Not started | Return top candidates + why-this/why-not + comparability warnings. |
-| Add elicitation integration for ambiguous queries | Not started | Wire into `os_mcp.stats_routing` and tool guidance. |
+| Build cached ONS/Nomis catalogue resource | Done | Added `resource://mcp-geo/ons-catalog` with refresh script; placeholder catalog stored in `resources/ons_catalog.json`. |
+| Add selection ranking tool with explainability | Done | Added `ons_select.search` with scored candidates and elicitation prompts. |
+| Add elicitation integration for ambiguous queries | Partial | Tool returns elicitation questions; stdio form wiring still pending. |
 | Add comparability gating + related-dataset linking | Not started | Implement `linking_rules.md` with safe defaults. |
-| Extend evaluation harness with selection tasks | Not started | Add dataset-selection questions + scoring expectations. |
+| Extend evaluation harness with selection tasks | Partial | Added initial `ons_select.search` question; expand coverage. |
 
 ## Codex context persistence (2026-02-02)
 

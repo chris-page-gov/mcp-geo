@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 - Added `os_apps.render_ui_probe` to verify MCP-Apps UI rendering and content-mode support.
 - Added `scripts/mcp_ui_mode_probe.py` to validate STDIO UI payload content types by mode.
 - Added ONS dataset selection research pack under `research/ons_dataset_selection/`.
+- Added `ons_select.search` for ranked ONS dataset selection with explainability prompts.
+- Added `resource://mcp-geo/ons-catalog` and `resources/ons_catalog.json` as the local catalog index.
+- Added `scripts/ons_catalog_refresh.py` to rebuild the ONS catalog index from the live API.
 
 ### Changed
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.

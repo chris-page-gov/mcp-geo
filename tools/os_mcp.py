@@ -540,9 +540,9 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
                 "List NOMIS datasets with q+limit, then inspect code lists if needed.",
             )
         return (
-            "ons_data.dimensions",
-            ["ons_data.dimensions", "ons_search.query"],
-            "List ONS dimensions and search available codes.",
+            "ons_select.search",
+            ["ons_select.search", "ons_data.dimensions"],
+            "Rank ONS datasets with explainability, then inspect dimensions before querying.",
         )
     if intent == QueryIntent.MAP_RENDER:
         return (
@@ -570,11 +570,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
         QueryIntent.BOUNDARY_FETCH: ["resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
-        QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_search.query", "nomis.query"],
+        QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_select.search", "nomis.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],
         QueryIntent.INTERACTIVE_SELECTION: ["admin_lookup.find_by_name"],
         QueryIntent.ROUTE_PLANNING: ["os_maps.render"],
-        QueryIntent.DATASET_DISCOVERY: ["ons_search.query", "nomis.datasets"],
+        QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
         QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],
         QueryIntent.VECTOR_TILES: ["os_maps.render"],
         QueryIntent.UNKNOWN: ["os_mcp.descriptor", "admin_lookup.find_by_name"],
@@ -617,7 +617,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use the route planner widget to set start/end coordinates."
         ),
         QueryIntent.DATASET_DISCOVERY: (
-            "Use ons_data.dimensions/ons_search.query for ONS datasets or "
+            "Use ons_select.search for ranked ONS dataset discovery (with explanations), or "
+            "ons_search.query for raw live search; "
             "nomis.datasets with q and limit for labour/census."
         ),
         QueryIntent.MAP_RENDER: (

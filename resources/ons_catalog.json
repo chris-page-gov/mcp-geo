@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-02-07T00:00:00Z",
+  "source": "placeholder",
+  "placeholder": true,
+  "items": [
+    {
+      "id": "sample-inflation",
+      "title": "Sample dataset: Inflation and prices",
+      "description": "Placeholder entry for ranking and explainability tests.",
+      "keywords": ["inflation", "prices", "cpi", "cpih"],
+      "themes": ["economy", "prices"],
+      "geography": {"levels": ["nation"]},
+      "time": {"granularity": "month"},
+      "state": "placeholder"
+    },
+    {
+      "id": "sample-employment",
+      "title": "Sample dataset: Employment and unemployment",
+      "description": "Placeholder entry for ranking and explainability tests.",
+      "keywords": ["employment", "unemployment", "jobs"],
+      "themes": ["labour"],
+      "geography": {"levels": ["region", "nation"]},
+      "time": {"granularity": "quarter"},
+      "state": "placeholder"
+    },
+    {
+      "id": "sample-housing",
+      "title": "Sample dataset: Housing affordability",
+      "description": "Placeholder entry for ranking and explainability tests.",
+      "keywords": ["housing", "affordability", "prices"],
+      "themes": ["housing"],
+      "geography": {"levels": ["local_authority", "nation"]},
+      "time": {"granularity": "year"},
+      "state": "placeholder"
+    }
+  ]
+}

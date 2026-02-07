@@ -3,8 +3,6 @@
 This document describes how to use the MCP Geo server for UK geospatial, ONS,
 and NOMIS statistics workflows. It is intended for MCP clients and agents as a
 quick, reliable guide to tool selection.
-statistics workflows. It is intended for MCP clients and agents as a quick,
-reliable guide to tool selection.
 
 ## What This Server Provides
 
@@ -51,7 +49,8 @@ Administrative areas:
 - Use `admin_lookup.reverse_hierarchy` for ancestor chains.
 
 Statistics:
-- Use `ons_search.query` to discover live ONS datasets.
+- Use `ons_select.search` to rank ONS datasets with explainable scoring.
+- Use `ons_search.query` for raw live ONS dataset search.
 - Use `ons_data.query` to fetch live ONS observations.
 - Use `ons_data.dimensions` to list ONS dimension ids and options.
 - Use `nomis.datasets` to discover NOMIS datasets for labour/census.
@@ -100,6 +99,7 @@ Fetch content with `/resources/read` using `uri`. Example:
 - `ui://mcp-geo/geography-selector` (UI widget HTML)
 - `resource://mcp-geo/boundary-manifest` (boundary dataset manifest)
 - `resource://mcp-geo/boundary-latest-report` (latest pipeline report)
+- `resource://mcp-geo/ons-catalog` (ONS dataset catalog index)
 
 ## Error Model
 

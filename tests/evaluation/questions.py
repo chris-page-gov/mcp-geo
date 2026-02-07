@@ -191,6 +191,20 @@ BASIC_QUESTIONS = [
         requires_ons_live=True,
     ),
     EvaluationQuestion(
+        id="B008A",
+        question="Rank ONS datasets for housing affordability",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Ranked dataset selection using ons_select.search.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates"],
+        ),
+        tool_calls=[ToolCallSpec("ons_select.search", {"query": "housing affordability"})],
+        tags=["ons", "search", "selection"],
+    ),
+    EvaluationQuestion(
         id="B009",
         question="Open a map so I can select wards",
         intent=Intent.INTERACTIVE_SELECTION,
