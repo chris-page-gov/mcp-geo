@@ -10,6 +10,7 @@ from tools.ons_common import ONSClient
 
 REQUIRED_ENTRY_FIELDS = ("id", "title", "description", "keywords", "state", "links")
 OPTIONAL_LIST_FIELDS = ("themes", "topics", "taxonomies")
+REQUIRED_LINK_KEYS = ("editions", "latest_version", "self")
 
 
 def _validate_entry_fields(entry: dict[str, object]) -> list[str]:
@@ -34,8 +35,19 @@ def _validate_entry_fields(entry: dict[str, object]) -> list[str]:
                 errors.append("keywords must contain strings only")
                 break
     links = entry.get("links")
-    if links is not None and not isinstance(links, (dict, list)):
-        errors.append("links must be dict or list")
+    if not isinstance(links, dict):
+        errors.append("links must be a dict")
+    else:
+        missing_links = [key for key in REQUIRED_LINK_KEYS if key not in links]
+        if missing_links:
+            errors.append(f"links missing keys {missing_links}")
+        latest = links.get("latest_version")
+        if isinstance(latest, dict):
+            href = latest.get("href")
+            if not isinstance(href, str) or not href.strip():
+                errors.append("links.latest_version.href must be a non-empty string")
+        else:
+            errors.append("links.latest_version must be an object")
     for field in OPTIONAL_LIST_FIELDS:
         value = entry.get(field)
         if value is None:
@@ -62,8 +74,19 @@ def _validate_live_response(resp: dict[str, object]) -> list[str]:
         if value is not None and not isinstance(value, str):
             errors.append(f"{field} must be string or null")
     links = resp.get("links")
-    if links is not None and not isinstance(links, (dict, list)):
-        errors.append("links must be dict or list")
+    if not isinstance(links, dict):
+        errors.append("links must be a dict")
+    else:
+        missing_links = [key for key in REQUIRED_LINK_KEYS if key not in links]
+        if missing_links:
+            errors.append(f"links missing keys {missing_links}")
+        latest = links.get("latest_version")
+        if isinstance(latest, dict):
+            href = latest.get("href")
+            if not isinstance(href, str) or not href.strip():
+                errors.append("links.latest_version.href must be a non-empty string")
+        else:
+            errors.append("links.latest_version must be an object")
     keywords = resp.get("keywords")
     if keywords is not None:
         if isinstance(keywords, list):
@@ -80,6 +103,31 @@ def _validate_live_response(resp: dict[str, object]) -> list[str]:
                 errors.append(f"{field} must contain strings only")
         elif not isinstance(value, str):
             errors.append(f"{field} must be string or list of strings")
+    return errors
+
+
+def _validate_live_latest_version_response(resp: dict[str, object]) -> list[str]:
+    errors: list[str] = []
+    edition = resp.get("edition")
+    version = resp.get("version")
+    dims = resp.get("dimensions")
+    if not isinstance(edition, str) or not edition.strip():
+        errors.append("edition must be a non-empty string")
+    if version is None:
+        errors.append("version is missing")
+    elif not isinstance(version, (str, int)):
+        errors.append("version must be string or int")
+    if not isinstance(dims, list) or not dims:
+        errors.append("dimensions must be a non-empty list")
+    else:
+        for dim in dims:
+            if not isinstance(dim, dict):
+                errors.append("dimensions must contain objects only")
+                break
+            dim_id = dim.get("id") or dim.get("name")
+            if not isinstance(dim_id, str) or not dim_id.strip():
+                errors.append("dimensions entries must have id/name string")
+                break
     return errors
 
 
@@ -144,6 +192,7 @@ def test_catalog_covers_live_datasets():
     }
     client = ONSClient()
     base_api = getattr(settings, "ONS_DATASET_API_BASE", "https://api.beta.ons.gov.uk/v1")
+    min_coverage = float(os.getenv("ONS_LIVE_COVERAGE_MIN", "0.99"))
     cooldown_seconds = float(os.getenv("ONS_LIVE_COOLDOWN_SECONDS", "10.0"))
     max_retries = int(os.getenv("ONS_LIVE_MAX_RETRIES", "6"))
     backoff_base = float(os.getenv("ONS_LIVE_BACKOFF_BASE", "5.0"))
@@ -170,7 +219,9 @@ def test_catalog_covers_live_datasets():
     }
     missing = live_ids - catalog_ids
     coverage = 1 - (len(missing) / max(len(live_ids), 1))
-    assert coverage >= 0.95, f"Catalog coverage {coverage:.2%}; missing {sorted(list(missing))[:10]}"
+    assert (
+        coverage >= min_coverage
+    ), f"Catalog coverage {coverage:.2%} < {min_coverage:.2%}; missing {sorted(list(missing))[:25]}"
 
 
 @pytestmark_live
@@ -186,18 +237,31 @@ def test_live_dataset_endpoints_resolve():
     rate_limits = 0
     timeouts = 0
     other_errors = 0
+    version_validations = 0
     for entry in items:
         dataset_id = entry.get("id")
+        dataset_ok = False
         last_status = None
         last_resp = None
+        latest_href = None
         for attempt in range(1, max_retries + 1):
-            status, resp = client.get_json(f"{base_api}/datasets/{dataset_id}", params=None)
+            status, resp = client.get_json(
+                f"{base_api}/datasets/{dataset_id}", params=None, use_cache=False
+            )
             if status == 200:
                 assert isinstance(resp, dict)
                 assert resp.get("id") == dataset_id
+                dataset_ok = True
                 field_errors = _validate_live_response(resp)
                 if field_errors:
                     errors.append(f"{dataset_id}: {', '.join(field_errors)}")
+                links = resp.get("links")
+                if isinstance(links, dict):
+                    latest = links.get("latest_version")
+                    if isinstance(latest, dict):
+                        href = latest.get("href")
+                        if isinstance(href, str) and href.strip():
+                            latest_href = href
                 last_status = None
                 last_resp = None
                 break
@@ -214,12 +278,50 @@ def test_live_dataset_endpoints_resolve():
             break
         if last_status is not None:
             errors.append(f"{dataset_id}: {last_status} ({last_resp})")
+
+        if not dataset_ok:
+            if throttle_seconds > 0:
+                time.sleep(throttle_seconds)
+            continue
+
+        if latest_href and f"/datasets/{dataset_id}/" in latest_href:
+            last_status = None
+            last_resp = None
+            for attempt in range(1, max_retries + 1):
+                status, resp = client.get_json(latest_href, params=None, use_cache=False)
+                if status == 200:
+                    assert isinstance(resp, dict)
+                    version_validations += 1
+                    field_errors = _validate_live_latest_version_response(resp)
+                    if field_errors:
+                        errors.append(f"{dataset_id} latest_version: {', '.join(field_errors)}")
+                    last_status = None
+                    last_resp = None
+                    break
+                last_status = status
+                last_resp = resp
+                if status == 429:
+                    rate_limits += 1
+                    time.sleep(backoff_base * (2 ** (attempt - 1)))
+                    continue
+                if isinstance(resp, dict) and resp.get("code") == "UPSTREAM_CONNECT_ERROR":
+                    timeouts += 1
+                else:
+                    other_errors += 1
+                break
+            if last_status is not None:
+                errors.append(f"{dataset_id} latest_version: {last_status} ({last_resp})")
+        elif latest_href:
+            errors.append(f"{dataset_id} latest_version: href mismatch ({latest_href})")
+        else:
+            errors.append(f"{dataset_id} latest_version: missing href")
+
         if throttle_seconds > 0:
             time.sleep(throttle_seconds)
-    if rate_limits or timeouts or other_errors:
-        print(
-            "Live dataset check summary: "
-            f"rate_limits={rate_limits} timeouts={timeouts} other_errors={other_errors}"
-        )
+    print(
+        "Live dataset check summary: "
+        f"datasets={len(items)} version_validations={version_validations}/{len(items)} "
+        f"rate_limits={rate_limits} timeouts={timeouts} other_errors={other_errors}"
+    )
     if errors:
         pytest.fail(f"Live dataset validation errors: {errors[:10]}")
