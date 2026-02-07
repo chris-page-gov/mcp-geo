@@ -141,7 +141,7 @@ Low impact
 | Add selection ranking tool with explainability | Done | Added `ons_select.search` with scored candidates and elicitation prompts. |
 | Add elicitation integration for ambiguous queries | Partial | Tool returns elicitation questions; stdio form wiring still pending. |
 | Add comparability gating + related-dataset linking | Partial | `ons_select.search` now returns related datasets with gating; expand rules per `linking_rules.md`. |
-| Extend evaluation harness with selection tasks | Partial | Added initial `ons_select.search` question; expand coverage. |
+| Extend evaluation harness with selection tasks | Partial | Added multiple `ons_select.search` questions + edge cases; continue expanding catalog validation. |
 
 ## Codex context persistence (2026-02-02)
 

@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.
 - Added STDIO elicitation tests (accept/cancel/unavailable + wire round-trip) and stats-routing input validation coverage.
+- Expanded evaluation coverage for ONS dataset selection and catalog validation.
 
 ## [0.2.11] - 2026-02-06
 ### Added

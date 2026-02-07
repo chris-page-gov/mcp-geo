@@ -205,6 +205,81 @@ BASIC_QUESTIONS = [
         tags=["ons", "search", "selection"],
     ),
     EvaluationQuestion(
+        id="B008B",
+        question="Find an ONS dataset for inflation and prices",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Ranked dataset selection for inflation topics with related datasets.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates", "relatedDatasets"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {"query": "inflation prices dataset", "includeRelated": True, "relatedLimit": 3},
+            )
+        ],
+        tags=["ons", "search", "selection", "inflation"],
+    ),
+    EvaluationQuestion(
+        id="B008C",
+        question="Find an ONS dataset for local population change",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Ranked dataset selection with geography/time hints.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates", "whyThis"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {
+                    "query": "population change dataset",
+                    "geographyLevel": "local_authority",
+                    "timeGranularity": "year",
+                },
+            )
+        ],
+        tags=["ons", "search", "selection", "population"],
+    ),
+    EvaluationQuestion(
+        id="B008D",
+        question="Find an ONS dataset for net migration",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Ranked dataset selection for migration topics.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates"],
+        ),
+        tool_calls=[ToolCallSpec("ons_select.search", {"query": "net migration dataset"})],
+        tags=["ons", "search", "selection", "migration"],
+    ),
+    EvaluationQuestion(
+        id="B008E",
+        question="Find an ONS dataset for productivity performance",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Ranked dataset selection with explicit intent tags.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {"query": "productivity dataset", "intentTags": ["productivity"]},
+            )
+        ],
+        tags=["ons", "search", "selection", "productivity"],
+    ),
+    EvaluationQuestion(
         id="B009",
         question="Open a map so I can select wards",
         intent=Intent.INTERACTIVE_SELECTION,
@@ -659,6 +734,50 @@ INTERMEDIATE_QUESTIONS = [
         ],
         tags=["routing", "stats"],
     ),
+    EvaluationQuestion(
+        id="I015",
+        question="Find an ONS dataset for housing affordability by local authority",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="Ranked dataset selection with related datasets and geography/time hints.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates", "relatedDatasets"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {
+                    "query": "housing affordability dataset",
+                    "geographyLevel": "local_authority",
+                    "timeGranularity": "year",
+                    "includeRelated": True,
+                    "relatedLimit": 5,
+                },
+            )
+        ],
+        tags=["ons", "search", "selection", "housing"],
+    ),
+    EvaluationQuestion(
+        id="I016",
+        question="Find an ONS dataset for weekly deaths by region",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="Ranked dataset selection for mortality topics.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["candidates"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {"query": "weekly deaths dataset region", "includeRelated": True},
+            )
+        ],
+        tags=["ons", "search", "selection", "mortality"],
+    ),
 ]
 
 
@@ -898,6 +1017,46 @@ EDGE_CASE_QUESTIONS = [
         tags=["edge", "ons"],
         requires_ons_live=True,
     ),
+    EvaluationQuestion(
+        id="E005",
+        question="Run dataset selection with invalid relatedLimit",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.EDGE,
+        description="ons_select.search should reject invalid relatedLimit.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["INVALID_INPUT"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {"query": "inflation dataset", "includeRelated": True, "relatedLimit": 0},
+                expect_error=True,
+            )
+        ],
+        tags=["edge", "ons", "selection"],
+    ),
+    EvaluationQuestion(
+        id="E006",
+        question="Run dataset selection with invalid includeRelated type",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.EDGE,
+        description="ons_select.search should reject non-boolean includeRelated.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["INVALID_INPUT"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {"query": "migration dataset", "includeRelated": "yes"},
+                expect_error=True,
+            )
+        ],
+        tags=["edge", "ons", "selection"],
+    ),
 ]
 
 
@@ -949,6 +1108,20 @@ AMBIGUOUS_QUESTIONS = [
             )
         ],
         tags=["ambiguous", "ui"],
+    ),
+    EvaluationQuestion(
+        id="M004",
+        question="Find a dataset for cost of living",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.AMBIGUOUS,
+        description="Ambiguous dataset selection should return elicitation prompts.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["elicitationQuestions"],
+        ),
+        tool_calls=[ToolCallSpec("ons_select.search", {"query": "cost of living dataset"})],
+        tags=["ambiguous", "ons", "selection"],
     ),
 ]
 
