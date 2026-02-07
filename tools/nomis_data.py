@@ -9,7 +9,10 @@ from tools.registry import Tool, ToolResult, register
 
 _DATASET_ID_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)+$", re.IGNORECASE)
 _GSS_CODE_PATTERN = re.compile(r"^[EWNS]\d{8}$", re.IGNORECASE)
-_WARD_PREFIXES = ("E05", "W05", "S13", "N08")
+_CENSUS_GSS_PREFIXES_OA = ("E00", "W00")
+_CENSUS_GSS_PREFIXES_LSOA = ("E01", "W01")
+_CENSUS_GSS_PREFIXES_MSOA = ("E02", "W02")
+_CENSUS_GSS_PREFIXES_WARD = ("E05", "W05")
 _SEARCH_TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 _MULTI_TERM_SYNONYMS: dict[str, tuple[str, ...]] = {
     "population": ("resident", "census", "demography"),
@@ -367,8 +370,9 @@ def _infer_query_template(dataset: str, overview: dict[str, Any] | None) -> dict
         if selected:
             template[concept_key] = selected
     if "geography" not in template:
-        # NOMIS Census 2021 ward queries require a TYPE selector before GSS ward codes.
-        template["geography"] = "TYPE499,E05012621,E05012622"
+        # NOMIS expects numeric geography IDs, but mcp-geo will resolve common GSS codes
+        # (wards/LSOA/MSOA/OA) for Census 2021 datasets when provided.
+        template["geography"] = "E05012621,E05012622"
     return template
 
 
@@ -381,7 +385,62 @@ def _is_plain_gss_geography(geography: str) -> bool:
     return all(_GSS_CODE_PATTERN.fullmatch(part) for part in parts)
 
 
-def _maybe_add_ward_type_selector(params: dict[str, Any]) -> dict[str, Any] | None:
+def _sdmx_first_code_list(data: Any) -> list[dict[str, Any]]:
+    if not isinstance(data, dict):
+        return []
+    structure = data.get("structure")
+    if not isinstance(structure, dict):
+        return []
+    codelists = structure.get("codelists")
+    if not isinstance(codelists, dict):
+        return []
+    codelist = codelists.get("codelist")
+    if not isinstance(codelist, list) or not codelist:
+        return []
+    first = codelist[0]
+    if not isinstance(first, dict):
+        return []
+    codes = first.get("code")
+    return codes if isinstance(codes, list) else []
+
+
+def _annotation_value(code: dict[str, Any], title: str) -> str | None:
+    annotations = code.get("annotations")
+    if not isinstance(annotations, dict):
+        return None
+    annotation_list = annotations.get("annotation")
+    if not isinstance(annotation_list, list):
+        return None
+    for entry in annotation_list:
+        if not isinstance(entry, dict):
+            continue
+        if str(entry.get("annotationtitle") or "").strip() != title:
+            continue
+        text = entry.get("annotationtext")
+        if text is None:
+            continue
+        return str(text)
+    return None
+
+
+def _resolve_gss_geography_type(gss_codes: list[str]) -> tuple[int, str] | None:
+    prefixes = {code.upper()[:3] for code in gss_codes if code}
+    if not prefixes:
+        return None
+    if prefixes.issubset(_CENSUS_GSS_PREFIXES_WARD):
+        return 153, "2022 wards"
+    if prefixes.issubset(_CENSUS_GSS_PREFIXES_OA):
+        return 150, "2021 output areas"
+    if prefixes.issubset(_CENSUS_GSS_PREFIXES_LSOA):
+        return 151, "2021 super output areas - lower layer"
+    if prefixes.issubset(_CENSUS_GSS_PREFIXES_MSOA):
+        return 152, "2021 super output areas - middle layer"
+    return None
+
+
+def _maybe_resolve_gss_geographies(
+    dataset: str, params: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
     geography = params.get("geography")
     if not isinstance(geography, str):
         return None
@@ -390,11 +449,52 @@ def _maybe_add_ward_type_selector(params: dict[str, Any]) -> dict[str, Any] | No
     parts = [part.strip().upper() for part in geography.split(",") if part.strip()]
     if not parts:
         return None
-    if not all(part.startswith(_WARD_PREFIXES) for part in parts):
+    resolved_type = _resolve_gss_geography_type(parts)
+    if not resolved_type:
+        return None
+    type_code, type_name = resolved_type
+
+    resolved: list[dict[str, Any]] = []
+    unresolved: list[str] = []
+    for gss in parts:
+        status, data = nomis_client.get_json(
+            _build_url(f"dataset/{dataset}/geography/TYPE{type_code}.def.sdmx.json"),
+            params={"search": gss},
+        )
+        if status != 200:
+            return None
+        codes = _sdmx_first_code_list(data)
+        match: dict[str, Any] | None = None
+        for code in codes:
+            if not isinstance(code, dict):
+                continue
+            geog_code = _annotation_value(code, "GeogCode")
+            if geog_code and geog_code.strip().upper() != gss:
+                continue
+            value = code.get("value")
+            if not isinstance(value, (int, str)) or not str(value).strip():
+                continue
+            description = code.get("description")
+            name = _extract_text(description) if description is not None else None
+            match = {"gss": gss, "nomis": int(value), "name": name}
+            break
+        if not match:
+            unresolved.append(gss)
+            continue
+        resolved.append(match)
+
+    if unresolved:
         return None
     adjusted = dict(params)
-    adjusted["geography"] = f"TYPE499,{','.join(parts)}"
-    return adjusted
+    adjusted["geography"] = ",".join(str(item["nomis"]) for item in resolved)
+    query_adjusted = {
+        "geographyResolvedFromGss": True,
+        "geographyType": {"code": type_code, "name": type_name},
+        "originalGeography": geography,
+        "resolvedGeography": adjusted["geography"],
+        "mapping": resolved[:50],
+    }
+    return adjusted, query_adjusted
 
 
 def _missing_dimensions_message(
@@ -485,8 +585,9 @@ def _datasets(payload: dict[str, Any]) -> ToolResult:
                 "Dataset definitions can be large; this response is a compact summary.",
                 "Set includeRaw=true to return the full upstream definition payload.",
                 (
-                    "If querying Census wards with GSS codes, geography usually needs "
-                    "TYPE499 prefixed (for example TYPE499,E05012621,E05012622)."
+                    "If querying Census geographies with GSS codes (for example wards like "
+                    "E05012621,E05012622), mcp-geo will resolve them to NOMIS numeric ids "
+                    "before querying."
                 ),
             ],
             "data": {"dataset": summary},
@@ -570,6 +671,7 @@ def _query(payload: dict[str, Any]) -> ToolResult:
     dataset = payload.get("dataset")
     fmt = (payload.get("format") or "jsonstat").lower()
     params = payload.get("params")
+    query_adjusted: dict[str, Any] | None = None
     if not isinstance(dataset, str) or not dataset:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset is required"}
     if fmt not in {"jsonstat", "sdmx"}:
@@ -582,36 +684,42 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "params must be an object"}
     suffix = "jsonstat.json" if fmt == "jsonstat" else "generic.sdmx.json"
     path = f"dataset/{dataset}.{suffix}"
-    status, data = nomis_client.get_json(_build_url(path), params=params or {})
+    params_dict = params or {}
+    resolved = _maybe_resolve_gss_geographies(dataset, params_dict)
+    if resolved:
+        params_dict, query_adjusted = resolved
+    status, data = nomis_client.get_json(_build_url(path), params=params_dict)
     if status != 200:
         return status, data
     err = _extract_nomis_error(data)
     if err:
-        params_dict = params or {}
         if "incomplete" in err.lower():
-            adjusted = _maybe_add_ward_type_selector(params_dict)
+            adjusted = None
+            adjusted_meta = None
+            if query_adjusted is None:
+                resolved_retry = _maybe_resolve_gss_geographies(dataset, params_dict)
+                if resolved_retry:
+                    adjusted, adjusted_meta = resolved_retry
             if adjusted:
                 retry_status, retry_data = nomis_client.get_json(_build_url(path), params=adjusted)
                 if retry_status == 200:
                     retry_err = _extract_nomis_error(retry_data)
                     if not retry_err:
-                        return 200, {
+                        result: dict[str, Any] = {
                             "live": True,
                             "dataset": dataset,
                             "format": fmt,
                             "data": retry_data,
-                            "queryAdjusted": {
-                                "geographySelectorInjected": True,
-                                "originalGeography": params_dict.get("geography"),
-                                "adjustedGeography": adjusted.get("geography"),
-                            },
                             "hints": [
                                 (
-                                    "NOMIS required a geography TYPE selector; the query was retried "
-                                    "with TYPE499 prefixed to ward GSS codes."
+                                    "NOMIS expects numeric geography IDs; the query was retried after "
+                                    "resolving GSS codes to NOMIS ids."
                                 )
                             ],
                         }
+                        if adjusted_meta is not None:
+                            result["queryAdjusted"] = adjusted_meta
+                        return 200, result
             overview = _fetch_dataset_overview(dataset)
             missing, template = _missing_dimensions_message(params_dict, overview)
             hint = (
@@ -619,9 +727,7 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                 "Use nomis.datasets with dataset=<id> to inspect queryTemplate and dimensions."
             )
             if isinstance(params_dict.get("geography"), str):
-                hint = (
-                    f"{hint} For ward GSS codes, try geography='TYPE499,{params_dict.get('geography')}'."
-                )
+                hint = f"{hint} If providing GSS geography codes, NOMIS may require numeric IDs."
             return 400, {
                 "isError": True,
                 "code": "NOMIS_QUERY_ERROR",
@@ -631,7 +737,13 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                 "hint": hint,
             }
         return 400, {"isError": True, "code": "NOMIS_QUERY_ERROR", "message": err}
-    return 200, {"live": True, "dataset": dataset, "format": fmt, "data": data}
+    result: dict[str, Any] = {"live": True, "dataset": dataset, "format": fmt, "data": data}
+    if query_adjusted is not None:
+        result["queryAdjusted"] = query_adjusted
+        result["hints"] = [
+            "GSS geography codes were resolved to NOMIS numeric ids before querying.",
+        ]
+    return 200, result
 
 
 register(Tool(

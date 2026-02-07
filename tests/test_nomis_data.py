@@ -44,6 +44,72 @@ def test_nomis_query_success(monkeypatch):
     assert body["data"]["value"] == 123
 
 
+def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    def geo_def(value: int, gss: str, name: str) -> Dict[str, Any]:
+        return {
+            "structure": {
+                "codelists": {
+                    "codelist": [
+                        {
+                            "code": [
+                                {
+                                    "value": value,
+                                    "description": {"value": name},
+                                    "annotations": {
+                                        "annotation": [
+                                            {"annotationtitle": "GeogCode", "annotationtext": gss},
+                                            {"annotationtitle": "TypeCode", "annotationtext": 153},
+                                            {"annotationtitle": "TypeName", "annotationtext": "2022 wards"},
+                                        ]
+                                    },
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        params = params or {}
+        if url.endswith("/dataset/NM_2021_1/geography/TYPE153.def.sdmx.json"):
+            search = params.get("search")
+            if search == "E05012621":
+                return 200, geo_def(641733691, "E05012621", "Leamington Brunswick")
+            if search == "E05012622":
+                return 200, geo_def(641733692, "E05012622", "Leamington Clarendon")
+            return 200, geo_def(0, str(search), "Unknown")
+        if url.endswith("/dataset/NM_2021_1.jsonstat.json"):
+            assert params.get("geography") == "641733691,641733692"
+            return 200, {"value": 123}
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_2021_1",
+            "params": {"geography": "E05012621,E05012622", "measures": "20100"},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["value"] == 123
+    assert body["queryAdjusted"]["geographyResolvedFromGss"] is True
+    assert body["queryAdjusted"]["originalGeography"] == "E05012621,E05012622"
+    assert body["queryAdjusted"]["resolvedGeography"] == "641733691,641733692"
+
+
 def test_nomis_query_error_surface(monkeypatch):
     from tools import nomis_common
 
