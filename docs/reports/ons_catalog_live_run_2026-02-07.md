@@ -7,41 +7,39 @@
 - Branch: `sota-mcp`
 - Commit: `7f3aec655864f40ac9bb7679c8e352c573b6e628`
 - Environment: devcontainer (Linux), Python 3.11.12
-- Command:
-  - `RUN_LIVE_API_TESTS=1 pytest -q -s tests/test_ons_catalog_snapshot.py --cov-fail-under=0`
-- Target API base:
-  - `ONS_DATASET_API_BASE` (default) = `https://api.beta.ons.gov.uk/v1`
-- Snapshot catalog:
-  - `resources/ons_catalog.json` (337 dataset entries, all `state=published`)
+- Command: `RUN_LIVE_API_TESTS=1 pytest -q -s tests/test_ons_catalog_snapshot.py --cov-fail-under=0`
+- Target API base: `ONS_DATASET_API_BASE` (default) = `https://api.beta.ons.gov.uk/v1`
+- Snapshot catalog: `resources/ons_catalog.json` (337 dataset entries, all `state=published`)
 
 ## What Was Validated
 
-The run executes `/Users/crpage/repos/mcp-geo/tests/test_ons_catalog_snapshot.py` with live mode enabled.
+The run executes `/Users/crpage/repos/mcp-geo/tests/test_ons_catalog_snapshot.py` with live mode
+enabled.
 
 Local snapshot checks:
 - Snapshot file exists at `ONS_CATALOG_PATH` and is non-placeholder (`placeholder=false`).
 - `items` is a list with >= 300 entries and all `id` values are present and unique.
-- Each catalog entry validates required fields and types:
-  - Required: `id`, `title`, `description`, `keywords`, `state`, `links`
-  - Optional: `themes`, `topics`, `taxonomies` (string or list of strings)
+- Each catalog entry validates required fields and types.
+- Required fields: `id`, `title`, `description`, `keywords`, `state`, `links`
+- Optional fields: `themes`, `topics`, `taxonomies` (string or list of strings)
 - Field coverage sanity checks:
-  - >= 90% of entries have a non-empty `title`
-  - >= 70% of entries have a non-empty `description`
+- >= 90% of entries have a non-empty `title`
+- >= 70% of entries have a non-empty `description`
 
 Live API checks:
 - Live datasets listing (`GET /datasets` across all pages) succeeds and snapshot coverage is >= 95%.
-- For every dataset `id` in `resources/ons_catalog.json`, the dataset endpoint resolves:
-  - `GET /datasets/{id}` returns `200`
-  - Response `id` matches the requested dataset id
-  - Key response fields validate presence and types:
-    - Required: `id`, `title`, `description`, `state`, `links`
-    - Optional: `keywords`, `themes`, `topics`, `taxonomies`
+- For every dataset `id` in `resources/ons_catalog.json`, the dataset endpoint resolves.
+- `GET /datasets/{id}` returns `200`.
+- Response `id` matches the requested dataset id.
+- Key response fields validate presence and types.
+- Required response fields: `id`, `title`, `description`, `state`, `links`
+- Optional response fields: `keywords`, `themes`, `topics`, `taxonomies`
 
 Timeouts and error monitoring:
 - Each dataset request is classified into one of:
-  - `429` rate limit events (retries with exponential backoff)
-  - upstream connect/timeout failures (`code=UPSTREAM_CONNECT_ERROR`)
-  - other non-200 errors (recorded verbatim)
+- `429` rate limit events (retries with exponential backoff)
+- upstream connect/timeout failures (`code=UPSTREAM_CONNECT_ERROR`)
+- other non-200 errors (recorded verbatim)
 - Field validation errors (200 responses with unexpected schema) are recorded per dataset id.
 - The test accumulates per-dataset errors and fails at the end with the first 10 errors printed.
 
@@ -87,4 +85,3 @@ No errors were observed in this run.
 ## Final Status
 
 PASS (all live catalog validation tests passed).
-
