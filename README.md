@@ -183,8 +183,9 @@ Set `MCP_STDIO_UI_SUPPORTED=1` to force UI mode, or
 Set `MCP_APPS_CONTENT_MODE=embedded` to embed UI HTML as a `resource` content
 block, or `MCP_APPS_CONTENT_MODE=resource_link` to emit a `resource_link`
 content block. Use `MCP_APPS_CONTENT_MODE=text` to suppress UI content blocks.
-Set `MCP_STDIO_ELICITATION_ENABLED=0` to disable comparison elicitation in
-`os_mcp.stats_routing`.
+Set `MCP_STDIO_ELICITATION_ENABLED=0` to disable form elicitation in STDIO
+(`os_mcp.stats_routing`, `ons_select.search`). For Streamable HTTP (`/mcp`), set
+`MCP_HTTP_ELICITATION_ENABLED=0`.
 
 ### Conditional Requests (ETag)
 Clients should cache UI/skills responses and revalidate using `If-None-Match`.

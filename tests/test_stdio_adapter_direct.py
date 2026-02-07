@@ -2,6 +2,7 @@ import io, json, re
 
 from server import stdio_adapter
 from server.mcp.resource_catalog import MCP_APPS_MIME
+from server.config import settings
 
 def frame(msg: dict) -> bytes:
     body = json.dumps(msg, separators=(",", ":")).encode()
@@ -328,5 +329,183 @@ def test_stdio_main_round_trip_with_elicitation(monkeypatch):
     data = result.get("data", {})
     assert data.get("provider") == "nomis"
     assert data.get("userSelections", {}).get("comparisonLevel") == "LSOA"
+    busy_error = next(m for m in messages if m.get("id") == 77 and isinstance(m.get("error"), dict))
+    assert busy_error["error"]["code"] == -32001
+
+
+def _write_catalog(tmp_path, items):
+    path = tmp_path / "ons_catalog.json"
+    payload = {
+        "generatedAt": "2026-02-07T00:00:00Z",
+        "source": "test",
+        "placeholder": False,
+        "items": items,
+    }
+    path.write_text(json.dumps(payload))
+    return path
+
+
+def test_ons_select_elicitation_applies_choices(monkeypatch, tmp_path):
+    catalog = _write_catalog(
+        tmp_path,
+        [
+            {
+                "id": "inflation-prices",
+                "title": "Inflation and prices",
+                "description": "Price indices over time.",
+                "keywords": ["inflation", "prices"],
+                "geography": {"levels": ["nation"]},
+                "time": {"granularity": "month"},
+                "state": "published",
+            }
+        ],
+    )
+    monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(catalog), raising=False)
+    monkeypatch.setattr(settings, "ONS_SELECT_LIVE_ENABLED", False, raising=False)
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    captured = {}
+
+    def _handler(params):
+        captured["params"] = params
+        return {
+            "action": "accept",
+            "content": {"geographyLevel": "nation", "timeGranularity": "month"},
+        }
+
+    stdio_adapter._set_elicitation_handler(_handler)
+    try:
+        call = stdio_adapter.handle_call_tool(
+            {
+                "name": "ons_select.search",
+                "arguments": {"query": "inflation"},
+            }
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+
+    assert call.get("ok") is True
+    params = captured.get("params", {})
+    schema = params.get("requestedSchema", {})
+    props = schema.get("properties", {})
+    assert "geographyLevel" in props
+    assert "timeGranularity" in props
+    data = call.get("data", {})
+    assert isinstance(data, dict)
+    assert data.get("needsElicitation") is False
+
+
+def test_ons_select_elicitation_cancel_returns_original(monkeypatch, tmp_path):
+    catalog = _write_catalog(
+        tmp_path,
+        [
+            {
+                "id": "inflation-prices",
+                "title": "Inflation and prices",
+                "description": "Price indices over time.",
+                "keywords": ["inflation", "prices"],
+                "geography": {"levels": ["nation"]},
+                "time": {"granularity": "month"},
+                "state": "published",
+            }
+        ],
+    )
+    monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(catalog), raising=False)
+    monkeypatch.setattr(settings, "ONS_SELECT_LIVE_ENABLED", False, raising=False)
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(lambda _params: {"action": "cancel"})
+    try:
+        call = stdio_adapter.handle_call_tool(
+            {
+                "name": "ons_select.search",
+                "arguments": {"query": "inflation"},
+            }
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    assert isinstance(data, dict)
+    assert data.get("needsElicitation") is True
+
+
+def test_stdio_main_round_trip_with_ons_select_elicitation(monkeypatch, tmp_path):
+    catalog = _write_catalog(
+        tmp_path,
+        [
+            {
+                "id": "inflation-prices",
+                "title": "Inflation and prices",
+                "description": "Price indices over time.",
+                "keywords": ["inflation", "prices"],
+                "geography": {"levels": ["nation"]},
+                "time": {"granularity": "month"},
+                "state": "published",
+            }
+        ],
+    )
+    monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(catalog), raising=False)
+    monkeypatch.setattr(settings, "ONS_SELECT_LIVE_ENABLED", False, raising=False)
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    initialize = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {"capabilities": {"elicitation": {"form": {}}}},
+    }
+    tool_call = {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/call",
+        "params": {
+            "tool": "ons_select.search",
+            "args": {"query": "inflation"},
+        },
+    }
+    interleaved_request = {
+        "jsonrpc": "2.0",
+        "id": 77,
+        "method": "tools/list",
+        "params": {},
+    }
+    elicitation_result = {
+        "jsonrpc": "2.0",
+        "id": "elicitation-1",
+        "result": {
+            "action": "accept",
+            "content": {"geographyLevel": "nation", "timeGranularity": "month"},
+        },
+    }
+    exit_msg = {"jsonrpc": "2.0", "method": "exit"}
+    stdin_bytes = (
+        frame(initialize)
+        + frame(tool_call)
+        + frame(interleaved_request)
+        + frame(elicitation_result)
+        + frame(exit_msg)
+    )
+    stdin = io.StringIO(stdin_bytes.decode())
+    stdout = io.StringIO()
+    stdio_adapter.main(stdin=stdin, stdout=stdout)
+
+    messages = read_all(io.BytesIO(stdout.getvalue().encode()))
+    elicitation = next(m for m in messages if m.get("method") == "elicitation/create")
+    assert elicitation.get("id") == "elicitation-1"
+    params = elicitation.get("params", {})
+    assert params.get("mode") == "form"
+    schema = params.get("requestedSchema", {})
+    properties = schema.get("properties", {})
+    assert "geographyLevel" in properties
+    assert "timeGranularity" in properties
+
+    tool_response = next(
+        m for m in messages if m.get("id") == 2 and isinstance(m.get("result"), dict)
+    )
+    result = tool_response["result"]
+    assert result.get("ok") is True
+    data = result.get("data", {})
+    assert data.get("needsElicitation") is False
     busy_error = next(m for m in messages if m.get("id") == 77 and isinstance(m.get("error"), dict))
     assert busy_error["error"]["code"] == -32001

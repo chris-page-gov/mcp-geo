@@ -342,8 +342,9 @@ If port `5432` is already in use, set `MCP_GEO_POSTGIS_PUBLISH_PORT` to another
 port or `0` to disable host publishing.
 
 If you need deterministic non-interactive routing, set
-`MCP_STDIO_ELICITATION_ENABLED=0` to disable comparison elicitation prompts in
-`os_mcp.stats_routing`.
+`MCP_STDIO_ELICITATION_ENABLED=0` to disable STDIO form elicitation prompts
+(`os_mcp.stats_routing`, `ons_select.search`). For Streamable HTTP (`/mcp`), set
+`MCP_HTTP_ELICITATION_ENABLED=0`.
 
 ## Appendix: ChatGPT local dev (HTTPS tunnel)
 

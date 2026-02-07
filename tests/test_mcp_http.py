@@ -1,7 +1,14 @@
 import importlib
+import json
+import queue
 import re
+import threading
 import time
 
+from fastapi.testclient import TestClient
+
+from server.config import settings
+from server.main import app
 from server.mcp.resource_catalog import MCP_APPS_MIME
 
 
@@ -162,7 +169,7 @@ def test_mcp_http_notification_returns_no_content(client):
         "/mcp",
         json={"jsonrpc": "2.0", "method": "tools/list", "params": {}},
     )
-    assert resp.status_code == 204
+    assert resp.status_code == 202
 
 
 def test_mcp_http_call_tool_errors(client):
@@ -250,3 +257,128 @@ def test_mcp_http_ui_tool_fallback_and_meta(client, monkeypatch):
         ),
     )
     assert resp.json()["result"]["isError"] is True
+
+
+def _write_catalog(tmp_path, items):
+    path = tmp_path / "ons_catalog.json"
+    payload = {
+        "generatedAt": "2026-02-07T00:00:00Z",
+        "source": "test",
+        "placeholder": False,
+        "items": items,
+    }
+    path.write_text(json.dumps(payload))
+    return path
+
+
+def test_mcp_http_ons_select_elicitation_stream(monkeypatch, tmp_path):
+    catalog = _write_catalog(
+        tmp_path,
+        [
+            {
+                "id": "inflation-prices",
+                "title": "Inflation and prices",
+                "description": "Price indices over time.",
+                "keywords": ["inflation", "prices"],
+                "geography": {"levels": ["nation"]},
+                "time": {"granularity": "month"},
+                "state": "published",
+            }
+        ],
+    )
+    monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(catalog), raising=False)
+    monkeypatch.setattr(settings, "ONS_SELECT_LIVE_ENABLED", False, raising=False)
+    monkeypatch.setenv("MCP_HTTP_ELICITATION_ENABLED", "1")
+    monkeypatch.setenv("MCP_HTTP_ELICITATION_TIMEOUT_SECONDS", "5")
+
+    main_client = TestClient(app)
+    init_resp = main_client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": "init-1",
+            "method": "initialize",
+            "params": {"capabilities": {"elicitation": {"form": {}}}},
+        },
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    tool_call = {
+        "jsonrpc": "2.0",
+        "id": "call-1",
+        "method": "tools/call",
+        "params": {"name": "ons_select.search", "arguments": {"query": "inflation"}},
+    }
+
+    events = queue.Queue()
+    captured = {}
+
+    def _stream():
+        stream_client = TestClient(app)
+        with stream_client.stream(
+            "POST",
+            "/mcp",
+            headers={
+                "mcp-session-id": session_id,
+                "accept": "text/event-stream, application/json",
+            },
+            json=tool_call,
+        ) as resp:
+            assert resp.status_code == 200
+            assert resp.headers.get("content-type", "").startswith("text/event-stream")
+            for raw in resp.iter_lines():
+                if raw is None:
+                    continue
+                line = raw.decode() if isinstance(raw, (bytes, bytearray)) else raw
+                if not isinstance(line, str) or not line.startswith("data:"):
+                    continue
+                data = line[len("data:"):].strip()
+                if not data:
+                    continue
+                msg = json.loads(data)
+                if msg.get("method") == "elicitation/create":
+                    captured["elicitation"] = msg
+                if msg.get("id") == "call-1" and isinstance(msg.get("result"), dict):
+                    captured["tool_response"] = msg
+                    events.put(("tool_response", msg.get("id")))
+
+    t = threading.Thread(target=_stream, daemon=True)
+    t.start()
+    elicitation_id = "elicitation-1"
+    accepted = False
+    for _ in range(20):
+        resp = main_client.post(
+            "/mcp",
+            headers={"mcp-session-id": session_id},
+            json={
+                "jsonrpc": "2.0",
+                "id": elicitation_id,
+                "result": {
+                    "action": "accept",
+                    "content": {"geographyLevel": "nation", "timeGranularity": "month"},
+                },
+            },
+        )
+        if resp.status_code == 202:
+            accepted = True
+            break
+        time.sleep(0.05)
+    assert accepted is True
+
+    kind, _ = events.get(timeout=5)
+    assert kind == "tool_response"
+    t.join(timeout=5)
+
+    elicitation = captured.get("elicitation", {})
+    params = elicitation.get("params", {})
+    schema = params.get("requestedSchema", {})
+    props = schema.get("properties", {})
+    assert "geographyLevel" in props
+    assert "timeGranularity" in props
+
+    tool_response = captured.get("tool_response", {})
+    result = tool_response.get("result", {})
+    assert result.get("ok") is True
+    data = result.get("data", {})
+    assert data.get("needsElicitation") is False

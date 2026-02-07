@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - `nomis.datasets` multi-term search now uses token scoring (with light synonym expansion for multi-word queries) so terms like `population census 2021` rank relevant datasets instead of relying on exact phrase matches.
 - Statistics routing guidance now prioritizes direct `nomis.query`/`ons_data.query` comparison flows and explicitly advises filtered dataset discovery.
 - STDIO now uses MCP `elicitation/create` for `os_mcp.stats_routing` comparison queries when clients advertise form elicitation support (`MCP_STDIO_ELICITATION_ENABLED=1` by default).
+- `ons_select.search` now uses MCP `elicitation/create` over STDIO and Streamable HTTP when clients advertise form elicitation support (`MCP_STDIO_ELICITATION_ENABLED=1`, `MCP_HTTP_ELICITATION_ENABLED=1`).
 - `os_mcp.stats_routing` now accepts optional `comparisonLevel` and `providerPreference` overrides and returns applied `userSelections`.
 - Claude Desktop wrapper now keeps `MCP_APPS_RESOURCE_LINK` disabled by default (`0`) so `resource_link` blocks remain opt-in and avoid Claude “unsupported format” failures.
 - Claude Desktop wrapper now defaults `MCP_APPS_CONTENT_MODE=embedded` so UI calls emit embedded `resource` blocks by default (safer than `resource_link` in current Claude behavior).
@@ -29,6 +30,7 @@ All notable changes to this project will be documented in this file.
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.
 - Added STDIO elicitation tests (accept/cancel/unavailable + wire round-trip) and stats-routing input validation coverage.
+- Added STDIO + HTTP Streamable elicitation coverage for `ons_select.search`.
 - Expanded evaluation coverage for ONS dataset selection and catalog validation.
 - Expanded live ONS catalog validation to check all datasets with throttling/backoff controls.
 - Live ONS catalog tests now validate entry fields and surface timeout/error summaries.

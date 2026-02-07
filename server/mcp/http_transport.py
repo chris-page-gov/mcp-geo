@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import threading
@@ -10,9 +11,14 @@ from typing import Any, Dict, Optional, Tuple
 from loguru import logger
 
 from fastapi import APIRouter, Request, status
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from server import stdio_adapter
+from server.mcp.elicitation_forms import (
+    apply_ons_select_elicitation_result,
+    build_ons_select_elicitation_params,
+    client_supports_elicitation_form,
+)
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.prompts import get_prompt, list_prompts
 from server.protocol import PROTOCOL_VERSION
@@ -86,6 +92,81 @@ def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
         if isinstance(mime_types, list):
             return MCP_APPS_MIME in mime_types
     return False
+
+
+def _accepts_event_stream(request: Request) -> bool:
+    accept = request.headers.get("accept", "")
+    if not isinstance(accept, str):
+        return False
+    accept_lower = accept.lower()
+    # Some clients (and test harnesses) send "*/*"; treat that as compatible.
+    return ("text/event-stream" in accept_lower) or ("*/*" in accept_lower) or (not accept_lower.strip())
+
+
+def _sse_event(data: str, *, event_id: Optional[str] = None, retry_ms: Optional[int] = None) -> str:
+    # SSE requires each field on its own line; terminate events with a blank line.
+    lines: list[str] = []
+    if retry_ms is not None:
+        lines.append(f"retry: {retry_ms}")
+    if event_id:
+        lines.append(f"id: {event_id}")
+    # Spec: "data field" can be empty; keep a single data line.
+    lines.append(f"data: {data}")
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def _pending_bucket(session_state: Dict[str, Any]) -> Dict[str, Any]:
+    pending = session_state.get("pending")
+    if isinstance(pending, dict):
+        return pending
+    pending = {}
+    session_state["pending"] = pending
+    return pending
+
+
+def _next_elicitation_request_id(session_state: Dict[str, Any]) -> str:
+    with _SESSION_LOCK:
+        raw = session_state.get("elicitation_seq", 0)
+        try:
+            seq = int(raw)
+        except (TypeError, ValueError):
+            seq = 0
+        seq += 1
+        session_state["elicitation_seq"] = seq
+    return f"elicitation-{seq}"
+
+
+def _register_pending(session_state: Dict[str, Any], request_id: str) -> asyncio.Future[Any]:
+    loop = asyncio.get_running_loop()
+    fut: asyncio.Future[Any] = loop.create_future()
+    with _SESSION_LOCK:
+        pending = _pending_bucket(session_state)
+        pending[request_id] = {"loop": loop, "future": fut, "created_at": time.time()}
+    return fut
+
+
+def _resolve_pending(session_state: Dict[str, Any], request_id: Any, result: Any) -> bool:
+    if not isinstance(request_id, str):
+        return False
+    with _SESSION_LOCK:
+        pending = session_state.get("pending")
+        if not isinstance(pending, dict):
+            return False
+        entry = pending.pop(request_id, None)
+    if not isinstance(entry, dict):
+        return False
+    loop = entry.get("loop")
+    fut = entry.get("future")
+    if not isinstance(loop, asyncio.AbstractEventLoop):
+        return False
+    if not isinstance(fut, asyncio.Future):
+        return False
+    try:
+        loop.call_soon_threadsafe(fut.set_result, result)
+    except RuntimeError:
+        return False
+    return True
 
 
 def _resp_success(msg_id: Any, result: Any) -> Dict[str, Any]:
@@ -246,6 +327,22 @@ async def mcp_endpoint(request: Request):
             headers=headers,
         )
     method = msg.get("method")
+    if method is None:
+        # JSON-RPC response from the client (e.g., elicitation result).
+        if msg_id is not None and ("result" in msg or "error" in msg):
+            result = msg.get("result")
+            if not _resolve_pending(session_state, msg_id, result):
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content=_resp_error(None, -32600, "Invalid Request"),
+                    headers=headers,
+                )
+            return Response(status_code=status.HTTP_202_ACCEPTED, headers=headers)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=_resp_error(msg_id, -32600, "Invalid Request"),
+            headers=headers,
+        )
     if not isinstance(method, str):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -266,8 +363,104 @@ async def mcp_endpoint(request: Request):
             _dispatch(method, params, session_state)
         except Exception:
             pass
-        return Response(status_code=status.HTTP_204_NO_CONTENT, headers=headers)
+        return Response(status_code=status.HTTP_202_ACCEPTED, headers=headers)
     try:
+        if method == "tools/call":
+            capabilities = session_state.get("capabilities", {})
+            if not isinstance(capabilities, dict):
+                capabilities = {}
+            name = params.get("tool") or params.get("name")
+            if not isinstance(name, str):
+                raise ValueError("Missing tool name")
+            resolved_name = stdio_adapter._resolve_tool_name(name)
+            payload = params.get("args") or params.get("arguments") or params.get("payload") or {}
+            if not isinstance(payload, dict):
+                raise TypeError("Payload must be object")
+            payload = dict(payload)
+            call_params = dict(params)
+            call_params["args"] = payload
+            call_params["arguments"] = payload
+            call_params["payload"] = payload
+            initial_result = _call_tool(call_params, capabilities)
+            data = initial_result.get("data") if isinstance(initial_result, dict) else None
+            if (
+                resolved_name == "ons_select.search"
+                and isinstance(data, dict)
+                and data.get("needsElicitation") is True
+                and _bool_env("MCP_HTTP_ELICITATION_ENABLED", default=True)
+                and _accepts_event_stream(request)
+                and client_supports_elicitation_form(capabilities)
+            ):
+                query = data.get("query") or payload.get("query") or payload.get("q") or ""
+                if isinstance(query, str) and query.strip():
+                    questions = data.get("elicitationQuestions")
+                    question_list = questions if isinstance(questions, list) else None
+                    elicitation_params = build_ons_select_elicitation_params(
+                        query.strip(),
+                        payload,
+                        question_list,
+                    )
+                    elicitation_id = _next_elicitation_request_id(session_state)
+                    fut = _register_pending(session_state, elicitation_id)
+
+                    async def _gen():
+                        try:
+                            yield _sse_event("", event_id=f"{elicitation_id}-prime")
+                            req_msg = {
+                                "jsonrpc": JSONRPC,
+                                "id": elicitation_id,
+                                "method": "elicitation/create",
+                                "params": elicitation_params,
+                            }
+                            yield _sse_event(
+                                json.dumps(req_msg, separators=(",", ":")),
+                                event_id=f"{elicitation_id}-request",
+                            )
+                            timeout_env = (
+                                os.getenv("MCP_HTTP_ELICITATION_TIMEOUT_SECONDS", "") or ""
+                            ).strip()
+                            timeout_s = 120.0
+                            if timeout_env:
+                                try:
+                                    timeout_s = float(timeout_env)
+                                except ValueError:
+                                    timeout_s = 120.0
+                            try:
+                                elicitation_result = await asyncio.wait_for(fut, timeout=timeout_s)
+                            except asyncio.TimeoutError:
+                                final_result = initial_result
+                            else:
+                                final_result = initial_result
+                                if isinstance(elicitation_result, dict):
+                                    changed, _error = apply_ons_select_elicitation_result(
+                                        payload,
+                                        elicitation_result,
+                                    )
+                                    if changed:
+                                        final_result = _call_tool(call_params, capabilities)
+                            yield _sse_event(
+                                json.dumps(_resp_success(msg_id, final_result), separators=(",", ":")),
+                                event_id=f"{elicitation_id}-response",
+                            )
+                        finally:
+                            with _SESSION_LOCK:
+                                pending = session_state.get("pending")
+                                if isinstance(pending, dict):
+                                    pending.pop(elicitation_id, None)
+
+                    stream_headers = dict(headers)
+                    stream_headers.setdefault("cache-control", "no-cache")
+                    return StreamingResponse(
+                        _gen(),
+                        media_type="text/event-stream",
+                        headers=stream_headers,
+                    )
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=_resp_success(msg_id, initial_result),
+                headers=headers,
+            )
+
         result = _dispatch(method, params, session_state)
         return JSONResponse(
             status_code=status.HTTP_200_OK,

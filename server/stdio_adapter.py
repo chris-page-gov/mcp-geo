@@ -38,6 +38,10 @@ from server.mcp.resource_catalog import (
 from server.mcp.prompts import get_prompt as get_prompt_def, list_prompts as list_prompt_defs
 from tools.os_apps import build_ui_tool_meta
 from server.mcp.tool_search import get_tool_metadata, search_tools
+from server.mcp.elicitation_forms import (
+    apply_ons_select_elicitation_result,
+    build_ons_select_elicitation_params,
+)
 from server import __version__ as SERVER_VERSION
 from server.protocol import PROTOCOL_VERSION
 
@@ -354,6 +358,29 @@ def _maybe_elicit_stats_routing(payload: Dict[str, Any]) -> tuple[bool, Dict[str
     return _apply_stats_routing_elicitation_choices(payload, response)
 
 
+def _maybe_elicit_ons_select(payload: Dict[str, Any], data: Dict[str, Any]) -> bool:
+    if not _bool_env("MCP_STDIO_ELICITATION_ENABLED", default=True):
+        return False
+    if not _client_supports_elicitation_form(CLIENT_CAPABILITIES):
+        return False
+    if _ELICITATION_HANDLER is None:
+        return False
+    if data.get("needsElicitation") is not True:
+        return False
+    query = data.get("query") or payload.get("query") or payload.get("q") or ""
+    if not isinstance(query, str) or not query.strip():
+        return False
+    questions = data.get("elicitationQuestions")
+    question_list = questions if isinstance(questions, list) else None
+    response = _ELICITATION_HANDLER(
+        build_ons_select_elicitation_params(query.strip(), payload, question_list)
+    )
+    if not isinstance(response, dict):
+        return False
+    changed, _error = apply_ons_select_elicitation_result(payload, response)
+    return changed
+
+
 def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict[str, Any]]:
     if data is None:
         return []
@@ -619,6 +646,9 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             result["content"] = _tool_content_from_data(data, allow_resource=False)
             return result
     status, data = tool.call(payload)
+    if resolved_name == "ons_select.search" and isinstance(data, dict):
+        if _maybe_elicit_ons_select(payload, data):
+            status, data = tool.call(payload)
     if isinstance(data, dict):
         data = dict(data)
         if resolved_name == "os_mcp.descriptor":
