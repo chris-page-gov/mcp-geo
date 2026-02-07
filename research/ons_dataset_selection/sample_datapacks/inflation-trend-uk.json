@@ -1,0 +1,196 @@
+{
+  "datapack_id": "inflation-trend-uk",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "inflation-trend-uk",
+    "tile_label": "How fast are prices rising?",
+    "intent_tags": [
+      "inflation",
+      "cost-of-living",
+      "prices"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "inflation-trend-uk-card",
+    "headline": "Inflation trend (CPIH) with wage context",
+    "summary": "Use CPIH as the primary inflation series and compare against earnings carefully.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "UK"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "monthly"
+    },
+    "release_frequency": "monthly",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "consumer-prices-cpih",
+    "dataset_title": "Consumer Prices Index including owner occupiers' housing costs (CPIH)",
+    "dataset_url": "https://www.ons.gov.uk/economy/inflationandpriceindices",
+    "provider": "ONS",
+    "dataset_family": "prices-and-inflation",
+    "geography_levels": [
+      "UK"
+    ],
+    "time_granularity": "monthly",
+    "latest_release_date": "2026-01-01",
+    "fitness_for_use_score": 92,
+    "confidence": "high",
+    "explainability_note": "Direct measure for inflation trend communication at UK level.",
+    "known_limitations": [
+      "Not a household-specific inflation experience metric."
+    ],
+    "comparability_warnings": [
+      "Do not compare directly with RPI for policy conclusions without caveats."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "consumer-prices-cpi",
+      "dataset_title": "Consumer Prices Index (CPI)",
+      "dataset_url": "https://www.ons.gov.uk/economy/inflationandpriceindices",
+      "provider": "ONS",
+      "dataset_family": "prices-and-inflation",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "monthly",
+      "latest_release_date": "2026-01-01",
+      "fitness_for_use_score": 86,
+      "confidence": "high",
+      "explainability_note": "Useful comparator to CPIH in public communication.",
+      "known_limitations": [
+        "Different coverage from CPIH."
+      ],
+      "comparability_warnings": [
+        "CPI and CPIH are related but not identical."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "average-weekly-earnings",
+      "dataset_title": "Average weekly earnings",
+      "dataset_url": "https://www.ons.gov.uk/employmentandlabourmarket",
+      "provider": "ONS",
+      "dataset_family": "labour-market",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "monthly",
+      "latest_release_date": "2026-01-01",
+      "fitness_for_use_score": 80,
+      "confidence": "medium",
+      "explainability_note": "Context for real-pay comparisons.",
+      "known_limitations": [
+        "Sectoral composition can distort headline readings."
+      ],
+      "comparability_warnings": [
+        "Real-pay interpretation needs inflation alignment."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "cpih-to-cpi",
+      "from_dataset_id": "consumer-prices-cpih",
+      "to_dataset_id": "consumer-prices-cpi",
+      "link_type": "complementary_context",
+      "link_reason": "Common alternative inflation indicator for comparison.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "cpih-to-awe",
+      "from_dataset_id": "consumer-prices-cpih",
+      "to_dataset_id": "average-weekly-earnings",
+      "link_type": "leading_or_lagging_indicator",
+      "link_reason": "Used together to assess real wage pressure.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "inflation-trend-uk-chart-1",
+      "chart_type": "line",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "period",
+      "y_field": "index_or_rate",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

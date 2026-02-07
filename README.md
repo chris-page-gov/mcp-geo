@@ -102,6 +102,12 @@ See [docs/tutorial.md](docs/tutorial.md) for an evaluation-style walkthrough cov
 
 See [docs/evaluation.md](docs/evaluation.md) for the question suite, rubric, and harness usage.
 
+## Research (ONS Dataset Selection)
+
+See `research/ons_dataset_selection/report.md` for the ONS dataset selection research pack,
+including the taxonomy options, DataPack schema, sample DataPacks, and linking rules used to
+improve AI dataset selection and explainability.
+
 ## Client Tracing
 
 See [docs/client_trace_strategy.md](docs/client_trace_strategy.md) for MCP traffic

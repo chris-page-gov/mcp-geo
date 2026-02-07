@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added `os_apps.render_ui_probe` to verify MCP-Apps UI rendering and content-mode support.
 - Added `scripts/mcp_ui_mode_probe.py` to validate STDIO UI payload content types by mode.
+- Added ONS dataset selection research pack under `research/ons_dataset_selection/`.
 
 ### Changed
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.

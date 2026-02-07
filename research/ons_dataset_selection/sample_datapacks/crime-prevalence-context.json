@@ -1,0 +1,199 @@
+{
+  "datapack_id": "crime-prevalence-context",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "crime-prevalence-context",
+    "tile_label": "Is crime getting worse?",
+    "intent_tags": [
+      "crime",
+      "public-safety",
+      "england-wales"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "crime-prevalence-context-card",
+    "headline": "Crime prevalence with recording-context safeguards",
+    "summary": "Use survey prevalence first, then add police and perception context with caveats.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "England-and-Wales",
+      "region"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "annual"
+    },
+    "release_frequency": "annual",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "crime-survey-england-wales",
+    "dataset_title": "Crime Survey for England and Wales headline indicators",
+    "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice",
+    "provider": "ONS",
+    "dataset_family": "crime-and-justice",
+    "geography_levels": [
+      "England-and-Wales",
+      "region"
+    ],
+    "time_granularity": "annual",
+    "latest_release_date": "2025-10-01",
+    "fitness_for_use_score": 83,
+    "confidence": "medium",
+    "explainability_note": "Survey-based crime prevalence baseline less affected by recording changes.",
+    "known_limitations": [
+      "Sampling error and reporting behaviour effects."
+    ],
+    "comparability_warnings": [
+      "Do not compare directly with police recorded crime as equivalent measures."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "police-recorded-crime",
+      "dataset_title": "Police recorded crime",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice",
+      "provider": "ONS",
+      "dataset_family": "crime-and-justice",
+      "geography_levels": [
+        "England-and-Wales",
+        "force-area"
+      ],
+      "time_granularity": "quarterly",
+      "latest_release_date": "2025-12-01",
+      "fitness_for_use_score": 76,
+      "confidence": "medium",
+      "explainability_note": "Administrative crime recording context.",
+      "known_limitations": [
+        "Recording practices can change over time."
+      ],
+      "comparability_warnings": [
+        "Not directly interchangeable with survey prevalence."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "perceptions-of-crime",
+      "dataset_title": "Perceptions of crime and safety",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice",
+      "provider": "ONS",
+      "dataset_family": "crime-and-justice",
+      "geography_levels": [
+        "England-and-Wales"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2025-10-01",
+      "fitness_for_use_score": 68,
+      "confidence": "low",
+      "explainability_note": "Public confidence context.",
+      "known_limitations": [
+        "Perception does not equal incidence."
+      ],
+      "comparability_warnings": [
+        "Use as complementary social signal only."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "csew-to-prc",
+      "from_dataset_id": "crime-survey-england-wales",
+      "to_dataset_id": "police-recorded-crime",
+      "link_type": "quality_or_revision_context",
+      "link_reason": "Different measurement systems require explicit caveats.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "csew-to-perception",
+      "from_dataset_id": "crime-survey-england-wales",
+      "to_dataset_id": "perceptions-of-crime",
+      "link_type": "complementary_context",
+      "link_reason": "Adds societal perception context to prevalence data.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "crime-prevalence-context-chart-1",
+      "chart_type": "line",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "period",
+      "y_field": "rate_or_count",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

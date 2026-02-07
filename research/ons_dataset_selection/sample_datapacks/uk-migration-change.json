@@ -1,0 +1,196 @@
+{
+  "datapack_id": "uk-migration-change",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "uk-migration-change",
+    "tile_label": "How has migration changed?",
+    "intent_tags": [
+      "migration",
+      "demography",
+      "uk-trend"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "uk-migration-change-card",
+    "headline": "Migration change with component explanation",
+    "summary": "Use long-term migration as primary trend and components for interpretation.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "UK"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "annual"
+    },
+    "release_frequency": "annual",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "long-term-international-migration",
+    "dataset_title": "Long-term international migration, UK",
+    "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration",
+    "provider": "ONS",
+    "dataset_family": "migration",
+    "geography_levels": [
+      "UK"
+    ],
+    "time_granularity": "annual",
+    "latest_release_date": "2025-11-01",
+    "fitness_for_use_score": 86,
+    "confidence": "medium",
+    "explainability_note": "Core migration balance indicator for UK trend.",
+    "known_limitations": [
+      "Method changes can affect long-run comparability."
+    ],
+    "comparability_warnings": [
+      "Check breakpoints where methodology changed."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "population-estimates-uk",
+      "dataset_title": "UK population estimates",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates",
+      "provider": "ONS",
+      "dataset_family": "population",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2025-06-01",
+      "fitness_for_use_score": 90,
+      "confidence": "high",
+      "explainability_note": "Population-level context for migration effects.",
+      "known_limitations": [
+        "Revision cycles may rebase levels."
+      ],
+      "comparability_warnings": [
+        "Compare matched vintages only."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "net-migration-components",
+      "dataset_title": "Net migration components",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration",
+      "provider": "ONS",
+      "dataset_family": "migration",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2025-11-01",
+      "fitness_for_use_score": 82,
+      "confidence": "medium",
+      "explainability_note": "Decomposes inflow/outflow drivers.",
+      "known_limitations": [
+        "Component uncertainty can be higher than total balance."
+      ],
+      "comparability_warnings": [
+        "Component sums may revise over time."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "ltim-to-pop",
+      "from_dataset_id": "long-term-international-migration",
+      "to_dataset_id": "population-estimates-uk",
+      "link_type": "complementary_context",
+      "link_reason": "Population context needed to interpret scale effects.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "ltim-to-components",
+      "from_dataset_id": "long-term-international-migration",
+      "to_dataset_id": "net-migration-components",
+      "link_type": "derived_from",
+      "link_reason": "Components explain total net movement.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "uk-migration-change-chart-1",
+      "chart_type": "line",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "period",
+      "y_field": "count",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

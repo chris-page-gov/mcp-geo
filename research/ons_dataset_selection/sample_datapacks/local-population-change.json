@@ -1,0 +1,200 @@
+{
+  "datapack_id": "local-population-change",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "local-population-change",
+    "tile_label": "Is my area growing or shrinking?",
+    "intent_tags": [
+      "population",
+      "local-authority",
+      "demography"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "local-population-change-card",
+    "headline": "Local population change with projection context",
+    "summary": "Start with LA population estimates, then compare projections and components.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "local-authority",
+      "region",
+      "UK"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "annual"
+    },
+    "release_frequency": "annual",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "population-estimates-la",
+    "dataset_title": "Population estimates for local authorities",
+    "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates",
+    "provider": "ONS",
+    "dataset_family": "population",
+    "geography_levels": [
+      "local-authority",
+      "region",
+      "UK"
+    ],
+    "time_granularity": "annual",
+    "latest_release_date": "2025-06-01",
+    "fitness_for_use_score": 91,
+    "confidence": "high",
+    "explainability_note": "Primary local population baseline for planning and trend analysis.",
+    "known_limitations": [
+      "Intercensal revisions can alter historical levels."
+    ],
+    "comparability_warnings": [
+      "Do not mix unreconciled vintages across years."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "population-projections-la",
+      "dataset_title": "Sub-national population projections",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections",
+      "provider": "ONS",
+      "dataset_family": "population",
+      "geography_levels": [
+        "local-authority"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2024-11-01",
+      "fitness_for_use_score": 83,
+      "confidence": "medium",
+      "explainability_note": "Forward-looking scenario support.",
+      "known_limitations": [
+        "Projection assumptions can change."
+      ],
+      "comparability_warnings": [
+        "Projections are not forecasts of policy shocks."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "births-la",
+      "dataset_title": "Births by area",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths",
+      "provider": "ONS",
+      "dataset_family": "vital-events",
+      "geography_levels": [
+        "local-authority"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2025-09-01",
+      "fitness_for_use_score": 78,
+      "confidence": "medium",
+      "explainability_note": "Natural change context.",
+      "known_limitations": [
+        "Registration timing effects."
+      ],
+      "comparability_warnings": [
+        "Short-year comparisons need caution."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "pop-la-to-proj-la",
+      "from_dataset_id": "population-estimates-la",
+      "to_dataset_id": "population-projections-la",
+      "link_type": "leading_or_lagging_indicator",
+      "link_reason": "Projection context extends trend interpretation.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "pop-la-to-births-la",
+      "from_dataset_id": "population-estimates-la",
+      "to_dataset_id": "births-la",
+      "link_type": "complementary_context",
+      "link_reason": "Birth trends provide component explanation.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "local-population-change-chart-1",
+      "chart_type": "map",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "area_code",
+      "y_field": "population",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}
