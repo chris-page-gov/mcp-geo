@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import time
 
 import pytest
 
@@ -60,7 +61,24 @@ def test_catalog_covers_live_datasets():
     }
     client = ONSClient()
     base_api = getattr(settings, "ONS_DATASET_API_BASE", "https://api.beta.ons.gov.uk/v1")
-    status, items = client.get_all_pages(f"{base_api}/datasets", params={"limit": 1000, "page": 1})
+    cooldown_seconds = float(os.getenv("ONS_LIVE_COOLDOWN_SECONDS", "10.0"))
+    max_retries = int(os.getenv("ONS_LIVE_MAX_RETRIES", "6"))
+    backoff_base = float(os.getenv("ONS_LIVE_BACKOFF_BASE", "5.0"))
+    if cooldown_seconds > 0:
+        time.sleep(cooldown_seconds)
+    status = None
+    items = None
+    for attempt in range(1, max_retries + 1):
+        status, items = client.get_all_pages(
+            f"{base_api}/datasets",
+            params={"limit": 1000, "page": 1},
+        )
+        if status == 200:
+            break
+        if status == 429:
+            time.sleep(backoff_base * (2 ** (attempt - 1)))
+            continue
+        break
     assert status == 200
     live_ids = {
         item.get("id")
@@ -76,12 +94,30 @@ def test_catalog_covers_live_datasets():
 def test_live_dataset_endpoints_resolve():
     data = _load_catalog()
     items = [item for item in data.get("items", []) if isinstance(item, dict) and item.get("id")]
-    sample = items[:5]
     client = ONSClient()
     base_api = getattr(settings, "ONS_DATASET_API_BASE", "https://api.beta.ons.gov.uk/v1")
-    for entry in sample:
+    throttle_seconds = float(os.getenv("ONS_LIVE_THROTTLE_SECONDS", "0.5"))
+    max_retries = int(os.getenv("ONS_LIVE_MAX_RETRIES", "6"))
+    backoff_base = float(os.getenv("ONS_LIVE_BACKOFF_BASE", "5.0"))
+    for entry in items:
         dataset_id = entry.get("id")
-        status, resp = client.get_json(f"{base_api}/datasets/{dataset_id}", params=None)
-        assert status == 200, f"Dataset {dataset_id} returned {status}"
-        assert isinstance(resp, dict)
-        assert resp.get("id") == dataset_id
+        last_status = None
+        last_resp = None
+        for attempt in range(1, max_retries + 1):
+            status, resp = client.get_json(f"{base_api}/datasets/{dataset_id}", params=None)
+            if status == 200:
+                assert isinstance(resp, dict)
+                assert resp.get("id") == dataset_id
+                last_status = None
+                last_resp = None
+                break
+            last_status = status
+            last_resp = resp
+            if status == 429:
+                time.sleep(backoff_base * (2 ** (attempt - 1)))
+                continue
+            break
+        if last_status is not None:
+            assert False, f"Dataset {dataset_id} returned {last_status} ({last_resp})"
+        if throttle_seconds > 0:
+            time.sleep(throttle_seconds)
