@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Added STDIO elicitation tests (accept/cancel/unavailable + wire round-trip) and stats-routing input validation coverage.
 - Expanded evaluation coverage for ONS dataset selection and catalog validation.
 - Expanded live ONS catalog validation to check all datasets with throttling/backoff controls.
+- Live ONS catalog tests now validate entry fields and surface timeout/error summaries.
 
 ## [0.2.11] - 2026-02-06
 ### Added
