@@ -56,7 +56,7 @@ def _install_os_handlers(handlers: Dict[str, Any]) -> None:
     handlers["places"] = places_handler
     handlers["names"] = names_handler
     handlers["features"] = features_handler
-    handlers["linked-ids"] = linked_ids_handler
+    handlers["identifierTypes"] = linked_ids_handler
 
 
 def _install_ons_stubs(monkeypatch) -> None:

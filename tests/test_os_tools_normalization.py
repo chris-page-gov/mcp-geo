@@ -138,10 +138,11 @@ def test_features_query(monkeypatch: MonkeyPatch):
         monkeypatch,
         [
             (
-                "features/v1/buildings",
+                "features/ngd/ofa/v1/collections/buildings/items",
                 (
                     200,
                     {
+                        "numberMatched": 3,
                         "features": [
                             {
                                 "id": "f1",
@@ -160,11 +161,217 @@ def test_features_query(monkeypatch: MonkeyPatch):
             "tool": "os_features.query",
             "collection": "buildings",
             "bbox": [0, 0, 1, 1],
+            "limit": 1,
         },
     )
     assert resp.status_code == 200
     data = resp.json()
     assert data["features"][0]["id"] == "f1"
+    assert data["nextPageToken"] == "1"
+
+
+def test_features_query_bad_limit(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "limit": 0,
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_features_query_bad_bbox_numeric(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": ["a", "b", "c", "d"],
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_features_query_bad_page_token(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "pageToken": "not-an-int",
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_linked_ids_infer_uprn(monkeypatch: MonkeyPatch):
+    patch_requests(
+        monkeypatch,
+        [
+            (
+                "search/links/v1/identifierTypes/uprn/100021892956",
+                (200, {"identifiers": [{"type": "TOID", "value": "osgb1000000000"}]}),
+            )
+        ],
+    )
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_linked_ids.get", "identifier": "100021892956"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["identifierType"] == "uprn"
+    assert data["assumedType"] is True
+    assert isinstance(data["identifiers"], list)
+
+
+def test_linked_ids_explicit_toid_type(monkeypatch: MonkeyPatch):
+    patch_requests(
+        monkeypatch,
+        [
+            (
+                "search/links/v1/identifierTypes/toid/osgb1000000000",
+                (200, {"identifiers": [{"type": "UPRN", "value": "100021892956"}]}),
+            )
+        ],
+    )
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_linked_ids.get",
+            "identifier": "osgb1000000000",
+            "identifierType": "OSGB",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["identifierType"] == "toid"
+    assert data["assumedType"] is False
+
+
+def test_linked_ids_invalid_type_and_no_inference(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_linked_ids.get", "identifier": "abc", "identifierType": "bad"},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_features_query_limit_not_int(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "limit": "1",
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_features_query_negative_page_token(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "pageToken": -1,
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_features_query_next_token_without_number_matched(monkeypatch: MonkeyPatch):
+    patch_requests(
+        monkeypatch,
+        [
+            (
+                "features/ngd/ofa/v1/collections/buildings/items",
+                (
+                    200,
+                    {
+                        "features": [
+                            "bad-entry",
+                            {
+                                "id": "f2",
+                                "geometry": {"type": "Polygon"},
+                                "properties": {},
+                            },
+                        ]
+                    },
+                ),
+            )
+        ],
+    )
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "limit": 1,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["count"] == 1
+    assert data["nextPageToken"] == "1"
+
+
+def test_linked_ids_infer_toid(monkeypatch: MonkeyPatch):
+    patch_requests(
+        monkeypatch,
+        [
+            (
+                "search/links/v1/identifierTypes/toid/osgb1000000000",
+                (200, {"identifiers": [{"type": "UPRN", "value": "100021892956"}]}),
+            )
+        ],
+    )
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_linked_ids.get", "identifier": "osgb1000000000"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["identifierType"] == "toid"
+    assert data["assumedType"] is True
+
+
+def test_linked_ids_status_error(monkeypatch: MonkeyPatch):
+    patch_requests(
+        monkeypatch,
+        [
+            (
+                "search/links/v1/identifierTypes/uprn/100021892956",
+                (403, {"error": "forbidden"}),
+            )
+        ],
+    )
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_linked_ids.get", "identifier": "100021892956"},
+    )
+    assert resp.status_code == 501
+    assert resp.json()["code"] in {"OS_API_ERROR", "OS_API_KEY_INVALID"}
 
 
 def test_vector_tiles_descriptor(monkeypatch: MonkeyPatch):

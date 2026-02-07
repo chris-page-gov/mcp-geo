@@ -86,8 +86,8 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (90.20% coverage, 464 passed, 1 skipped) on 2026-02-06.
-- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` succeeded on 2026-02-06.
+- Latest full test run: `pytest -q` (90.02% coverage, 537 passed, 3 skipped) on 2026-02-07.
+- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` (90.02% coverage, 537 passed, 3 skipped) on 2026-02-07.
 
 ## Key Conventions
 
@@ -121,6 +121,7 @@ assumptions change.
 - 2026-02-07: Added `ons_select.search` + `resource://mcp-geo/ons-catalog` with a catalog refresh script to improve ONS dataset selection.
 - 2026-02-07: Added related-dataset linking with comparability gating to `ons_select.search` (opt-in via `includeRelated`).
 - 2026-02-07: Wired `ons_select.search` missing-context prompts into MCP form elicitation (`elicitation/create`) for STDIO and Streamable HTTP transports.
+- 2026-02-07: Fixed `os_features.query` to use the NGD OGC API Features items endpoint; fixed `os_linked_ids.get` to use OS search/links identifierTypes.
 
 ## Open Questions
 

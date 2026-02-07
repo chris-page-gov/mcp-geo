@@ -63,7 +63,9 @@ def classify_os_api_key_error(status_code: int, body: str | None) -> tuple[str, 
 class OSClient:
     base_places = "https://api.os.uk/search/places/v1"
     base_names = "https://api.os.uk/search/names/v1"
-    base_features = "https://api.os.uk/features/v1"
+    # OS NGD is exposed via an OGC API Features implementation (GeoJSON responses).
+    base_ngd_features = "https://api.os.uk/features/ngd/ofa/v1"
+    base_linked_ids = "https://api.os.uk/search/links/v1"
     base_maps = "https://api.os.uk/maps/v1"
     base_vector_tiles = "https://api.os.uk/maps/vector/v1"
 

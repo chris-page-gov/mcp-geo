@@ -27,6 +27,10 @@ All notable changes to this project will be documented in this file.
 - Trace proxy parsing now only attempts JSON decode on client/server JSON-RPC lines, reducing false parse errors from Docker/build stderr noise.
 - Troubleshooting docs now include `parent_message_uuid` UUID failures as Claude host/session issues (not MCP server payload errors), with concrete recovery steps.
 
+### Fixed
+- `os_features.query` now uses OS NGD OGC API Features (`features/ngd/ofa/v1/collections/{collection}/items`) and supports basic paging via `limit` + `pageToken` (`nextPageToken` in responses).
+- `os_linked_ids.get` now uses OS Linked Identifiers (`search/links/v1/identifierTypes/{identifierType}/{identifier}`) with optional identifier type inference.
+
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.
 - Added STDIO elicitation tests (accept/cancel/unavailable + wire round-trip) and stats-routing input validation coverage.

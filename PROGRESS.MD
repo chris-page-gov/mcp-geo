@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-06
+Last updated: 2026-02-07
 
 ## Sources reviewed
 
@@ -39,8 +39,8 @@ Legend: Done, Partial, Not started
 | Tool registry + dynamic imports | Done | server/mcp/tools.py, tools/registry.py | Explicit module import loop. |
 | OS Places (geocoder) | Done | tools/os_places.py, docs/examples.md | search/by_postcode/by_uprn/nearest/within implemented. |
 | OS Names (gazetteer) | Done | tools/os_names.py | find + nearest. |
-| OS Linked Identifiers | Done | tools/os_linked_ids.py | UPRN/USRN/TOID resolution. |
-| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Only bbox query exposed; no attribute filters/polygon/collection listing. |
+| OS Linked Identifiers | Done | tools/os_linked_ids.py | Uses OS search/links identifierTypes API; supports UPRN/USRN/TOID (type can be inferred). |
+| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Bbox query exposed via NGD OGC API Features items endpoint with limit/pageToken paging; no queryables/attribute filters/polygon/collection listing. |
 | OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL now available; full rendering/overlays still pending. |
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; no streaming/large export pipeline. |
