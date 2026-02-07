@@ -20,6 +20,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - `tools/`: Concrete tool modules (os_places, os_places_extra, os_names, os_features, os_linked_ids, os_maps, os_vector_tiles, etc.).
 - `playground/`: Placeholder for a web or CLI UI (not yet populated with frontend assets here).
 - `tests/`: Pytest suite (currently missing critical coverage—see gaps section).
+- `research/`: Research packs and design studies (see `research/ons_dataset_selection/`).
 - `.devcontainer/`: Development container configuration.
 - `CHANGELOG.md`: Unreleased section tracks epics.
 - `pyproject.toml`: Project metadata & dependencies.
@@ -117,6 +118,17 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 - Keep the implementation plan in `PROGRESS.MD` updated as plan items move from
   pending to in progress to done. Update `CHANGELOG.md` when a plan item is
   completed and adjust related docs in the same change.
+
+## Agent Skills (Codex)
+
+- Codex supports Agent Skills; follow the Agent Skills specification for format and behavior.
+- The upstream spec and examples are vendored as a git submodule at `docs/vendor/agentskills`.
+- When adding skills for this repo:
+  - Create a skill directory containing a `SKILL.md` with YAML frontmatter (at least `name` and `description`) plus Markdown instructions.
+  - Use optional `scripts/`, `references/`, and `assets/` directories for helper code and large resources instead of inlining bulky content.
+  - Keep instructions concise; move large tables or examples into referenced files.
+  - Document prerequisites and expected outputs to keep automation reliable.
+- Update `docs/spec_tracking.md` if the Agent Skills spec URL or status changes.
 
 ## Preview Spec Tracking
 

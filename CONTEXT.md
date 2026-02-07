@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-06
+Last updated: 2026-02-07
 Owner: @chris-page-gov
 
 ## Purpose
@@ -48,10 +48,12 @@ assumptions change.
 ## Current Focus
 
 - Ensuring reliable MCP-Apps performance and client compatibility.
+- Improving ONS dataset selection (ranking, elicitation, comparability guardrails).
 
 ## Active Work
 
 - Documentation pack and preparation for workshop/demo.
+- ONS dataset selection research pack integrated at `research/ons_dataset_selection/`.
 - Track delivery work in `docs/spec_package/12_backlog_and_plan.md` and `PROGRESS.MD`.
 
 ## Status Snapshot (from PROGRESS.MD)
@@ -60,6 +62,8 @@ assumptions change.
   route_query tool, baseline tests, boundary cache ingestion pipeline.
 - Partial: OS Features, OS Maps render, ONS data tooling, admin lookup caching, resources
   population, playground UI, observability.
+- Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
+  evaluation plan).
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -112,6 +116,8 @@ assumptions change.
 - 2026-02-06: Added flat `ui/resourceUri` metadata alongside nested `ui.resourceUri` in UI tool metadata for broader MCP-Apps host compatibility.
 - 2026-02-06: `nomis.datasets` query filtering now applies multi-token scoring for better dataset ranking on compound prompts (for example `population census 2021`).
 - 2026-02-06: `scripts/mcp_stdio_trace_proxy.py` now avoids JSON parse attempts for stderr/non-RPC lines to reduce noisy parse-error entries in trace logs.
+- 2026-02-07: Added ONS dataset selection research pack under `research/ons_dataset_selection/` to guide dataset ranking, elicitation, and explainability.
+- 2026-02-07: Added Agent Skills vendor submodule and tracking entry to align Codex skill usage with the Agent Skills spec.
 
 ## Open Questions
 

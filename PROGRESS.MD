@@ -92,6 +92,7 @@ Medium impact
 - Add OS Net / Match & Cleanse / Downloads tooling if still in scope.
 - Replace map render descriptor stub with a real rendering or proxy service.
 - Expand ONS data export (streaming CSV/XLSX) and add more live dataset coverage.
+- Implement ONS dataset selection optimization (catalogue index, ranking, explainability, elicitation).
 - Improve observability: structured JSON logs, latency histograms, request/response size metrics.
 - Add CI pipeline (lint, type, tests, coverage, build image).
 
@@ -123,6 +124,24 @@ Low impact
 | --- | --- | --- |
 | Add full specification package | Done | docs/spec_package/* |
 | Align README + getting_started with ONS cache behavior | Done | README.md, docs/getting_started.md |
+
+## ONS dataset selection research (2026-02-07)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Add research pack under `research/ons_dataset_selection/` | Done | Includes report, taxonomy options, datapack schema, samples, linking rules, roadmap, evaluation plan. |
+| Normalize SeeLinks references to MCP Geo | Done | Research pack now framed for MCP Geo usage. |
+| Link research in README + changelog | Done | README section added; changelog updated. |
+
+## Dataset selection optimization plan (2026-02-07)
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| Build cached ONS/Nomis catalogue resource | Not started | Store dataset/edition/version + dimension metadata with ETag support. |
+| Add selection ranking tool with explainability | Not started | Return top candidates + why-this/why-not + comparability warnings. |
+| Add elicitation integration for ambiguous queries | Not started | Wire into `os_mcp.stats_routing` and tool guidance. |
+| Add comparability gating + related-dataset linking | Not started | Implement `linking_rules.md` with safe defaults. |
+| Extend evaluation harness with selection tasks | Not started | Add dataset-selection questions + scoring expectations. |
 
 ## Codex context persistence (2026-02-02)
 
