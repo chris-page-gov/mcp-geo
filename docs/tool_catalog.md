@@ -1451,6 +1451,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     "geographyLevel": {
       "type": "string"
     },
+    "includeRelated": {
+      "type": "boolean"
+    },
     "intentTags": {
       "items": {
         "type": "string"
@@ -1467,6 +1470,11 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "query": {
       "type": "string"
+    },
+    "relatedLimit": {
+      "maximum": 10,
+      "minimum": 1,
+      "type": "integer"
     },
     "timeGranularity": {
       "type": "string"
@@ -1505,6 +1513,9 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
     },
     "query": {
       "type": "string"
+    },
+    "relatedDatasets": {
+      "type": "array"
     }
   },
   "required": [

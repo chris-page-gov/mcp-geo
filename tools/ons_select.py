@@ -26,6 +26,8 @@ _SYNONYMS: dict[str, tuple[str, ...]] = {
 
 _DEFAULT_LIMIT = 5
 _MAX_LIMIT = 25
+_DEFAULT_RELATED_LIMIT = 5
+_MAX_RELATED_LIMIT = 10
 
 
 def _resolve_catalog_path() -> Path:
@@ -55,6 +57,39 @@ def _expand_tokens(tokens: Iterable[str]) -> list[str]:
         seen.add(token)
         out.append(token)
     return out
+
+
+def _entry_tokens(entry: dict[str, Any]) -> set[str]:
+    parts: list[str] = []
+    for key in ("title", "description", "id"):
+        value = entry.get(key)
+        if isinstance(value, str) and value:
+            parts.append(value)
+    keywords = entry.get("keywords") or []
+    if isinstance(keywords, list):
+        parts.extend(str(k) for k in keywords if isinstance(k, str))
+    themes = entry.get("themes") or []
+    if isinstance(themes, list):
+        parts.extend(str(t) for t in themes if isinstance(t, str))
+    return set(_tokenize(" ".join(parts)))
+
+
+def _extract_geo_levels(entry: dict[str, Any]) -> list[str]:
+    geo = entry.get("geography")
+    if isinstance(geo, dict):
+        levels = geo.get("levels")
+        if isinstance(levels, list):
+            return [str(x).lower() for x in levels if isinstance(x, str)]
+    return []
+
+
+def _extract_time_granularity(entry: dict[str, Any]) -> str | None:
+    time_meta = entry.get("time")
+    if isinstance(time_meta, dict):
+        gran = time_meta.get("granularity")
+        if isinstance(gran, str) and gran.strip():
+            return gran.strip().lower()
+    return None
 
 
 def _load_catalog() -> tuple[list[dict[str, Any]] | None, dict[str, Any] | None]:
@@ -209,6 +244,59 @@ def _build_why_not(warnings: list[str], entry: dict[str, Any]) -> list[str]:
     return []
 
 
+def _build_related_datasets(
+    primary: dict[str, Any],
+    entries: list[dict[str, Any]],
+    query_tokens: list[str],
+    limit: int,
+) -> list[dict[str, Any]]:
+    primary_tokens = _entry_tokens(primary) | set(query_tokens)
+    primary_geo = _extract_geo_levels(primary)
+    primary_time = _extract_time_granularity(primary)
+    related: list[dict[str, Any]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("id") == primary.get("id"):
+            continue
+        entry_tokens = _entry_tokens(entry)
+        overlap = primary_tokens & entry_tokens
+        if not overlap:
+            continue
+        warnings: list[str] = []
+        entry_geo = _extract_geo_levels(entry)
+        entry_time = _extract_time_granularity(entry)
+        if primary_geo and entry_geo and not set(primary_geo) & set(entry_geo):
+            # Hard gate for incompatible geographies.
+            continue
+        if primary_time and entry_time and primary_time != entry_time:
+            # Hard gate for incompatible time basis.
+            continue
+        if not entry_geo or not primary_geo:
+            warnings.append("Missing geography metadata for comparability check")
+        if not entry_time or not primary_time:
+            warnings.append("Missing time granularity for comparability check")
+        score = len(overlap) * 5
+        if primary_geo and entry_geo and set(primary_geo) & set(entry_geo):
+            score += 5
+        if primary_time and entry_time and primary_time == entry_time:
+            score += 5
+        if warnings:
+            score -= 2 * len(warnings)
+        related.append(
+            {
+                "datasetId": entry.get("id"),
+                "title": entry.get("title"),
+                "linkType": "complementary_context",
+                "linkScore": max(score, 0),
+                "linkReason": f"Shared intent tokens: {', '.join(sorted(list(overlap))[:6])}",
+                "warnings": warnings,
+            }
+        )
+    related.sort(key=lambda item: (-item.get("linkScore", 0), str(item.get("title", ""))))
+    return related[:limit]
+
+
 def _build_elicitation_questions(
     geography_level: str | None,
     time_granularity: str | None,
@@ -262,6 +350,21 @@ def _search(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "intentTags must be a list of strings",
         }
+    include_related = payload.get("includeRelated", False)
+    if not isinstance(include_related, bool):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "includeRelated must be a boolean",
+        }
+    related_limit = payload.get("relatedLimit", _DEFAULT_RELATED_LIMIT)
+    if not isinstance(related_limit, int) or related_limit < 1:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "relatedLimit must be >= 1",
+        }
+    related_limit = min(related_limit, _MAX_RELATED_LIMIT)
 
     tokens = _expand_tokens(_tokenize(query))
 
@@ -304,7 +407,9 @@ def _search(payload: dict[str, Any]) -> ToolResult:
     scored.sort(key=lambda item: (-item[0], str(item[1].get("title", ""))))
 
     candidates: list[dict[str, Any]] = []
+    top_entries: list[dict[str, Any]] = []
     for score, entry, reasons, warnings in scored[:limit]:
+        top_entries.append(entry)
         candidates.append(
             {
                 "datasetId": entry.get("id"),
@@ -328,12 +433,17 @@ def _search(payload: dict[str, Any]) -> ToolResult:
 
     questions = _build_elicitation_questions(geography_level, time_granularity, intent_tags, tokens)
 
+    related = []
+    if include_related and top_entries:
+        related = _build_related_datasets(top_entries[0], catalog_items, tokens, related_limit)
+
     return 200, {
         "query": query,
         "candidates": candidates,
         "candidateCount": len(candidates),
         "needsElicitation": bool(questions),
         "elicitationQuestions": questions,
+        "relatedDatasets": related,
         "catalogMeta": {
             "generatedAt": catalog_meta.get("generatedAt") if isinstance(catalog_meta, dict) else None,
             "source": catalog_meta.get("source") if isinstance(catalog_meta, dict) else None,
@@ -362,6 +472,8 @@ register(
                 "geographyLevel": {"type": "string"},
                 "timeGranularity": {"type": "string"},
                 "intentTags": {"type": "array", "items": {"type": "string"}},
+                "includeRelated": {"type": "boolean"},
+                "relatedLimit": {"type": "integer", "minimum": 1, "maximum": 10},
             },
             "required": [],
             "additionalProperties": False,
@@ -374,6 +486,7 @@ register(
                 "candidateCount": {"type": "integer"},
                 "needsElicitation": {"type": "boolean"},
                 "elicitationQuestions": {"type": "array", "items": {"type": "string"}},
+                "relatedDatasets": {"type": "array"},
                 "catalogMeta": {"type": "object"},
             },
             "required": ["query", "candidates", "candidateCount"],

@@ -140,7 +140,7 @@ Low impact
 | Build cached ONS/Nomis catalogue resource | Done | Added `resource://mcp-geo/ons-catalog` with refresh script; placeholder catalog stored in `resources/ons_catalog.json`. |
 | Add selection ranking tool with explainability | Done | Added `ons_select.search` with scored candidates and elicitation prompts. |
 | Add elicitation integration for ambiguous queries | Partial | Tool returns elicitation questions; stdio form wiring still pending. |
-| Add comparability gating + related-dataset linking | Not started | Implement `linking_rules.md` with safe defaults. |
+| Add comparability gating + related-dataset linking | Partial | `ons_select.search` now returns related datasets with gating; expand rules per `linking_rules.md`. |
 | Extend evaluation harness with selection tasks | Partial | Added initial `ons_select.search` question; expand coverage. |
 
 ## Codex context persistence (2026-02-02)

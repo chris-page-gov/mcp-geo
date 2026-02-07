@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added `ons_select.search` for ranked ONS dataset selection with explainability prompts.
 - Added `resource://mcp-geo/ons-catalog` and `resources/ons_catalog.json` as the local catalog index.
 - Added `scripts/ons_catalog_refresh.py` to rebuild the ONS catalog index from the live API.
+- Added related-dataset linking with comparability gating in `ons_select.search` when `includeRelated=true`.
 
 ### Changed
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.

@@ -93,6 +93,58 @@ def test_ons_select_returns_elicitation_questions(client, monkeypatch, tmp_path)
     assert any("time" in q.lower() for q in data["elicitationQuestions"])
 
 
+def test_ons_select_related_datasets_with_gating(client, monkeypatch, tmp_path):
+    catalog = _write_catalog(
+        tmp_path,
+        [
+            {
+                "id": "housing-affordability",
+                "title": "Housing affordability index",
+                "description": "Housing affordability for local areas.",
+                "keywords": ["housing", "affordability"],
+                "geography": {"levels": ["local_authority"]},
+                "time": {"granularity": "year"},
+                "state": "published",
+            },
+            {
+                "id": "housing-prices",
+                "title": "Housing prices by local authority",
+                "description": "House prices by local authority.",
+                "keywords": ["housing", "prices"],
+                "geography": {"levels": ["local_authority"]},
+                "time": {"granularity": "year"},
+                "state": "published",
+            },
+            {
+                "id": "employment-rate",
+                "title": "Employment rate",
+                "description": "Employment for regions.",
+                "keywords": ["employment"],
+                "geography": {"levels": ["region"]},
+                "time": {"granularity": "month"},
+                "state": "published",
+            },
+        ],
+    )
+    monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(catalog), raising=False)
+    monkeypatch.setattr(settings, "ONS_SELECT_LIVE_ENABLED", False, raising=False)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_select.search",
+            "query": "housing affordability",
+            "includeRelated": True,
+            "relatedLimit": 5,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    related = data.get("relatedDatasets", [])
+    assert any(item.get("datasetId") == "housing-prices" for item in related)
+    assert all(item.get("datasetId") != "employment-rate" for item in related)
+
+
 def test_ons_select_catalog_missing_returns_error(client, monkeypatch, tmp_path):
     missing = tmp_path / "missing.json"
     monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(missing), raising=False)
