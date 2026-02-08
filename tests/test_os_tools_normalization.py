@@ -143,6 +143,7 @@ def test_features_query(monkeypatch: MonkeyPatch):
                     200,
                     {
                         "numberMatched": 3,
+                        "numberReturned": 1,
                         "features": [
                             {
                                 "id": "f1",
@@ -167,6 +168,8 @@ def test_features_query(monkeypatch: MonkeyPatch):
     assert resp.status_code == 200
     data = resp.json()
     assert data["features"][0]["id"] == "f1"
+    assert data["numberMatched"] == 3
+    assert data["numberReturned"] == 1
     assert data["nextPageToken"] == "1"
 
 

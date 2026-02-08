@@ -131,6 +131,9 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     number_matched = body.get("numberMatched")
     if not isinstance(number_matched, int):
         number_matched = None
+    number_returned = body.get("numberReturned")
+    if not isinstance(number_returned, int):
+        number_returned = None
 
     next_token: str | None = None
     if number_matched is not None:
@@ -146,6 +149,8 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         "bbox": [min_lon, min_lat, max_lon, max_lat],
         "features": features_out,
         "count": len(features_out),
+        "numberMatched": number_matched,
+        "numberReturned": number_returned,
         "limit": limit,
         "offset": offset,
         "nextPageToken": next_token,
@@ -195,6 +200,8 @@ register(
                 "bbox": {"type": "array", "items": {"type": "number"}},
                 "features": {"type": "array"},
                 "count": {"type": "integer"},
+                "numberMatched": {"type": ["integer", "null"]},
+                "numberReturned": {"type": ["integer", "null"]},
                 "limit": {"type": "integer"},
                 "offset": {"type": "integer"},
                 "nextPageToken": {"type": ["string", "null"]},
