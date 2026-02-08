@@ -1,5 +1,8 @@
 # OS Catalog Live Validation Run Report (2026-02-07)
 
+Note: this v1 run failed due to NGD `items` probes timing out on a large bbox; see
+`docs/reports/os_catalog_live_run_2026-02-08.md` for the stabilized follow-up run.
+
 ## Run Metadata
 
 - Date: 2026-02-07 (UTC)
@@ -105,4 +108,3 @@ FAIL
 
 The OS live probe run detected 13 required NGD collection item probes that timed out, indicating current reliability
 issues (or overly strict timeouts) for a subset of OS NGD OGC API Features collections under this environment/config.
-

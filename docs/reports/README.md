@@ -9,4 +9,5 @@ This folder contains human-readable run reports and investigation summaries.
 
 ## OS Catalog Live Validation
 
-- 2026-02-07: [OS catalog live validation run](os_catalog_live_run_2026-02-07.md)
+- 2026-02-08: [OS catalog live validation run](os_catalog_live_run_2026-02-08.md)
+- 2026-02-07: [OS catalog live validation run (v1)](os_catalog_live_run_2026-02-07.md)

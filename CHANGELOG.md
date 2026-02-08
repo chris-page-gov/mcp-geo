@@ -15,7 +15,8 @@ All notable changes to this project will be documented in this file.
 - Added `resource://mcp-geo/os-catalog` and `resources/os_catalog.json` as the OS API + downloads catalog index.
 - Added `scripts/os_catalog_refresh.py` to rebuild the OS catalog index from live OS API discovery.
 - Added OS catalog snapshot + live validation tests (`tests/test_os_catalog_snapshot.py`).
-- Added OS catalog live validation run report (`docs/reports/os_catalog_live_run_2026-02-07.md`).
+- Added OS catalog live validation run report (v1): `docs/reports/os_catalog_live_run_2026-02-07.md` (timeouts observed).
+- Added OS catalog live validation run report (follow-up): `docs/reports/os_catalog_live_run_2026-02-08.md`.
 - Added `os_features.collections` to list NGD OGC API Features collections and return a latest-by-base mapping.
 - Added `os_apps.render_boundary_explorer` (`ui://mcp-geo/boundary-explorer`) for boundary + inventory exploration.
 - Added `os_map.inventory` and `os_map.export` to orchestrate bounded inventories and export snapshots as resources.
