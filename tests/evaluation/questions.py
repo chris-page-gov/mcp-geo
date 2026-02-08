@@ -456,6 +456,20 @@ BASIC_QUESTIONS = [
         ],
         tags=["apps", "ui", "probe"],
     ),
+    EvaluationQuestion(
+        id="B020",
+        question="Open a 3D view of Warwick and Leamington wards with premises types",
+        intent=Intent.INTERACTIVE_SELECTION,
+        difficulty=Difficulty.BASIC,
+        description="Launch the Warwick + Leamington 3D UI widget.",
+        expected=ExpectedOutcome(
+            required_tools=["os_apps.render_warwick_leamington_3d"],
+            max_tool_calls=2,
+            required_keywords=["instructions"],
+        ),
+        tool_calls=[ToolCallSpec("os_apps.render_warwick_leamington_3d", {})],
+        tags=["apps", "ui", "3d"],
+    ),
 ]
 
 

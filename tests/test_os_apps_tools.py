@@ -104,6 +104,18 @@ def test_os_apps_render_ui_probe_embedded(monkeypatch):
     assert resource_blocks
     assert resource_blocks[0]["resource"]["uri"] == "ui://mcp-geo/statistics-dashboard"
 
+def test_os_apps_render_warwick_leamington_3d(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_apps.render_warwick_leamington_3d"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["uiResourceUris"] == ["ui://mcp-geo/warwick-leamington-3d"]
+    assert body["resourceUri"] == "ui://mcp-geo/warwick-leamington-3d"
+    assert body["_meta"]["ui"]["resourceUri"] == "ui://mcp-geo/warwick-leamington-3d"
+
 
 def test_os_apps_content_mode_aliases():
     assert os_apps._normalize_content_mode("link") == "resource_link"

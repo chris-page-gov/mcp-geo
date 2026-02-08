@@ -14,6 +14,7 @@ def test_resources_list_includes_skills_and_ui():
     uris = {r.get("uri") for r in resources if isinstance(r, dict)}
     assert "skills://mcp-geo/getting-started" in uris
     assert "ui://mcp-geo/geography-selector" in uris
+    assert "ui://mcp-geo/warwick-leamington-3d" in uris
 
 
 def test_resources_get_skills_uri():
@@ -31,6 +32,13 @@ def test_resources_get_ui_uri():
     assert contents[0]["mimeType"] == "text/html;profile=mcp-app"
     assert "ui" in contents[0].get("_meta", {})
     assert "Geography Selector" in contents[0]["text"]
+
+def test_resources_get_warwick_leamington_3d_ui_uri():
+    resp = client.get("/resources/read", params={"uri": "ui://mcp-geo/warwick-leamington-3d"})
+    assert resp.status_code == 200
+    contents = resource_contents(resp)
+    assert contents[0]["mimeType"] == "text/html;profile=mcp-app"
+    assert "Warwick + Royal Leamington Spa" in contents[0]["text"]
 
 
 def test_resources_list_pagination():

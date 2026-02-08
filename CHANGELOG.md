@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Added OS catalog live validation run report (follow-up): `docs/reports/os_catalog_live_run_2026-02-08.md`.
 - Added `os_features.collections` to list NGD OGC API Features collections and return a latest-by-base mapping.
 - Added `os_apps.render_boundary_explorer` (`ui://mcp-geo/boundary-explorer`) for boundary + inventory exploration.
+- Added `os_apps.render_warwick_leamington_3d` (`ui://mcp-geo/warwick-leamington-3d`) for a 3D wards + premises types view.
 - Added `os_map.inventory` and `os_map.export` to orchestrate bounded inventories and export snapshots as resources.
 
 ### Changed
