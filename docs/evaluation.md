@@ -70,6 +70,7 @@ changes can be audited over time. The test is skipped unless explicitly enabled.
 
 - ONS catalog live validation run report (v2): `docs/reports/ons_catalog_live_run_2026-02-07_v2.md`
 - Previous run report (v1): `docs/reports/ons_catalog_live_run_2026-02-07.md`
+- OS catalog live validation run report: `docs/reports/os_catalog_live_run_2026-02-07.md`
 - Reports index: `docs/reports/README.md`
 
 If you are using the devcontainer, a PostGIS service is started automatically

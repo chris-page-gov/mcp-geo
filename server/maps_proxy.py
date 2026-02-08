@@ -5,6 +5,7 @@ import hashlib
 import math
 import threading
 import time
+import re
 from collections import OrderedDict
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -33,6 +34,8 @@ _OSM_CACHE_KEY_SEP = "/"
 _TILE_SIZE = 256
 _MAX_LAT = 85.05112878
 _OS_BREAKER = get_circuit_breaker("os")
+_OS_KEY_PLACEHOLDER = "OS_API_KEY"
+_KEY_QUERY_RE = re.compile(r"([?&]key=)[^&#]+", re.IGNORECASE)
 
 
 def _osm_tile_base() -> str:
@@ -182,11 +185,13 @@ def _rewrite_style_urls(
     def rewrite(url: str) -> str:
         if _OS_BASE in url:
             url = url.replace(_OS_BASE, "/maps/vector")
-        url = url.replace("{API_KEY}", key)
-        url = url.replace("OS_API_KEY", key)
-        if "/maps/vector" in url and "key=" not in url:
-            joiner = "&" if "?" in url else "?"
-            url = f"{url}{joiner}key={key}"
+        # Never embed the real key in returned styles/tiles (local-first hosts should provide OS_API_KEY
+        # server-side). Keep a stable placeholder so clients don't accidentally copy/paste a secret.
+        url = url.replace("{API_KEY}", _OS_KEY_PLACEHOLDER)
+        url = url.replace("OS_API_KEY", _OS_KEY_PLACEHOLDER)
+        if key:
+            url = url.replace(key, _OS_KEY_PLACEHOLDER)
+        url = _KEY_QUERY_RE.sub(rf"\1{_OS_KEY_PLACEHOLDER}", url)
         if srs and "/maps/vector/vts" in url and "srs=" not in url:
             joiner = "&" if "?" in url else "?"
             url = f"{url}{joiner}srs={srs}"
@@ -224,7 +229,8 @@ def _rewrite_style_urls(
                     and source.get("type") == "vector"
                     and srs
                 ):
-                    tile_base = f"{base_url}/maps/vector/vts/tile/{{z}}/{{y}}/{{x}}.pbf?key={key}&srs={srs}"
+                    base = (base_url or "").rstrip("/")
+                    tile_base = f"{base}/maps/vector/vts/tile/{{z}}/{{y}}/{{x}}.pbf?srs={srs}"
                     source["tiles"] = [tile_base]
                     source["tileSize"] = source.get("tileSize") or 512
                     source.pop("url", None)

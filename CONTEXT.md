@@ -122,6 +122,7 @@ assumptions change.
 - 2026-02-07: Added related-dataset linking with comparability gating to `ons_select.search` (opt-in via `includeRelated`).
 - 2026-02-07: Wired `ons_select.search` missing-context prompts into MCP form elicitation (`elicitation/create`) for STDIO and Streamable HTTP transports.
 - 2026-02-07: Fixed `os_features.query` to use the NGD OGC API Features items endpoint; fixed `os_linked_ids.get` to use OS search/links identifierTypes.
+- 2026-02-07: Added OS API + downloads catalog snapshot (`resource://mcp-geo/os-catalog`) with refresh script and live validation run report.
 
 ## Open Questions
 

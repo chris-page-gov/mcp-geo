@@ -138,10 +138,12 @@ Low impact
 | Step | Status | Notes |
 | --- | --- | --- |
 | Build cached ONS/Nomis catalogue resource | Done | Added `resource://mcp-geo/ons-catalog` with refresh script; placeholder catalog stored in `resources/ons_catalog.json`. |
+| Build cached OS API/downloads catalogue resource | Done | Added `resource://mcp-geo/os-catalog` with refresh script; snapshot stored in `resources/os_catalog.json`. |
 | Add selection ranking tool with explainability | Done | Added `ons_select.search` with scored candidates and elicitation prompts. |
 | Add elicitation integration for ambiguous queries | Done | `ons_select.search` now uses MCP `elicitation/create` in stdio + Streamable HTTP when clients advertise form elicitation support. |
 | Add comparability gating + related-dataset linking | Partial | `ons_select.search` now returns related datasets with gating; expand rules per `linking_rules.md`. |
 | Extend evaluation harness with selection tasks | Partial | Added multiple `ons_select.search` questions + edge cases; continue expanding catalog validation. |
+| Add OS catalog live validation and run report | Done | Added `tests/test_os_catalog_snapshot.py` and report `docs/reports/os_catalog_live_run_2026-02-07.md` (notes timeouts/entitlement gaps). |
 
 ## Codex context persistence (2026-02-02)
 

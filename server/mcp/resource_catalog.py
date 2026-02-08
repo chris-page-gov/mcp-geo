@@ -14,6 +14,9 @@ BOUNDARY_MANIFEST_PATH = ROOT / "docs" / "Boundaries.json"
 BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
 ONS_CACHE_DIR = ROOT / "data" / "cache" / "ons"
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
+OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
+LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
+EXPORTS_DIR = ROOT / "data" / "exports"
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
 ONS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-cache/"
@@ -35,6 +38,48 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
             "audience": ["user"],
             "priority": 1.0,
             "capabilities": ["search", "selection", "hierarchy", "map"],
+        },
+        "csp": {
+            "connectDomains": [
+                "self",
+                "https://api.os.uk",
+                "https://unpkg.com",
+                "http://localhost:8000",
+                "http://127.0.0.1:8000",
+            ],
+            "resourceDomains": [
+                "self",
+                "https://api.os.uk",
+                "https://fonts.googleapis.com",
+                "https://fonts.gstatic.com",
+                "https://unpkg.com",
+            ],
+            "workerDomains": ["self", "blob:"],
+        },
+        "permissions": {"sameOrigin": True},
+    },
+    {
+        "slug": "boundary-explorer",
+        "name": "ui_boundary_explorer",
+        "title": "Boundary Explorer",
+        "description": (
+            "Interactive explorer for UK boundaries with progressive disclosure for UPRNs, buildings, "
+            "and transport links, plus local layer import and export."
+        ),
+        "file": "boundary_explorer.html",
+        "annotations": {
+            "audience": ["user"],
+            "priority": 0.95,
+            "capabilities": [
+                "search",
+                "selection",
+                "hierarchy",
+                "map",
+                "inventory",
+                "aggregation",
+                "local-layers",
+                "export",
+            ],
         },
         "csp": {
             "connectDomains": [
@@ -123,6 +168,27 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": ONS_CATALOG_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "ons"},
+    },
+    {
+        "slug": "os-catalog",
+        "name": "data_os_catalog",
+        "title": "OS API Catalog",
+        "description": (
+            "Catalog of Ordnance Survey API endpoints and download products, with sample probes for "
+            "live validation."
+        ),
+        "path": OS_CATALOG_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "os"},
+    },
+    {
+        "slug": "layers-catalog",
+        "name": "data_layers_catalog",
+        "title": "Layers Catalog",
+        "description": "Catalog mapping user-friendly layer concepts to OS NGD collections and rendering hints.",
+        "path": LAYERS_CATALOG_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "maps"},
     },
 ]
 
@@ -345,6 +411,8 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
         return {"slug": slug}
     if slug == "ons-cache-index":
         return {"slug": slug}
+    if isinstance(slug, str) and slug.startswith("exports/"):
+        return {"slug": slug}
     if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
         return {"slug": slug}
     return None
@@ -380,6 +448,20 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "ons-catalog"), None
         return (*_load_json_file(ONS_CATALOG_PATH), None)
+    if slug == "os-catalog":
+        if not OS_CATALOG_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "OS catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "os-catalog"), None
+        return (*_load_json_file(OS_CATALOG_PATH), None)
+    if slug == "layers-catalog":
+        if not LAYERS_CATALOG_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Layers catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "layers-catalog"), None
+        return (*_load_json_file(LAYERS_CATALOG_PATH), None)
     if slug == "boundary-latest-report":
         latest = _latest_run_report_path()
         if not latest:
@@ -443,6 +525,22 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         path = ONS_CACHE_DIR / filename
         if path.exists():
             return (*_load_json_file(path), None)
+    if isinstance(slug, str) and slug.startswith("exports/"):
+        rel = slug.split("/", 1)[1]
+        candidate = (EXPORTS_DIR / rel).resolve()
+        exports_root = EXPORTS_DIR.resolve()
+        if not str(candidate).startswith(str(exports_root)):
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid export path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        if not candidate.exists() or not candidate.is_file():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Export not found."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        content, etag = _load_json_file(candidate)
+        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(candidate)}
     content = json.dumps({"isError": True, "code": "NOT_FOUND", "message": "Resource not found."})
     return content, _etag_from_bytes(content.encode("utf-8"), "missing"), None
 

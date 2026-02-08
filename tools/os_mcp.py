@@ -124,6 +124,19 @@ INTERACTIVE_PATTERNS = [
     r"\bpick\b.*\bareas?\b",
 ]
 
+BOUNDARY_EXPLORER_HINT_PATTERNS = [
+    r"\buprn(s)?\b",
+    r"\bbuilding(s)?\b",
+    r"\broad links?\b",
+    r"\bpath links?\b",
+    r"\broadlink\b",
+    r"\bpathlink\b",
+    r"\blayer(s)?\b",
+    r"\bshapefile(s)?\b",
+    r"\binventory\b",
+    r"\bexport\b",
+]
+
 ROUTE_PATTERNS = [
     r"\broute\b",
     r"\bdirections?\b",
@@ -344,6 +357,32 @@ def _build_interactive_params(query: str, place_name: str | None) -> dict[str, A
     return params
 
 
+def _should_offer_boundary_explorer(
+    query_lower: str, *, level_mentions: list[str], place_name: str | None
+) -> bool:
+    if not any(re.search(pattern, query_lower) for pattern in BOUNDARY_EXPLORER_HINT_PATTERNS):
+        return False
+    if level_mentions or place_name:
+        return True
+    if re.search(r"\bwithin\b|\bin\b", query_lower):
+        return True
+    return False
+
+
+def _build_boundary_explorer_params(query: str, place_name: str | None) -> dict[str, Any]:
+    query_lower = query.lower()
+    level_mentions = _find_level_mentions(query_lower)
+    admin_level = _pick_admin_level(level_mentions) or "WARD"
+    params: dict[str, Any] = {"level": admin_level}
+    if place_name:
+        params["searchTerm"] = place_name
+    if re.search(r"\buprn(s)?\b", query_lower):
+        params["detailLevel"] = "uprn"
+    elif re.search(r"\bpostcode(s)?\b", query_lower):
+        params["detailLevel"] = "postcode"
+    return params
+
+
 def _detect_feature_collection(query_lower: str) -> str | None:
     for key, collection in FEATURE_COLLECTIONS.items():
         if re.search(rf"\b{re.escape(key)}\b", query_lower):
@@ -380,14 +419,29 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         return QueryIntent.MAP_RENDER, 0.85, {}, context
 
     place_name = _extract_place_name(query)
+    wants_boundary_explorer = _should_offer_boundary_explorer(
+        query_lower, level_mentions=level_mentions, place_name=place_name
+    )
     if re.search(r"\baddress(es)?\b", query_lower):
         context["address_mode"] = "search"
         return QueryIntent.ADDRESS_LOOKUP, 0.8, {"text": query}, context
     if any(re.search(pattern, query_lower) for pattern in INTERACTIVE_PATTERNS):
-        params = _build_interactive_params(query, place_name)
+        params = (
+            _build_boundary_explorer_params(query, place_name)
+            if wants_boundary_explorer
+            else _build_interactive_params(query, place_name)
+        )
+        if wants_boundary_explorer:
+            context["interactive_widget"] = "boundary_explorer"
         return QueryIntent.INTERACTIVE_SELECTION, 0.9, params, context
     if re.search(r"\b(select|choose|pick)\b", query_lower) and _find_level_mentions(query_lower):
-        params = _build_interactive_params(query, place_name)
+        params = (
+            _build_boundary_explorer_params(query, place_name)
+            if wants_boundary_explorer
+            else _build_interactive_params(query, place_name)
+        )
+        if wants_boundary_explorer:
+            context["interactive_widget"] = "boundary_explorer"
         return QueryIntent.INTERACTIVE_SELECTION, 0.9, params, context
 
     if _should_route_nomis(query_lower, level_mentions):
@@ -399,9 +453,22 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         QueryIntent.AREA_COMPARISON: _match_patterns(query, COMPARISON_PATTERNS),
         QueryIntent.FEATURE_SEARCH: _match_patterns(query, FEATURE_SEARCH_PATTERNS),
         QueryIntent.BOUNDARY_FETCH: _match_patterns(query, BOUNDARY_PATTERNS),
+        QueryIntent.INTERACTIVE_SELECTION: _match_patterns(query, INTERACTIVE_PATTERNS),
         QueryIntent.ROUTE_PLANNING: _match_patterns(query, ROUTE_PATTERNS),
         QueryIntent.DATASET_DISCOVERY: _match_patterns(query, DATASET_PATTERNS),
     }
+
+    if wants_boundary_explorer:
+        context["interactive_widget"] = "boundary_explorer"
+        scores[QueryIntent.INTERACTIVE_SELECTION] = max(scores[QueryIntent.INTERACTIVE_SELECTION], 0.92)
+        # If the query looks like "features within a boundary", prefer the boundary explorer UI over
+        # raw NGD feature queries to avoid forcing callers to pick collections/bboxes prematurely.
+        if (
+            scores.get(QueryIntent.FEATURE_SEARCH, 0.0) >= 0.8
+            and (level_mentions or scores.get(QueryIntent.BOUNDARY_FETCH, 0.0) >= 0.5)
+            and re.search(r"\bwithin\b|\binside\b", query_lower)
+        ):
+            scores[QueryIntent.FEATURE_SEARCH] = min(scores[QueryIntent.FEATURE_SEARCH], 0.85)
 
     if re.search(r"\bcompare\b|\bvs\.?\b|\bversus\b", query_lower):
         scores[QueryIntent.AREA_COMPARISON] = max(scores[QueryIntent.AREA_COMPARISON], 0.9)
@@ -449,7 +516,11 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if admin_level:
             params["level"] = admin_level
     elif best_intent == QueryIntent.INTERACTIVE_SELECTION:
-        params = _build_interactive_params(query, place_name)
+        params = (
+            _build_boundary_explorer_params(query, place_name)
+            if context.get("interactive_widget") == "boundary_explorer"
+            else _build_interactive_params(query, place_name)
+        )
     elif best_intent == QueryIntent.FEATURE_SEARCH and feature_collection:
         params = {"collection": feature_collection}
     return best_intent, best_score, params, context
@@ -521,6 +592,12 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "Open the statistics dashboard to compare multiple areas.",
         )
     if intent == QueryIntent.INTERACTIVE_SELECTION:
+        if context.get("interactive_widget") == "boundary_explorer":
+            return (
+                "os_apps.render_boundary_explorer",
+                ["os_apps.render_boundary_explorer"],
+                "Open the boundary explorer to select boundaries and build map inventories (UPRNs/buildings/links).",
+            )
         return (
             "os_apps.render_geography_selector",
             ["os_apps.render_geography_selector"],
@@ -572,7 +649,7 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
         QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_select.search", "nomis.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],
-        QueryIntent.INTERACTIVE_SELECTION: ["admin_lookup.find_by_name"],
+        QueryIntent.INTERACTIVE_SELECTION: ["os_apps.render_boundary_explorer", "admin_lookup.find_by_name"],
         QueryIntent.ROUTE_PLANNING: ["os_maps.render"],
         QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
         QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],
@@ -611,7 +688,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
         ),
         QueryIntent.INTERACTIVE_SELECTION: (
-            "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."
+            "Use MCP-Apps UI to collect the area of interest and progressive detail preferences. "
+            "Prefer the boundary explorer when users ask for UPRNs/buildings/road/path links inside a boundary."
         ),
         QueryIntent.ROUTE_PLANNING: (
             "Use the route planner widget to set start/end coordinates."

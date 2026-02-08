@@ -168,6 +168,13 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     monkeypatch.setattr(os_names, "client", fake_client)
     monkeypatch.setattr(os_features, "client", fake_client)
     monkeypatch.setattr(os_linked_ids, "client", fake_client)
+    # Keep exports local to the test tempdir (avoid writing into the repo worktree).
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    exports_dir = tmp_path / "exports"
+    monkeypatch.setattr(os_map, "_EXPORTS_DIR", exports_dir)
+    monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", exports_dir)
     monkeypatch.setattr(settings, "ONS_LIVE_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "ONS_SEARCH_LIVE_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)

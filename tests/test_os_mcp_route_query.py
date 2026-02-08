@@ -54,6 +54,15 @@ def test_route_query_interactive_selection():
     assert params.get("focusName") == "Coventry West"
 
 
+def test_route_query_boundary_explorer_for_layer_inventory():
+    body = _route("Show me buildings and road links within Westminster ward")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_boundary_explorer"
+    params = body["recommended_parameters"]
+    assert params["level"] == "WARD"
+    assert params.get("searchTerm") == "Westminster"
+
+
 def test_route_query_vector_tiles():
     body = _route("Show me the vector tiles descriptor")
     assert body["intent"] == "vector_tiles"

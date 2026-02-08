@@ -31,7 +31,9 @@ class NormalizedUPRN(TypedDict, total=False):
     lat: float
     lon: float
     classification: str | None
+    classificationDescription: str | None
     local_custodian_code: str | int | float | None
+    localCustodianName: str | None
 
 
 def _by_postcode(payload: dict[str, Any]) -> ToolResult:
@@ -75,8 +77,12 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
             lon = 0.0
         lcc = dpa.get("LOCAL_CUSTODIAN_CODE")
         local_custodian_code = cast(str | int | float | None, lcc)
-        classification_code = dpa.get("CLASS")
-        classification_desc = None
+        classification_code = dpa.get("CLASSIFICATION_CODE") or dpa.get("CLASS")
+        classification_desc = (
+            dpa.get("CLASSIFICATION_CODE_DESCRIPTION")
+            or dpa.get("CLASSIFICATION_DESCRIPTION")
+            or dpa.get("CLASS_DESCRIPTION")
+        )
         cust_name = None
         uprns.append({
             "uprn": dpa.get("UPRN"),

@@ -14,6 +14,7 @@ from tools.registry import Tool, ToolResult, register
 
 _UI_URIS = {
     "geography": "ui://mcp-geo/geography-selector",
+    "boundary": "ui://mcp-geo/boundary-explorer",
     "statistics": "ui://mcp-geo/statistics-dashboard",
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
@@ -23,6 +24,11 @@ _UI_RESOURCE_LINKS = {
         "name": "ui_geography_selector",
         "title": "Geography Selector",
         "description": "Interactive selector for UK administrative areas.",
+    },
+    _UI_URIS["boundary"]: {
+        "name": "ui_boundary_explorer",
+        "title": "Boundary Explorer",
+        "description": "Interactive explorer for boundaries, UPRNs, buildings, and links (with local layer import).",
     },
     _UI_URIS["statistics"]: {
         "name": "ui_statistics_dashboard",
@@ -43,6 +49,9 @@ _UI_RESOURCE_LINKS = {
 UI_TOOL_RESOURCES = {
     "os_apps.render_geography_selector": {
         "mcp": _UI_URIS["geography"],
+    },
+    "os_apps.render_boundary_explorer": {
+        "mcp": _UI_URIS["boundary"],
     },
     "os_apps.render_statistics_dashboard": {
         "mcp": _UI_URIS["statistics"],
@@ -391,6 +400,58 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
     )
 
 
+def _render_boundary_explorer(payload: dict[str, Any]) -> ToolResult:
+    """Open the boundary explorer widget."""
+    config: dict[str, Any] = {}
+    level = payload.get("level")
+    if level is not None and not isinstance(level, str):
+        return _error("level must be a string")
+    if level:
+        config["level"] = level
+    search_term = payload.get("searchTerm")
+    if search_term is not None and not isinstance(search_term, str):
+        return _error("searchTerm must be a string")
+    if search_term:
+        config["searchTerm"] = search_term
+    focus_name = payload.get("focusName")
+    if focus_name is not None and not isinstance(focus_name, str):
+        return _error("focusName must be a string")
+    if focus_name:
+        config["focusName"] = focus_name
+    focus_level = payload.get("focusLevel")
+    if focus_level is not None and not isinstance(focus_level, str):
+        return _error("focusLevel must be a string")
+    if focus_level:
+        config["focusLevel"] = focus_level
+    initial_lat = payload.get("initialLat")
+    initial_lng = payload.get("initialLng")
+    initial_zoom = payload.get("initialZoom")
+    if initial_lat is not None and not isinstance(initial_lat, (int, float)):
+        return _error("initialLat must be a number")
+    if initial_lng is not None and not isinstance(initial_lng, (int, float)):
+        return _error("initialLng must be a number")
+    if initial_zoom is not None and not isinstance(initial_zoom, int):
+        return _error("initialZoom must be an integer")
+    if initial_lat is not None and initial_lng is not None:
+        config["initialView"] = {"lat": float(initial_lat), "lng": float(initial_lng)}
+    if initial_zoom is not None:
+        config["initialZoom"] = int(initial_zoom)
+    detail_level = payload.get("detailLevel")
+    if detail_level is not None and not isinstance(detail_level, str):
+        return _error("detailLevel must be a string")
+    if detail_level:
+        config["detailLevel"] = detail_level
+    content_mode = payload.get("contentMode")
+    if content_mode is not None and not isinstance(content_mode, str):
+        return _error("contentMode must be a string")
+    return _build_widget_response(
+        config,
+        "Open the boundary explorer to select boundaries, add layers, and inspect inventories.",
+        resource_uri=_UI_URIS["boundary"],
+        content_mode=content_mode,
+    )
+
+
 def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
     """Open the statistics dashboard widget.
 
@@ -640,6 +701,45 @@ register(
             "required": ["status", "uiResourceUris"],
         },
         handler=_render_geography_selector,
+    )
+)
+
+register(
+    Tool(
+        name="os_apps.render_boundary_explorer",
+        description="Open the MCP-Apps boundary explorer widget.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_apps.render_boundary_explorer"},
+                "level": {"type": "string"},
+                "searchTerm": {"type": "string"},
+                "focusName": {"type": "string"},
+                "focusLevel": {"type": "string"},
+                "detailLevel": {"type": "string"},
+                "initialLat": {"type": "number"},
+                "initialLng": {"type": "number"},
+                "initialZoom": {"type": "integer"},
+                "contentMode": {"type": "string"},
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "status": {"type": "string"},
+                "config": {"type": "object"},
+                "instructions": {"type": "string"},
+                "resourceUri": {"type": "string"},
+                "uiResourceUris": {"type": "array", "items": {"type": "string"}},
+                "_meta": {"type": "object"},
+                "structuredContent": {"type": "object"},
+                "content": {"type": "array"},
+            },
+            "required": ["status", "uiResourceUris"],
+        },
+        handler=_render_boundary_explorer,
     )
 )
 

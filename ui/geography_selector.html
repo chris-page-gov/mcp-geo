@@ -467,16 +467,6 @@
               </select>
             </div>
             <div class="field">
-              <label for="apiKeyInput">OS API Key (optional)</label>
-              <input
-                id="apiKeyInput"
-                type="password"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="Paste key to enable OS vector tiles"
-              />
-            </div>
-            <div class="field">
               <label for="mapStyleSelect">Map style</label>
               <select id="mapStyleSelect">
                 <option value="osm">OpenStreetMap (fallback)</option>
@@ -657,7 +647,6 @@
       const cacheSearchButton = document.getElementById("cacheSearchButton");
       const cacheSearchInput = document.getElementById("cacheSearchInput");
       const cacheLevelInput = document.getElementById("cacheLevelInput");
-      const apiKeyInput = document.getElementById("apiKeyInput");
       const mapStyleSelect = document.getElementById("mapStyleSelect");
       const mapOpacity = document.getElementById("mapOpacity");
       const clearSelectionButton = document.getElementById("clearSelection");
@@ -1172,7 +1161,6 @@
       }
 
       function rewriteOsRequest(url) {
-        const apiKey = apiKeyInput.value.trim();
         const proxyBase = state.proxyBase || "http://localhost:8000";
         try {
           const resolved = new URL(url, proxyBase);
@@ -1182,9 +1170,14 @@
           if (!isOsApi && !isProxy) {
             return null;
           }
-          const isVectorProxy = isProxy && resolved.pathname.startsWith("/maps/vector/");
-          if (apiKey && !resolved.searchParams.has("key") && (isOsApi || isVectorProxy)) {
-            resolved.searchParams.set("key", apiKey);
+          // Local-first: do not accept secrets from the UI. Proxy OS vector tiles through the MCP server,
+          // which injects OS_API_KEY server-side.
+          if (isOsApi && resolved.pathname.startsWith("/maps/vector/v1/")) {
+            const rel = resolved.pathname.replace("/maps/vector/v1/", "");
+            const proxied = new URL(proxyBase);
+            proxied.pathname = `/maps/vector/${rel}`;
+            proxied.search = resolved.search;
+            resolved.href = proxied.href;
           }
           if (resolved.pathname.includes("/maps/vector/vts") && !resolved.searchParams.has("srs")) {
             resolved.searchParams.set("srs", vectorSrs);
@@ -2289,21 +2282,25 @@
         if (!state.map) {
           return;
         }
-        const apiKey = apiKeyInput.value.trim();
         if (!mapStyleSelect.value.startsWith("os_")) {
-          return;
-        }
-        if (!apiKey) {
-          statusEl.textContent = "API key required for OS vector tiles";
           return;
         }
         const styleName = mapStyleSelect.value.replace("os_", "") || "OS_VTS_3857_Light.json";
         const proxyBase = state.proxyBase || "http://localhost:8000";
-        const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${vectorSrs}&key=${apiKey}`;
+        const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${vectorSrs}`;
         if (styleUrl) {
           state.sourcesReady = false;
           state.sourcesInitializing = false;
           state.map.setStyle(styleUrl);
+          state.map.once("error", (event) => {
+            const msg = String(event?.error?.message || "");
+            if (!/(\\b401\\b|\\b403\\b|OS API key|NO_API_KEY|Unauthorized|Forbidden)/i.test(msg)) {
+              return;
+            }
+            statusEl.textContent = "OS connection unavailable (set OS_API_KEY in the MCP server env)";
+            mapStyleSelect.value = "osm";
+            applyMapStyle("osm");
+          });
           state.map.once("style.load", () => {
             addSourcesAndLayers();
             scheduleMapMutationFlush();
@@ -2318,12 +2315,6 @@
           return;
         }
         if (styleId.startsWith("os_")) {
-          const apiKey = apiKeyInput.value.trim();
-          if (!apiKey) {
-            statusEl.textContent = "API key required for OS vector tiles";
-            mapStyleSelect.value = "osm";
-            return applyMapStyle("osm");
-          }
           state.lastMapError = null;
           applyVectorTiles();
           scheduleDiagnosticsUpdate();
@@ -2468,11 +2459,6 @@
         }
         scheduleDiagnosticsUpdate();
       });
-      apiKeyInput.addEventListener("change", () => mapAdapter.setStyle(mapStyleSelect.value));
-      apiKeyInput.addEventListener("copy", (event) => event.preventDefault());
-      apiKeyInput.addEventListener("cut", (event) => event.preventDefault());
-      apiKeyInput.addEventListener("contextmenu", (event) => event.preventDefault());
-      apiKeyInput.addEventListener("selectstart", (event) => event.preventDefault());
       mapStyleSelect.addEventListener("change", () => mapAdapter.setStyle(mapStyleSelect.value));
       mapOpacity.addEventListener("input", () => mapAdapter.setOpacity());
       levelSelect.addEventListener("change", () => {

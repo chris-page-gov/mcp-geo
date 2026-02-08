@@ -14,6 +14,7 @@ class NormalizedAddress(TypedDict, total=False):
     lat: float
     lon: float
     classification: str | None
+    classificationDescription: str | None
 
 
 MAX_BBOX_AREA_M2 = 1_000_000.0
@@ -104,6 +105,12 @@ def _norm_dpa_list(body: PlacesResponse | dict[str, Any]) -> list[NormalizedAddr
         dpa = result.get("DPA", {})
         if not dpa:
             continue
+        classification_code = dpa.get("CLASSIFICATION_CODE") or dpa.get("CLASS")
+        classification_desc = (
+            dpa.get("CLASSIFICATION_CODE_DESCRIPTION")
+            or dpa.get("CLASSIFICATION_DESCRIPTION")
+            or dpa.get("CLASS_DESCRIPTION")
+        )
         # Defensive numeric conversion
         try:
             lat = float(dpa.get("LAT", 0) or 0)
@@ -118,7 +125,8 @@ def _norm_dpa_list(body: PlacesResponse | dict[str, Any]) -> list[NormalizedAddr
             "address": dpa.get("ADDRESS"),
             "lat": lat,
             "lon": lon,
-            "classification": dpa.get("CLASS"),
+            "classification": classification_code,
+            "classificationDescription": classification_desc,
         })
     return out
 

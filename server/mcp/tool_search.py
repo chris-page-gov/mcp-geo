@@ -30,6 +30,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "os_linked_ids": ToolCategory.LINKED,
     "os_maps": ToolCategory.MAPS,
     "os_vector_tiles": ToolCategory.VECTOR,
+    "os_map": ToolCategory.MAPS,
     "admin_lookup": ToolCategory.ADMIN,
     "ons_data": ToolCategory.STATISTICS,
     "ons_search": ToolCategory.STATISTICS,
@@ -47,6 +48,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_linked_ids": ["uprn", "usrn", "toid", "linked"],
     "os_maps": ["map", "render", "static"],
     "os_vector_tiles": ["vector", "tiles", "style", "descriptor"],
+    "os_map": ["map", "inventory", "export", "layers", "aggregation", "boundary"],
     "admin_lookup": ["admin", "boundary", "hierarchy", "areas"],
     "ons_data": ["ons", "statistics", "observations", "dataset"],
     "ons_search": ["ons", "search", "dataset", "discover"],
@@ -70,6 +72,7 @@ ALWAYS_LOADED_TOOLS: Set[str] = {
     "admin_lookup.find_by_name",
     "os_mcp.descriptor",
     "os_apps.render_geography_selector",
+    "os_apps.render_boundary_explorer",
     "os_apps.log_event",
 }
 
@@ -86,8 +89,8 @@ EXTERNAL_PREFIXES: Set[str] = {
     "nomis",
 }
 
-STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter"}
-NON_IDEMPOTENT_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter"}
+STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter", "os_map.export"}
+NON_IDEMPOTENT_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter", "os_map.export"}
 
 
 def _tokenize(text: str) -> list[str]:

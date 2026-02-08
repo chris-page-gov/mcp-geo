@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "title": "MCP Geo Layers Catalog",
+  "notes": [
+    "This catalog maps user-friendly layer concepts to OS APIs and OS NGD OGC API Features collections.",
+    "Collection ids are versioned with a numeric suffix (for example trn-ntwk-roadlink-5).",
+    "Use os_features.collections.latestByBaseId to resolve the newest available version at runtime.",
+    "Clients should apply progressive disclosure: aggregate at low zoom, render individual features at high zoom."
+  ],
+  "layers": [
+    {
+      "id": "uprns",
+      "title": "UPRNs (OS Places)",
+      "provider": "os_places",
+      "kind": "points",
+      "tool": "os_places.within",
+      "default": {
+        "render": {
+          "mode": "heatmap",
+          "dotModeMinZoom": 16
+        },
+        "budgets": { "maxFeatures": 2000 }
+      },
+      "aggregation": {
+        "primary": "density",
+        "preserveGeography": true,
+        "examples": [
+          "Heatmap from UPRN points for building density without cluttering cartography."
+        ]
+      }
+    },
+    {
+      "id": "buildings",
+      "title": "Buildings (NGD Building Part)",
+      "provider": "os_ngd",
+      "kind": "polygons",
+      "collectionBaseId": "bld-fts-buildingpart",
+      "default": {
+        "render": { "mode": "fill-outline" },
+        "budgets": { "maxFeatures": 1000 }
+      }
+    },
+    {
+      "id": "road_links",
+      "title": "Road Links (NGD Transport Network RoadLink)",
+      "provider": "os_ngd",
+      "kind": "lines",
+      "collectionBaseId": "trn-ntwk-roadlink",
+      "default": {
+        "render": { "mode": "line" },
+        "budgets": { "maxFeatures": 2000 }
+      },
+      "aggregation": {
+        "primary": "width_by_nearby_detail",
+        "preserveGeography": true,
+        "examples": [
+          "Line width is proportional to nearby building/UPRN density (computed client-side at high zoom)."
+        ]
+      }
+    },
+    {
+      "id": "path_links",
+      "title": "Path Links (NGD Transport Network PathLink)",
+      "provider": "os_ngd",
+      "kind": "lines",
+      "collectionBaseId": "trn-ntwk-pathlink",
+      "default": {
+        "render": { "mode": "line" },
+        "budgets": { "maxFeatures": 2000 }
+      }
+    }
+  ]
+}
+

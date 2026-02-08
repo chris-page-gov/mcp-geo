@@ -1,0 +1,5280 @@
+{
+  "generatedAt": "2026-02-07T23:55:33.283402+00:00",
+  "source": "https://api.os.uk",
+  "placeholder": false,
+  "items": [
+    {
+      "id": "os.search.places.find",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: Find",
+      "description": "Free text search for addresses and places.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/places/v1/find",
+        "params": {
+          "query": "10 Downing Street",
+          "maxresults": 1,
+          "output_srs": "WGS84"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.places.postcode",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: Postcode",
+      "description": "Lookup addresses and UPRNs by postcode.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/places/v1/postcode",
+        "params": {
+          "postcode": "SW1A 2AA",
+          "maxresults": 1,
+          "output_srs": "WGS84"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.places.uprn",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: UPRN",
+      "description": "Lookup a single address by UPRN.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/places/v1/uprn",
+        "params": {
+          "uprn": "100023336956",
+          "output_srs": "WGS84"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ],
+      "meta": {
+        "uprn": "100023336956"
+      }
+    },
+    {
+      "id": "os.search.places.nearest",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: Nearest",
+      "description": "Nearest address record to a British National Grid point.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/places/v1/nearest",
+        "params": {
+          "point": "530000,180000",
+          "radius": 100
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.places.bbox",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: BBox",
+      "description": "Search within a British National Grid bbox (< 1km^2).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/places/v1/bbox",
+        "params": {
+          "bbox": "529750,179750,530250,180250",
+          "maxresults": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.places.radius",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: Radius",
+      "description": "Search within a radius of a WGS84 point (lat,lon).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/places/v1/radius",
+        "params": {
+          "point": "51.503,-0.127",
+          "radius": 100,
+          "srs": "WGS84",
+          "output_srs": "WGS84",
+          "maxresults": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.places.polygon",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Places API: Polygon",
+      "description": "Search within a GeoJSON polygon (POST body is the Polygon object).",
+      "required": true,
+      "request": {
+        "method": "POST",
+        "url": "https://api.os.uk/search/places/v1/polygon",
+        "params": {
+          "srs": "WGS84",
+          "output_srs": "WGS84",
+          "maxresults": 1
+        },
+        "body": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -0.15,
+                51.49
+              ],
+              [
+                -0.12,
+                51.49
+              ],
+              [
+                -0.12,
+                51.51
+              ],
+              [
+                -0.15,
+                51.51
+              ],
+              [
+                -0.15,
+                51.49
+              ]
+            ]
+          ]
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/places/overview",
+        "https://osdatahub.os.uk/docs/places/gettingStarted",
+        "https://osdatahub.os.uk/docs/places/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.names.find",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Names API: Find",
+      "description": "Free text search for named features (gazetteer).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/names/v1/find",
+        "params": {
+          "query": "Warwick",
+          "maxresults": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/names/overview",
+        "https://osdatahub.os.uk/docs/names/gettingStarted",
+        "https://osdatahub.os.uk/docs/names/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.names.nearest",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Names API: Nearest",
+      "description": "Nearest named features to a British National Grid point.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/names/v1/nearest",
+        "params": {
+          "point": "530000,180000",
+          "radius": 100
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/names/overview",
+        "https://osdatahub.os.uk/docs/names/gettingStarted",
+        "https://osdatahub.os.uk/docs/names/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.search.links.identifiers",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Linked Identifiers API: identifiers/{id}",
+      "description": "Lookup linked identifiers for a base identifier (example UPRN).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/links/v1/identifiers/100023336956",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/overview",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/gettingStarted",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/technicalSpecification"
+      ],
+      "meta": {
+        "identifier": "100023336956"
+      }
+    },
+    {
+      "id": "os.search.links.identifierTypes.uprn",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Linked Identifiers API: identifierTypes/uprn/{id}",
+      "description": "Lookup linked identifiers using an explicit identifier type (UPRN).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/links/v1/identifierTypes/uprn/100023336956",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/overview",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/gettingStarted",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/technicalSpecification"
+      ],
+      "meta": {
+        "uprn": "100023336956"
+      }
+    },
+    {
+      "id": "os.search.links.featureTypes.roadlink",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Linked Identifiers API: featureTypes/RoadLink/{id}",
+      "description": "Lookup correlations for a feature type identifier (RoadLink TOID).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/links/v1/featureTypes/RoadLink/osgb5000005158744708",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/overview",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/gettingStarted",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/technicalSpecification"
+      ],
+      "meta": {
+        "toid": "osgb5000005158744708"
+      }
+    },
+    {
+      "id": "os.search.links.productVersionInfo",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Linked Identifiers API: productVersionInfo/{correlationMethod}",
+      "description": "Resolve current product version info for a correlation method id.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/links/v1/productVersionInfo/BLPU_UPRN_RoadLink_TOID_9",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/overview",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/gettingStarted",
+        "https://osdatahub.os.uk/docs/linkedIdentifiers/technicalSpecification"
+      ],
+      "meta": {
+        "correlationMethod": "BLPU_UPRN_RoadLink_TOID_9"
+      }
+    },
+    {
+      "id": "os.search.match.match",
+      "kind": "probe",
+      "category": "search",
+      "title": "OS Match & Cleanse API: match",
+      "description": "Address matching/cleansing operation (entitlement-gated for some keys).",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/search/match/v1/match",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/match/overview",
+        "https://osdatahub.os.uk/docs/match/gettingStarted",
+        "https://osdatahub.os.uk/docs/match/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.features.wfs.capabilities",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS Features API (WFS): GetCapabilities",
+      "description": "WFS capabilities document (XML).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/v1/wfs",
+        "params": {
+          "service": "WFS",
+          "request": "GetCapabilities"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/xml"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/wfs/overview",
+        "https://osdatahub.os.uk/docs/wfs/gettingStarted",
+        "https://osdatahub.os.uk/docs/wfs/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.features.wfs.archive.capabilities",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS Features API (WFS Archive): GetCapabilities",
+      "description": "WFS product archive capabilities (often entitlement-gated).",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/v1/wfs/archive",
+        "params": {
+          "service": "WFS",
+          "request": "GetCapabilities"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/xml"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/wfs/overview",
+        "https://osdatahub.os.uk/docs/wfs/gettingStarted",
+        "https://osdatahub.os.uk/docs/wfs/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.features.ngd.collections",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD API \u2013 Features: Collections",
+      "description": "List available NGD feature collections (OGC API Features).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "count": 91
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-building-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-building-1",
+      "description": "Buildings that consist of multiple adjoining building parts.\u00a0 When contained in a Land Use Site, adjoining building parts will be represented by a single feature.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-1",
+        "collectionTitle": "Building v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-building-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-building-2",
+      "description": "A new building geometry which represents a single building footprint. This geometry consists of adjoining building parts which have been determined to be part of the same building. When contained in a Land Use Site, adjoining building parts will be represented by a single feature.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-2",
+        "collectionTitle": "Building v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-building-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-building-3",
+      "description": "A new building geometry which represents a single building footprint. This geometry consists of adjoining building parts which have been determined to be part of the same building. When contained in a Land Use Site, adjoining building parts will be represented by a single feature.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-3",
+        "collectionTitle": "Building v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-building-4.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-building-4",
+      "description": "A new building geometry which represents a single building footprint. This geometry consists of adjoining building parts which have been determined to be part of the same building. When contained in a Land Use Site, adjoining building parts will be represented by a single feature.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-4/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-4",
+        "collectionTitle": "Building v4"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-buildingaccesslocation-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-buildingaccesslocation-1",
+      "description": "Feature which has a point geometry and represents the locations where pedestrians and / or vehicles can enter or exit a building.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingaccesslocation-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingaccesslocation-1",
+        "collectionTitle": "Building Access Location v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-buildingline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-buildingline-1",
+      "description": "A feature which has a line geometry and represents a wall between two buildings, building internal divisions, or an overhanging building edge.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingline-1",
+        "collectionTitle": "Building Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-buildingpart-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-buildingpart-1",
+      "description": "Polygon feature representing either a complete separate building, or part of a larger building where internal divisions exist from ground to roof level which can be identified externally. Examples of Building Part features include a multistorey car park, a castle or a windmill.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingpart-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingpart-1",
+        "collectionTitle": "Building Part v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-buildingpart-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: bld-fts-buildingpart-2",
+      "description": "Polygon feature representing either a complete separate building, or part of a larger building where internal divisions exist from ground to roof level which can be identified externally. Examples of Building Part features include a multistorey car park, a castle or a windmill.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingpart-2",
+        "collectionTitle": "Building Part v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.gnm-fts-crowdsourcednamepoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: gnm-fts-crowdsourcednamepoint-1",
+      "description": "A crowd sourced name collated from data submitted to the Vernacular Names Tool in the OS Data Hub, provided as a point feature.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-crowdsourcednamepoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-crowdsourcednamepoint-1",
+        "collectionTitle": "Crowd Sourced Name Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.gnm-fts-namedarea-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: gnm-fts-namedarea-1",
+      "description": "A settlement, locality, geographical feature, or area of water that has a name, represented as a polygon.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-namedarea-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-namedarea-1",
+        "collectionTitle": "Named Area v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.gnm-fts-namedpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: gnm-fts-namedpoint-1",
+      "description": "A settlement, locality, geographical feature, or area of water that has a name, represented as a point.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-namedpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-namedpoint-1",
+        "collectionTitle": "Named Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.gnm-fts-namedroadjunction-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: gnm-fts-namedroadjunction-1",
+      "description": "A named intersection between roads at a junction or roundabout. The intersection may be numbered, have an official name or be assigned a modelled name based on the names of the intersecting roads.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-namedroadjunction-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-namedroadjunction-1",
+        "collectionTitle": "Named Road Junction v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-land-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-land-1",
+      "description": "Polygon feature representing an area on the Earth's surface that has not otherwise been captured as a Building Part, Rail, Road Track Or Path, Structure, or Water Feature Type. Examples of Land features include arable or grazing land, made surface, bare earth or grass, and heath or rough grassland.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-land-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-land-1",
+        "collectionTitle": "Land v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-land-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-land-2",
+      "description": "Polygon feature representing an area on the Earth's surface that has not otherwise been captured as a Building Part, Rail, Road Track Or Path, Structure, or Water Feature Type. Examples of Land features include arable or grazing land, made surface, bare earth or grass, and heath or rough grassland.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-land-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-land-2",
+        "collectionTitle": "Land v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-land-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-land-3",
+      "description": "Polygon feature representing an area on the Earth's surface that has not otherwise been captured as a Building Part, Rail, Road Track Or Path, Structure, or Water Feature Type. Examples of Land features include arable or grazing land, made surface, bare earth or grass, and heath or rough grassland.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-land-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-land-3",
+        "collectionTitle": "Land v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-landform-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-landform-1",
+      "description": "Polygon feature representing an area of the Earth's surface with a distinct physical morphology, such as cliffs, artificial slopes, and burial mounds.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landform-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landform-1",
+        "collectionTitle": "Landform v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-landformline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-landformline-1",
+      "description": "Feature which has a line geometry and represents the alignment of either the higher limit, or the side or lower limit of areas with a distinct physical morphology, typically where there is a significant change in slope angle. This feature type is best used in combination with the Landform Feature Type.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landformline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landformline-1",
+        "collectionTitle": "Landform Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-landformpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-landformpoint-1",
+      "description": "Feature which has a point geometry and represents an area of the Earth's surface with a distinct physical morphology that is too small to capture as a Landform feature but is considered to be of sufficient interest to be captured, typically associated with former mineral workings.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landformpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landformpoint-1",
+        "collectionTitle": "Landform Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-landpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lnd-fts-landpoint-1",
+      "description": "An area on the Earth's surface that has not otherwise been captured as a Building Part, Structure Point, or Water Point feature and is too small to capture as a Land feature, for example, a coniferous tree or a non-coniferous tree.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landpoint-1",
+        "collectionTitle": "Land Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-site-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lus-fts-site-1",
+      "description": "Polygon feature which represents the recognisable extent of certain types of function or activity. Examples include a caravan site, a university, and a railway centre.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-site-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-site-1",
+        "collectionTitle": "Site v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-site-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lus-fts-site-2",
+      "description": "Polygon feature which represents the recognisable extent of certain types of function or activity. Examples include a caravan site, a university, and a railway centre.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-site-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-site-2",
+        "collectionTitle": "Site v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-siteaccesslocation-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lus-fts-siteaccesslocation-1",
+      "description": "Feature which has a point geometry and represents the locations where pedestrians and / or vehicles can enter or exit a site.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-siteaccesslocation-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-siteaccesslocation-1",
+        "collectionTitle": "Site Access Location v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-siteaccesslocation-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lus-fts-siteaccesslocation-2",
+      "description": "Feature which has a point geometry and represents the locations where pedestrians and / or vehicles can enter or exit a site.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-siteaccesslocation-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-siteaccesslocation-2",
+        "collectionTitle": "Site Access Location v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-siteroutingpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: lus-fts-siteroutingpoint-1",
+      "description": "The location on the road network which provides entry or exit into a site for vehicles and / or pedestrians, represented as a point geometry.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-siteroutingpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-siteroutingpoint-1",
+        "collectionTitle": "Site Routing Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-compoundstructure-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-compoundstructure-1",
+      "description": "Polygon feature which encompasses one or more components and represents a manmade construction that has been built for a specific purpose. Examples include a bridge, a dam, and an aqueduct.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-compoundstructure-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-compoundstructure-1",
+        "collectionTitle": "Compound Structure v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-compoundstructure-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-compoundstructure-2",
+      "description": "Polygon feature which encompasses one or more components and represents a manmade construction that has been built for a specific purpose. Examples include a bridge, a dam, and an aqueduct.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-compoundstructure-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-compoundstructure-2",
+        "collectionTitle": "Compound Structure v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-fieldboundary-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-fieldboundary-1",
+      "description": "A line feature representing field boundary features adjacent to, or contained within, areas of agricultural land, trees, rough grassland or heath. Also includes features adjacent to, or contained within, land in the RPA\u2019s Rural Land Register where they are in urban areas in England. Field Boundary features replicate all, or part of, an underlying OS NGD Structure (Built Obstruction) Line and are classified as Tree Canopy, Wooded Strip, Hedge, Wall, Other or Unknown (in hierarchy order).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-fieldboundary-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-fieldboundary-1",
+        "collectionTitle": "Field Boundary v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structure-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-structure-1",
+      "description": "Polygon feature representing a manmade construction that is not a building. Examples include a mast, a chimney, and a crane.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structure-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structure-1",
+        "collectionTitle": "Structure v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structure-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-structure-2",
+      "description": "Polygon feature representing a manmade construction that is not a building. Examples include a mast, a chimney, and a crane.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structure-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structure-2",
+        "collectionTitle": "Structure v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structure-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-structure-3",
+      "description": "Polygon feature representing a manmade construction that is not a building. Examples include a mast, a chimney, and a crane.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structure-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structure-3",
+        "collectionTitle": "Structure v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structureline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-structureline-1",
+      "description": "Feature which has a line geometry and represents a linear, freestanding, manmade construction that is not a building and is not wide enough to capture as a structure. Examples include a gate or barrier, a pipeline, and a sea wall.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structureline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structureline-1",
+        "collectionTitle": "Structure Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structurepoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: str-fts-structurepoint-1",
+      "description": "Feature which has a point geometry and represents a freestanding manmade construction that is not a building and is less than 4m square but is considered to be of sufficient interest to be captured. Examples include a statue, a telephone call box, and a post box.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structurepoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structurepoint-1",
+        "collectionTitle": "Structure Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-cartographicraildetail-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-cartographicraildetail-1",
+      "description": "A cartographic representation of a Railway Rail or Railway Buffer.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-cartographicraildetail-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-cartographicraildetail-1",
+        "collectionTitle": "Cartographic Rail Detail v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-rail-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-rail-1",
+      "description": "Features related to travel by railway or tramway. Features representing, describing or limiting the extents of railways. The Transport Features Collection contains information relating to permanent railways that form the network between two points.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-rail-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-rail-1",
+        "collectionTitle": "Rail v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-rail-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-rail-2",
+      "description": "Features related to travel by railway or tramway. Features representing, describing or limiting the extents of railways. The Transport Features Collection contains information relating to permanent railways that form the network between two points.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-rail-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-rail-2",
+        "collectionTitle": "Rail v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-rail-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-rail-3",
+      "description": "Features related to travel by railway or tramway. Features representing, describing or limiting the extents of railways. The Transport Features Collection contains information relating to permanent railways that form the network between two points.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-rail-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-rail-3",
+        "collectionTitle": "Rail v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-roadline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-roadline-1",
+      "description": "A line feature representing the edges of traffic calming.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadline-1",
+        "collectionTitle": "Road Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-roadtrackorpath-1",
+      "description": "Features representing, describing or limiting the extents of roadways, tracks and pathways. A road is a metalled way for vehicles. A track is an unmetalled way that is clearly marked, permanent and used by vehicles. A path is defined as any established way other than a road or track.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadtrackorpath-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadtrackorpath-1",
+        "collectionTitle": "Road Track Or Path v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-roadtrackorpath-2",
+      "description": "Features representing, describing or limiting the extents of roadways, tracks and pathways. A road is a metalled way for vehicles. A track is an unmetalled way that is clearly marked, permanent and used by vehicles. A path is defined as any established way other than a road or track.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadtrackorpath-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadtrackorpath-2",
+        "collectionTitle": "Road Track Or Path v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-roadtrackorpath-3",
+      "description": "Features representing, describing or limiting the extents of roadways, tracks and pathways. A road is a metalled way for vehicles. A track is an unmetalled way that is clearly marked, permanent and used by vehicles. A path is defined as any established way other than a road or track.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadtrackorpath-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadtrackorpath-3",
+        "collectionTitle": "Road Track Or Path v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-streetlight-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-fts-streetlight-1",
+      "description": "A point representation of a pole mounted light which is positioned to artificially illuminate sections of a road or path.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-streetlight-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-streetlight-1",
+        "collectionTitle": "Street Light v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-buslane-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-buslane-1",
+      "description": "A linear feature that describes a bus lane and it's relationship to the road network.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-buslane-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-buslane-1",
+        "collectionTitle": "Bus Lane v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-connectinglink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-connectinglink-1",
+      "description": "The Road and Path Networks are not topologically structured together. Connecting Links have been introduced to enable a connection between the Road Network and the Path Network without splitting the Road Network. A Connecting Link feature is a linear spatial object which represents a logical connection between the Path Network and the Road Network, and they do represent a feature in the real world. A Connecting Link will always reference a Path Node and a Connecting Node.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-connectinglink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-connectinglink-1",
+        "collectionTitle": "Connecting Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-connectingnode-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-connectingnode-1",
+      "description": "A Connecting Node is a point feature that identifies the point along the Road Link which the Path Link connects to. The Connecting Node has been snapped to a vertex along the Road Link and provides a reference to the Road Link it has been snapped to. The Road Link is not split at the location of the Connecting Node. The Connecting Node is referenced by a Connecting Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-connectingnode-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-connectingnode-1",
+        "collectionTitle": "Connecting Node v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-cyclelane-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-cyclelane-1",
+      "description": "A linear feature that describes a cycle lane or cycle track and it's relationship to the road or path network.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-cyclelane-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-cyclelane-1",
+        "collectionTitle": "Cycle Lane v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-ferrylink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-ferrylink-1",
+      "description": "A Ferry Link is a linear spatial object which represents the connectivity of a vehicular ferry route across a body of water. A Ferry Link will only be captured where both terminals are located within Great Britain and where there is a timetabled service which is available to the public. Ferry routes with a terminal located outside of Great Britain are not captured (for example, Dover to Calais) and neither are ferry routes where the service is not available to the public.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-ferrylink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-ferrylink-1",
+        "collectionTitle": "Ferry Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-ferrynode-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-ferrynode-1",
+      "description": "A Ferry Node is a point spatial object which is used to represent the connectivity where the Ferry Link features start and end. A Ferry Node feature may serve multiple Ferry Link features if more than one destination is served from the same location. Ferry Node's will always be referenced by at least one Ferry Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-ferrynode-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-ferrynode-1",
+        "collectionTitle": "Ferry Node v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-ferryterminal-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-ferryterminal-1",
+      "description": "The ferry and road network elements are linked together through a Ferry Terminal feature. A Ferry Terminal is a logical connection between the two networks and therefore there is no geometry supplied with these features. They will reference one Road Node and one Ferry Node. The Ferry Terminals will also provide a reference to the OS MasterMap Site feature.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-ferryterminal-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-ferryterminal-1",
+        "collectionTitle": "Ferry Terminal v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-path-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-path-1",
+      "description": "A Path feature is a link set which represents a collection of Path Link features that share the same name (for example, Church Walk). A Path will reference the complete collection of Road Link features irrespective of which authority boundary it falls within. A Path Link feature may be referenced by multiple Path features.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-path-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-path-1",
+        "collectionTitle": "Path v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pathlink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-pathlink-1",
+      "description": "A Path Link is a linear spatial object that defines the geometry and connectivity of the path network between two points in the network. Path Links will be split for connectivity purposes (for example, at junctions) and Path Nodes will connect the Path Links together. Each Path Link will provide a reference to the Path Nodes at the start and end of the Path Link.\nPath Links will be captured where:\nThey provide a route that cannot be inferred from the Road Network.\nThey provide connectivity between road networks.\nThere is a canal path or tow path.\nThere are paths over footbridges and under subways.\nPath Links will not be captured where:\nThey run parallel to the Road Network (for example, a pavement).\nThey are connected to a motorway.\nThere is a physical obstruction which prevents connectivity.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathlink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathlink-1",
+        "collectionTitle": "Path Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pathlink-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-pathlink-2",
+      "description": "A Path Link is a linear spatial object that defines the geometry and connectivity of the path network between two points in the network. Path Links will be split for connectivity purposes (for example, at junctions) and Path Nodes will connect the Path Links together. Each Path Link will provide a reference to the Path Nodes at the start and end of the Path Link. Path Links will be captured where: They provide a route that cannot be inferred from the Road Network. They provide connectivity between road networks. There is a canal path or tow path. There are paths over footbridges and under subways. Path Links will not be captured where: They run parallel to the Road Network (for example, a pavement). They are connected to a motorway. There is a physical obstruction which prevents connectivity.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathlink-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathlink-2",
+        "collectionTitle": "Path Link v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pathlink-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-pathlink-3",
+      "description": "A Path Link is a linear spatial object that defines the geometry and connectivity of the path network between two points in the network. Path Links will be split for connectivity purposes (for example, at junctions) and Path Nodes will connect the Path Links together. Each Path Link will provide a reference to the Path Nodes at the start and end of the Path Link. Path Links will be captured where: They provide a route that cannot be inferred from the Road Network. They provide connectivity between road networks. There is a canal path or tow path. There are paths over footbridges and under subways. Path Links will not be captured where: They run parallel to the Road Network (for example, a pavement). They are connected to a motorway. There is a physical obstruction which prevents connectivity.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathlink-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathlink-3",
+        "collectionTitle": "Path Link v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pathnode-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-pathnode-1",
+      "description": "A point spatial object that is used to break up the path network for connectivity. The path network splits for the following circumstances: The location where an attribute changes. The intersection or crossing of Path Links. The start / end of a Path Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathnode-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathnode-1",
+        "collectionTitle": "Path Node v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pavementlink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-pavementlink-1",
+      "description": "A subsection of the road link geometry that indicates where there is pavement on either side of the road",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pavementlink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pavementlink-1",
+        "collectionTitle": "Pavement Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-railwaylink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-railwaylink-1",
+      "description": "A Railway Link is a linear feature that defines the geometry and connectivity of the Rail Network between two points in the network.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-railwaylink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-railwaylink-1",
+        "collectionTitle": "Railway Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-railwaylinkset-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-railwaylinkset-1",
+      "description": "A Railway Link Set depicts the full extent of a named railway as one continuous line.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-railwaylinkset-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-railwaylinkset-1",
+        "collectionTitle": "Railway Link Set v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-railwaynode-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-railwaynode-1",
+      "description": "A point spatial object that is used to break up the Railway Network for connectivity. The Railway Network splits for the following circumstances; 1)The location where an attribute changes; 2)The intersection or crossing of Railway Links; 3)The start / end of a Railway Link",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-railwaynode-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-railwaynode-1",
+        "collectionTitle": "Railway Node v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-road-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-road-1",
+      "description": "A road feature is a link set which represents a collection of road link features that share the same name (for example, Bilston Road) or classification number (for example, A41), used primarily by motorised vehicles. A road will reference the complete collection of road link features irrespective of which authority boundary it falls within. The feature type will include Motorways, A Roads, B Roads, and Named Thoroughfares (roads). The link set may not be contiguous across junctions or where a classified road consists of separate sections, which may be separated by some considerable distance. In addition, the same road link feature may be referenced by multiple road features.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-road-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-road-1",
+        "collectionTitle": "Road v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadjunction-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadjunction-1",
+      "description": "A Road Junction feature is a collection of Road Node features that share the same road junction name or number. The collection of Road Nodes will include all Road Nodes that constitute part of a 'slip road' or other link between two or more crossing road features. A Road Node could be referenced by multiple Road Junction features.\nMotorway Junctions will be populated completely, other junctions are being supplied as data is improved for future releases.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadjunction-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadjunction-1",
+        "collectionTitle": "Road Junction v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadlink-1",
+      "description": "A Road Link is a linear spatial object that defines the geometry and connectivity of a road network between two points in the network. Road Links can represent single carriageways, dual carriageways, slip roads, roundabouts, and indicative trajectories across traffic squares. Road Links will be split for connectivity purposes (for example at junctions) and Road Nodes will connect the Road Links together. Each Road Link will provide a reference to the Road Nodes at the start and end of the Road Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-1",
+        "collectionTitle": "Road Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadlink-2",
+      "description": "A Road Link is a linear spatial object that defines the geometry and connectivity of a road network between two points in the network. Road Links can represent single carriageways, dual carriageways, slip roads, roundabouts, and indicative trajectories across traffic squares. Road Links will be split for connectivity purposes (for example at junctions) and Road Nodes will connect the Road Links together. Each Road Link will provide a reference to the Road Nodes at the start and end of the Road Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-2",
+        "collectionTitle": "Road Link v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadlink-3",
+      "description": "A Road Link is a linear spatial object that defines the geometry and connectivity of a road network between two points in the network. Road Links can represent single carriageways, dual carriageways, slip roads, roundabouts, and indicative trajectories across traffic squares. Road Links will be split for connectivity purposes (for example, at junctions) and Road Nodes will connect the Road Links together. Each Road Link will provide a reference to the Road Nodes at the start and end of the Road Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-3",
+        "collectionTitle": "Road Link v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-4.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadlink-4",
+      "description": "A Road Link is a linear spatial object that defines the geometry and connectivity of a road network between two points in the network. Road Links can represent single carriageways, dual carriageways, slip roads, roundabouts, and indicative trajectories across traffic squares. Road Links will be split for connectivity purposes (for example, at junctions) and Road Nodes will connect the Road Links together. Each Road Link will provide a reference to the Road Nodes at the start and end of the Road Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-4/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-4",
+        "collectionTitle": "Road Link v4"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-5.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadlink-5",
+      "description": "A Road Link is a linear spatial object that defines the geometry and connectivity of a road network between two points in the network. Road Links can represent single carriageways, dual carriageways, slip roads, roundabouts, and indicative trajectories across traffic squares. Road Links will be split for connectivity purposes (for example, at junctions) and Road Nodes will connect the Road Links together. Each Road Link will provide a reference to the Road Nodes at the start and end of the Road Link.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-5/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-5",
+        "collectionTitle": "Road Link v5"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadnode-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-roadnode-1",
+      "description": "A point spatial object that is used to break up the road network for connectivity. The road network splits for the following circumstances:\nThe location where an attribute recorded on the Road Link changes (for example, its name or form)\nThe intersection or crossing of roads (including bridges, flyovers, and tunnels where there is no connectivity)\nThe start / end of a Road feature\nWhere a one-way routing feature starts or ends\nWhere a tunnel starts or ends\nChange of Local Highway Authority",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadnode-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadnode-1",
+        "collectionTitle": "Road Node v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-street-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-street-1",
+      "description": "A Street feature is the definition of the street as defined in the National Street Gazetteer. A Street includes aggregated geometry. Where possible, the geometry of streets captured by a Roads or Highway Authority is spatially matched to the geometry of OS Road Links.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-street-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-street-1",
+        "collectionTitle": "Street v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-tramonroad-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-ntwk-tramonroad-1",
+      "description": "A subsection of the road link geometry that indicates where there is a Tram within the road area.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-tramonroad-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-tramonroad-1",
+        "collectionTitle": "Tram On Road v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-averageandindicativespeed-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-averageandindicativespeed-1",
+      "description": "This feature type provides two sets of speed information for all roads in Great Britain. These are:\n1.\tA historic average speed in kilometres per hours (kph). In this context, 'historic' means that the average speed data was collected over a six-month period for the selected road link. Average speeds are provided in different time periods for each road link. A single day (i.e. a 24-hour period) is split into 8 time periods Monday to Friday (MF) and 6 time periods Saturday to Sunday (SS), for example, Monday\u2013Friday (MF) 07:00\u201309:00, Saturday\u2013Sunday (SS) 14:00\u201319:00. There\u2019s a separate attribute for each time period.\n2.\tAn indicative speed limit. This is an indication of the maximum speed limit for vehicles; the indicative speed limits reference road network data. Indicative speed limit values that apply over the majority of a section of road are provided in both miles per hour (mph) and kilometres per hour (kph).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-averageandindicativespeed-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-averageandindicativespeed-1",
+        "collectionTitle": "Average And Indicative Speed v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-highwaydedication-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-highwaydedication-1",
+      "description": "Highway dedication provides an indication of the type of Highway user who has access to that particular section of the Highway.\nAgainst every section of geometry supplied by the local highway authority there will be one of eight different types of Highway Dedication defined in the Highways Act 1980 and the Countryside and Rights of Way Act 2000 which determines the Highway user access.\nThere can only be one Highway Dedication type applied to the geometry at any given date or time.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-highwaydedication-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-highwaydedication-1",
+        "collectionTitle": "Highway Dedication v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-maintenancearea-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-maintenancearea-1",
+      "description": "A feature which has a closed (area) geometry and provides information about whether the road is maintained at public expense by a national or local highway authority, a road authority or is maintained by another responsible organisation (i.e. not maintained at public expense). If a path is prospectively maintainable at public expense, then this is not currently maintained by a road or highway authority, but the responsible organisation has started the process for a highway or road authority to become responsible for the maintenance of the street at public expense.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-maintenancearea-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-maintenancearea-1",
+        "collectionTitle": "Maintenance Area v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-maintenanceline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-maintenanceline-1",
+      "description": "A feature which has a line / curve geometry and provides information about whether the road is maintained at public expense by a national or local highway authority, a road authority or is maintained by another responsible organisation (i.e. not maintained at public expense). If a path is prospectively maintainable at public expense, then this is not currently maintained by a road or highway authority, but the responsible organisation has started the process for a highway or road authority to become responsible for the maintenance of the street at public expense.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-maintenanceline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-maintenanceline-1",
+        "collectionTitle": "Maintenance Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-maintenancepoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-maintenancepoint-1",
+      "description": "A feature which has a point geometry and provides information about whether the road is maintained at public expense by a national or local highway authority, a road authority or is maintained by another responsible organisation (i.e. not maintained at public expense). If a path is prospectively maintainable at public expense, then this is not currently maintained by a road or highway authority, but the responsible organisation has started the process for a highway or road authority to become responsible for the maintenance of the street at public expense.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-maintenancepoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-maintenancepoint-1",
+        "collectionTitle": "Maintenance Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-reinstatementarea-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-reinstatementarea-1",
+      "description": "A feature which has a closed (area) geometry and defines the standard the path must be restored to following opening due to works in the highway, as defined in the New Roads and Street Works Act Specification for the Reinstatement of Openings in Highways in England and Wales, and the New Roads and Street Works Act 1991 Specification for the Reinstatement of Openings in Roads in Scotland.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-reinstatementarea-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-reinstatementarea-1",
+        "collectionTitle": "Reinstatement Area v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-reinstatementline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-reinstatementline-1",
+      "description": "A feature which has a line / curve geometry and defines the standard the path must be restored to following opening due to works in the highway, as defined in the New Roads and Street Works Act Specification for the Reinstatement of Openings in Highways in England and Wales, and the New Roads and Street Works Act 1991 Specification for the Reinstatement of Openings in Roads in Scotland.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-reinstatementline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-reinstatementline-1",
+        "collectionTitle": "Reinstatement Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-reinstatementpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-reinstatementpoint-1",
+      "description": "A feature which has a point geometry and defines the standard the path must be restored to following opening due to works in the highway, as defined in the New Roads and Street Works Act Specification for the Reinstatement of Openings in Highways in England and Wales, and the New Roads and Street Works Act 1991 Specification for the Reinstatement of Openings in Roads in Scotland.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-reinstatementpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-reinstatementpoint-1",
+        "collectionTitle": "Reinstatement Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-restriction-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-restriction-1",
+      "description": "Restriction includes turn restrictions, restriction for vehicles, and access restrictions.\nTurn restrictions are a restriction based upon a vehicle manoeuvre. This type of restriction includes prohibitive driving instructions, mandatory driving instruction and implicit restrictions. Prohibited instructions are indicated by road signs within a red circle, examples include No U Turn, No Right Turn or No Left Turn. These can include exceptions to the instruction and are typically elements like Except for Buses. Mandatory driving instructions indicated by road signs within a blue circle or painted on the roadway such as Turn Right, Ahead Only and Left Turn. Implicit restrictions occur where a turn is not signed as prohibited but would not be a normal manoeuvre. For example, where a road splits around a traffic island or at complex junctions where additional geometry has been captured to reflect the traffic flow. These are not differentiated from actual signed restrictions.\nRestriction for vehicles are constraints that apply to the vehicles based on their physical characteristics: height, weight, width and length. These are required to protect structures such as bridges and tunnels from damage, or to restrict/prohibit use by vehicle that exceed specific dimensions, usually for environmental reasons.\nRestriction for vehicles has been extended to support the full definition of height, weight, width and length restrictions as defined in the UK to ensure that they can:\nApply to specific vehicle types only\nRelate to a structure for which the restriction is designed to protect (for example, a Bridge)",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-restriction-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-restriction-1",
+        "collectionTitle": "Restriction v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-routinghazard-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-routinghazard-1",
+      "description": "These are locations which are hazardous, and caution should be taken to ensure safe travel. Hazards are usually signed using the warning sign through a red triangle.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-routinghazard-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-routinghazard-1",
+        "collectionTitle": "Routing Hazard v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-routingstructure-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-routingstructure-1",
+      "description": "These indicate the location of key structures related to the highway network. These may be:\nBarriers: Structures or equipment constructed to control, obstruct, or prevent passage or access\nBridges and Tunnels\nCrossings and Signals: Equipment such as traffic signals, and locations that control the flow of traffic",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-routingstructure-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-routingstructure-1",
+        "collectionTitle": "RoutingStructure v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-specialdesignationarea-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-specialdesignationarea-1",
+      "description": "Special Designations are statutory and advisory designations that can be applied to protect a highway when street or road works are to be undertaken. A Special Designation feature will reference back to the Roads product through Network Reference and will reference a Street Feature. Features which are a partial reference will provide a Network Reference Location.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-specialdesignationarea-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-specialdesignationarea-1",
+        "collectionTitle": "Special Designation Area v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-specialdesignationline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-specialdesignationline-1",
+      "description": "Special Designations are statutory and advisory designations that can be applied to protect a highway when street or road works are to be undertaken. A Special Designation feature will reference back to the Roads product through Network Reference and will reference a Street Feature. Features which are a partial reference will provide a Network Reference Location.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-specialdesignationline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-specialdesignationline-1",
+        "collectionTitle": "Special Designation Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-specialdesignationpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: trn-rami-specialdesignationpoint-1",
+      "description": "Special Designations are statutory and advisory designations that can be applied to protect a highway when street or road works are to be undertaken. A Special Designation feature will reference back to the Roads product through Network Reference and will reference a Street Feature. Features which are a partial reference will provide a Network Reference Location.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-specialdesignationpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-specialdesignationpoint-1",
+        "collectionTitle": "Special Designation Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-intertidalline-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-fts-intertidalline-1",
+      "description": "A watercourse that extends across the inter tidal zone.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-intertidalline-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-intertidalline-1",
+        "collectionTitle": "Inter Tidal Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-tidalboundary-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-fts-tidalboundary-1",
+      "description": "The alignment of the limit of tidal water at specific states of the tide.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-tidalboundary-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-tidalboundary-1",
+        "collectionTitle": "Tidal Boundary v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-water-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-fts-water-1",
+      "description": "Polygon feature representing an area of permanent inland water.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-water-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-water-1",
+        "collectionTitle": "Water v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-water-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-fts-water-2",
+      "description": "Polygon feature representing an area of permanent inland water.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-water-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-water-2",
+        "collectionTitle": "Water v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-water-3.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-fts-water-3",
+      "description": "Polygon feature representing an area of permanent inland water.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-water-3/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-water-3",
+        "collectionTitle": "Water v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-waterpoint-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-fts-waterpoint-1",
+      "description": "Point feature associated with permanent inland water that is too small to be captured as a Water feature but which OS consider to be of sufficient interest to be captured.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-waterpoint-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-waterpoint-1",
+        "collectionTitle": "Water Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-ntwk-waterlink-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-ntwk-waterlink-1",
+      "description": "A network representation of the general alignment and connectivity of permanent water, including rivers, lakes, and canals.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waterlink-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waterlink-1",
+        "collectionTitle": "Water Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-ntwk-waterlink-2.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-ntwk-waterlink-2",
+      "description": "A network representation of the general alignment and connectivity of permanent water, including rivers, lakes, and canals.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waterlink-2/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waterlink-2",
+        "collectionTitle": "Water Link v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-ntwk-waterlinkset-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-ntwk-waterlinkset-1",
+      "description": "A body of water with an accepted name that the water network flows through.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waterlinkset-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waterlinkset-1",
+        "collectionTitle": "Water Link Set v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-ntwk-waternode-1.items",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD items: wtr-ntwk-waternode-1",
+      "description": "The location where a connected area of permanent water ends, where an area of permanent water is connected to two or more other areas of permanent water, or where a recorded attribute changes for an area of permanent water.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waternode-1/items",
+        "params": {
+          "bbox": "-0.127,51.503,-0.126,51.504",
+          "limit": 1
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waternode-1",
+        "collectionTitle": "Water Node v1"
+      }
+    },
+    {
+      "id": "os.maps.raster.wmts.capabilities",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS Maps API (Raster WMTS): GetCapabilities",
+      "description": "WMTS capabilities document (XML).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/raster/v1/wmts",
+        "params": {
+          "service": "WMTS",
+          "request": "GetCapabilities"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/xml"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/wmts/overview",
+        "https://osdatahub.os.uk/docs/wmts/gettingStarted",
+        "https://osdatahub.os.uk/docs/wmts/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.maps.raster.zxy.tile",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS Maps API (Raster ZXY): Sample tile",
+      "description": "Fetch a single PNG tile (kept small; no bulk downloads).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/raster/v1/zxy/Light_3857/7/63/42.png",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "image/png",
+        "minBytes": 64
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/wmts/overview",
+        "https://osdatahub.os.uk/docs/wmts/gettingStarted",
+        "https://osdatahub.os.uk/docs/wmts/technicalSpecification"
+      ],
+      "meta": {
+        "z": 7,
+        "x": 63,
+        "y": 42,
+        "layer": "Light_3857"
+      }
+    },
+    {
+      "id": "os.maps.vector.vts.metadata",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS Vector Tile API (VTS): service metadata",
+      "description": "ArcGIS-style VTS service metadata (JSON).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/v1/vts",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/vts/overview",
+        "https://osdatahub.os.uk/docs/vts/gettingStarted",
+        "https://osdatahub.os.uk/docs/vts/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.maps.vector.vts.style",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS Vector Tile API (VTS): style JSON",
+      "description": "Fetch a named MapLibre style JSON from VTS.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/v1/vts/resources/styles",
+        "params": {
+          "style": "OS_VTS_3857_Light.json",
+          "srs": "3857"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/vts/overview",
+        "https://osdatahub.os.uk/docs/vts/gettingStarted",
+        "https://osdatahub.os.uk/docs/vts/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.maps.vector.vts.tile",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS Vector Tile API (VTS): sample tile",
+      "description": "Fetch a single PBF vector tile (kept small; no bulk downloads).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/v1/vts/tile/7/42/63.pbf",
+        "params": {
+          "srs": "3857"
+        }
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/octet-stream",
+        "minBytes": 64
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/vts/overview",
+        "https://osdatahub.os.uk/docs/vts/gettingStarted",
+        "https://osdatahub.os.uk/docs/vts/technicalSpecification"
+      ],
+      "meta": {
+        "z": 7,
+        "x": 63,
+        "y": 42
+      }
+    },
+    {
+      "id": "os.maps.vector.ngd.ota.root",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS NGD API \u2013 Tiles (OTA): landing",
+      "description": "OGC API Tiles landing document (JSON).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/ngd/ota/v1",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ota/overview",
+        "https://osdatahub.os.uk/docs/ota/gettingStarted",
+        "https://osdatahub.os.uk/docs/ota/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.maps.vector.ngd.ota.collections",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS NGD API \u2013 Tiles (OTA): collections",
+      "description": "List tile collections (OGC API Tiles).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/ngd/ota/v1/collections",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ota/overview",
+        "https://osdatahub.os.uk/docs/ota/gettingStarted",
+        "https://osdatahub.os.uk/docs/ota/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.maps.vector.ngd.ota.tilematrixsets",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS NGD API \u2013 Tiles (OTA): tileMatrixSets",
+      "description": "List TileMatrixSets supported by the service.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/ngd/ota/v1/tilematrixsets",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ota/overview",
+        "https://osdatahub.os.uk/docs/ota/gettingStarted",
+        "https://osdatahub.os.uk/docs/ota/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.maps.vector.ngd.ota.conformance",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS NGD API \u2013 Tiles (OTA): conformance",
+      "description": "List OGC conformance classes implemented by this service.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/vector/ngd/ota/v1/conformance",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ota/overview",
+        "https://osdatahub.os.uk/docs/ota/gettingStarted",
+        "https://osdatahub.os.uk/docs/ota/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.downloads.openapi",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads API: OpenAPI specification",
+      "description": "Downloads API OpenAPI YAML (metadata only; no file downloads).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/openapi.yaml",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/yaml"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.downloads.products",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads API: Products list",
+      "description": "List available download products (metadata only).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "count": 27
+      }
+    },
+    {
+      "id": "os.downloads.product.250kScaleColourRaster.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: 1:250 000 Scale Colour Raster\u2122 (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/250kScaleColourRaster",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "250kScaleColourRaster",
+        "productName": "1:250 000 Scale Colour Raster\u2122",
+        "version": "2025-06"
+      }
+    },
+    {
+      "id": "os.downloads.product.250kScaleColourRaster.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: 1:250 000 Scale Colour Raster\u2122 (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/250kScaleColourRaster/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "250kScaleColourRaster",
+        "productName": "1:250 000 Scale Colour Raster\u2122",
+        "version": "2025-06"
+      }
+    },
+    {
+      "id": "os.downloads.product.GeoClimate_UKCP18_Open.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoClimate UKCP18 Open (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GeoClimate_UKCP18_Open",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GeoClimate_UKCP18_Open",
+        "productName": "BGS GeoClimate UKCP18 Open",
+        "version": "Version 1"
+      }
+    },
+    {
+      "id": "os.downloads.product.GeoClimate_UKCP18_Open.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoClimate UKCP18 Open (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GeoClimate_UKCP18_Open/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GeoClimate_UKCP18_Open",
+        "productName": "BGS GeoClimate UKCP18 Open",
+        "version": "Version 1"
+      }
+    },
+    {
+      "id": "os.downloads.product.GeoCoast_Open.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoCoast Open (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GeoCoast_Open",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GeoCoast_Open",
+        "productName": "BGS GeoCoast Open",
+        "version": "Version 1"
+      }
+    },
+    {
+      "id": "os.downloads.product.GeoCoast_Open.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoCoast Open (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GeoCoast_Open/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GeoCoast_Open",
+        "productName": "BGS GeoCoast Open",
+        "version": "Version 1"
+      }
+    },
+    {
+      "id": "os.downloads.product.GeoScour_Open.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoScour Open (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GeoScour_Open",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GeoScour_Open",
+        "productName": "BGS GeoScour Open",
+        "version": "Version 2"
+      }
+    },
+    {
+      "id": "os.downloads.product.GeoScour_Open.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoScour Open (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GeoScour_Open/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GeoScour_Open",
+        "productName": "BGS GeoScour Open",
+        "version": "Version 2"
+      }
+    },
+    {
+      "id": "os.downloads.product.GB-Hex-5km-GeoSure.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoSure 5 km hex grid (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GB-Hex-5km-GeoSure",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GB-Hex-5km-GeoSure",
+        "productName": "BGS GeoSure 5 km hex grid",
+        "version": "Version 8"
+      }
+    },
+    {
+      "id": "os.downloads.product.GB-Hex-5km-GeoSure.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS GeoSure 5 km hex grid (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GB-Hex-5km-GeoSure/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GB-Hex-5km-GeoSure",
+        "productName": "BGS GeoSure 5 km hex grid",
+        "version": "Version 8"
+      }
+    },
+    {
+      "id": "os.downloads.product.BGS_Geology_625k.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Geology 625K (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/BGS_Geology_625k",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "BGS_Geology_625k",
+        "productName": "BGS Geology 625K",
+        "version": "Version 5"
+      }
+    },
+    {
+      "id": "os.downloads.product.BGS_Geology_625k.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Geology 625K (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/BGS_Geology_625k/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "BGS_Geology_625k",
+        "productName": "BGS Geology 625K",
+        "version": "Version 5"
+      }
+    },
+    {
+      "id": "os.downloads.product.Hydrogeology_625k.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Hydrogeology 625k digital hydrogeological map of the UK (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Hydrogeology_625k",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Hydrogeology_625k",
+        "productName": "BGS Hydrogeology 625k digital hydrogeological map of the UK",
+        "version": "Version 5"
+      }
+    },
+    {
+      "id": "os.downloads.product.Hydrogeology_625k.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Hydrogeology 625k digital hydrogeological map of the UK (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Hydrogeology_625k/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Hydrogeology_625k",
+        "productName": "BGS Hydrogeology 625k digital hydrogeological map of the UK",
+        "version": "Version 5"
+      }
+    },
+    {
+      "id": "os.downloads.product.GB-Hex-1km-Mining-Haz.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Mining hazard (not including coal) 1 km hex grid (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GB-Hex-1km-Mining-Haz",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GB-Hex-1km-Mining-Haz",
+        "productName": "BGS Mining hazard (not including coal) 1 km hex grid",
+        "version": "Version 8"
+      }
+    },
+    {
+      "id": "os.downloads.product.GB-Hex-1km-Mining-Haz.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Mining hazard (not including coal) 1 km hex grid (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GB-Hex-1km-Mining-Haz/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GB-Hex-1km-Mining-Haz",
+        "productName": "BGS Mining hazard (not including coal) 1 km hex grid",
+        "version": "Version 8"
+      }
+    },
+    {
+      "id": "os.downloads.product.Soil_Parent_Material_Model_1km.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Soil Parent Material Model (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Soil_Parent_Material_Model_1km",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Soil_Parent_Material_Model_1km",
+        "productName": "BGS Soil Parent Material Model",
+        "version": "Version 6"
+      }
+    },
+    {
+      "id": "os.downloads.product.Soil_Parent_Material_Model_1km.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS Soil Parent Material Model (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Soil_Parent_Material_Model_1km/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Soil_Parent_Material_Model_1km",
+        "productName": "BGS Soil Parent Material Model",
+        "version": "Version 6"
+      }
+    },
+    {
+      "id": "os.downloads.product.Radon_Indicative_Atlas.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS/UKHSA Radon data: Indicative Atlas of Radon (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Radon_Indicative_Atlas",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Radon_Indicative_Atlas",
+        "productName": "BGS/UKHSA Radon data: Indicative Atlas of Radon",
+        "version": "Version 3 (GB); Version 1 (NI)"
+      }
+    },
+    {
+      "id": "os.downloads.product.Radon_Indicative_Atlas.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: BGS/UKHSA Radon data: Indicative Atlas of Radon (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Radon_Indicative_Atlas/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Radon_Indicative_Atlas",
+        "productName": "BGS/UKHSA Radon data: Indicative Atlas of Radon",
+        "version": "Version 3 (GB); Version 1 (NI)"
+      }
+    },
+    {
+      "id": "os.downloads.product.BoundaryLine.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: Boundary-Line\u2122 (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/BoundaryLine",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "BoundaryLine",
+        "productName": "Boundary-Line\u2122",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.BoundaryLine.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: Boundary-Line\u2122 (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/BoundaryLine/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "BoundaryLine",
+        "productName": "Boundary-Line\u2122",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.CodePointOpen.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: Code-Point\u00ae Open (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/CodePointOpen",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "CodePointOpen",
+        "productName": "Code-Point\u00ae Open",
+        "version": "2026-02"
+      }
+    },
+    {
+      "id": "os.downloads.product.CodePointOpen.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: Code-Point\u00ae Open (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/CodePointOpen/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "CodePointOpen",
+        "productName": "Code-Point\u00ae Open",
+        "version": "2026-02"
+      }
+    },
+    {
+      "id": "os.downloads.product.GBOverviewMaps.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: GB Overview Maps (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GBOverviewMaps",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GBOverviewMaps",
+        "productName": "GB Overview Maps",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.GBOverviewMaps.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: GB Overview Maps (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/GBOverviewMaps/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "GBOverviewMaps",
+        "productName": "GB Overview Maps",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.MiniScale.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: MiniScale\u00ae (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/MiniScale",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "MiniScale",
+        "productName": "MiniScale\u00ae",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.MiniScale.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: MiniScale\u00ae (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/MiniScale/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "MiniScale",
+        "productName": "MiniScale\u00ae",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.BuiltUpAreas.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Built Up Areas (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/BuiltUpAreas",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "BuiltUpAreas",
+        "productName": "OS Open Built Up Areas",
+        "version": "2024-04"
+      }
+    },
+    {
+      "id": "os.downloads.product.BuiltUpAreas.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Built Up Areas (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/BuiltUpAreas/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "BuiltUpAreas",
+        "productName": "OS Open Built Up Areas",
+        "version": "2024-04"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenGreenspace.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Greenspace (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenGreenspace",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenGreenspace",
+        "productName": "OS Open Greenspace",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenGreenspace.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Greenspace (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenGreenspace/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenGreenspace",
+        "productName": "OS Open Greenspace",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.LIDS.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Linked Identifiers (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/LIDS",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "LIDS",
+        "productName": "OS Open Linked Identifiers",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.LIDS.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Linked Identifiers (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/LIDS/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "LIDS",
+        "productName": "OS Open Linked Identifiers",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenNames.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Names (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenNames",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenNames",
+        "productName": "OS Open Names",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenNames.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Names (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenNames/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenNames",
+        "productName": "OS Open Names",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenRivers.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Rivers (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenRivers",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenRivers",
+        "productName": "OS Open Rivers",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenRivers.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Rivers (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenRivers/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenRivers",
+        "productName": "OS Open Rivers",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenRoads.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Roads (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenRoads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenRoads",
+        "productName": "OS Open Roads",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenRoads.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Roads (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenRoads/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenRoads",
+        "productName": "OS Open Roads",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenTOID.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open TOID (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenTOID",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenTOID",
+        "productName": "OS Open TOID",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenTOID.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open TOID (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenTOID/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenTOID",
+        "productName": "OS Open TOID",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenUPRN.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open UPRN (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenUPRN",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenUPRN",
+        "productName": "OS Open UPRN",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenUPRN.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open UPRN (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenUPRN/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenUPRN",
+        "productName": "OS Open UPRN",
+        "version": "2026-01"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenUSRN.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open USRN (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenUSRN",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenUSRN",
+        "productName": "OS Open USRN",
+        "version": "2026-02"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenUSRN.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open USRN (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenUSRN/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenUSRN",
+        "productName": "OS Open USRN",
+        "version": "2026-02"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenZoomstack.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Zoomstack (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenZoomstack",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenZoomstack",
+        "productName": "OS Open Zoomstack",
+        "version": "2025-12"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenZoomstack.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Open Zoomstack (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenZoomstack/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenZoomstack",
+        "productName": "OS Open Zoomstack",
+        "version": "2025-12"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenMapLocal.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS OpenMap - Local (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenMapLocal",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenMapLocal",
+        "productName": "OS OpenMap - Local",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.OpenMapLocal.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS OpenMap - Local (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/OpenMapLocal/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "OpenMapLocal",
+        "productName": "OS OpenMap - Local",
+        "version": "2025-10"
+      }
+    },
+    {
+      "id": "os.downloads.product.Terrain50.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Terrain\u00ae 50 (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Terrain50",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Terrain50",
+        "productName": "OS Terrain\u00ae 50",
+        "version": "2025-07"
+      }
+    },
+    {
+      "id": "os.downloads.product.Terrain50.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS Terrain\u00ae 50 (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/Terrain50/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "Terrain50",
+        "productName": "OS Terrain\u00ae 50",
+        "version": "2025-07"
+      }
+    },
+    {
+      "id": "os.downloads.product.VectorMapDistrict.meta",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS VectorMap\u00ae District (meta)",
+      "description": "Product metadata lookup.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/VectorMapDistrict",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "VectorMapDistrict",
+        "productName": "OS VectorMap\u00ae District",
+        "version": "2025-11"
+      }
+    },
+    {
+      "id": "os.downloads.product.VectorMapDistrict.downloads",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads product: OS VectorMap\u00ae District (downloads)",
+      "description": "List download options (do not follow redirect URLs).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/products/VectorMapDistrict/downloads",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ],
+      "meta": {
+        "productId": "VectorMapDistrict",
+        "productName": "OS VectorMap\u00ae District",
+        "version": "2025-11"
+      }
+    },
+    {
+      "id": "os.downloads.dataPackages",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads API: dataPackages",
+      "description": "List account-specific data packages (probe for permissions only).",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1/dataPackages",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.positioning.osnet.openapi",
+      "kind": "probe",
+      "category": "positioning",
+      "title": "OS Net API: OpenAPI specification",
+      "description": "OS Net API OpenAPI YAML.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/positioning/osnet/v1/openapi.yaml",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/yaml"
+      }
+    },
+    {
+      "id": "os.positioning.osnet.rinex.years",
+      "kind": "probe",
+      "category": "positioning",
+      "title": "OS Net API: RINEX years listing",
+      "description": "List years that have RINEX data.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/positioning/osnet/v1/rinex",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      }
+    },
+    {
+      "id": "os.positioning.osnet.station.detail",
+      "kind": "probe",
+      "category": "positioning",
+      "title": "OS Net API: station detail (AMER)",
+      "description": "Fetch station detail for a known station id (avoids large list responses).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/positioning/osnet/v1/stations/AMER",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "meta": {
+        "stationId": "AMER"
+      }
+    },
+    {
+      "id": "os.positioning.osnet.station.log",
+      "kind": "probe",
+      "category": "positioning",
+      "title": "OS Net API: station log (AMER)",
+      "description": "Fetch station log (text/plain).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/positioning/osnet/v1/stations/AMER/log",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "text/plain"
+      },
+      "meta": {
+        "stationId": "AMER"
+      }
+    }
+  ]
+}

@@ -64,6 +64,26 @@ def test_os_apps_render_geography_selector_text_only_override(monkeypatch):
     assert all(block.get("type") == "text" for block in content if isinstance(block, dict))
 
 
+def test_os_apps_render_boundary_explorer(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_apps.render_boundary_explorer",
+            "level": "WARD",
+            "searchTerm": "Westminster",
+            "detailLevel": "postcode",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["uiResourceUris"] == ["ui://mcp-geo/boundary-explorer"]
+    assert body["status"] == "ready"
+    assert body["config"]["level"] == "WARD"
+    assert body["config"]["searchTerm"] == "Westminster"
+    assert body["config"]["detailLevel"] == "postcode"
+
+
 def test_os_apps_render_ui_probe_embedded(monkeypatch):
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
     resp = client.post(

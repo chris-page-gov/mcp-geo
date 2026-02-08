@@ -12,12 +12,15 @@ client = TestClient(app)
 
 
 def test_resources_list_includes_data_catalog_entries() -> None:
-    resp = client.get("/resources/list")
+    resp = client.get("/resources/list", params={"limit": 200, "page": 1})
     assert resp.status_code == 200
     resources = resp.json().get("resources", [])
     uris = {entry.get("uri") for entry in resources if isinstance(entry, dict)}
     assert "resource://mcp-geo/boundary-manifest" in uris
     assert "resource://mcp-geo/boundary-cache-status" in uris
+    assert "resource://mcp-geo/ons-catalog" in uris
+    assert "resource://mcp-geo/os-catalog" in uris
+    assert "resource://mcp-geo/layers-catalog" in uris
 
 
 def test_resources_read_boundary_manifest() -> None:

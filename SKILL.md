@@ -100,6 +100,8 @@ Fetch content with `/resources/read` using `uri`. Example:
 - `resource://mcp-geo/boundary-manifest` (boundary dataset manifest)
 - `resource://mcp-geo/boundary-latest-report` (latest pipeline report)
 - `resource://mcp-geo/ons-catalog` (ONS dataset catalog index)
+- `resource://mcp-geo/os-catalog` (Ordnance Survey API and downloads catalog index)
+- `resource://mcp-geo/layers-catalog` (human-friendly layer catalog for OS NGD collections)
 
 ## Error Model
 

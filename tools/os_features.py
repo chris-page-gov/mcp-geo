@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from tools.os_common import client
@@ -7,6 +8,8 @@ from tools.registry import Tool, ToolResult, register
 
 _DEFAULT_LIMIT = 100
 _MAX_LIMIT = 500
+
+_COLLECTION_VERSION_RE = re.compile(r"^(?P<base>.+)-(?P<ver>[0-9]+)$")
 
 
 def _parse_bbox(value: Any) -> tuple[float, float, float, float] | None:
@@ -60,6 +63,7 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     if not collection:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing collection"}
 
+    include_geometry = bool(payload.get("includeGeometry"))
     bbox = _parse_bbox(payload.get("bbox"))
     if bbox is None:
         return 400, {
@@ -115,11 +119,14 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         geometry_type = None
         if isinstance(geometry, dict):
             geometry_type = geometry.get("type")
-        features_out.append({
+        out_item: dict[str, Any] = {
             "id": feat.get("id"),
             "geometry_type": geometry_type,
             "properties": feat.get("properties", {}),
-        })
+        }
+        if include_geometry and isinstance(geometry, dict):
+            out_item["geometry"] = geometry
+        features_out.append(out_item)
 
     number_matched = body.get("numberMatched")
     if not isinstance(number_matched, int):
@@ -146,6 +153,7 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         "hints": [
             "This uses OS NGD OGC API Features (collections/{collection}/items).",
             "Use pageToken (offset) + limit for paging.",
+            "Pass includeGeometry=true to include GeoJSON geometry in each feature (larger payloads).",
         ],
     }
 
@@ -171,6 +179,11 @@ register(
                     "type": ["string", "integer", "null"],
                     "description": "Offset for paging (use nextPageToken from the previous response).",
                 },
+                "includeGeometry": {
+                    "type": "boolean",
+                    "description": "When true, include GeoJSON geometry per feature (larger payloads).",
+                    "default": False,
+                },
             },
             "required": ["collection", "bbox"],
             "additionalProperties": False,
@@ -193,3 +206,98 @@ register(
     )
 )
 
+
+def _features_collections(payload: dict[str, Any]) -> ToolResult:
+    """List OS NGD OGC API Features collections (id/title/description) + latest version mapping."""
+    status, body = client.get_json(f"{client.base_ngd_features}/collections", None)
+    if status != 200:
+        return 501, body
+    if not isinstance(body, dict):
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "Expected JSON object response from OS NGD features collections endpoint",
+        }
+    raw = body.get("collections", [])
+    if not isinstance(raw, list):
+        raw = []
+
+    q = payload.get("q") or payload.get("query")
+    q_norm = str(q).strip().lower() if isinstance(q, str) else ""
+
+    collections: list[dict[str, Any]] = []
+    latest_by_base: dict[str, str] = {}
+    latest_versions: dict[str, int] = {}
+
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        coll_id = item.get("id")
+        if not isinstance(coll_id, str) or not coll_id.strip():
+            continue
+        coll_id = coll_id.strip()
+        title = item.get("title")
+        desc = item.get("description")
+        record = {
+            "id": coll_id,
+            "title": title if isinstance(title, str) else "",
+            "description": desc if isinstance(desc, str) else "",
+        }
+        if q_norm:
+            hay = f"{record['id']} {record['title']} {record['description']}".lower()
+            if q_norm not in hay:
+                continue
+        collections.append(record)
+
+        m = _COLLECTION_VERSION_RE.match(coll_id)
+        if not m:
+            continue
+        base = m.group("base")
+        try:
+            ver = int(m.group("ver"))
+        except ValueError:
+            continue
+        prev = latest_versions.get(base, -1)
+        if ver > prev:
+            latest_versions[base] = ver
+            latest_by_base[base] = coll_id
+
+    collections.sort(key=lambda x: x.get("id", ""))
+    return 200, {
+        "count": len(collections),
+        "collections": collections,
+        "latestByBaseId": latest_by_base,
+        "live": True,
+        "hints": [
+            "Use latestByBaseId to pick the newest collection version (highest numeric suffix).",
+            "Pass q to filter by substring match in id/title/description.",
+        ],
+    }
+
+
+register(
+    Tool(
+        name="os_features.collections",
+        description="List OS NGD OGC API Features collections (and a latest-by-base mapping).",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_features.collections"},
+                "q": {"type": "string", "description": "Optional substring filter."},
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "count": {"type": "integer"},
+                "collections": {"type": "array"},
+                "latestByBaseId": {"type": "object"},
+            },
+            "required": ["collections", "latestByBaseId"],
+            "additionalProperties": True,
+        },
+        handler=_features_collections,
+    )
+)

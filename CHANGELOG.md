@@ -12,6 +12,13 @@ All notable changes to this project will be documented in this file.
 - Added `resource://mcp-geo/ons-catalog` and `resources/ons_catalog.json` as the local catalog index.
 - Added `scripts/ons_catalog_refresh.py` to rebuild the ONS catalog index from the live API.
 - Added related-dataset linking with comparability gating in `ons_select.search` when `includeRelated=true`.
+- Added `resource://mcp-geo/os-catalog` and `resources/os_catalog.json` as the OS API + downloads catalog index.
+- Added `scripts/os_catalog_refresh.py` to rebuild the OS catalog index from live OS API discovery.
+- Added OS catalog snapshot + live validation tests (`tests/test_os_catalog_snapshot.py`).
+- Added OS catalog live validation run report (`docs/reports/os_catalog_live_run_2026-02-07.md`).
+- Added `os_features.collections` to list NGD OGC API Features collections and return a latest-by-base mapping.
+- Added `os_apps.render_boundary_explorer` (`ui://mcp-geo/boundary-explorer`) for boundary + inventory exploration.
+- Added `os_map.inventory` and `os_map.export` to orchestrate bounded inventories and export snapshots as resources.
 
 ### Changed
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.
@@ -26,10 +33,13 @@ All notable changes to this project will be documented in this file.
 - MCP-Apps tools now support `MCP_APPS_CONTENT_MODE` to control UI content blocks (`resource_link`, embedded `resource`, or `text` only), and UI tool metadata now includes both nested `ui.resourceUri` and flat `ui/resourceUri` keys for compatibility.
 - Trace proxy parsing now only attempts JSON decode on client/server JSON-RPC lines, reducing false parse errors from Docker/build stderr noise.
 - Troubleshooting docs now include `parent_message_uuid` UUID failures as Claude host/session issues (not MCP server payload errors), with concrete recovery steps.
+- Devcontainer PostGIS service now binds host port `5433` (instead of `5432`) to avoid conflicts with local PostgreSQL installs.
 
 ### Fixed
 - `os_features.query` now uses OS NGD OGC API Features (`features/ngd/ofa/v1/collections/{collection}/items`) and supports basic paging via `limit` + `pageToken` (`nextPageToken` in responses).
 - `os_linked_ids.get` now uses OS Linked Identifiers (`search/links/v1/identifierTypes/{identifierType}/{identifier}`) with optional identifier type inference.
+- `os_vector_tiles.descriptor` now emits the correct upstream tile template (`/vts/tile/{z}/{y}/{x}.pbf`).
+- OS catalog NGD per-collection item probes now use a small bbox to avoid timeouts in dense areas.
 
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.

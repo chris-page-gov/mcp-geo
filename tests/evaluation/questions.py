@@ -954,6 +954,48 @@ ADVANCED_QUESTIONS = [
         tags=["nomis", "query"],
         requires_ons_live=True,
     ),
+    EvaluationQuestion(
+        id="A010",
+        question="Build a boundary inventory and export it for Westminster ward",
+        intent=Intent.INTERACTIVE_SELECTION,
+        difficulty=Difficulty.ADVANCED,
+        description="Boundary explorer + layer inventory + export workflow (coverage for helper tools).",
+        expected=ExpectedOutcome(
+            required_tools=[
+                "os_apps.render_boundary_explorer",
+                "os_features.collections",
+                "os_map.inventory",
+                "os_map.export",
+            ],
+            max_tool_calls=6,
+            required_keywords=["boundary-explorer", "latestByBaseId", "requestedLayers", "exports/"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "os_apps.render_boundary_explorer",
+                {"level": "WARD", "searchTerm": "Westminster", "detailLevel": "postcode"},
+            ),
+            ToolCallSpec("os_features.collections", {}),
+            ToolCallSpec(
+                "os_map.inventory",
+                {
+                    "bbox": [-0.1500, 51.4900, -0.1200, 51.5100],
+                    "layers": ["uprns", "buildings", "road_links", "path_links"],
+                    "limits": {"uprns": 50, "buildings": 10, "road_links": 10, "path_links": 10},
+                },
+            ),
+            ToolCallSpec(
+                "os_map.export",
+                {
+                    "bbox": [-0.1500, 51.4900, -0.1200, 51.5100],
+                    "name": "evaluation-export",
+                    "layers": ["uprns", "buildings", "road_links", "path_links"],
+                    "limits": {"uprns": 50, "buildings": 10, "road_links": 10, "path_links": 10},
+                },
+            ),
+        ],
+        tags=["maps", "inventory", "export", "ui"],
+    ),
 ]
 
 

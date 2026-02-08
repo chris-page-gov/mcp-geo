@@ -24,6 +24,7 @@ _IMPORT_MODULES = [
     "tools.ons_select",
     "tools.ons_codes",
     "tools.nomis_data",
+    "tools.os_map",
     "tools.os_mcp",
     "tools.os_apps",
 ]
@@ -78,6 +79,7 @@ _PREFIX_IMPORTS = {
     "ons_select": ["tools.ons_select"],
     "ons_codes": ["tools.ons_codes"],
     "nomis": ["tools.nomis_data"],
+    "os_map": ["tools.os_map"],
     "os_mcp": ["tools.os_mcp"],
     "os_apps": ["tools.os_apps"],
 }
