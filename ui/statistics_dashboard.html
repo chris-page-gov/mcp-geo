@@ -518,8 +518,25 @@
         postToHost({ jsonrpc: "2.0", method, params });
       }
 
-      function requestTool(tool, args) {
-        return rpcCall("tools/call", { name: tool, arguments: args || {} });
+      function sanitizeToolName(toolName) {
+        if (typeof toolName !== "string") {
+          return toolName;
+        }
+        return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
+      }
+
+      async function requestTool(tool, args) {
+        try {
+          return await rpcCall("tools/call", { name: tool, arguments: args || {} });
+        } catch (err) {
+          const message = String(err?.message || "");
+          const sanitized = sanitizeToolName(tool);
+          const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
+          if (sanitized && sanitized !== tool && looksMissing) {
+            return await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+          }
+          throw err;
+        }
       }
 
       async function requestToolStrict(tool, args) {

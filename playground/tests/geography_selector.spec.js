@@ -48,6 +48,18 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
       if (message.method === "tools/call") {
         const name = message.params?.name || message.params?.tool;
         if (name === "os_places.search") {
+          // Simulate clients that sanitize tool names (e.g. disallow ".").
+          window.postMessage(
+            {
+              jsonrpc: "2.0",
+              id: message.id,
+              error: { code: -32000, message: "Tool not found on server: os_places.search" },
+            },
+            "*"
+          );
+          return;
+        }
+        if (name === "os_places_search") {
           respond({ results: addressResults });
           return;
         }

@@ -47,7 +47,7 @@ assumptions change.
 
 ## Current Focus
 
-- Ensuring reliable MCP-Apps performance and client compatibility.
+- Ensuring reliable MCP-Apps performance and client compatibility (including tool-name restrictions).
 - Improving ONS dataset selection (ranking, elicitation, comparability guardrails).
 
 ## Active Work
@@ -127,9 +127,11 @@ assumptions change.
 - 2026-02-07: Added OS API + downloads catalog snapshot (`resource://mcp-geo/os-catalog`) with refresh script and live validation run report.
 - 2026-02-08: Added VS Code workspace MCP config at `.vscode/mcp.json` (including a trace profile) and removed legacy `mcp.servers` config from `.vscode/settings.json`.
 - 2026-02-08: Devcontainer PostGIS host port is now random by default to avoid conflicts; set `MCP_GEO_POSTGIS_HOST_PORT` to pin.
+- 2026-02-09: MCP-Apps UI widgets now retry tool calls using sanitized (underscore) tool names when dotted names are rejected by the host; tool naming strategy updated to treat sanitized names as first-class for restricted clients.
 
 ## Open Questions
 
+- Should we formally deprecate dotted tool names and standardize on sanitized names across HTTP + STDIO (and how do we surface `originalName` mappings consistently)?
 - Does Claude Desktop actually render MCP-Apps UI from `_meta.ui.resourceUri` or `uiResourceUris` without `resource_link`, or is it currently ignoring MCP-Apps UI entirely?
 
 ## Run and Test Notes

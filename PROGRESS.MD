@@ -216,4 +216,27 @@ MCP-Apps UI for clients that render it.
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
 | Update docs + skills to guide Claude to map fallback flow | Not started | Explicit “use os_maps.render + image link” guidance. |
 | Add tests for Claude fallback behavior | Partial | Added MCP-Apps content-mode + metadata compatibility tests and `os_apps.render_ui_probe` assertions; still need end-to-end host render verification tests. |
+| Handle sanitized tool names in UI widgets | Done | UI widgets now retry tool calls with the sanitized (underscore) tool name when the host rejects dotted names. |
 | Add trace session + artifact bundle workflow | Done | `scripts/trace_session.py` + `scripts/trace_report.py` and docs update. |
+
+## Tool naming compatibility plan (2026-02-09)
+
+Context: some MCP clients (notably Claude) require tool names matching
+`^[a-zA-Z0-9_-]{1,64}$`, which means dotted tool names (for example `os_places.by_postcode`)
+can be rejected or silently sanitized.
+
+Our STDIO adapter already sanitizes names for list/search, but MCP-Apps UI widgets were
+calling dotted names directly, causing “Tool not found” errors under dot-disallowing hosts.
+
+Plan:
+- Treat the sanitized form (dot → underscore, plus collision handling) as the primary client-facing name for restricted clients.
+- Preserve dotted names as canonical internal IDs for backward compatibility (HTTP callers + internal code), while accepting sanitized aliases.
+- Implement shared tool-name mapping helpers and use them consistently across STDIO + HTTP + UI widgets.
+
+Next implementation steps:
+1. Extract tool-name sanitize/resolve logic into a shared module (used by both STDIO + HTTP routers).
+2. HTTP: add a `nameMode` option for `/tools/list` and `/tools/describe` (for example `original|sanitized`) and accept sanitized tool names in `/tools/call`.
+3. UI widgets: prefer sanitized names when host/tooling indicates restriction; keep retry fallback as a safety net.
+4. Add tests: HTTP round-trip for sanitized names; keep Playwright regression exercising dot-disallowed behavior.
+5. Docs: update Claude + VS Code guidance to show sanitized tool names and how to map back to originals (`annotations.originalName`).
+

@@ -140,7 +140,7 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 ## MCP Client Interop Learnings
 
 - Claude uses `tools/call` with `params.name` + `params.arguments` (not `args`); support both.
-- Claude expects tool names matching `^[a-zA-Z0-9_-]{1,64}$`; normalize dotted names for stdio list/search and accept originals for calls.
+- Claude expects tool names matching `^[a-zA-Z0-9_-]{1,64}$`; normalize dotted names for stdio list/search and accept both sanitized + original names for calls. UI widgets should tolerate sanitized names (retry with dot→underscore).
 - STDIO framing can be JSON lines or Content-Length; auto-detect and allow `MCP_STDIO_FRAMING=line` to force.
 - Do not respond to JSON-RPC notifications (no `id`) to avoid client disconnects.
 - Some clients do not advertise MCP-Apps UI support; stdio adds `data.fallback` static map metadata for `os_apps.render_geography_selector` unless `MCP_STDIO_UI_SUPPORTED=1`. Use `MCP_STDIO_FALLBACK_BBOX_DEG` to control fallback span.
