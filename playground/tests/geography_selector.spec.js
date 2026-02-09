@@ -135,7 +135,6 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
     }
   });
 
-  await page.fill("#apiKeyInput", "test-key");
   await page.selectOption("#mapStyleSelect", "os_OS_VTS_3857_Light.json");
 
   await page.waitForFunction(() => {
@@ -150,4 +149,8 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
       return false;
     }
   });
+
+  // Capture map rendering for regression coverage
+  await expect(page.locator("#map")).toBeVisible();
+  await expect(page.locator("#map")).toHaveScreenshot("geography-selector-map.png");
 });

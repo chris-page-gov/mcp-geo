@@ -6,7 +6,7 @@
     <title>MCP Geo - Geography Selector</title>
     <link
       rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css"
+      href="vendor/maplibre-gl.css"
     />
     <link
       rel="stylesheet"
@@ -566,7 +566,7 @@
       </section>
     </div>
 
-    <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
+    <script src="vendor/maplibre-gl.js"></script>
     <script>
       const modes = [
         { id: "free", label: "Free text", tool: "os_places.search" },
@@ -1161,7 +1161,10 @@
       }
 
       function rewriteOsRequest(url) {
-        const proxyBase = state.proxyBase || "http://localhost:8000";
+        const proxyBase = state.proxyBase;
+          if (!proxyBase) {
+            return null;
+          }
         try {
           const resolved = new URL(url, proxyBase);
           const proxyOrigin = new URL(proxyBase).origin;
@@ -1192,8 +1195,14 @@
         if (!window.maplibregl) {
           return;
         }
-        const proxyBase = state.proxyBase || "http://localhost:8000";
-        maplibregl.workerUrl = `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+        const proxyBase = state.proxyBase;
+        const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
+        const shouldUseLocalWorker =
+          window.location.protocol === "file:" || window.location.origin === "null";
+        maplibregl.workerUrl =
+          shouldUseLocalWorker || !proxyBase
+            ? localWorkerUrl
+            : `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
         const fallbackStyle = {
           version: 8,
           sources: {},
@@ -2273,9 +2282,15 @@
         if (mcpGeo.vectorTiles) {
           state.vectorTiles = mcpGeo.vectorTiles;
         }
-        if (state.map && window.maplibregl && state.proxyBase) {
-          maplibregl.workerUrl = `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
-        }
+        if (state.map && window.maplibregl) {
+            const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
+            const shouldUseLocalWorker =
+              window.location.protocol === "file:" || window.location.origin === "null";
+            maplibregl.workerUrl =
+              shouldUseLocalWorker || !state.proxyBase
+                ? localWorkerUrl
+                : `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+          }
       }
 
       function applyVectorTiles() {
@@ -2286,7 +2301,11 @@
           return;
         }
         const styleName = mapStyleSelect.value.replace("os_", "") || "OS_VTS_3857_Light.json";
-        const proxyBase = state.proxyBase || "http://localhost:8000";
+        const proxyBase = state.proxyBase;
+          if (!proxyBase) {
+            showOsWarning();
+            return;
+          }
         const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${vectorSrs}`;
         if (styleUrl) {
           state.sourcesReady = false;
@@ -2320,13 +2339,16 @@
           scheduleDiagnosticsUpdate();
           return;
         }
-        const proxyBase = state.proxyBase || "http://localhost:8000";
+        const proxyBase = state.proxyBase;
+          const osmTiles = proxyBase
+            ? `${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
+            : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
         const fallbackStyle = {
           version: 8,
           sources: {
             osm: {
               type: "raster",
-              tiles: [`${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`],
+              tiles: [osmTiles],
               tileSize: 256,
             },
           },
@@ -2514,7 +2536,12 @@
       buildSelectionModeButtons();
       buildZoomLadder();
       buildLayerToggles();
-      mapAdapter.init();
+      try {
+        mapAdapter.init();
+      } catch (err) {
+        state.lastMapError = redactSecrets(err?.message || "Map init error");
+        state.lastMapErrorDetail = { message: state.lastMapError };
+      }
       renderResults([]);
       renderSelectionSummary();
       scheduleDiagnosticsUpdate();

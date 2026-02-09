@@ -12,7 +12,7 @@
     />
     <link
       rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css"
+      href="vendor/maplibre-gl.css"
     />
     <style>
       :root {
@@ -592,7 +592,7 @@
       </div>
     </div>
 
-    <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
+    <script src="vendor/maplibre-gl.js"></script>
     <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.min.js"></script>
     <script>
       const hostStatusEl = document.getElementById("hostStatus");
@@ -633,7 +633,7 @@
 
       const state = {
         hostReady: false,
-        proxyBase: "http://localhost:8000",
+        proxyBase: null,
         map: null,
         boundaries: [],
         boundaryById: new Map(),
@@ -770,16 +770,21 @@
 
       const mapAdapter = {
         init() {
-          const proxyBase = state.proxyBase || "http://localhost:8000";
-          if (window.maplibregl) {
-            maplibregl.workerUrl = `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
-          }
-          const fallbackStyle = {
-            version: 8,
-            sources: {
-              osm: {
-                type: "raster",
-                tiles: [`${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`],
+          const proxyBase = state.proxyBase;
+            const osmTiles = proxyBase
+              ? `${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
+              : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+            if (window.maplibregl) {
+              maplibregl.workerUrl = proxyBase
+                ? `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`
+                : "vendor/maplibre-gl-csp-worker.js";
+            }
+            const fallbackStyle = {
+              version: 8,
+              sources: {
+                osm: {
+                  type: "raster",
+                  tiles: [osmTiles],
                 tileSize: 256,
               },
             },
@@ -803,7 +808,11 @@
         },
         setBasemap(styleId) {
           if (!state.map) return;
-          const proxyBase = state.proxyBase || "http://localhost:8000";
+          const proxyBase = state.proxyBase;
+            if (!proxyBase) {
+              showOsWarning();
+              return;
+            }
           if (styleId && styleId.startsWith("os_")) {
             const styleName = styleId.replace("os_", "");
             const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=3857`;
@@ -1882,9 +1891,11 @@
           const ctx = message.params || {};
           const mcpGeo = ctx.mcpGeo || {};
           if (mcpGeo.proxyBase) state.proxyBase = mcpGeo.proxyBase;
-          if (state.map && window.maplibregl && state.proxyBase) {
-            maplibregl.workerUrl = `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
-          }
+          if (state.map && window.maplibregl) {
+              maplibregl.workerUrl = state.proxyBase
+                ? `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`
+                : "vendor/maplibre-gl-csp-worker.js";
+            }
           return;
         }
       });
