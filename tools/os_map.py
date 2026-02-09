@@ -338,7 +338,15 @@ register(
                     "description": "WGS84 bbox [minLon,minLat,maxLon,maxLat]",
                 },
                 "layers": {
-                    "type": ["array", "string", "null"],
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 1,
+                        },
+                        {"type": "string"},
+                        {"type": "null"},
+                    ],
                     "description": "Requested layers (uprns, buildings, road_links, path_links).",
                 },
                 "limits": {"type": "object", "description": "Per-layer max features (budgets)."},
@@ -358,11 +366,16 @@ register(
         output_schema={
             "type": "object",
             "properties": {
-                "bbox": {"type": "array"},
+                "bbox": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 4,
+                    "maxItems": 4,
+                },
                 "layers": {"type": "object"},
-                "requestedLayers": {"type": "array"},
+                "requestedLayers": {"type": "array", "items": {"type": "string"}},
                 "limits": {"type": "object"},
-                "hints": {"type": "array"},
+                "hints": {"type": "array", "items": {"type": "string"}},
             },
             "required": ["layers"],
             "additionalProperties": True,
@@ -387,7 +400,18 @@ register(
                 },
                 "name": {"type": "string"},
                 "recipe": {"type": "object"},
-                "layers": {"type": ["array", "string", "null"]},
+                "layers": {
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 1,
+                        },
+                        {"type": "string"},
+                        {"type": "null"},
+                    ],
+                    "description": "Requested layers (uprns, buildings, road_links, path_links).",
+                },
                 "limits": {"type": "object"},
                 "includeGeometry": {"type": "object"},
                 "collections": {"type": "object"},
@@ -401,7 +425,7 @@ register(
                 "exportId": {"type": "string"},
                 "uri": {"type": "string"},
                 "path": {"type": "string"},
-                "notes": {"type": "array"},
+                "notes": {"type": "array", "items": {"type": "string"}},
             },
             "required": ["exportId", "uri", "path"],
             "additionalProperties": True,
