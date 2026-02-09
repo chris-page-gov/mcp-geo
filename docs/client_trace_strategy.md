@@ -100,6 +100,15 @@ Use the proxy and UI event logging together:
 }
 ```
 
+## 4b) VS Code quick setup example
+
+This repo includes a workspace MCP config at `.vscode/mcp.json` with a traced
+server entry `mcp-geo-trace`. Start that server in VS Code, then reproduce the
+workflow in Copilot Chat (Agent mode). Artifacts:
+
+- MCP JSON-RPC: `logs/vscode-mcp-trace.jsonl`
+- UI events: `logs/ui-events.vscode-trace.jsonl`
+
 ## 5) What to look for
 
 - `tools/search` calls in `logs/mcp-trace.jsonl` confirm tool search usage.

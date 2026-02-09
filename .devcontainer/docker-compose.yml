@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   app:
     build:
@@ -26,7 +24,12 @@ services:
       POSTGRES_USER: mcp_geo
       POSTGRES_PASSWORD: mcp_geo
       PGDATA: /var/lib/postgresql/data/pgdata
+    # Host port is optional. Default to a random free port to avoid conflicts
+    # when multiple devcontainers (or local Postgres) are running.
+    #
+    # To pin it, export `MCP_GEO_POSTGIS_HOST_PORT=5433` before starting the
+    # devcontainer.
     ports:
-      - "5433:5432"
+      - "${MCP_GEO_POSTGIS_HOST_PORT:-0}:5432"
     volumes:
       - ../data/postgres:/var/lib/postgresql/data

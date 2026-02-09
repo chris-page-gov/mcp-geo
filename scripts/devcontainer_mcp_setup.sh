@@ -29,4 +29,4 @@ for var in OS_API_KEY ONS_API_KEY ONS_LIVE_ENABLED LOG_LEVEL STDIO_KEY BEARER_TO
   fi
 done
 
-codex mcp add "${env_args[@]}" "$server_name" -- "$server_cmd"
+codex mcp add "${env_args[@]}" "$server_name" -- python3 "$server_cmd"

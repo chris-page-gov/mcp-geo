@@ -28,6 +28,12 @@ Optional: enable the PostGIS boundary cache for full admin boundaries:
 - `BOUNDARY_CACHE_ENABLED=true`
 - `BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
 
+Devcontainer note:
+- The devcontainer starts PostGIS as the `postgis` service; use
+  `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
+- The PostGIS *host* port is random by default; set `MCP_GEO_POSTGIS_HOST_PORT=5433`
+  before starting the devcontainer if you want it pinned.
+
 ```bash
 export BOUNDARY_CACHE_ENABLED=true
 export BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo

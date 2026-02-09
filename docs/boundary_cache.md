@@ -66,6 +66,11 @@ BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo
 
 Restart the server.
 
+Devcontainer note:
+- Inside the devcontainer, use `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo`.
+- The PostGIS container's *host* port is random by default (see `.devcontainer/docker-compose.yml`).
+  Set `MCP_GEO_POSTGIS_HOST_PORT=5433` before starting the devcontainer if you want a fixed host port.
+
 ## Zoom-aware resolution
 
 The cache selects geometry using `min_zoom`/`max_zoom`:

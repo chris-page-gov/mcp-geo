@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 - Added `os_map.inventory` and `os_map.export` to orchestrate bounded inventories and export snapshots as resources.
 
 ### Changed
+- VS Code workspace MCP config now lives in `.vscode/mcp.json` (stdio/http + trace profiles); removed legacy `mcp.servers` registration from `.vscode/settings.json`.
+- Updated `mcp.json` STDIO entries to run via `python3 scripts/os-mcp` (works even if the wrapper script is not marked executable).
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.
 - `nomis.datasets` now returns a compact summary for `dataset=<id>` lookups by default; full definitions require `includeRaw=true` to prevent oversized tool responses in Claude traces.
 - `nomis.datasets` multi-term search now uses token scoring (with light synonym expansion for multi-word queries) so terms like `population census 2021` rank relevant datasets instead of relying on exact phrase matches.
@@ -35,7 +37,7 @@ All notable changes to this project will be documented in this file.
 - MCP-Apps tools now support `MCP_APPS_CONTENT_MODE` to control UI content blocks (`resource_link`, embedded `resource`, or `text` only), and UI tool metadata now includes both nested `ui.resourceUri` and flat `ui/resourceUri` keys for compatibility.
 - Trace proxy parsing now only attempts JSON decode on client/server JSON-RPC lines, reducing false parse errors from Docker/build stderr noise.
 - Troubleshooting docs now include `parent_message_uuid` UUID failures as Claude host/session issues (not MCP server payload errors), with concrete recovery steps.
-- Devcontainer PostGIS service now binds host port `5433` (instead of `5432`) to avoid conflicts with local PostgreSQL installs.
+- Devcontainer PostGIS now defaults to a random free host port (instead of pinning `5433`) to avoid port conflicts; set `MCP_GEO_POSTGIS_HOST_PORT` to pin it.
 - `os_features.query` now returns `numberMatched` (and `numberReturned`) when provided by the upstream NGD features API, so clients can size queries before paging or exporting.
 
 ### Fixed
@@ -43,6 +45,8 @@ All notable changes to this project will be documented in this file.
 - `os_linked_ids.get` now uses OS Linked Identifiers (`search/links/v1/identifierTypes/{identifierType}/{identifier}`) with optional identifier type inference.
 - `os_vector_tiles.descriptor` now emits the correct upstream tile template (`/vts/tile/{z}/{y}/{x}.pbf`).
 - OS catalog NGD per-collection item probes now use a small bbox to avoid timeouts in dense areas.
+- `os_map.inventory`/`os_map.export` schemas now declare `layers` with a strict array `items` shape (via `anyOf`) to avoid strict tool schema validation failures.
+- Settings now ignore empty env var values so VS Code MCP `${env:VAR}` expansions don't clobber defaults with empty strings.
 
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.

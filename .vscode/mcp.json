@@ -1,0 +1,75 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "osApiKey",
+      "description": "Ordnance Survey API key (OS_API_KEY)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "mcp-geo": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "scripts/os-mcp"
+      ],
+      "cwd": ".",
+      "env": {
+        "OS_API_KEY": "${input:osApiKey}",
+        "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
+        "NOMIS_LIVE_ENABLED": "${env:NOMIS_LIVE_ENABLED}",
+        "NOMIS_UID": "${env:NOMIS_UID}",
+        "NOMIS_SIGNATURE": "${env:NOMIS_SIGNATURE}",
+        "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_APPS_CONTENT_MODE": "embedded",
+        "UI_EVENT_LOG_PATH": "logs/ui-events.vscode.jsonl"
+      },
+      "dev": {
+        "watch": [
+          "./server/**/*.py",
+          "./tools/**/*.py",
+          "./scripts/**/*.py",
+          "./resources/**/*",
+          "./ui/**/*"
+        ]
+      }
+    },
+    "mcp-geo-trace": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "scripts/mcp_stdio_trace_proxy.py",
+        "--log",
+        "logs/vscode-mcp-trace.jsonl",
+        "--",
+        "python3",
+        "scripts/os-mcp"
+      ],
+      "cwd": ".",
+      "env": {
+        "OS_API_KEY": "${input:osApiKey}",
+        "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
+        "NOMIS_LIVE_ENABLED": "${env:NOMIS_LIVE_ENABLED}",
+        "NOMIS_UID": "${env:NOMIS_UID}",
+        "NOMIS_SIGNATURE": "${env:NOMIS_SIGNATURE}",
+        "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_APPS_CONTENT_MODE": "embedded",
+        "UI_EVENT_LOG_PATH": "logs/ui-events.vscode-trace.jsonl"
+      },
+      "dev": {
+        "watch": [
+          "./server/**/*.py",
+          "./tools/**/*.py",
+          "./scripts/**/*.py",
+          "./resources/**/*",
+          "./ui/**/*"
+        ]
+      }
+    },
+    "mcp-geo-http": {
+      "type": "http",
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}

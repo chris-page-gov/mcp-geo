@@ -65,6 +65,9 @@ class Settings(BaseSettings):
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
+        # VS Code MCP config often supplies empty strings for unset env vars
+        # (e.g. "${env:ONS_LIVE_ENABLED}" -> ""). Treat those as missing.
+        "env_ignore_empty": True,
         "extra": "ignore",
     }
 

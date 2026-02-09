@@ -25,6 +25,7 @@ dependencies = [
 [project.scripts]
 mcp-geo-stdio = "scripts.os_mcp:main"
 
+mcp-geo-trace = "scripts.mcp_stdio_trace_proxy:cli"
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "httpx", "anyio", "psycopg[binary]"]
 dev = [

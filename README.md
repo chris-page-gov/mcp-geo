@@ -397,7 +397,13 @@ kill $PID
 Simpler: write a tiny Python snippet to send framed messages (see `tests/test_stdio_adapter.py`).
 
 ### VS Code
-Opening the workspace lets compatible MCP extensions discover `mcp.json` and spawn the STDIO adapter. Environment variables (`OS_API_KEY`, `ONS_LIVE_ENABLED`) are injected via the `env` block.
+VS Code reads MCP server configuration from `.vscode/mcp.json` (workspace) or your
+user-level `mcp.json`. This repo includes `.vscode/mcp.json` with:
+- `mcp-geo` (STDIO, with MCP-Apps UI enabled)
+- `mcp-geo-trace` (STDIO + JSON-RPC trace log under `logs/`)
+- `mcp-geo-http` (HTTP transport at `http://127.0.0.1:8000/mcp`)
+
+See `docs/vscode.md` for step-by-step setup, MCP-Apps UI validation, and tracing.
 
 ### Notes
 - `resources/read` now emits a weak ETag (`etag`) and supports conditional retrieval via `ifNoneMatch` param. If matched, response shape: `{ "jsonrpc":"2.0", "id": <n>, "result": { "notModified": true, "etag": "W/\"...\"" } }`.

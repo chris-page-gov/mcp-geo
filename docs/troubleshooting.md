@@ -55,6 +55,20 @@ Notes:
 - JSON trace lines with `direction=server->stderr` are diagnostics; they are not
   MCP JSON-RPC payloads.
 
+## VS Code MCP server start fails: "cannot find script" / path context
+If VS Code fails to start `mcp-geo` / `mcp-geo-trace` and reports it cannot find a script,
+it’s usually a **launch context** issue (working directory / variable substitution), not a missing file.
+
+What to do:
+- Prefer repo-root relative paths and set `cwd` to the repo root.
+  - This repo’s known-good configuration is in `.vscode/mcp.json`.
+- Avoid relying on `${workspaceFolder}` substitution unless you have confirmed your MCP launcher expands it.
+  - Some launchers treat it literally, producing non-existent paths like `${workspaceFolder}/scripts/os-mcp`.
+
+Notes:
+- For repo-local dev, `scripts/os-mcp` is supported.
+- `scripts/os_mcp.py` defensively adds the repo root to `sys.path` so `python3 scripts/os-mcp` works reliably.
+
 ## Claude error: `parent_message_uuid` must be a UUID
 If Claude shows an error like:
 

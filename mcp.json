@@ -2,8 +2,10 @@
   "$schema": "https://modelcontextprotocol.io/schemas/v1alpha/mcp.json",
   "mcpServers": {
     "mcp-geo-stdio": {
-      "command": "./scripts/os-mcp",
-      "args": [],
+      "command": "python3",
+      "args": [
+        "scripts/os-mcp"
+      ],
       "env": {
         "OS_API_KEY": "${env:OS_API_KEY}",
         "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
@@ -14,8 +16,10 @@
       "autoApprove": ["tools", "resources"]
     },
     "mcp-geo": {
-      "command": "./scripts/os-mcp",
-      "args": [],
+      "command": "python3",
+      "args": [
+        "scripts/os-mcp"
+      ],
       "env": {
         "OS_API_KEY": "${env:OS_API_KEY}",
         "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
