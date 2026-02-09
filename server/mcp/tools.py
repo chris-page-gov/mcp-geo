@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from server.mcp.tool_search import get_tool_metadata, search_tools
+from server.tool_naming import resolve_tool_name
 from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
 
@@ -124,11 +125,15 @@ async def call_tool(request: Request):
             },
         )
     tool_name = tool_name.strip()
-    tool = get(tool_name)
+    resolved_name = resolve_tool_name(tool_name, list_tools())
+    tool = get(resolved_name)
+    if resolved_name != tool_name:
+        data = dict(data)
+        data["tool"] = resolved_name
     if not tool:
-        errors = _try_import_for_tool(tool_name)
-        tool = get(tool_name)
-        prefix = tool_name.split(".", 1)[0].lower()
+        errors = _try_import_for_tool(resolved_name)
+        tool = get(resolved_name)
+        prefix = resolved_name.split(".", 1)[0].lower()
         if not tool and (errors or prefix in _PREFIX_IMPORTS):
             code = "TOOL_IMPORT_FAILED" if errors else "TOOL_NOT_REGISTERED"
             message = (
@@ -154,7 +159,7 @@ async def call_tool(request: Request):
             },
         )
     status_code, payload = tool.call(data)
-    if tool_name == "os_mcp.descriptor" and isinstance(payload, dict):
+    if resolved_name == "os_mcp.descriptor" and isinstance(payload, dict):
         payload = dict(payload)
         payload.setdefault("transport", "http")
     return JSONResponse(status_code=status_code, content=payload)

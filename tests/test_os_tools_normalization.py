@@ -99,6 +99,40 @@ def test_places_search(monkeypatch: MonkeyPatch):
     assert data["results"][0]["uprn"] == "2"
 
 
+def test_places_search_sanitized_tool_name(monkeypatch: MonkeyPatch):
+    patch_requests(
+        monkeypatch,
+        [
+            (
+                "/find",
+                (
+                    200,
+                    {
+                        "results": [
+                            {
+                                "DPA": {
+                                    "UPRN": "2",
+                                    "ADDRESS": "2 Example Rd",
+                                    "LAT": "51.5",
+                                    "LNG": "-0.2",
+                                    "CLASS": "C",
+                                }
+                            }
+                        ]
+                    },
+                ),
+            )
+        ],
+    )
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_places_search", "text": "Example"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["results"][0]["uprn"] == "2"
+
+
 def test_names_find(monkeypatch: MonkeyPatch):
     patch_requests(
         monkeypatch,
