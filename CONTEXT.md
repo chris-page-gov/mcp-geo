@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-07
+Last updated: 2026-02-10
 Owner: @chris-page-gov
 
 ## Purpose
@@ -128,6 +128,8 @@ assumptions change.
 - 2026-02-08: Added VS Code workspace MCP config at `.vscode/mcp.json` (including a trace profile) and removed legacy `mcp.servers` config from `.vscode/settings.json`.
 - 2026-02-08: Devcontainer PostGIS host port is now random by default to avoid conflicts; set `MCP_GEO_POSTGIS_HOST_PORT` to pin.
 - 2026-02-09: MCP-Apps UI widgets now retry tool calls using sanitized (underscore) tool names when dotted names are rejected by the host; tool naming strategy updated to treat sanitized names as first-class for restricted clients.
+- 2026-02-10: Added `scripts/vscode_mcp_stdio.py` and updated `.vscode/mcp.json` to use it so VS Code can start stdio servers on macOS without requiring global Python deps (it prefers the repo venv at `.venv/`).
+- 2026-02-10: Added `scripts/vscode_trace_snapshot.py` to convert VS Code trace artifacts into a `logs/sessions/` directory that can be summarized by `scripts/trace_report.py`.
 
 ## Open Questions
 

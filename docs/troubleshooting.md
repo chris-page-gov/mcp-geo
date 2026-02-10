@@ -69,6 +69,19 @@ Notes:
 - For repo-local dev, `scripts/os-mcp` is supported.
 - `scripts/os_mcp.py` defensively adds the repo root to `sys.path` so `python3 scripts/os-mcp` works reliably.
 
+## STDIO server start fails: `ModuleNotFoundError` (for example `loguru`)
+If an MCP client starts the STDIO server with a Python interpreter that does not have the
+repo dependencies installed, you may see errors like:
+
+- `ModuleNotFoundError: No module named 'loguru'`
+
+Remediation:
+- VS Code: use the repo’s `.vscode/mcp.json` which runs `scripts/vscode_mcp_stdio.py` to select the
+  appropriate Python environment.
+- Local dev (macOS): ensure the repo venv exists and deps are installed (example: `python -m venv .venv && . .venv/bin/activate && pip install -e '.[dev]'`),
+  then run `./scripts/os-mcp` from that activated venv.
+- Devcontainer: rebuild/reopen the devcontainer so `postCreateCommand` installs dependencies inside the container.
+
 ## Claude error: `parent_message_uuid` must be a UUID
 If Claude shows an error like:
 

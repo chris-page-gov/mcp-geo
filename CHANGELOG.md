@@ -21,9 +21,11 @@ All notable changes to this project will be documented in this file.
 - Added `os_apps.render_boundary_explorer` (`ui://mcp-geo/boundary-explorer`) for boundary + inventory exploration.
 - Added `os_apps.render_warwick_leamington_3d` (`ui://mcp-geo/warwick-leamington-3d`) for a 3D wards + premises types view.
 - Added `os_map.inventory` and `os_map.export` to orchestrate bounded inventories and export snapshots as resources.
+- Added `scripts/vscode_trace_snapshot.py` to snapshot VS Code trace logs into `logs/sessions/` and generate a report via `scripts/trace_report.py`.
 
 ### Changed
 - VS Code workspace MCP config now lives in `.vscode/mcp.json` (stdio/http + trace profiles); removed legacy `mcp.servers` registration from `.vscode/settings.json`.
+- VS Code stdio servers now launch via `scripts/vscode_mcp_stdio.py` so host VS Code sessions can use the repo venv (`.venv/`) instead of relying on global Python deps.
 - Updated `mcp.json` STDIO entries to run via `python3 scripts/os-mcp` (works even if the wrapper script is not marked executable).
 - `nomis.datasets` now returns a bounded dataset summary by default (with `q` and `limit` support) to avoid large unfiltered payloads that can stall MCP clients.
 - `nomis.datasets` now returns a compact summary for `dataset=<id>` lookups by default; full definitions require `includeRaw=true` to prevent oversized tool responses in Claude traces.

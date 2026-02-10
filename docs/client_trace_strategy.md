@@ -109,6 +109,12 @@ workflow in Copilot Chat (Agent mode). Artifacts:
 - MCP JSON-RPC: `logs/vscode-mcp-trace.jsonl`
 - UI events: `logs/ui-events.vscode-trace.jsonl`
 
+To snapshot these into a per-run session directory (and generate a report):
+
+```bash
+python scripts/vscode_trace_snapshot.py
+```
+
 ## 5) What to look for
 
 - `tools/search` calls in `logs/mcp-trace.jsonl` confirm tool search usage.

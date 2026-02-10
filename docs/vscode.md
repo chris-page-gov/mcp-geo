@@ -12,7 +12,7 @@ This repo includes a VS Code workspace MCP configuration at `.vscode/mcp.json`.
 
 Defined in `.vscode/mcp.json`:
 
-- `mcp-geo` (STDIO): runs `python3 scripts/os-mcp` from the workspace root and enables MCP-Apps UI.
+- `mcp-geo` (STDIO): runs `python3 scripts/vscode_mcp_stdio.py` from the workspace root and enables MCP-Apps UI.
 - `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py`.
 - `mcp-geo-http` (HTTP): points to `http://127.0.0.1:8000/mcp` (you must run `uvicorn` yourself).
 
@@ -22,6 +22,10 @@ secure storage (it is not written to the repo).
 If you prefer environment variables instead, replace `${input:osApiKey}` with
 `${env:OS_API_KEY}` in `.vscode/mcp.json` and ensure `OS_API_KEY` is set in the
 environment where VS Code runs (or in the devcontainer `containerEnv`).
+
+Note: `scripts/vscode_mcp_stdio.py` exists because VS Code may launch MCP stdio
+servers using the host Python. On macOS, it will automatically prefer the repo
+venv at `.venv/` if present to avoid missing dependencies (for example `loguru`).
 
 ## Start and Verify
 
@@ -46,6 +50,11 @@ Use `mcp-geo-trace` and reproduce the issue in Agent mode. It writes:
 - `logs/vscode-mcp-trace.jsonl` (all MCP JSON-RPC requests/responses)
 - `logs/ui-events.vscode-trace.jsonl` (MCP-Apps UI events via `os_apps.log_event`)
 
+To snapshot these into a per-run session directory (and generate a report):
+
+```bash
+python scripts/vscode_trace_snapshot.py
+```
+
 These logs are the fastest way to confirm what VS Code advertised in
 `initialize` (capabilities) and what the server returned for UI tools.
-
