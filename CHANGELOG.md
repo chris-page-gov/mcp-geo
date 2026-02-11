@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
   checks in `tests/evaluation/questions.py`.
 - Added shared client capability/fallback helpers in `server/mcp/client_capabilities.py`
   so stdio and HTTP transports apply identical MCP-Apps UI gating decisions.
+- Added Playwright host-render end-to-end tests for UI-capable host rendering,
+  deterministic non-UI fallback payloads, and sanitized/dotted tool-name behavior.
 
 ## [0.2.12] - 2026-02-11
 ### Added

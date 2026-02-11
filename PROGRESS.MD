@@ -111,7 +111,7 @@ Legend: pending, in_progress, done
 | C01 | `feat(ons-select): implement full comparability gating rules` | done | Added strict geography/time/revision/denominator gating and richer related-dataset explainability/provenance fields. |
 | C02 | `test(ons-select): add catalog validation harness coverage` | done | Added reusable catalog validator script/module, validator tests, and evaluation questions for catalog/comparability assertions. |
 | C03 | `feat(ui-fallback): centralize client capability gating across transports` | done | Shared capability/fallback helpers now drive both stdio and HTTP, including consistent statistics-dashboard fallback selection. |
-| C04 | `test(ui-fallback): add end-to-end host render verification` | pending | Playwright host render verification (UI + fallback). |
+| C04 | `test(ui-fallback): add end-to-end host render verification` | done | Added Playwright host-render tests for UI-capable host, non-UI fallback payloads, and sanitized/dotted tool-name render calls. |
 | C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | pending | Sanitize-first list/describe/search while preserving call aliases. |
 | C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | pending | Toolset filter surface for HTTP + MCP transport. |
 | C07 | `feat(os-features): add polygon and attribute-filter query expansion` | pending | Polygon/filter/queryables/sort/projection/count support. |
@@ -259,7 +259,7 @@ MCP-Apps UI for clients that render it.
 | Provide a static map image endpoint/tool | Done | Return a renderable image URL (server-side) for Claude. |
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
 | Update docs + skills to guide Claude to map fallback flow | Not started | Explicit “use os_maps.render + image link” guidance. |
-| Add tests for Claude fallback behavior | Partial | Added MCP-Apps content-mode + metadata compatibility tests and `os_apps.render_ui_probe` assertions; still need end-to-end host render verification tests. |
+| Add tests for Claude fallback behavior | Done | Added end-to-end host render verification for UI-capable/non-UI hosts plus sanitized-name behavior in Playwright. |
 | Handle sanitized tool names in UI widgets | Done | UI widgets now retry tool calls with the sanitized (underscore) tool name when the host rejects dotted names. |
 | Add trace session + artifact bundle workflow | Done | `scripts/trace_session.py` + `scripts/trace_report.py` and docs update. |
 
