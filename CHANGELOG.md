@@ -29,6 +29,11 @@ All notable changes to this project will be documented in this file.
 - Added overlay-ready `os_maps.render` contract with explicit input overlays
   (points/lines/polygons/local layers), overlay collection summaries, and optional
   `os_map.inventory` hydration for buildings/road links/path links/UPRNs.
+- Added playground orchestration APIs (`GET/DELETE /playground/orchestration`)
+  with session-aware transcript/event summaries and evaluation snapshot wiring.
+- Added shared observability counters and `/metrics` export lines for per-tool
+  latency histograms, input/output payload bytes, cache-hit counts, fallback
+  counts, and playground event/orchestration counters.
 
 ## [0.2.12] - 2026-02-11
 ### Added

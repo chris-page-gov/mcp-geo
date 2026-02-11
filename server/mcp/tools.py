@@ -1,9 +1,11 @@
 import importlib
+import time
 from typing import Any, Dict
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
+from server.observability import record_tool_call
 from server.mcp.tool_search import (
     filter_tool_names_by_toolsets,
     get_tool_metadata,
@@ -188,10 +190,19 @@ async def call_tool(request: Request):
                 "message": f"Tool '{tool_name}' not found",
             },
         )
+    started = time.perf_counter()
     status_code, payload = tool.call(data)
     if resolved_name == "os_mcp.descriptor" and isinstance(payload, dict):
         payload = dict(payload)
         payload.setdefault("transport", "http")
+    record_tool_call(
+        tool_name=resolved_name,
+        transport="http_tools",
+        payload=data,
+        result=payload,
+        status_code=status_code,
+        latency_ms=(time.perf_counter() - started) * 1000.0,
+    )
     return JSONResponse(status_code=status_code, content=payload)
 
 

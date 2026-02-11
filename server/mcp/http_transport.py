@@ -27,6 +27,7 @@ from server.mcp.client_capabilities import (
 )
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.prompts import get_prompt, list_prompts
+from server.observability import record_tool_call
 from server.protocol import (
     HTTP_DEFAULT_PROTOCOL_VERSION,
     PROTOCOL_VERSION,
@@ -285,6 +286,7 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
     payload = params.get("args") or params.get("arguments") or params.get("payload") or {}
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
+    started = time.perf_counter()
     status_code, data = tool.call(payload)
     if isinstance(data, dict):
         data = dict(data)
@@ -300,6 +302,14 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
         )
         if fallback:
             data["fallback"] = fallback
+    record_tool_call(
+        tool_name=resolved_name,
+        transport="mcp_http",
+        payload=payload,
+        result=data,
+        status_code=status_code,
+        latency_ms=(time.perf_counter() - started) * 1000.0,
+    )
     ok = 200 <= status_code < 300
     result: Dict[str, Any] = {"status": status_code, "ok": ok, "data": data}
     allow_resource = _bool_env("MCP_HTTP_RESOURCE_CONTENT", default=True)

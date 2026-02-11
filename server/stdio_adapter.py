@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO
 
@@ -54,6 +55,7 @@ from server.mcp.client_capabilities import (
     ui_fallback_for_tool as _shared_ui_fallback_for_tool,
 )
 from server import __version__ as SERVER_VERSION
+from server.observability import record_tool_call
 from server.protocol import PROTOCOL_VERSION, negotiate_protocol_version
 from server.tool_naming import (
     build_tool_name_maps,
@@ -630,6 +632,7 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             result: Dict[str, Any] = {"status": status, "ok": False, "data": data, "isError": True}
             result["content"] = _tool_content_from_data(data, allow_resource=False)
             return result
+    started = time.perf_counter()
     status, data = tool.call(payload)
     if resolved_name == "ons_select.search" and isinstance(data, dict):
         if _maybe_elicit_ons_select(payload, data):
@@ -648,6 +651,14 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
         )
         if fallback:
             data["fallback"] = fallback
+    record_tool_call(
+        tool_name=resolved_name,
+        transport="stdio",
+        payload=payload,
+        result=data,
+        status_code=status,
+        latency_ms=(time.perf_counter() - started) * 1000.0,
+    )
     ok = 200 <= status < 300
     result: Dict[str, Any] = {"status": status, "ok": ok, "data": data}
     allow_resource = _bool_env("MCP_STDIO_RESOURCE_CONTENT", default=False)

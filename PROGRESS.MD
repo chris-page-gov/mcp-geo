@@ -121,7 +121,7 @@ Legend: pending, in_progress, done
 | C11 | `feat(nomis): add dataset-specific workflow coverage and routing guidance` | done | Added `resource://mcp-geo/nomis-workflows` workflow profiles and surfaced this URI in NOMIS-routed `os_mcp.route_query` responses/guidance. |
 | C12 | `feat(admin-cache): harden cache maturity and freshness behavior` | done | Boundary cache status now includes maturity/staleness sections; dataset freshness states are explicit, and admin cache fallback responses expose `fallbackReason` + cache maturity context. |
 | C13 | `feat(resources): ship real boundary and code-list packs via hybrid fetch cache` | done | Added hybrid cache source manifests, pack index resources, and `scripts/pack_cache_refresh.py` to fetch/checksum/update cache-backed boundary/code-list pack indexes. |
-| C14 | `feat(playground-observability): complete playground orchestration and richer metrics` | pending | Add richer metrics and improve orchestration endpoints. |
+| C14 | `feat(playground-observability): complete playground orchestration and richer metrics` | done | Added orchestration summary/reset endpoints, session-aware playground event/transcript tracking, and Prometheus metrics for per-tool latency/payload bytes/cache-hit/fallback plus playground counters. |
 | C15 | `feat(os-poi): add OS POI tools and finalize backlog closure` | pending | Add `os_poi.search`, `os_poi.nearest`, `os_poi.within`. |
 | C16 | `chore(release-readiness): final progress closure and full regression run` | pending | Finalize docs/status + full regression pass. |
 

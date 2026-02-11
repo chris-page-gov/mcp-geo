@@ -7,6 +7,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from server import observability
 from server.mcp import http_transport, playground, resources, tools
 from server import maps_proxy
 from server.logging import configure_logging
@@ -157,6 +158,7 @@ def metrics():
         # +Inf bucket
         lines.append(f'app_request_latency_ms_bucket{{le="+Inf"}} {cumulative + _latency_overflow}')
         lines.append(f"app_request_latency_ms_count {cumulative + _latency_overflow}")
+    lines.extend(observability.build_prometheus_lines())
     body = "\n".join(lines) + "\n"
     return FastAPIResponse(content=body, media_type="text/plain; version=0.0.4")
 
