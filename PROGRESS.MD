@@ -101,6 +101,30 @@ Low impact
 - Enrich resource catalog with fuller code lists and provenance metadata.
 - Expand boundary cache coverage (ingest official datasets at multiple resolutions).
 
+## Completion program tracker (2026-02-11)
+
+Legend: pending, in_progress, done
+
+| Seq | Commit | Status | Notes |
+| --- | --- | --- | --- |
+| C00 | `chore(program): add phased completion tracker for open progress items` | done | Tracker added and unreleased changelog seeded. |
+| C01 | `feat(ons-select): implement full comparability gating rules` | in_progress | Expand comparability gate and related-dataset explainability. |
+| C02 | `test(ons-select): add catalog validation harness coverage` | pending | Add catalog validator and evaluation coverage. |
+| C03 | `feat(ui-fallback): centralize client capability gating across transports` | pending | Shared client capability helpers for stdio/http. |
+| C04 | `test(ui-fallback): add end-to-end host render verification` | pending | Playwright host render verification (UI + fallback). |
+| C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | pending | Sanitize-first list/describe/search while preserving call aliases. |
+| C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | pending | Toolset filter surface for HTTP + MCP transport. |
+| C07 | `feat(os-features): add polygon and attribute-filter query expansion` | pending | Polygon/filter/queryables/sort/projection/count support. |
+| C08 | `feat(os-maps): complete overlays and interactive layer wiring` | pending | Overlay-ready map render contract + parity alignment. |
+| C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | pending | Local layer import E2E coverage. |
+| C10 | `feat(ons-export): implement streaming export pipeline` | pending | Stream/resource mode for larger filter outputs. |
+| C11 | `feat(nomis): add dataset-specific workflow coverage and routing guidance` | pending | NOMIS workflow resource + routing guidance updates. |
+| C12 | `feat(admin-cache): harden cache maturity and freshness behavior` | pending | Staleness/freshness transparency and maturity flags. |
+| C13 | `feat(resources): ship real boundary and code-list packs via hybrid fetch cache` | pending | Fetch/checksum/index pipeline and resource exposure. |
+| C14 | `feat(playground-observability): complete playground orchestration and richer metrics` | pending | Add richer metrics and improve orchestration endpoints. |
+| C15 | `feat(os-poi): add OS POI tools and finalize backlog closure` | pending | Add `os_poi.search`, `os_poi.nearest`, `os_poi.within`. |
+| C16 | `chore(release-readiness): final progress closure and full regression run` | pending | Finalize docs/status + full regression pass. |
+
 ## Active implementation plan (2026-01-27)
 
 | Step | Status | Notes |
