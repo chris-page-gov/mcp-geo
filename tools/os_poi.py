@@ -53,11 +53,13 @@ def _text_or_none(value: Any) -> str | None:
 
 
 def _extract_source_entry(row: dict[str, Any]) -> dict[str, Any] | None:
+    if not isinstance(row, dict):
+        return None
     for key in ("POI", "DPA", "LPI", "GAZETTEER_ENTRY"):
         value = row.get(key)
         if isinstance(value, dict):
             return value
-    return row if isinstance(row, dict) else None
+    return row
 
 
 def _normalize_results(payload: dict[str, Any]) -> list[dict[str, Any]]:

@@ -47,19 +47,21 @@ assumptions change.
 
 ## Current Focus
 
-- Ensuring reliable MCP-Apps performance and client compatibility (including tool-name restrictions).
-- Improving ONS dataset selection (ranking, elicitation, comparability guardrails).
+- Keeping the completed phased progress program stable with full regression coverage.
+- Prioritizing next major gap: CI pipeline implementation.
 
 ## Active Work
 
+- Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
 - Documentation pack and preparation for workshop/demo.
-- ONS dataset selection research pack integrated at `research/ons_dataset_selection/`.
-- Track delivery work in `docs/spec_package/12_backlog_and_plan.md` and `PROGRESS.MD`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
 - Done: core server, stdio adapter, tool registry, OS Places/Names/Linked IDs/Vector Tiles,
   route_query tool, baseline tests, boundary cache ingestion pipeline.
+- Done: completion program tracker items `C00` through `C16` (dataset-selection gating,
+  UI fallback, tool naming/toolsets, OS features/maps overlays, export pipeline, NOMIS workflows,
+  admin cache maturity, boundary/code-list cache resources, observability, and POI tools).
 - Partial: OS Features, OS Maps render, ONS data tooling, admin lookup caching, resources
   population, playground UI, observability.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
@@ -86,7 +88,8 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (91.04% coverage, 581 passed, 6 skipped) on 2026-02-11.
+- Latest full test run: `pytest -q` (90.26% coverage, 634 passed, 6 skipped) on 2026-02-11.
+- Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
 - Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` (91.05% coverage, 569 passed, 6 skipped) on 2026-02-11.
 
 ## Key Conventions
@@ -97,6 +100,7 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-11: Closed phased completion program tracker item `C16` after full regression (`pytest -q`, 90.26% coverage) and playground Playwright verification (`6 passed`).
 - 2026-02-02: Added persistent Codex context file and devcontainer Codex home mount.
 - 2026-02-02: Expanded CONTEXT.md with PROGRESS and spec package summary to preserve context.
 - 2026-02-06: Added legacy `uiResourceUris` fields in MCP-Apps tool responses to improve Claude Desktop compatibility.

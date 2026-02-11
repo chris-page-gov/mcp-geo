@@ -38,6 +38,21 @@ All notable changes to this project will be documented in this file.
   with OS Places-backed POI queries and normalized outputs.
 - Added POI-aware routing guidance in `os_mcp.route_query` (`poi_lookup`
   intent) and expanded tool-search metadata/toolsets to include `os_poi.*`.
+- Added release-readiness closure updates in `PROGRESS.MD`/`CONTEXT.md` with
+  completion of tracker item `C16` and refreshed verification status.
+
+### Fixed
+- Hardened `os_poi` source-entry extraction to safely ignore non-object rows
+  instead of raising when malformed payloads are encountered.
+
+### Tests
+- Added POI evaluation harness scenarios (`B011A`/`B011B`/`B011C`) so full-tool
+  coverage checks include `os_poi.search`, `os_poi.nearest`, and `os_poi.within`.
+- Added branch-coverage tests for `os_poi` parser/normalization edges,
+  `os_maps` helper/validation paths, playground event pruning/invalid payload
+  handling, and `server/main`/`server/observability` edge paths.
+- Re-ran full regression and coverage gate (`pytest -q`) plus playground
+  Playwright suite (`npm --prefix playground run test`).
 
 ## [0.2.12] - 2026-02-11
 ### Added

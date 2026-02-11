@@ -491,3 +491,197 @@ def test_resources_read_export_not_found(client) -> None:  # type: ignore[no-unt
     assert resp.status_code == 200
     payload = json.loads(resp.json()["contents"][0]["text"])
     assert payload.get("code") == "NOT_FOUND"
+
+
+def test_os_maps_helper_normalization_paths() -> None:
+    from tools import os_maps
+
+    assert os_maps._num("bad") is None
+
+    assert os_maps._feature_point("bad") is None
+    assert os_maps._feature_point({"type": "Feature", "geometry": {"type": "LineString"}}) is None
+    assert os_maps._feature_point({"coordinates": ["bad", 1]}) is None
+    point = os_maps._feature_point({"lng": "-0.12", "lat": "51.5", "properties": "bad"})
+    assert point is not None
+    assert point["geometry"]["type"] == "Point"
+    assert point["properties"] == {}
+
+    assert os_maps._feature_line("bad") is None
+    assert os_maps._feature_line({"type": "Feature", "geometry": {"type": "Polygon"}}) is None
+    line = os_maps._feature_line({"geometry": {"type": "LineString", "coordinates": []}})
+    assert line is not None
+    assert line["geometry"]["type"] == "LineString"
+
+    assert os_maps._feature_polygon("bad") is None
+    assert os_maps._feature_polygon({"type": "Feature", "geometry": {"type": "LineString"}}) is None
+    polygon = os_maps._feature_polygon({"geometry": {"type": "Polygon", "coordinates": []}})
+    assert polygon is not None
+    assert polygon["geometry"]["type"] == "Polygon"
+
+    assert os_maps._normalize_feature_collection(None, kind="point") == []
+    assert (
+        os_maps._normalize_feature_collection(
+            {"type": "FeatureCollection", "features": "bad"},
+            kind="point",
+        )
+        == []
+    )
+    assert os_maps._normalize_feature_collection({"type": "bad"}, kind="point") == []
+    line_features = os_maps._normalize_feature_collection(
+        [{"geometry": {"type": "LineString", "coordinates": []}}],
+        kind="line",
+    )
+    assert len(line_features) == 1
+
+    local_layers = os_maps._normalize_local_layers(
+        [
+            "skip",
+            {"name": "invalid", "geojson": {"type": "FeatureCollection", "features": []}},
+            {
+                "geojson": {
+                    "type": "Feature",
+                    "geometry": {"type": "Polygon", "coordinates": []},
+                    "properties": {"x": 1},
+                }
+            },
+            {
+                "kind": "bad",
+                "geojson": {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [-0.1, 51.5]},
+                    "properties": {},
+                },
+            },
+            {
+                "kind": "bad",
+                "geojson": {
+                    "type": "Feature",
+                    "geometry": {"type": "LineString", "coordinates": []},
+                    "properties": {},
+                },
+            },
+        ]
+    )
+    assert len(local_layers) == 3
+    assert local_layers[0]["name"] == "local_layer_3"
+    assert local_layers[0]["kind"] == "polygon"
+    assert local_layers[1]["kind"] == "point"
+    assert local_layers[2]["kind"] == "line"
+
+    assert os_maps._build_uprn_features("bad") == []
+    uprn_features = os_maps._build_uprn_features(
+        [{"uprn": "1", "lat": "bad", "lon": -0.1}, {"uprn": "2", "lat": 51.5, "lon": -0.1}]
+    )
+    assert len(uprn_features) == 1
+    assert uprn_features[0]["properties"]["uprn"] == "2"
+
+    assert os_maps._extract_inventory_overlay_layers({"layers": "bad"}) == []
+    inventory_layers = os_maps._extract_inventory_overlay_layers(
+        {
+            "layers": {
+                "uprns": {"results": [{"uprn": "100", "lat": 51.5, "lon": -0.1}]},
+                "buildings": {
+                    "collection": "bld-x",
+                    "features": [
+                        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": []}}
+                    ],
+                },
+                "road_links": {"features": []},
+                "path_links": {
+                    "collection": "path-x",
+                    "features": [
+                        {"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}
+                    ],
+                    "nextPageToken": "10",
+                },
+            }
+        }
+    )
+    assert {row["id"] for row in inventory_layers} == {
+        "inventory_uprns",
+        "inventory_buildings",
+        "inventory_path_links",
+    }
+    summary = os_maps._overlay_summary(inventory_layers)
+    assert any(row["id"] == "inventory_path_links" and row["nextPageToken"] == "10" for row in summary)
+
+    assert os_maps._normalize_overlay_layers({"overlays": "bad"}) == []
+    normalized_overlay = os_maps._normalize_overlay_layers(
+        {
+            "overlays": {
+                "points": [{"lat": 51.5, "lon": -0.1}],
+                "lines": [{"geometry": {"type": "LineString", "coordinates": []}}],
+                "polygons": [{"geometry": {"type": "Polygon", "coordinates": []}}],
+                "localLayers": [{"geojson": {"type": "Feature", "geometry": {"type": "Polygon"}}}],
+            }
+        }
+    )
+    assert {row["id"] for row in normalized_overlay} >= {
+        "input_points",
+        "input_lines",
+        "input_polygons",
+    }
+
+    req_without_inventory = os_maps._build_inventory_request({"tool": "x"}, [-0.2, 51.4, -0.1, 51.5])
+    assert req_without_inventory == {"tool": "os_map.inventory", "bbox": [-0.2, 51.4, -0.1, 51.5]}
+    req_with_inventory = os_maps._build_inventory_request(
+        {
+            "inventory": {
+                "layers": ["uprns"],
+                "limits": {"uprns": 1},
+                "pageTokens": {"road_links": "2"},
+                "includeGeometry": {"buildings": False},
+                "collections": {"buildings": "custom"},
+            }
+        },
+        [-0.2, 51.4, -0.1, 51.5],
+    )
+    assert req_with_inventory["layers"] == ["uprns"]
+    assert req_with_inventory["limits"]["uprns"] == 1
+    assert req_with_inventory["collections"]["buildings"] == "custom"
+
+
+def test_os_maps_render_validation_and_inventory_error_paths(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_maps
+
+    assert os_maps._maps_render({"bbox": "bad"})[0] == 400
+    assert os_maps._maps_render({"bbox": [0, 0, "x", 1]})[0] == 400
+    assert os_maps._maps_render({"bbox": [0, 0, 0, 1]})[0] == 400
+    assert os_maps._maps_render({"bbox": [0, 0, 1, 1], "size": "bad"})[0] == 400
+    assert os_maps._maps_render({"bbox": [0, 0, 1, 1], "size": 64})[0] == 400
+
+    payload = {"bbox": [-0.2, 51.4, -0.1, 51.5], "includeInventory": True}
+
+    monkeypatch.setattr(os_maps, "get_tool", lambda _name: None)
+    status, result = os_maps._maps_render(payload)
+    assert status == 501
+    assert result["code"] == "MISSING_TOOL"
+
+    class DummyTool:
+        def __init__(self, response: tuple[int, Any]):
+            self.response = response
+
+        def call(self, args: dict[str, Any]):  # noqa: ARG002
+            return self.response
+
+    monkeypatch.setattr(
+        os_maps,
+        "get_tool",
+        lambda name: DummyTool((502, {"isError": True, "code": "UPSTREAM"}))
+        if name == "os_map.inventory"
+        else None,
+    )
+    status, result = os_maps._maps_render(payload)
+    assert status == 502
+    assert result["code"] == "UPSTREAM"
+
+    monkeypatch.setattr(
+        os_maps,
+        "get_tool",
+        lambda name: DummyTool((200, "bad"))
+        if name == "os_map.inventory"
+        else None,
+    )
+    status, result = os_maps._maps_render(payload)
+    assert status == 500
+    assert result["code"] == "INTEGRATION_ERROR"

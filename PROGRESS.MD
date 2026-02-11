@@ -122,7 +122,7 @@ Legend: pending, in_progress, done
 | C13 | `feat(resources): ship real boundary and code-list packs via hybrid fetch cache` | done | Added hybrid cache source manifests, pack index resources, and `scripts/pack_cache_refresh.py` to fetch/checksum/update cache-backed boundary/code-list pack indexes. |
 | C14 | `feat(playground-observability): complete playground orchestration and richer metrics` | done | Added orchestration summary/reset endpoints, session-aware playground event/transcript tracking, and Prometheus metrics for per-tool latency/payload bytes/cache-hit/fallback plus playground counters. |
 | C15 | `feat(os-poi): add OS POI tools and finalize backlog closure` | done | Added `os_poi.search`, `os_poi.nearest`, and `os_poi.within` with entitlement-safe OS error passthrough, toolset/category integration, route-query POI intent routing, and endpoint-contract test coverage. |
-| C16 | `chore(release-readiness): final progress closure and full regression run` | pending | Finalize docs/status + full regression pass. |
+| C16 | `chore(release-readiness): final progress closure and full regression run` | done | Completed docs/status closure and full regression: `pytest -q` (90.26% coverage, 634 passed, 6 skipped) plus `npm --prefix playground run test` (6 passed). |
 
 ## Active implementation plan (2026-01-27)
 
@@ -244,7 +244,8 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (91.04% coverage, 581 passed, 6 skipped) on 2026-02-11.
+Latest full test run: `pytest -q` (90.26% coverage, 634 passed, 6 skipped) on 2026-02-11.
+Latest playground UI test run: `npm --prefix playground run test` (6 passed) on 2026-02-11.
 
 ## Claude UI fallback plan (short)
 

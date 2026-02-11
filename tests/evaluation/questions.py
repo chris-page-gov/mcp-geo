@@ -353,6 +353,56 @@ BASIC_QUESTIONS = [
         requires_os_api=True,
     ),
     EvaluationQuestion(
+        id="B011A",
+        question="Search points of interest for cafes in Westminster",
+        intent=Intent.PLACE_LOOKUP,
+        difficulty=Difficulty.BASIC,
+        description="POI text search via os_poi.search.",
+        expected=ExpectedOutcome(
+            required_tools=["os_poi.search"],
+            max_tool_calls=2,
+            required_keywords=["results"],
+        ),
+        tool_calls=[ToolCallSpec("os_poi.search", {"text": "cafes in Westminster", "limit": 5})],
+        tags=["poi", "search"],
+        requires_os_api=True,
+    ),
+    EvaluationQuestion(
+        id="B011B",
+        question="Find nearest POIs to 51.5034,-0.1276",
+        intent=Intent.PLACE_LOOKUP,
+        difficulty=Difficulty.BASIC,
+        description="POI nearest lookup via os_poi.nearest.",
+        expected=ExpectedOutcome(
+            required_tools=["os_poi.nearest"],
+            max_tool_calls=2,
+            required_keywords=["results"],
+        ),
+        tool_calls=[ToolCallSpec("os_poi.nearest", {"lat": 51.5034, "lon": -0.1276, "limit": 5})],
+        tags=["poi", "nearest"],
+        requires_os_api=True,
+    ),
+    EvaluationQuestion(
+        id="B011C",
+        question="Find POIs within a Westminster bbox",
+        intent=Intent.PLACE_LOOKUP,
+        difficulty=Difficulty.BASIC,
+        description="POI bbox lookup via os_poi.within.",
+        expected=ExpectedOutcome(
+            required_tools=["os_poi.within"],
+            max_tool_calls=2,
+            required_keywords=["results"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "os_poi.within",
+                {"bbox": [-0.1310, 51.5020, -0.1250, 51.5060], "limit": 10},
+            )
+        ],
+        tags=["poi", "bbox"],
+        requires_os_api=True,
+    ),
+    EvaluationQuestion(
         id="B012",
         question="Nearest named feature to 51.5034,-0.1276",
         intent=Intent.FEATURE_SEARCH,

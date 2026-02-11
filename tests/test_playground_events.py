@@ -67,3 +67,29 @@ def test_playground_orchestration_filters_by_session():
     assert b_resp.status_code == 200
     assert a_resp.json()["summary"]["toolCallCount"] == 1
     assert b_resp.json()["summary"]["toolCallCount"] == 1
+
+
+def test_playground_events_invalid_payload_and_pruning():
+    from server.mcp import playground
+
+    client = TestClient(app)
+    client.delete("/playground/orchestration")
+
+    invalid = client.post("/playground/events", json={"payload": {"text": "missing event type"}})
+    assert invalid.status_code == 200
+    assert invalid.json()["code"] == "INVALID_INPUT"
+
+    playground.PLAYGROUND_EVENTS[:] = [{} for _ in range(playground.MAX_EVENTS * 2)]
+    resp = client.post("/playground/events", json={"eventType": "prompt"})
+    assert resp.status_code == 200
+    assert resp.json()["ok"] is True
+    assert len(playground.PLAYGROUND_EVENTS) == playground.MAX_EVENTS
+
+
+def test_playground_latest_evaluation_no_file(monkeypatch):
+    from server.mcp import playground
+
+    monkeypatch.setattr(playground.Path, "exists", lambda _self: False)
+    payload = playground._latest_evaluation_payload()
+    assert payload["path"] is None
+    assert payload["data"] is None
