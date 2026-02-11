@@ -1,0 +1,22 @@
+{
+  "version": "2026-02-11",
+  "kind": "boundary",
+  "packs": [
+    {
+      "id": "ons_wards_dec_2024_uk_bgc",
+      "title": "ONS Wards (Dec 2024) UK BGC",
+      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+      "sourceType": "arcgis_hub",
+      "format": "GeoPackage",
+      "notes": "Download URL is resolved via boundary manifest/pipeline run metadata."
+    },
+    {
+      "id": "ons_lsoa_dec_2021_ew_bgc",
+      "title": "ONS LSOA (Dec 2021) EW BGC",
+      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+      "sourceType": "arcgis_hub",
+      "format": "GeoPackage",
+      "notes": "Kept as remote reference; cached locally on refresh."
+    }
+  ]
+}

@@ -123,6 +123,9 @@ All notable changes to this project will be documented in this file.
 - Added boundary-cache maturity/staleness reporting (`maturity` + `staleness`)
   across cache status surfaces, and explicit fallback-reason metadata for
   `admin_lookup.search_cache` live fallback paths.
+- Added hybrid boundary/code-list pack resources and refresh pipeline:
+  source manifests + pack indexes are now exposed as resources, with
+  `scripts/pack_cache_refresh.py` generating checksum/cache metadata.
 
 ## [0.2.11] - 2026-02-06
 ### Added

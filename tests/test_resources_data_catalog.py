@@ -21,6 +21,10 @@ def test_resources_list_includes_data_catalog_entries() -> None:
     assert "resource://mcp-geo/ons-catalog" in uris
     assert "resource://mcp-geo/os-catalog" in uris
     assert "resource://mcp-geo/layers-catalog" in uris
+    assert "resource://mcp-geo/boundary-pack-sources" in uris
+    assert "resource://mcp-geo/code-list-pack-sources" in uris
+    assert "resource://mcp-geo/boundary-packs-index" in uris
+    assert "resource://mcp-geo/code-list-packs-index" in uris
 
 
 def test_resources_read_boundary_manifest() -> None:
@@ -48,6 +52,22 @@ def test_resources_read_boundary_manifest_by_name() -> None:
     contents = resource_contents(resp)
     payload = json.loads(contents[0]["text"])
     assert "manifest_version" in payload
+
+
+def test_resources_read_pack_indexes() -> None:
+    boundary_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/boundary-packs-index"})
+    assert boundary_resp.status_code == 200
+    boundary_payload = json.loads(resource_contents(boundary_resp)[0]["text"])
+    assert boundary_payload["kind"] == "boundary"
+    assert boundary_payload["cacheMode"] == "hybrid_fetch_cache"
+    assert isinstance(boundary_payload.get("packs"), list)
+
+    code_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/code-list-packs-index"})
+    assert code_resp.status_code == 200
+    code_payload = json.loads(resource_contents(code_resp)[0]["text"])
+    assert code_payload["kind"] == "code_lists"
+    assert code_payload["cacheMode"] == "hybrid_fetch_cache"
+    assert isinstance(code_payload.get("packs"), list)
 
 
 def test_resources_list_includes_ons_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]

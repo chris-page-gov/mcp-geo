@@ -17,6 +17,10 @@ ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
+BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
+CODE_LIST_PACK_SOURCES_PATH = ROOT / "resources" / "code_list_pack_sources.json"
+BOUNDARY_PACKS_INDEX_PATH = ROOT / "resources" / "boundary_packs_index.json"
+CODE_LIST_PACKS_INDEX_PATH = ROOT / "resources" / "code_list_packs_index.json"
 EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 
@@ -231,6 +235,42 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": NOMIS_WORKFLOWS_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "guide", "domain": "nomis"},
+    },
+    {
+        "slug": "boundary-pack-sources",
+        "name": "data_boundary_pack_sources",
+        "title": "Boundary Pack Sources",
+        "description": "Source manifest for boundary packs managed via hybrid fetch cache.",
+        "path": BOUNDARY_PACK_SOURCES_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "manifest", "domain": "boundaries"},
+    },
+    {
+        "slug": "code-list-pack-sources",
+        "name": "data_code_list_pack_sources",
+        "title": "Code-list Pack Sources",
+        "description": "Source manifest for code-list packs managed via hybrid fetch cache.",
+        "path": CODE_LIST_PACK_SOURCES_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "manifest", "domain": "codes"},
+    },
+    {
+        "slug": "boundary-packs-index",
+        "name": "data_boundary_packs_index",
+        "title": "Boundary Packs Index",
+        "description": "Hybrid cache index for boundary packs (checksum + cache path status).",
+        "path": BOUNDARY_PACKS_INDEX_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "boundaries"},
+    },
+    {
+        "slug": "code-list-packs-index",
+        "name": "data_code_list_packs_index",
+        "title": "Code-list Packs Index",
+        "description": "Hybrid cache index for code-list packs (checksum + cache path status).",
+        "path": CODE_LIST_PACKS_INDEX_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "codes"},
     },
 ]
 
@@ -536,6 +576,34 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "nomis-workflows"), None
         return (*_load_json_file(NOMIS_WORKFLOWS_PATH), None)
+    if slug == "boundary-pack-sources":
+        if not BOUNDARY_PACK_SOURCES_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Boundary pack sources not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "boundary-pack-sources"), None
+        return (*_load_json_file(BOUNDARY_PACK_SOURCES_PATH), None)
+    if slug == "code-list-pack-sources":
+        if not CODE_LIST_PACK_SOURCES_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Code-list pack sources not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "code-list-pack-sources"), None
+        return (*_load_json_file(CODE_LIST_PACK_SOURCES_PATH), None)
+    if slug == "boundary-packs-index":
+        if not BOUNDARY_PACKS_INDEX_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Boundary packs index not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "boundary-packs-index"), None
+        return (*_load_json_file(BOUNDARY_PACKS_INDEX_PATH), None)
+    if slug == "code-list-packs-index":
+        if not CODE_LIST_PACKS_INDEX_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Code-list packs index not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "code-list-packs-index"), None
+        return (*_load_json_file(CODE_LIST_PACKS_INDEX_PATH), None)
     if slug == "boundary-latest-report":
         latest = _latest_run_report_path()
         if not latest:
