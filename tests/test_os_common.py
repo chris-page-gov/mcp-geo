@@ -51,6 +51,5 @@ def test_integration_error(monkeypatch):
     monkeypatch.setattr(requests, "get", fake_get)
     client_obj = OSClient(api_key="abc", retries=1)
     code, payload = client_obj.get_json("https://api.os.uk/test", {})
-    # General exception branch returns 500 INTEGRATION_ERROR
-    assert code == 500
-    assert payload["code"] == "INTEGRATION_ERROR"
+    assert code == 502
+    assert payload["code"] == "UPSTREAM_INVALID_RESPONSE"

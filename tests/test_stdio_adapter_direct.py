@@ -3,6 +3,7 @@ import io, json, re
 from server import stdio_adapter
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.config import settings
+from server.protocol import PROTOCOL_VERSION
 
 def frame(msg: dict) -> bytes:
     body = json.dumps(msg, separators=(",", ":")).encode()
@@ -57,6 +58,16 @@ def test_direct_main_initialize_and_exit():
     if 'result' not in first and first.get('method') == 'log':  # skip log notification
         first = read_one(buf)
     assert first.get('result', {}).get('server') == 'mcp-geo'
+
+
+def test_stdio_initialize_negotiates_supported_protocol():
+    result = stdio_adapter.handle_initialize({"protocolVersion": "2025-03-26", "capabilities": {}})
+    assert result.get("protocolVersion") == "2025-03-26"
+
+
+def test_stdio_initialize_falls_back_to_latest_protocol():
+    result = stdio_adapter.handle_initialize({"protocolVersion": "1999-01-01", "capabilities": {}})
+    assert result.get("protocolVersion") == PROTOCOL_VERSION
 
 
 def test_tool_names_sanitized_and_resolvable():

@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from server.main import app
 from server.mcp import http_transport
+from server.protocol import PROTOCOL_VERSION
 from tools.registry import Tool, register
 
 
@@ -109,6 +110,88 @@ def test_mcp_http_capabilities_not_dict_branch():
     assert resp.json()["result"]["ok"] is True
 
 
+def test_mcp_http_initialize_negotiates_protocol_and_sets_header():
+    client = TestClient(app)
+    resp = client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": "i",
+            "method": "initialize",
+            "params": {"protocolVersion": "1999-01-01"},
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["result"]["protocolVersion"] == PROTOCOL_VERSION
+    assert resp.headers.get("mcp-protocol-version") == PROTOCOL_VERSION
+
+
+def test_mcp_http_rejects_unsupported_protocol_header():
+    client = TestClient(app)
+    init_resp = client.post("/mcp", json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}})
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-session-id": session_id,
+            "mcp-protocol-version": "2099-01-01",
+        },
+        json={"jsonrpc": "2.0", "id": "x", "method": "tools/list", "params": {}},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["error"]["message"] == "Unsupported protocol version"
+
+
+def test_mcp_http_rejects_protocol_header_mismatch_from_negotiated_session():
+    client = TestClient(app)
+    init_resp = client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": "i",
+            "method": "initialize",
+            "params": {"protocolVersion": "2025-11-25"},
+        },
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-session-id": session_id,
+            "mcp-protocol-version": "2025-03-26",
+        },
+        json={"jsonrpc": "2.0", "id": "x", "method": "tools/list", "params": {}},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert "does not match negotiated session protocol" in body["error"]["message"]
+
+
+def test_mcp_http_uses_negotiated_protocol_header_on_subsequent_requests():
+    client = TestClient(app)
+    init_resp = client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": "i",
+            "method": "initialize",
+            "params": {"protocolVersion": "2025-03-26"},
+        },
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json={"jsonrpc": "2.0", "id": "x", "method": "tools/list", "params": {}},
+    )
+    assert resp.status_code == 200
+    assert resp.headers.get("mcp-protocol-version") == "2025-03-26"
+
+
 def test_mcp_http_generic_internal_error_handler(monkeypatch):
     client = TestClient(app)
     init_resp = client.post("/mcp", json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}})
@@ -123,4 +206,3 @@ def test_mcp_http_generic_internal_error_handler(monkeypatch):
     )
     assert resp.status_code == 200
     assert resp.json()["error"]["code"] == -32603
-

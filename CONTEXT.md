@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-10
+Last updated: 2026-02-11
 Owner: @chris-page-gov
 
 ## Purpose
@@ -86,8 +86,8 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (90.02% coverage, 537 passed, 3 skipped) on 2026-02-07.
-- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` (90.02% coverage, 537 passed, 3 skipped) on 2026-02-07.
+- Latest full test run: `pytest -q` (91.04% coverage, 581 passed, 6 skipped) on 2026-02-11.
+- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` (91.05% coverage, 569 passed, 6 skipped) on 2026-02-11.
 
 ## Key Conventions
 
@@ -128,6 +128,12 @@ assumptions change.
 - 2026-02-08: Added VS Code workspace MCP config at `.vscode/mcp.json` (including a trace profile) and removed legacy `mcp.servers` config from `.vscode/settings.json`.
 - 2026-02-08: Devcontainer PostGIS host port is now random by default to avoid conflicts; set `MCP_GEO_POSTGIS_HOST_PORT` to pin.
 - 2026-02-09: MCP-Apps UI widgets now retry tool calls using sanitized (underscore) tool names when dotted names are rejected by the host; tool naming strategy updated to treat sanitized names as first-class for restricted clients.
+- 2026-02-11: Normalized invalid upstream JSON handling across OS/ONS/admin clients to `502` + `UPSTREAM_INVALID_RESPONSE` and added regression tests.
+- 2026-02-11: Added endpoint matrix and upstream URL-contract tests to catch route/endpoint regressions across HTTP endpoints and tool families.
+- 2026-02-11: Added `scripts/rate_limit_assessor.py` to calibrate `RATE_LIMIT_PER_MIN` against observed 429 ratio/latency and output a recommendation JSON report.
+- 2026-02-11: Evaluation audit records now summarize per-task `429` hits (including a by-tool breakdown) to track backoff reliance.
+- 2026-02-11: Core protocol negotiation now prefers MCP `2025-11-25` with compatibility for `2025-06-18`, `2025-03-26`, and `2024-11-05`; HTTP now validates `MCP-Protocol-Version` against negotiated session version.
+- 2026-02-11: Playground setup now includes a version matrix showing MCP core + MCP Apps + client/SDK versions; Playwright playground tests now run on port `4173` to avoid local `5173` collisions.
 - 2026-02-10: Added `scripts/vscode_mcp_stdio.py` and updated `.vscode/mcp.json` to use it so VS Code can start stdio servers on macOS without requiring global Python deps (it prefers the repo venv at `.venv/`).
 - 2026-02-10: Added `scripts/vscode_trace_snapshot.py` to convert VS Code trace artifacts into a `logs/sessions/` directory that can be summarized by `scripts/trace_report.py`.
 

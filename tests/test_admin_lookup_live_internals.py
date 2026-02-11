@@ -90,6 +90,25 @@ def test_arcgis_client_retries_on_timeout(monkeypatch):
     assert calls["count"] == 2
 
 
+def test_arcgis_client_invalid_json_returns_error(monkeypatch):
+    client = admin_lookup._ArcGisClient()
+
+    class BadResp:
+        status_code = 200
+        text = "nope"
+
+        def json(self) -> dict[str, Any]:
+            raise ValueError("boom json parse")
+
+    def fake_get(url, params, timeout):  # noqa: ARG001
+        return BadResp()
+
+    monkeypatch.setattr(admin_lookup.requests, "get", fake_get)
+    status, data = client.get_json("http://example", {"q": "x"})
+    assert status == 502
+    assert data["code"] == "UPSTREAM_INVALID_RESPONSE"
+
+
 def test_live_find_by_name_builds_results(monkeypatch):
     _patch_admin_sources(monkeypatch)
     captured = {}

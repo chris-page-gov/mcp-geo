@@ -136,7 +136,25 @@ class ONSClient:
                         "code": "ONS_API_ERROR",
                         "message": f"ONS API error: {resp.text[:200]}",
                     }
-                data = resp.json()
+                try:
+                    data = resp.json()
+                except Exception as exc:
+                    self._breaker.record_failure()
+                    log_upstream_error(
+                        service="ons",
+                        code="UPSTREAM_INVALID_RESPONSE",
+                        status_code=resp.status_code,
+                        url=getattr(resp, "url", url),
+                        params=merged,
+                        detail=f"{exc}: {resp.text[:200]}",
+                        attempt=attempt,
+                        error_category=classify_error("UPSTREAM_INVALID_RESPONSE"),
+                    )
+                    return 502, {
+                        "isError": True,
+                        "code": "UPSTREAM_INVALID_RESPONSE",
+                        "message": "ONS API returned invalid JSON.",
+                    }
                 if use_cache:
                     self.cache.set(key, data)
                 self._breaker.record_success()

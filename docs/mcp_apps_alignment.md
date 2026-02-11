@@ -8,6 +8,11 @@ removes legacy OpenAI Apps (skybridge) compatibility.
 - MCP core spec: `docs/vendor/mcp/repos/modelcontextprotocol/docs/specification/2025-11-25/`
 
 ## Alignment Summary
+- Core MCP handshake now negotiates protocol versions instead of echoing client input.
+  Server preference is `2025-11-25`, with compatibility support for
+  `2025-06-18`, `2025-03-26`, and `2024-11-05`.
+- Streamable HTTP now validates `MCP-Protocol-Version` headers against supported and
+  negotiated session versions (400 on invalid/unsupported mismatches).
 - UI resources are exposed as `ui://mcp-geo/<slug>` with
   `mimeType: text/html;profile=mcp-app`.
 - Tool metadata uses `_meta.ui.resourceUri` only (no `openai/*` keys).

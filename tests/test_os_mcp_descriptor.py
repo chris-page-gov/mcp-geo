@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from server.mcp.resource_catalog import MCP_APPS_MIME
+from server.protocol import MCP_APPS_PROTOCOL_VERSION, PROTOCOL_VERSION, SUPPORTED_PROTOCOL_VERSIONS
 
 from server.main import app
 
@@ -12,6 +13,9 @@ def test_os_mcp_descriptor_tool():
     assert resp.status_code == 200
     body = resp.json()
     assert body.get("server") == "mcp-geo"
+    assert body.get("protocolVersion") == PROTOCOL_VERSION
+    assert body.get("supportedProtocolVersions") == list(SUPPORTED_PROTOCOL_VERSIONS)
+    assert body.get("mcpAppsProtocolVersion") == MCP_APPS_PROTOCOL_VERSION
     assert "toolSearch" in body
     assert body.get("skillsUri") == "skills://mcp-geo/getting-started"
     extensions = body.get("capabilities", {}).get("extensions", {})

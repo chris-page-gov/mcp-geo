@@ -5,7 +5,11 @@ from enum import Enum
 from typing import Any
 
 from server import __version__ as SERVER_VERSION
-from server.protocol import PROTOCOL_VERSION
+from server.protocol import (
+    MCP_APPS_PROTOCOL_VERSION,
+    PROTOCOL_VERSION,
+    SUPPORTED_PROTOCOL_VERSIONS,
+)
 from server.mcp.resource_catalog import MCP_APPS_MIME, SKILLS_RESOURCE
 from server.mcp.tool_search import get_tool_search_config
 from tools.registry import Tool, ToolResult, register
@@ -732,6 +736,8 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
         "server": {"type": "string"},
         "version": {"type": "string"},
         "protocolVersion": {"type": "string"},
+        "supportedProtocolVersions": {"type": "array"},
+        "mcpAppsProtocolVersion": {"type": "string"},
         "transport": {"type": "string"},
         "capabilities": {"type": "object"},
         "toolSearch": {"type": "object"},
@@ -759,6 +765,8 @@ def _descriptor(payload: dict[str, Any]) -> ToolResult:
         "server": "mcp-geo",
         "version": SERVER_VERSION,
         "protocolVersion": PROTOCOL_VERSION,
+        "supportedProtocolVersions": list(SUPPORTED_PROTOCOL_VERSIONS),
+        "mcpAppsProtocolVersion": MCP_APPS_PROTOCOL_VERSION,
         "capabilities": {
             "toolSearch": True,
             "skills": True,
@@ -977,6 +985,8 @@ register(
                 "server": {"type": "string"},
                 "version": {"type": "string"},
                 "protocolVersion": {"type": "string"},
+                "supportedProtocolVersions": {"type": "array", "items": {"type": "string"}},
+                "mcpAppsProtocolVersion": {"type": "string"},
                 "transport": {"type": "string"},
                 "capabilities": {"type": "object"},
                 "toolSearch": {"type": "object"},

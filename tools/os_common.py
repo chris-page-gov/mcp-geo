@@ -149,7 +149,26 @@ class OSClient:
                         },
                     )
                 self._breaker.record_success()
-                return 200, resp.json()
+                try:
+                    payload = resp.json()
+                except Exception as exc:
+                    self._breaker.record_failure()
+                    log_upstream_error(
+                        service="os",
+                        code="UPSTREAM_INVALID_RESPONSE",
+                        status_code=resp.status_code,
+                        url=getattr(resp, "url", url),
+                        params=merged,
+                        detail=f"{exc}: {resp.text[:200]}",
+                        attempt=attempt,
+                        error_category=classify_error("UPSTREAM_INVALID_RESPONSE"),
+                    )
+                    return 502, {
+                        "isError": True,
+                        "code": "UPSTREAM_INVALID_RESPONSE",
+                        "message": "OS API returned invalid JSON.",
+                    }
+                return 200, payload
             except req_exc.SSLError as exc:
                 self._breaker.record_failure()
                 log_upstream_error(

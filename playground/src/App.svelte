@@ -9,6 +9,7 @@
   } from "@modelcontextprotocol/sdk/types.js";
   import { onMount } from "svelte";
   import { z } from "zod";
+  import packageInfo from "../package.json";
 
   const AnySchema = z.object({}).passthrough();
 
@@ -72,6 +73,12 @@
   const UI_PROTOCOL_VERSION = "2026-01-26";
   const UI_RESOURCE_MIME = "text/html;profile=mcp-app";
   const UI_BOOT_AT = new Date().toISOString();
+  const PLAYGROUND_CLIENT_INFO = {
+    name: "mcp-geo-playground",
+    version: packageInfo?.version || "0.1.0"
+  };
+  const MCP_SDK_VERSION =
+    packageInfo?.dependencies?.["@modelcontextprotocol/sdk"] || "unknown";
   const BUILD_INFO = {
     mode: import.meta?.env?.MODE || "unknown",
     dev: Boolean(import.meta?.env?.DEV),
@@ -550,7 +557,7 @@
     status = "connecting";
     try {
       client = new Client(
-        { name: "mcp-geo-playground", version: "0.1.0" },
+        PLAYGROUND_CLIENT_INFO,
         {
           capabilities: {
             tools: {},
@@ -935,7 +942,7 @@
       displayMode,
       availableDisplayModes: ["inline", "fullscreen"],
       platform: "web",
-      userAgent: "mcp-geo-playground",
+      userAgent: PLAYGROUND_CLIENT_INFO.name,
       containerDimensions: uiPreviewExpanded
         ? { maxHeight: window.innerHeight }
         : { maxHeight: 700 },
@@ -979,7 +986,7 @@
     if (method === "ui/initialize") {
       respondToUi(id, {
         protocolVersion: UI_PROTOCOL_VERSION,
-        hostInfo: { name: "mcp-geo-playground", version: "0.1.0" },
+        hostInfo: PLAYGROUND_CLIENT_INFO,
         hostCapabilities: buildHostCapabilities(),
         hostContext: buildHostContext()
       });
@@ -1115,6 +1122,14 @@
     ? `${(descriptorSizeBytes / 1024).toFixed(1)} KB`
     : "0 KB";
   $: descriptorWarn = descriptorSizeBytes > 50 * 1024;
+  $: serverVersion = descriptorMeta?.version || "n/a";
+  $: coreProtocolVersion = descriptorMeta?.protocolVersion || "n/a";
+  $: supportedProtocolVersions = Array.isArray(
+    descriptorMeta?.supportedProtocolVersions
+  )
+    ? descriptorMeta.supportedProtocolVersions.join(", ")
+    : "n/a";
+  $: mcpAppsProtocolVersion = descriptorMeta?.mcpAppsProtocolVersion || "n/a";
 
   $: toolCounts = descriptorMeta?.toolSearch?.counts || {};
   $: toolsTotal = toolCounts.total || tools.length;
@@ -1233,6 +1248,39 @@
 
       <div class="card">
         <h2>Descriptor (initial view)</h2>
+        <div class="version-matrix">
+          <h3>Version matrix</h3>
+          <div class="version-grid">
+            <div class="version-item">
+              <div class="label">Server package</div>
+              <div class="value">{serverVersion}</div>
+            </div>
+            <div class="version-item">
+              <div class="label">MCP core (active)</div>
+              <div class="value">{coreProtocolVersion}</div>
+            </div>
+            <div class="version-item">
+              <div class="label">MCP core (supported)</div>
+              <div class="value">{supportedProtocolVersions}</div>
+            </div>
+            <div class="version-item">
+              <div class="label">MCP Apps protocol (server)</div>
+              <div class="value">{mcpAppsProtocolVersion}</div>
+            </div>
+            <div class="version-item">
+              <div class="label">MCP Apps protocol (playground host)</div>
+              <div class="value">{UI_PROTOCOL_VERSION}</div>
+            </div>
+            <div class="version-item">
+              <div class="label">Playground client</div>
+              <div class="value">{PLAYGROUND_CLIENT_INFO.version}</div>
+            </div>
+            <div class="version-item">
+              <div class="label">MCP SDK dependency</div>
+              <div class="value">{MCP_SDK_VERSION}</div>
+            </div>
+          </div>
+        </div>
         {#if descriptorMeta}
           <div class="descriptor-meta">
             <div>
@@ -1992,6 +2040,40 @@
 
   .descriptor-meta .label {
     color: #4b3b2d;
+  }
+
+  .version-matrix {
+    margin-top: 12px;
+    background: #fffaf2;
+    border: 1px solid #e2d8cc;
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .version-matrix h3 {
+    margin: 0 0 10px;
+    font-size: 0.95rem;
+  }
+
+  .version-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .version-item {
+    background: #f4ecdf;
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .version-item .label {
+    color: #5a4a3a;
+  }
+
+  .version-item .value {
+    color: #1f1f1f;
+    font-size: 0.95rem;
   }
 
   .caps {

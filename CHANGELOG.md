@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+
+## [0.2.12] - 2026-02-11
 ### Added
 - Added `os_apps.render_ui_probe` to verify MCP-Apps UI rendering and content-mode support.
 - Added `scripts/mcp_ui_mode_probe.py` to validate STDIO UI payload content types by mode.
@@ -22,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Added `os_apps.render_warwick_leamington_3d` (`ui://mcp-geo/warwick-leamington-3d`) for a 3D wards + premises types view.
 - Added `os_map.inventory` and `os_map.export` to orchestrate bounded inventories and export snapshots as resources.
 - Added `scripts/vscode_trace_snapshot.py` to snapshot VS Code trace logs into `logs/sessions/` and generate a report via `scripts/trace_report.py`.
+- Added `scripts/rate_limit_assessor.py` to probe traffic levels and recommend `RATE_LIMIT_PER_MIN` from observed 429 ratio/latency behavior.
 
 ### Changed
 - VS Code workspace MCP config now lives in `.vscode/mcp.json` (stdio/http + trace profiles); removed legacy `mcp.servers` registration from `.vscode/settings.json`.
@@ -41,6 +44,20 @@ All notable changes to this project will be documented in this file.
 - Troubleshooting docs now include `parent_message_uuid` UUID failures as Claude host/session issues (not MCP server payload errors), with concrete recovery steps.
 - Devcontainer PostGIS now defaults to a random free host port (instead of pinning `5433`) to avoid port conflicts; set `MCP_GEO_POSTGIS_HOST_PORT` to pin it.
 - `os_features.query` now returns `numberMatched` (and `numberReturned`) when provided by the upstream NGD features API, so clients can size queries before paging or exporting.
+- Raised default `RATE_LIMIT_PER_MIN` from 120 to 207 after local calibration on `POST /tools/call` traffic profile.
+- Evaluation audit logs now include per-task `429` summaries (`429 Rate-limit hits` and `429 by tool`) to expose backoff reliance.
+- Updated MCP core protocol default from `2025-06-18` to `2025-11-25` and added explicit
+  version negotiation (`2025-11-25`, `2025-06-18`, `2025-03-26`, `2024-11-05`) in stdio/http
+  initialize flows.
+- Streamable HTTP now validates `MCP-Protocol-Version` against supported and negotiated
+  session versions, and returns `mcp-protocol-version` on responses.
+- `os_mcp.descriptor` now reports `supportedProtocolVersions` and
+  `mcpAppsProtocolVersion` (`2026-01-26`) for client diagnostics.
+- Playground setup now shows a version matrix (server package, active/supported MCP core
+  versions, MCP Apps protocol server/host, playground client version, MCP SDK dependency)
+  and sources client version from `playground/package.json` instead of hardcoded values.
+- Playground Playwright config now uses port `4173` with `--strictPort` to avoid flaky
+  collisions on the default Vite port during local test runs.
 
 ### Fixed
 - `os_features.query` now uses OS NGD OGC API Features (`features/ngd/ofa/v1/collections/{collection}/items`) and supports basic paging via `limit` + `pageToken` (`nextPageToken` in responses).
@@ -49,6 +66,10 @@ All notable changes to this project will be documented in this file.
 - OS catalog NGD per-collection item probes now use a small bbox to avoid timeouts in dense areas.
 - `os_map.inventory`/`os_map.export` schemas now declare `layers` with a strict array `items` shape (via `anyOf`) to avoid strict tool schema validation failures.
 - Settings now ignore empty env var values so VS Code MCP `${env:VAR}` expansions don't clobber defaults with empty strings.
+- NOMIS concept and codelist definition tools now use the correct `.def.sdmx.json` endpoints and `nomis.query` resolves common Census GSS geography codes (OA/LSOA/MSOA/ward) via NOMIS `geography/TYPE*` lookups.
+- Upstream JSON parse failures are now normalized consistently across OS, ONS, and admin lookup clients as `502` + `UPSTREAM_INVALID_RESPONSE`.
+- Initialize handlers no longer echo unsupported client protocol versions; they now return
+  a negotiated supported version.
 
 ### Tests
 - Added NOMIS dataset summary/filter/limit coverage and strengthened stats-routing comparison assertions.
@@ -57,6 +78,14 @@ All notable changes to this project will be documented in this file.
 - Expanded evaluation coverage for ONS dataset selection and catalog validation.
 - Expanded live ONS catalog validation to check all datasets with throttling/backoff controls.
 - Live ONS catalog tests now validate entry fields and surface timeout/error summaries.
+- Added endpoint matrix coverage for `/health`, `/tools/*`, `/resources/*`, `/playground/*`, and `/metrics`.
+- Added upstream URL contract tests across OS, ONS, NOMIS, and admin lookup tools to catch endpoint-shape regressions.
+- Added invalid-JSON regression tests for `tools/os_common.py`, `tools/ons_common.py`, and `tools/admin_lookup.py`.
+- Added `tests/test_rate_limit_assessor.py` for rate-limit probe recommendation and metric parsing logic.
+- Added `tests/test_evaluation_audit_rate_limits.py` to verify per-task `429` audit summaries and result/utilization reporting.
+- Added protocol negotiation coverage (`tests/test_protocol_versions.py`) plus stdio/http
+  initialize and header-validation regression tests.
+- Extended playground smoke coverage to assert version matrix and MCP Apps protocol labels.
 
 ## [0.2.11] - 2026-02-06
 ### Added

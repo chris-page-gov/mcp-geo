@@ -63,8 +63,8 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
                                     "annotations": {
                                         "annotation": [
                                             {"annotationtitle": "GeogCode", "annotationtext": gss},
-                                            {"annotationtitle": "TypeCode", "annotationtext": 153},
-                                            {"annotationtitle": "TypeName", "annotationtext": "2022 wards"},
+                                            {"annotationtitle": "TypeCode", "annotationtext": 297},
+                                            {"annotationtitle": "TypeName", "annotationtext": "Wards"},
                                         ]
                                     },
                                 }
@@ -81,7 +81,7 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
         use_cache: bool = True,
     ) -> Tuple[int, Dict[str, Any]]:
         params = params or {}
-        if url.endswith("/dataset/NM_2021_1/geography/TYPE153.def.sdmx.json"):
+        if url.endswith("/geography/TYPE297.def.sdmx.json"):
             search = params.get("search")
             if search == "E05012621":
                 return 200, geo_def(641733691, "E05012621", "Leamington Brunswick")
@@ -110,6 +110,34 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
     assert body["queryAdjusted"]["resolvedGeography"] == "641733691,641733692"
 
 
+def test_nomis_concepts_and_codelists_use_sdmx_json_endpoints(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    seen: Dict[str, str] = {}
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        seen["url"] = url
+        return 200, {"items": []}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.concepts", "concept": "GEOGRAPHY", "format": "json"},
+    )
+    assert resp.status_code == 200
+    assert seen["url"].endswith("/concept/GEOGRAPHY.def.sdmx.json")
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.codelists", "codelist": "CL_1_1_SEX", "format": "json"},
+    )
+    assert resp.status_code == 200
+    assert seen["url"].endswith("/codelist/CL_1_1_SEX.def.sdmx.json")
+
+
 def test_nomis_query_error_surface(monkeypatch):
     from tools import nomis_common
 
@@ -128,6 +156,51 @@ def test_nomis_query_error_surface(monkeypatch):
     assert resp.status_code == 400
     body = resp.json()
     assert body["code"] == "NOMIS_QUERY_ERROR"
+
+
+def test_nomis_query_incomplete_hint_variants(monkeypatch):
+    from tools import nomis_common, nomis_data
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        if url.endswith("/dataset/NM_1_1.jsonstat.json"):
+            return 200, {"error": "Query is incomplete"}
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    monkeypatch.setattr(
+        nomis_data,
+        "_fetch_dataset_overview",
+        lambda dataset: {"dimensions": [{"concept": "time"}, {"concept": "geography"}]},
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.query", "dataset": "NM_1_1", "params": {"geography": "TYPE486"}},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert "Required dimensions likely missing" in body["hint"]
+    assert "time" in body["missingDimensions"]
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_1_1",
+            "params": {"geography": "TYPE486", "time": "latest"},
+        },
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert "All required dimensions appear present" in body["hint"]
+    assert body["missingDimensions"] == []
 
 
 def test_nomis_datasets_and_concepts(monkeypatch):

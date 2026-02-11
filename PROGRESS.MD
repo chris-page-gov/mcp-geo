@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-07
+Last updated: 2026-02-11
 
 ## Sources reviewed
 
@@ -45,7 +45,7 @@ Legend: Done, Partial, Not started
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; no streaming/large export pipeline. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
-| NOMIS statistics | Partial | tools/nomis_data.py | Added discovery/query tools; needs coverage for dataset-specific workflows. |
+| NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Still needs more dataset-specific workflow coverage. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search can fall back to live. |
 | Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Boundary manifest + cache status exposed; full boundary packs not yet shipped. |
@@ -199,9 +199,29 @@ Common playground capabilities still required:
 | Apply elicitation selections to routing guidance | Done | `tools/os_mcp.py` accepts `comparisonLevel` and `providerPreference`, returns `userSelections`, and adjusts recommendations accordingly. |
 | Add direct + round-trip tests | Done | Added helper-path coverage and stdio wire round-trip tests in `tests/test_stdio_adapter_direct.py` plus stats-routing validation in `tests/test_os_mcp_route_query.py`. |
 
+## Reliability hardening (2026-02-11)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Normalize upstream invalid JSON errors across HTTP clients | Done | `tools/os_common.py`, `tools/ons_common.py`, and `tools/admin_lookup.py` now return `502` + `UPSTREAM_INVALID_RESPONSE`. |
+| Add API endpoint matrix test coverage | Done | Added `tests/test_http_endpoint_matrix.py` for `/health`, `/tools/*`, `/resources/*`, `/playground/*`, and `/metrics`. |
+| Add upstream endpoint contract regression tests | Done | Added `tests/test_tool_upstream_endpoint_contracts.py` to validate URL/params for OS, ONS, NOMIS, and admin lookup tool families. |
+| Add rate-limit calibration script | Done | Added `scripts/rate_limit_assessor.py` and `tests/test_rate_limit_assessor.py` to recommend `RATE_LIMIT_PER_MIN` from probe results. |
+| Apply calibrated default rate limit | Done | Calibrated on local `POST /tools/call` profile; updated default `RATE_LIMIT_PER_MIN` to 207 in `server/config.py`. |
+| Add per-task 429 audit summaries | Done | Audit logs now include `429 Rate-limit hits` and `429 by tool`; harness result/utilization exports include 429 counts (`tests/test_evaluation_audit_rate_limits.py`). |
+| Harden protocol negotiation to latest MCP + MCP-Apps era | Done | Core default bumped to `2025-11-25`; stdio/http now negotiate supported versions and HTTP validates `MCP-Protocol-Version`; descriptor exposes `supportedProtocolVersions` + `mcpAppsProtocolVersion`. |
+
+## Playground version visibility (2026-02-11)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Show version matrix in setup descriptor card | Done | `playground/src/App.svelte` now surfaces server/core/MCP Apps/client/SDK versions (with `n/a` fallbacks when disconnected). |
+| Remove hardcoded playground client version | Done | Client/host now use `playground/package.json` version metadata (`0.1.0`). |
+| Stabilize playground Playwright port usage | Done | `playground/playwright.config.js` now uses `4173` + `--strictPort`; smoke test asserts version matrix labels. |
+
 ## Verification status
 
-Latest full test run: `pytest -q` (90.20% coverage, 464 passed, 1 skipped) on 2026-02-06.
+Latest full test run: `pytest -q` (91.04% coverage, 581 passed, 6 skipped) on 2026-02-11.
 
 ## Claude UI fallback plan (short)
 
@@ -239,4 +259,3 @@ Next implementation steps:
 3. UI widgets: prefer sanitized names when host/tooling indicates restriction; keep retry fallback as a safety net.
 4. Add tests: HTTP round-trip for sanitized names; keep Playwright regression exercising dot-disallowed behavior.
 5. Docs: update Claude + VS Code guidance to show sanitized tool names and how to map back to originals (`annotations.originalName`).
-

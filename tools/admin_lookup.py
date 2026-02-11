@@ -215,7 +215,25 @@ class _ArcGisClient:
                         "code": "ADMIN_LOOKUP_API_ERROR",
                         "message": f"Admin lookup API error: {resp.text[:200]}",
                     }
-                data = resp.json()
+                try:
+                    data = resp.json()
+                except Exception as exc:
+                    resp_url = getattr(resp, "url", url)
+                    log_upstream_error(
+                        service="admin_lookup",
+                        code="UPSTREAM_INVALID_RESPONSE",
+                        status_code=resp.status_code,
+                        url=resp_url,
+                        params=params,
+                        detail=f"{exc}: {resp.text[:200]}",
+                        attempt=attempt,
+                        error_category=classify_error("UPSTREAM_INVALID_RESPONSE"),
+                    )
+                    return 502, {
+                        "isError": True,
+                        "code": "UPSTREAM_INVALID_RESPONSE",
+                        "message": "Admin lookup API returned invalid JSON.",
+                    }
                 self.cache.set(key, data)
                 return 200, data
             except req_exc.SSLError as exc:

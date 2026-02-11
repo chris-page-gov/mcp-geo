@@ -352,8 +352,6 @@ def _infer_query_template(dataset: str, overview: dict[str, Any] | None) -> dict
         if not concept:
             continue
         concept_key = concept.lower()
-        if concept_key == "geography":
-            continue
         sample_values = dim.get("sampleValues")
         values = sample_values if isinstance(sample_values, list) else []
         selected: str | None = None
@@ -365,14 +363,16 @@ def _infer_query_template(dataset: str, overview: dict[str, Any] | None) -> dict
                 selected = "20100"
             elif values_text:
                 selected = values_text[0]
+        elif concept_key == "time":
+            values_text = [str(v) for v in values]
+            if any(v.lower() == "latest" for v in values_text):
+                selected = "latest"
+            elif values_text:
+                selected = values_text[0]
         elif values:
             selected = str(values[0])
         if selected:
             template[concept_key] = selected
-    if "geography" not in template:
-        # NOMIS expects numeric geography IDs, but mcp-geo will resolve common GSS codes
-        # (wards/LSOA/MSOA/OA) for Census 2021 datasets when provided.
-        template["geography"] = "E05012621,E05012622"
     return template
 
 
@@ -428,13 +428,13 @@ def _resolve_gss_geography_type(gss_codes: list[str]) -> tuple[int, str] | None:
     if not prefixes:
         return None
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_WARD):
-        return 153, "2022 wards"
+        return 297, "wards"
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_OA):
-        return 150, "2021 output areas"
+        return 300, "output areas"
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_LSOA):
-        return 151, "2021 super output areas - lower layer"
+        return 298, "lsoa"
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_MSOA):
-        return 152, "2021 super output areas - middle layer"
+        return 299, "msoa"
     return None
 
 
@@ -458,7 +458,7 @@ def _maybe_resolve_gss_geographies(
     unresolved: list[str] = []
     for gss in parts:
         status, data = nomis_client.get_json(
-            _build_url(f"dataset/{dataset}/geography/TYPE{type_code}.def.sdmx.json"),
+            _build_url(f"geography/TYPE{type_code}.def.sdmx.json"),
             params={"search": gss},
         )
         if status != 200:
@@ -536,7 +536,7 @@ def _datasets(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "includeRaw must be a boolean"}
     if fmt not in {"sdmx", "json"}:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "format must be 'sdmx' or 'json'"}
-    suffix = "def.sdmx.json" if fmt == "sdmx" else "def.json"
+    suffix = "def.sdmx.json"
     path = f"dataset/{suffix}" if not dataset else f"dataset/{dataset}/{suffix}"
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
@@ -632,8 +632,8 @@ def _concepts(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "concept must be a string"}
     if fmt not in {"sdmx", "json"}:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "format must be 'sdmx' or 'json'"}
-    suffix = "def.sdmx.json" if fmt == "sdmx" else "def.json"
-    path = f"concept/{suffix}" if not concept else f"concept/{concept}/{suffix}"
+    suffix = "def.sdmx.json"
+    path = f"concept/{suffix}" if not concept else f"concept/{concept}.{suffix}"
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
         return status, data
@@ -653,8 +653,8 @@ def _codelists(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "codelist must be a string"}
     if fmt not in {"sdmx", "json"}:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "format must be 'sdmx' or 'json'"}
-    suffix = "def.sdmx.json" if fmt == "sdmx" else "def.json"
-    path = f"codelist/{suffix}" if not codelist else f"codelist/{codelist}/{suffix}"
+    suffix = "def.sdmx.json"
+    path = f"codelist/{suffix}" if not codelist else f"codelist/{codelist}.{suffix}"
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
         return status, data
@@ -722,10 +722,14 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                         return 200, result
             overview = _fetch_dataset_overview(dataset)
             missing, template = _missing_dimensions_message(params_dict, overview)
-            hint = (
-                "Required dimensions likely missing or malformed. "
-                "Use nomis.datasets with dataset=<id> to inspect queryTemplate and dimensions."
-            )
+            base_hint = "Use nomis.datasets with dataset=<id> to inspect queryTemplate and dimensions."
+            if missing:
+                hint = f"Required dimensions likely missing or malformed. {base_hint}"
+            else:
+                hint = (
+                    "All required dimensions appear present; one or more dimension values may be invalid. "
+                    f"{base_hint} Use nomis.codelists to inspect valid codes."
+                )
             if isinstance(params_dict.get("geography"), str):
                 hint = f"{hint} If providing GSS geography codes, NOMIS may require numeric IDs."
             return 400, {

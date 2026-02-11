@@ -8,6 +8,13 @@ See [Latest Specification which this MUST conform to](https://modelcontextprotoc
 This is a preview spec; tracking and review cadence live in `docs/spec_tracking.md`.
 OpenAI's MCP documentation is at https://platform.openai.com/docs/mcp (preview; tracked in `docs/spec_tracking.md`).
 
+Protocol negotiation behavior:
+- Preferred MCP core protocol revision: `2025-11-25`
+- Supported MCP core protocol versions: `2025-11-25`, `2025-06-18`, `2025-03-26`, `2024-11-05`
+- Streamable HTTP enforces `MCP-Protocol-Version` when provided and returns negotiated
+  `mcp-protocol-version` on responses
+- MCP-Apps extension tracked at `2026-01-26` (`io.modelcontextprotocol/ui`)
+
 ## Key Features
 - MCP endpoints: `/mcp` (streamable HTTP JSON-RPC), `/tools/list`, `/tools/call`, `/tools/describe`, `/tools/search`, `/resources/list`, `/resources/describe`, `/resources/read`
 - Uniform error envelope and pagination (`nextPageToken`)
@@ -201,13 +208,31 @@ to receive a compressed response (check `Content-Encoding: gzip`).
 
 ## Rate Limiting
 Basic per-minute in-memory rate limiting is enabled by default:
-- Environment variable: `RATE_LIMIT_PER_MIN` (default 120 per IP per top-level path segment)
+- Environment variable: `RATE_LIMIT_PER_MIN` (default 207 per IP per top-level path segment)
 - Bypass (tests/dev): `RATE_LIMIT_BYPASS=true` (set to `false` to enforce)
 Responses over the limit return:
 ```json
 { "isError": true, "code": "RATE_LIMITED", "message": "Rate limit exceeded" }
 ```
 Note: In-memory approach is not multi-process safe; replace with Redis or a shared store for production.
+
+### Rate-Limit Calibration Helper
+You can run an active probe to estimate a suitable `RATE_LIMIT_PER_MIN`:
+```bash
+python3 scripts/rate_limit_assessor.py \
+  --base-url http://127.0.0.1:8000 \
+  --path /tools/list \
+  --start-rpm 60 \
+  --step-rpm 30 \
+  --max-rpm 300 \
+  --duration-sec 20 \
+  --target-429-ratio 0.01 \
+  --headroom-percent 15 \
+  --output logs/rate-limit-assessment.json
+```
+Notes:
+- Set `RATE_LIMIT_BYPASS=false` before probing, otherwise no limiter behavior will be observed.
+- The recommendation is per client IP and top-level path segment, matching middleware behavior.
 
 ## Metrics
 Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`):

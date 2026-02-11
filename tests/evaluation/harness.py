@@ -98,8 +98,8 @@ class EvaluationHarness:
                 resolved[key] = value
         return resolved
 
-    def _record_context(self, response: Dict[str, Any], context: Dict[str, Any]) -> None:
-        if "filterId" in response:
+    def _record_context(self, response: Any, context: Dict[str, Any]) -> None:
+        if isinstance(response, dict) and "filterId" in response:
             context["filterId"] = response.get("filterId")
 
     def _call_spec(self, spec: ToolCallSpec, context: Dict[str, Any]) -> tuple[int, Dict[str, Any]]:
@@ -126,20 +126,38 @@ class EvaluationHarness:
         )
 
         if self.use_routing:
+            routing_start = time.time()
             status, routing_data = self.client.call_tool(
                 "os_mcp.route_query",
                 {"query": question.question},
             )
+            routing_duration_ms = (time.time() - routing_start) * 1000
+            routing_success = 200 <= status < 300
+            routing_error: Optional[str] = None
+            if isinstance(routing_data, dict) and not routing_success:
+                routing_error = routing_data.get("message")
+
+            self.audit_logger.record_tool_call(
+                tool_name="os_mcp.route_query",
+                inputs={"query": question.question},
+                outputs=routing_data,
+                duration_ms=routing_duration_ms,
+                status_code=status,
+                success=routing_success,
+                error=routing_error,
+            )
+
             tool_calls.append("os_mcp.route_query")
             raw_responses.append({"tool": "os_mcp.route_query", "response": routing_data})
-            detected_intent = routing_data.get("intent")
-            detected_confidence = routing_data.get("confidence", 0.0)
-            self.audit_logger.record_routing(
-                intent=detected_intent or "unknown",
-                confidence=detected_confidence,
-                recommended_tool=routing_data.get("recommended_tool", "unknown"),
-                workflow_steps=routing_data.get("workflow_steps", []),
-            )
+            if isinstance(routing_data, dict):
+                detected_intent = routing_data.get("intent")
+                detected_confidence = routing_data.get("confidence", 0.0)
+                self.audit_logger.record_routing(
+                    intent=detected_intent or "unknown",
+                    confidence=detected_confidence,
+                    recommended_tool=routing_data.get("recommended_tool", "unknown"),
+                    workflow_steps=routing_data.get("workflow_steps", []),
+                )
             if status >= 400:
                 unexpected_errors.append(f"route_query status={status}")
 
@@ -156,14 +174,19 @@ class EvaluationHarness:
                 inputs=self._resolve_payload(spec.payload, context),
                 outputs=response,
                 duration_ms=duration_ms,
+                status_code=status,
                 success=success,
                 error=None if success else response.get("message") if isinstance(response, dict) else None,
             )
 
             self._record_context(response, context)
 
-            if not success or response.get("isError"):
-                message = response.get("code") or response.get("message") or f"status={status}"
+            response_is_error = isinstance(response, dict) and bool(response.get("isError"))
+            if not success or response_is_error:
+                if isinstance(response, dict):
+                    message = response.get("code") or response.get("message") or f"status={status}"
+                else:
+                    message = f"status={status}"
                 error_messages.append(str(message))
                 if not spec.expect_error:
                     unexpected_errors.append(str(message))
@@ -358,13 +381,15 @@ class EvaluationHarness:
                 total_calls += 1
                 stats = tool_stats.setdefault(
                     call.tool_name,
-                    {"calls": 0, "success": 0, "errors": 0},
+                    {"calls": 0, "success": 0, "errors": 0, "rateLimited429": 0},
                 )
                 stats["calls"] += 1
                 if call.success:
                     stats["success"] += 1
                 else:
                     stats["errors"] += 1
+                if call.status_code == 429:
+                    stats["rateLimited429"] += 1
         for stats in tool_stats.values():
             calls = stats["calls"]
             stats["successRate"] = round((stats["success"] / calls) * 100, 2) if calls else 0.0
@@ -482,6 +507,10 @@ class EvaluationHarness:
                     if self.results
                     else 0
                 ),
+                "rate_limit_429_total": sum(
+                    (r.audit_record.rate_limit_429_count if r.audit_record else 0)
+                    for r in self.results
+                ),
             },
             "utilization": utilization,
             "effectiveness": effectiveness,
@@ -498,6 +527,9 @@ class EvaluationHarness:
                     "tool_calls": r.tool_calls,
                     "duration_ms": r.duration_ms,
                     "error": r.error,
+                    "rate_limit_429_count": (
+                        r.audit_record.rate_limit_429_count if r.audit_record else 0
+                    ),
                     "dimensions": [
                         {
                             "dimension": d.dimension,

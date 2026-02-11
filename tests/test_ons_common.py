@@ -65,3 +65,22 @@ def test_ons_client_timeout_returns_error(monkeypatch):
     status, data = c.get_json("https://api.ons.gov.uk/test", {"a": 1})
     assert status == 501
     assert data["code"] == "UPSTREAM_CONNECT_ERROR"
+
+
+def test_ons_client_invalid_json_returns_error(monkeypatch):
+    import requests
+
+    class BadResp:
+        status_code = 200
+        text = "not-json"
+        def json(self):  # type: ignore[override]
+            raise ValueError("boom json parse")
+
+    def fake_get(url: str, params: Dict[str, Any] | None = None, timeout: float | None = None):
+        return BadResp()
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    c = ONSClient(retries=1, cache_ttl=1.0)
+    status, data = c.get_json("https://api.ons.gov.uk/test", {"a": 1})
+    assert status == 502
+    assert data["code"] == "UPSTREAM_INVALID_RESPONSE"

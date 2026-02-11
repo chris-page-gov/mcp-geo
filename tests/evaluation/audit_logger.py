@@ -18,6 +18,7 @@ class ToolCallRecord:
     inputs: Dict[str, Any]
     outputs: Any
     success: bool
+    status_code: Optional[int] = None
     error: Optional[str] = None
 
 
@@ -32,6 +33,8 @@ class AuditRecord:
     tool_calls: List[ToolCallRecord] = field(default_factory=list)
     final_response: Optional[str] = None
     total_duration_ms: float = 0.0
+    rate_limit_429_count: int = 0
+    rate_limit_429_by_tool: Dict[str, int] = field(default_factory=dict)
     success: bool = True
     error: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -79,6 +82,7 @@ class AuditLogger:
         inputs: Dict[str, Any],
         outputs: Any,
         duration_ms: float,
+        status_code: Optional[int],
         success: bool,
         error: Optional[str] = None,
     ) -> None:
@@ -91,10 +95,16 @@ class AuditLogger:
                 duration_ms=duration_ms,
                 inputs=inputs,
                 outputs=outputs,
+                status_code=status_code,
                 success=success,
                 error=error,
             )
         )
+        if status_code == 429:
+            self._current_record.rate_limit_429_count += 1
+            self._current_record.rate_limit_429_by_tool[tool_name] = (
+                self._current_record.rate_limit_429_by_tool.get(tool_name, 0) + 1
+            )
 
     def record_response(self, response: str) -> None:
         if self._current_record:
@@ -149,6 +159,8 @@ class AuditLogger:
             lines.append(self.SUBSECTION)
             lines.append(f"Timestamp: {call.timestamp}")
             lines.append(f"Duration: {call.duration_ms:.1f}ms")
+            if call.status_code is not None:
+                lines.append(f"HTTP Status: {call.status_code}")
             lines.append(f"Status: {'SUCCESS' if call.success else 'ERROR'}")
             lines.append("")
             lines.append("Inputs:")
@@ -166,6 +178,9 @@ class AuditLogger:
         lines.append("## 5. METRICS")
         lines.append(self.SECTION_END)
         lines.append(f"Duration: {record.total_duration_ms:.1f}ms")
+        lines.append(f"429 Rate-limit hits: {record.rate_limit_429_count}")
+        if record.rate_limit_429_by_tool:
+            lines.append(f"429 by tool: {record.rate_limit_429_by_tool}")
         lines.append(f"Success: {record.success}")
         if record.error:
             lines.append(f"Error: {record.error}")

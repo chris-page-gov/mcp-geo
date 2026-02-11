@@ -43,7 +43,7 @@ from server.mcp.elicitation_forms import (
     build_ons_select_elicitation_params,
 )
 from server import __version__ as SERVER_VERSION
-from server.protocol import PROTOCOL_VERSION
+from server.protocol import PROTOCOL_VERSION, negotiate_protocol_version
 
 JSONRPC = "2.0"
 
@@ -511,7 +511,7 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
 
 def handle_initialize(params: Dict[str, Any]) -> Any:
     requested = params.get("protocolVersion")
-    protocol_version = requested if isinstance(requested, str) else PROTOCOL_VERSION
+    protocol_version = negotiate_protocol_version(requested)
     global CLIENT_CAPABILITIES
     capabilities = params.get("capabilities")
     CLIENT_CAPABILITIES = capabilities if isinstance(capabilities, dict) else {}

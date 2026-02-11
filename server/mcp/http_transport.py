@@ -21,7 +21,14 @@ from server.mcp.elicitation_forms import (
 )
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.prompts import get_prompt, list_prompts
-from server.protocol import PROTOCOL_VERSION
+from server.protocol import (
+    HTTP_DEFAULT_PROTOCOL_VERSION,
+    PROTOCOL_VERSION,
+    SUPPORTED_PROTOCOL_VERSIONS,
+    is_supported_protocol_version,
+    negotiate_protocol_version,
+    normalize_protocol_version,
+)
 from tools.registry import get as get_tool
 
 router = APIRouter()
@@ -182,11 +189,13 @@ def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[
 
 def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[str, Any]:
     requested = params.get("protocolVersion")
-    protocol_version = requested if isinstance(requested, str) else PROTOCOL_VERSION
+    protocol_version = negotiate_protocol_version(requested)
     capabilities = params.get("capabilities")
     session_state["capabilities"] = capabilities if isinstance(capabilities, dict) else {}
+    session_state["protocolVersion"] = protocol_version
     logger.info(
-        "MCP initialize (http) capabilities={capabilities}",
+        "MCP initialize (http) protocol={protocol} capabilities={capabilities}",
+        protocol=protocol_version,
         capabilities=session_state["capabilities"],
     )
     return {
@@ -205,6 +214,73 @@ def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[s
         "server": "mcp-geo",
         "version": stdio_adapter.SERVER_VERSION,
     }
+
+
+def _protocol_error_response(
+    *,
+    headers: Dict[str, str],
+    message: str,
+    requested: str | None = None,
+    negotiated: str | None = None,
+) -> JSONResponse:
+    data: Dict[str, Any] = {"supported": list(SUPPORTED_PROTOCOL_VERSIONS)}
+    if requested is not None:
+        data["requested"] = requested
+    if negotiated is not None:
+        data["negotiated"] = negotiated
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=_resp_error(None, -32600, message, data),
+        headers=headers,
+    )
+
+
+def _resolve_request_protocol_version(
+    *,
+    request: Request,
+    method: str,
+    session_state: Dict[str, Any],
+    headers: Dict[str, str],
+) -> tuple[str, JSONResponse | None]:
+    header_version = normalize_protocol_version(request.headers.get("mcp-protocol-version"))
+    if header_version and not is_supported_protocol_version(header_version):
+        return (
+            PROTOCOL_VERSION,
+            _protocol_error_response(
+                headers=headers,
+                message="Unsupported protocol version",
+                requested=header_version,
+            ),
+        )
+
+    negotiated = normalize_protocol_version(session_state.get("protocolVersion"))
+    if negotiated and not is_supported_protocol_version(negotiated):
+        negotiated = None
+
+    # initialize performs negotiation in-band using params.protocolVersion.
+    if method == "initialize":
+        if header_version:
+            return header_version, None
+        if negotiated:
+            return negotiated, None
+        return HTTP_DEFAULT_PROTOCOL_VERSION, None
+
+    if negotiated and header_version and header_version != negotiated:
+        return (
+            negotiated,
+            _protocol_error_response(
+                headers=headers,
+                message="MCP-Protocol-Version does not match negotiated session protocol",
+                requested=header_version,
+                negotiated=negotiated,
+            ),
+        )
+
+    if header_version:
+        return header_version, None
+    if negotiated:
+        return negotiated, None
+    return HTTP_DEFAULT_PROTOCOL_VERSION, None
 
 
 def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str, Any]:
@@ -349,6 +425,15 @@ async def mcp_endpoint(request: Request):
             content=_resp_error(msg_id, -32600, "Invalid Request"),
             headers=headers,
         )
+    protocol_version, protocol_error = _resolve_request_protocol_version(
+        request=request,
+        method=method,
+        session_state=session_state,
+        headers=headers,
+    )
+    headers["mcp-protocol-version"] = protocol_version
+    if protocol_error is not None:
+        return protocol_error
     params = msg.get("params")
     if params is None:
         params = {}
@@ -462,6 +547,10 @@ async def mcp_endpoint(request: Request):
             )
 
         result = _dispatch(method, params, session_state)
+        if method == "initialize" and isinstance(result, dict):
+            negotiated = normalize_protocol_version(result.get("protocolVersion"))
+            if negotiated and is_supported_protocol_version(negotiated):
+                headers["mcp-protocol-version"] = negotiated
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content=_resp_success(msg_id, result),
