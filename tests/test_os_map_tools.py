@@ -261,6 +261,116 @@ def test_os_map_resolve_collection_id_override_and_unknown() -> None:
     assert os_map._resolve_collection_id("nope", {}) is None
 
 
+def test_os_maps_render_overlay_contract_without_inventory(client) -> None:  # type: ignore[no-untyped-def]
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_maps.render",
+            "bbox": [-0.12, 51.5, -0.11, 51.51],
+            "size": 512,
+            "overlays": {
+                "points": [
+                    {"lat": 51.5005, "lon": -0.1105, "properties": {"label": "A"}},
+                    {"coordinates": [-0.1102, 51.5006], "properties": {"label": "B"}},
+                ],
+                "polygons": [
+                    {
+                        "type": "Feature",
+                        "properties": {"name": "poly"},
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [
+                                [
+                                    [-0.1108, 51.5003],
+                                    [-0.1100, 51.5003],
+                                    [-0.1100, 51.5009],
+                                    [-0.1108, 51.5009],
+                                    [-0.1108, 51.5003],
+                                ]
+                            ],
+                        },
+                    }
+                ],
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["render"]["imageWidth"] == 512
+    assert body["render"]["imageHeight"] == 512
+    layers = {row["id"]: row for row in body["overlayLayers"]}
+    assert layers["input_points"]["kind"] == "point"
+    assert layers["input_points"]["count"] == 2
+    assert layers["input_polygons"]["kind"] == "polygon"
+    collections = {row["id"]: row for row in body["overlayCollections"]}
+    assert collections["input_points"]["featureCollection"]["type"] == "FeatureCollection"
+    assert len(collections["input_points"]["featureCollection"]["features"]) == 2
+    assert "inventory" in body and body["inventory"] is None
+
+
+def test_os_maps_render_inventory_alignment(client, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_maps
+
+    class DummyTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            assert args["tool"] == "os_map.inventory"
+            assert args["bbox"] == [-0.12, 51.5, -0.11, 51.51]
+            return 200, {
+                "bbox": args["bbox"],
+                "layers": {
+                    "uprns": {
+                        "results": [
+                            {"uprn": "1001", "lat": 51.5001, "lon": -0.1101},
+                            {"uprn": "1002", "lat": 51.5002, "lon": -0.1102},
+                        ]
+                    },
+                    "buildings": {
+                        "collection": "bld-fts-buildingpart-1",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": "b1",
+                                "geometry": {"type": "Polygon", "coordinates": []},
+                                "properties": {"name": "b1"},
+                            }
+                        ],
+                    },
+                    "road_links": {
+                        "collection": "trn-ntwk-roadlink-1",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": "r1",
+                                "geometry": {"type": "LineString", "coordinates": []},
+                                "properties": {"name": "r1"},
+                            }
+                        ],
+                        "nextPageToken": "1",
+                    },
+                },
+            }
+
+    monkeypatch.setattr(os_maps, "get_tool", lambda name: DummyTool() if name == "os_map.inventory" else None)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_maps.render",
+            "bbox": [-0.12, 51.5, -0.11, 51.51],
+            "includeInventory": True,
+            "inventory": {"layers": ["uprns", "buildings", "road_links"]},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["inventory"]["layers"]["uprns"]["results"][0]["uprn"] == "1001"
+    layers = {row["id"]: row for row in body["overlayLayers"]}
+    assert layers["inventory_uprns"]["kind"] == "point"
+    assert layers["inventory_uprns"]["count"] == 2
+    assert layers["inventory_buildings"]["collection"] == "bld-fts-buildingpart-1"
+    assert layers["inventory_road_links"]["nextPageToken"] == "1"
+
+
 def test_os_map_inventory_error_branches(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_map
 

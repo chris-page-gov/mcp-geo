@@ -26,6 +26,9 @@ All notable changes to this project will be documented in this file.
   tool discovery/search surfaces.
 - Added `os_features.query` expansion for polygon geometry input, attribute filters,
   projection/sort controls, `resultType=hits`, and optional queryables metadata.
+- Added overlay-ready `os_maps.render` contract with explicit input overlays
+  (points/lines/polygons/local layers), overlay collection summaries, and optional
+  `os_map.inventory` hydration for buildings/road links/path links/UPRNs.
 
 ## [0.2.12] - 2026-02-11
 ### Added
@@ -108,6 +111,8 @@ All notable changes to this project will be documented in this file.
 - Added protocol negotiation coverage (`tests/test_protocol_versions.py`) plus stdio/http
   initialize and header-validation regression tests.
 - Extended playground smoke coverage to assert version matrix and MCP Apps protocol labels.
+- Added `os_maps.render` overlay/inventory alignment coverage in
+  `tests/test_os_map_tools.py`.
 
 ## [0.2.11] - 2026-02-06
 ### Added
