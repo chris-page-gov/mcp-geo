@@ -499,6 +499,9 @@ def test_boundary_cache_status(monkeypatch):
     assert status["enabled"] is True
     assert status["levels"][0]["level"] == "OA"
     assert status["datasets"][0]["datasetId"] == "ons_oa_2021_bgc"
+    assert status["datasets"][0]["freshnessState"] in {"fresh", "stale", "unknown"}
+    assert status["maturity"]["state"] in {"ready", "degraded", "stale", "unknown", "cold_start", "unusable"}
+    assert "staleDatasetIds" in status["staleness"]
 
 
 def test_boundary_cache_search(monkeypatch):

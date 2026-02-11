@@ -561,12 +561,29 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                 "enabled": False,
                 "configured": configured,
                 "dsnSet": dsn_set,
+                "maturity": {"state": "disabled", "reason": "cache_unavailable"},
+                "staleness": {
+                    "maxAgeDays": int(getattr(settings, "BOUNDARY_CACHE_MAX_AGE_DAYS", 180)),
+                    "freshDatasetIds": [],
+                    "staleDatasetIds": [],
+                    "unknownFreshnessDatasetIds": [],
+                },
                 "reloadHint": "Run scripts/boundary_cache_ingest.py to populate PostGIS.",
             }
         else:
             status = cache.status() or {}
             if "enabled" not in status:
                 status["enabled"] = True
+            status.setdefault("maturity", {"state": "unknown", "reason": "maturity_unreported"})
+            status.setdefault(
+                "staleness",
+                {
+                    "maxAgeDays": int(getattr(settings, "BOUNDARY_CACHE_MAX_AGE_DAYS", 180)),
+                    "freshDatasetIds": [],
+                    "staleDatasetIds": [],
+                    "unknownFreshnessDatasetIds": [],
+                },
+            )
             status["configured"] = configured
             status["dsnSet"] = dsn_set
             status["reloadHint"] = "Run scripts/boundary_cache_ingest.py to populate PostGIS."

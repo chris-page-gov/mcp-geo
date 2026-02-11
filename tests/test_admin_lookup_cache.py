@@ -76,7 +76,13 @@ def test_admin_lookup_cache_status(monkeypatch):
 
     class StubCache:
         def status(self):
-            return {"enabled": True, "total": 10, "geomCount": 10}
+            return {
+                "enabled": True,
+                "total": 10,
+                "geomCount": 10,
+                "maturity": {"state": "ready"},
+                "staleness": {"staleDatasetIds": [], "freshDatasetIds": []},
+            }
 
     monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: StubCache())
     c = _client()
@@ -85,6 +91,7 @@ def test_admin_lookup_cache_status(monkeypatch):
     body = resp.json()
     assert body["enabled"] is True
     assert body["total"] == 10
+    assert body["maturity"]["state"] == "ready"
 
 
 def test_admin_lookup_cache_search(monkeypatch):
@@ -126,7 +133,9 @@ def test_admin_lookup_cache_search_fallback_live_when_disabled(monkeypatch):
     body = resp.json()
     assert body["live"] is True
     assert body["meta"]["fallback"] is True
+    assert body["meta"]["fallbackReason"] == "cache_disabled"
     assert body["meta"]["cache"] == "disabled"
+    assert body["meta"]["cacheMaturity"]["state"] == "disabled"
 
 
 def test_admin_lookup_cache_search_fallback_live_when_error(monkeypatch):
@@ -154,4 +163,5 @@ def test_admin_lookup_cache_search_fallback_live_when_error(monkeypatch):
     body = resp.json()
     assert body["live"] is True
     assert body["meta"]["fallback"] is True
+    assert body["meta"]["fallbackReason"] == "cache_error"
     assert body["meta"]["cacheError"] is True

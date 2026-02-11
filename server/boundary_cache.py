@@ -377,6 +377,11 @@ class BoundaryCache:
         dataset_rows = []
         for row in datasets:
             fresh, age_days = self._freshness(row.get("release_date"), row.get("ingested_at"))
+            freshness_state = "unknown"
+            if fresh is True:
+                freshness_state = "fresh"
+            elif fresh is False:
+                freshness_state = "stale"
             dataset_rows.append(
                 {
                     "datasetId": row.get("dataset_id"),
@@ -394,8 +399,35 @@ class BoundaryCache:
                     "license": row.get("license"),
                     "fresh": fresh,
                     "ageDays": age_days,
+                    "freshnessState": freshness_state,
+                    "stale": fresh is False,
                 }
             )
+        fresh_ids = [row.get("datasetId") for row in dataset_rows if row.get("fresh") is True]
+        stale_ids = [row.get("datasetId") for row in dataset_rows if row.get("fresh") is False]
+        unknown_ids = [row.get("datasetId") for row in dataset_rows if row.get("fresh") is None]
+        known_freshness = [row for row in dataset_rows if row.get("fresh") is not None]
+        fresh_ratio = (
+            len(fresh_ids) / len(known_freshness) if known_freshness else None
+        )
+        if total == 0:
+            maturity_state = "cold_start"
+        elif geom_total == 0:
+            maturity_state = "unusable"
+        elif fresh_ratio == 1.0:
+            maturity_state = "ready"
+        elif fresh_ratio is None:
+            maturity_state = "unknown"
+        elif fresh_ratio >= 0.6:
+            maturity_state = "degraded"
+        else:
+            maturity_state = "stale"
+        last_ingested_at: str | None = None
+        for row in dataset_rows:
+            ingested = row.get("ingestedAt")
+            if isinstance(ingested, str):
+                if last_ingested_at is None or ingested > last_ingested_at:
+                    last_ingested_at = ingested
         return {
             "enabled": True,
             "schema": self._schema,
@@ -407,6 +439,20 @@ class BoundaryCache:
             "levels": per_level_stats,
             "datasets": dataset_rows,
             "maxAgeDays": self._max_age_days,
+            "maturity": {
+                "state": maturity_state,
+                "freshDatasetCount": len(fresh_ids),
+                "staleDatasetCount": len(stale_ids),
+                "unknownFreshnessCount": len(unknown_ids),
+                "freshDatasetRatio": fresh_ratio,
+                "lastIngestedAt": last_ingested_at,
+            },
+            "staleness": {
+                "maxAgeDays": self._max_age_days,
+                "freshDatasetIds": fresh_ids,
+                "staleDatasetIds": stale_ids,
+                "unknownFreshnessDatasetIds": unknown_ids,
+            },
         }
 
     def search(

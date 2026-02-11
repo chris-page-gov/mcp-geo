@@ -917,6 +917,21 @@ register(Tool(
 ))
 
 
+def _cache_maturity_snapshot(cache: Any) -> dict[str, Any]:
+    if cache is None:
+        return {"state": "disabled", "reason": "cache_disabled"}
+    try:
+        status = cache.status()
+    except Exception:
+        return {"state": "error", "reason": "cache_status_failed"}
+    if not isinstance(status, dict):
+        return {"state": "error", "reason": "cache_status_unavailable"}
+    maturity = status.get("maturity")
+    if isinstance(maturity, dict):
+        return maturity
+    return {"state": "unknown", "reason": "maturity_unreported"}
+
+
 def _cache_status(payload: dict[str, Any]) -> ToolResult:
     refresh = bool(payload.get("refresh"))
     if refresh:
@@ -929,6 +944,13 @@ def _cache_status(payload: dict[str, Any]) -> ToolResult:
             "enabled": False,
             "configured": configured,
             "dsnSet": dsn_set,
+            "maturity": {"state": "disabled", "reason": "cache_disabled"},
+            "staleness": {
+                "maxAgeDays": int(getattr(settings, "BOUNDARY_CACHE_MAX_AGE_DAYS", 180)),
+                "freshDatasetIds": [],
+                "staleDatasetIds": [],
+                "unknownFreshnessDatasetIds": [],
+            },
             "reloadHint": "Run scripts/boundary_cache_ingest.py to populate PostGIS.",
         }
     status = cache.status()
@@ -940,6 +962,16 @@ def _cache_status(payload: dict[str, Any]) -> ToolResult:
         }
     status["configured"] = configured
     status["dsnSet"] = dsn_set
+    status.setdefault("maturity", {"state": "unknown", "reason": "maturity_unreported"})
+    status.setdefault(
+        "staleness",
+        {
+            "maxAgeDays": int(getattr(settings, "BOUNDARY_CACHE_MAX_AGE_DAYS", 180)),
+            "freshDatasetIds": [],
+            "staleDatasetIds": [],
+            "unknownFreshnessDatasetIds": [],
+        },
+    )
     status["reloadHint"] = "Run scripts/boundary_cache_ingest.py to populate PostGIS."
     return 200, status
 
@@ -1004,7 +1036,9 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
                 "meta": {
                     "source": "arcgis",
                     "fallback": True,
+                    "fallbackReason": "cache_disabled",
                     "cache": "disabled",
+                    "cacheMaturity": {"state": "disabled", "reason": "cache_disabled"},
                     "query": query,
                     "level": level,
                     "limit": limit,
@@ -1032,7 +1066,9 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
                 "meta": {
                     "source": "arcgis",
                     "fallback": True,
+                    "fallbackReason": "cache_error",
                     "cacheError": True,
+                    "cacheMaturity": _cache_maturity_snapshot(cache),
                     "query": query,
                     "level": level,
                     "limit": limit,
@@ -1052,6 +1088,7 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
             "level": level,
             "limit": limit,
             "includeGeometry": include_geometry,
+            "cacheMaturity": _cache_maturity_snapshot(cache),
         },
     }
 

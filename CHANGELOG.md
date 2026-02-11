@@ -120,6 +120,9 @@ All notable changes to this project will be documented in this file.
   `resource://mcp-geo/ons-exports/*` with index resource `resource://mcp-geo/ons-exports-index`.
 - Added NOMIS workflow profiles resource (`resource://mcp-geo/nomis-workflows`)
   and linked NOMIS-routed `os_mcp.route_query` guidance to that profile catalog.
+- Added boundary-cache maturity/staleness reporting (`maturity` + `staleness`)
+  across cache status surfaces, and explicit fallback-reason metadata for
+  `admin_lookup.search_cache` live fallback paths.
 
 ## [0.2.11] - 2026-02-06
 ### Added
