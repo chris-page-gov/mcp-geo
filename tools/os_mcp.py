@@ -17,6 +17,7 @@ from tools.registry import Tool, ToolResult, register
 
 class QueryIntent(str, Enum):
     ADDRESS_LOOKUP = "address_lookup"
+    POI_LOOKUP = "poi_lookup"
     PLACE_LOOKUP = "place_lookup"
     STATISTICS = "statistics"
     AREA_COMPARISON = "area_comparison"
@@ -103,11 +104,25 @@ COMPARISON_PATTERNS = [
 
 FEATURE_SEARCH_PATTERNS = [
     (
-        r"\b(buildings?|roads?|streets?|railway|station|cinema|school|hospital|park|shop|"
-        r"restaurant|pub|church|museum|library|hotel)\b"
+        r"\b(buildings?|roads?|streets?|railway|station|bridges?|path links?|road links?|"
+        r"parcels?|topograph(y|ic))\b"
     ),
     r"\bfeatures?\b",
     r"\bngd\b",
+]
+
+POI_PATTERNS = [
+    r"\bpoi\b",
+    r"\bpoints? of interest\b",
+    r"\bamenit(y|ies)\b",
+    (
+        r"\bnearby\b.*\b(caf(e|es)|restaurants?|pubs?|shops?|hospitals?|schools?|"
+        r"pharmacies?|atms?|hotels?|museums?|cinemas?)\b"
+    ),
+    (
+        r"\b(caf(e|es)|restaurants?|pubs?|shops?|hospitals?|schools?|pharmacies?|atms?|"
+        r"hotels?|museums?|cinemas?)\b"
+    ),
 ]
 
 BOUNDARY_PATTERNS = [
@@ -454,6 +469,7 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         context["nomis_preferred"] = True
 
     scores = {
+        QueryIntent.POI_LOOKUP: _match_patterns(query, POI_PATTERNS),
         QueryIntent.PLACE_LOOKUP: _match_patterns(query, PLACE_LOOKUP_PATTERNS),
         QueryIntent.STATISTICS: _match_patterns(query, STATISTICS_PATTERNS),
         QueryIntent.AREA_COMPARISON: _match_patterns(query, COMPARISON_PATTERNS),
@@ -485,6 +501,12 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         scores[QueryIntent.FEATURE_SEARCH] = max(scores[QueryIntent.FEATURE_SEARCH], 0.9)
         context["feature_collection"] = feature_collection
 
+    if any(re.search(pattern, query_lower) for pattern in POI_PATTERNS):
+        scores[QueryIntent.POI_LOOKUP] = max(scores[QueryIntent.POI_LOOKUP], 0.85)
+        if re.search(r"\bnearest\b|\bnear\b|\bnearby\b", query_lower):
+            scores[QueryIntent.POI_LOOKUP] = max(scores[QueryIntent.POI_LOOKUP], 0.92)
+        scores[QueryIntent.FEATURE_SEARCH] = min(scores[QueryIntent.FEATURE_SEARCH], 0.75)
+
     if re.search(r"\broute\b|\bdirections\b|\bfrom\b.*\bto\b", query_lower):
         scores[QueryIntent.ROUTE_PLANNING] = max(scores[QueryIntent.ROUTE_PLANNING], 0.85)
 
@@ -500,6 +522,7 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             for intent in [
                 QueryIntent.STATISTICS,
                 QueryIntent.AREA_COMPARISON,
+                QueryIntent.POI_LOOKUP,
                 QueryIntent.FEATURE_SEARCH,
                 QueryIntent.BOUNDARY_FETCH,
                 QueryIntent.ROUTE_PLANNING,
@@ -521,6 +544,8 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         admin_level = _pick_admin_level(level_mentions)
         if admin_level:
             params["level"] = admin_level
+    elif best_intent == QueryIntent.POI_LOOKUP:
+        params = {"text": query}
     elif best_intent == QueryIntent.INTERACTIVE_SELECTION:
         params = (
             _build_boundary_explorer_params(query, place_name)
@@ -551,6 +576,12 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "os_places.search",
             ["os_places.search"],
             "Free-text address search using OS Places.",
+        )
+    if intent == QueryIntent.POI_LOOKUP:
+        return (
+            "os_poi.search",
+            ["os_poi.search", "os_poi.nearest", "os_poi.within"],
+            "Search OS Points of Interest for amenities and nearby services.",
         )
     if intent == QueryIntent.LINKED_IDS:
         return (
@@ -653,6 +684,7 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
 def _get_alternative_tools(intent: QueryIntent) -> list[str]:
     alternatives = {
         QueryIntent.ADDRESS_LOOKUP: ["os_places.search", "os_places.nearest"],
+        QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
         QueryIntent.LINKED_IDS: ["os_places.by_uprn"],
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
         QueryIntent.BOUNDARY_FETCH: ["resources/read"],
@@ -674,6 +706,10 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         QueryIntent.ADDRESS_LOOKUP: (
             "Use OS Places for postcodes, UPRNs, or free-text address search. "
             "Postcodes return multiple UPRNs; UPRN returns a single address."
+        ),
+        QueryIntent.POI_LOOKUP: (
+            "Use os_poi.search/nearest/within for amenities and points of interest. "
+            "Use nearest for a point lookup and within for bbox-constrained queries."
         ),
         QueryIntent.LINKED_IDS: (
             "Use os_linked_ids.get when the query mentions UPRN/USRN/TOID relationships."

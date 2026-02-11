@@ -48,6 +48,9 @@ def test_os_tool_upstream_url_contracts(monkeypatch):
         {"tool": "os_places.by_uprn", "uprn": "1"},
         {"tool": "os_places.nearest", "lat": 51.5, "lon": -0.1},
         {"tool": "os_places.within", "bbox": [-0.2, 51.5, -0.1, 51.6]},
+        {"tool": "os_poi.search", "text": "cafe"},
+        {"tool": "os_poi.nearest", "lat": 51.5, "lon": -0.1},
+        {"tool": "os_poi.within", "bbox": [-0.2, 51.5, -0.1, 51.6]},
         {"tool": "os_names.find", "text": "London"},
         {"tool": "os_features.query", "collection": "buildings", "bbox": [-0.2, 51.5, -0.1, 51.6]},
         {"tool": "os_features.collections"},
@@ -83,6 +86,15 @@ def test_os_tool_upstream_url_contracts(monkeypatch):
     assert bbox_params.get("output_srs") == "WGS84"
     bbox_parts = [float(part) for part in str(bbox_params.get("bbox", "")).split(",")]
     assert len(bbox_parts) == 4
+
+    poi_calls = [
+        (url, params)
+        for url, params in calls
+        if isinstance(params, dict) and params.get("dataset") == "POI"
+    ]
+    assert any(url.endswith("/search/places/v1/find") for url, _ in poi_calls)
+    assert any(url.endswith("/search/places/v1/nearest") for url, _ in poi_calls)
+    assert any(url.endswith("/search/places/v1/bbox") for url, _ in poi_calls)
 
 
 def test_ons_tool_upstream_url_contracts(monkeypatch):

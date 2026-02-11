@@ -25,6 +25,7 @@ class ToolCategory(str, Enum):
 
 _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "os_places": ToolCategory.PLACES,
+    "os_poi": ToolCategory.PLACES,
     "os_names": ToolCategory.NAMES,
     "os_features": ToolCategory.FEATURES,
     "os_linked_ids": ToolCategory.LINKED,
@@ -43,6 +44,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
 
 _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_places": ["address", "postcode", "uprn", "place", "geocode"],
+    "os_poi": ["poi", "points", "interest", "amenities", "nearby", "places"],
     "os_names": ["gazetteer", "names", "feature", "nearest"],
     "os_features": ["ngd", "feature", "bbox", "collection"],
     "os_linked_ids": ["uprn", "usrn", "toid", "linked"],
@@ -61,7 +63,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
 
 TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
     "core_router": ("os_mcp.*",),
-    "places_names": ("os_places.*", "os_names.*", "os_linked_ids.get"),
+    "places_names": ("os_places.*", "os_poi.*", "os_names.*", "os_linked_ids.get"),
     "features_layers": ("os_features.*", "os_map.inventory", "os_map.export"),
     "maps_tiles": ("os_maps.render", "os_vector_tiles.descriptor"),
     "admin_boundaries": ("admin_lookup.*",),
@@ -90,6 +92,7 @@ ALWAYS_LOADED_TOOLS: Set[str] = {
 
 EXTERNAL_PREFIXES: Set[str] = {
     "os_places",
+    "os_poi",
     "os_names",
     "os_features",
     "os_linked_ids",
@@ -267,6 +270,7 @@ def get_tool_search_system_prompt() -> str:
         "Primary tools:\n"
         "- os_places.search: free text address search\n"
         "- os_places.by_postcode: lookup UPRNs and addresses\n"
+        "- os_poi.search: search points of interest (amenities/services)\n"
         "- admin_lookup.find_by_name: find administrative areas by name (use level/levels to reduce noise)\n"
         "- ons_select.search: rank ONS datasets with explainability\n"
         "- ons_search.query: discover ONS datasets (live API search)\n"

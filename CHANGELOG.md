@@ -34,6 +34,10 @@ All notable changes to this project will be documented in this file.
 - Added shared observability counters and `/metrics` export lines for per-tool
   latency histograms, input/output payload bytes, cache-hit counts, fallback
   counts, and playground event/orchestration counters.
+- Added OS POI tooling: `os_poi.search`, `os_poi.nearest`, and `os_poi.within`
+  with OS Places-backed POI queries and normalized outputs.
+- Added POI-aware routing guidance in `os_mcp.route_query` (`poi_lookup`
+  intent) and expanded tool-search metadata/toolsets to include `os_poi.*`.
 
 ## [0.2.12] - 2026-02-11
 ### Added

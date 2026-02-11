@@ -95,6 +95,12 @@ def test_route_query_address_search():
     assert body["recommended_tool"] == "os_places.search"
 
 
+def test_route_query_poi_search():
+    body = _route("Find nearby cafes in Westminster")
+    assert body["intent"] == "poi_lookup"
+    assert body["recommended_tool"] == "os_poi.search"
+
+
 def test_route_query_unknown():
     body = _route("asdfghjkl qwertyuiop")
     assert body["intent"] == "unknown"

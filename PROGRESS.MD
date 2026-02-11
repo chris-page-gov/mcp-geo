@@ -67,7 +67,7 @@ core tools. Current implementation coverage is incomplete for:
 - OS Match & Cleanse API: not implemented.
 - OS Downloads API: not implemented.
 - OAuth2 flow for OS APIs: not implemented (API key only).
-- Points of Interest / POI APIs: not implemented.
+- Points of Interest / POI APIs: implemented via `os_poi.search`, `os_poi.nearest`, and `os_poi.within`.
 - Full ONS Open Geography linked data API: not implemented (ArcGIS live lookup is used instead).
 
 ## Spec evolution milestones captured in the repo
@@ -82,7 +82,6 @@ core tools. Current implementation coverage is incomplete for:
 ## Outstanding work (from original proposal + newer docs)
 
 High impact
-- Implement OS Points of Interest coverage (tool and/or resource).
 - Expand OS Features to support attribute filters, polygons, and collection listing.
 - Ship real boundary resources (wards, LSOA/MSOA, LAD, etc.) with paging + metadata.
 - Finish the playground UI (UI resource rendering + evaluation harness orchestration).
@@ -122,7 +121,7 @@ Legend: pending, in_progress, done
 | C12 | `feat(admin-cache): harden cache maturity and freshness behavior` | done | Boundary cache status now includes maturity/staleness sections; dataset freshness states are explicit, and admin cache fallback responses expose `fallbackReason` + cache maturity context. |
 | C13 | `feat(resources): ship real boundary and code-list packs via hybrid fetch cache` | done | Added hybrid cache source manifests, pack index resources, and `scripts/pack_cache_refresh.py` to fetch/checksum/update cache-backed boundary/code-list pack indexes. |
 | C14 | `feat(playground-observability): complete playground orchestration and richer metrics` | done | Added orchestration summary/reset endpoints, session-aware playground event/transcript tracking, and Prometheus metrics for per-tool latency/payload bytes/cache-hit/fallback plus playground counters. |
-| C15 | `feat(os-poi): add OS POI tools and finalize backlog closure` | pending | Add `os_poi.search`, `os_poi.nearest`, `os_poi.within`. |
+| C15 | `feat(os-poi): add OS POI tools and finalize backlog closure` | done | Added `os_poi.search`, `os_poi.nearest`, and `os_poi.within` with entitlement-safe OS error passthrough, toolset/category integration, route-query POI intent routing, and endpoint-contract test coverage. |
 | C16 | `chore(release-readiness): final progress closure and full regression run` | pending | Finalize docs/status + full regression pass. |
 
 ## Active implementation plan (2026-01-27)

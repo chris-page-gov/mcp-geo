@@ -22,6 +22,7 @@ from tools.registry import Tool, all_tools, get, list_tools, register
 _IMPORT_MODULES = [
     "tools.os_places",
     "tools.os_places_extra",
+    "tools.os_poi",
     "tools.os_names",
     "tools.os_linked_ids",
     "tools.os_features",
@@ -77,6 +78,7 @@ if get("os_features.query") is None:
 
 _PREFIX_IMPORTS = {
     "os_places": ["tools.os_places", "tools.os_places_extra"],
+    "os_poi": ["tools.os_poi"],
     "os_names": ["tools.os_names"],
     "os_linked_ids": ["tools.os_linked_ids"],
     "os_features": ["tools.os_features"],
