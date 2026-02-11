@@ -251,6 +251,35 @@ def test_features_query_bad_page_token(monkeypatch: MonkeyPatch):
     assert resp.json()["code"] == "INVALID_INPUT"
 
 
+def test_features_query_bad_polygon(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "polygon": [[0, 0], [1, 0], [1, 1]],
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_features_query_bad_filter_type(monkeypatch: MonkeyPatch):
+    patch_requests(monkeypatch, [])
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "filter": "status=active",
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
 def test_linked_ids_infer_uprn(monkeypatch: MonkeyPatch):
     patch_requests(
         monkeypatch,

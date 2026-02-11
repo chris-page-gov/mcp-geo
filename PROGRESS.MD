@@ -40,7 +40,7 @@ Legend: Done, Partial, Not started
 | OS Places (geocoder) | Done | tools/os_places.py, docs/examples.md | search/by_postcode/by_uprn/nearest/within implemented. |
 | OS Names (gazetteer) | Done | tools/os_names.py | find + nearest. |
 | OS Linked Identifiers | Done | tools/os_linked_ids.py | Uses OS search/links identifierTypes API; supports UPRN/USRN/TOID (type can be inferred). |
-| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Bbox query exposed via NGD OGC API Features items endpoint with limit/pageToken paging; no queryables/attribute filters/polygon/collection listing. |
+| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Supports bbox or polygon queries, attribute filters, resultType hits, field projection, sorting, queryables fetch, and collections listing/latest mapping. Feature-by-id and CRS options still pending. |
 | OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL now available; full rendering/overlays still pending. |
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; no streaming/large export pipeline. |
@@ -114,7 +114,7 @@ Legend: pending, in_progress, done
 | C04 | `test(ui-fallback): add end-to-end host render verification` | done | Added Playwright host-render tests for UI-capable host, non-UI fallback payloads, and sanitized/dotted tool-name render calls. |
 | C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | done | HTTP discovery endpoints now emit sanitized names first, include `annotations.originalName`, and accept sanitized+dotted aliases for calls/describe. |
 | C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | done | Added named toolsets (Google toolkit-style grouping) plus include/exclude filters across HTTP `/tools/*` and MCP `tools/list|search`. |
-| C07 | `feat(os-features): add polygon and attribute-filter query expansion` | pending | Polygon/filter/queryables/sort/projection/count support. |
+| C07 | `feat(os-features): add polygon and attribute-filter query expansion` | done | `os_features.query` now supports polygon geometry, property filters, sort/projection, `resultType=hits`, and optional queryables metadata. |
 | C08 | `feat(os-maps): complete overlays and interactive layer wiring` | pending | Overlay-ready map render contract + parity alignment. |
 | C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | pending | Local layer import E2E coverage. |
 | C10 | `feat(ons-export): implement streaming export pipeline` | pending | Stream/resource mode for larger filter outputs. |

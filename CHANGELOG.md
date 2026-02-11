@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 - Added named toolsets (Google toolkit-style grouping) with `toolset`,
   `includeToolsets`, and `excludeToolsets` filters across HTTP and MCP
   tool discovery/search surfaces.
+- Added `os_features.query` expansion for polygon geometry input, attribute filters,
+  projection/sort controls, `resultType=hits`, and optional queryables metadata.
 
 ## [0.2.12] - 2026-02-11
 ### Added
