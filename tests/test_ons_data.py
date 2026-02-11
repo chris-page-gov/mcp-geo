@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Tuple
 
 from fastapi.testclient import TestClient
@@ -97,3 +98,97 @@ def test_ons_query_auto_resolve(monkeypatch):
     body = resp.json()
     assert body["dataset"] == "gdp"
     assert body["results"][0]["value"] == 99
+
+
+def test_filter_output_resource_delivery(monkeypatch, tmp_path):
+    from server.mcp import resource_catalog
+    from tools import ons_data
+
+    monkeypatch.setattr(ons_data, "_ONS_EXPORTS_DIR", tmp_path / "ons_exports")
+    monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", tmp_path / "ons_exports")
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        return 200, {"observations": [{"time": "2024 Q1", "value": 123.4}], "total": 1}
+
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+
+    create_resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.create_filter",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "geography": "K02000001",
+        },
+    )
+    assert create_resp.status_code == 201
+    filter_id = create_resp.json()["filterId"]
+
+    output_resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.get_filter_output",
+            "filterId": filter_id,
+            "format": "CSV",
+            "delivery": "resource",
+        },
+    )
+    assert output_resp.status_code == 200
+    body = output_resp.json()
+    assert body["delivery"] == "resource"
+    assert body["resourceUri"].startswith("resource://mcp-geo/ons-exports/")
+
+    read_resp = client.get("/resources/read", params={"uri": body["resourceUri"]})
+    assert read_resp.status_code == 200
+    contents = read_resp.json()["contents"]
+    payload = json.loads(contents[0]["text"])
+    assert payload["filterId"] == filter_id
+    assert payload["format"] == "CSV"
+    assert payload["encoding"] == "utf-8"
+    assert "time,value" in payload["data"]
+
+
+def test_filter_output_auto_switches_to_resource(monkeypatch, tmp_path):
+    from server.mcp import resource_catalog
+    from tools import ons_data
+
+    monkeypatch.setattr(ons_data, "_ONS_EXPORTS_DIR", tmp_path / "ons_exports")
+    monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", tmp_path / "ons_exports")
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        observations = [
+            {"time": "2024 Q1", "value": 123.4, "geography": "E09000001"},
+            {"time": "2024 Q2", "value": 123.9, "geography": "E09000001"},
+        ]
+        return 200, {"observations": observations, "total": len(observations)}
+
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+
+    create_resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.create_filter",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "geography": "K02000001",
+        },
+    )
+    assert create_resp.status_code == 201
+    filter_id = create_resp.json()["filterId"]
+
+    output_resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.get_filter_output",
+            "filterId": filter_id,
+            "format": "JSON",
+            "delivery": "auto",
+            "inlineMaxBytes": 10,
+        },
+    )
+    assert output_resp.status_code == 200
+    body = output_resp.json()
+    assert body["delivery"] == "resource"
+    assert body["resourceUri"].startswith("resource://mcp-geo/ons-exports/")

@@ -43,7 +43,7 @@ Legend: Done, Partial, Not started
 | OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Supports bbox or polygon queries, attribute filters, resultType hits, field projection, sorting, queryables fetch, and collections listing/latest mapping. Feature-by-id and CRS options still pending. |
 | OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL plus overlay-ready render contract delivered (input overlays + optional `os_map.inventory` hydration). Full end-to-end client rendering orchestration still pending. |
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
-| ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; no streaming/large export pipeline. |
+| ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; `ons_data.get_filter_output` now supports resource-backed export delivery for large outputs (`delivery=resource|auto`) with `resource://mcp-geo/ons-exports/*` artifacts. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
 | NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Still needs more dataset-specific workflow coverage. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search can fall back to live. |
@@ -117,7 +117,7 @@ Legend: pending, in_progress, done
 | C07 | `feat(os-features): add polygon and attribute-filter query expansion` | done | `os_features.query` now supports polygon geometry, property filters, sort/projection, `resultType=hits`, and optional queryables metadata. |
 | C08 | `feat(os-maps): complete overlays and interactive layer wiring` | done | `os_maps.render` now accepts overlay inputs/local layers, can hydrate from `os_map.inventory`, and returns overlay summaries + feature collections aligned to boundary explorer layer semantics. |
 | C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | done | Added Playwright coverage for GeoJSON and Shapefile.zip local-layer import plus polygon-driven selection highlighting against inventory UPRNs. |
-| C10 | `feat(ons-export): implement streaming export pipeline` | pending | Stream/resource mode for larger filter outputs. |
+| C10 | `feat(ons-export): implement streaming export pipeline` | done | Added `delivery=inline|resource|auto` on `ons_data.get_filter_output`, with resource-backed exports and stream metadata for large payload handling via `resource://mcp-geo/ons-exports/*`. |
 | C11 | `feat(nomis): add dataset-specific workflow coverage and routing guidance` | pending | NOMIS workflow resource + routing guidance updates. |
 | C12 | `feat(admin-cache): harden cache maturity and freshness behavior` | pending | Staleness/freshness transparency and maturity flags. |
 | C13 | `feat(resources): ship real boundary and code-list packs via hybrid fetch cache` | pending | Fetch/checksum/index pipeline and resource exposure. |

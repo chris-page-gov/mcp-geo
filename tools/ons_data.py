@@ -1,6 +1,11 @@
 from __future__ import annotations
+import base64
+import csv
+import io
 import json
 import re
+import time
+from pathlib import Path
 from typing import Any, cast
 from tools.registry import Tool, register, ToolResult
 from server.config import settings
@@ -603,6 +608,73 @@ register(Tool(
 
 _FILTER_STORE: dict[str, dict[str, Any]] = {}
 _FILTER_COUNTER = 0
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_ONS_EXPORTS_DIR = _REPO_ROOT / "data" / "ons_exports"
+_INLINE_EXPORT_MAX_BYTES = 200_000
+
+
+def _table_headers(rows: list[dict[str, Any]]) -> list[str]:
+    headers: list[str] = []
+    for row in rows:
+        for key in row.keys():
+            if key not in headers:
+                headers.append(key)
+    return headers
+
+
+def _csv_payload(rows: list[dict[str, Any]]) -> tuple[str, int, int]:
+    headers = _table_headers(rows)
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow([row.get(header, "") for header in headers])
+    return buf.getvalue(), len(rows), len(headers)
+
+
+def _xlsx_payload(rows: list[dict[str, Any]]) -> tuple[str, int, int]:
+    from openpyxl import Workbook  # type: ignore
+
+    headers = _table_headers(rows)
+    wb = Workbook()
+    ws = wb.active
+    ws.append(headers)
+    for row in rows:
+        ws.append([row.get(header, "") for header in headers])
+    stream = io.BytesIO()
+    wb.save(stream)
+    encoded = base64.b64encode(stream.getvalue()).decode("ascii")
+    return encoded, len(rows), len(headers)
+
+
+def _write_export_resource(
+    *,
+    filter_id: str,
+    fmt: str,
+    content_type: str,
+    encoding: str,
+    data: Any,
+    rows: int | None,
+    columns: int | None,
+) -> tuple[str, int]:
+    _ONS_EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    file_name = f"{filter_id}-{int(time.time() * 1000)}-{fmt.lower()}.json"
+    path = _ONS_EXPORTS_DIR / file_name
+    payload: dict[str, Any] = {
+        "filterId": filter_id,
+        "format": fmt,
+        "contentType": content_type,
+        "encoding": encoding,
+        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "data": data,
+    }
+    if rows is not None:
+        payload["rows"] = rows
+    if columns is not None:
+        payload["columns"] = columns
+    serialized = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
+    path.write_text(serialized, encoding="utf-8")
+    return f"resource://mcp-geo/ons-exports/{file_name}", len(serialized.encode("utf-8"))
 
 def _get_observation(payload: dict[str, Any]) -> ToolResult:
     # Live-only: return first matching observation.
@@ -663,8 +735,22 @@ def _create_filter(payload: dict[str, Any]) -> ToolResult:
 def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
     filter_id = payload.get("filterId")
     fmt = (payload.get("format") or "JSON").upper()
+    delivery = str(payload.get("delivery") or "inline").strip().lower()
+    inline_max_bytes = payload.get("inlineMaxBytes", _INLINE_EXPORT_MAX_BYTES)
     if not isinstance(filter_id, str):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing filterId"}
+    if delivery not in {"inline", "resource", "auto"}:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "delivery must be one of inline, resource, auto",
+        }
+    if not isinstance(inline_max_bytes, int) or inline_max_bytes < 1:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "inlineMaxBytes must be a positive integer",
+        }
     stored = _FILTER_STORE.get(filter_id)
     if stored is None:
         # Treat unknown id as 404
@@ -673,47 +759,125 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
     status, result = _query(stored)
     if status != 200:
         return status, result
+    rows_raw = result.get("results", [])
+    rows = [row for row in rows_raw if isinstance(row, dict)] if isinstance(rows_raw, list) else []
+
     # Supported formats: JSON (structured object), CSV (text), XLSX (base64 binary)
     if fmt == "JSON":
-        return 200, {"filterId": filter_id, "format": fmt, "data": result}
-    rows = result.get("results", [])
+        content_type = "application/json"
+        inline_payload = {"filterId": filter_id, "format": fmt, "data": result}
+        payload_bytes = len(json.dumps(result, ensure_ascii=True, separators=(",", ":")).encode("utf-8"))
+        if delivery == "resource" or (delivery == "auto" and payload_bytes > inline_max_bytes):
+            uri, resource_bytes = _write_export_resource(
+                filter_id=filter_id,
+                fmt=fmt,
+                content_type=content_type,
+                encoding="json",
+                data=result,
+                rows=len(rows),
+                columns=None,
+            )
+            return 200, {
+                "filterId": filter_id,
+                "format": fmt,
+                "delivery": "resource",
+                "resourceUri": uri,
+                "contentType": content_type,
+                "bytes": resource_bytes,
+                "rows": len(rows),
+                "stream": {
+                    "uri": uri,
+                    "mode": "resource",
+                    "chunkBytes": 65536,
+                    "hint": "Use resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                },
+            }
+        inline_payload["delivery"] = "inline"
+        inline_payload["bytes"] = payload_bytes
+        return 200, inline_payload
     if fmt == "CSV":
-        # Build header from union of keys
-        headers: list[str] = []
-        for r in rows:
-            if isinstance(r, dict):
-                for k in r.keys():
-                    if k not in headers:
-                        headers.append(k)
-        import io, csv
-        buf = io.StringIO()
-        writer = csv.writer(buf)
-        writer.writerow(headers)
-        for r in rows:
-            if isinstance(r, dict):
-                writer.writerow([r.get(h, "") for h in headers])
-        csv_text = buf.getvalue()
-        return 200, {"filterId": filter_id, "format": fmt, "contentType": "text/csv", "dataBase64": csv_text.encode().decode(), "rows": len(rows), "columns": len(headers)}
+        csv_text, row_count, col_count = _csv_payload(rows)
+        content_type = "text/csv"
+        payload_bytes = len(csv_text.encode("utf-8"))
+        if delivery == "resource" or (delivery == "auto" and payload_bytes > inline_max_bytes):
+            uri, resource_bytes = _write_export_resource(
+                filter_id=filter_id,
+                fmt=fmt,
+                content_type=content_type,
+                encoding="utf-8",
+                data=csv_text,
+                rows=row_count,
+                columns=col_count,
+            )
+            return 200, {
+                "filterId": filter_id,
+                "format": fmt,
+                "delivery": "resource",
+                "resourceUri": uri,
+                "contentType": content_type,
+                "rows": row_count,
+                "columns": col_count,
+                "bytes": resource_bytes,
+                "stream": {
+                    "uri": uri,
+                    "mode": "resource",
+                    "chunkBytes": 65536,
+                    "hint": "Use resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                },
+            }
+        return 200, {
+            "filterId": filter_id,
+            "format": fmt,
+            "delivery": "inline",
+            "contentType": content_type,
+            # Keep legacy field name for compatibility.
+            "dataBase64": csv_text,
+            "rows": row_count,
+            "columns": col_count,
+            "bytes": payload_bytes,
+        }
     if fmt == "XLSX":
         try:
-            import io
-            from openpyxl import Workbook  # type: ignore
-            wb = Workbook()
-            ws = wb.active
-            headers: list[str] = []
-            for r in rows:
-                if isinstance(r, dict):
-                    for k in r.keys():
-                        if k not in headers:
-                            headers.append(k)
-            ws.append(headers)
-            for r in rows:
-                if isinstance(r, dict):
-                    ws.append([r.get(h, "") for h in headers])
-            stream = io.BytesIO()
-            wb.save(stream)
-            b64 = stream.getvalue().hex()  # hex to keep simple (could use base64)
-            return 200, {"filterId": filter_id, "format": fmt, "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "dataHex": b64, "rows": len(rows), "columns": len(headers)}
+            b64, row_count, col_count = _xlsx_payload(rows)
+            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            payload_bytes = len(b64.encode("ascii"))
+            if delivery == "resource" or (delivery == "auto" and payload_bytes > inline_max_bytes):
+                uri, resource_bytes = _write_export_resource(
+                    filter_id=filter_id,
+                    fmt=fmt,
+                    content_type=content_type,
+                    encoding="base64",
+                    data=b64,
+                    rows=row_count,
+                    columns=col_count,
+                )
+                return 200, {
+                    "filterId": filter_id,
+                    "format": fmt,
+                    "delivery": "resource",
+                    "resourceUri": uri,
+                    "contentType": content_type,
+                    "rows": row_count,
+                    "columns": col_count,
+                    "bytes": resource_bytes,
+                    "stream": {
+                        "uri": uri,
+                        "mode": "resource",
+                        "chunkBytes": 65536,
+                        "hint": "Use resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                    },
+                }
+            return 200, {
+                "filterId": filter_id,
+                "format": fmt,
+                "delivery": "inline",
+                "contentType": content_type,
+                # Keep legacy field name for compatibility.
+                "dataHex": b64,
+                "rows": row_count,
+                "columns": col_count,
+                "bytes": payload_bytes,
+            }
         except Exception as exc:  # pragma: no cover
             return 500, {"isError": True, "code": "INTEGRATION_ERROR", "message": f"XLSX generation failed: {exc}"}
     return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Unsupported format (use JSON, CSV, XLSX)"}
@@ -749,8 +913,39 @@ register(Tool(
 
 register(Tool(
     name="ons_data.get_filter_output",
-    description="Retrieve data for a previously created filter (formats: JSON, CSV, XLSX).",
-    input_schema={"type": "object", "properties": {"tool": {"type": "string", "const": "ons_data.get_filter_output"}, "filterId": {"type": "string"}, "format": {"type": "string", "enum": ["JSON", "CSV", "XLSX"]}}, "required": ["filterId"], "additionalProperties": False},
-    output_schema={"type": "object", "properties": {"filterId": {"type": "string"}, "format": {"type": "string"}, "data": {"type": "object"}, "contentType": {"type": ["string", "null"]}, "dataBase64": {"type": ["string", "null"]}, "dataHex": {"type": ["string", "null"]}, "rows": {"type": ["integer", "null"]}, "columns": {"type": ["integer", "null"]}}, "required": ["filterId", "format"]},
+    description=(
+        "Retrieve data for a previously created filter (formats: JSON, CSV, XLSX). "
+        "Supports inline or resource delivery for larger outputs."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "ons_data.get_filter_output"},
+            "filterId": {"type": "string"},
+            "format": {"type": "string", "enum": ["JSON", "CSV", "XLSX"]},
+            "delivery": {"type": "string", "enum": ["inline", "resource", "auto"]},
+            "inlineMaxBytes": {"type": "integer", "minimum": 1},
+        },
+        "required": ["filterId"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "filterId": {"type": "string"},
+            "format": {"type": "string"},
+            "delivery": {"type": "string"},
+            "data": {"type": "object"},
+            "contentType": {"type": ["string", "null"]},
+            "dataBase64": {"type": ["string", "null"]},
+            "dataHex": {"type": ["string", "null"]},
+            "resourceUri": {"type": ["string", "null"]},
+            "stream": {"type": ["object", "null"]},
+            "bytes": {"type": ["integer", "null"]},
+            "rows": {"type": ["integer", "null"]},
+            "columns": {"type": ["integer", "null"]},
+        },
+        "required": ["filterId", "format"],
+    },
     handler=_get_filter_output,
 ))

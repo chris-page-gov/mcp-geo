@@ -17,9 +17,11 @@ ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
 EXPORTS_DIR = ROOT / "data" / "exports"
+ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
 ONS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-cache/"
+ONS_EXPORTS_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-exports/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
 
 
@@ -335,6 +337,12 @@ def _ons_cache_files() -> list[Path]:
     return sorted(path for path in ONS_CACHE_DIR.glob("*.json") if path.is_file())
 
 
+def _ons_export_files() -> list[Path]:
+    if not ONS_EXPORTS_DIR.exists():
+        return []
+    return sorted(path for path in ONS_EXPORTS_DIR.glob("*.json") if path.is_file())
+
+
 def list_data_resources() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
     for entry in DATA_RESOURCE_DEFS:
@@ -404,6 +412,19 @@ def list_data_resources() -> list[dict[str, Any]]:
                     "type": "data",
                 }
             )
+    export_files = _ons_export_files()
+    if export_files:
+        resources.append(
+            {
+                "uri": data_resource_uri("ons-exports-index"),
+                "name": "data_ons_exports_index",
+                "title": "ONS Export Resource Index",
+                "description": "Index of resource-backed ONS filter output exports.",
+                "mimeType": "application/json",
+                "annotations": {"type": "index", "domain": "ons"},
+                "type": "data",
+            }
+        )
     return resources
 
 
@@ -441,9 +462,15 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
         return {"slug": slug}
     if slug == "ons-cache-index":
         return {"slug": slug}
+    if slug == "ons-exports-index":
+        return {"slug": slug}
     if isinstance(slug, str) and slug.startswith("exports/"):
         return {"slug": slug}
+    if isinstance(slug, str) and slug.startswith("ons-exports/"):
+        return {"slug": slug}
     if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
+        return {"slug": slug}
+    if identifier.startswith(ONS_EXPORTS_PREFIX):
         return {"slug": slug}
     return None
 
@@ -543,6 +570,22 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             _etag_from_bytes(content.encode("utf-8"), "ons-cache-index"),
             {"generatedAt": datetime.now(timezone.utc).isoformat()},
         )
+    if slug == "ons-exports-index":
+        items = []
+        for path in _ons_export_files():
+            items.append(
+                {
+                    "name": path.name,
+                    "uri": f"{ONS_EXPORTS_PREFIX}{path.name}",
+                    "bytes": path.stat().st_size,
+                }
+            )
+        content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "ons-exports-index"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
     if isinstance(slug, str) and slug.startswith("ons-cache/"):
         filename = slug.split("/", 1)[1]
         path = ONS_CACHE_DIR / filename
@@ -550,6 +593,22 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             content = json.dumps({"isError": True, "code": "NOT_FOUND", "message": "ONS cache file not found."})
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
         return (*_load_json_file(path), None)
+    if isinstance(slug, str) and slug.startswith("ons-exports/"):
+        filename = slug.split("/", 1)[1]
+        path = (ONS_EXPORTS_DIR / filename).resolve()
+        exports_root = ONS_EXPORTS_DIR.resolve()
+        if not str(path).startswith(str(exports_root)):
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid ONS export path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        if not path.exists() or not path.is_file():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "ONS export not found."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        content, etag = _load_json_file(path)
+        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("ons-cache"):
         filename = slug.split("ons-cache", 1)[-1].lstrip("/")
         path = ONS_CACHE_DIR / filename

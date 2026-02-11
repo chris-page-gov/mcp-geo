@@ -115,6 +115,9 @@ All notable changes to this project will be documented in this file.
   `tests/test_os_map_tools.py`.
 - Added Playwright `boundary_explorer_local_layers` coverage for local
   GeoJSON + Shapefile.zip imports and polygon-driven selection behavior.
+- Added ONS filter-output streaming/resource pipeline: `ons_data.get_filter_output`
+  now supports `delivery=inline|resource|auto` and writes large exports to
+  `resource://mcp-geo/ons-exports/*` with index resource `resource://mcp-geo/ons-exports-index`.
 
 ## [0.2.11] - 2026-02-06
 ### Added
