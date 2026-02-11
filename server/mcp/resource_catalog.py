@@ -146,36 +146,6 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
         },
         "csp": None,
     },
-    {
-        "slug": "warwick-leamington-3d",
-        "name": "ui_warwick_leamington_3d",
-        "title": "Warwick + Leamington (3D)",
-        "description": "3D view of Warwick and Royal Leamington Spa wards with OS Places premises types.",
-        "file": "warwick_leamington_3d.html",
-        "annotations": {
-            "audience": ["user"],
-            "priority": 0.75,
-            "capabilities": ["map", "3d", "wards", "premises", "os-places"],
-        },
-        "csp": {
-            "connectDomains": [
-                "self",
-                "https://demotiles.maplibre.org",
-                "https://unpkg.com",
-                "http://localhost:8000",
-                "http://127.0.0.1:8000",
-            ],
-            "resourceDomains": [
-                "self",
-                "https://demotiles.maplibre.org",
-                "https://fonts.googleapis.com",
-                "https://fonts.gstatic.com",
-                "https://unpkg.com",
-            ],
-            "workerDomains": ["self", "blob:"],
-        },
-        "permissions": {"sameOrigin": True},
-    },
 ]
 
 SKILLS_RESOURCE: dict[str, Any] = {

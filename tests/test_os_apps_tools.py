@@ -104,17 +104,25 @@ def test_os_apps_render_ui_probe_embedded(monkeypatch):
     assert resource_blocks
     assert resource_blocks[0]["resource"]["uri"] == "ui://mcp-geo/statistics-dashboard"
 
-def test_os_apps_render_warwick_leamington_3d(monkeypatch):
-    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
-    resp = client.post(
-        "/tools/call",
-        json={"tool": "os_apps.render_warwick_leamington_3d"},
-    )
+def test_os_apps_embedded_response_size_guard(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
+
+    def fake_resolve_ui_resource(_uri):
+        return {"uri": "ui://mcp-geo/geography-selector", "mimeType": "text/html;profile=mcp-app"}
+
+    def fake_load_ui_content(_entry):
+        return "<!DOCTYPE html>" + ("x" * (os_apps._MAX_EMBEDDED_RESOURCE_BYTES + 1024)), "W/test"
+
+    monkeypatch.setattr(os_apps, "resolve_ui_resource", fake_resolve_ui_resource)
+    monkeypatch.setattr(os_apps, "load_ui_content", fake_load_ui_content)
+
+    resp = client.post("/tools/call", json={"tool": "os_apps.render_geography_selector"})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["uiResourceUris"] == ["ui://mcp-geo/warwick-leamington-3d"]
-    assert body["resourceUri"] == "ui://mcp-geo/warwick-leamington-3d"
-    assert body["_meta"]["ui"]["resourceUri"] == "ui://mcp-geo/warwick-leamington-3d"
+    content = body.get("content", [])
+    assert any(block.get("type") == "text" for block in content if isinstance(block, dict))
+    assert not any(block.get("type") == "resource" for block in content if isinstance(block, dict))
+    assert body["resourceUri"] == "ui://mcp-geo/geography-selector"
 
 
 def test_os_apps_content_mode_aliases():

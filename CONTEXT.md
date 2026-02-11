@@ -100,6 +100,7 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-11: Removed the dedicated Warwick/Leamington 3D MCP-Apps tool/resource and added a response-size guard to keep UI tool payloads below the 1MB transport limit.
 - 2026-02-11: Closed phased completion program tracker item `C16` after full regression (`pytest -q`, 90.26% coverage) and playground Playwright verification (`6 passed`).
 - 2026-02-02: Added persistent Codex context file and devcontainer Codex home mount.
 - 2026-02-02: Expanded CONTEXT.md with PROGRESS and spec package summary to preserve context.

@@ -18,7 +18,6 @@ _UI_URIS = {
     "statistics": "ui://mcp-geo/statistics-dashboard",
     "feature": "ui://mcp-geo/feature-inspector",
     "route": "ui://mcp-geo/route-planner",
-    "warwickLeamington3d": "ui://mcp-geo/warwick-leamington-3d",
 }
 _UI_RESOURCE_LINKS = {
     _UI_URIS["geography"]: {
@@ -46,11 +45,6 @@ _UI_RESOURCE_LINKS = {
         "title": "Route Planner",
         "description": "Plan routes with waypoints and directions.",
     },
-    _UI_URIS["warwickLeamington3d"]: {
-        "name": "ui_warwick_leamington_3d",
-        "title": "Warwick + Leamington (3D)",
-        "description": "3D view of Warwick and Royal Leamington Spa wards with OS Places premises types.",
-    },
 }
 UI_TOOL_RESOURCES = {
     "os_apps.render_geography_selector": {
@@ -68,13 +62,13 @@ UI_TOOL_RESOURCES = {
     "os_apps.render_route_planner": {
         "mcp": _UI_URIS["route"],
     },
-    "os_apps.render_warwick_leamington_3d": {
-        "mcp": _UI_URIS["warwickLeamington3d"],
-    },
     "os_apps.render_ui_probe": {
         "mcp": _UI_URIS["statistics"],
     },
 }
+
+_MAX_TOOL_RESPONSE_BYTES = 950_000
+_MAX_EMBEDDED_RESOURCE_BYTES = 850_000
 
 
 def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
@@ -128,11 +122,27 @@ def _resolve_content_mode(override: Any) -> str | None:
     return None
 
 
-def _build_embedded_resource(resource_uri: str) -> dict[str, Any] | None:
+def _json_size_bytes(value: Any) -> int:
+    try:
+        encoded = json.dumps(value, ensure_ascii=True, separators=(",", ":"), default=str)
+    except Exception:
+        encoded = str(value)
+    return len(encoded.encode("utf-8"))
+
+
+def _build_embedded_resource(resource_uri: str) -> tuple[dict[str, Any] | None, str | None]:
     entry = resolve_ui_resource(resource_uri)
     if not entry:
-        return None
+        return None, None
     text, _etag = load_ui_content(entry)
+    if len(text.encode("utf-8")) > _MAX_EMBEDDED_RESOURCE_BYTES:
+        return (
+            None,
+            (
+                "Embedded UI content omitted because it exceeds transport-safe limits; "
+                "open the widget using resourceUri instead."
+            ),
+        )
     resource: dict[str, Any] = {
         "uri": entry["uri"],
         "mimeType": entry.get("mimeType", MCP_APPS_MIME),
@@ -141,7 +151,33 @@ def _build_embedded_resource(resource_uri: str) -> dict[str, Any] | None:
     meta = entry.get("resourceMeta")
     if meta:
         resource["_meta"] = meta
-    return {"type": "resource", "resource": resource}
+    return {"type": "resource", "resource": resource}, None
+
+
+def _enforce_widget_response_limit(response: dict[str, Any], *, resource_uri: str) -> dict[str, Any]:
+    if _json_size_bytes(response) <= _MAX_TOOL_RESPONSE_BYTES:
+        return response
+    response["content"] = [
+        {"type": "text", "text": response.get("instructions", "Open the UI widget.")},
+        {
+            "type": "text",
+            "text": (
+                "UI payload reduced to stay under the 1MB transport limit; "
+                f"use {resource_uri} for full widget content."
+            ),
+        },
+    ]
+    meta = response.get("_meta")
+    if not isinstance(meta, dict):
+        meta = {}
+        response["_meta"] = meta
+    meta["uiPayloadTruncated"] = True
+    meta["uiPayloadLimitBytes"] = _MAX_TOOL_RESPONSE_BYTES
+    structured = response.get("structuredContent")
+    if isinstance(structured, dict):
+        structured["contentTruncated"] = True
+        structured["delivery"] = "uri_only"
+    return response
 
 
 def _build_widget_response(
@@ -166,9 +202,11 @@ def _build_widget_response(
             resource_link["description"] = link_meta["description"]
         content.append(resource_link)
     elif mode == "embedded":
-        embedded = _build_embedded_resource(resource_uri)
+        embedded, warning = _build_embedded_resource(resource_uri)
         if embedded:
             content.append(embedded)
+        if warning:
+            content.append({"type": "text", "text": warning})
     structured = {
         "status": "ready",
         "config": config,
@@ -176,7 +214,7 @@ def _build_widget_response(
         "resourceUri": resource_uri,
         "uiResourceUris": [resource_uri],
     }
-    return 200, {
+    response = {
         "status": "ready",
         "config": config,
         "instructions": instructions,
@@ -190,6 +228,7 @@ def _build_widget_response(
         "structuredContent": structured,
         "content": content,
     }
+    return 200, _enforce_widget_response_limit(response, resource_uri=resource_uri)
 
 
 def _looks_sensitive(key: str) -> bool:
@@ -630,19 +669,6 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
         content_mode=content_mode,
     )
 
-def _render_warwick_leamington_3d(payload: dict[str, Any]) -> ToolResult:
-    """Open the Warwick + Leamington 3D ward + premises view."""
-    content_mode = payload.get("contentMode")
-    if content_mode is not None and not isinstance(content_mode, str):
-        return _error("contentMode must be a string")
-    return _build_widget_response(
-        {},
-        "Open the Warwick + Leamington 3D view (wards + premises types).",
-        resource_uri=_UI_URIS["warwickLeamington3d"],
-        content_mode=content_mode,
-    )
-
-
 def _render_ui_probe(payload: dict[str, Any]) -> ToolResult:
     """Probe MCP-Apps UI rendering support.
 
@@ -865,37 +891,6 @@ register(
             "required": ["status", "uiResourceUris"],
         },
         handler=_render_route_planner,
-    )
-)
-
-register(
-    Tool(
-        name="os_apps.render_warwick_leamington_3d",
-        description="Open the Warwick + Leamington 3D ward + premises view widget.",
-        input_schema={
-            "type": "object",
-            "properties": {
-                "tool": {"type": "string", "const": "os_apps.render_warwick_leamington_3d"},
-                "contentMode": {"type": "string"},
-            },
-            "required": [],
-            "additionalProperties": False,
-        },
-        output_schema={
-            "type": "object",
-            "properties": {
-                "status": {"type": "string"},
-                "config": {"type": "object"},
-                "instructions": {"type": "string"},
-                "resourceUri": {"type": "string"},
-                "uiResourceUris": {"type": "array", "items": {"type": "string"}},
-                "_meta": {"type": "object"},
-                "structuredContent": {"type": "object"},
-                "content": {"type": "array"},
-            },
-            "required": ["status", "uiResourceUris"],
-        },
-        handler=_render_warwick_leamington_3d,
     )
 )
 

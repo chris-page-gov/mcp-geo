@@ -41,6 +41,13 @@ All notable changes to this project will be documented in this file.
 - Added release-readiness closure updates in `PROGRESS.MD`/`CONTEXT.md` with
   completion of tracker item `C16` and refreshed verification status.
 
+### Changed
+- Removed the dedicated `os_apps.render_warwick_leamington_3d` tool and
+  corresponding `ui://mcp-geo/warwick-leamington-3d` resource from discovery.
+- Added an MCP-Apps payload size guard in `tools/os_apps.py` so oversized
+  embedded HTML is downgraded to URI/text delivery before crossing the 1MB
+  transport ceiling.
+
 ### Fixed
 - Hardened `os_poi` source-entry extraction to safely ignore non-object rows
   instead of raising when malformed payloads are encountered.
@@ -51,6 +58,9 @@ All notable changes to this project will be documented in this file.
 - Added branch-coverage tests for `os_poi` parser/normalization edges,
   `os_maps` helper/validation paths, playground event pruning/invalid payload
   handling, and `server/main`/`server/observability` edge paths.
+- Updated UI tool/resource and evaluation tests to remove
+  Warwick/Leamington-specific widget expectations and assert size-guard
+  behavior for embedded content delivery.
 - Re-ran full regression and coverage gate (`pytest -q`) plus playground
   Playwright suite (`npm --prefix playground run test`).
 
