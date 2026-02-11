@@ -109,7 +109,7 @@ Legend: pending, in_progress, done
 | --- | --- | --- | --- |
 | C00 | `chore(program): add phased completion tracker for open progress items` | done | Tracker added and unreleased changelog seeded. |
 | C01 | `feat(ons-select): implement full comparability gating rules` | done | Added strict geography/time/revision/denominator gating and richer related-dataset explainability/provenance fields. |
-| C02 | `test(ons-select): add catalog validation harness coverage` | pending | Add catalog validator and evaluation coverage. |
+| C02 | `test(ons-select): add catalog validation harness coverage` | done | Added reusable catalog validator script/module, validator tests, and evaluation questions for catalog/comparability assertions. |
 | C03 | `feat(ui-fallback): centralize client capability gating across transports` | pending | Shared client capability helpers for stdio/http. |
 | C04 | `test(ui-fallback): add end-to-end host render verification` | pending | Playwright host render verification (UI + fallback). |
 | C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | pending | Sanitize-first list/describe/search while preserving call aliases. |
@@ -166,7 +166,7 @@ Legend: pending, in_progress, done
 | Add selection ranking tool with explainability | Done | Added `ons_select.search` with scored candidates and elicitation prompts. |
 | Add elicitation integration for ambiguous queries | Done | `ons_select.search` now uses MCP `elicitation/create` in stdio + Streamable HTTP when clients advertise form elicitation support. |
 | Add comparability gating + related-dataset linking | Done | `ons_select.search` now enforces geography/time/revision/denominator safety gates, typed links, and provenance-rich related dataset edges. |
-| Extend evaluation harness with selection tasks | Partial | Added multiple `ons_select.search` questions + edge cases; continue expanding catalog validation. |
+| Extend evaluation harness with selection tasks | Done | Added catalog-resource and comparability-focused `ons_select.search` evaluation scenarios plus validator-backed catalog coverage. |
 | Add OS catalog live validation and run report | Done | Added `tests/test_os_catalog_snapshot.py` and report `docs/reports/os_catalog_live_run_2026-02-07.md` (notes timeouts/entitlement gaps). |
 
 ## Codex context persistence (2026-02-02)

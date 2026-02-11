@@ -213,7 +213,7 @@ BASIC_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["ons_select.search"],
             max_tool_calls=2,
-            required_keywords=["candidates", "relatedDatasets"],
+            required_keywords=["candidates", "relatedDatasets", "catalogMeta"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -278,6 +278,26 @@ BASIC_QUESTIONS = [
             )
         ],
         tags=["ons", "search", "selection", "productivity"],
+    ),
+    EvaluationQuestion(
+        id="B008F",
+        question="Read the ONS dataset catalog resource metadata",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Validate catalog resource accessibility and metadata fields.",
+        expected=ExpectedOutcome(
+            required_tools=["resources/read"],
+            max_tool_calls=2,
+            required_keywords=["generatedAt", "items", "placeholder"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "resources/read",
+                {"uri": "resource://mcp-geo/ons-catalog"},
+                call_type="resource",
+            )
+        ],
+        tags=["ons", "resources", "catalog"],
     ),
     EvaluationQuestion(
         id="B009",
@@ -782,7 +802,7 @@ INTERMEDIATE_QUESTIONS = [
         expected=ExpectedOutcome(
             required_tools=["ons_select.search"],
             max_tool_calls=2,
-            required_keywords=["candidates"],
+            required_keywords=["candidates", "catalogMeta"],
         ),
         tool_calls=[
             ToolCallSpec(
@@ -791,6 +811,29 @@ INTERMEDIATE_QUESTIONS = [
             )
         ],
         tags=["ons", "search", "selection", "mortality"],
+    ),
+    EvaluationQuestion(
+        id="I017",
+        question="Find comparable weekly deaths datasets and explain why they relate",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.INTERMEDIATE,
+        description="Validate related dataset explainability fields for comparability gating.",
+        expected=ExpectedOutcome(
+            required_tools=["ons_select.search"],
+            max_tool_calls=2,
+            required_keywords=["relatedDatasets", "linkReason", "provenance"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "ons_select.search",
+                {
+                    "query": "weekly deaths dataset region",
+                    "includeRelated": True,
+                    "relatedLimit": 5,
+                },
+            )
+        ],
+        tags=["ons", "search", "selection", "comparability"],
     ),
 ]
 

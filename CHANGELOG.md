@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - Added stricter `ons_select.search` comparability gating over geography/time/revision/denominator
   plus typed related-dataset edges with explainable `linkReason`, comparability notes,
   revision/release context, and provenance metadata.
+- Added `tools/ons_catalog_validator.py` and `scripts/ons_catalog_validate.py` for reusable
+  ONS catalog schema/comparability metadata validation.
+- Added evaluation coverage for ONS catalog resource metadata and comparability explainability
+  checks in `tests/evaluation/questions.py`.
 
 ## [0.2.12] - 2026-02-11
 ### Added
