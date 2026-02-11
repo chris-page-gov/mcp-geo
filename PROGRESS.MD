@@ -116,7 +116,7 @@ Legend: pending, in_progress, done
 | C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | done | Added named toolsets (Google toolkit-style grouping) plus include/exclude filters across HTTP `/tools/*` and MCP `tools/list|search`. |
 | C07 | `feat(os-features): add polygon and attribute-filter query expansion` | done | `os_features.query` now supports polygon geometry, property filters, sort/projection, `resultType=hits`, and optional queryables metadata. |
 | C08 | `feat(os-maps): complete overlays and interactive layer wiring` | done | `os_maps.render` now accepts overlay inputs/local layers, can hydrate from `os_map.inventory`, and returns overlay summaries + feature collections aligned to boundary explorer layer semantics. |
-| C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | pending | Local layer import E2E coverage. |
+| C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | done | Added Playwright coverage for GeoJSON and Shapefile.zip local-layer import plus polygon-driven selection highlighting against inventory UPRNs. |
 | C10 | `feat(ons-export): implement streaming export pipeline` | pending | Stream/resource mode for larger filter outputs. |
 | C11 | `feat(nomis): add dataset-specific workflow coverage and routing guidance` | pending | NOMIS workflow resource + routing guidance updates. |
 | C12 | `feat(admin-cache): harden cache maturity and freshness behavior` | pending | Staleness/freshness transparency and maturity flags. |

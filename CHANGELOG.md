@@ -113,6 +113,8 @@ All notable changes to this project will be documented in this file.
 - Extended playground smoke coverage to assert version matrix and MCP Apps protocol labels.
 - Added `os_maps.render` overlay/inventory alignment coverage in
   `tests/test_os_map_tools.py`.
+- Added Playwright `boundary_explorer_local_layers` coverage for local
+  GeoJSON + Shapefile.zip imports and polygon-driven selection behavior.
 
 ## [0.2.11] - 2026-02-06
 ### Added
