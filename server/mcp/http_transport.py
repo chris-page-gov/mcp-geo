@@ -19,6 +19,12 @@ from server.mcp.elicitation_forms import (
     build_ons_select_elicitation_params,
     client_supports_elicitation_form,
 )
+from server.mcp.client_capabilities import (
+    bool_env as _shared_bool_env,
+    client_supports_ui as _shared_client_supports_ui,
+    read_bool_env as _shared_read_bool_env,
+    ui_fallback_for_tool as _shared_ui_fallback_for_tool,
+)
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.prompts import get_prompt, list_prompts
 from server.protocol import (
@@ -75,30 +81,15 @@ def _get_session(request: Request) -> Tuple[str, Dict[str, Any]]:
 
 
 def _read_bool_env(name: str) -> Optional[bool]:
-    raw = os.getenv(name)
-    if raw is None or raw == "":
-        return None
-    return raw.strip().lower() in {"1", "true", "yes", "on"}
+    return _shared_read_bool_env(name)
 
 
 def _bool_env(name: str, default: bool = False) -> bool:
-    raw = os.getenv(name)
-    if raw is None or raw == "":
-        return default
-    return raw.strip().lower() in {"1", "true", "yes", "on"}
+    return _shared_bool_env(name, default=default)
 
 
 def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
-    override = _read_bool_env("MCP_HTTP_UI_SUPPORTED")
-    if override is not None:
-        return override
-    extensions = capabilities.get("extensions", {}) if isinstance(capabilities, dict) else {}
-    ui_ext = extensions.get("io.modelcontextprotocol/ui")
-    if isinstance(ui_ext, dict):
-        mime_types = ui_ext.get("mimeTypes")
-        if isinstance(mime_types, list):
-            return MCP_APPS_MIME in mime_types
-    return False
+    return _shared_client_supports_ui(capabilities, override_env="MCP_HTTP_UI_SUPPORTED")
 
 
 def _accepts_event_stream(request: Request) -> bool:
@@ -299,11 +290,16 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
         data = dict(data)
         if resolved_name == "os_mcp.descriptor":
             data.setdefault("transport", "http")
-        ui_supported = _client_supports_ui(capabilities)
-        if resolved_name.startswith("os_apps.render_") and not ui_supported:
-            fallback = stdio_adapter._build_static_map_fallback(payload, data)
-            if fallback:
-                data["fallback"] = fallback
+        fallback = _shared_ui_fallback_for_tool(
+            resolved_name,
+            payload,
+            data,
+            ui_supported=_client_supports_ui(capabilities),
+            build_static_map_fallback=stdio_adapter._build_static_map_fallback,
+            build_stats_dashboard_fallback=stdio_adapter._build_stats_dashboard_fallback,
+        )
+        if fallback:
+            data["fallback"] = fallback
     ok = 200 <= status_code < 300
     result: Dict[str, Any] = {"status": status_code, "ok": ok, "data": data}
     allow_resource = _bool_env("MCP_HTTP_RESOURCE_CONTENT", default=True)

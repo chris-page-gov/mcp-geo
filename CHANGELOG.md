@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
   ONS catalog schema/comparability metadata validation.
 - Added evaluation coverage for ONS catalog resource metadata and comparability explainability
   checks in `tests/evaluation/questions.py`.
+- Added shared client capability/fallback helpers in `server/mcp/client_capabilities.py`
+  so stdio and HTTP transports apply identical MCP-Apps UI gating decisions.
 
 ## [0.2.12] - 2026-02-11
 ### Added

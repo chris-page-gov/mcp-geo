@@ -259,6 +259,28 @@ def test_mcp_http_ui_tool_fallback_and_meta(client, monkeypatch):
     assert resp.json()["result"]["isError"] is True
 
 
+def test_mcp_http_ui_stats_dashboard_fallback(client, monkeypatch):
+    monkeypatch.setenv("MCP_HTTP_UI_SUPPORTED", "0")
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload(
+            "ui-stats-1",
+            "tools/call",
+            {
+                "name": "os_apps_render_statistics_dashboard",
+                "arguments": {"areaCodes": ["E09000033"], "dataset": "gdp", "measure": "GDPV"},
+            },
+        ),
+    )
+    result = resp.json()["result"]
+    fallback = result["data"]["fallback"]
+    assert fallback["type"] == "statistics_dashboard"
+    assert "nomis.query" in fallback.get("suggestedTools", [])
+
+
 def _write_catalog(tmp_path, items):
     path = tmp_path / "ons_catalog.json"
     payload = {

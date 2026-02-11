@@ -110,7 +110,7 @@ Legend: pending, in_progress, done
 | C00 | `chore(program): add phased completion tracker for open progress items` | done | Tracker added and unreleased changelog seeded. |
 | C01 | `feat(ons-select): implement full comparability gating rules` | done | Added strict geography/time/revision/denominator gating and richer related-dataset explainability/provenance fields. |
 | C02 | `test(ons-select): add catalog validation harness coverage` | done | Added reusable catalog validator script/module, validator tests, and evaluation questions for catalog/comparability assertions. |
-| C03 | `feat(ui-fallback): centralize client capability gating across transports` | pending | Shared client capability helpers for stdio/http. |
+| C03 | `feat(ui-fallback): centralize client capability gating across transports` | done | Shared capability/fallback helpers now drive both stdio and HTTP, including consistent statistics-dashboard fallback selection. |
 | C04 | `test(ui-fallback): add end-to-end host render verification` | pending | Playwright host render verification (UI + fallback). |
 | C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | pending | Sanitize-first list/describe/search while preserving call aliases. |
 | C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | pending | Toolset filter surface for HTTP + MCP transport. |
@@ -254,7 +254,7 @@ MCP-Apps UI for clients that render it.
 
 | Task | Status | Notes |
 | --- | --- | --- |
-| Gate UI resources by client capability and only emit UI content when supported | Partial | `resource_link` blocks are opt-in (`MCP_APPS_RESOURCE_LINK=1`); `scripts/claude-mcp-local` now defaults to `MCP_APPS_RESOURCE_LINK=0` and `MCP_APPS_CONTENT_MODE=embedded` to avoid Claude unsupported-format failures. |
+| Gate UI resources by client capability and only emit UI content when supported | Done | Capability gating now uses shared stdio/http helpers and consistent fallback mode selection for `os_apps.render_*` tools. |
 | Add UI content-mode switch for MCP-Apps render tools | Done | `MCP_APPS_CONTENT_MODE` supports `resource_link`, embedded `resource`, or text-only content blocks; `os_apps.render_ui_probe` added for verification. |
 | Provide a static map image endpoint/tool | Done | Return a renderable image URL (server-side) for Claude. |
 | Provide a browser map viewer that prompts for OS API key when needed | Not started | Local assets only; prompt in-page without logging. |
