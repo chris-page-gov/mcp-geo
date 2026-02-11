@@ -112,7 +112,7 @@ Legend: pending, in_progress, done
 | C02 | `test(ons-select): add catalog validation harness coverage` | done | Added reusable catalog validator script/module, validator tests, and evaluation questions for catalog/comparability assertions. |
 | C03 | `feat(ui-fallback): centralize client capability gating across transports` | done | Shared capability/fallback helpers now drive both stdio and HTTP, including consistent statistics-dashboard fallback selection. |
 | C04 | `test(ui-fallback): add end-to-end host render verification` | done | Added Playwright host-render tests for UI-capable host, non-UI fallback payloads, and sanitized/dotted tool-name render calls. |
-| C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | pending | Sanitize-first list/describe/search while preserving call aliases. |
+| C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | done | HTTP discovery endpoints now emit sanitized names first, include `annotations.originalName`, and accept sanitized+dotted aliases for calls/describe. |
 | C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | pending | Toolset filter surface for HTTP + MCP transport. |
 | C07 | `feat(os-features): add polygon and attribute-filter query expansion` | pending | Polygon/filter/queryables/sort/projection/count support. |
 | C08 | `feat(os-maps): complete overlays and interactive layer wiring` | pending | Overlay-ready map render contract + parity alignment. |
@@ -277,9 +277,9 @@ Plan:
 - Preserve dotted names as canonical internal IDs for backward compatibility (HTTP callers + internal code), while accepting sanitized aliases.
 - Implement shared tool-name mapping helpers and use them consistently across STDIO + HTTP + UI widgets.
 
-Next implementation steps:
-1. Extract tool-name sanitize/resolve logic into a shared module (used by both STDIO + HTTP routers).
-2. HTTP: add a `nameMode` option for `/tools/list` and `/tools/describe` (for example `original|sanitized`) and accept sanitized tool names in `/tools/call`.
-3. UI widgets: prefer sanitized names when host/tooling indicates restriction; keep retry fallback as a safety net.
-4. Add tests: HTTP round-trip for sanitized names; keep Playwright regression exercising dot-disallowed behavior.
-5. Docs: update Claude + VS Code guidance to show sanitized tool names and how to map back to originals (`annotations.originalName`).
+Implementation status:
+1. Done: shared sanitize/resolve/schema-rewrite logic is centralized in `server/tool_naming.py` and consumed by STDIO + HTTP routers.
+2. Done: HTTP discovery endpoints are sanitized-first and `/tools/call` + `/tools/describe` accept sanitized aliases.
+3. Done: UI widgets keep sanitized retry behavior when hosts reject dotted names.
+4. Done: HTTP/STDIO tests plus Playwright host-render regression cover sanitized-name behavior.
+5. Done: README guidance now documents sanitized names and `annotations.originalName`.

@@ -10,14 +10,17 @@ def test_tools_search_basic_query():
     assert resp.status_code == 200
     data = resp.json()
     assert data["count"] >= 1
-    assert any(t["name"] == "os_places.by_postcode" for t in data["tools"])
+    assert any(t["name"] == "os_places_by_postcode" for t in data["tools"])
+    first = data["tools"][0]
+    assert "annotations" in first
+    assert "originalName" in first["annotations"]
 
 
 def test_tools_search_regex_mode():
     resp = client.post("/tools/search", json={"query": r"^os_places\.", "mode": "regex"})
     assert resp.status_code == 200
     data = resp.json()
-    assert any(t["name"].startswith("os_places.") for t in data["tools"])
+    assert any(t["name"].startswith("os_places_") for t in data["tools"])
 
 
 def test_tools_search_category_filter():

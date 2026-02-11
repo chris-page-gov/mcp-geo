@@ -6,7 +6,6 @@ delegating to this module's `main`.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
@@ -50,6 +49,12 @@ from server.mcp.client_capabilities import (
 )
 from server import __version__ as SERVER_VERSION
 from server.protocol import PROTOCOL_VERSION, negotiate_protocol_version
+from server.tool_naming import (
+    build_tool_name_maps,
+    resolve_tool_name,
+    rewrite_tool_schema,
+    sanitize_tool_name,
+)
 
 JSONRPC = "2.0"
 
@@ -114,37 +119,17 @@ _ELICITATION_REQUEST_SEQ = 0
 
 
 def _sanitize_tool_name(name: str, seen: Dict[str, str]) -> str:
-    base = re.sub(r"[^A-Za-z0-9_-]", "_", name)
-    if not base:
-        base = "tool"
-    candidate = base
-    if len(candidate) > 64:
-        digest = hashlib.sha1(name.encode()).hexdigest()[:8]
-        max_prefix = 64 - 1 - len(digest)
-        candidate = f"{candidate[:max_prefix]}_{digest}"
-    if candidate in seen and seen[candidate] != name:
-        digest = hashlib.sha1(name.encode()).hexdigest()[:8]
-        max_prefix = 64 - 1 - len(digest)
-        candidate = f"{base[:max_prefix]}_{digest}"
-    return candidate
+    return sanitize_tool_name(name, seen)
 
 
 def _build_tool_name_maps() -> tuple[Dict[str, str], Dict[str, str]]:
-    original_to_sanitized: Dict[str, str] = {}
-    sanitized_to_original: Dict[str, str] = {}
-    for tool in all_tools():
-        original = tool.name
-        sanitized = _sanitize_tool_name(original, sanitized_to_original)
-        original_to_sanitized[original] = sanitized
-        sanitized_to_original[sanitized] = original
-    return original_to_sanitized, sanitized_to_original
+    originals = [tool.name for tool in all_tools()]
+    return build_tool_name_maps(originals)
 
 
 def _resolve_tool_name(name: str) -> str:
-    if get_tool(name):
-        return name
-    _, sanitized_to_original = _build_tool_name_maps()
-    return sanitized_to_original.get(name, name)
+    originals = [tool.name for tool in all_tools()]
+    return resolve_tool_name(name, originals)
 
 
 def _rewrite_tool_schema(
@@ -153,27 +138,11 @@ def _rewrite_tool_schema(
     sanitized_name: str,
     original_name: str,
 ) -> Dict[str, Any]:
-    if not isinstance(schema, dict):
-        return schema
-    props = schema.get("properties")
-    if not isinstance(props, dict):
-        return schema
-    tool_prop = props.get("tool")
-    if not isinstance(tool_prop, dict):
-        return schema
-    updated_tool = dict(tool_prop)
-    if "const" in updated_tool:
-        updated_tool["const"] = sanitized_name
-    if "enum" in updated_tool and isinstance(updated_tool["enum"], list):
-        updated_tool["enum"] = [
-            sanitized_name if item == original_name else item
-            for item in updated_tool["enum"]
-        ]
-    new_props = dict(props)
-    new_props["tool"] = updated_tool
-    new_schema = dict(schema)
-    new_schema["properties"] = new_props
-    return new_schema
+    return rewrite_tool_schema(
+        schema,
+        sanitized_name=sanitized_name,
+        original_name=original_name,
+    )
 
 
 def _write_message(payload: Dict[str, Any], framing: str) -> None:

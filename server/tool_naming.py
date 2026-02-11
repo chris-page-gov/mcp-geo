@@ -1,6 +1,7 @@
 import hashlib
 import re
 from collections.abc import Iterable, Mapping
+from typing import Any
 
 
 _ALLOWED_TOOL_NAME_RE = re.compile(r"[^A-Za-z0-9_-]")
@@ -61,3 +62,31 @@ def resolve_tool_name(requested: str, originals: Iterable[str]) -> str:
 
     _original_to_sanitized, sanitized_to_original = build_tool_name_maps(original_set)
     return sanitized_to_original.get(requested, requested)
+
+
+def rewrite_tool_schema(
+    schema: dict[str, Any],
+    *,
+    sanitized_name: str,
+    original_name: str,
+) -> dict[str, Any]:
+    if not isinstance(schema, dict):
+        return schema
+    props = schema.get("properties")
+    if not isinstance(props, dict):
+        return schema
+    tool_prop = props.get("tool")
+    if not isinstance(tool_prop, dict):
+        return schema
+    updated_tool = dict(tool_prop)
+    if "const" in updated_tool:
+        updated_tool["const"] = sanitized_name
+    if "enum" in updated_tool and isinstance(updated_tool["enum"], list):
+        updated_tool["enum"] = [
+            sanitized_name if item == original_name else item for item in updated_tool["enum"]
+        ]
+    new_props = dict(props)
+    new_props["tool"] = updated_tool
+    new_schema = dict(schema)
+    new_schema["properties"] = new_props
+    return new_schema

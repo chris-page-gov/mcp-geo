@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
   so stdio and HTTP transports apply identical MCP-Apps UI gating decisions.
 - Added Playwright host-render end-to-end tests for UI-capable host rendering,
   deterministic non-UI fallback payloads, and sanitized/dotted tool-name behavior.
+- Added sanitized-first HTTP tool discovery output (`/tools/list`, `/tools/describe`,
+  `/tools/search`) with `annotations.originalName` alias mapping metadata.
 
 ## [0.2.12] - 2026-02-11
 ### Added

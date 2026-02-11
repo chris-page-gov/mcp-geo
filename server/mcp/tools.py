@@ -5,7 +5,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from server.mcp.tool_search import get_tool_metadata, search_tools
-from server.tool_naming import resolve_tool_name
+from server.tool_naming import build_tool_name_maps, resolve_tool_name, rewrite_tool_schema
 from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
 
@@ -105,10 +105,12 @@ router = APIRouter()
 @router.get("/tools/list")
 def list_tools_endpoint(limit: int = 10, page: int = 1) -> Dict[str, Any]:
     names = list_tools()
+    original_to_sanitized, _ = build_tool_name_maps(names)
+    sanitized = [original_to_sanitized.get(name, name) for name in names]
     start = (page - 1) * limit
     end = start + limit
-    next_page_token = str(page + 1) if end < len(names) else None
-    return {"tools": names[start:end], "nextPageToken": next_page_token}
+    next_page_token = str(page + 1) if end < len(sanitized) else None
+    return {"tools": sanitized[start:end], "nextPageToken": next_page_token}
 
 
 @router.post("/tools/call")
@@ -235,22 +237,47 @@ async def search_tools_endpoint(request: Request):
                 "message": str(exc),
             },
         )
-    return {"tools": results, "count": len(results), "mode": mode}
+    original_to_sanitized, _ = build_tool_name_maps(list_tools())
+    normalized: list[dict[str, Any]] = []
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        entry = dict(result)
+        original_name = entry.get("name")
+        if isinstance(original_name, str):
+            entry["name"] = original_to_sanitized.get(original_name, original_name)
+            annotations = entry.get("annotations")
+            if isinstance(annotations, dict):
+                annotations = dict(annotations)
+            else:
+                annotations = {}
+            annotations.setdefault("originalName", original_name)
+            entry["annotations"] = annotations
+        normalized.append(entry)
+    return {"tools": normalized, "count": len(normalized), "mode": mode}
 
 
-def _describe_tool(tool: Tool) -> dict[str, Any]:
+def _describe_tool(tool: Tool, original_to_sanitized: dict[str, str]) -> dict[str, Any]:
     meta = get_tool_metadata(tool)
+    original_name = tool.name
+    sanitized_name = original_to_sanitized.get(original_name, original_name)
+    annotations = dict(meta.get("annotations", {}))
+    annotations.setdefault("originalName", original_name)
     description: dict[str, Any] = {
-        "name": tool.name,
+        "name": sanitized_name,
         "description": tool.description,
         "version": tool.version,
-        "inputSchema": tool.input_schema,
+        "inputSchema": rewrite_tool_schema(
+            tool.input_schema,
+            sanitized_name=sanitized_name,
+            original_name=original_name,
+        ),
         "outputSchema": tool.output_schema,
-        "inputSchemaRef": f"#/tools/{tool.name}/inputSchema",
-        "outputSchemaRef": f"#/tools/{tool.name}/outputSchema",
-        "annotations": meta.get("annotations", {}),
+        "inputSchemaRef": f"#/tools/{sanitized_name}/inputSchema",
+        "outputSchemaRef": f"#/tools/{sanitized_name}/outputSchema",
+        "annotations": annotations,
     }
-    ui_meta = build_ui_tool_meta(tool.name)
+    ui_meta = build_ui_tool_meta(original_name)
     internal_meta: dict[str, Any] = {}
     if meta.get("category") is not None:
         internal_meta["category"] = meta.get("category")
@@ -270,8 +297,11 @@ def _describe_tool(tool: Tool) -> dict[str, Any]:
 
 @router.get("/tools/describe")
 def describe_tools(name: str | None = None):
+    original_names = list_tools()
+    original_to_sanitized, _ = build_tool_name_maps(original_names)
     if name:
-        tool = get(name)
+        resolved_name = resolve_tool_name(name, original_names)
+        tool = get(resolved_name)
         if not tool:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -281,7 +311,7 @@ def describe_tools(name: str | None = None):
                     "message": f"Tool '{name}' not found",
                 },
             )
-        return {"tools": [_describe_tool(tool)]}
+        return {"tools": [_describe_tool(tool, original_to_sanitized)]}
     return {
-        "tools": [_describe_tool(t) for t in all_tools()]
+        "tools": [_describe_tool(t, original_to_sanitized) for t in all_tools()]
     }

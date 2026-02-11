@@ -122,6 +122,9 @@ and MCP-Apps UI interaction capture using the stdio and HTTP trace proxies.
 
 ## Tool Catalog (Epics B–D)
 Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`.
+Discovery responses use sanitized tool names (for example `os_places_by_postcode`) for
+client compatibility; map back to canonical dotted names via
+`annotations.originalName`. Tool calls accept both sanitized and dotted names.
 
 | Tool | Purpose |
 |------|---------|
