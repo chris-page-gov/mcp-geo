@@ -45,7 +45,7 @@ Legend: Done, Partial, Not started
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; `ons_data.get_filter_output` now supports resource-backed export delivery for large outputs (`delivery=resource|auto`) with `resource://mcp-geo/ons-exports/*` artifacts. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
-| NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Still needs more dataset-specific workflow coverage. |
+| NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py, resources/nomis_workflows.json | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Added dataset-specific workflow profiles resource and routing guidance link-up; broader profile depth can still be expanded. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search can fall back to live. |
 | Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/ | Boundary manifest + cache status exposed; full boundary packs not yet shipped. |
@@ -118,7 +118,7 @@ Legend: pending, in_progress, done
 | C08 | `feat(os-maps): complete overlays and interactive layer wiring` | done | `os_maps.render` now accepts overlay inputs/local layers, can hydrate from `os_map.inventory`, and returns overlay summaries + feature collections aligned to boundary explorer layer semantics. |
 | C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | done | Added Playwright coverage for GeoJSON and Shapefile.zip local-layer import plus polygon-driven selection highlighting against inventory UPRNs. |
 | C10 | `feat(ons-export): implement streaming export pipeline` | done | Added `delivery=inline|resource|auto` on `ons_data.get_filter_output`, with resource-backed exports and stream metadata for large payload handling via `resource://mcp-geo/ons-exports/*`. |
-| C11 | `feat(nomis): add dataset-specific workflow coverage and routing guidance` | pending | NOMIS workflow resource + routing guidance updates. |
+| C11 | `feat(nomis): add dataset-specific workflow coverage and routing guidance` | done | Added `resource://mcp-geo/nomis-workflows` workflow profiles and surfaced this URI in NOMIS-routed `os_mcp.route_query` responses/guidance. |
 | C12 | `feat(admin-cache): harden cache maturity and freshness behavior` | pending | Staleness/freshness transparency and maturity flags. |
 | C13 | `feat(resources): ship real boundary and code-list packs via hybrid fetch cache` | pending | Fetch/checksum/index pipeline and resource exposure. |
 | C14 | `feat(playground-observability): complete playground orchestration and richer metrics` | pending | Add richer metrics and improve orchestration endpoints. |

@@ -507,3 +507,11 @@ def test_nomis_datasets_limit_validation(monkeypatch):
     assert resp.status_code == 400
     resp = client.post("/tools/call", json={"tool": "nomis.datasets", "includeRaw": "yes"})
     assert resp.status_code == 400
+
+
+def test_nomis_workflow_resource_is_available():
+    resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/nomis-workflows"})
+    assert resp.status_code == 200
+    payload = resp.json()["contents"][0]["text"]
+    assert "labour_market_area_compare" in payload
+    assert "census_theme_profile" in payload

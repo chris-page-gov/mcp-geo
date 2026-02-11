@@ -85,6 +85,8 @@ def test_route_query_statistics_nomis():
     body = _route("Unemployment rate for LSOA in Warwick")
     assert body["intent"] == "statistics"
     assert body["recommended_tool"] == "nomis.query"
+    assert body["workflow_profile_uri"] == "resource://mcp-geo/nomis-workflows"
+    assert "nomis-workflows" in body["guidance"]
 
 
 def test_route_query_address_search():
@@ -97,6 +99,7 @@ def test_route_query_unknown():
     body = _route("asdfghjkl qwertyuiop")
     assert body["intent"] == "unknown"
     assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["workflow_profile_uri"] is None
 
 
 def test_stats_routing_tool():

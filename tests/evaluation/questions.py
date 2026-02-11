@@ -458,6 +458,27 @@ BASIC_QUESTIONS = [
         requires_ons_live=True,
     ),
     EvaluationQuestion(
+        id="B018A",
+        question="Show NOMIS workflow profiles",
+        intent=Intent.DATASET_DISCOVERY,
+        difficulty=Difficulty.BASIC,
+        description="Read NOMIS workflow profile resource for dataset-specific guidance.",
+        expected=ExpectedOutcome(
+            required_tools=["resources/read"],
+            max_tool_calls=2,
+            required_keywords=["profiles", "labour_market_area_compare"],
+        ),
+        tool_calls=[
+            ToolCallSpec(
+                "resources/read",
+                {"uri": "resource://mcp-geo/nomis-workflows"},
+                call_type="resource",
+            )
+        ],
+        tags=["nomis", "resource", "workflow"],
+        requires_ons_live=True,
+    ),
+    EvaluationQuestion(
         id="B019",
         question="Probe MCP-Apps UI rendering mode support",
         intent=Intent.INTERACTIVE_SELECTION,

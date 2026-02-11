@@ -118,6 +118,8 @@ All notable changes to this project will be documented in this file.
 - Added ONS filter-output streaming/resource pipeline: `ons_data.get_filter_output`
   now supports `delivery=inline|resource|auto` and writes large exports to
   `resource://mcp-geo/ons-exports/*` with index resource `resource://mcp-geo/ons-exports-index`.
+- Added NOMIS workflow profiles resource (`resource://mcp-geo/nomis-workflows`)
+  and linked NOMIS-routed `os_mcp.route_query` guidance to that profile catalog.
 
 ## [0.2.11] - 2026-02-06
 ### Added

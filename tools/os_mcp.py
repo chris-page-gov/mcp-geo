@@ -225,6 +225,8 @@ FEATURE_COLLECTIONS = {
     "parks": "parks",
 }
 
+NOMIS_WORKFLOW_URI = "resource://mcp-geo/nomis-workflows"
+
 
 def _match_patterns(query: str, patterns: list[str]) -> float:
     query_lower = query.lower()
@@ -581,7 +583,8 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
                 ["nomis.query", "nomis.datasets", "nomis.concepts"],
                 (
                     "Query NOMIS labour/census statistics directly. "
-                    "If dataset id is unknown, use nomis.datasets with q and limit."
+                    "If dataset id is unknown, use nomis.datasets with q and limit. "
+                    "See resource://mcp-geo/nomis-workflows for dataset-specific workflow profiles."
                 ),
             )
         return (
@@ -618,7 +621,10 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             return (
                 "nomis.datasets",
                 ["nomis.datasets", "nomis.codelists"],
-                "List NOMIS datasets with q+limit, then inspect code lists if needed.",
+                (
+                    "List NOMIS datasets with q+limit, then inspect code lists if needed. "
+                    "See resource://mcp-geo/nomis-workflows for workflow templates."
+                ),
             )
         return (
             "ons_select.search",
@@ -686,7 +692,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use NOMIS for labour/census or deep local geographies; otherwise use ONS datasets. "
             "Prefer nomis.query directly when dataset is known. If you need discovery, call "
             "nomis.datasets with q and limit to avoid large payloads. ONS flow: "
-            "ons_data.dimensions to find filters, then ons_data.query for observations."
+            "ons_data.dimensions to find filters, then ons_data.query for observations. "
+            "NOMIS workflow profiles are available at resource://mcp-geo/nomis-workflows."
         ),
         QueryIntent.AREA_COMPARISON: (
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
@@ -701,7 +708,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         QueryIntent.DATASET_DISCOVERY: (
             "Use ons_select.search for ranked ONS dataset discovery (with explanations), or "
             "ons_search.query for raw live search; "
-            "nomis.datasets with q and limit for labour/census."
+            "nomis.datasets with q and limit for labour/census. "
+            "NOMIS workflow profiles are available at resource://mcp-geo/nomis-workflows."
         ),
         QueryIntent.MAP_RENDER: (
             "Use os_maps.render with a bbox to obtain a static map URL template."
@@ -816,6 +824,11 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     query = query.strip()
     intent, confidence, params, context = _classify_query(query)
     tool, workflow, explanation = _get_tool_for_intent(intent, context)
+    workflow_profile_uri = (
+        NOMIS_WORKFLOW_URI
+        if (tool.startswith("nomis.") or bool(context.get("nomis_preferred")))
+        else None
+    )
     return 200, {
         "query": query,
         "intent": intent.value,
@@ -826,6 +839,7 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         "workflow_steps": workflow,
         "alternative_tools": _get_alternative_tools(intent),
         "guidance": _get_guidance_for_intent(intent),
+        "workflow_profile_uri": workflow_profile_uri,
     }
 
 
@@ -1023,6 +1037,7 @@ register(
                 "workflow_steps": {"type": "array"},
                 "alternative_tools": {"type": "array"},
                 "guidance": {"type": "string"},
+                "workflow_profile_uri": {"type": ["string", "null"]},
             },
             "required": ["intent", "confidence", "recommended_tool", "workflow_steps"],
         },

@@ -16,6 +16,7 @@ ONS_CACHE_DIR = ROOT / "data" / "cache" / "ons"
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
+NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
 EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 
@@ -221,6 +222,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": LAYERS_CATALOG_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "maps"},
+    },
+    {
+        "slug": "nomis-workflows",
+        "name": "data_nomis_workflows",
+        "title": "NOMIS Workflow Profiles",
+        "description": "Dataset-specific NOMIS workflow profiles and routing hints.",
+        "path": NOMIS_WORKFLOWS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "guide", "domain": "nomis"},
     },
 ]
 
@@ -519,6 +529,13 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "layers-catalog"), None
         return (*_load_json_file(LAYERS_CATALOG_PATH), None)
+    if slug == "nomis-workflows":
+        if not NOMIS_WORKFLOWS_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "NOMIS workflows catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "nomis-workflows"), None
+        return (*_load_json_file(NOMIS_WORKFLOWS_PATH), None)
     if slug == "boundary-latest-report":
         latest = _latest_run_report_path()
         if not latest:
