@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 - Added phased completion tracker in `PROGRESS.MD` for the open work program
   (`C00`–`C16`) covering dataset selection, UI fallback, tool naming/toolsets,
   OS features/maps expansion, exports, resources, observability, and POI.
+- Added stricter `ons_select.search` comparability gating over geography/time/revision/denominator
+  plus typed related-dataset edges with explainable `linkReason`, comparability notes,
+  revision/release context, and provenance metadata.
 
 ## [0.2.12] - 2026-02-11
 ### Added

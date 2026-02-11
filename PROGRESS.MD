@@ -108,7 +108,7 @@ Legend: pending, in_progress, done
 | Seq | Commit | Status | Notes |
 | --- | --- | --- | --- |
 | C00 | `chore(program): add phased completion tracker for open progress items` | done | Tracker added and unreleased changelog seeded. |
-| C01 | `feat(ons-select): implement full comparability gating rules` | in_progress | Expand comparability gate and related-dataset explainability. |
+| C01 | `feat(ons-select): implement full comparability gating rules` | done | Added strict geography/time/revision/denominator gating and richer related-dataset explainability/provenance fields. |
 | C02 | `test(ons-select): add catalog validation harness coverage` | pending | Add catalog validator and evaluation coverage. |
 | C03 | `feat(ui-fallback): centralize client capability gating across transports` | pending | Shared client capability helpers for stdio/http. |
 | C04 | `test(ui-fallback): add end-to-end host render verification` | pending | Playwright host render verification (UI + fallback). |
@@ -165,7 +165,7 @@ Legend: pending, in_progress, done
 | Build cached OS API/downloads catalogue resource | Done | Added `resource://mcp-geo/os-catalog` with refresh script; snapshot stored in `resources/os_catalog.json`. |
 | Add selection ranking tool with explainability | Done | Added `ons_select.search` with scored candidates and elicitation prompts. |
 | Add elicitation integration for ambiguous queries | Done | `ons_select.search` now uses MCP `elicitation/create` in stdio + Streamable HTTP when clients advertise form elicitation support. |
-| Add comparability gating + related-dataset linking | Partial | `ons_select.search` now returns related datasets with gating; expand rules per `linking_rules.md`. |
+| Add comparability gating + related-dataset linking | Done | `ons_select.search` now enforces geography/time/revision/denominator safety gates, typed links, and provenance-rich related dataset edges. |
 | Extend evaluation harness with selection tasks | Partial | Added multiple `ons_select.search` questions + edge cases; continue expanding catalog validation. |
 | Add OS catalog live validation and run report | Done | Added `tests/test_os_catalog_snapshot.py` and report `docs/reports/os_catalog_live_run_2026-02-07.md` (notes timeouts/entitlement gaps). |
 
