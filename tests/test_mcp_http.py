@@ -42,6 +42,45 @@ def test_mcp_http_list_tools_sanitized(client):
     assert all(re.match(r"^[A-Za-z0-9_-]{1,64}$", name) for name in names)
 
 
+def test_mcp_http_list_tools_toolset_filter(client):
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload("list-toolset-1", "tools/list", {"toolset": "ons_selection"}),
+    )
+    payload = resp.json()
+    tools = payload["result"]["tools"]
+    assert tools
+    names = [tool["name"] for tool in tools]
+    assert all(name.startswith("ons_") for name in names)
+    assert "toolsets" in payload["result"]
+
+
+def test_mcp_http_search_tools_toolset_filters(client):
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload(
+            "search-toolset-1",
+            "tools/search",
+            {"query": "dataset", "toolset": "ons_selection"},
+        ),
+    )
+    payload = resp.json()
+    tools = payload["result"]["tools"]
+    assert tools
+    original_names = [tool.get("annotations", {}).get("originalName") for tool in tools]
+    assert all(
+        isinstance(name, str)
+        and (name.startswith("ons_select.") or name.startswith("ons_search.") or name.startswith("ons_codes."))
+        for name in original_names
+    )
+
+
 def test_mcp_http_call_tool_accepts_arguments(client):
     init_resp = client.post("/mcp", json=_initialize_payload())
     session_id = init_resp.headers.get("mcp-session-id")

@@ -36,3 +36,36 @@ def test_tools_search_missing_query():
     assert resp.status_code == 400
     body = resp.json()
     assert body.get("code") == "INVALID_INPUT"
+
+
+def test_tools_search_toolset_include_filter():
+    resp = client.post("/tools/search", json={"query": "dataset", "toolset": "ons_selection"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["tools"]
+    original_names = [t.get("annotations", {}).get("originalName") for t in data["tools"]]
+    assert all(
+        isinstance(name, str)
+        and (name.startswith("ons_select.") or name.startswith("ons_search.") or name.startswith("ons_codes."))
+        for name in original_names
+    )
+
+
+def test_tools_search_toolset_exclude_filter():
+    resp = client.post(
+        "/tools/search",
+        json={"query": "address", "excludeToolsets": ["places_names"]},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["tools"]
+    original_names = [t.get("annotations", {}).get("originalName") for t in data["tools"]]
+    assert all(
+        isinstance(name, str)
+        and not (
+            name.startswith("os_places.")
+            or name.startswith("os_names.")
+            or name == "os_linked_ids.get"
+        )
+        for name in original_names
+    )

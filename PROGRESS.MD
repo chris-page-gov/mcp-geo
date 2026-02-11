@@ -113,7 +113,7 @@ Legend: pending, in_progress, done
 | C03 | `feat(ui-fallback): centralize client capability gating across transports` | done | Shared capability/fallback helpers now drive both stdio and HTTP, including consistent statistics-dashboard fallback selection. |
 | C04 | `test(ui-fallback): add end-to-end host render verification` | done | Added Playwright host-render tests for UI-capable host, non-UI fallback payloads, and sanitized/dotted tool-name render calls. |
 | C05 | `feat(tool-naming): complete sanitized-only naming policy with alias resolution` | done | HTTP discovery endpoints now emit sanitized names first, include `annotations.originalName`, and accept sanitized+dotted aliases for calls/describe. |
-| C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | pending | Toolset filter surface for HTTP + MCP transport. |
+| C06 | `feat(toolsets): expose named toolsets and include/exclude filters` | done | Added named toolsets (Google toolkit-style grouping) plus include/exclude filters across HTTP `/tools/*` and MCP `tools/list|search`. |
 | C07 | `feat(os-features): add polygon and attribute-filter query expansion` | pending | Polygon/filter/queryables/sort/projection/count support. |
 | C08 | `feat(os-maps): complete overlays and interactive layer wiring` | pending | Overlay-ready map render contract + parity alignment. |
 | C09 | `test(boundary-explorer): verify local GeoJSON and Shapefile.zip layer import` | pending | Local layer import E2E coverage. |
@@ -283,3 +283,21 @@ Implementation status:
 3. Done: UI widgets keep sanitized retry behavior when hosts reject dotted names.
 4. Done: HTTP/STDIO tests plus Playwright host-render regression cover sanitized-name behavior.
 5. Done: README guidance now documents sanitized names and `annotations.originalName`.
+
+## Toolset grouping review (Google MCP toolkit style)
+
+Implemented named toolsets and filters in `server/mcp/tool_search.py` with
+exposure via `/tools/list`, `/tools/describe`, `/tools/search`, and MCP
+`tools/list` + `tools/search` (`toolset`, `includeToolsets`, `excludeToolsets`).
+
+| Toolset | Coverage status |
+| --- | --- |
+| `core_router` | Done |
+| `places_names` | Done |
+| `features_layers` | Done |
+| `maps_tiles` | Done |
+| `admin_boundaries` | Done |
+| `ons_selection` | Done |
+| `ons_data` | Done |
+| `nomis_data` | Done |
+| `apps_ui` | Done |

@@ -36,7 +36,13 @@ from server.mcp.resource_catalog import (
 )
 from server.mcp.prompts import get_prompt as get_prompt_def, list_prompts as list_prompt_defs
 from tools.os_apps import build_ui_tool_meta
-from server.mcp.tool_search import get_tool_metadata, search_tools
+from server.mcp.tool_search import (
+    filter_tools_by_toolsets,
+    get_tool_metadata,
+    get_toolset_catalog,
+    parse_toolset_list,
+    search_tools,
+)
 from server.mcp.elicitation_forms import (
     apply_ons_select_elicitation_result,
     build_ons_select_elicitation_params,
@@ -497,9 +503,20 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
     }
 
 def handle_list_tools(_params: Dict[str, Any]) -> Any:
+    toolset = _params.get("toolset")
+    if toolset is not None and not isinstance(toolset, str):
+        raise ValueError("toolset must be a string")
+    include_toolsets = parse_toolset_list(_params.get("includeToolsets"))
+    exclude_toolsets = parse_toolset_list(_params.get("excludeToolsets"))
     tool_entries: list[dict[str, Any]] = []
+    filtered_tools = filter_tools_by_toolsets(
+        all_tools(),
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
     original_to_sanitized, _ = _build_tool_name_maps()
-    for t in all_tools():
+    for t in filtered_tools:
         meta = get_tool_metadata(t)
         name = original_to_sanitized.get(t.name, t.name)
         annotations = dict(meta.get("annotations", {}))
@@ -536,7 +553,7 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
                 merged["mcp-geo"] = internal_meta
             entry["_meta"] = merged
         tool_entries.append(entry)
-    return {"tools": tool_entries}
+    return {"tools": tool_entries, "toolsets": get_toolset_catalog()}
 
 
 def handle_search_tools(params: Dict[str, Any]) -> Any:
@@ -555,12 +572,20 @@ def handle_search_tools(params: Dict[str, Any]) -> Any:
     include_schemas = params.get("includeSchemas", False)
     if not isinstance(include_schemas, bool):
         raise ValueError("includeSchemas must be a boolean")
+    toolset = params.get("toolset")
+    if toolset is not None and not isinstance(toolset, str):
+        raise ValueError("toolset must be a string")
+    include_toolsets = parse_toolset_list(params.get("includeToolsets"))
+    exclude_toolsets = parse_toolset_list(params.get("excludeToolsets"))
     results = search_tools(
         query,
         mode=mode,
         limit=limit,
         category=category,
         include_schemas=include_schemas,
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
     )
     original_to_sanitized, _ = _build_tool_name_maps()
     for entry in results:
@@ -579,7 +604,7 @@ def handle_search_tools(params: Dict[str, Any]) -> Any:
                     original_name=original,
                 )
         entry["name"] = sanitized
-    return {"tools": results, "count": len(results), "mode": mode}
+    return {"tools": results, "count": len(results), "mode": mode, "toolsets": get_toolset_catalog()}
 
 def handle_call_tool(params: Dict[str, Any]) -> Any:
     name = params.get("tool") or params.get("name")

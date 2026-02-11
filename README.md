@@ -125,6 +125,8 @@ Tools are discoverable via `/tools/list` and rich metadata via `/tools/describe`
 Discovery responses use sanitized tool names (for example `os_places_by_postcode`) for
 client compatibility; map back to canonical dotted names via
 `annotations.originalName`. Tool calls accept both sanitized and dotted names.
+Use `toolset`, `includeToolsets`, and `excludeToolsets` filters to focus discovery
+responses by capability groups (for example `ons_selection`, `maps_tiles`, `apps_ui`).
 
 | Tool | Purpose |
 |------|---------|

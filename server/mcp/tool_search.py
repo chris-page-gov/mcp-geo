@@ -59,6 +59,18 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
 
+TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
+    "core_router": ("os_mcp.*",),
+    "places_names": ("os_places.*", "os_names.*", "os_linked_ids.get"),
+    "features_layers": ("os_features.*", "os_map.inventory", "os_map.export"),
+    "maps_tiles": ("os_maps.render", "os_vector_tiles.descriptor"),
+    "admin_boundaries": ("admin_lookup.*",),
+    "ons_selection": ("ons_select.search", "ons_search.query", "ons_codes.*"),
+    "ons_data": ("ons_data.*",),
+    "nomis_data": ("nomis.*",),
+    "apps_ui": ("os_apps.render_*", "os_apps.log_event"),
+}
+
 ALWAYS_LOADED_TOOLS: Set[str] = {
     "os_mcp.route_query",
     "os_mcp.stats_routing",
@@ -126,6 +138,120 @@ def build_keywords(tool: Tool) -> list[str]:
     return sorted(keywords)
 
 
+def _matches_toolset_pattern(tool_name: str, pattern: str) -> bool:
+    if pattern.endswith("*"):
+        return tool_name.startswith(pattern[:-1])
+    return tool_name == pattern
+
+
+def toolsets_for_tool(tool_name: str) -> list[str]:
+    matched: list[str] = []
+    for toolset, patterns in TOOLSET_PATTERNS.items():
+        if any(_matches_toolset_pattern(tool_name, pattern) for pattern in patterns):
+            matched.append(toolset)
+    return matched
+
+
+def parse_toolset_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        if not value.strip():
+            return []
+        return [item.strip() for item in value.split(",") if item.strip()]
+    if isinstance(value, list):
+        if not all(isinstance(item, str) for item in value):
+            raise ValueError("toolset filters must contain strings")
+        return [item.strip() for item in value if item.strip()]
+    raise ValueError("toolset filters must be a string or list of strings")
+
+
+def resolve_toolset_filters(
+    *,
+    toolset: str | None = None,
+    include_toolsets: Sequence[str] | None = None,
+    exclude_toolsets: Sequence[str] | None = None,
+) -> tuple[set[str], set[str]]:
+    include: set[str] = set()
+    exclude: set[str] = set()
+    if isinstance(toolset, str) and toolset.strip():
+        include.add(toolset.strip())
+    if include_toolsets:
+        include.update(name.strip() for name in include_toolsets if isinstance(name, str) and name.strip())
+    if exclude_toolsets:
+        exclude.update(name.strip() for name in exclude_toolsets if isinstance(name, str) and name.strip())
+    valid = set(TOOLSET_PATTERNS)
+    invalid = sorted((include | exclude) - valid)
+    if invalid:
+        raise ValueError(f"Unknown toolset(s): {invalid}. Valid toolsets: {sorted(valid)}")
+    return include, exclude
+
+
+def filter_tools_by_toolsets(
+    tools: Sequence[Tool],
+    *,
+    toolset: str | None = None,
+    include_toolsets: Sequence[str] | None = None,
+    exclude_toolsets: Sequence[str] | None = None,
+) -> list[Tool]:
+    include, exclude = resolve_toolset_filters(
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
+    include_active = bool(include)
+    filtered: list[Tool] = []
+    for tool in tools:
+        matched = set(toolsets_for_tool(tool.name))
+        if include_active and not (matched & include):
+            continue
+        if exclude and (matched & exclude):
+            continue
+        filtered.append(tool)
+    return filtered
+
+
+def filter_tool_names_by_toolsets(
+    names: Sequence[str],
+    *,
+    toolset: str | None = None,
+    include_toolsets: Sequence[str] | None = None,
+    exclude_toolsets: Sequence[str] | None = None,
+) -> list[str]:
+    include, exclude = resolve_toolset_filters(
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
+    include_active = bool(include)
+    filtered: list[str] = []
+    for name in names:
+        matched = set(toolsets_for_tool(name))
+        if include_active and not (matched & include):
+            continue
+        if exclude and (matched & exclude):
+            continue
+        filtered.append(name)
+    return filtered
+
+
+def get_toolset_catalog() -> dict[str, dict[str, Any]]:
+    names = sorted(tool.name for tool in all_tools())
+    catalog: dict[str, dict[str, Any]] = {}
+    for toolset, patterns in TOOLSET_PATTERNS.items():
+        members = [
+            name
+            for name in names
+            if any(_matches_toolset_pattern(name, pattern) for pattern in patterns)
+        ]
+        catalog[toolset] = {
+            "patterns": list(patterns),
+            "tools": members,
+            "count": len(members),
+        }
+    return catalog
+
+
 def get_tool_metadata(tool: Tool) -> Dict[str, Any]:
     return {
         "category": infer_category(tool.name).value,
@@ -158,6 +284,7 @@ def generate_mcp_toolset_config(server_name: str = "mcp-geo") -> Dict[str, Any]:
         "mcp_server_name": server_name,
         "default_config": {"defer_loading": True},
         "configs": configs,
+        "named_toolsets": get_toolset_catalog(),
     }
 
 
@@ -175,6 +302,7 @@ def get_tool_search_config(category: str | None = None) -> Dict[str, Any]:
             "total": len(names),
         },
         "categories": [c.value for c in ToolCategory],
+        "toolsets": get_toolset_catalog(),
         "mcp_toolset_config": generate_mcp_toolset_config(),
         "system_prompt": get_tool_search_system_prompt(),
     }
@@ -227,8 +355,16 @@ def search_tools(
     limit: int = 10,
     category: str | None = None,
     include_schemas: bool = False,
+    toolset: str | None = None,
+    include_toolsets: Sequence[str] | None = None,
+    exclude_toolsets: Sequence[str] | None = None,
 ) -> List[Dict[str, Any]]:
-    tools = all_tools()
+    tools = filter_tools_by_toolsets(
+        all_tools(),
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
     results: list[dict[str, Any]] = []
     pattern = None
     if mode == "regex":
@@ -285,5 +421,12 @@ __all__ = [
     "get_tool_search_system_prompt",
     "generate_mcp_toolset_config",
     "get_tool_search_config",
+    "TOOLSET_PATTERNS",
+    "toolsets_for_tool",
+    "parse_toolset_list",
+    "resolve_toolset_filters",
+    "filter_tools_by_toolsets",
+    "filter_tool_names_by_toolsets",
+    "get_toolset_catalog",
     "search_tools",
 ]

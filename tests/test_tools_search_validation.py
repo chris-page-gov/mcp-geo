@@ -22,6 +22,24 @@ def test_tools_search_invalid_include_schemas(client):
     assert resp.json()["code"] == "INVALID_INPUT"
 
 
+def test_tools_search_invalid_toolset_type(client):
+    resp = client.post("/tools/search", json={"query": "os", "toolset": 123})
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_tools_search_invalid_include_toolsets_type(client):
+    resp = client.post("/tools/search", json={"query": "os", "includeToolsets": 123})
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_tools_search_unknown_toolset(client):
+    resp = client.post("/tools/search", json={"query": "os", "toolset": "not-a-toolset"})
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
 def test_tools_call_unknown_prefixed_tool(client):
     resp = client.post("/tools/call", json={"tool": "os_places.missing"})
     assert resp.status_code == 501

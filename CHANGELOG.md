@@ -21,6 +21,9 @@ All notable changes to this project will be documented in this file.
   deterministic non-UI fallback payloads, and sanitized/dotted tool-name behavior.
 - Added sanitized-first HTTP tool discovery output (`/tools/list`, `/tools/describe`,
   `/tools/search`) with `annotations.originalName` alias mapping metadata.
+- Added named toolsets (Google toolkit-style grouping) with `toolset`,
+  `includeToolsets`, and `excludeToolsets` filters across HTTP and MCP
+  tool discovery/search surfaces.
 
 ## [0.2.12] - 2026-02-11
 ### Added

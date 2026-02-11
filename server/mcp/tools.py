@@ -4,7 +4,13 @@ from typing import Any, Dict
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
-from server.mcp.tool_search import get_tool_metadata, search_tools
+from server.mcp.tool_search import (
+    filter_tool_names_by_toolsets,
+    get_tool_metadata,
+    get_toolset_catalog,
+    parse_toolset_list,
+    search_tools,
+)
 from server.tool_naming import build_tool_name_maps, resolve_tool_name, rewrite_tool_schema
 from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
@@ -103,14 +109,36 @@ router = APIRouter()
 
 
 @router.get("/tools/list")
-def list_tools_endpoint(limit: int = 10, page: int = 1) -> Dict[str, Any]:
+def list_tools_endpoint(
+    limit: int = 10,
+    page: int = 1,
+    toolset: str | None = None,
+    includeToolsets: str | None = None,
+    excludeToolsets: str | None = None,
+) -> Any:
     names = list_tools()
+    try:
+        filtered_names = filter_tool_names_by_toolsets(
+            names,
+            toolset=toolset,
+            include_toolsets=parse_toolset_list(includeToolsets),
+            exclude_toolsets=parse_toolset_list(excludeToolsets),
+        )
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"isError": True, "code": "INVALID_INPUT", "message": str(exc)},
+        )
     original_to_sanitized, _ = build_tool_name_maps(names)
-    sanitized = [original_to_sanitized.get(name, name) for name in names]
+    sanitized = [original_to_sanitized.get(name, name) for name in filtered_names]
     start = (page - 1) * limit
     end = start + limit
     next_page_token = str(page + 1) if end < len(sanitized) else None
-    return {"tools": sanitized[start:end], "nextPageToken": next_page_token}
+    return {
+        "tools": sanitized[start:end],
+        "nextPageToken": next_page_token,
+        "toolsets": get_toolset_catalog(),
+    }
 
 
 @router.post("/tools/call")
@@ -220,6 +248,24 @@ async def search_tools_endpoint(request: Request):
                 "message": "includeSchemas must be a boolean",
             },
         )
+    toolset = data.get("toolset")
+    if toolset is not None and not isinstance(toolset, str):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "toolset must be a string",
+            },
+        )
+    try:
+        include_toolsets = parse_toolset_list(data.get("includeToolsets"))
+        exclude_toolsets = parse_toolset_list(data.get("excludeToolsets"))
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"isError": True, "code": "INVALID_INPUT", "message": str(exc)},
+        )
     try:
         results = search_tools(
             query,
@@ -227,6 +273,9 @@ async def search_tools_endpoint(request: Request):
             limit=limit,
             category=category,
             include_schemas=include_schemas,
+            toolset=toolset,
+            include_toolsets=include_toolsets,
+            exclude_toolsets=exclude_toolsets,
         )
     except ValueError as exc:
         return JSONResponse(
@@ -254,7 +303,12 @@ async def search_tools_endpoint(request: Request):
             annotations.setdefault("originalName", original_name)
             entry["annotations"] = annotations
         normalized.append(entry)
-    return {"tools": normalized, "count": len(normalized), "mode": mode}
+    return {
+        "tools": normalized,
+        "count": len(normalized),
+        "mode": mode,
+        "toolsets": get_toolset_catalog(),
+    }
 
 
 def _describe_tool(tool: Tool, original_to_sanitized: dict[str, str]) -> dict[str, Any]:
@@ -296,11 +350,39 @@ def _describe_tool(tool: Tool, original_to_sanitized: dict[str, str]) -> dict[st
 
 
 @router.get("/tools/describe")
-def describe_tools(name: str | None = None):
+def describe_tools(
+    name: str | None = None,
+    toolset: str | None = None,
+    includeToolsets: str | None = None,
+    excludeToolsets: str | None = None,
+):
     original_names = list_tools()
+    try:
+        filtered_names = set(
+            filter_tool_names_by_toolsets(
+                original_names,
+                toolset=toolset,
+                include_toolsets=parse_toolset_list(includeToolsets),
+                exclude_toolsets=parse_toolset_list(excludeToolsets),
+            )
+        )
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"isError": True, "code": "INVALID_INPUT", "message": str(exc)},
+        )
     original_to_sanitized, _ = build_tool_name_maps(original_names)
     if name:
         resolved_name = resolve_tool_name(name, original_names)
+        if filtered_names and resolved_name not in filtered_names:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={
+                    "isError": True,
+                    "code": "UNKNOWN_TOOL",
+                    "message": f"Tool '{name}' not found",
+                },
+            )
         tool = get(resolved_name)
         if not tool:
             return JSONResponse(
@@ -311,7 +393,12 @@ def describe_tools(name: str | None = None):
                     "message": f"Tool '{name}' not found",
                 },
             )
-        return {"tools": [_describe_tool(tool, original_to_sanitized)]}
+        return {
+            "tools": [_describe_tool(tool, original_to_sanitized)],
+            "toolsets": get_toolset_catalog(),
+        }
+    filtered_tools = [tool for tool in all_tools() if tool.name in filtered_names]
     return {
-        "tools": [_describe_tool(t, original_to_sanitized) for t in all_tools()]
+        "tools": [_describe_tool(t, original_to_sanitized) for t in filtered_tools],
+        "toolsets": get_toolset_catalog(),
     }

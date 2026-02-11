@@ -58,3 +58,20 @@ def test_tools_describe_unknown():
     body = resp.json()
     assert body.get("isError")
     assert body.get("code") == "UNKNOWN_TOOL"
+
+
+def test_tools_list_toolset_filter():
+    resp = client.get("/tools/list", params={"toolset": "maps_tiles"})
+    assert resp.status_code == 200
+    tools = resp.json()["tools"]
+    assert tools
+    assert all(name in {"os_maps_render", "os_vector_tiles_descriptor"} for name in tools)
+
+
+def test_tools_describe_toolset_filter():
+    resp = client.get("/tools/describe", params={"toolset": "maps_tiles"})
+    assert resp.status_code == 200
+    tools = resp.json()["tools"]
+    assert tools
+    names = {tool["name"] for tool in tools}
+    assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
