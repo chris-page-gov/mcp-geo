@@ -47,6 +47,9 @@ All notable changes to this project will be documented in this file.
 - Added an MCP-Apps payload size guard in `tools/os_apps.py` so oversized
   embedded HTML is downgraded to URI/text delivery before crossing the 1MB
   transport ceiling.
+- Removed legacy Warwick/Leamington 3D artifacts from the repo:
+  `ui/warwick_leamington_3d.html` and
+  `scripts/build_warwick_leamington_wards_premises_3d.py`.
 
 ### Fixed
 - Hardened `os_poi` source-entry extraction to safely ignore non-object rows
