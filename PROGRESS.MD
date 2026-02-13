@@ -43,10 +43,10 @@ Legend: pending, in_progress, done
 | WS-SEARCH-3 Places + Linked IDs closure | done | none | Added `os_places.radius`, `os_places.polygon`, and linked identifier extra paths. |
 | WS-MAP-4 Raster + WFS capabilities | done | WS-INT-0 | Added WMTS/ZXY raster tools and WFS/WFS archive capabilities with delivery controls. |
 | WS-POS-5 OTA + OS Net tooling | done | WS-INT-0 | Added NGD OTA discovery tools and OS Net station/log/RINEX tools. |
-| WS-QGIS-6 QGIS linkage tools | pending | WS-MAP-4, WS-POS-5 | Adds QGIS connection/export descriptor tools. |
-| WS-OBS-7 Observability coverage | pending | WS-DL-2, WS-MAP-4 or WS-POS-5 | Adds latency/bytes/fallback metrics and export lifecycle logs. |
+| WS-QGIS-6 QGIS linkage tools | done | WS-MAP-4, WS-POS-5 | Added `os_qgis.vector_tile_profile` and `os_qgis.export_geopackage_descriptor` with inline/resource/auto delivery and QGIS style/export descriptors. |
+| WS-OBS-7 Observability coverage | done | WS-DL-2, WS-MAP-4 or WS-POS-5 | Added auto-delivery resource-fallback metric and structured OS download export lifecycle logs (`requested`, `queued`, `completed`, `failed`). |
 | WS-DOC-8 Documentation closure | done | WS-CAT-1 and feature streams | Updated planning/status docs and endpoint coverage notes to match implemented streams. |
-| WS-INT-9 Final integration + regression | done | all workstreams | Integrated registrations/resources and passed full regression (`pytest -q --cov-report=term-missing:skip-covered`). |
+| WS-INT-9 Final integration + regression | done | all workstreams | Integrated registrations/resources and passed full regression (`pytest -q --cov-report=term-missing:skip-covered`: 683 passed, 6 skipped, 90.16% coverage). |
 
 ## Progress against the original vision
 

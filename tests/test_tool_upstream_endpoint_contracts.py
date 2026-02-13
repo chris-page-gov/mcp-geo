@@ -123,6 +123,11 @@ def test_os_tool_upstream_url_contracts(monkeypatch):
         },
         {"tool": "os_maps.wmts_capabilities"},
         {"tool": "os_maps.raster_tile", "style": "Road_3857", "z": 7, "x": 63, "y": 42},
+        {"tool": "os_qgis.vector_tile_profile", "style": "OS_VTS_3857_Light"},
+        {
+            "tool": "os_qgis.export_geopackage_descriptor",
+            "sourceResourceUri": "resource://mcp-geo/os-exports/demo.json",
+        },
         {"tool": "os_tiles_ota.collections"},
         {"tool": "os_tiles_ota.tilematrixsets"},
         {"tool": "os_tiles_ota.conformance"},

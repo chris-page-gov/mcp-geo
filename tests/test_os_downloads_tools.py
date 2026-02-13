@@ -348,3 +348,41 @@ def test_os_downloads_expiry_iso_none_when_ttl_not_positive(monkeypatch) -> None
 
     monkeypatch.setattr(os_downloads.settings, "OS_DATA_CACHE_TTL", 0, raising=False)
     assert os_downloads._expiry_iso(1700000000.0) is None
+
+
+def test_os_downloads_export_lifecycle_logging(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_downloads
+
+    os_downloads._EXPORT_STORE.clear()
+    events: list[dict] = []
+
+    def fake_get_json(url: str, params=None):
+        if url.endswith("/downloads/v1/products/openroads/downloads"):
+            return 200, [{"id": "d1", "fileName": "openroads-1.zip"}]
+        return 200, []
+
+    def fake_log_export_lifecycle(**kwargs):
+        events.append(kwargs)
+
+    monkeypatch.setattr(os_downloads.client, "get_json", fake_get_json, raising=True)
+    monkeypatch.setattr(
+        os_downloads,
+        "log_export_lifecycle",
+        fake_log_export_lifecycle,
+        raising=True,
+    )
+
+    ok = client.post(
+        "/tools/call",
+        json={"tool": "os_downloads.prepare_export", "productId": "openroads"},
+    )
+    assert ok.status_code == 200
+    states = [event.get("state") for event in events]
+    assert "requested" in states
+    assert "queued" in states
+    assert "completed" in states
+
+    events.clear()
+    bad = client.post("/tools/call", json={"tool": "os_downloads.prepare_export"})
+    assert bad.status_code == 400
+    assert any(event.get("state") == "failed" for event in events)

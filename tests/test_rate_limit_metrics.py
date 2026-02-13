@@ -61,6 +61,7 @@ def test_metrics_endpoint_exposes_tool_and_playground_observability():
     assert "mcp_tool_payload_bytes_total" in text
     assert "mcp_tool_cache_hits_total" in text
     assert "mcp_tool_fallback_total" in text
+    assert "mcp_tool_delivery_resource_fallback_total" in text
     assert "playground_tool_call_records_total" in text
     assert "playground_orchestration_requests_total" in text
     assert "playground_events_total" in text

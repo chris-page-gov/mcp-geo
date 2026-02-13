@@ -5,6 +5,7 @@ from typing import Any
 from uuid import uuid4
 
 from server.config import settings
+from server.logging import log_export_lifecycle
 from tools.os_common import client
 from tools.os_delivery import (
     now_utc_iso,
@@ -28,6 +29,36 @@ def _invalid(message: str) -> ToolResult:
 
 def _integration_error(message: str) -> ToolResult:
     return 500, {"isError": True, "code": "INTEGRATION_ERROR", "message": message}
+
+
+def _default_inline_max_bytes() -> int:
+    return int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000))
+
+
+def _log_export_state(
+    *,
+    tool_name: str,
+    state: str,
+    export_id: str | None = None,
+    product_id: str | None = None,
+    delivery: str | None = None,
+    bytes_value: int | None = None,
+    resource_uri: str | None = None,
+    error_code: str | None = None,
+    detail: str | None = None,
+) -> None:
+    log_export_lifecycle(
+        service="os_downloads",
+        tool_name=tool_name,
+        state=state,
+        export_id=export_id,
+        product_id=product_id,
+        delivery=delivery,
+        bytes_value=bytes_value,
+        resource_uri=resource_uri,
+        error_code=error_code,
+        detail=detail,
+    )
 
 
 def _downloads_get(path: str, params: dict[str, Any] | None = None) -> ToolResult:
@@ -56,7 +87,11 @@ def _parse_offset(value: Any) -> int | None:
     return None
 
 
-def _paginate(items: list[dict[str, Any]], limit: int, offset: int) -> tuple[list[dict[str, Any]], str | None]:
+def _paginate(
+    items: list[dict[str, Any]],
+    limit: int,
+    offset: int,
+) -> tuple[list[dict[str, Any]], str | None]:
     sliced = items[offset: offset + limit]
     next_offset = offset + limit
     next_page = str(next_offset) if next_offset < len(items) else None
@@ -169,7 +204,11 @@ def _list_product_downloads(payload: dict[str, Any]) -> ToolResult:
     offset = _parse_offset(payload.get("pageToken") or payload.get("offset"))
     if offset is None:
         return _invalid("pageToken/offset must be a non-negative integer")
-    page, next_page_token = _paginate([item for item in body if isinstance(item, dict)], limit, offset)
+    page, next_page_token = _paginate(
+        [item for item in body if isinstance(item, dict)],
+        limit,
+        offset,
+    )
 
     delivery, delivery_err = parse_delivery(payload.get("delivery"), default="auto")
     if delivery_err:
@@ -192,7 +231,7 @@ def _list_product_downloads(payload: dict[str, Any]) -> ToolResult:
         response_prefix=f"os-downloads-{product_id}-downloads",
         payload=response_payload,
         requested_delivery=delivery or "auto",
-        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+        inline_max_bytes=inline_max_bytes or _default_inline_max_bytes(),
         include_stream_hint=True,
     )
 
@@ -220,7 +259,7 @@ def _list_data_packages(payload: dict[str, Any]) -> ToolResult:
         response_prefix="os-downloads-data-packages",
         payload=response_payload,
         requested_delivery=delivery or "auto",
-        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+        inline_max_bytes=inline_max_bytes or _default_inline_max_bytes(),
         include_stream_hint=True,
     )
 
@@ -233,19 +272,63 @@ def _expiry_iso(created_at_epoch: float) -> str | None:
 
 
 def _prepare_export(payload: dict[str, Any]) -> ToolResult:
+    export_id = uuid4().hex
     product_id = str(payload.get("productId", "")).strip()
     if not product_id:
+        _log_export_state(
+            tool_name="os_downloads.prepare_export",
+            state="failed",
+            export_id=export_id,
+            error_code="INVALID_INPUT",
+            detail="productId is required",
+        )
         return _invalid("productId is required")
+    _log_export_state(
+        tool_name="os_downloads.prepare_export",
+        state="requested",
+        export_id=export_id,
+        product_id=product_id,
+    )
 
     filename_contains = payload.get("filenameContains")
     if filename_contains is not None and not isinstance(filename_contains, str):
+        _log_export_state(
+            tool_name="os_downloads.prepare_export",
+            state="failed",
+            export_id=export_id,
+            product_id=product_id,
+            error_code="INVALID_INPUT",
+            detail="filenameContains must be a string when provided",
+        )
         return _invalid("filenameContains must be a string when provided")
     q_text = filename_contains.strip().lower() if isinstance(filename_contains, str) else ""
 
+    _log_export_state(
+        tool_name="os_downloads.prepare_export",
+        state="queued",
+        export_id=export_id,
+        product_id=product_id,
+    )
     status, body = _downloads_get(f"/products/{product_id}/downloads", None)
     if status != 200:
+        _log_export_state(
+            tool_name="os_downloads.prepare_export",
+            state="failed",
+            export_id=export_id,
+            product_id=product_id,
+            error_code=(body.get("code") if isinstance(body, dict) else "OS_API_ERROR"),
+            detail=(body.get("message") if isinstance(body, dict) else None),
+        )
         return status, body
     if not isinstance(body, list):
+        _log_export_state(
+            tool_name="os_downloads.prepare_export",
+            state="failed",
+            export_id=export_id,
+            product_id=product_id,
+            error_code="INTEGRATION_ERROR",
+            detail="Expected downloads list from OS Downloads API.",
+        )
         return _integration_error("Expected downloads list from OS Downloads API.")
 
     filtered: list[dict[str, Any]] = []
@@ -261,7 +344,6 @@ def _prepare_export(payload: dict[str, Any]) -> ToolResult:
                 continue
         filtered.append(item)
 
-    export_id = uuid4().hex
     created_at_epoch = time.time()
     created_at = now_utc_iso()
     expires_at = _expiry_iso(created_at_epoch)
@@ -277,14 +359,30 @@ def _prepare_export(payload: dict[str, Any]) -> ToolResult:
 
     delivery, delivery_err = parse_delivery(payload.get("delivery"), default="resource")
     if delivery_err:
+        _log_export_state(
+            tool_name="os_downloads.prepare_export",
+            state="failed",
+            export_id=export_id,
+            product_id=product_id,
+            error_code="INVALID_INPUT",
+            detail=delivery_err,
+        )
         return _invalid(delivery_err)
     inline_max_bytes, max_err = parse_inline_max_bytes(payload.get("inlineMaxBytes"))
     if max_err:
+        _log_export_state(
+            tool_name="os_downloads.prepare_export",
+            state="failed",
+            export_id=export_id,
+            product_id=product_id,
+            error_code="INVALID_INPUT",
+            detail=max_err,
+        )
         return _invalid(max_err)
     chosen_delivery = select_delivery_mode(
         requested_delivery=delivery or "resource",
         payload_bytes=payload_bytes(export_payload),
-        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+        inline_max_bytes=inline_max_bytes or _default_inline_max_bytes(),
     )
 
     resource_meta: dict[str, Any] | None = None
@@ -323,32 +421,86 @@ def _prepare_export(payload: dict[str, Any]) -> ToolResult:
     else:
         response["export"] = export_payload
         response["bytes"] = payload_bytes(export_payload)
+    _log_export_state(
+        tool_name="os_downloads.prepare_export",
+        state="completed",
+        export_id=export_id,
+        product_id=product_id,
+        delivery=chosen_delivery,
+        bytes_value=(
+            response.get("bytes") if isinstance(response.get("bytes"), int) else None
+        ),
+        resource_uri=(
+            response.get("resourceUri")
+            if isinstance(response.get("resourceUri"), str)
+            else None
+        ),
+    )
     return 200, response
 
 
 def _get_export(payload: dict[str, Any]) -> ToolResult:
     export_id = str(payload.get("exportId", "")).strip()
     if not export_id:
+        _log_export_state(
+            tool_name="os_downloads.get_export",
+            state="failed",
+            error_code="INVALID_INPUT",
+            detail="exportId is required",
+        )
         return _invalid("exportId is required")
+    _log_export_state(
+        tool_name="os_downloads.get_export",
+        state="requested",
+        export_id=export_id,
+    )
     stored = _EXPORT_STORE.get(export_id)
     if stored is None:
+        _log_export_state(
+            tool_name="os_downloads.get_export",
+            state="failed",
+            export_id=export_id,
+            error_code="NOT_FOUND",
+            detail="Export not found",
+        )
         return 404, {"isError": True, "code": "NOT_FOUND", "message": "Export not found"}
 
     export_payload = stored.get("payload")
     if not isinstance(export_payload, dict):
+        _log_export_state(
+            tool_name="os_downloads.get_export",
+            state="failed",
+            export_id=export_id,
+            error_code="INTEGRATION_ERROR",
+            detail="Stored export payload is invalid.",
+        )
         return _integration_error("Stored export payload is invalid.")
     resource_meta = stored.get("resourceMeta")
 
     delivery, delivery_err = parse_delivery(payload.get("delivery"), default="auto")
     if delivery_err:
+        _log_export_state(
+            tool_name="os_downloads.get_export",
+            state="failed",
+            export_id=export_id,
+            error_code="INVALID_INPUT",
+            detail=delivery_err,
+        )
         return _invalid(delivery_err)
     inline_max_bytes, max_err = parse_inline_max_bytes(payload.get("inlineMaxBytes"))
     if max_err:
+        _log_export_state(
+            tool_name="os_downloads.get_export",
+            state="failed",
+            export_id=export_id,
+            error_code="INVALID_INPUT",
+            detail=max_err,
+        )
         return _invalid(max_err)
     chosen_delivery = select_delivery_mode(
         requested_delivery=delivery or "auto",
         payload_bytes=payload_bytes(export_payload),
-        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+        inline_max_bytes=inline_max_bytes or _default_inline_max_bytes(),
     )
 
     if chosen_delivery == "resource":
@@ -358,7 +510,7 @@ def _get_export(payload: dict[str, Any]) -> ToolResult:
                 payload=export_payload,
             )
             stored["resourceMeta"] = resource_meta
-        return 200, {
+        response = {
             "exportId": export_id,
             "state": "completed",
             "createdAt": stored.get("createdAt"),
@@ -369,8 +521,17 @@ def _get_export(payload: dict[str, Any]) -> ToolResult:
             "sha256": resource_meta["sha256"],
             "live": True,
         }
+        _log_export_state(
+            tool_name="os_downloads.get_export",
+            state="completed",
+            export_id=export_id,
+            delivery="resource",
+            bytes_value=response.get("bytes"),
+            resource_uri=response.get("resourceUri"),
+        )
+        return 200, response
 
-    return 200, {
+    response = {
         "exportId": export_id,
         "state": "completed",
         "createdAt": stored.get("createdAt"),
@@ -380,6 +541,14 @@ def _get_export(payload: dict[str, Any]) -> ToolResult:
         "export": export_payload,
         "live": True,
     }
+    _log_export_state(
+        tool_name="os_downloads.get_export",
+        state="completed",
+        export_id=export_id,
+        delivery="inline",
+        bytes_value=response.get("bytes"),
+    )
+    return 200, response
 
 
 register(
@@ -502,7 +671,10 @@ register(
 register(
     Tool(
         name="os_downloads.prepare_export",
-        description="Prepare an OS downloads export payload and return inline or resource delivery metadata.",
+        description=(
+            "Prepare an OS downloads export payload and return inline or resource "
+            "delivery metadata."
+        ),
         input_schema={
             "type": "object",
             "properties": {
@@ -559,4 +731,3 @@ register(
         handler=_get_export,
     )
 )
-

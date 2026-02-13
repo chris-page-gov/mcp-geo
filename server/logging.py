@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-from typing import Iterable
 
 try:
     from loguru import logger
@@ -26,11 +25,14 @@ except ImportError:  # pragma: no cover - optional dependency fallback
         def add(self, *_args: object, **_kwargs: object) -> None:
             return None
 
-        def bind(self, **_kwargs: object) -> "_StubLogger":
+        def bind(self, **_kwargs: object) -> _StubLogger:
             return self
 
         def warning(self, message: str) -> None:
             _base_logger.warning(message)
+
+        def info(self, message: str) -> None:
+            _base_logger.info(message)
 
     logger = _StubLogger()
 
@@ -81,4 +83,34 @@ def log_upstream_error(
     }
     logger.bind(**{k: v for k, v in payload.items() if v is not None}).warning(
         "Upstream error"
+    )
+
+
+def log_export_lifecycle(
+    *,
+    service: str,
+    tool_name: str,
+    state: str,
+    export_id: str | None = None,
+    product_id: str | None = None,
+    delivery: str | None = None,
+    bytes_value: int | None = None,
+    resource_uri: str | None = None,
+    error_code: str | None = None,
+    detail: str | None = None,
+) -> None:
+    payload = {
+        "service": service,
+        "tool_name": tool_name,
+        "state": state,
+        "export_id": export_id,
+        "product_id": product_id,
+        "delivery": delivery,
+        "bytes": bytes_value,
+        "resource_uri": resource_uri,
+        "error_code": error_code,
+        "detail": detail,
+    }
+    logger.bind(**{k: v for k, v in payload.items() if v is not None}).info(
+        "Export lifecycle"
     )

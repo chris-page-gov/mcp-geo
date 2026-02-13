@@ -79,3 +79,51 @@ def test_observability_json_size_and_cache_hit_edges():
     assert observability._json_size_bytes(Unserializable()) == len("fallback-value")
     assert observability._result_has_cache_hit({"fromCache": True}) is True
     assert observability._result_has_cache_hit({"meta": {"cacheHit": True}}) is True
+    assert observability._result_has_fallback({"fallback": {"kind": "map"}}) is True
+
+
+def test_observability_delivery_fallback_detection():
+    from server import observability
+
+    assert observability._requested_delivery_mode({}) == "auto"
+    assert observability._requested_delivery_mode({"delivery": "AUTO"}) == "auto"
+    assert observability._requested_delivery_mode({"delivery": "resource"}) == "resource"
+    assert observability._result_delivery_mode({"delivery": "resource"}) == "resource"
+    assert observability._result_delivery_mode({"delivery": "inline"}) == "inline"
+    assert observability._result_delivery_mode({"delivery": 1}) is None
+    assert observability._result_has_delivery_resource_fallback(
+        {"delivery": "auto"},
+        {"delivery": "resource"},
+    ) is True
+    assert observability._result_has_delivery_resource_fallback(
+        {},
+        {"delivery": "resource"},
+    ) is True
+    assert observability._result_has_delivery_resource_fallback(
+        {"delivery": "inline"},
+        {"delivery": "resource"},
+    ) is False
+    assert observability._result_has_delivery_resource_fallback(
+        {"delivery": "auto"},
+        {"delivery": "inline"},
+    ) is False
+
+
+def test_observability_delivery_fallback_metric_line():
+    from server import observability
+
+    observability.record_tool_call(
+        tool_name="obs_delivery_fallback_test",
+        transport="unit",
+        payload={},
+        result={"delivery": "resource"},
+        status_code=200,
+        latency_ms=1.2,
+    )
+    lines = observability.build_prometheus_lines()
+    assert any(
+        line.startswith("mcp_tool_delivery_resource_fallback_total")
+        and 'tool="obs_delivery_fallback_test"' in line
+        and 'transport="unit"' in line
+        for line in lines
+    )

@@ -29,18 +29,15 @@ Completed workstreams:
 - WS-SEARCH-3
 - WS-MAP-4
 - WS-POS-5
-- WS-DOC-8
-- WS-INT-9
-
-Pending workstreams:
-
 - WS-QGIS-6
 - WS-OBS-7
+- WS-DOC-8
+- WS-INT-9
 
 Current validation snapshot:
 
 - Full regression: `pytest -q --cov-report=term-missing:skip-covered`
-- Result: 90.22% coverage, 675 passed, 6 skipped.
+- Result: 90.16% coverage, 683 passed, 6 skipped.
 - Refreshed OS catalog size: 273 entries (`resources/os_catalog.json`).
 
 ## Verified Baseline (Initial)
@@ -470,13 +467,13 @@ Each thread/subagent should follow this checklist:
 
 ## Tracking Checklist
 
-- [ ] WS-INT-0 contract freeze merged
-- [ ] WS-CAT-1 catalog closure merged
-- [ ] WS-DL-2 downloads tool family merged
-- [ ] WS-SEARCH-3 places/linked IDs merged
-- [ ] WS-MAP-4 raster/WFS tooling merged
-- [ ] WS-POS-5 OTA/OS Net tooling merged
-- [ ] WS-QGIS-6 QGIS linkage merged
-- [ ] WS-OBS-7 observability updates merged
-- [ ] WS-DOC-8 documentation closure merged
-- [ ] WS-INT-9 final integration and regression merged
+- [x] WS-INT-0 contract freeze merged
+- [x] WS-CAT-1 catalog closure merged
+- [x] WS-DL-2 downloads tool family merged
+- [x] WS-SEARCH-3 places/linked IDs merged
+- [x] WS-MAP-4 raster/WFS tooling merged
+- [x] WS-POS-5 OTA/OS Net tooling merged
+- [x] WS-QGIS-6 QGIS linkage merged
+- [x] WS-OBS-7 observability updates merged
+- [x] WS-DOC-8 documentation closure merged
+- [x] WS-INT-9 final integration and regression merged

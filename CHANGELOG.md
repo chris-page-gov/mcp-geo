@@ -64,6 +64,9 @@ All notable changes to this project will be documented in this file.
   `resource://mcp-geo/os-cache/{file}`,
   `resource://mcp-geo/os-exports-index`,
   and `resource://mcp-geo/os-exports/{file}`.
+- Added QGIS linkage tools in `tools/os_qgis.py`:
+  `os_qgis.vector_tile_profile` and `os_qgis.export_geopackage_descriptor`
+  with `delivery=inline|resource|auto` support and OS VTS style artifact hints.
 
 ### Changed
 - Removed the dedicated `os_apps.render_warwick_leamington_3d` tool and
@@ -79,6 +82,9 @@ All notable changes to this project will be documented in this file.
   Road/Outdoor raster style probes; refreshed `resources/os_catalog.json`.
 - Updated MCP tool registration/search metadata in `server/mcp/tools.py` and
   `server/mcp/tool_search.py` for new OS families and discovery coverage.
+- Extended observability with `mcp_tool_delivery_resource_fallback_total`
+  and wired OS Downloads export lifecycle structured logging for
+  `requested`, `queued`, `completed`, and `failed` states.
 
 ### Fixed
 - Hardened `os_poi` source-entry extraction to safely ignore non-object rows
@@ -104,6 +110,8 @@ All notable changes to this project will be documented in this file.
 - Extended existing suites (`tests/test_os_common.py`, `tests/test_resource_catalog.py`,
   `tests/test_resources_data_catalog.py`, `tests/test_tool_upstream_endpoint_contracts.py`,
   `tests/test_os_catalog_snapshot.py`) for new endpoint/resource contracts and error paths.
+- Added `tests/test_os_qgis_tools.py` and expanded observability/downloads
+  branch tests for delivery fallback metrics and export lifecycle logging.
 
 ## [0.2.12] - 2026-02-11
 ### Added

@@ -17,6 +17,7 @@ _TOOL_INPUT_BYTES_TOTAL: dict[tuple[str, str], int] = defaultdict(int)
 _TOOL_OUTPUT_BYTES_TOTAL: dict[tuple[str, str], int] = defaultdict(int)
 _TOOL_CACHE_HITS_TOTAL: dict[tuple[str, str], int] = defaultdict(int)
 _TOOL_FALLBACK_TOTAL: dict[tuple[str, str], int] = defaultdict(int)
+_TOOL_DELIVERY_RESOURCE_FALLBACK_TOTAL: dict[tuple[str, str], int] = defaultdict(int)
 
 _PLAYGROUND_LOCK = threading.Lock()
 _PLAYGROUND_TOOL_CALL_RECORDS_TOTAL = 0
@@ -66,6 +67,40 @@ def _result_has_fallback(result: Any) -> bool:
     return isinstance(meta, dict) and meta.get("fallback") is True
 
 
+def _requested_delivery_mode(payload: Any) -> str:
+    if not isinstance(payload, dict):
+        return "auto"
+    raw = payload.get("delivery")
+    if not isinstance(raw, str) or not raw.strip():
+        return "auto"
+    mode = raw.strip().lower()
+    if mode in {"inline", "resource", "auto"}:
+        return mode
+    return "auto"
+
+
+def _result_delivery_mode(result: Any) -> str | None:
+    if not isinstance(result, dict):
+        return None
+    raw = result.get("delivery")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    mode = raw.strip().lower()
+    if mode in {"inline", "resource", "auto"}:
+        return mode
+    return None
+
+
+def _result_has_delivery_resource_fallback(payload: Any, result: Any) -> bool:
+    if not isinstance(result, dict):
+        return False
+    if result.get("isError") is True:
+        return False
+    requested_mode = _requested_delivery_mode(payload)
+    result_mode = _result_delivery_mode(result)
+    return requested_mode == "auto" and result_mode == "resource"
+
+
 def record_tool_call(
     *,
     tool_name: str,
@@ -81,6 +116,7 @@ def record_tool_call(
     is_error = status_code >= 400 or (isinstance(result, dict) and result.get("isError") is True)
     cache_hit = _result_has_cache_hit(result)
     fallback = _result_has_fallback(result)
+    delivery_resource_fallback = _result_has_delivery_resource_fallback(payload, result)
 
     with _TOOL_LOCK:
         _TOOL_CALLS_TOTAL[key] += 1
@@ -90,7 +126,7 @@ def record_tool_call(
         _TOOL_LATENCY_COUNT[key] += 1
         hist = _TOOL_LATENCY_HIST.setdefault(
             key,
-            {bucket: 0 for bucket in _TOOL_LATENCY_BUCKETS},
+            dict.fromkeys(_TOOL_LATENCY_BUCKETS, 0),
         )
         for bucket in _TOOL_LATENCY_BUCKETS:
             if latency_ms <= bucket:
@@ -104,6 +140,8 @@ def record_tool_call(
             _TOOL_CACHE_HITS_TOTAL[key] += 1
         if fallback:
             _TOOL_FALLBACK_TOTAL[key] += 1
+        if delivery_resource_fallback:
+            _TOOL_DELIVERY_RESOURCE_FALLBACK_TOTAL[key] += 1
 
 
 def record_playground_tool_call(_tool_name: str) -> None:
@@ -138,6 +176,9 @@ def build_prometheus_lines() -> list[str]:
         "# TYPE mcp_tool_cache_hits_total counter",
         "# HELP mcp_tool_fallback_total Total tool results that included fallback payloads",
         "# TYPE mcp_tool_fallback_total counter",
+        "# HELP mcp_tool_delivery_resource_fallback_total Total auto-delivery tool calls that "
+        "fell back to resource delivery",
+        "# TYPE mcp_tool_delivery_resource_fallback_total counter",
         "# HELP playground_tool_call_records_total Total /playground/tool_call records",
         "# TYPE playground_tool_call_records_total counter",
         "# HELP playground_orchestration_requests_total Total /playground/orchestration reads",
@@ -176,7 +217,8 @@ def build_prometheus_lines() -> list[str]:
             )
             lines.append(
                 "mcp_tool_latency_ms_count"
-                f"{{tool=\"{_label_escape(tool)}\",transport=\"{_label_escape(transport)}\"}} {count}"
+                f"{{tool=\"{_label_escape(tool)}\","
+                f"transport=\"{_label_escape(transport)}\"}} {count}"
             )
             lines.append(
                 "mcp_tool_latency_ms_sum"
@@ -205,6 +247,11 @@ def build_prometheus_lines() -> list[str]:
                 "mcp_tool_fallback_total"
                 f"{{tool=\"{_label_escape(tool)}\",transport=\"{_label_escape(transport)}\"}} "
                 f"{_TOOL_FALLBACK_TOTAL.get(key, 0)}"
+            )
+            lines.append(
+                "mcp_tool_delivery_resource_fallback_total"
+                f"{{tool=\"{_label_escape(tool)}\",transport=\"{_label_escape(transport)}\"}} "
+                f"{_TOOL_DELIVERY_RESOURCE_FALLBACK_TOTAL.get(key, 0)}"
             )
 
     with _PLAYGROUND_LOCK:

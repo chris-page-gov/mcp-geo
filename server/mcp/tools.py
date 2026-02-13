@@ -1,11 +1,10 @@
 import importlib
 import time
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
-from server.observability import record_tool_call
 from server.mcp.tool_search import (
     filter_tool_names_by_toolsets,
     get_tool_metadata,
@@ -13,6 +12,7 @@ from server.mcp.tool_search import (
     parse_toolset_list,
     search_tools,
 )
+from server.observability import record_tool_call
 from server.tool_naming import build_tool_name_maps, resolve_tool_name, rewrite_tool_schema
 from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
@@ -28,6 +28,7 @@ _IMPORT_MODULES = [
     "tools.os_features",
     "tools.os_maps",
     "tools.os_vector_tiles",
+    "tools.os_qgis",
     "tools.os_tiles_ota",
     "tools.os_net",
     "tools.os_downloads",
@@ -87,6 +88,7 @@ _PREFIX_IMPORTS = {
     "os_features": ["tools.os_features"],
     "os_maps": ["tools.os_maps"],
     "os_vector_tiles": ["tools.os_vector_tiles"],
+    "os_qgis": ["tools.os_qgis"],
     "os_tiles_ota": ["tools.os_tiles_ota"],
     "os_net": ["tools.os_net"],
     "os_downloads": ["tools.os_downloads"],

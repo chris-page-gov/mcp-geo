@@ -66,10 +66,11 @@ assumptions change.
   UI fallback, tool naming/toolsets, OS features/maps overlays, export pipeline, NOMIS workflows,
   admin cache maturity, boundary/code-list cache resources, observability, and POI tools).
 - Done: OS catalog/workstream wave implementation for WS-INT-0, WS-CAT-1, WS-DL-2, WS-SEARCH-3,
-  WS-MAP-4, and WS-POS-5 (OS Downloads, OS Net, OTA discovery, raster/WMTS, WFS capabilities,
-  Places radius/polygon, and Linked IDs extra paths).
+  WS-MAP-4, WS-POS-5, WS-QGIS-6, and WS-OBS-7 (OS Downloads, OS Net, OTA discovery, raster/WMTS,
+  WFS capabilities, Places radius/polygon, Linked IDs extra paths, QGIS descriptors, and
+  delivery-fallback/export-lifecycle observability).
 - Partial: OS Features, OS Maps render, ONS data tooling, admin lookup caching, resources
-  population, playground UI, observability.
+  population, playground UI.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
   evaluation plan).
 - Not started: CI pipeline.
@@ -94,9 +95,9 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
+- Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.16% coverage, 683 passed, 6 skipped) on 2026-02-13.
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
-- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
+- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.16% coverage, 683 passed, 6 skipped) on 2026-02-13.
 
 ## Key Conventions
 
@@ -106,6 +107,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-13: Completed WS-QGIS-6 and WS-OBS-7 by adding `os_qgis.vector_tile_profile`
+  and `os_qgis.export_geopackage_descriptor`, plus delivery fallback observability
+  metric/export lifecycle logging for OS downloads; full regression now passes at
+  90.16% coverage.
 - 2026-02-13: Implemented parallel OS catalog gap workstreams WS-INT-0, WS-CAT-1,
   WS-DL-2, WS-SEARCH-3, WS-MAP-4, and WS-POS-5, including new OS Downloads, OS Net,
   OTA, WMTS/ZXY raster, WFS capabilities, and catalog probe coverage; full regression
