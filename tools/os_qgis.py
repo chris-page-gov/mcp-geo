@@ -20,6 +20,20 @@ from tools.registry import Tool, ToolResult, register
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _STYLE_ROOT = _REPO_ROOT / "submodules" / "os-vector-tile-api-stylesheets"
 _QML_DIR = _STYLE_ROOT / "QGIS Stylesheets (QML)"
+_FALLBACK_STYLE_IDS = {
+    3857: [
+        "OS_VTS_3857_Light",
+        "OS_VTS_3857_Dark",
+        "OS_VTS_3857_Road",
+        "OS_VTS_3857_Outdoor",
+    ],
+    27700: [
+        "OS_VTS_27700_Light",
+        "OS_VTS_27700_Dark",
+        "OS_VTS_27700_Road",
+        "OS_VTS_27700_Outdoor",
+    ],
+}
 
 
 def _invalid(message: str) -> ToolResult:
@@ -46,10 +60,10 @@ def _available_style_ids(srs: int) -> list[str]:
     prefix = f"OS_VTS_{srs}_"
     out: list[str] = []
     if not _STYLE_ROOT.exists():
-        return out
+        return list(_FALLBACK_STYLE_IDS.get(srs, []))
     for path in sorted(_STYLE_ROOT.glob(f"{prefix}*.json")):
         out.append(path.stem)
-    return out
+    return out or list(_FALLBACK_STYLE_IDS.get(srs, []))
 
 
 def _style_asset_paths(style_id: str) -> dict[str, Any]:

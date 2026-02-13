@@ -85,9 +85,10 @@ def test_observability_json_size_and_cache_hit_edges():
 def test_observability_delivery_fallback_detection():
     from server import observability
 
-    assert observability._requested_delivery_mode({}) == "auto"
+    assert observability._requested_delivery_mode({}) is None
     assert observability._requested_delivery_mode({"delivery": "AUTO"}) == "auto"
     assert observability._requested_delivery_mode({"delivery": "resource"}) == "resource"
+    assert observability._requested_delivery_mode({"delivery": "bad"}) is None
     assert observability._result_delivery_mode({"delivery": "resource"}) == "resource"
     assert observability._result_delivery_mode({"delivery": "inline"}) == "inline"
     assert observability._result_delivery_mode({"delivery": 1}) is None
@@ -98,7 +99,7 @@ def test_observability_delivery_fallback_detection():
     assert observability._result_has_delivery_resource_fallback(
         {},
         {"delivery": "resource"},
-    ) is True
+    ) is False
     assert observability._result_has_delivery_resource_fallback(
         {"delivery": "inline"},
         {"delivery": "resource"},

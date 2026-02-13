@@ -67,16 +67,16 @@ def _result_has_fallback(result: Any) -> bool:
     return isinstance(meta, dict) and meta.get("fallback") is True
 
 
-def _requested_delivery_mode(payload: Any) -> str:
+def _requested_delivery_mode(payload: Any) -> str | None:
     if not isinstance(payload, dict):
-        return "auto"
+        return None
     raw = payload.get("delivery")
     if not isinstance(raw, str) or not raw.strip():
-        return "auto"
+        return None
     mode = raw.strip().lower()
     if mode in {"inline", "resource", "auto"}:
         return mode
-    return "auto"
+    return None
 
 
 def _result_delivery_mode(result: Any) -> str | None:

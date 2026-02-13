@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from server.main import app
@@ -62,6 +64,30 @@ def test_os_qgis_vector_tile_profile_resource_delivery(monkeypatch) -> None:  # 
     body = resp.json()
     assert body["delivery"] == "resource"
     assert body["resourceUri"].startswith("resource://mcp-geo/os-exports/")
+
+
+def test_os_qgis_vector_tile_profile_without_styles_submodule(
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_qgis
+
+    monkeypatch.setattr(
+        os_qgis,
+        "_STYLE_ROOT",
+        Path("/tmp/mcp-geo-missing-styles-submodule"),
+        raising=True,
+    )
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_qgis.vector_tile_profile",
+            "style": "OS_VTS_3857_Light",
+            "srs": 3857,
+        },
+    )
+    assert resp.status_code == 200
+    profile = resp.json()["profile"]
+    assert "OS_VTS_3857_Light" in profile["availableStyles"]
 
 
 def test_os_qgis_geopackage_descriptor_inline_and_invalid() -> None:
