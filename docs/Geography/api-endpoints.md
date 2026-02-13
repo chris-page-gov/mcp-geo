@@ -12,7 +12,6 @@ OS Maps API
     ZXY API Endpoint address
     https://api.os.uk/maps/raster/v1/zxy/Road_3857/{z}/{x}/{y}.png?key=
     https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=
-    https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=
 OS Places API
     https://api.os.uk/search/places/v1/{path}?key=
 OS Downloads API
