@@ -96,7 +96,7 @@ test("boundary explorer imports GeoJSON and Shapefile.zip local layers and appli
     });
   });
 
-  await page.route("https://unpkg.com/shpjs@4.0.4/dist/shp.min.js", async (route) => {
+  await page.route("**/shpjs@4.0.4/**/shp.min.js*", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/javascript",

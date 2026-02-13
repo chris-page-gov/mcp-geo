@@ -123,6 +123,7 @@ npm run dev
 Then open:
 
 - `http://localhost:5173`
+- Playwright UI tests run Vite on `http://localhost:4173` to avoid local `5173` collisions.
 
 Defaults:
 - MCP server URL: `http://localhost:8000/mcp`
@@ -132,6 +133,7 @@ Note: `playground/app.py` is a legacy stub and does not serve the Svelte UI.
 
 If you see CORS/preflight errors, ensure `CORS_ALLOWED_ORIGINS` includes the
 playground URL (default includes `http://localhost:5173`).
+For Playwright runs, include `http://localhost:4173` as well.
 
 The playground can:
 - Connect and list tools/resources/templates

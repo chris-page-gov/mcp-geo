@@ -19,5 +19,8 @@ mcp_geo.egg-info
 node_modules
 playground/node_modules
 submodules
+!submodules/
+!submodules/os-vector-tile-api-stylesheets/
+!submodules/os-vector-tile-api-stylesheets/**
 tests
 docs

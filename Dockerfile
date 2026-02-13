@@ -21,6 +21,4 @@ RUN useradd --create-home --shell /bin/bash appuser \
 
 USER appuser
 
-EXPOSE 8000
-
 CMD ["python", "-m", "server.stdio_adapter"]

@@ -102,6 +102,13 @@ All notable changes to this project will be documented in this file.
   outputs honor requested sizes above 256px.
 - Fixed QGIS GeoPackage descriptor resource prefix generation to sanitize
   user-provided `layerName` components before filesystem/resource URI use.
+- Fixed Docker build packaging to include the OS vector style submodule path
+  (`submodules/os-vector-tile-api-stylesheets`) while still ignoring other
+  submodule content.
+- Fixed Docker runtime intent clarity by removing `EXPOSE 8000` from the
+  default STDIO image configuration.
+- Fixed Playwright local-layer test network stubbing to match `shpjs` script
+  URLs using a resilient wildcard pattern instead of one exact CDN URL.
 
 ### Tests
 - Added POI evaluation harness scenarios (`B011A`/`B011B`/`B011C`) so full-tool

@@ -95,7 +95,7 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.16% coverage, 683 passed, 6 skipped) on 2026-02-13.
+- Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.14% coverage, 688 passed, 6 skipped) on 2026-02-13.
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
 - Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.16% coverage, 683 passed, 6 skipped) on 2026-02-13.
 
@@ -107,6 +107,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-13: Applied post-review hardening updates for PR #1: included OS vector
+  stylesheet submodule path in Docker build context, removed `EXPOSE 8000` from
+  STDIO-default image, aligned getting-started docs with Playwright port
+  (`4173`), and made Playwright shpjs route matching resilient to URL variants.
 - 2026-02-13: Completed WS-QGIS-6 and WS-OBS-7 by adding `os_qgis.vector_tile_profile`
   and `os_qgis.export_geopackage_descriptor`, plus delivery fallback observability
   metric/export lifecycle logging for OS downloads; full regression now passes at
