@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-02-13
 ### Added
 - Added phased completion tracker in `PROGRESS.MD` for the open work program
   (`C00`–`C16`) covering dataset selection, UI fallback, tool naming/toolsets,
