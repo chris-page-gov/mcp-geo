@@ -55,6 +55,18 @@ Notes:
 - JSON trace lines with `direction=server->stderr` are diagnostics; they are not
   MCP JSON-RPC payloads.
 
+## OS VTS labels missing for custom symbol layers
+If custom label layers render without text on OS Vector Tile Service basemaps,
+the style is usually referencing glyph assets that are not available for
+arbitrary custom symbol layers.
+
+Remediation:
+- Prefer HTML markers / DOM overlays for custom labels and highlighted points.
+- Keep OS VTS for the basemap itself; render your interactive annotations in a
+  separate overlay layer (for example, `new maplibregl.Marker(...)`).
+- If you need style-only map output, use icon/circle/fill/line layers that do
+  not rely on custom glyph text rendering.
+
 ## VS Code MCP server start fails: "cannot find script" / path context
 If VS Code fails to start `mcp-geo` / `mcp-geo-trace` and reports it cannot find a script,
 it’s usually a **launch context** issue (working directory / variable substitution), not a missing file.

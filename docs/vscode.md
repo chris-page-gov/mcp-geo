@@ -16,6 +16,19 @@ Defined in `.vscode/mcp.json`:
 - `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py` and the same `starter` default.
 - `mcp-geo-http` (HTTP): points to `http://127.0.0.1:8000/mcp` (you must run `uvicorn` yourself).
 
+Tool set file for VS Code Configure Tools:
+
+- Repo copy: `.vscode/mcp-geo.toolsets.jsonc`
+- Install location (macOS): `~/Library/Application Support/Code/User/prompts/mcp-geo.toolsets.jsonc`
+
+Quick install:
+
+```bash
+mkdir -p "$HOME/Library/Application Support/Code/User/prompts"
+cp .vscode/mcp-geo.toolsets.jsonc \
+  "$HOME/Library/Application Support/Code/User/prompts/mcp-geo.toolsets.jsonc"
+```
+
 The config uses a VS Code `inputs` prompt for `OS_API_KEY` and stores it in VS Code
 secure storage (it is not written to the repo).
 

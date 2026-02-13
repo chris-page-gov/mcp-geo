@@ -197,6 +197,11 @@ OpenData overzoom variants (EPSG:3857):
 - `OS_VTS_3857_Open_Greyscale.json`
 - `OS_VTS_3857_Open_Black_and_White.json`
 
+Known limitation (validated in Claude/Desktop map tests on 2026-02-13):
+- OS VTS does not expose glyph assets for arbitrary custom symbol layers.
+- For custom labels/markers on top of OS VTS basemaps, prefer HTML markers or
+  DOM overlays instead of glyph-backed symbol text layers.
+
 Reference: OS-Vector-Tile-API-Stylesheets (GitHub). This repo is also available as
 `submodules/os-vector-tile-api-stylesheets`.
 

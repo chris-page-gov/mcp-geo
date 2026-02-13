@@ -435,6 +435,8 @@ user-level `mcp.json`. This repo includes `.vscode/mcp.json` with:
 - `mcp-geo` (STDIO, with MCP-Apps UI enabled)
 - `mcp-geo-trace` (STDIO + JSON-RPC trace log under `logs/`)
 - `mcp-geo-http` (HTTP transport at `http://127.0.0.1:8000/mcp`)
+- `.vscode/mcp-geo.toolsets.jsonc` (copy to your VS Code user prompts folder as
+  `mcp-geo.toolsets.jsonc` to group tools in Configure Tools)
 
 See `docs/vscode.md` for step-by-step setup, MCP-Apps UI validation, and tracing.
 

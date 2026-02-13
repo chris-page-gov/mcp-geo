@@ -1,0 +1,138 @@
+// /Users/<USER PROFILE>/Library/Application Support/Code/User/prompts/mcp-geo.toolsets.jsonc
+{
+  "starter": {
+    "tools": [
+      "admin_lookup_find_by_name",
+      "nomis_query",
+      "ons_data_query",
+      "ons_search_query",
+      "ons_select_search",
+      "os_apps_log_event",
+      "os_apps_render_boundary_explorer",
+      "os_apps_render_geography_selector",
+      "os_mcp_descriptor",
+      "os_mcp_route_query",
+      "os_mcp_stats_routing",
+      "os_names_find",
+      "os_places_by_postcode",
+      "os_places_search"
+    ],
+    "description": "Lean default toolkit for common geography and statistics workflows.",
+    "icon": "rocket"
+  },
+  "core_router": {
+    "tools": [
+      "os_mcp_descriptor",
+      "os_mcp_route_query",
+      "os_mcp_select_toolsets",
+      "os_mcp_stats_routing"
+    ],
+    "description": "Core MCP routing, discovery, and toolset-selection controls.",
+    "icon": "hubot"
+  },
+  "places_names": {
+    "tools": [
+      "os_linked_ids_get",
+      "os_names_find",
+      "os_names_nearest",
+      "os_places_by_postcode",
+      "os_places_by_uprn",
+      "os_places_nearest",
+      "os_places_polygon",
+      "os_places_radius",
+      "os_places_search",
+      "os_places_within",
+      "os_poi_nearest",
+      "os_poi_search",
+      "os_poi_within"
+    ],
+    "description": "Address, postcode, place-name, UPRN, and POI search/lookup tools.",
+    "icon": "search"
+  },
+  "features_layers": {
+    "tools": [
+      "os_features_collections",
+      "os_features_query",
+      "os_features_wfs_archive_capabilities",
+      "os_features_wfs_capabilities",
+      "os_map_export",
+      "os_map_inventory"
+    ],
+    "description": "NGD feature-layer querying plus map inventory/export operations.",
+    "icon": "layers"
+  },
+  "maps_tiles": {
+    "tools": [
+      "os_maps_render",
+      "os_vector_tiles_descriptor"
+    ],
+    "description": "Static map rendering and vector tile descriptor generation.",
+    "icon": "map"
+  },
+  "qgis_linkage": {
+    "tools": [
+      "os_qgis_export_geopackage_descriptor",
+      "os_qgis_vector_tile_profile"
+    ],
+    "description": "QGIS integration helpers for vector tiles and GeoPackage exports.",
+    "icon": "symbol-namespace"
+  },
+  "admin_boundaries": {
+    "tools": [
+      "admin_lookup_area_geometry",
+      "admin_lookup_containing_areas",
+      "admin_lookup_find_by_name",
+      "admin_lookup_get_cache_status",
+      "admin_lookup_reverse_hierarchy",
+      "admin_lookup_search_cache"
+    ],
+    "description": "Administrative boundary search, hierarchy traversal, and cache status tools.",
+    "icon": "organization"
+  },
+  "ons_selection": {
+    "tools": [
+      "ons_codes_list",
+      "ons_codes_options",
+      "ons_search_query",
+      "ons_select_search"
+    ],
+    "description": "ONS dataset discovery, ranking, and code-list exploration.",
+    "icon": "graph-scatter"
+  },
+  "ons_data": {
+    "tools": [
+      "ons_data_create_filter",
+      "ons_data_dimensions",
+      "ons_data_editions",
+      "ons_data_get_filter_output",
+      "ons_data_get_observation",
+      "ons_data_query",
+      "ons_data_versions"
+    ],
+    "description": "ONS observations querying plus dataset edition/version/dimension workflows.",
+    "icon": "graph"
+  },
+  "nomis_data": {
+    "tools": [
+      "nomis_codelists",
+      "nomis_concepts",
+      "nomis_datasets",
+      "nomis_query"
+    ],
+    "description": "NOMIS dataset discovery, schema exploration, and statistical query tools.",
+    "icon": "symbol-numeric"
+  },
+  "apps_ui": {
+    "tools": [
+      "os_apps_log_event",
+      "os_apps_render_boundary_explorer",
+      "os_apps_render_feature_inspector",
+      "os_apps_render_geography_selector",
+      "os_apps_render_route_planner",
+      "os_apps_render_statistics_dashboard",
+      "os_apps_render_ui_probe"
+    ],
+    "description": "MCP Apps UI renderers and UI telemetry logging.",
+    "icon": "device-desktop"
+  }
+}

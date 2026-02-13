@@ -1,0 +1,1882 @@
+2026-02-13 14: 35: 24.833 [info
+] Connection state: Running
+2026-02-13 14: 35: 24.833 [info
+] [editor -> server
+] {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+        "protocolVersion": "2025-11-25",
+        "capabilities": {
+            "roots": {
+                "listChanged": true
+            },
+            "sampling": {},
+            "elicitation": {
+                "form": {},
+                "url": {}
+            },
+            "tasks": {
+                "list": {},
+                "cancel": {},
+                "requests": {
+                    "sampling": {
+                        "createMessage": {}
+                    },
+                    "elicitation": {
+                        "create": {}
+                    }
+                }
+            },
+            "extensions": {
+                "io.modelcontextprotocol/ui": {
+                    "mimeTypes": [
+                        "text/html;profile=mcp-app"
+                    ]
+                }
+            }
+        },
+        "clientInfo": {
+            "name": "Visual Studio Code",
+            "version": "1.109.3"
+        }
+    }
+}
+2026-02-13 14: 35: 25.343 [warning
+] [server stderr
+] 2026-02-13 14: 35: 25.323 | INFO     | server.stdio_adapter:handle_initialize: 574 - MCP initialize (stdio) support_summary={'requestedProtocolVersion': '2025-11-25', 'negotiatedProtocolVersion': '2025-11-25', 'requestedProtocolSupportedByServer': True, 'capabilityKeys': ['elicitation', 'extensions', 'roots', 'sampling', 'tasks'
+    ], 'supports': {'tools': False, 'resources': False, 'prompts': False, 'elicitationForm': True, 'mcpAppsUi': True, 'sampling': True, 'roots': True
+    }
+}
+2026-02-13 14: 35: 25.343 [info
+] [server -> editor
+] {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "protocolVersion": "2025-11-25",
+        "serverInfo": {
+            "name": "mcp-geo",
+            "version": "0.3.0"
+        },
+        "capabilities": {
+            "tools": {
+                "list": true,
+                "call": true
+            },
+            "resources": {
+                "list": true,
+                "read": true
+            },
+            "prompts": {
+                "list": true,
+                "get": true
+            },
+            "extensions": {
+                "io.modelcontextprotocol/ui": {
+                    "mimeTypes": [
+                        "text/html;profile=mcp-app"
+                    ]
+                }
+            }
+        },
+        "server": "mcp-geo",
+        "version": "0.3.0"
+    }
+}
+2026-02-13 14: 35: 25.345 [info
+] [editor -> server
+] {
+    "method": "notifications/initialized",
+    "jsonrpc": "2.0"
+}
+2026-02-13 14: 35: 25.345 [info
+] [editor -> server
+] {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "prompts/list",
+    "params": {}
+}
+2026-02-13 14: 35: 25.346 [info
+] [editor -> server
+] {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/list",
+    "params": {}
+}
+2026-02-13 14: 35: 25.384 [info
+] [server -> editor
+] {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+        "prompts": [
+            {
+                "name": "eval_address_lookup",
+                "title": "Eval: Address Lookup",
+                "description": "Postcode lookup via OS Places.",
+                "_meta": {
+                    "intent": "address_lookup",
+                    "difficulty": "basic",
+                    "requires_os_api": true,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "postcode",
+                        "uprn"
+                    ]
+                }
+            },
+            {
+                "name": "eval_area_comparison",
+                "title": "Eval: Area Comparison",
+                "description": "Multi-area comparison workflow.",
+                "_meta": {
+                    "intent": "area_comparison",
+                    "difficulty": "advanced",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "comparison"
+                    ]
+                }
+            },
+            {
+                "name": "eval_boundary_fetch",
+                "title": "Eval: Boundary Fetch",
+                "description": "Two-step boundary bbox lookup.",
+                "_meta": {
+                    "intent": "boundary_fetch",
+                    "difficulty": "intermediate",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "boundary"
+                    ]
+                }
+            },
+            {
+                "name": "eval_dataset_discovery",
+                "title": "Eval: Dataset Discovery",
+                "description": "ONS dimensions listing (live mode).",
+                "_meta": {
+                    "intent": "dataset_discovery",
+                    "difficulty": "basic",
+                    "requires_os_api": false,
+                    "requires_ons_live": true,
+                    "tags": [
+                        "ons"
+                    ]
+                }
+            },
+            {
+                "name": "eval_feature_search",
+                "title": "Eval: Feature Search",
+                "description": "Feature inspector widget.",
+                "_meta": {
+                    "intent": "feature_search",
+                    "difficulty": "advanced",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "apps",
+                        "features"
+                    ]
+                }
+            },
+            {
+                "name": "eval_interactive_selection",
+                "title": "Eval: Interactive Selection",
+                "description": "Interactive selection + boundary lookup.",
+                "_meta": {
+                    "intent": "interactive_selection",
+                    "difficulty": "advanced",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "apps",
+                        "boundary"
+                    ]
+                }
+            },
+            {
+                "name": "eval_linked_ids",
+                "title": "Eval: Linked Ids",
+                "description": "Linked identifiers lookup.",
+                "_meta": {
+                    "intent": "linked_ids",
+                    "difficulty": "intermediate",
+                    "requires_os_api": true,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "linked",
+                        "ids"
+                    ]
+                }
+            },
+            {
+                "name": "eval_map_render",
+                "title": "Eval: Map Render",
+                "description": "Vector tiles + static map descriptors.",
+                "_meta": {
+                    "intent": "map_render",
+                    "difficulty": "advanced",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "map",
+                        "tiles"
+                    ]
+                }
+            },
+            {
+                "name": "eval_place_lookup",
+                "title": "Eval: Place Lookup",
+                "description": "Basic administrative area lookup (live).",
+                "_meta": {
+                    "intent": "place_lookup",
+                    "difficulty": "basic",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "place",
+                        "admin"
+                    ]
+                }
+            },
+            {
+                "name": "eval_route_planning",
+                "title": "Eval: Route Planning",
+                "description": "Route planner widget.",
+                "_meta": {
+                    "intent": "route_planning",
+                    "difficulty": "intermediate",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "apps",
+                        "routing"
+                    ]
+                }
+            },
+            {
+                "name": "eval_statistics",
+                "title": "Eval: Statistics",
+                "description": "ONS query over live observations.",
+                "_meta": {
+                    "intent": "statistics",
+                    "difficulty": "intermediate",
+                    "requires_os_api": false,
+                    "requires_ons_live": true,
+                    "tags": [
+                        "ons",
+                        "query"
+                    ]
+                }
+            },
+            {
+                "name": "eval_unknown",
+                "title": "Eval: Unknown",
+                "description": "Tool search endpoint validation.",
+                "_meta": {
+                    "intent": "unknown",
+                    "difficulty": "advanced",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "tool-search"
+                    ]
+                }
+            },
+            {
+                "name": "eval_vector_tiles",
+                "title": "Eval: Vector Tiles",
+                "description": "Vector tiles descriptor output for OS base map.",
+                "_meta": {
+                    "intent": "vector_tiles",
+                    "difficulty": "basic",
+                    "requires_os_api": false,
+                    "requires_ons_live": false,
+                    "tags": [
+                        "tiles"
+                    ]
+                }
+            }
+        ]
+    }
+}
+2026-02-13 14: 35: 25.384 [info
+] [server -> editor
+] {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+        "tools": [
+            {
+                "name": "admin_lookup_find_by_name",
+                "description": "Substring case-insensitive search by area name",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "admin_lookup_find_by_name"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                        },
+                        "level": {
+                            "type": "string",
+                            "description": "Optional single level (WARD/LSOA/etc)."
+                        },
+                        "levels": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "match": {
+                            "type": "string",
+                            "enum": [
+                                "contains",
+                                "starts_with",
+                                "exact"
+                            ]
+                        },
+                        "limitPerLevel": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                        }
+                    },
+                    "required": [
+                        "text"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "results": {
+                            "type": "array"
+                        },
+                        "count": {
+                            "type": "integer"
+                        },
+                        "live": {
+                            "type": "boolean"
+                        },
+                        "meta": {
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "results"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "originalName": "admin_lookup.find_by_name"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "admin",
+                        "keywords": [
+                            "admin",
+                            "area",
+                            "areas",
+                            "boundary",
+                            "by",
+                            "case",
+                            "find",
+                            "hierarchy",
+                            "insensitive",
+                            "lookup",
+                            "name",
+                            "search",
+                            "substring"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "nomis_query",
+                "description": "Query NOMIS datasets (JSON-stat or SDMX JSON).",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "nomis_query"
+                        },
+                        "dataset": {
+                            "type": "string"
+                        },
+                        "format": {
+                            "type": "string",
+                            "enum": [
+                                "jsonstat",
+                                "sdmx"
+                            ]
+                        },
+                        "params": {
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "dataset"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "live": {
+                            "type": "boolean"
+                        },
+                        "dataset": {
+                            "type": "string"
+                        },
+                        "format": {
+                            "type": "string"
+                        },
+                        "data": {
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "live",
+                        "dataset",
+                        "format",
+                        "data"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "nomis.query"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "statistics",
+                        "keywords": [
+                            "census",
+                            "dataset",
+                            "datasets",
+                            "employment",
+                            "json",
+                            "labour",
+                            "nomis",
+                            "or",
+                            "query",
+                            "sdmx",
+                            "stat",
+                            "statistics"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "ons_data_query",
+                "description": "Query live ONS observations (dataset/edition/version or search term).",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "ons_data_query"
+                        },
+                        "geography": {
+                            "type": "string"
+                        },
+                        "measure": {
+                            "type": "string"
+                        },
+                        "timeRange": {
+                            "type": "string",
+                            "description": "Format 'YYYY Qn-YYYY Qn' or single period 'YYYY Qn'"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        },
+                        "page": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "dataset": {
+                            "type": "string",
+                            "description": "ONS dataset ID for live mode"
+                        },
+                        "edition": {
+                            "type": "string",
+                            "description": "ONS dataset edition for live mode"
+                        },
+                        "version": {
+                            "type": "string",
+                            "description": "ONS dataset version for live mode"
+                        },
+                        "term": {
+                            "type": "string",
+                            "description": "Search term for auto-resolving dataset/edition/version"
+                        },
+                        "query": {
+                            "type": "string",
+                            "description": "Alias for term"
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "results": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        },
+                        "count": {
+                            "type": "integer"
+                        },
+                        "limit": {
+                            "type": "integer"
+                        },
+                        "page": {
+                            "type": "integer"
+                        },
+                        "nextPageToken": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "timeRange": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "timeValues": {
+                            "type": [
+                                "array",
+                                "null"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "results",
+                        "count",
+                        "limit",
+                        "page"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "ons_data.query"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "statistics",
+                        "keywords": [
+                            "data",
+                            "dataset",
+                            "edition",
+                            "live",
+                            "observations",
+                            "ons",
+                            "or",
+                            "query",
+                            "search",
+                            "statistics",
+                            "term",
+                            "version"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "ons_search_query",
+                "description": "Search live ONS datasets by term.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "ons_search_query"
+                        },
+                        "term": {
+                            "type": "string"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        },
+                        "offset": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "required": [
+                        "term"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "results": {
+                            "type": "array"
+                        },
+                        "count": {
+                            "type": "integer"
+                        },
+                        "limit": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        },
+                        "offset": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        },
+                        "total": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        },
+                        "live": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "results",
+                        "count"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "ons_search.query"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "statistics",
+                        "keywords": [
+                            "by",
+                            "dataset",
+                            "datasets",
+                            "discover",
+                            "live",
+                            "ons",
+                            "query",
+                            "search",
+                            "term"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "ons_select_search",
+                "description": "Rank ONS datasets using a cached catalog with explainable scoring and elicitation prompts for missing context.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "ons_select_search"
+                        },
+                        "query": {
+                            "type": "string"
+                        },
+                        "q": {
+                            "type": "string"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 25
+                        },
+                        "geographyLevel": {
+                            "type": "string"
+                        },
+                        "timeGranularity": {
+                            "type": "string"
+                        },
+                        "intentTags": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "includeRelated": {
+                            "type": "boolean"
+                        },
+                        "relatedLimit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "candidates": {
+                            "type": "array"
+                        },
+                        "candidateCount": {
+                            "type": "integer"
+                        },
+                        "needsElicitation": {
+                            "type": "boolean"
+                        },
+                        "elicitationQuestions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "relatedDatasets": {
+                            "type": "array"
+                        },
+                        "catalogMeta": {
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "query",
+                        "candidates",
+                        "candidateCount"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "ons_select.search"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "statistics",
+                        "keywords": [
+                            "a",
+                            "and",
+                            "cached",
+                            "catalog",
+                            "context",
+                            "dataset",
+                            "datasets",
+                            "discover",
+                            "elicitation",
+                            "explainable",
+                            "for",
+                            "missing",
+                            "ons",
+                            "prompts",
+                            "rank",
+                            "ranking",
+                            "scoring",
+                            "search",
+                            "select",
+                            "selection",
+                            "using",
+                            "with"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_apps_log_event",
+                "description": "Log MCP-Apps UI interaction events for tracing.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_apps_log_event"
+                        },
+                        "eventType": {
+                            "type": "string"
+                        },
+                        "source": {
+                            "type": "string"
+                        },
+                        "payload": {
+                            "type": "object"
+                        },
+                        "context": {
+                            "type": "object"
+                        },
+                        "timestamp": {
+                            "type": "number"
+                        },
+                        "sessionId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "eventType"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string"
+                        },
+                        "eventId": {
+                            "type": "string"
+                        },
+                        "timestamp": {
+                            "type": "number"
+                        },
+                        "logPath": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "eventId",
+                        "timestamp"
+                    ]
+                },
+                "annotations": {
+                    "originalName": "os_apps.log_event"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "apps",
+                        "keywords": [
+                            "apps",
+                            "event",
+                            "events",
+                            "for",
+                            "interaction",
+                            "interactive",
+                            "log",
+                            "mcp",
+                            "mcp-apps",
+                            "os",
+                            "telemetry",
+                            "tracing",
+                            "ui",
+                            "widget"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_apps_render_boundary_explorer",
+                "description": "Open the MCP-Apps boundary explorer widget.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_apps_render_boundary_explorer"
+                        },
+                        "level": {
+                            "type": "string"
+                        },
+                        "searchTerm": {
+                            "type": "string"
+                        },
+                        "focusName": {
+                            "type": "string"
+                        },
+                        "focusLevel": {
+                            "type": "string"
+                        },
+                        "detailLevel": {
+                            "type": "string"
+                        },
+                        "initialLat": {
+                            "type": "number"
+                        },
+                        "initialLng": {
+                            "type": "number"
+                        },
+                        "initialZoom": {
+                            "type": "integer"
+                        },
+                        "contentMode": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string"
+                        },
+                        "config": {
+                            "type": "object"
+                        },
+                        "instructions": {
+                            "type": "string"
+                        },
+                        "resourceUri": {
+                            "type": "string"
+                        },
+                        "uiResourceUris": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "_meta": {
+                            "type": "object"
+                        },
+                        "structuredContent": {
+                            "type": "object"
+                        },
+                        "content": {
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "uiResourceUris"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "originalName": "os_apps.render_boundary_explorer"
+                },
+                "_meta": {
+                    "ui": {
+                        "resourceUri": "ui://mcp-geo/boundary-explorer"
+                    },
+                    "ui/resourceUri": "ui://mcp-geo/boundary-explorer",
+                    "openai/outputTemplate": "ui://mcp-geo/boundary-explorer",
+                    "mcp-geo": {
+                        "category": "apps",
+                        "keywords": [
+                            "apps",
+                            "boundary",
+                            "event",
+                            "explorer",
+                            "interactive",
+                            "log",
+                            "mcp",
+                            "mcp-apps",
+                            "open",
+                            "os",
+                            "render",
+                            "telemetry",
+                            "the",
+                            "ui",
+                            "widget"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_apps_render_geography_selector",
+                "description": "Open the MCP-Apps geography selector widget.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_apps_render_geography_selector"
+                        },
+                        "level": {
+                            "type": "string"
+                        },
+                        "searchTerm": {
+                            "type": "string"
+                        },
+                        "focusName": {
+                            "type": "string"
+                        },
+                        "focusLevel": {
+                            "type": "string"
+                        },
+                        "multiSelect": {
+                            "type": "boolean"
+                        },
+                        "initialLat": {
+                            "type": "number"
+                        },
+                        "initialLng": {
+                            "type": "number"
+                        },
+                        "initialZoom": {
+                            "type": "integer"
+                        },
+                        "contentMode": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string"
+                        },
+                        "config": {
+                            "type": "object"
+                        },
+                        "instructions": {
+                            "type": "string"
+                        },
+                        "resourceUri": {
+                            "type": "string"
+                        },
+                        "uiResourceUris": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "_meta": {
+                            "type": "object"
+                        },
+                        "structuredContent": {
+                            "type": "object"
+                        },
+                        "content": {
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "uiResourceUris"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "originalName": "os_apps.render_geography_selector"
+                },
+                "_meta": {
+                    "ui": {
+                        "resourceUri": "ui://mcp-geo/geography-selector"
+                    },
+                    "ui/resourceUri": "ui://mcp-geo/geography-selector",
+                    "openai/outputTemplate": "ui://mcp-geo/geography-selector",
+                    "mcp-geo": {
+                        "category": "apps",
+                        "keywords": [
+                            "apps",
+                            "event",
+                            "geography",
+                            "interactive",
+                            "log",
+                            "mcp",
+                            "mcp-apps",
+                            "open",
+                            "os",
+                            "render",
+                            "selector",
+                            "telemetry",
+                            "the",
+                            "ui",
+                            "widget"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_mcp_descriptor",
+                "description": "Describe server capabilities and tool search configuration.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_mcp_descriptor"
+                        },
+                        "category": {
+                            "type": "string",
+                            "description": "Optional tool category to filter search config."
+                        },
+                        "includeTools": {
+                            "type": "boolean",
+                            "description": "Include per-tool metadata in toolSearch section.",
+                            "default": true
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "server": {
+                            "type": "string"
+                        },
+                        "version": {
+                            "type": "string"
+                        },
+                        "protocolVersion": {
+                            "type": "string"
+                        },
+                        "supportedProtocolVersions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "mcpAppsProtocolVersion": {
+                            "type": "string"
+                        },
+                        "transport": {
+                            "type": "string"
+                        },
+                        "capabilities": {
+                            "type": "object"
+                        },
+                        "toolSearch": {
+                            "type": "object"
+                        },
+                        "skillsUri": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "server",
+                        "version",
+                        "protocolVersion",
+                        "toolSearch"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "originalName": "os_mcp.descriptor"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "core",
+                        "keywords": [
+                            "and",
+                            "capabilities",
+                            "configuration",
+                            "describe",
+                            "descriptor",
+                            "intent",
+                            "mcp",
+                            "metadata",
+                            "os",
+                            "route",
+                            "router",
+                            "search",
+                            "server",
+                            "skills",
+                            "tool",
+                            "tool-search"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_mcp_route_query",
+                "description": "Classify a query and recommend the right tool/workflow.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_mcp_route_query"
+                        },
+                        "query": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "query"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "intent": {
+                            "type": "string"
+                        },
+                        "confidence": {
+                            "type": "number"
+                        },
+                        "recommended_tool": {
+                            "type": "string"
+                        },
+                        "recommended_parameters": {
+                            "type": "object"
+                        },
+                        "explanation": {
+                            "type": "string"
+                        },
+                        "workflow_steps": {
+                            "type": "array"
+                        },
+                        "alternative_tools": {
+                            "type": "array"
+                        },
+                        "guidance": {
+                            "type": "string"
+                        },
+                        "workflow_profile_uri": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "intent",
+                        "confidence",
+                        "recommended_tool",
+                        "workflow_steps"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "originalName": "os_mcp.route_query"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "core",
+                        "keywords": [
+                            "a",
+                            "and",
+                            "capabilities",
+                            "classify",
+                            "intent",
+                            "mcp",
+                            "metadata",
+                            "os",
+                            "query",
+                            "recommend",
+                            "right",
+                            "route",
+                            "router",
+                            "skills",
+                            "the",
+                            "tool",
+                            "tool-search",
+                            "workflow"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_mcp_stats_routing",
+                "description": "Explain whether stats queries route to ONS or NOMIS.",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_mcp_stats_routing"
+                        },
+                        "query": {
+                            "type": "string"
+                        },
+                        "comparisonLevel": {
+                            "type": "string",
+                            "enum": [
+                                "WARD",
+                                "LSOA",
+                                "MSOA"
+                            ]
+                        },
+                        "providerPreference": {
+                            "type": "string",
+                            "enum": [
+                                "AUTO",
+                                "NOMIS",
+                                "ONS"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "query"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "provider": {
+                            "type": "string"
+                        },
+                        "nomisPreferred": {
+                            "type": "boolean"
+                        },
+                        "userSelections": {
+                            "type": "object"
+                        },
+                        "reasons": {
+                            "type": "array"
+                        },
+                        "matchedPatterns": {
+                            "type": "array"
+                        },
+                        "matchedLevels": {
+                            "type": "array"
+                        },
+                        "recommendedTool": {
+                            "type": "string"
+                        },
+                        "comparisonRecommended": {
+                            "type": "boolean"
+                        },
+                        "nextSteps": {
+                            "type": "array"
+                        },
+                        "notes": {
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "provider",
+                        "nomisPreferred",
+                        "reasons",
+                        "recommendedTool"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "originalName": "os_mcp.stats_routing"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "core",
+                        "keywords": [
+                            "capabilities",
+                            "explain",
+                            "intent",
+                            "mcp",
+                            "metadata",
+                            "nomis",
+                            "ons",
+                            "or",
+                            "os",
+                            "queries",
+                            "route",
+                            "router",
+                            "routing",
+                            "skills",
+                            "stats",
+                            "to",
+                            "tool-search",
+                            "whether"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_names_find",
+                "description": "Find place names",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_names_find"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                        }
+                    },
+                    "required": [
+                        "text"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "results": {
+                            "type": "array"
+                        },
+                        "count": {
+                            "type": "integer"
+                        },
+                        "limit": {
+                            "type": "integer"
+                        },
+                        "truncated": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "results"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "os_names.find"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "names",
+                        "keywords": [
+                            "feature",
+                            "find",
+                            "gazetteer",
+                            "names",
+                            "nearest",
+                            "os",
+                            "place"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_places_by_postcode",
+                "description": "Lookup UPRNs and addresses for a UK postcode via OS Places API",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_places_by_postcode"
+                        },
+                        "postcode": {
+                            "type": "string",
+                            "description": "UK postcode"
+                        }
+                    },
+                    "required": [
+                        "postcode"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "uprns": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "uprn": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "address": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "lat": {
+                                        "type": "number"
+                                    },
+                                    "lon": {
+                                        "type": "number"
+                                    },
+                                    "classification": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "classificationDescription": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "local_custodian_code": {
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "null"
+                                        ]
+                                    },
+                                    "localCustodianName": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "uprn",
+                                    "address",
+                                    "lat",
+                                    "lon"
+                                ],
+                                "additionalProperties": true
+                            }
+                        },
+                        "provenance": {
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "uprns"
+                    ],
+                    "additionalProperties": true
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "os_places.by_postcode"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "places",
+                        "keywords": [
+                            "a",
+                            "address",
+                            "addresses",
+                            "and",
+                            "api",
+                            "by",
+                            "for",
+                            "geocode",
+                            "lookup",
+                            "os",
+                            "place",
+                            "places",
+                            "postcode",
+                            "uk",
+                            "uprn",
+                            "uprns",
+                            "via"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            },
+            {
+                "name": "os_places_search",
+                "description": "Free text search in OS Places",
+                "version": "0.1.0",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tool": {
+                            "type": "string",
+                            "const": "os_places_search"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                        }
+                    },
+                    "required": [
+                        "text"
+                    ],
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "results": {
+                            "type": "array"
+                        },
+                        "count": {
+                            "type": "number"
+                        },
+                        "limit": {
+                            "type": "integer"
+                        },
+                        "truncated": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "results"
+                    ]
+                },
+                "annotations": {
+                    "readOnlyHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": true,
+                    "originalName": "os_places.search"
+                },
+                "_meta": {
+                    "mcp-geo": {
+                        "category": "places",
+                        "keywords": [
+                            "address",
+                            "free",
+                            "geocode",
+                            "in",
+                            "os",
+                            "place",
+                            "places",
+                            "postcode",
+                            "search",
+                            "text",
+                            "uprn"
+                        ],
+                        "deferLoading": false
+                    }
+                }
+            }
+        ],
+        "toolsets": {
+            "starter": {
+                "patterns": [
+                    "admin_lookup.find_by_name",
+                    "nomis.query",
+                    "ons_data.query",
+                    "ons_search.query",
+                    "ons_select.search",
+                    "os_apps.log_event",
+                    "os_apps.render_boundary_explorer",
+                    "os_apps.render_geography_selector",
+                    "os_mcp.descriptor",
+                    "os_mcp.route_query",
+                    "os_mcp.stats_routing",
+                    "os_names.find",
+                    "os_places.by_postcode",
+                    "os_places.search"
+                ],
+                "tools": [
+                    "admin_lookup.find_by_name",
+                    "nomis.query",
+                    "ons_data.query",
+                    "ons_search.query",
+                    "ons_select.search",
+                    "os_apps.log_event",
+                    "os_apps.render_boundary_explorer",
+                    "os_apps.render_geography_selector",
+                    "os_mcp.descriptor",
+                    "os_mcp.route_query",
+                    "os_mcp.stats_routing",
+                    "os_names.find",
+                    "os_places.by_postcode",
+                    "os_places.search"
+                ],
+                "count": 14
+            },
+            "core_router": {
+                "patterns": [
+                    "os_mcp.*"
+                ],
+                "tools": [
+                    "os_mcp.descriptor",
+                    "os_mcp.route_query",
+                    "os_mcp.select_toolsets",
+                    "os_mcp.stats_routing"
+                ],
+                "count": 4
+            },
+            "places_names": {
+                "patterns": [
+                    "os_places.*",
+                    "os_poi.*",
+                    "os_names.*",
+                    "os_linked_ids.get"
+                ],
+                "tools": [
+                    "os_linked_ids.get",
+                    "os_names.find",
+                    "os_names.nearest",
+                    "os_places.by_postcode",
+                    "os_places.by_uprn",
+                    "os_places.nearest",
+                    "os_places.polygon",
+                    "os_places.radius",
+                    "os_places.search",
+                    "os_places.within",
+                    "os_poi.nearest",
+                    "os_poi.search",
+                    "os_poi.within"
+                ],
+                "count": 13
+            },
+            "features_layers": {
+                "patterns": [
+                    "os_features.*",
+                    "os_map.inventory",
+                    "os_map.export"
+                ],
+                "tools": [
+                    "os_features.collections",
+                    "os_features.query",
+                    "os_features.wfs_archive_capabilities",
+                    "os_features.wfs_capabilities",
+                    "os_map.export",
+                    "os_map.inventory"
+                ],
+                "count": 6
+            },
+            "maps_tiles": {
+                "patterns": [
+                    "os_maps.render",
+                    "os_vector_tiles.descriptor"
+                ],
+                "tools": [
+                    "os_maps.render",
+                    "os_vector_tiles.descriptor"
+                ],
+                "count": 2
+            },
+            "qgis_linkage": {
+                "patterns": [
+                    "os_qgis.*"
+                ],
+                "tools": [
+                    "os_qgis.export_geopackage_descriptor",
+                    "os_qgis.vector_tile_profile"
+                ],
+                "count": 2
+            },
+            "admin_boundaries": {
+                "patterns": [
+                    "admin_lookup.*"
+                ],
+                "tools": [
+                    "admin_lookup.area_geometry",
+                    "admin_lookup.containing_areas",
+                    "admin_lookup.find_by_name",
+                    "admin_lookup.get_cache_status",
+                    "admin_lookup.reverse_hierarchy",
+                    "admin_lookup.search_cache"
+                ],
+                "count": 6
+            },
+            "ons_selection": {
+                "patterns": [
+                    "ons_select.search",
+                    "ons_search.query",
+                    "ons_codes.*"
+                ],
+                "tools": [
+                    "ons_codes.list",
+                    "ons_codes.options",
+                    "ons_search.query",
+                    "ons_select.search"
+                ],
+                "count": 4
+            },
+            "ons_data": {
+                "patterns": [
+                    "ons_data.*"
+                ],
+                "tools": [
+                    "ons_data.create_filter",
+                    "ons_data.dimensions",
+                    "ons_data.editions",
+                    "ons_data.get_filter_output",
+                    "ons_data.get_observation",
+                    "ons_data.query",
+                    "ons_data.versions"
+                ],
+                "count": 7
+            },
+            "nomis_data": {
+                "patterns": [
+                    "nomis.*"
+                ],
+                "tools": [
+                    "nomis.codelists",
+                    "nomis.concepts",
+                    "nomis.datasets",
+                    "nomis.query"
+                ],
+                "count": 4
+            },
+            "apps_ui": {
+                "patterns": [
+                    "os_apps.render_*",
+                    "os_apps.log_event"
+                ],
+                "tools": [
+                    "os_apps.log_event",
+                    "os_apps.render_boundary_explorer",
+                    "os_apps.render_feature_inspector",
+                    "os_apps.render_geography_selector",
+                    "os_apps.render_route_planner",
+                    "os_apps.render_statistics_dashboard",
+                    "os_apps.render_ui_probe"
+                ],
+                "count": 7
+            }
+        }
+    }
+}
+2026-02-13 14: 35: 25.384 [info
+] Discovered 14 tools

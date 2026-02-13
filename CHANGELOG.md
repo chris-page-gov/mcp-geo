@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+
+## [0.3.1] - 2026-02-13
 ### Added
 - Added a curated `starter` toolset to discovery metadata for lean MCP startup
   capability exposure.
@@ -14,6 +16,10 @@ All notable changes to this project will be documented in this file.
 - Added `os_mcp.select_toolsets`, a post-init tool that resolves
   `tools/list` filter parameters (`toolset`, `includeToolsets`,
   `excludeToolsets`) with optional query-based inference.
+- Added VS Code toolset configuration template at
+  `.vscode/mcp-geo.toolsets.jsonc` plus setup guidance in VS Code docs/README.
+- Added troubleshooting guidance for OS VTS custom-label rendering limits and
+  the HTML/DOM marker overlay workaround.
 
 ### Changed
 - Updated STDIO/MCP and HTTP discovery handlers so `tools/list` and

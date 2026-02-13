@@ -107,6 +107,9 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-13: Captured OS VTS label rendering constraint from Claude/Desktop
+  validation: custom symbol-layer text should use HTML/DOM marker overlays
+  rather than glyph-backed symbol text on OS VTS basemaps.
 - 2026-02-13: Hardened Claude/STDIO payload sizing for map workflows by adding
   explicit limits to `os_places.search` and `os_names.find`, reducing
   `os_map.inventory` default/max limits to avoid oversized overlay payloads,
