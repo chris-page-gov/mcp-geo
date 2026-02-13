@@ -156,6 +156,15 @@ def list_tools_endpoint(
 @router.post("/tools/call")
 async def call_tool(request: Request):
     data = await request.json()
+    if not isinstance(data, dict):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Request body must be a JSON object",
+            },
+        )
     tool_name = data.get("tool")
     if not isinstance(tool_name, str) or not tool_name.strip():
         return JSONResponse(

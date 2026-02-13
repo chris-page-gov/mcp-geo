@@ -27,11 +27,14 @@ from server.mcp import tools as _mcp_import  # noqa: F401
 from tools.registry import all_tools, get as get_tool
 from server.mcp.resource_catalog import (
     DATA_RESOURCE_PREFIX,
+    list_data_resources,
     MCP_APPS_MIME,
     list_skill_resources,
     list_ui_resources,
+    load_data_content,
     load_skill_content,
     load_ui_content,
+    resolve_data_resource,
     resolve_skill_resource,
     resolve_ui_resource,
 )
@@ -69,6 +72,7 @@ JSONRPC = "2.0"
 RESOURCE_LIST: List[dict[str, Any]] = []
 RESOURCE_LIST.extend(list_skill_resources())
 RESOURCE_LIST.extend(list_ui_resources())
+RESOURCE_LIST.extend(list_data_resources())
 
 
 def handle_get_resource(params: Dict[str, Any]) -> Any:
@@ -78,8 +82,11 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
         raise ValueError("Missing resource name or uri")
     if uri:
         if isinstance(uri, str) and uri.startswith(DATA_RESOURCE_PREFIX):
-            name = uri[len(DATA_RESOURCE_PREFIX):]
-            raise LookupError("Resource not available in live-only mode")
+            entry = resolve_data_resource(uri)
+            if entry:
+                content, _etag, meta = load_data_content(entry)
+                return _read_result(uri, "application/json", content, meta)
+            raise LookupError(f"Unknown resource '{uri}'")
         else:
             ui_entry = resolve_ui_resource(str(uri))
             if ui_entry:
@@ -109,6 +116,16 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
         if skill_entry:
             content, _etag = load_skill_content()
             return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
+        if str(name).startswith(DATA_RESOURCE_PREFIX) or resolve_data_resource(str(name)):
+            entry = resolve_data_resource(str(name))
+            if entry:
+                content, _etag, meta = load_data_content(entry)
+                uri_value = (
+                    str(name)
+                    if str(name).startswith(DATA_RESOURCE_PREFIX)
+                    else f"{DATA_RESOURCE_PREFIX}{entry.get('slug', '')}"
+                )
+                return _read_result(uri_value, "application/json", content, meta)
     if not isinstance(name, str):
         raise ValueError("Missing resource name")
     raise LookupError(f"Unknown resource '{name}'")

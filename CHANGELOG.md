@@ -92,6 +92,12 @@ All notable changes to this project will be documented in this file.
 - Restored coverage gate after OS catalog/tooling wave additions with focused
   branch tests for delivery, downloads, capabilities, OS client branches, and
   resource-catalog path guards.
+- Fixed STDIO `resources/read` handling so `resource://mcp-geo/*` data resources
+  are now resolvable (matching HTTP resource delivery behavior).
+- Fixed `/tools/call` request validation to return `400 INVALID_INPUT` for
+  non-object JSON bodies instead of surfacing `500 INTERNAL_ERROR`.
+- Fixed `/maps/static/osm` large-size rendering to stitch multiple OSM tiles so
+  outputs honor requested sizes above 256px.
 
 ### Tests
 - Added POI evaluation harness scenarios (`B011A`/`B011B`/`B011C`) so full-tool

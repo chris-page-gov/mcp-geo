@@ -280,6 +280,8 @@ def test_handle_get_resource_success_paths():
     assert ui.get("contents") and ui["contents"][0]["mimeType"].startswith("text/html")
     skills = stdio_adapter.handle_get_resource({"uri": "skills://mcp-geo/getting-started"})
     assert skills.get("contents") and skills["contents"][0]["mimeType"] == "text/markdown"
+    data = stdio_adapter.handle_get_resource({"uri": "resource://mcp-geo/os-exports-index"})
+    assert data.get("contents") and data["contents"][0]["mimeType"] == "application/json"
     by_name = stdio_adapter.handle_get_resource({"name": "ui://mcp-geo/geography-selector"})
     assert by_name.get("contents") and by_name["contents"][0]["uri"].startswith("ui://mcp-geo/")
 

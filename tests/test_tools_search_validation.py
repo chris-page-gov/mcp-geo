@@ -45,3 +45,10 @@ def test_tools_call_unknown_prefixed_tool(client):
     assert resp.status_code == 501
     payload = resp.json()
     assert payload["code"] in ("TOOL_NOT_REGISTERED", "TOOL_IMPORT_FAILED")
+
+
+def test_tools_call_rejects_non_object_payload(client):
+    resp = client.post("/tools/call", json=["not", "an", "object"])
+    assert resp.status_code == 400
+    payload = resp.json()
+    assert payload["code"] == "INVALID_INPUT"

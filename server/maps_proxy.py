@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import io
 import math
 import threading
 import time
@@ -13,6 +14,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
+from PIL import Image, UnidentifiedImageError
 
 from server.config import settings
 from server.circuit_breaker import get_circuit_breaker
@@ -157,6 +159,48 @@ def _bbox_center(bbox: list[float]) -> tuple[float, float]:
 def _tile_for_lonlat(lon: float, lat: float, zoom: int) -> tuple[int, int]:
     x, y = _lonlat_to_pixel(lon, lat, zoom)
     return int(x // _TILE_SIZE), int(y // _TILE_SIZE)
+
+
+def _tile_matrix_size(zoom: int) -> int:
+    return 2 ** zoom
+
+
+def _normalize_tile_x(x: int, zoom: int) -> int:
+    n = _tile_matrix_size(zoom)
+    return x % n
+
+
+def _is_valid_tile_y(y: int, zoom: int) -> bool:
+    n = _tile_matrix_size(zoom)
+    return 0 <= y < n
+
+
+def _get_osm_tile_bytes(z: int, x: int, y: int) -> tuple[bytes, str, str]:
+    x = _normalize_tile_x(x, z)
+    if not _is_valid_tile_y(y, z):
+        raise HTTPException(status_code=400, detail="OSM tile y out of range")
+    cache_key = _osm_cache_key(z, x, y)
+    cached = _get_cached_osm_tile(cache_key)
+    if cached:
+        return (
+            cached.get("content", b""),
+            cached.get("content_type", "image/png"),
+            "HIT",
+        )
+    url = _osm_tile_url(z, x, y)
+    try:
+        resp = requests.get(
+            url,
+            timeout=DEFAULT_TIMEOUT,
+            headers={"User-Agent": _osm_user_agent()},
+        )
+    except (req_exc.ConnectionError, req_exc.Timeout) as exc:
+        raise HTTPException(status_code=502, detail=f"OSM proxy error: {exc}") from exc
+    content_type = resp.headers.get("content-type", "image/png")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail="Failed to fetch OSM tile")
+    _store_osm_tile(cache_key, resp.content, content_type)
+    return resp.content, content_type, "MISS"
 
 
 def _get_api_key(request: Request) -> str:
@@ -559,50 +603,68 @@ def render_static_osm(
         raise HTTPException(status_code=400, detail="bbox must be minLon,minLat,maxLon,maxLat")
     min_lon, min_lat, max_lon, max_lat = parts
     bbox_vals = [min_lon, min_lat, max_lon, max_lat]
-    target_px = max(64, min(int(size), _TILE_SIZE))
+    target_px = max(64, min(int(size), 2048))
     map_zoom = zoom if zoom is not None else _bbox_to_zoom(bbox_vals, target_px)
     center_lon, center_lat = _bbox_center(bbox_vals)
     tile_x, tile_y = _tile_for_lonlat(center_lon, center_lat, map_zoom)
-    cache_key = _osm_cache_key(map_zoom, tile_x, tile_y)
-    cached = _get_cached_osm_tile(cache_key)
-    if cached:
-        headers = _osm_cache_headers(cached.get("etag"))
-        headers["X-Cache"] = "HIT"
+    if target_px <= _TILE_SIZE:
+        content, content_type, cache_state = _get_osm_tile_bytes(map_zoom, tile_x, tile_y)
+        headers = _osm_cache_headers()
+        headers["X-Cache"] = cache_state
         headers["X-Map-Zoom"] = str(map_zoom)
         headers["X-Map-Tile"] = f"{tile_x},{tile_y}"
         response = Response(
-            content=cached.get("content", b""),
+            content=content,
             status_code=200,
-            media_type=cached.get("content_type", "image/png"),
+            media_type=content_type,
             headers=headers,
         )
         return _apply_cors(response, request)
-    url = _osm_tile_url(map_zoom, tile_x, tile_y)
-    try:
-        resp = requests.get(
-            url,
-            timeout=DEFAULT_TIMEOUT,
-            headers={"User-Agent": _osm_user_agent()},
-        )
-    except (req_exc.ConnectionError, req_exc.Timeout) as exc:
-        raise HTTPException(status_code=502, detail=f"OSM proxy error: {exc}") from exc
-    content_type = resp.headers.get("content-type", "image/png")
-    if resp.status_code != 200:
-        response = Response(
-            content=resp.content,
-            status_code=resp.status_code,
-            media_type=content_type,
-        )
-        return _apply_cors(response, request)
-    etag = _store_osm_tile(cache_key, resp.content, content_type)
-    headers = _osm_cache_headers(etag)
-    headers["X-Cache"] = "MISS"
+
+    center_px_x, center_px_y = _lonlat_to_pixel(center_lon, center_lat, map_zoom)
+    half = target_px / 2.0
+    min_px_x = center_px_x - half
+    max_px_x = center_px_x + half
+    min_px_y = center_px_y - half
+    max_px_y = center_px_y + half
+    min_tile_x = math.floor(min_px_x / _TILE_SIZE)
+    max_tile_x = math.floor((max_px_x - 1) / _TILE_SIZE)
+    min_tile_y = math.floor(min_px_y / _TILE_SIZE)
+    max_tile_y = math.floor((max_px_y - 1) / _TILE_SIZE)
+
+    canvas = Image.new("RGBA", (target_px, target_px))
+    all_hits = True
+    tiles_used = 0
+    for ty in range(min_tile_y, max_tile_y + 1):
+        if not _is_valid_tile_y(ty, map_zoom):
+            continue
+        for tx in range(min_tile_x, max_tile_x + 1):
+            tile_bytes, _content_type, cache_state = _get_osm_tile_bytes(map_zoom, tx, ty)
+            if cache_state != "HIT":
+                all_hits = False
+            try:
+                tile_image = Image.open(io.BytesIO(tile_bytes)).convert("RGBA")
+            except (UnidentifiedImageError, OSError) as exc:
+                raise HTTPException(status_code=502, detail=f"Invalid OSM tile image: {exc}") from exc
+            paste_x = int(round(tx * _TILE_SIZE - min_px_x))
+            paste_y = int(round(ty * _TILE_SIZE - min_px_y))
+            canvas.alpha_composite(tile_image, (paste_x, paste_y))
+            tiles_used += 1
+
+    if tiles_used == 0:
+        raise HTTPException(status_code=502, detail="No OSM tiles available for requested map")
+    rendered = io.BytesIO()
+    canvas.save(rendered, format="PNG")
+    rendered_bytes = rendered.getvalue()
+    headers = _osm_cache_headers()
+    headers["X-Cache"] = "HIT" if all_hits else "MISS"
     headers["X-Map-Zoom"] = str(map_zoom)
     headers["X-Map-Tile"] = f"{tile_x},{tile_y}"
+    headers["X-Map-Tiles"] = str(tiles_used)
     response = Response(
-        content=resp.content,
-        status_code=resp.status_code,
-        media_type=content_type,
+        content=rendered_bytes,
+        status_code=200,
+        media_type="image/png",
         headers=headers,
     )
     return _apply_cors(response, request)
