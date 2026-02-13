@@ -130,6 +130,33 @@ def _norm_dpa_list(body: PlacesResponse | dict[str, Any]) -> list[NormalizedAddr
         })
     return out
 
+
+def _parse_polygon(value: Any) -> dict[str, Any] | None:
+    if isinstance(value, dict):
+        if str(value.get("type", "")).lower() != "polygon":
+            return None
+        coords = value.get("coordinates")
+        if not (isinstance(coords, list) and coords):
+            return None
+        return value
+    if isinstance(value, list):
+        ring: list[list[float]] = []
+        for point in value:
+            if not (isinstance(point, list) and len(point) >= 2):
+                return None
+            try:
+                lon = float(point[0])
+                lat = float(point[1])
+            except (TypeError, ValueError):
+                return None
+            ring.append([lon, lat])
+        if len(ring) < 4:
+            return None
+        if ring[0] != ring[-1]:
+            ring.append(ring[0])
+        return {"type": "Polygon", "coordinates": [ring]}
+    return None
+
 # /search/places/v1/find
 
 def _places_search(payload: dict[str, Any]) -> ToolResult:
@@ -237,6 +264,76 @@ def _places_within(payload: dict[str, Any]) -> ToolResult:
         response["provenance"] = meta
     return 200, response
 
+
+def _places_radius(payload: dict[str, Any]) -> ToolResult:
+    raw_lat = payload.get("lat")
+    raw_lon = payload.get("lon")
+    raw_radius = payload.get("radiusMeters", payload.get("radius"))
+    try:
+        lat = float(raw_lat)
+        lon = float(raw_lon)
+    except Exception:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "lat/lon must be numeric"}
+    try:
+        radius = int(raw_radius)
+    except Exception:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "radiusMeters must be an integer"}
+    if radius < 1:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "radiusMeters must be > 0"}
+
+    maxresults = payload.get("limit", payload.get("maxresults", 50))
+    try:
+        maxresults_val = int(maxresults)
+    except Exception:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "limit must be an integer when provided",
+        }
+    if maxresults_val < 1:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be > 0"}
+
+    params = {
+        "point": f"{lat},{lon}",
+        "radius": radius,
+        "srs": "WGS84",
+        "output_srs": "WGS84",
+        "maxresults": maxresults_val,
+    }
+    status, raw = client.get_json(f"{client.base_places}/radius", params)
+    if status != 200:
+        return status, raw
+    body = cast(PlacesResponse, raw)
+    return 200, {"results": _norm_dpa_list(body), "count": len(body.get("results", []))}
+
+
+def _places_polygon(payload: dict[str, Any]) -> ToolResult:
+    polygon = _parse_polygon(payload.get("polygon"))
+    if polygon is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "polygon must be a GeoJSON Polygon or coordinate ring",
+        }
+    maxresults = payload.get("limit", payload.get("maxresults", 100))
+    try:
+        maxresults_val = int(maxresults)
+    except Exception:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "limit must be an integer when provided",
+        }
+    if maxresults_val < 1:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be > 0"}
+
+    params = {"srs": "WGS84", "output_srs": "WGS84", "maxresults": maxresults_val}
+    status, raw = client.post_json(f"{client.base_places}/polygon", body=polygon, params=params)
+    if status != 200:
+        return status, raw
+    body = cast(PlacesResponse, raw)
+    return 200, {"results": _norm_dpa_list(body), "count": len(body.get("results", []))}
+
 # Register tools (overwrite placeholders if present)
 
 register(Tool(
@@ -292,4 +389,48 @@ register(Tool(
         "additionalProperties": True,
     },
     handler=_places_within
+))
+
+register(Tool(
+    name="os_places.radius",
+    description="Addresses within a radius of a WGS84 point",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "os_places.radius"},
+            "lat": {"type": "number"},
+            "lon": {"type": "number"},
+            "radiusMeters": {"type": "integer", "minimum": 1},
+            "limit": {"type": "integer", "minimum": 1},
+        },
+        "required": ["lat", "lon", "radiusMeters"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {"results": {"type": "array"}, "count": {"type": "number"}},
+        "required": ["results"],
+    },
+    handler=_places_radius
+))
+
+register(Tool(
+    name="os_places.polygon",
+    description="Addresses within a polygon",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "os_places.polygon"},
+            "polygon": {},
+            "limit": {"type": "integer", "minimum": 1},
+        },
+        "required": ["polygon"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {"results": {"type": "array"}, "count": {"type": "number"}},
+        "required": ["results"],
+    },
+    handler=_places_polygon
 ))

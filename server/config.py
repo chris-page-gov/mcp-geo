@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     NOMIS_SIGNATURE: str = ""
     ONS_DATASET_CACHE_ENABLED: bool = True
     ONS_DATASET_CACHE_DIR: str = "data/cache/ons"
+    OS_EXPORT_INLINE_MAX_BYTES: int = 200_000
+    OS_DATA_CACHE_DIR: str = "data/cache/os"
+    OS_DATA_CACHE_TTL: float = 3600.0
+    OS_DATA_CACHE_SIZE: int = 512
     UI_EVENT_LOG_PATH: str = "logs/ui-events.jsonl"
     PLAYGROUND_EVENT_LOG_PATH: str = "logs/playground-events.jsonl"
     CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"

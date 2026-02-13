@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-07T23:55:33.283402+00:00",
+  "generatedAt": "2026-02-13T06:53:48.106005+00:00",
   "source": "https://api.os.uk",
   "placeholder": false,
   "items": [
@@ -469,6 +469,30 @@
       ]
     },
     {
+      "id": "os.features.ngd.root",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD API \u2013 Features: landing",
+      "description": "NGD OGC API Features landing document.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ]
+    },
+    {
       "id": "os.features.ngd.collections",
       "kind": "probe",
       "category": "features",
@@ -527,6 +551,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.bld-fts-building-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-building-1",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-building-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-1",
+        "collectionTitle": "Building v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.bld-fts-building-2.items",
       "kind": "probe",
       "category": "features",
@@ -546,6 +598,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-2",
+        "collectionTitle": "Building v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-building-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-building-2",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-building-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -589,6 +669,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.bld-fts-building-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-building-3",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-building-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-3",
+        "collectionTitle": "Building v3"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.bld-fts-building-4.items",
       "kind": "probe",
       "category": "features",
@@ -608,6 +716,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-building-4",
+        "collectionTitle": "Building v4"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-building-4.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-building-4",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-building-4.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-4/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -651,6 +787,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.bld-fts-buildingaccesslocation-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-buildingaccesslocation-1",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-buildingaccesslocation-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingaccesslocation-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingaccesslocation-1",
+        "collectionTitle": "Building Access Location v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.bld-fts-buildingline-1.items",
       "kind": "probe",
       "category": "features",
@@ -670,6 +834,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingline-1",
+        "collectionTitle": "Building Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-buildingline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-buildingline-1",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-buildingline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -713,6 +905,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.bld-fts-buildingpart-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-buildingpart-1",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-buildingpart-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingpart-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingpart-1",
+        "collectionTitle": "Building Part v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.bld-fts-buildingpart-2.items",
       "kind": "probe",
       "category": "features",
@@ -732,6 +952,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "bld-fts-buildingpart-2",
+        "collectionTitle": "Building Part v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.bld-fts-buildingpart-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: bld-fts-buildingpart-2",
+      "description": "Probe queryables metadata endpoint for collection bld-fts-buildingpart-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -775,6 +1023,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.gnm-fts-crowdsourcednamepoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: gnm-fts-crowdsourcednamepoint-1",
+      "description": "Probe queryables metadata endpoint for collection gnm-fts-crowdsourcednamepoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-crowdsourcednamepoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-crowdsourcednamepoint-1",
+        "collectionTitle": "Crowd Sourced Name Point v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.gnm-fts-namedarea-1.items",
       "kind": "probe",
       "category": "features",
@@ -794,6 +1070,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-namedarea-1",
+        "collectionTitle": "Named Area v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.gnm-fts-namedarea-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: gnm-fts-namedarea-1",
+      "description": "Probe queryables metadata endpoint for collection gnm-fts-namedarea-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-namedarea-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -837,6 +1141,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.gnm-fts-namedpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: gnm-fts-namedpoint-1",
+      "description": "Probe queryables metadata endpoint for collection gnm-fts-namedpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-namedpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-namedpoint-1",
+        "collectionTitle": "Named Point v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.gnm-fts-namedroadjunction-1.items",
       "kind": "probe",
       "category": "features",
@@ -856,6 +1188,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "gnm-fts-namedroadjunction-1",
+        "collectionTitle": "Named Road Junction v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.gnm-fts-namedroadjunction-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: gnm-fts-namedroadjunction-1",
+      "description": "Probe queryables metadata endpoint for collection gnm-fts-namedroadjunction-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/gnm-fts-namedroadjunction-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -899,6 +1259,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.lnd-fts-land-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-land-1",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-land-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-land-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-land-1",
+        "collectionTitle": "Land v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.lnd-fts-land-2.items",
       "kind": "probe",
       "category": "features",
@@ -918,6 +1306,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-land-2",
+        "collectionTitle": "Land v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-land-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-land-2",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-land-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-land-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -961,6 +1377,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.lnd-fts-land-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-land-3",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-land-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-land-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-land-3",
+        "collectionTitle": "Land v3"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.lnd-fts-landform-1.items",
       "kind": "probe",
       "category": "features",
@@ -980,6 +1424,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landform-1",
+        "collectionTitle": "Landform v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-landform-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-landform-1",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-landform-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landform-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1023,6 +1495,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.lnd-fts-landformline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-landformline-1",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-landformline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landformline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landformline-1",
+        "collectionTitle": "Landform Line v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.lnd-fts-landformpoint-1.items",
       "kind": "probe",
       "category": "features",
@@ -1042,6 +1542,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landformpoint-1",
+        "collectionTitle": "Landform Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lnd-fts-landformpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-landformpoint-1",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-landformpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landformpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1085,6 +1613,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.lnd-fts-landpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lnd-fts-landpoint-1",
+      "description": "Probe queryables metadata endpoint for collection lnd-fts-landpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lnd-fts-landpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lnd-fts-landpoint-1",
+        "collectionTitle": "Land Point v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.lus-fts-site-1.items",
       "kind": "probe",
       "category": "features",
@@ -1104,6 +1660,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-site-1",
+        "collectionTitle": "Site v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-site-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lus-fts-site-1",
+      "description": "Probe queryables metadata endpoint for collection lus-fts-site-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-site-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1147,6 +1731,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.lus-fts-site-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lus-fts-site-2",
+      "description": "Probe queryables metadata endpoint for collection lus-fts-site-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-site-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-site-2",
+        "collectionTitle": "Site v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.lus-fts-siteaccesslocation-1.items",
       "kind": "probe",
       "category": "features",
@@ -1166,6 +1778,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-siteaccesslocation-1",
+        "collectionTitle": "Site Access Location v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-siteaccesslocation-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lus-fts-siteaccesslocation-1",
+      "description": "Probe queryables metadata endpoint for collection lus-fts-siteaccesslocation-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-siteaccesslocation-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1209,6 +1849,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.lus-fts-siteaccesslocation-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lus-fts-siteaccesslocation-2",
+      "description": "Probe queryables metadata endpoint for collection lus-fts-siteaccesslocation-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-siteaccesslocation-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-siteaccesslocation-2",
+        "collectionTitle": "Site Access Location v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.lus-fts-siteroutingpoint-1.items",
       "kind": "probe",
       "category": "features",
@@ -1228,6 +1896,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "lus-fts-siteroutingpoint-1",
+        "collectionTitle": "Site Routing Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.lus-fts-siteroutingpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: lus-fts-siteroutingpoint-1",
+      "description": "Probe queryables metadata endpoint for collection lus-fts-siteroutingpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/lus-fts-siteroutingpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1271,6 +1967,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.str-fts-compoundstructure-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-compoundstructure-1",
+      "description": "Probe queryables metadata endpoint for collection str-fts-compoundstructure-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-compoundstructure-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-compoundstructure-1",
+        "collectionTitle": "Compound Structure v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.str-fts-compoundstructure-2.items",
       "kind": "probe",
       "category": "features",
@@ -1290,6 +2014,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-compoundstructure-2",
+        "collectionTitle": "Compound Structure v2"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-compoundstructure-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-compoundstructure-2",
+      "description": "Probe queryables metadata endpoint for collection str-fts-compoundstructure-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-compoundstructure-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1333,6 +2085,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.str-fts-fieldboundary-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-fieldboundary-1",
+      "description": "Probe queryables metadata endpoint for collection str-fts-fieldboundary-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-fieldboundary-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-fieldboundary-1",
+        "collectionTitle": "Field Boundary v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.str-fts-structure-1.items",
       "kind": "probe",
       "category": "features",
@@ -1352,6 +2132,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structure-1",
+        "collectionTitle": "Structure v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structure-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-structure-1",
+      "description": "Probe queryables metadata endpoint for collection str-fts-structure-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structure-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1395,6 +2203,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.str-fts-structure-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-structure-2",
+      "description": "Probe queryables metadata endpoint for collection str-fts-structure-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structure-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structure-2",
+        "collectionTitle": "Structure v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.str-fts-structure-3.items",
       "kind": "probe",
       "category": "features",
@@ -1414,6 +2250,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structure-3",
+        "collectionTitle": "Structure v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structure-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-structure-3",
+      "description": "Probe queryables metadata endpoint for collection str-fts-structure-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structure-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1457,6 +2321,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.str-fts-structureline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-structureline-1",
+      "description": "Probe queryables metadata endpoint for collection str-fts-structureline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structureline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structureline-1",
+        "collectionTitle": "Structure Line v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.str-fts-structurepoint-1.items",
       "kind": "probe",
       "category": "features",
@@ -1476,6 +2368,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "str-fts-structurepoint-1",
+        "collectionTitle": "Structure Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.str-fts-structurepoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: str-fts-structurepoint-1",
+      "description": "Probe queryables metadata endpoint for collection str-fts-structurepoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/str-fts-structurepoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1519,6 +2439,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-fts-cartographicraildetail-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-cartographicraildetail-1",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-cartographicraildetail-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-cartographicraildetail-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-cartographicraildetail-1",
+        "collectionTitle": "Cartographic Rail Detail v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-fts-rail-1.items",
       "kind": "probe",
       "category": "features",
@@ -1538,6 +2486,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-rail-1",
+        "collectionTitle": "Rail v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-rail-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-rail-1",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-rail-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-rail-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1581,6 +2557,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-fts-rail-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-rail-2",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-rail-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-rail-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-rail-2",
+        "collectionTitle": "Rail v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-fts-rail-3.items",
       "kind": "probe",
       "category": "features",
@@ -1600,6 +2604,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-rail-3",
+        "collectionTitle": "Rail v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-rail-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-rail-3",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-rail-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-rail-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1643,6 +2675,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-fts-roadline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-roadline-1",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-roadline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadline-1",
+        "collectionTitle": "Road Line v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-1.items",
       "kind": "probe",
       "category": "features",
@@ -1662,6 +2722,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadtrackorpath-1",
+        "collectionTitle": "Road Track Or Path v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-roadtrackorpath-1",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-roadtrackorpath-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadtrackorpath-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1705,6 +2793,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-roadtrackorpath-2",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-roadtrackorpath-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadtrackorpath-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadtrackorpath-2",
+        "collectionTitle": "Road Track Or Path v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-3.items",
       "kind": "probe",
       "category": "features",
@@ -1724,6 +2840,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-roadtrackorpath-3",
+        "collectionTitle": "Road Track Or Path v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-fts-roadtrackorpath-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-roadtrackorpath-3",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-roadtrackorpath-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-roadtrackorpath-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1767,6 +2911,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-fts-streetlight-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-fts-streetlight-1",
+      "description": "Probe queryables metadata endpoint for collection trn-fts-streetlight-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-fts-streetlight-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-fts-streetlight-1",
+        "collectionTitle": "Street Light v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-buslane-1.items",
       "kind": "probe",
       "category": "features",
@@ -1786,6 +2958,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-buslane-1",
+        "collectionTitle": "Bus Lane v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-buslane-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-buslane-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-buslane-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-buslane-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1829,6 +3029,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-connectinglink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-connectinglink-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-connectinglink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-connectinglink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-connectinglink-1",
+        "collectionTitle": "Connecting Link v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-connectingnode-1.items",
       "kind": "probe",
       "category": "features",
@@ -1848,6 +3076,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-connectingnode-1",
+        "collectionTitle": "Connecting Node v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-connectingnode-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-connectingnode-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-connectingnode-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-connectingnode-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1891,6 +3147,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-cyclelane-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-cyclelane-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-cyclelane-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-cyclelane-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-cyclelane-1",
+        "collectionTitle": "Cycle Lane v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-ferrylink-1.items",
       "kind": "probe",
       "category": "features",
@@ -1910,6 +3194,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-ferrylink-1",
+        "collectionTitle": "Ferry Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-ferrylink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-ferrylink-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-ferrylink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-ferrylink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -1953,6 +3265,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-ferrynode-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-ferrynode-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-ferrynode-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-ferrynode-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-ferrynode-1",
+        "collectionTitle": "Ferry Node v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-ferryterminal-1.items",
       "kind": "probe",
       "category": "features",
@@ -1972,6 +3312,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-ferryterminal-1",
+        "collectionTitle": "Ferry Terminal v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-ferryterminal-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-ferryterminal-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-ferryterminal-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-ferryterminal-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2015,6 +3383,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-path-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-path-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-path-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-path-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-path-1",
+        "collectionTitle": "Path v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-pathlink-1.items",
       "kind": "probe",
       "category": "features",
@@ -2034,6 +3430,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathlink-1",
+        "collectionTitle": "Path Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pathlink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-pathlink-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-pathlink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathlink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2077,6 +3501,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-pathlink-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-pathlink-2",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-pathlink-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathlink-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathlink-2",
+        "collectionTitle": "Path Link v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-pathlink-3.items",
       "kind": "probe",
       "category": "features",
@@ -2096,6 +3548,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathlink-3",
+        "collectionTitle": "Path Link v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pathlink-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-pathlink-3",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-pathlink-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathlink-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2139,6 +3619,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-pathnode-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-pathnode-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-pathnode-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pathnode-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pathnode-1",
+        "collectionTitle": "Path Node v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-pavementlink-1.items",
       "kind": "probe",
       "category": "features",
@@ -2158,6 +3666,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-pavementlink-1",
+        "collectionTitle": "Pavement Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-pavementlink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-pavementlink-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-pavementlink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-pavementlink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2201,6 +3737,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-railwaylink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-railwaylink-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-railwaylink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-railwaylink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-railwaylink-1",
+        "collectionTitle": "Railway Link v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-railwaylinkset-1.items",
       "kind": "probe",
       "category": "features",
@@ -2220,6 +3784,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-railwaylinkset-1",
+        "collectionTitle": "Railway Link Set v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-railwaylinkset-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-railwaylinkset-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-railwaylinkset-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-railwaylinkset-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2263,6 +3855,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-railwaynode-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-railwaynode-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-railwaynode-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-railwaynode-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-railwaynode-1",
+        "collectionTitle": "Railway Node v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-road-1.items",
       "kind": "probe",
       "category": "features",
@@ -2282,6 +3902,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-road-1",
+        "collectionTitle": "Road v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-road-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-road-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-road-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-road-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2325,6 +3973,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-roadjunction-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadjunction-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadjunction-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadjunction-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadjunction-1",
+        "collectionTitle": "Road Junction v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-roadlink-1.items",
       "kind": "probe",
       "category": "features",
@@ -2344,6 +4020,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-1",
+        "collectionTitle": "Road Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadlink-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadlink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2387,6 +4091,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadlink-2",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadlink-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-2",
+        "collectionTitle": "Road Link v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-roadlink-3.items",
       "kind": "probe",
       "category": "features",
@@ -2406,6 +4138,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-3",
+        "collectionTitle": "Road Link v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadlink-3",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadlink-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2449,6 +4209,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-4.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadlink-4",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadlink-4.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-4/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-4",
+        "collectionTitle": "Road Link v4"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-roadlink-5.items",
       "kind": "probe",
       "category": "features",
@@ -2468,6 +4256,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadlink-5",
+        "collectionTitle": "Road Link v5"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-roadlink-5.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadlink-5",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadlink-5.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadlink-5/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2511,6 +4327,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-roadnode-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-roadnode-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-roadnode-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-roadnode-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-roadnode-1",
+        "collectionTitle": "Road Node v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-ntwk-street-1.items",
       "kind": "probe",
       "category": "features",
@@ -2530,6 +4374,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-street-1",
+        "collectionTitle": "Street v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-ntwk-street-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-street-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-street-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-street-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2573,6 +4445,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-ntwk-tramonroad-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-ntwk-tramonroad-1",
+      "description": "Probe queryables metadata endpoint for collection trn-ntwk-tramonroad-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-ntwk-tramonroad-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-ntwk-tramonroad-1",
+        "collectionTitle": "Tram On Road v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-averageandindicativespeed-1.items",
       "kind": "probe",
       "category": "features",
@@ -2592,6 +4492,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-averageandindicativespeed-1",
+        "collectionTitle": "Average And Indicative Speed v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-averageandindicativespeed-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-averageandindicativespeed-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-averageandindicativespeed-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-averageandindicativespeed-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2635,6 +4563,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-highwaydedication-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-highwaydedication-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-highwaydedication-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-highwaydedication-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-highwaydedication-1",
+        "collectionTitle": "Highway Dedication v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-maintenancearea-1.items",
       "kind": "probe",
       "category": "features",
@@ -2654,6 +4610,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-maintenancearea-1",
+        "collectionTitle": "Maintenance Area v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-maintenancearea-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-maintenancearea-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-maintenancearea-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-maintenancearea-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2697,6 +4681,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-maintenanceline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-maintenanceline-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-maintenanceline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-maintenanceline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-maintenanceline-1",
+        "collectionTitle": "Maintenance Line v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-maintenancepoint-1.items",
       "kind": "probe",
       "category": "features",
@@ -2716,6 +4728,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-maintenancepoint-1",
+        "collectionTitle": "Maintenance Point v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-maintenancepoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-maintenancepoint-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-maintenancepoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-maintenancepoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2759,6 +4799,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-reinstatementarea-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-reinstatementarea-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-reinstatementarea-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-reinstatementarea-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-reinstatementarea-1",
+        "collectionTitle": "Reinstatement Area v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-reinstatementline-1.items",
       "kind": "probe",
       "category": "features",
@@ -2778,6 +4846,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-reinstatementline-1",
+        "collectionTitle": "Reinstatement Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-reinstatementline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-reinstatementline-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-reinstatementline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-reinstatementline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2821,6 +4917,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-reinstatementpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-reinstatementpoint-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-reinstatementpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-reinstatementpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-reinstatementpoint-1",
+        "collectionTitle": "Reinstatement Point v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-restriction-1.items",
       "kind": "probe",
       "category": "features",
@@ -2840,6 +4964,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-restriction-1",
+        "collectionTitle": "Restriction v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-restriction-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-restriction-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-restriction-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-restriction-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2883,6 +5035,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-routinghazard-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-routinghazard-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-routinghazard-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-routinghazard-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-routinghazard-1",
+        "collectionTitle": "Routing Hazard v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-routingstructure-1.items",
       "kind": "probe",
       "category": "features",
@@ -2902,6 +5082,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-routingstructure-1",
+        "collectionTitle": "RoutingStructure v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-routingstructure-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-routingstructure-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-routingstructure-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-routingstructure-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -2945,6 +5153,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-specialdesignationarea-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-specialdesignationarea-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-specialdesignationarea-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-specialdesignationarea-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-specialdesignationarea-1",
+        "collectionTitle": "Special Designation Area v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.trn-rami-specialdesignationline-1.items",
       "kind": "probe",
       "category": "features",
@@ -2964,6 +5200,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-specialdesignationline-1",
+        "collectionTitle": "Special Designation Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.trn-rami-specialdesignationline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-specialdesignationline-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-specialdesignationline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-specialdesignationline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -3007,6 +5271,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.trn-rami-specialdesignationpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: trn-rami-specialdesignationpoint-1",
+      "description": "Probe queryables metadata endpoint for collection trn-rami-specialdesignationpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/trn-rami-specialdesignationpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "trn-rami-specialdesignationpoint-1",
+        "collectionTitle": "Special Designation Point v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.wtr-fts-intertidalline-1.items",
       "kind": "probe",
       "category": "features",
@@ -3026,6 +5318,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-intertidalline-1",
+        "collectionTitle": "Inter Tidal Line v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-intertidalline-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-fts-intertidalline-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-fts-intertidalline-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-intertidalline-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -3069,6 +5389,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.wtr-fts-tidalboundary-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-fts-tidalboundary-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-fts-tidalboundary-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-tidalboundary-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-tidalboundary-1",
+        "collectionTitle": "Tidal Boundary v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.wtr-fts-water-1.items",
       "kind": "probe",
       "category": "features",
@@ -3088,6 +5436,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-water-1",
+        "collectionTitle": "Water v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-water-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-fts-water-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-fts-water-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-water-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -3131,6 +5507,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.wtr-fts-water-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-fts-water-2",
+      "description": "Probe queryables metadata endpoint for collection wtr-fts-water-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-water-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-water-2",
+        "collectionTitle": "Water v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.wtr-fts-water-3.items",
       "kind": "probe",
       "category": "features",
@@ -3150,6 +5554,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-water-3",
+        "collectionTitle": "Water v3"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-fts-water-3.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-fts-water-3",
+      "description": "Probe queryables metadata endpoint for collection wtr-fts-water-3.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-water-3/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -3193,6 +5625,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.wtr-fts-waterpoint-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-fts-waterpoint-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-fts-waterpoint-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-fts-waterpoint-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-fts-waterpoint-1",
+        "collectionTitle": "Water Point v1"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.wtr-ntwk-waterlink-1.items",
       "kind": "probe",
       "category": "features",
@@ -3212,6 +5672,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waterlink-1",
+        "collectionTitle": "Water Link v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-ntwk-waterlink-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-ntwk-waterlink-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-ntwk-waterlink-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waterlink-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -3255,6 +5743,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.wtr-ntwk-waterlink-2.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-ntwk-waterlink-2",
+      "description": "Probe queryables metadata endpoint for collection wtr-ntwk-waterlink-2.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waterlink-2/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waterlink-2",
+        "collectionTitle": "Water Link v2"
+      }
+    },
+    {
       "id": "os.features.ngd.collection.wtr-ntwk-waterlinkset-1.items",
       "kind": "probe",
       "category": "features",
@@ -3274,6 +5790,34 @@
           200
         ],
         "contentTypePrefix": "application/geo+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waterlinkset-1",
+        "collectionTitle": "Water Link Set v1"
+      }
+    },
+    {
+      "id": "os.features.ngd.collection.wtr-ntwk-waterlinkset-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-ntwk-waterlinkset-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-ntwk-waterlinkset-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waterlinkset-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
       },
       "docs": [
         "https://osdatahub.os.uk/docs/ofa/overview",
@@ -3317,6 +5861,34 @@
       }
     },
     {
+      "id": "os.features.ngd.collection.wtr-ntwk-waternode-1.queryables",
+      "kind": "probe",
+      "category": "features",
+      "title": "OS NGD queryables: wtr-ntwk-waternode-1",
+      "description": "Probe queryables metadata endpoint for collection wtr-ntwk-waternode-1.",
+      "required": false,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/features/ngd/ofa/v1/collections/wtr-ntwk-waternode-1/queryables",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/schema+json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/ofa/overview",
+        "https://osdatahub.os.uk/docs/ofa/gettingStarted",
+        "https://osdatahub.os.uk/docs/ofa/technicalSpecification"
+      ],
+      "meta": {
+        "collectionId": "wtr-ntwk-waternode-1",
+        "collectionTitle": "Water Node v1"
+      }
+    },
+    {
       "id": "os.maps.raster.wmts.capabilities",
       "kind": "probe",
       "category": "maps",
@@ -3344,15 +5916,15 @@
       ]
     },
     {
-      "id": "os.maps.raster.zxy.tile",
+      "id": "os.maps.raster.zxy.road.tile",
       "kind": "probe",
       "category": "maps",
-      "title": "OS Maps API (Raster ZXY): Sample tile",
-      "description": "Fetch a single PNG tile (kept small; no bulk downloads).",
+      "title": "OS Maps API (Raster ZXY): Road sample tile",
+      "description": "Fetch a single Road_3857 PNG tile (kept small; no bulk downloads).",
       "required": true,
       "request": {
         "method": "GET",
-        "url": "https://api.os.uk/maps/raster/v1/zxy/Light_3857/7/63/42.png",
+        "url": "https://api.os.uk/maps/raster/v1/zxy/Road_3857/7/63/42.png",
         "params": {}
       },
       "expects": {
@@ -3371,7 +5943,38 @@
         "z": 7,
         "x": 63,
         "y": 42,
-        "layer": "Light_3857"
+        "layer": "Road_3857"
+      }
+    },
+    {
+      "id": "os.maps.raster.zxy.outdoor.tile",
+      "kind": "probe",
+      "category": "maps",
+      "title": "OS Maps API (Raster ZXY): Outdoor sample tile",
+      "description": "Fetch a single Outdoor_3857 PNG tile (kept small; no bulk downloads).",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/7/63/42.png",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "image/png",
+        "minBytes": 64
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/wmts/overview",
+        "https://osdatahub.os.uk/docs/wmts/gettingStarted",
+        "https://osdatahub.os.uk/docs/wmts/technicalSpecification"
+      ],
+      "meta": {
+        "z": 7,
+        "x": 63,
+        "y": 42,
+        "layer": "Outdoor_3857"
       }
     },
     {
@@ -3551,6 +6154,30 @@
         "https://osdatahub.os.uk/docs/ota/overview",
         "https://osdatahub.os.uk/docs/ota/gettingStarted",
         "https://osdatahub.os.uk/docs/ota/technicalSpecification"
+      ]
+    },
+    {
+      "id": "os.downloads.root",
+      "kind": "probe",
+      "category": "downloads",
+      "title": "OS Downloads API: landing",
+      "description": "Downloads API landing document.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/downloads/v1",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      },
+      "docs": [
+        "https://osdatahub.os.uk/docs/downloads/overview",
+        "https://osdatahub.os.uk/docs/downloads/gettingStarted",
+        "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
       ]
     },
     {
@@ -5193,6 +7820,25 @@
         "https://osdatahub.os.uk/docs/downloads/gettingStarted",
         "https://osdatahub.os.uk/docs/downloads/technicalSpecification"
       ]
+    },
+    {
+      "id": "os.positioning.osnet.root",
+      "kind": "probe",
+      "category": "positioning",
+      "title": "OS Net API: landing",
+      "description": "OS Net API landing document.",
+      "required": true,
+      "request": {
+        "method": "GET",
+        "url": "https://api.os.uk/positioning/osnet/v1",
+        "params": {}
+      },
+      "expects": {
+        "status": [
+          200
+        ],
+        "contentTypePrefix": "application/json"
+      }
     },
     {
       "id": "os.positioning.osnet.openapi",

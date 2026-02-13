@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-11
+Last updated: 2026-02-13
 Owner: @chris-page-gov
 
 ## Purpose
@@ -48,11 +48,14 @@ assumptions change.
 ## Current Focus
 
 - Keeping the completed phased progress program stable with full regression coverage.
-- Prioritizing next major gap: CI pipeline implementation.
+- Driving the OS catalog/tooling gap closure plan via parallel workstreams.
+- Prioritizing next major gap after gap closure: CI pipeline implementation.
 
 ## Active Work
 
 - Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
+- Coordinate parallel OS gap workstreams and integration gates from
+  `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.
 - Documentation pack and preparation for workshop/demo.
 
 ## Status Snapshot (from PROGRESS.MD)
@@ -62,6 +65,9 @@ assumptions change.
 - Done: completion program tracker items `C00` through `C16` (dataset-selection gating,
   UI fallback, tool naming/toolsets, OS features/maps overlays, export pipeline, NOMIS workflows,
   admin cache maturity, boundary/code-list cache resources, observability, and POI tools).
+- Done: OS catalog/workstream wave implementation for WS-INT-0, WS-CAT-1, WS-DL-2, WS-SEARCH-3,
+  WS-MAP-4, and WS-POS-5 (OS Downloads, OS Net, OTA discovery, raster/WMTS, WFS capabilities,
+  Places radius/polygon, and Linked IDs extra paths).
 - Partial: OS Features, OS Maps render, ONS data tooling, admin lookup caching, resources
   population, playground UI, observability.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
@@ -88,9 +94,9 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (90.26% coverage, 634 passed, 6 skipped) on 2026-02-11.
+- Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
-- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q"` (91.05% coverage, 569 passed, 6 skipped) on 2026-02-11.
+- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
 
 ## Key Conventions
 
@@ -100,6 +106,15 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-13: Implemented parallel OS catalog gap workstreams WS-INT-0, WS-CAT-1,
+  WS-DL-2, WS-SEARCH-3, WS-MAP-4, and WS-POS-5, including new OS Downloads, OS Net,
+  OTA, WMTS/ZXY raster, WFS capabilities, and catalog probe coverage; full regression
+  now passes at 90.22% coverage.
+- 2026-02-13: Revised OS catalog gap implementation plan into dependency-gated
+  parallel workstreams suitable for separate threads/subagents, with shared-file
+  ownership and integration checkpoints documented in
+  `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.
+- 2026-02-12: Added OS catalog usage and delivery analysis report (`docs/reports/os_catalog_repo_usage_and_delivery_plan_2026-02-12.md`) covering catalog-to-runtime coverage, NGD overlap analysis, large-payload delivery patterns, cache/storage options, and QGIS linkage recommendations.
 - 2026-02-11: Removed the dedicated Warwick/Leamington 3D MCP-Apps tool/resource and added a response-size guard to keep UI tool payloads below the 1MB transport limit.
 - 2026-02-11: Closed phased completion program tracker item `C16` after full regression (`pytest -q`, 90.26% coverage) and playground Playwright verification (`6 passed`).
 - 2026-02-02: Added persistent Codex context file and devcontainer Codex home mount.

@@ -129,6 +129,24 @@ def test_os_catalog_snapshot_structure() -> None:
     assert ids and len(set(ids)) == len(ids)
     assert not errors, f"OS catalog item validation failed: {errors[:10]}"
 
+    required_ids = {
+        "os.features.ngd.root",
+        "os.downloads.root",
+        "os.positioning.osnet.root",
+        "os.maps.raster.zxy.road.tile",
+        "os.maps.raster.zxy.outdoor.tile",
+    }
+    missing_ids = sorted(required_ids - set(ids))
+    assert not missing_ids, f"OS catalog missing required probes: {missing_ids}"
+
+    assert any(
+        isinstance(item, dict)
+        and isinstance(item.get("id"), str)
+        and item["id"].startswith("os.features.ngd.collection.")
+        and item["id"].endswith(".queryables")
+        for item in items
+    ), "OS catalog missing NGD queryables probe entries"
+
 
 RUN_LIVE = os.getenv("RUN_LIVE_API_TESTS") == "1"
 pytestmark_live = pytest.mark.skipif(not RUN_LIVE, reason="RUN_LIVE_API_TESTS=1 required")

@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-11
+Last updated: 2026-02-13
 
 ## Sources reviewed
 
@@ -28,6 +28,26 @@ Evolving spec and repo-aligned docs:
 - docs/troubleshooting.md
 - README.md
 
+## Active implementation plan (2026-02-13)
+
+Reference plan:
+- `/Users/crpage/repos/mcp-geo/docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| WS-INT-0 Contract freeze + shared scaffolding | done | none | Added shared delivery contract/config and resource scaffolding (`os_delivery`, OS cache/exports resources). |
+| WS-CAT-1 Catalog gap closure | done | none | Added OFA/OS Net/Downloads roots, OFA queryables, and explicit Road+Outdoor ZXY probes in refreshed catalog. |
+| WS-DL-2 OS Downloads tool family | done | WS-INT-0 | Implemented `os_downloads.*` with inline/resource/auto delivery and export lifecycle support. |
+| WS-SEARCH-3 Places + Linked IDs closure | done | none | Added `os_places.radius`, `os_places.polygon`, and linked identifier extra paths. |
+| WS-MAP-4 Raster + WFS capabilities | done | WS-INT-0 | Added WMTS/ZXY raster tools and WFS/WFS archive capabilities with delivery controls. |
+| WS-POS-5 OTA + OS Net tooling | done | WS-INT-0 | Added NGD OTA discovery tools and OS Net station/log/RINEX tools. |
+| WS-QGIS-6 QGIS linkage tools | pending | WS-MAP-4, WS-POS-5 | Adds QGIS connection/export descriptor tools. |
+| WS-OBS-7 Observability coverage | pending | WS-DL-2, WS-MAP-4 or WS-POS-5 | Adds latency/bytes/fallback metrics and export lifecycle logs. |
+| WS-DOC-8 Documentation closure | done | WS-CAT-1 and feature streams | Updated planning/status docs and endpoint coverage notes to match implemented streams. |
+| WS-INT-9 Final integration + regression | done | all workstreams | Integrated registrations/resources and passed full regression (`pytest -q --cov-report=term-missing:skip-covered`). |
+
 ## Progress against the original vision
 
 Legend: Done, Partial, Not started
@@ -39,9 +59,12 @@ Legend: Done, Partial, Not started
 | Tool registry + dynamic imports | Done | server/mcp/tools.py, tools/registry.py | Explicit module import loop. |
 | OS Places (geocoder) | Done | tools/os_places.py, docs/examples.md | search/by_postcode/by_uprn/nearest/within implemented. |
 | OS Names (gazetteer) | Done | tools/os_names.py | find + nearest. |
-| OS Linked Identifiers | Done | tools/os_linked_ids.py | Uses OS search/links identifierTypes API; supports UPRN/USRN/TOID (type can be inferred). |
-| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Supports bbox or polygon queries, attribute filters, resultType hits, field projection, sorting, queryables fetch, and collections listing/latest mapping. Feature-by-id and CRS options still pending. |
-| OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL plus overlay-ready render contract delivered (input overlays + optional `os_map.inventory` hydration). Full end-to-end client rendering orchestration still pending. |
+| OS Linked Identifiers | Done | tools/os_linked_ids.py | Supports identifier lookups plus `identifiers`, `feature_types`, and `product_version_info` surfaces. |
+| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Supports bbox or polygon queries, attribute filters, resultType hits, field projection, sorting, queryables fetch, collections listing/latest mapping, plus WFS and WFS archive capabilities. Feature-by-id and CRS options still pending. |
+| OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL plus overlay-ready render contract delivered, with WMTS capabilities and raster ZXY tile retrieval. Full end-to-end client rendering orchestration still pending. |
+| OS NGD Tiles (OTA) | Done | tools/os_tiles_ota.py | Added OTA discovery surfaces: collections, tilematrixsets, conformance. |
+| OS Downloads API | Done | tools/os_downloads.py | Added product/download listing plus export prepare/get with resource-backed delivery. |
+| OS Net API | Done | tools/os_net.py | Added RINEX years, station metadata, and station log retrieval with delivery controls. |
 | OS Vector Tiles | Done | tools/os_vector_tiles.py | Descriptor tool present. |
 | ONS data query + filters | Partial | tools/ons_data.py, tools/ons_codes.py | Live mode required; ons_codes supports on-disk cache; `ons_data.get_filter_output` now supports resource-backed export delivery for large outputs (`delivery=resource|auto`) with `resource://mcp-geo/ons-exports/*` artifacts. |
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
@@ -61,11 +84,11 @@ Legend: Done, Partial, Not started
 ## Additional API coverage from the documentation collection task
 
 The documentation collection identifies extra OS and ONS services beyond the
-core tools. Current implementation coverage is incomplete for:
+core tools. Current implementation coverage is:
 
-- OS Net API (GNSS / RINEX data): not implemented.
+- OS Net API (GNSS / RINEX data): implemented via `os_net.rinex_years`, `os_net.station_get`, and `os_net.station_log`.
+- OS Downloads API: implemented via `os_downloads.*` list/get/export tools.
 - OS Match & Cleanse API: not implemented.
-- OS Downloads API: not implemented.
 - OAuth2 flow for OS APIs: not implemented (API key only).
 - Points of Interest / POI APIs: implemented via `os_poi.search`, `os_poi.nearest`, and `os_poi.within`.
 - Full ONS Open Geography linked data API: not implemented (ArcGIS live lookup is used instead).
@@ -88,7 +111,7 @@ High impact
 - Provide OAuth2 support for OS APIs where required.
 
 Medium impact
-- Add OS Net / Match & Cleanse / Downloads tooling if still in scope.
+- Add OS Match & Cleanse tooling if still in scope.
 - Replace map render descriptor stub with a real rendering or proxy service.
 - Expand ONS data export (streaming CSV/XLSX) and add more live dataset coverage.
 - Implement ONS dataset selection optimization (catalogue index, ranking, explainability, elicitation).
@@ -244,7 +267,7 @@ Common playground capabilities still required:
 
 ## Verification status
 
-Latest full test run: `pytest -q` (90.26% coverage, 634 passed, 6 skipped) on 2026-02-11.
+Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
 Latest playground UI test run: `npm --prefix playground run test` (6 passed) on 2026-02-11.
 
 ## Claude UI fallback plan (short)

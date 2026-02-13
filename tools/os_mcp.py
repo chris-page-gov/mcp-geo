@@ -192,6 +192,8 @@ LINKED_ID_PATTERNS = [
     r"\blinked id\b",
 ]
 
+CORRELATION_METHOD_REGEX = re.compile(r"\b[A-Z0-9_]+_[0-9]+\b")
+
 LEVEL_KEYWORDS = {
     "oa": [r"\boa\b", r"\boutput areas?\b"],
     "lsoa": [r"\blsoa\b", r"\blower (layer )?super output areas?\b"],
@@ -262,6 +264,13 @@ def _extract_postcode(query: str) -> str | None:
 
 def _extract_uprn(query: str) -> str | None:
     match = UPRN_REGEX.search(query)
+    if not match:
+        return None
+    return match.group(0)
+
+
+def _extract_correlation_method(query: str) -> str | None:
+    match = CORRELATION_METHOD_REGEX.search(query.strip())
     if not match:
         return None
     return match.group(0)
@@ -431,6 +440,18 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if any(re.search(pattern, query_lower) for pattern in LINKED_ID_PATTERNS):
         identifier = uprn or _extract_uprn(query) or ""
         context["linked_id"] = identifier
+        if re.search(r"\bproduct version\b|\bcorrelation method\b", query_lower):
+            context["linked_mode"] = "product_version_info"
+            corr = _extract_correlation_method(query)
+            params = {"correlationMethod": corr} if corr else {}
+            return QueryIntent.LINKED_IDS, 0.92, params, context
+        if re.search(r"\bfeature type\b|\broadlink\b|\broad link\b", query_lower):
+            context["linked_mode"] = "feature_types"
+            feature_type = "RoadLink" if "road" in query_lower else "RoadLink"
+            params = {"featureType": feature_type}
+            if identifier:
+                params["identifier"] = identifier
+            return QueryIntent.LINKED_IDS, 0.9, params, context
         return QueryIntent.LINKED_IDS, 0.9, {"identifier": identifier} if identifier else {}, context
 
     if any(re.search(pattern, query_lower) for pattern in VECTOR_TILE_PATTERNS):
@@ -584,9 +605,22 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "Search OS Points of Interest for amenities and nearby services.",
         )
     if intent == QueryIntent.LINKED_IDS:
+        linked_mode = str(context.get("linked_mode") or "")
+        if linked_mode == "product_version_info":
+            return (
+                "os_linked_ids.product_version_info",
+                ["os_linked_ids.product_version_info"],
+                "Resolve linked-identifiers product version details for a correlation method.",
+            )
+        if linked_mode == "feature_types":
+            return (
+                "os_linked_ids.feature_types",
+                ["os_linked_ids.feature_types", "os_linked_ids.identifiers"],
+                "Resolve linked identifiers for a feature type identifier.",
+            )
         return (
             "os_linked_ids.get",
-            ["os_linked_ids.get"],
+            ["os_linked_ids.get", "os_linked_ids.identifiers"],
             "Resolve linked identifiers (UPRN/USRN/TOID) for an entity.",
         )
     if intent == QueryIntent.PLACE_LOOKUP:
@@ -685,7 +719,12 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
     alternatives = {
         QueryIntent.ADDRESS_LOOKUP: ["os_places.search", "os_places.nearest"],
         QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
-        QueryIntent.LINKED_IDS: ["os_places.by_uprn"],
+        QueryIntent.LINKED_IDS: [
+            "os_linked_ids.identifiers",
+            "os_linked_ids.feature_types",
+            "os_linked_ids.product_version_info",
+            "os_places.by_uprn",
+        ],
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
         QueryIntent.BOUNDARY_FETCH: ["resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
@@ -712,7 +751,9 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use nearest for a point lookup and within for bbox-constrained queries."
         ),
         QueryIntent.LINKED_IDS: (
-            "Use os_linked_ids.get when the query mentions UPRN/USRN/TOID relationships."
+            "Use os_linked_ids.get for identifier type lookups, os_linked_ids.identifiers for generic "
+            "identifier crosswalks, os_linked_ids.feature_types for feature-type identifiers, and "
+            "os_linked_ids.product_version_info for correlation method version checks."
         ),
         QueryIntent.PLACE_LOOKUP: (
             "Use admin_lookup.find_by_name for administrative areas, "

@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-02-13T06:17:39Z",
+  "apiKeyConfigured": true,
+  "probeCount": 12,
+  "results": [
+    {
+      "name": "OS NGD API \u2013 Tiles",
+      "url": "https://api.os.uk/maps/vector/ngd/ota/v1?key=REDACTED",
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1494,
+      "elapsedMs": 326.1,
+      "error": null
+    },
+    {
+      "name": "OS NGD API \u2013 Features",
+      "url": "https://api.os.uk/features/ngd/ofa/v1?key=REDACTED",
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1213,
+      "elapsedMs": 223.9,
+      "error": null
+    },
+    {
+      "name": "OS Net API",
+      "url": "https://api.os.uk/positioning/osnet/v1?key=REDACTED",
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1498,
+      "elapsedMs": 118.5,
+      "error": null
+    },
+    {
+      "name": "OS Names API",
+      "url": "https://api.os.uk/search/names/v1/find?key=REDACTED&query=Warwick&maxresults=1",
+      "status": 200,
+      "contentType": "application/json;charset=UTF-8",
+      "bytes": 1748,
+      "elapsedMs": 265.9,
+      "error": null
+    },
+    {
+      "name": "OS Maps API (WMTS)",
+      "url": "https://api.os.uk/maps/raster/v1/wmts?key=REDACTED&service=WMTS&request=GetCapabilities",
+      "status": 200,
+      "contentType": "application/xml",
+      "bytes": 43421,
+      "elapsedMs": 164.2,
+      "error": null
+    },
+    {
+      "name": "OS Maps API (ZXY Road)",
+      "url": "https://api.os.uk/maps/raster/v1/zxy/Road_3857/7/63/42.png?key=REDACTED",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 57984,
+      "elapsedMs": 325.9,
+      "error": null
+    },
+    {
+      "name": "OS Maps API (ZXY Outdoor)",
+      "url": "https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/7/63/42.png?key=REDACTED",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 95812,
+      "elapsedMs": 300.6,
+      "error": null
+    },
+    {
+      "name": "OS Places API",
+      "url": "https://api.os.uk/search/places/v1/find?key=REDACTED&query=10+Downing+Street&maxresults=1&output_srs=WGS84",
+      "status": 200,
+      "contentType": "application/json;charset=UTF-8",
+      "bytes": 1778,
+      "elapsedMs": 1238.2,
+      "error": null
+    },
+    {
+      "name": "OS Downloads API",
+      "url": "https://api.os.uk/downloads/v1?key=REDACTED",
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2655,
+      "elapsedMs": 122.0,
+      "error": null
+    },
+    {
+      "name": "OS Features API (WFS)",
+      "url": "https://api.os.uk/features/v1/wfs?key=REDACTED&service=WFS&request=GetCapabilities",
+      "status": 200,
+      "contentType": "application/xml",
+      "bytes": 32819,
+      "elapsedMs": 158.0,
+      "error": null
+    },
+    {
+      "name": "OS Linked Identifiers API",
+      "url": "https://api.os.uk/search/links/v1/identifierTypes/uprn/100023336956?key=REDACTED",
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1276,
+      "elapsedMs": 226.6,
+      "error": null
+    },
+    {
+      "name": "OS Vector Tile API",
+      "url": "https://api.os.uk/maps/vector/v1/vts?key=REDACTED",
+      "status": 200,
+      "contentType": "application/json;charset=utf-8",
+      "bytes": 1724,
+      "elapsedMs": 231.0,
+      "error": null
+    }
+  ]
+}

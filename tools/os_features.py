@@ -3,7 +3,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from server.config import settings
 from tools.os_common import client
+from tools.os_delivery import (
+    parse_delivery,
+    parse_inline_max_bytes,
+    payload_bytes,
+    select_delivery_mode,
+    write_resource_payload,
+)
 from tools.registry import Tool, ToolResult, register
 
 _DEFAULT_LIMIT = 100
@@ -648,5 +656,124 @@ register(
             "additionalProperties": True,
         },
         handler=_features_collections,
+    )
+)
+
+
+def _wfs_capabilities_common(path: str, payload: dict[str, Any]) -> ToolResult:
+    delivery, delivery_err = parse_delivery(payload.get("delivery"), default="auto")
+    if delivery_err:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": delivery_err}
+    inline_max_bytes, max_err = parse_inline_max_bytes(payload.get("inlineMaxBytes"))
+    if max_err:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": max_err}
+
+    params: dict[str, Any] = {"service": "WFS", "request": "GetCapabilities"}
+    version = payload.get("version")
+    if isinstance(version, str) and version.strip():
+        params["version"] = version.strip()
+
+    status, body = client.get_bytes(path, params)
+    if status != 200:
+        return status, body
+    content = body.get("content")
+    if not isinstance(content, (bytes, bytearray)):
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "WFS capabilities response was not binary content.",
+        }
+    xml_text = bytes(content).decode("utf-8", "replace")
+    response_payload = {
+        "service": "WFS",
+        "request": "GetCapabilities",
+        "contentType": str(body.get("contentType", "application/xml")),
+        "xml": xml_text,
+        "bytes": len(content),
+        "live": True,
+    }
+    selected_mode = select_delivery_mode(
+        requested_delivery=delivery or "auto",
+        payload_bytes=payload_bytes(response_payload),
+        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+    )
+    if selected_mode == "resource":
+        prefix = "os-features-wfs-archive-capabilities" if "archive" in path else "os-features-wfs-capabilities"
+        meta = write_resource_payload(prefix=prefix, payload=response_payload)
+        return 200, {
+            "delivery": "resource",
+            "resourceUri": meta["resourceUri"],
+            "bytes": meta["bytes"],
+            "sha256": meta["sha256"],
+            "contentType": response_payload["contentType"],
+            "live": True,
+        }
+    response_payload["delivery"] = "inline"
+    return 200, response_payload
+
+
+def _wfs_capabilities(payload: dict[str, Any]) -> ToolResult:
+    return _wfs_capabilities_common("https://api.os.uk/features/v1/wfs", payload)
+
+
+def _wfs_archive_capabilities(payload: dict[str, Any]) -> ToolResult:
+    return _wfs_capabilities_common("https://api.os.uk/features/v1/wfs/archive", payload)
+
+
+register(
+    Tool(
+        name="os_features.wfs_capabilities",
+        description="Fetch WFS GetCapabilities for OS Features API.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_features.wfs_capabilities"},
+                "version": {"type": "string"},
+                "delivery": {"type": "string", "enum": ["inline", "resource", "auto"]},
+                "inlineMaxBytes": {"type": "integer", "minimum": 1},
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "delivery": {"type": "string"},
+                "xml": {"type": "string"},
+                "resourceUri": {"type": "string"},
+            },
+            "required": ["delivery"],
+            "additionalProperties": True,
+        },
+        handler=_wfs_capabilities,
+    )
+)
+
+register(
+    Tool(
+        name="os_features.wfs_archive_capabilities",
+        description="Fetch WFS archive GetCapabilities (entitlement dependent).",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_features.wfs_archive_capabilities"},
+                "version": {"type": "string"},
+                "delivery": {"type": "string", "enum": ["inline", "resource", "auto"]},
+                "inlineMaxBytes": {"type": "integer", "minimum": 1},
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "delivery": {"type": "string"},
+                "xml": {"type": "string"},
+                "resourceUri": {"type": "string"},
+            },
+            "required": ["delivery"],
+            "additionalProperties": True,
+        },
+        handler=_wfs_archive_capabilities,
     )
 )

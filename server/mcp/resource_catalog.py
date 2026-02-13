@@ -24,9 +24,23 @@ CODE_LIST_PACKS_INDEX_PATH = ROOT / "resources" / "code_list_packs_index.json"
 EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 
+
+def _resolve_data_path(raw: str | None, default: str) -> Path:
+    value = str(raw or default)
+    path = Path(value)
+    if not path.is_absolute():
+        path = ROOT / value
+    return path
+
+
+OS_CACHE_DIR = _resolve_data_path(getattr(settings, "OS_DATA_CACHE_DIR", None), "data/cache/os")
+OS_EXPORTS_DIR = _resolve_data_path(None, "data/os_exports")
+
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
 ONS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-cache/"
 ONS_EXPORTS_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-exports/"
+OS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}os-cache/"
+OS_EXPORTS_PREFIX = f"{DATA_RESOURCE_PREFIX}os-exports/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
 
 
@@ -363,6 +377,18 @@ def _ons_export_files() -> list[Path]:
     return sorted(path for path in ONS_EXPORTS_DIR.glob("*.json") if path.is_file())
 
 
+def _os_cache_files() -> list[Path]:
+    if not OS_CACHE_DIR.exists():
+        return []
+    return sorted(path for path in OS_CACHE_DIR.glob("*.json") if path.is_file())
+
+
+def _os_export_files() -> list[Path]:
+    if not OS_EXPORTS_DIR.exists():
+        return []
+    return sorted(path for path in OS_EXPORTS_DIR.glob("*.json") if path.is_file())
+
+
 def list_data_resources() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
     for entry in DATA_RESOURCE_DEFS:
@@ -445,6 +471,32 @@ def list_data_resources() -> list[dict[str, Any]]:
                 "type": "data",
             }
         )
+    os_cache_files = _os_cache_files()
+    if os_cache_files:
+        resources.append(
+            {
+                "uri": data_resource_uri("os-cache-index"),
+                "name": "data_os_cache_index",
+                "title": "OS Cache Index",
+                "description": "Index of locally cached OS API responses.",
+                "mimeType": "application/json",
+                "annotations": {"type": "index", "domain": "os"},
+                "type": "data",
+            }
+        )
+    os_export_files = _os_export_files()
+    if os_export_files:
+        resources.append(
+            {
+                "uri": data_resource_uri("os-exports-index"),
+                "name": "data_os_exports_index",
+                "title": "OS Export Resource Index",
+                "description": "Index of resource-backed OS export artifacts.",
+                "mimeType": "application/json",
+                "annotations": {"type": "index", "domain": "os"},
+                "type": "data",
+            }
+        )
     return resources
 
 
@@ -484,13 +536,25 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
         return {"slug": slug}
     if slug == "ons-exports-index":
         return {"slug": slug}
+    if slug == "os-cache-index":
+        return {"slug": slug}
+    if slug == "os-exports-index":
+        return {"slug": slug}
     if isinstance(slug, str) and slug.startswith("exports/"):
         return {"slug": slug}
     if isinstance(slug, str) and slug.startswith("ons-exports/"):
         return {"slug": slug}
+    if isinstance(slug, str) and slug.startswith("os-cache/"):
+        return {"slug": slug}
+    if isinstance(slug, str) and slug.startswith("os-exports/"):
+        return {"slug": slug}
     if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
         return {"slug": slug}
     if identifier.startswith(ONS_EXPORTS_PREFIX):
+        return {"slug": slug}
+    if identifier.startswith(OS_CACHE_PREFIX):
+        return {"slug": slug}
+    if identifier.startswith(OS_EXPORTS_PREFIX):
         return {"slug": slug}
     return None
 
@@ -658,6 +722,32 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             _etag_from_bytes(content.encode("utf-8"), "ons-exports-index"),
             {"generatedAt": datetime.now(timezone.utc).isoformat()},
         )
+    if slug == "os-cache-index":
+        items = []
+        for path in _os_cache_files():
+            items.append({"name": path.name, "uri": f"{OS_CACHE_PREFIX}{path.name}", "bytes": path.stat().st_size})
+        content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "os-cache-index"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
+    if slug == "os-exports-index":
+        items = []
+        for path in _os_export_files():
+            items.append(
+                {
+                    "name": path.name,
+                    "uri": f"{OS_EXPORTS_PREFIX}{path.name}",
+                    "bytes": path.stat().st_size,
+                }
+            )
+        content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "os-exports-index"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
     if isinstance(slug, str) and slug.startswith("ons-cache/"):
         filename = slug.split("/", 1)[1]
         path = ONS_CACHE_DIR / filename
@@ -677,6 +767,37 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         if not path.exists() or not path.is_file():
             content = json.dumps(
                 {"isError": True, "code": "NOT_FOUND", "message": "ONS export not found."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        content, etag = _load_json_file(path)
+        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
+    if isinstance(slug, str) and slug.startswith("os-cache/"):
+        filename = slug.split("/", 1)[1]
+        path = (OS_CACHE_DIR / filename).resolve()
+        cache_root = OS_CACHE_DIR.resolve()
+        if not str(path).startswith(str(cache_root)):
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid OS cache path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        if not path.exists() or not path.is_file():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "OS cache file not found."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        return (*_load_json_file(path), None)
+    if isinstance(slug, str) and slug.startswith("os-exports/"):
+        filename = slug.split("/", 1)[1]
+        path = (OS_EXPORTS_DIR / filename).resolve()
+        exports_root = OS_EXPORTS_DIR.resolve()
+        if not str(path).startswith(str(exports_root)):
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid OS export path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        if not path.exists() or not path.is_file():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "OS export not found."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
         content, etag = _load_json_file(path)
@@ -708,6 +829,8 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
 
 __all__ = [
     "DATA_RESOURCE_PREFIX",
+    "OS_CACHE_PREFIX",
+    "OS_EXPORTS_PREFIX",
     "ONS_CACHE_PREFIX",
     "SKILL_PATH",
     "SKILLS_RESOURCE",

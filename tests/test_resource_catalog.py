@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from _pytest.monkeypatch import MonkeyPatch
 
@@ -179,9 +180,156 @@ def test_ons_cache_slug_without_slash(monkeypatch: MonkeyPatch, tmp_path) -> Non
     assert meta is None
 
 
+def test_os_exports_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    exports_dir = tmp_path / "os_exports"
+    exports_dir.mkdir()
+    export_file = exports_dir / "sample.json"
+    export_file.write_text("{\"ok\":true}", encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", exports_dir)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "os-exports-index"})
+    payload = json.loads(content)
+    assert payload["items"][0]["name"] == "sample.json"
+    assert etag
+    assert meta is not None
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "os-exports/sample.json"})
+    payload = json.loads(content)
+    assert payload["ok"] is True
+    assert etag
+    assert meta is not None
+
+
+def test_os_cache_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    cache_dir = tmp_path / "os_cache"
+    cache_dir.mkdir()
+    cache_file = cache_dir / "cached.json"
+    cache_file.write_text("{\"cached\":true}", encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", cache_dir)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "os-cache-index"})
+    payload = json.loads(content)
+    assert payload["items"][0]["name"] == "cached.json"
+    assert etag
+    assert meta is not None
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "os-cache/cached.json"})
+    payload = json.loads(content)
+    assert payload["cached"] is True
+    assert etag
+    assert meta is None
+
+
 def test_load_data_content_unknown_slug_returns_not_found() -> None:
     content, etag, meta = resource_catalog.load_data_content({"slug": "does-not-exist"})
     payload = json.loads(content)
     assert payload.get("code") == "NOT_FOUND"
     assert etag
     assert meta is None
+
+
+def test_os_file_helpers_missing_dirs(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", tmp_path / "missing-cache")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", tmp_path / "missing-exports")
+    assert resource_catalog._os_cache_files() == []
+    assert resource_catalog._os_export_files() == []
+
+
+def test_list_data_resources_includes_os_cache_index(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    cache_dir = tmp_path / "os_cache"
+    cache_dir.mkdir()
+    (cache_dir / "cached.json").write_text('{"ok":true}', encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", cache_dir)
+    resources = resource_catalog.list_data_resources()
+    uris = {entry.get("uri") for entry in resources if isinstance(entry, dict)}
+    assert "resource://mcp-geo/os-cache-index" in uris
+
+
+def test_resolve_data_resource_additional_os_prefixes() -> None:
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-cache-index") == {
+        "slug": "os-cache-index"
+    }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-exports-index") == {
+        "slug": "os-exports-index"
+    }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-cache/demo.json") == {
+        "slug": "os-cache/demo.json"
+    }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-exports/demo.json") == {
+        "slug": "os-exports/demo.json"
+    }
+
+
+def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    missing = tmp_path / "missing.json"
+    cases: list[tuple[str, str]] = [
+        ("OS_CATALOG_PATH", "os-catalog"),
+        ("LAYERS_CATALOG_PATH", "layers-catalog"),
+        ("NOMIS_WORKFLOWS_PATH", "nomis-workflows"),
+        ("BOUNDARY_PACK_SOURCES_PATH", "boundary-pack-sources"),
+        ("CODE_LIST_PACK_SOURCES_PATH", "code-list-pack-sources"),
+        ("BOUNDARY_PACKS_INDEX_PATH", "boundary-packs-index"),
+        ("CODE_LIST_PACKS_INDEX_PATH", "code-list-packs-index"),
+    ]
+    for attr, slug in cases:
+        monkeypatch.setattr(resource_catalog, attr, missing)
+        content, etag, meta = resource_catalog.load_data_content({"slug": slug})
+        payload = json.loads(content)
+        assert payload.get("code") == "NOT_FOUND"
+        assert etag
+        assert meta is None
+
+
+def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", tmp_path / "ons_exports")
+    monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", tmp_path / "os_cache")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", tmp_path / "os_exports")
+    monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", tmp_path / "exports")
+
+    # Ensure base directories exist for deterministic root resolution.
+    Path(resource_catalog.ONS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+    Path(resource_catalog.OS_CACHE_DIR).mkdir(parents=True, exist_ok=True)
+    Path(resource_catalog.OS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+    Path(resource_catalog.EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+
+
+def test_load_data_content_not_found_export_and_cache_files(
+    monkeypatch: MonkeyPatch, tmp_path
+) -> None:
+    ons_exports = tmp_path / "ons_exports"
+    os_cache = tmp_path / "os_cache"
+    os_exports = tmp_path / "os_exports"
+    exports = tmp_path / "exports"
+    ons_exports.mkdir()
+    os_cache.mkdir()
+    os_exports.mkdir()
+    exports.mkdir()
+
+    monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", ons_exports)
+    monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", os_cache)
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports)
+    monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", exports)
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/missing.json"})
+    assert json.loads(content).get("code") == "NOT_FOUND"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/missing.json"})
+    assert json.loads(content).get("code") == "NOT_FOUND"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/missing.json"})
+    assert json.loads(content).get("code") == "NOT_FOUND"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "exports/missing.json"})
+    assert json.loads(content).get("code") == "NOT_FOUND"

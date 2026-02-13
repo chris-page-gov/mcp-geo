@@ -426,6 +426,18 @@ def main() -> int:
     _add_item(
         items,
         _probe(
+            item_id="os.features.ngd.root",
+            title="OS NGD API – Features: landing",
+            description="NGD OGC API Features landing document.",
+            category="features",
+            url=f"{OS_API_ROOT}/features/ngd/ofa/v1",
+            expects={"status": [200], "contentTypePrefix": "application/json"},
+            docs=ngd_docs,
+        ),
+    )
+    _add_item(
+        items,
+        _probe(
             item_id="os.features.ngd.collections",
             title="OS NGD API – Features: Collections",
             description="List available NGD feature collections (OGC API Features).",
@@ -457,6 +469,20 @@ def main() -> int:
                 meta={"collectionId": coll_id, "collectionTitle": title},
             ),
         )
+        _add_item(
+            items,
+            _probe(
+                item_id=f"os.features.ngd.collection.{coll_id}.queryables",
+                title=f"OS NGD queryables: {coll_id}",
+                description=f"Probe queryables metadata endpoint for collection {coll_id}.",
+                category="features",
+                url=f"{OS_API_ROOT}/features/ngd/ofa/v1/collections/{coll_id}/queryables",
+                required=False,
+                expects={"status": [200], "contentTypePrefix": "application/schema+json"},
+                docs=ngd_docs,
+                meta={"collectionId": coll_id, "collectionTitle": title},
+            ),
+        )
 
     # Maps: Raster (WMTS + ZXY tile)
     raster_docs = _extract_docs(raster_landing)
@@ -476,14 +502,27 @@ def main() -> int:
     _add_item(
         items,
         _probe(
-            item_id="os.maps.raster.zxy.tile",
-            title="OS Maps API (Raster ZXY): Sample tile",
-            description="Fetch a single PNG tile (kept small; no bulk downloads).",
+            item_id="os.maps.raster.zxy.road.tile",
+            title="OS Maps API (Raster ZXY): Road sample tile",
+            description="Fetch a single Road_3857 PNG tile (kept small; no bulk downloads).",
             category="maps",
-            url=f"{OS_API_ROOT}/maps/raster/v1/zxy/Light_3857/7/63/42.png",
+            url=f"{OS_API_ROOT}/maps/raster/v1/zxy/Road_3857/7/63/42.png",
             expects={"status": [200], "contentTypePrefix": "image/png", "minBytes": 64},
             docs=raster_docs,
-            meta={"z": 7, "x": 63, "y": 42, "layer": "Light_3857"},
+            meta={"z": 7, "x": 63, "y": 42, "layer": "Road_3857"},
+        ),
+    )
+    _add_item(
+        items,
+        _probe(
+            item_id="os.maps.raster.zxy.outdoor.tile",
+            title="OS Maps API (Raster ZXY): Outdoor sample tile",
+            description="Fetch a single Outdoor_3857 PNG tile (kept small; no bulk downloads).",
+            category="maps",
+            url=f"{OS_API_ROOT}/maps/raster/v1/zxy/Outdoor_3857/7/63/42.png",
+            expects={"status": [200], "contentTypePrefix": "image/png", "minBytes": 64},
+            docs=raster_docs,
+            meta={"z": 7, "x": 63, "y": 42, "layer": "Outdoor_3857"},
         ),
     )
 
@@ -584,6 +623,18 @@ def main() -> int:
     _add_item(
         items,
         _probe(
+            item_id="os.downloads.root",
+            title="OS Downloads API: landing",
+            description="Downloads API landing document.",
+            category="downloads",
+            url=f"{OS_API_ROOT}/downloads/v1",
+            expects={"status": [200], "contentTypePrefix": "application/json"},
+            docs=downloads_docs,
+        ),
+    )
+    _add_item(
+        items,
+        _probe(
             item_id="os.downloads.openapi",
             title="OS Downloads API: OpenAPI specification",
             description="Downloads API OpenAPI YAML (metadata only; no file downloads).",
@@ -664,6 +715,18 @@ def main() -> int:
 
     # Positioning: OS Net (OpenAPI + sample station + log + RINEX years)
     osnet_docs = _extract_docs(osnet_landing)
+    _add_item(
+        items,
+        _probe(
+            item_id="os.positioning.osnet.root",
+            title="OS Net API: landing",
+            description="OS Net API landing document.",
+            category="positioning",
+            url=f"{OS_API_ROOT}/positioning/osnet/v1",
+            expects={"status": [200], "contentTypePrefix": "application/json"},
+            docs=osnet_docs,
+        ),
+    )
     _add_item(
         items,
         _probe(

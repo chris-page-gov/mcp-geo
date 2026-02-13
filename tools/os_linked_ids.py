@@ -82,6 +82,58 @@ def _linked_ids_get(payload: dict[str, Any]) -> ToolResult:
     }
 
 
+def _linked_ids_identifiers(payload: dict[str, Any]) -> ToolResult:
+    identifier = str(payload.get("identifier", "")).strip()
+    if not identifier:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing identifier"}
+    status, body = client.get_json(f"{client.base_linked_ids}/identifiers/{identifier}", None)
+    if status != 200:
+        return status, body
+    return 200, {"identifier": identifier, "identifiers": body, "live": True}
+
+
+def _linked_ids_feature_types(payload: dict[str, Any]) -> ToolResult:
+    feature_type = str(payload.get("featureType", "")).strip()
+    identifier = str(payload.get("identifier", "")).strip()
+    if not feature_type:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing featureType"}
+    if not identifier:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing identifier"}
+    status, body = client.get_json(
+        f"{client.base_linked_ids}/featureTypes/{feature_type}/{identifier}",
+        None,
+    )
+    if status != 200:
+        return status, body
+    return 200, {
+        "featureType": feature_type,
+        "identifier": identifier,
+        "identifiers": body,
+        "live": True,
+    }
+
+
+def _linked_ids_product_version_info(payload: dict[str, Any]) -> ToolResult:
+    correlation_method = str(payload.get("correlationMethod", "")).strip()
+    if not correlation_method:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "Missing correlationMethod",
+        }
+    status, body = client.get_json(
+        f"{client.base_linked_ids}/productVersionInfo/{correlation_method}",
+        None,
+    )
+    if status != 200:
+        return status, body
+    return 200, {
+        "correlationMethod": correlation_method,
+        "productVersionInfo": body,
+        "live": True,
+    }
+
+
 register(
     Tool(
         name="os_linked_ids.get",
@@ -114,3 +166,85 @@ register(
     )
 )
 
+register(
+    Tool(
+        name="os_linked_ids.identifiers",
+        description="Resolve linked identifiers using /identifiers/{id}.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_linked_ids.identifiers"},
+                "identifier": {"type": "string"},
+            },
+            "required": ["identifier"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "identifier": {"type": "string"},
+                "identifiers": {"type": ["array", "object"]},
+                "live": {"type": "boolean"},
+            },
+            "required": ["identifier", "identifiers"],
+            "additionalProperties": True,
+        },
+        handler=_linked_ids_identifiers,
+    )
+)
+
+register(
+    Tool(
+        name="os_linked_ids.feature_types",
+        description="Resolve linked identifiers using /featureTypes/{featureType}/{id}.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_linked_ids.feature_types"},
+                "featureType": {"type": "string"},
+                "identifier": {"type": "string"},
+            },
+            "required": ["featureType", "identifier"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "featureType": {"type": "string"},
+                "identifier": {"type": "string"},
+                "identifiers": {"type": ["array", "object"]},
+                "live": {"type": "boolean"},
+            },
+            "required": ["featureType", "identifier", "identifiers"],
+            "additionalProperties": True,
+        },
+        handler=_linked_ids_feature_types,
+    )
+)
+
+register(
+    Tool(
+        name="os_linked_ids.product_version_info",
+        description="Resolve product version info for a correlation method.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_linked_ids.product_version_info"},
+                "correlationMethod": {"type": "string"},
+            },
+            "required": ["correlationMethod"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "correlationMethod": {"type": "string"},
+                "productVersionInfo": {"type": ["array", "object"]},
+                "live": {"type": "boolean"},
+            },
+            "required": ["correlationMethod", "productVersionInfo"],
+            "additionalProperties": True,
+        },
+        handler=_linked_ids_product_version_info,
+    )
+)

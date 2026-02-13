@@ -40,6 +40,30 @@ All notable changes to this project will be documented in this file.
   intent) and expanded tool-search metadata/toolsets to include `os_poi.*`.
 - Added release-readiness closure updates in `PROGRESS.MD`/`CONTEXT.md` with
   completion of tracker item `C16` and refreshed verification status.
+- Added shared OS delivery helpers in `tools/os_delivery.py` and new OS cache/export
+  config keys (`OS_EXPORT_INLINE_MAX_BYTES`, `OS_DATA_CACHE_DIR`, `OS_DATA_CACHE_TTL`,
+  `OS_DATA_CACHE_SIZE`) for consistent `inline|resource|auto` payload handling.
+- Added OS Downloads MCP tools in `tools/os_downloads.py`:
+  `os_downloads.list_products`, `os_downloads.get_product`,
+  `os_downloads.list_product_downloads`, `os_downloads.list_data_packages`,
+  `os_downloads.prepare_export`, and `os_downloads.get_export`.
+- Added OS Net MCP tools in `tools/os_net.py`:
+  `os_net.rinex_years`, `os_net.station_get`, and `os_net.station_log`.
+- Added NGD OTA MCP discovery tools in `tools/os_tiles_ota.py`:
+  `os_tiles_ota.collections`, `os_tiles_ota.tilematrixsets`, and
+  `os_tiles_ota.conformance`.
+- Added raster/feature capability tools:
+  `os_maps.wmts_capabilities`, `os_maps.raster_tile`,
+  `os_features.wfs_capabilities`, and `os_features.wfs_archive_capabilities`.
+- Added missing search-path tools:
+  `os_places.radius`, `os_places.polygon`,
+  `os_linked_ids.identifiers`, `os_linked_ids.feature_types`,
+  and `os_linked_ids.product_version_info`.
+- Added OS cache/export resources:
+  `resource://mcp-geo/os-cache-index`,
+  `resource://mcp-geo/os-cache/{file}`,
+  `resource://mcp-geo/os-exports-index`,
+  and `resource://mcp-geo/os-exports/{file}`.
 
 ### Changed
 - Removed the dedicated `os_apps.render_warwick_leamington_3d` tool and
@@ -50,10 +74,18 @@ All notable changes to this project will be documented in this file.
 - Removed legacy Warwick/Leamington 3D artifacts from the repo:
   `ui/warwick_leamington_3d.html` and
   `scripts/build_warwick_leamington_wards_premises_3d.py`.
+- Expanded `scripts/os_catalog_refresh.py` coverage to include OFA root,
+  OFA queryables probes, OS Downloads root, OS Net root, and explicit
+  Road/Outdoor raster style probes; refreshed `resources/os_catalog.json`.
+- Updated MCP tool registration/search metadata in `server/mcp/tools.py` and
+  `server/mcp/tool_search.py` for new OS families and discovery coverage.
 
 ### Fixed
 - Hardened `os_poi` source-entry extraction to safely ignore non-object rows
   instead of raising when malformed payloads are encountered.
+- Restored coverage gate after OS catalog/tooling wave additions with focused
+  branch tests for delivery, downloads, capabilities, OS client branches, and
+  resource-catalog path guards.
 
 ### Tests
 - Added POI evaluation harness scenarios (`B011A`/`B011B`/`B011C`) so full-tool
@@ -66,6 +98,12 @@ All notable changes to this project will be documented in this file.
   behavior for embedded content delivery.
 - Re-ran full regression and coverage gate (`pytest -q`) plus playground
   Playwright suite (`npm --prefix playground run test`).
+- Added test suites for new OS capability/delivery work:
+  `tests/test_os_downloads_tools.py`, `tests/test_os_new_capability_tools.py`,
+  `tests/test_os_places_new_tools.py`, and `tests/test_os_delivery.py`.
+- Extended existing suites (`tests/test_os_common.py`, `tests/test_resource_catalog.py`,
+  `tests/test_resources_data_catalog.py`, `tests/test_tool_upstream_endpoint_contracts.py`,
+  `tests/test_os_catalog_snapshot.py`) for new endpoint/resource contracts and error paths.
 
 ## [0.2.12] - 2026-02-11
 ### Added

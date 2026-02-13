@@ -105,3 +105,40 @@ def test_resources_read_ons_exports_index_and_file(monkeypatch, tmp_path) -> Non
     payload = json.loads(resource_contents(read_resp)[0]["text"])
     assert payload["filterId"] == "f0001"
     assert payload["format"] == "JSON"
+
+
+def test_resources_list_includes_os_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+
+    exports_dir = tmp_path / "os_exports"
+    exports_dir.mkdir()
+    (exports_dir / "sample-os-export.json").write_text('{"ok":true}', encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", exports_dir)
+
+    resp = client.get("/resources/list", params={"limit": 300, "page": 1})
+    assert resp.status_code == 200
+    uris = {entry.get("uri") for entry in resp.json().get("resources", []) if isinstance(entry, dict)}
+    assert "resource://mcp-geo/os-exports-index" in uris
+
+
+def test_resources_read_os_exports_index_and_file(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+
+    exports_dir = tmp_path / "os_exports"
+    exports_dir.mkdir()
+    export_name = "os-downloads-export-demo.json"
+    export_path = exports_dir / export_name
+    export_path.write_text('{"exportId":"x1","productId":"openroads"}', encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", exports_dir)
+
+    index_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/os-exports-index"})
+    assert index_resp.status_code == 200
+    index_payload = json.loads(resource_contents(index_resp)[0]["text"])
+    items = index_payload.get("items", [])
+    assert any(item.get("name") == export_name for item in items if isinstance(item, dict))
+
+    read_resp = client.get("/resources/read", params={"uri": f"resource://mcp-geo/os-exports/{export_name}"})
+    assert read_resp.status_code == 200
+    payload = json.loads(resource_contents(read_resp)[0]["text"])
+    assert payload["exportId"] == "x1"
+    assert payload["productId"] == "openroads"

@@ -1,7 +1,17 @@
 from __future__ import annotations
 
+import base64
 from typing import Any
 
+from server.config import settings
+from tools.os_common import client
+from tools.os_delivery import (
+    parse_delivery,
+    parse_inline_max_bytes,
+    payload_bytes,
+    select_delivery_mode,
+    write_resource_payload,
+)
 from tools.registry import get as get_tool
 from tools.registry import Tool, register
 
@@ -310,6 +320,125 @@ def _build_inventory_request(payload: dict[str, Any], bbox: list[float]) -> dict
             req[key] = value
     return req
 
+
+def _maps_wmts_capabilities(payload: dict[str, Any]):
+    delivery, delivery_err = parse_delivery(payload.get("delivery"), default="auto")
+    if delivery_err:
+        return _error(delivery_err)
+    inline_max_bytes, max_err = parse_inline_max_bytes(payload.get("inlineMaxBytes"))
+    if max_err:
+        return _error(max_err)
+
+    params: dict[str, Any] = {"service": "WMTS", "request": "GetCapabilities"}
+    version = payload.get("version")
+    if isinstance(version, str) and version.strip():
+        params["version"] = version.strip()
+
+    status, body = client.get_bytes("https://api.os.uk/maps/raster/v1/wmts", params)
+    if status != 200:
+        return status, body
+    content = body.get("content")
+    if not isinstance(content, (bytes, bytearray)):
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "WMTS capabilities response was not binary content.",
+        }
+    text = bytes(content).decode("utf-8", "replace")
+    response_payload = {
+        "contentType": str(body.get("contentType", "application/xml")),
+        "service": "WMTS",
+        "request": "GetCapabilities",
+        "xml": text,
+        "bytes": len(content),
+        "live": True,
+    }
+    selected_mode = select_delivery_mode(
+        requested_delivery=delivery or "auto",
+        payload_bytes=payload_bytes(response_payload),
+        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+    )
+    if selected_mode == "resource":
+        meta = write_resource_payload(prefix="os-maps-wmts-capabilities", payload=response_payload)
+        return 200, {
+            "delivery": "resource",
+            "resourceUri": meta["resourceUri"],
+            "bytes": meta["bytes"],
+            "sha256": meta["sha256"],
+            "contentType": response_payload["contentType"],
+            "live": True,
+        }
+    response_payload["delivery"] = "inline"
+    return 200, response_payload
+
+
+def _maps_raster_tile(payload: dict[str, Any]):
+    style = str(payload.get("style", "Road_3857")).strip() or "Road_3857"
+    try:
+        z = int(payload.get("z"))
+        x = int(payload.get("x"))
+        y = int(payload.get("y"))
+    except Exception:
+        return _error("z/x/y must be integers")
+    if min(z, x, y) < 0:
+        return _error("z/x/y must be non-negative")
+
+    image_format = str(payload.get("format", "png")).strip().lower() or "png"
+    if image_format not in {"png", "jpg", "jpeg"}:
+        return _error("format must be one of png, jpg, jpeg")
+
+    delivery, delivery_err = parse_delivery(payload.get("delivery"), default="auto")
+    if delivery_err:
+        return _error(delivery_err)
+    inline_max_bytes, max_err = parse_inline_max_bytes(payload.get("inlineMaxBytes"))
+    if max_err:
+        return _error(max_err)
+
+    url = f"https://api.os.uk/maps/raster/v1/zxy/{style}/{z}/{x}/{y}.{image_format}"
+    status, body = client.get_bytes(url, None)
+    if status != 200:
+        return status, body
+    content = body.get("content")
+    if not isinstance(content, (bytes, bytearray)):
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "Raster tile response was not binary content.",
+        }
+
+    response_payload = {
+        "style": style,
+        "z": z,
+        "x": x,
+        "y": y,
+        "contentType": str(body.get("contentType", "image/png")),
+        "encoding": "base64",
+        "dataBase64": base64.b64encode(bytes(content)).decode("ascii"),
+        "bytes": len(content),
+        "live": True,
+    }
+    selected_mode = select_delivery_mode(
+        requested_delivery=delivery or "auto",
+        payload_bytes=payload_bytes(response_payload),
+        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+    )
+    if selected_mode == "resource":
+        meta = write_resource_payload(prefix=f"os-maps-raster-{style}-{z}-{x}-{y}", payload=response_payload)
+        return 200, {
+            "delivery": "resource",
+            "resourceUri": meta["resourceUri"],
+            "bytes": meta["bytes"],
+            "sha256": meta["sha256"],
+            "contentType": response_payload["contentType"],
+            "style": style,
+            "z": z,
+            "x": x,
+            "y": y,
+            "live": True,
+        }
+    response_payload["delivery"] = "inline"
+    return 200, response_payload
+
 def _maps_render(payload: dict[str, Any]):
     bbox = payload.get("bbox")
     if not (isinstance(bbox, list) and len(bbox) == 4):
@@ -390,6 +519,66 @@ def _maps_render(payload: dict[str, Any]):
         "inventory": inventory,
         "hints": hints,
     }
+
+
+register(Tool(
+    name="os_maps.wmts_capabilities",
+    description="Fetch WMTS GetCapabilities with inline/resource delivery controls.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "os_maps.wmts_capabilities"},
+            "version": {"type": "string"},
+            "delivery": {"type": "string", "enum": ["inline", "resource", "auto"]},
+            "inlineMaxBytes": {"type": "integer", "minimum": 1},
+        },
+        "required": [],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "delivery": {"type": "string"},
+            "xml": {"type": "string"},
+            "resourceUri": {"type": "string"},
+        },
+        "required": ["delivery"],
+        "additionalProperties": True,
+    },
+    handler=_maps_wmts_capabilities
+))
+
+register(Tool(
+    name="os_maps.raster_tile",
+    description="Fetch a raster ZXY tile with inline/resource delivery controls.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "os_maps.raster_tile"},
+            "style": {"type": "string"},
+            "z": {"type": "integer", "minimum": 0},
+            "x": {"type": "integer", "minimum": 0},
+            "y": {"type": "integer", "minimum": 0},
+            "format": {"type": "string"},
+            "delivery": {"type": "string", "enum": ["inline", "resource", "auto"]},
+            "inlineMaxBytes": {"type": "integer", "minimum": 1},
+        },
+        "required": ["z", "x", "y"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "delivery": {"type": "string"},
+            "dataBase64": {"type": "string"},
+            "resourceUri": {"type": "string"},
+            "contentType": {"type": "string"},
+        },
+        "required": ["delivery", "contentType"],
+        "additionalProperties": True,
+    },
+    handler=_maps_raster_tile
+))
 
 register(Tool(
     name="os_maps.render",
