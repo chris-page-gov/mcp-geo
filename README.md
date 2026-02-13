@@ -115,6 +115,13 @@ See `research/ons_dataset_selection/report.md` for the ONS dataset selection res
 including the taxonomy options, DataPack schema, sample DataPacks, and linking rules used to
 improve AI dataset selection and explainability.
 
+## Research (Map Delivery Interoperability)
+
+See `research/map_delivery_research_2026-02/README.md` for the map delivery
+research pack covering personas, map delivery option analysis, containerized
+Playwright trials, screenshots/log evidence, and final recommendations for
+cross-client map reliability.
+
 ## Client Tracing
 
 See [docs/client_trace_strategy.md](docs/client_trace_strategy.md) for MCP traffic

@@ -34,6 +34,10 @@ Devcontainer note:
   `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
 - The PostGIS *host* port is random by default; set `MCP_GEO_POSTGIS_HOST_PORT=5433`
   before starting the devcontainer if you want it pinned.
+- Additional devcontainer-forwarded ports useful for map workflows:
+  - `4173` (Playwright/Vite map trial server),
+  - `6274`/`6277` (MCP Inspector UI/proxy),
+  - `8888` (Jupyter Lab for notebook-based map analysis).
 
 ```bash
 export BOUNDARY_CACHE_ENABLED=true
@@ -159,6 +163,13 @@ For playground tests, install Playwright system deps once:
 ```bash
 cd playground
 npx playwright install --with-deps
+```
+
+For automated map delivery validation (containerized trial matrix + evidence capture):
+
+```bash
+./scripts/run_map_delivery_trials.sh
+python3 scripts/map_trials/summarize_playwright_trials.py
 ```
 
 ## 4) What data is available

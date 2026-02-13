@@ -48,6 +48,18 @@ Legend: pending, in_progress, done
 | WS-DOC-8 Documentation closure | done | WS-CAT-1 and feature streams | Updated planning/status docs and endpoint coverage notes to match implemented streams. |
 | WS-INT-9 Final integration + regression | done | all workstreams | Integrated registrations/resources and passed full regression (`pytest -q --cov-report=term-missing:skip-covered`: 683 passed, 6 skipped, 90.16% coverage). |
 
+## Map delivery interoperability research (2026-02-13)
+
+Legend: pending, in_progress, done
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| MDR-01 Define personas and journey requirements for map delivery | done | Added research persona/journey pack covering public, analyst, GIS, engineering, and accessibility-first users. |
+| MDR-02 Build containerized autonomous trial harness | done | Added `scripts/run_map_delivery_trials.sh`, multi-browser Playwright trial config/specs, and structured evidence logs/screenshots. |
+| MDR-03 Validate MCP server connectivity in devcontainer | done | Captured in-container baseline (`/health`, `initialize`, `os_maps.render`, `os_vector_tiles.descriptor`) with reproducible logs. |
+| MDR-04 Execute and evaluate map rendering trials | done | Final clean run: 8 passed, 4 skipped; generated trial summary report and artifacts. |
+| MDR-05 Produce detailed report and external source register | done | Added full report set in `research/map_delivery_research_2026-02/` including options, trial methodology/results, recommendations, and source register. |
+
 ## Progress against the original vision
 
 Legend: Done, Partial, Not started

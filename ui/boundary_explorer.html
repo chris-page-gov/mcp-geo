@@ -834,7 +834,7 @@
             const styleName = styleId.replace("os_", "");
             const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=3857`;
             try {
-              state.map.setStyle(styleUrl);
+              state.map.setStyle(styleUrl, { diff: false });
               state.map.once("style.load", () => {
                 ensureSourcesAndLayers();
                 applyLayerVisibility();
@@ -862,7 +862,7 @@
             },
             layers: [{ id: "osm", type: "raster", source: "osm" }],
           };
-          state.map.setStyle(fallbackStyle);
+          state.map.setStyle(fallbackStyle, { diff: false });
           state.map.once("style.load", () => {
             ensureSourcesAndLayers();
             applyLayerVisibility();

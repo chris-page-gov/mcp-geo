@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added a map delivery interoperability research pack under
+  `research/map_delivery_research_2026-02/` with personas, longlist options,
+  trial design/results, external source register, progress journal, and final
+  recommendations report.
+- Added containerized autonomous map trial tooling:
+  - `playground/playwright.trials.config.js`
+  - `playground/trials/tests/map_delivery_matrix.spec.js`
+  - `scripts/run_map_delivery_trials.sh`
+  - `scripts/map_trials/summarize_playwright_trials.py`
+- Added notebook-based trial tracking starter at
+  `research/map_delivery_research_2026-02/notebooks/map_delivery_option_tracker.ipynb`.
+
+### Changed
+- Hardened devcontainer setup for map validation workflows:
+  - Added forwarded ports for Playwright test server, Inspector, and Jupyter.
+  - Added Jupyter extension and post-create install of `jupyterlab` and `ipykernel`.
+  - Added container env defaults for trial workspace and expanded CORS dev origins.
+  - Expanded base image packages (`jq`, `postgresql-client`, `libspatialindex-dev`).
+
 ## [0.3.1] - 2026-02-13
 ### Added
 - Added a curated `starter` toolset to discovery metadata for lean MCP startup
