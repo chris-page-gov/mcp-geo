@@ -96,8 +96,12 @@ All notable changes to this project will be documented in this file.
   are now resolvable (matching HTTP resource delivery behavior).
 - Fixed `/tools/call` request validation to return `400 INVALID_INPUT` for
   non-object JSON bodies instead of surfacing `500 INTERNAL_ERROR`.
+- Fixed `/tools/search` request validation to return `400 INVALID_INPUT` for
+  non-object JSON bodies instead of surfacing `500 INTERNAL_ERROR`.
 - Fixed `/maps/static/osm` large-size rendering to stitch multiple OSM tiles so
   outputs honor requested sizes above 256px.
+- Fixed QGIS GeoPackage descriptor resource prefix generation to sanitize
+  user-provided `layerName` components before filesystem/resource URI use.
 
 ### Tests
 - Added POI evaluation harness scenarios (`B011A`/`B011B`/`B011C`) so full-tool

@@ -228,6 +228,15 @@ async def call_tool(request: Request):
 @router.post("/tools/search")
 async def search_tools_endpoint(request: Request):
     data = await request.json()
+    if not isinstance(data, dict):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Request body must be a JSON object",
+            },
+        )
     query = data.get("query") or data.get("q")
     if not isinstance(query, str) or not query.strip():
         return JSONResponse(

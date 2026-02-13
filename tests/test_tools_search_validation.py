@@ -40,6 +40,13 @@ def test_tools_search_unknown_toolset(client):
     assert resp.json()["code"] == "INVALID_INPUT"
 
 
+def test_tools_search_rejects_non_object_payload(client):
+    resp = client.post("/tools/search", json=["not", "an", "object"])
+    assert resp.status_code == 400
+    payload = resp.json()
+    assert payload["code"] == "INVALID_INPUT"
+
+
 def test_tools_call_unknown_prefixed_tool(client):
     resp = client.post("/tools/call", json={"tool": "os_places.missing"})
     assert resp.status_code == 501

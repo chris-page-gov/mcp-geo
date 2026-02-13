@@ -121,3 +121,39 @@ def test_os_qgis_geopackage_descriptor_resource(monkeypatch) -> None:  # type: i
     body = resp.json()
     assert body["delivery"] == "resource"
     assert body["resourceUri"].startswith("resource://mcp-geo/os-exports/")
+
+
+def test_os_qgis_geopackage_descriptor_sanitizes_prefix_component(
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_qgis
+
+    seen_prefixes: list[str] = []
+
+    def fake_write_resource_payload(prefix: str, payload: dict):
+        seen_prefixes.append(prefix)
+        return {
+            "resourceUri": f"resource://mcp-geo/os-exports/{prefix}.json",
+            "bytes": 111,
+            "sha256": "abc",
+            "path": "/tmp/os-qgis-descriptor.json",
+        }
+
+    monkeypatch.setattr(
+        os_qgis,
+        "write_resource_payload",
+        fake_write_resource_payload,
+        raising=True,
+    )
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_qgis.export_geopackage_descriptor",
+            "sourceResourceUri": "resource://mcp-geo/os-exports/demo.json",
+            "layerName": "roads/main",
+            "delivery": "resource",
+        },
+    )
+    assert resp.status_code == 200
+    assert seen_prefixes
+    assert "/" not in seen_prefixes[0]

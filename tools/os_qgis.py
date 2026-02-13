@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,12 @@ _QML_DIR = _STYLE_ROOT / "QGIS Stylesheets (QML)"
 
 def _invalid(message: str) -> ToolResult:
     return 400, {"isError": True, "code": "INVALID_INPUT", "message": message}
+
+
+def _safe_prefix_component(value: str) -> str:
+    candidate = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip().lower())
+    candidate = candidate.strip("._-")
+    return candidate or "layer"
 
 
 def _resolve_style_id(raw: Any, srs: int) -> str:
@@ -214,7 +221,7 @@ def _export_geopackage_descriptor(payload: dict[str, Any]) -> ToolResult:
     }
     response_payload = {"descriptor": descriptor, "live": False}
     return _delivery_wrap(
-        prefix=f"os-qgis-gpkg-descriptor-{layer_name.lower()}",
+        prefix=f"os-qgis-gpkg-descriptor-{_safe_prefix_component(layer_name)}",
         payload=response_payload,
         delivery=delivery or "auto",
         inline_max_bytes=inline_max_bytes
