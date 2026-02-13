@@ -1,0 +1,50 @@
+============================================================
+AUDIT LOG: 4f7c55c0
+Timestamp: 2026-01-20T20:22:26.910582
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Get the boundary bbox for Westminster"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: boundary_fetch
+Confidence: 0.85
+Recommended Tool: admin_lookup.area_geometry
+Workflow Steps: ['admin_lookup.find_by_name', 'admin_lookup.area_geometry']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: admin_lookup.find_by_name
+········································
+Timestamp: 2026-01-20T20:22:26.912955
+Duration: 1.1ms
+Status: SUCCESS
+
+Inputs:
+{'text': 'Westminster'}
+
+Outputs:
+{'results': [{'id': 'E01004736', 'level': 'LSOA', 'name': 'Westminster 018A'}, {'id': 'E02000977', 'level': 'MSOA', 'name': 'Westminster 018'}, {'id': 'E09000033', 'level': 'DISTRICT', 'name': 'Westminster'}]}
+
+### Tool Call 2: admin_lookup.area_geometry
+········································
+Timestamp: 2026-01-20T20:22:26.913935
+Duration: 1.0ms
+Status: SUCCESS
+
+Inputs:
+{'id': 'E09000033'}
+
+Outputs:
+{'id': 'E09000033', 'bbox': [-0.15, 51.495, -0.13, 51.505]}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Get the boundary bbox for Westminster", "intent": "boundary_fetch", "confidence": 0.85, "recommended_tool": "admin_lookup.area_geometry", "recommended_parameters": {}, "explanation": "Get a bounding box for an administrative area.", "workflow_steps": ["admin_lookup.find_by_name", "admin_lookup.area_geometry"], "alternative_tools": ["resources/read"], "guidance": "Find the area id first, then call admin_lookup.area_geometry for a bbox summary."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E01004736", "level": "LSOA", "name": "Westminster 018A"}, {"id": "E02000977", "level": "MSOA", "name": "Westminster 018"}, {"id": "E09000033", "level": "DISTRICT", "name": "Westminster"}]}}, {"tool": "admin_lookup.area_geometry", "response": {"id": "E09000033", "bbox": [-0.15, 51.495, -0.13, 51.505]}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.4ms
+Success: True

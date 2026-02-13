@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    environment:
+      BOUNDARY_CACHE_ENABLED: "true"
+      BOUNDARY_CACHE_DSN: "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
+      BOUNDARY_CACHE_FALLBACK_LIVE: "true"
+      BOUNDARY_CACHE_MAX_AGE_DAYS: "180"
+      ADMIN_LOOKUP_LIVE_ENABLED: "true"
+      MCP_GEO_LIVE_DB_DSN: "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
+    volumes:
+      - ..:/workspaces/mcp-geo:cached
+    command: sleep infinity
+    depends_on:
+      - postgis
+
+  postgis:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mcp_geo
+      POSTGRES_USER: mcp_geo
+      POSTGRES_PASSWORD: mcp_geo
+      PGDATA: /var/lib/postgresql/data/pgdata
+    # Host port is optional. Default to a random free port to avoid conflicts
+    # when multiple devcontainers (or local Postgres) are running.
+    #
+    # To pin it, export `MCP_GEO_POSTGIS_HOST_PORT=5433` before starting the
+    # devcontainer.
+    ports:
+      - "${MCP_GEO_POSTGIS_HOST_PORT:-0}:5432"
+    volumes:
+      - ../data/postgres:/var/lib/postgresql/data

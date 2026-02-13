@@ -1,0 +1,196 @@
+{
+  "datapack_id": "uk-growth-momentum",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "uk-growth-momentum",
+    "tile_label": "Is the economy speeding up or slowing down?",
+    "intent_tags": [
+      "gdp",
+      "economic-growth",
+      "macro"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "uk-growth-momentum-card",
+    "headline": "GDP momentum with benchmark and driver context",
+    "summary": "Use monthly GDP for timeliness and quarterly accounts for confirmation.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "UK"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "monthly"
+    },
+    "release_frequency": "monthly",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "gdp-monthly-estimate",
+    "dataset_title": "GDP monthly estimate, UK",
+    "dataset_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp",
+    "provider": "ONS",
+    "dataset_family": "economy",
+    "geography_levels": [
+      "UK"
+    ],
+    "time_granularity": "monthly",
+    "latest_release_date": "2026-01-01",
+    "fitness_for_use_score": 87,
+    "confidence": "high",
+    "explainability_note": "Most timely GDP trend indicator for macro monitoring.",
+    "known_limitations": [
+      "Monthly volatility can overstate turning points."
+    ],
+    "comparability_warnings": [
+      "Use quarterly confirmation for strategic decisions."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "gdp-quarterly-national-accounts",
+      "dataset_title": "Quarterly national accounts",
+      "dataset_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp",
+      "provider": "ONS",
+      "dataset_family": "economy",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "quarterly",
+      "latest_release_date": "2025-12-20",
+      "fitness_for_use_score": 90,
+      "confidence": "high",
+      "explainability_note": "Benchmark GDP series with fuller revisions framework.",
+      "known_limitations": [
+        "Later publication than monthly estimate."
+      ],
+      "comparability_warnings": [
+        "Do not mix monthly flash and quarterly without caveat."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "business-investment",
+      "dataset_title": "Business investment",
+      "dataset_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp",
+      "provider": "ONS",
+      "dataset_family": "economy",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "quarterly",
+      "latest_release_date": "2025-12-20",
+      "fitness_for_use_score": 79,
+      "confidence": "medium",
+      "explainability_note": "Driver context for GDP changes.",
+      "known_limitations": [
+        "Sector mix can shift interpretation."
+      ],
+      "comparability_warnings": [
+        "Series can revise materially."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "gdp-monthly-to-quarterly",
+      "from_dataset_id": "gdp-monthly-estimate",
+      "to_dataset_id": "gdp-quarterly-national-accounts",
+      "link_type": "quality_or_revision_context",
+      "link_reason": "Quarterly accounts provide fuller revisions and benchmarking.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "gdp-to-investment",
+      "from_dataset_id": "gdp-monthly-estimate",
+      "to_dataset_id": "business-investment",
+      "link_type": "leading_or_lagging_indicator",
+      "link_reason": "Investment dynamics help explain GDP movement.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "uk-growth-momentum-chart-1",
+      "chart_type": "line",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "period",
+      "y_field": "growth_rate",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

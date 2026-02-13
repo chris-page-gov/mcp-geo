@@ -1,0 +1,1529 @@
+{
+  "manifest_version": "1.0.0",
+  "generated_at_utc": "2026-01-30T12:00:44Z",
+  "purpose": "Automated discovery, download, ingestion to PostGIS, and validation of authoritative UK administrative/statistical boundary datasets (nation-specific where required) for MCP-geo.",
+  "completion_definition": {
+    "completion_statement_for_codex": "This step is complete when every boundary_family in boundary_families has (a) a resolvable download_url for each required variant in required_variants, (b) has been ingested into PostGIS into the expected schema/table naming convention, and (c) passes all validation rules (schema checks, geometry validity, unique code constraints, and row-count sanity checks) with a reproducible run log.",
+    "required_variants": [
+      "BFC",
+      "BFE",
+      "BGC",
+      "BUC"
+    ],
+    "allowed_optional_variants": [
+      "BSC",
+      "BVG",
+      "BUE",
+      "BFG"
+    ],
+    "notes": [
+      "Some families will not exist for all variants and/or all nations; in that case the script must record 'not published' with evidence (CKAN query results or source page).",
+      "For Scotland and Northern Ireland sources, variants may be described differently (e.g., 'Extent of the Realm', 'Clipped to coastline'); map these onto BFE/BFC equivalents in 'variant_mapping'."
+    ]
+  },
+  "variant_definitions": {
+    "definitions_source": {
+      "publisher": "Office for National Statistics",
+      "reference": "Digital boundaries product page"
+    },
+    "variants": {
+      "BFC": "Full resolution - clipped to the coastline (Mean High Water mark).",
+      "BFE": "Full resolution - extent of the realm (usually Mean Low Water mark; may include offshore islands).",
+      "BGC": "Generalised (20m) - clipped to the coastline (Mean High Water mark).",
+      "BUC": "Ultra generalised (500m) - clipped to the coastline (Mean High Water mark).",
+      "BSC": "Super generalised (where published) - typically coarser than BUC; treat as optional.",
+      "BVG": "Variant sometimes used for very generalised products; treat as optional.",
+      "BUE": "Variant sometimes used for ultra generalised extent; treat as optional.",
+      "BFG": "Variant sometimes used for full generalised extent; treat as optional."
+    }
+  },
+  "catalogue_sources": [
+    {
+      "source_id": "ons_ckan_datagovuk",
+      "type": "ckan",
+      "publisher": "data.gov.uk (CKAN catalogue for ONS Open Geography Portal distributions)",
+      "base_url": "https://ckan.publishing.service.gov.uk",
+      "api": {
+        "package_search": "https://ckan.publishing.service.gov.uk/api/3/action/package_search",
+        "package_show": "https://ckan.publishing.service.gov.uk/api/3/action/package_show"
+      },
+      "auth": {
+        "required": false
+      },
+      "notes": [
+        "Use to discover latest boundary datasets by title and tags and to obtain stable resource URLs.",
+        "Many ONS boundary resources point to ArcGIS Hub download endpoints (open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/<itemId>/geoPackage?layers=0)."
+      ]
+    },
+    {
+      "source_id": "os_downloads_api_boundaryline",
+      "type": "http_api",
+      "publisher": "Ordnance Survey",
+      "base_url": "https://api.os.uk/downloads/v1/products/BoundaryLine/downloads",
+      "auth": {
+        "required": false
+      },
+      "request_template": "GET https://api.os.uk/downloads/v1/products/BoundaryLine/downloads?area=GB&format={format}&redirect=true",
+      "supported_formats": [
+        "GeoPackage",
+        "ESRI Shapefile",
+        "MapInfo TAB",
+        "GML",
+        "Vector tiles"
+      ],
+      "notes": [
+        "Follow redirects to retrieve the ZIP from OS-hosted storage.",
+        "Boundary-Line is updated twice a year (May and October)."
+      ]
+    },
+    {
+      "source_id": "scotgov_maps_atom",
+      "type": "direct_download",
+      "publisher": "Scottish Government (maps.gov.scot ATOM downloads)",
+      "base_url": "https://maps.gov.scot/ATOM/shapefiles/",
+      "auth": {
+        "required": false
+      },
+      "notes": [
+        "Used for 2022 Data Zones and 2022 Intermediate Zones boundary ZIPs (shapefiles)."
+      ]
+    },
+    {
+      "source_id": "nrs_publications_media",
+      "type": "direct_download",
+      "publisher": "National Records of Scotland",
+      "base_url": "https://www.nrscotland.gov.uk/media/",
+      "auth": {
+        "required": false
+      },
+      "http_hints": {
+        "user_agent": "Mozilla/5.0",
+        "follow_redirects": true
+      },
+      "notes": [
+        "NRS hosts 2022 Census Output Area boundaries and related geographies as ZIP downloads."
+      ]
+    },
+    {
+      "source_id": "nisra_publications",
+      "type": "direct_download",
+      "publisher": "Northern Ireland Statistics and Research Agency (NISRA)",
+      "base_url": "https://www.nisra.gov.uk/",
+      "auth": {
+        "required": false
+      },
+      "http_hints": {
+        "user_agent": "Mozilla/5.0",
+        "follow_redirects": true
+      },
+      "notes": [
+        "Some NISRA file downloads may require a standard browser-like User-Agent header."
+      ]
+    },
+    {
+      "source_id": "opendatani_ckan",
+      "type": "ckan",
+      "publisher": "OpenDataNI (CKAN catalogue backup for NI boundary datasets)",
+      "base_url": "https://admin.opendatani.gov.uk",
+      "api": {
+        "package_search": "https://admin.opendatani.gov.uk/api/3/action/package_search",
+        "package_show": "https://admin.opendatani.gov.uk/api/3/action/package_show"
+      },
+      "auth": {
+        "required": false
+      },
+      "notes": [
+        "Use as a fallback if direct NISRA publication downloads fail."
+      ]
+    }
+  ],
+  "templates": {
+    "ons_default": {
+      "category": "ONS_Open_Geography_Portal",
+      "authority": {
+        "publisher": "Office for National Statistics (ONS Geography)",
+        "source": "Open Geography Portal distributions via data.gov.uk CKAN"
+      },
+      "discovery": {
+        "source_id": "ons_ckan_datagovuk",
+        "method": "ckan_package_search",
+        "ckan_organisation": "office-for-national-statistics",
+        "selection": {
+          "strategy": "latest_by_title_date_then_metadata_modified",
+          "title_date_patterns": [
+            "\\((January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{4}\\)",
+            "\\b(19|20)\\d{2}\\b"
+          ]
+        },
+        "resource_preference": [
+          {
+            "format_any_of": [
+              "GeoPackage",
+              "GPKG"
+            ],
+            "must_contain": "geoPackage"
+          },
+          {
+            "format_any_of": [
+              "SHP",
+              "Shapefile",
+              "ESRI Shapefile"
+            ],
+            "must_contain": "shapefile"
+          }
+        ]
+      },
+      "variant_policy": {
+        "required_variants": [
+          "BFC",
+          "BFE",
+          "BGC",
+          "BUC"
+        ],
+        "optional_variants": [
+          "BSC"
+        ],
+        "variant_detection": {
+          "from_title_regex": "\\b(BFC|BFE|BGC|BUC|BSC)\\b",
+          "fallback": "BFC"
+        }
+      },
+      "ingest": {
+        "geometry_type": "MULTIPOLYGON",
+        "promote_to_multi": true,
+        "target_srid": 27700,
+        "layer_selection": {
+          "preferred": "single_layer",
+          "gpkg_layer_index": 0
+        }
+      },
+      "validation": {
+        "must_be_unique": [
+          "gss_code"
+        ],
+        "geometry_checks": {
+          "st_isvalid": true,
+          "geom_type_allowed": [
+            "MULTIPOLYGON",
+            "POLYGON"
+          ]
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    },
+    "scotland_nrs_default": {
+      "category": "Scotland_Census_2022_NRS",
+      "authority": {
+        "publisher": "National Records of Scotland",
+        "source": "NRS Census 2022 Geography Products"
+      },
+      "ingest": {
+        "geometry_type": "MULTIPOLYGON",
+        "target_srid": 27700,
+        "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
+      },
+      "validation": {
+        "geometry_checks": {
+          "st_isvalid": true
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    },
+    "scotland_scotgov_default": {
+      "category": "Scotland_SpatialData_Gov",
+      "authority": {
+        "publisher": "Scottish Government SpatialData.gov.scot",
+        "source": "maps.gov.scot ATOM shapefiles"
+      },
+      "ingest": {
+        "geometry_type": "MULTIPOLYGON",
+        "target_srid": 27700,
+        "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
+      },
+      "validation": {
+        "geometry_checks": {
+          "st_isvalid": true
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    },
+    "ni_nisra_default": {
+      "category": "Northern_Ireland_NISRA",
+      "authority": {
+        "publisher": "Northern Ireland Statistics and Research Agency (NISRA)",
+        "source": "NISRA geography products"
+      },
+      "ingest": {
+        "geometry_type": "MULTIPOLYGON",
+        "target_srid": 27700,
+        "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
+      },
+      "validation": {
+        "geometry_checks": {
+          "st_isvalid": true
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    }
+  },
+  "postgis_defaults": {
+    "target_srid": 27700,
+    "schema": "boundaries",
+    "table_naming": "{family_id}__{variant}__{vintage_id}",
+    "geometry_column": "geom",
+    "indexes": [
+      {
+        "type": "gist",
+        "columns": [
+          "geom"
+        ]
+      },
+      {
+        "type": "btree",
+        "columns": [
+          "gss_code"
+        ]
+      }
+    ],
+    "load_tooling": {
+      "preferred": [
+        "ogr2ogr",
+        "psql"
+      ],
+      "ogr2ogr_example_flags": [
+        "-f PostgreSQL",
+        "-nlt PROMOTE_TO_MULTI",
+        "-lco GEOMETRY_NAME=geom",
+        "-lco FID=fid",
+        "-lco PRECISION=NO"
+      ]
+    }
+  },
+  "boundary_families": [
+    {
+      "family_id": "oa_2021_ew",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "OA21CD"
+        ],
+        "name_fields": []
+      },
+      "description": "Census 2021 Output Areas for England and Wales (building-block statistical geography).",
+      "discovery_overrides": {
+        "query": "Output Areas (December 2021) Boundaries for England and Wales",
+        "tags_any": [
+          "BDY_CENSUS",
+          "Census"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^(OA21CD|LSOA21CD)$"
+      }
+    },
+    {
+      "family_id": "lsoa_2021_ew",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "LSOA21CD"
+        ],
+        "name_fields": [
+          "LSOA21NM"
+        ]
+      },
+      "description": "Census 2021 LSOAs for England and Wales.",
+      "discovery_overrides": {
+        "query": "Lower layer Super Output Areas (December 2021) Boundaries for England and Wales",
+        "tags_any": [
+          "BDY_CENSUS",
+          "Census"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^LSOA21CD$",
+        "name_column_regex": "^LSOA21NM$"
+      }
+    },
+    {
+      "family_id": "msoa_2021_ew",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "MSOA21CD"
+        ],
+        "name_fields": [
+          "MSOA21NM"
+        ]
+      },
+      "description": "Census 2021 MSOAs for England and Wales.",
+      "discovery_overrides": {
+        "query": "Middle layer Super Output Areas (December 2021) Boundaries for England and Wales",
+        "tags_any": [
+          "BDY_CENSUS",
+          "Census"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^MSOA21CD$",
+        "name_column_regex": "^MSOA21NM$"
+      }
+    },
+    {
+      "family_id": "countries_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "CTRY**CD"
+        ],
+        "name_fields": [
+          "CTRY**NM"
+        ]
+      },
+      "description": "UK countries boundaries (England, Wales, Scotland, Northern Ireland).",
+      "discovery_overrides": {
+        "query": "Countries (December 2021) Boundaries UK",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^CTRY\\d{2}CD$",
+        "name_column_regex": "^CTRY\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "regions_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "RGN**CD"
+        ],
+        "name_fields": [
+          "RGN**NM"
+        ]
+      },
+      "description": "English regions boundaries.",
+      "discovery_overrides": {
+        "query": "Regions (December 2021) Boundaries EN",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^RGN\\d{2}CD$",
+        "name_column_regex": "^RGN\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "lad_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "LAD**CD"
+        ],
+        "name_fields": [
+          "LAD**NM"
+        ]
+      },
+      "description": "Local Authority Districts (incl. Scotland council areas and NI LGDs in UK products).",
+      "discovery_overrides": {
+        "query": "Local Authority Districts",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^LAD\\d{2}CD$|^E0\\d{7}$|^W0\\d{7}$|^S1\\d{7}$|^N0\\d{7}$",
+        "name_column_regex": "^LAD\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "ctyua_uk",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "CTYUA**CD"
+        ],
+        "name_fields": [
+          "CTYUA**NM"
+        ]
+      },
+      "description": "Counties and Unitary Authorities (England & Wales).",
+      "discovery_overrides": {
+        "query": "Counties and Unitary Authorities",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^(CTYUA\\d{2}CD|UTLA\\d{2}CD)$",
+        "name_column_regex": "^(CTYUA\\d{2}NM|UTLA\\d{2}NM)$"
+      }
+    },
+    {
+      "family_id": "wards_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "WD**CD"
+        ],
+        "name_fields": [
+          "WD**NM"
+        ]
+      },
+      "description": "Electoral wards/divisions (country-specific systems).",
+      "discovery_overrides": {
+        "query": "Wards",
+        "tags_any": [
+          "BDY_ELE"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^WD\\d{2}CD$|^E05\\d{6}$|^W05\\d{6}$|^S13\\d{6}$|^N08\\d{6}$",
+        "name_column_regex": "^WD\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "parishes_ew",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "PAR**CD"
+        ],
+        "name_fields": [
+          "PAR**NM"
+        ]
+      },
+      "description": "Civil parishes (England) and communities (Wales), plus non-parished areas.",
+      "discovery_overrides": {
+        "query": "Parishes and Non Civil Parished Areas",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^PAR\\d{2}CD$|^PARNCP\\d{2}CD$|^E04\\d{6}$|^W04\\d{6}$",
+        "name_column_regex": "^PAR\\d{2}NM$|^PARNCP\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "pcon_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "PCON**CD"
+        ],
+        "name_fields": [
+          "PCON**NM"
+        ]
+      },
+      "description": "UK Parliamentary constituencies (Westminster).",
+      "discovery_overrides": {
+        "query": "Westminster Parliamentary Constituencies",
+        "tags_any": [
+          "BDY_ELE"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^PCON\\d{2}CD$|^E14\\d{6}$|^W07\\d{6}$|^S14\\d{6}$|^N06\\d{6}$",
+        "name_column_regex": "^PCON\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "itl1_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "ITL1**CD"
+        ],
+        "name_fields": [
+          "ITL1**NM"
+        ]
+      },
+      "description": "ITL Level 1 (statistical regions).",
+      "discovery_overrides": {
+        "query": "International Territorial Level 1",
+        "tags_any": [
+          "BDY_STAT"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^ITL1\\d{2}CD$|^ITL1CD$|^NUTS.*",
+        "name_column_regex": "^ITL1\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "itl2_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "ITL2**CD"
+        ],
+        "name_fields": [
+          "ITL2**NM"
+        ]
+      },
+      "description": "ITL Level 2.",
+      "discovery_overrides": {
+        "query": "International Territorial Level 2",
+        "tags_any": [
+          "BDY_STAT"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^ITL2\\d{2}CD$|^ITL2CD$",
+        "name_column_regex": "^ITL2\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "itl3_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "ITL3**CD"
+        ],
+        "name_fields": [
+          "ITL3**NM"
+        ]
+      },
+      "description": "ITL Level 3.",
+      "discovery_overrides": {
+        "query": "International Territorial Level 3",
+        "tags_any": [
+          "BDY_STAT"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^ITL3\\d{2}CD$|^ITL3CD$",
+        "name_column_regex": "^ITL3\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "built_up_areas_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "BUA22CD"
+        ],
+        "name_fields": [
+          "BUA22NM"
+        ]
+      },
+      "description": "Built-up Areas (BUAs).",
+      "discovery_overrides": {
+        "query": "Built-up Areas (December 2022) Boundaries UK",
+        "tags_any": [
+          "BDY_BUA"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^BUA\\d{2}CD$",
+        "name_column_regex": "^BUA\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "built_up_area_subdivisions_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "BUASD22CD"
+        ],
+        "name_fields": [
+          "BUASD22NM"
+        ]
+      },
+      "description": "Built-up Area Sub-divisions (BUASDs).",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "GPKG",
+          "url": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/491d04adbefa4ae494b96c69b7f80083/geoPackage?layers=0"
+        },
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/491d04adbefa4ae494b96c69b7f80083/shapefile?layers=0"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^BUASD\\d{2}CD$",
+        "name_column_regex": "^BUASD\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "ttwa_2011_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "TTWA11CD"
+        ],
+        "name_fields": [
+          "TTWA11NM"
+        ]
+      },
+      "description": "Travel to Work Areas (TTWAs) 2011.",
+      "discovery_overrides": {
+        "query": "Travel to Work Areas (2011) Boundaries UK",
+        "tags_any": [
+          "BDY_STAT"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^(TTWA11CD|TTWA01CD|id)$",
+        "name_column_regex": "^(TTWA11NM|TTWA01NM|city_nm)$",
+        "allow_duplicate_codes": true
+      }
+    },
+    {
+      "family_id": "police_force_areas_uk",
+      "template": "ons_default",
+      "coverage": [
+        "United Kingdom"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "PFA**CD"
+        ],
+        "name_fields": [
+          "PFA**NM"
+        ]
+      },
+      "description": "Police Force Areas (PFAs).",
+      "discovery_overrides": {
+        "query": "Police Force Areas",
+        "tags_any": [
+          "BDY_ADM",
+          "Crime"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^PFA\\d{2}CD$",
+        "name_column_regex": "^PFA\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "pcc_areas_ew",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "PCC**CD"
+        ],
+        "name_fields": [
+          "PCC**NM"
+        ]
+      },
+      "description": "Police and Crime Commissioner Areas (PCC).",
+      "discovery_overrides": {
+        "query": "Police and Crime Commissioner Areas",
+        "tags_any": [
+          "BDY_ADM",
+          "Crime"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^(PCC\\d{2}CD|PFA\\d{2}CD)$",
+        "name_column_regex": "^(PCC\\d{2}NM|PFA\\d{2}NM)$"
+      }
+    },
+    {
+      "family_id": "fire_rescue_authorities_ew",
+      "template": "ons_default",
+      "coverage": [
+        "England",
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "FRA**CD"
+        ],
+        "name_fields": [
+          "FRA**NM"
+        ]
+      },
+      "description": "Fire and Rescue Authorities.",
+      "discovery_overrides": {
+        "query": "Fire and Rescue Authorities",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^FRA\\d{2}CD$",
+        "name_column_regex": "^FRA\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "combined_authorities_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "CAUTH**CD"
+        ],
+        "name_fields": [
+          "CAUTH**NM"
+        ]
+      },
+      "description": "Combined Authorities (England).",
+      "discovery_overrides": {
+        "query": "Combined Authorities",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^CAUTH\\d{2}CD$|^E47\\d{6}$",
+        "name_column_regex": "^CAUTH\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "combined_county_authorities_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "CCA**CD"
+        ],
+        "name_fields": [
+          "CCA**NM"
+        ]
+      },
+      "description": "Combined County Authorities (England).",
+      "discovery_overrides": {
+        "query": "Combined County Authorities",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^CCA\\d{2}CD$|^E4[89]\\d{5}$|^UTLA\\d{2}CD$",
+        "name_column_regex": "^CCA\\d{2}NM$|^UTLA\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "local_resilience_forums_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "LRF**CD"
+        ],
+        "name_fields": [
+          "LRF**NM"
+        ]
+      },
+      "description": "Local Resilience Forums (England).",
+      "discovery_overrides": {
+        "query": "Local Resilience Forums",
+        "tags_any": [
+          "BDY_ADM"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^LRF\\d{2}CD$",
+        "name_column_regex": "^LRF\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "icb_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "ICB**CD"
+        ],
+        "name_fields": [
+          "ICB**NM"
+        ]
+      },
+      "description": "NHS Integrated Care Boards (England).",
+      "discovery_overrides": {
+        "query": "Integrated Care Boards",
+        "tags_any": [
+          "BDY_HEALTH",
+          "Health"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^ICB\\d{2}CD$|^E54\\d{6}$|^SICBL\\d{2}CD$",
+        "name_column_regex": "^ICB\\d{2}NM$|^SICBL\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "sub_icb_locations_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "SICBL**CD"
+        ],
+        "name_fields": [
+          "SICBL**NM"
+        ]
+      },
+      "description": "NHS Sub-ICB Locations (England).",
+      "discovery_overrides": {
+        "query": "Sub-ICB Locations",
+        "tags_any": [
+          "BDY_HEALTH",
+          "Health"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^SICBL\\d{2}CD$|^E38\\d{6}$",
+        "name_column_regex": "^SICBL\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "nhs_regions_en",
+      "template": "ons_default",
+      "coverage": [
+        "England"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "NHSER**CD"
+        ],
+        "name_fields": [
+          "NHSER**NM"
+        ]
+      },
+      "description": "NHS England Regions.",
+      "discovery_overrides": {
+        "query": "NHS England Regions",
+        "tags_any": [
+          "BDY_HEALTH",
+          "Health"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^NHSER\\d{2}CD$",
+        "name_column_regex": "^NHSER\\d{2}NM$"
+      }
+    },
+    {
+      "family_id": "local_health_boards_wa",
+      "template": "ons_default",
+      "coverage": [
+        "Wales"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "LHB**CD"
+        ],
+        "name_fields": [
+          "LHB**NM"
+        ]
+      },
+      "description": "Local Health Boards (Wales).",
+      "discovery_overrides": {
+        "query": "Local Health Boards",
+        "tags_any": [
+          "BDY_HEALTH",
+          "Health"
+        ]
+      },
+      "validation_overrides": {
+        "code_column_regex": "^LHB\\d{2}CD$|^W11\\d{6}$",
+        "name_column_regex": "^LHB\\d{2}NM$|.*NM$|.*NAME$"
+      }
+    },
+    {
+      "family_id": "oa_2022_scotland",
+      "template": "scotland_nrs_default",
+      "coverage": [
+        "Scotland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "OA22CD",
+          "OA_CODE"
+        ],
+        "name_fields": []
+      },
+      "description": "Scotland Census 2022 Output Area boundaries. NRS publishes both extent-of-realm and clipped-to-coastline versions.",
+      "variant_mapping": {
+        "Extent of the Realm": "BFE",
+        "Clipped to coastline": "BFC"
+      },
+      "downloads": [
+        {
+          "variant": "BFE",
+          "format": "SHP_ZIP",
+          "url": "https://www.nrscotland.gov.uk/media/xyvbbitq/output-area-2022-eor.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nrscotland.gov.uk/media/uwdpx4hn/output-area-2022-mhw.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(OA22CD|OA_CODE|code)$",
+        "row_count_sanity": {
+          "min": 1000
+        }
+      }
+    },
+    {
+      "family_id": "settlements_2022_scotland",
+      "template": "scotland_nrs_default",
+      "coverage": [
+        "Scotland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "SETT22CD",
+          "SETT_CODE"
+        ],
+        "name_fields": [
+          "SETT22NM",
+          "SETT_NAME"
+        ]
+      },
+      "description": "Scotland Census 2022 Settlement boundaries.",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nrscotland.gov.uk/media/c3xbhayl/census-settlement-2022-mhw.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(SETT22CD|SETT_CODE|code)$",
+        "name_column_regex": "^(SETT22NM|SETT_NAME|name)$"
+      }
+    },
+    {
+      "family_id": "localities_2022_scotland",
+      "template": "scotland_nrs_default",
+      "coverage": [
+        "Scotland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "LOC22CD",
+          "LOC_CODE"
+        ],
+        "name_fields": [
+          "LOC22NM",
+          "LOC_NAME"
+        ]
+      },
+      "description": "Scotland Census 2022 Locality boundaries.",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nrscotland.gov.uk/media/im2nqu55/censuslocality2022_mhw.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(LOC22CD|LOC_CODE|code)$",
+        "name_column_regex": "^(LOC22NM|LOC_NAME|name)$"
+      }
+    },
+    {
+      "family_id": "island_groups_2022_scotland",
+      "template": "scotland_nrs_default",
+      "coverage": [
+        "Scotland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "IG22CD",
+          "IG_CODE"
+        ],
+        "name_fields": [
+          "IG22NM",
+          "IG_NAME"
+        ]
+      },
+      "description": "Scotland Census 2022 Island Groups boundaries.",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nrscotland.gov.uk/media/1o4ioj5n/island-groups-2022-mhw.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(IG22CD|IG_CODE|code)$",
+        "name_column_regex": "^(IG22NM|IG_NAME|name)$"
+      }
+    },
+    {
+      "family_id": "data_zones_2022_scotland",
+      "template": "scotland_scotgov_default",
+      "coverage": [
+        "Scotland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "DataZone"
+        ],
+        "name_fields": []
+      },
+      "description": "Scottish Data Zones 2022 boundaries (ATOM shapefile).",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://maps.gov.scot/ATOM/shapefiles/SG_DataZoneBdry_2022.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(DataZone|dzcode)$",
+        "row_count_sanity": {
+          "min": 1000
+        }
+      }
+    },
+    {
+      "family_id": "intermediate_zones_2022_scotland",
+      "template": "scotland_scotgov_default",
+      "coverage": [
+        "Scotland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "IntermediateZone"
+        ],
+        "name_fields": []
+      },
+      "description": "Scottish Intermediate Zones 2022 boundaries (ATOM shapefile).",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://maps.gov.scot/ATOM/shapefiles/SG_IntermediateZoneBdry_2022.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(IntermediateZone|IZCode)$",
+        "name_column_regex": "^(IZName)$"
+      }
+    },
+    {
+      "family_id": "small_areas_2011_ni",
+      "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
+      "coverage": [
+        "Northern Ireland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "SA2011",
+          "SA_Code"
+        ]
+      },
+      "description": "Northern Ireland Census 2011 Small Areas.",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SA2011_Esri_Shapefile_0.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "MAPINFO_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SA2011_MapInfo_Tab_0.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(SA2011|SA_CODE)$"
+      }
+    },
+    {
+      "family_id": "super_output_areas_2011_ni",
+      "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
+      "coverage": [
+        "Northern Ireland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "SOA2011",
+          "SOA_Code"
+        ]
+      },
+      "description": "Northern Ireland Census 2011 Super Output Areas (SOA).",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SOA2011_Esri_Shapefile_0.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "MAPINFO_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/SOA2011_MapInfo_Tab_0.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^(SOA2011|SOA_CODE)$"
+      }
+    },
+    {
+      "family_id": "data_zones_2021_ni",
+      "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
+      "coverage": [
+        "Northern Ireland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "DZ2021",
+          "DZ_Code"
+        ],
+        "name_fields": [
+          "DZ2021_Name",
+          "DZ_Name"
+        ]
+      },
+      "description": "Northern Ireland Census 2021 Data Zones (DZ).",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-dz2021-esri-shapefile.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "GEOJSON_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-dz2021-geojson.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "FGDB_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-dz2021-geodatabase.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^DZ2021_CD$",
+        "name_column_regex": "^DZ2021_NM$"
+      },
+      "notes": [
+        "NISRA states Data Zones nest within Super Data Zones, which nest within LGDs and Parliamentary Constituencies."
+      ]
+    },
+    {
+      "family_id": "super_data_zones_2021_ni",
+      "template": "ni_nisra_default",
+      "source_id": "nisra_publications",
+      "coverage": [
+        "Northern Ireland"
+      ],
+      "geography_key": {
+        "code_fields": [
+          "SDZ2021",
+          "SDZ_Code"
+        ],
+        "name_fields": [
+          "SDZ2021_Name",
+          "SDZ_Name"
+        ]
+      },
+      "description": "Northern Ireland Census 2021 Super Data Zones (SDZ).",
+      "downloads": [
+        {
+          "variant": "BFC",
+          "format": "SHP_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-sdz2021-esri-shapefile.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "GEOJSON_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-sdz2021-geojson.zip"
+        },
+        {
+          "variant": "BFC",
+          "format": "FGDB_ZIP",
+          "url": "https://www.nisra.gov.uk/files/nisra/publications/geography-sdz2021-geodatabase.zip"
+        }
+      ],
+      "validation_overrides": {
+        "code_column_regex": "^SDZ2021_CD$",
+        "name_column_regex": "^SDZ2021_NM$"
+      }
+    },
+    {
+      "family_id": "ni_lgd_fallback",
+      "category": "Northern_Ireland_OpenDataNI_Fallback",
+      "authority": {
+        "publisher": "Northern Ireland (via OpenDataNI CKAN)",
+        "source": "OpenDataNI CKAN catalogue"
+      },
+      "coverage": [
+        "Northern Ireland"
+      ],
+      "description": "Fallback discovery for NI Local Government District boundaries (if UK LAD products are not used).",
+      "discovery": {
+        "source_id": "opendatani_ckan",
+        "method": "ckan_package_search",
+        "query": "Local Government District boundary"
+      },
+      "ingest": {
+        "geometry_type": "MULTIPOLYGON",
+        "target_srid": 27700,
+        "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^TrustCode$",
+        "name_column_regex": "^TrustName$"
+      },
+      "validation": {
+        "geometry_checks": {
+          "st_isvalid": true
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    },
+    {
+      "family_id": "ni_dea_fallback",
+      "category": "Northern_Ireland_OpenDataNI_Fallback",
+      "authority": {
+        "publisher": "Northern Ireland (via OpenDataNI CKAN)",
+        "source": "OpenDataNI CKAN catalogue"
+      },
+      "coverage": [
+        "Northern Ireland"
+      ],
+      "description": "Fallback discovery for NI District Electoral Area boundaries.",
+      "discovery": {
+        "source_id": "opendatani_ckan",
+        "method": "ckan_package_search",
+        "query": "District Electoral Area boundary"
+      },
+      "ingest": {
+        "geometry_type": "MULTIPOLYGON",
+        "target_srid": 27700,
+        "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^DEA$",
+        "name_column_regex": "^Area$"
+      },
+      "validation": {
+        "geometry_checks": {
+          "st_isvalid": true
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    },
+    {
+      "family_id": "os_boundaryline_gb_bulk",
+      "category": "OS_BoundaryLine",
+      "authority": {
+        "publisher": "Ordnance Survey",
+        "source": "OS Boundary-Line (bulk download)"
+      },
+      "coverage": [
+        "Great Britain"
+      ],
+      "description": "Boundary-Line bulk product (multiple layers) for GB; updated twice yearly; supplied in National Grid.",
+      "discovery": {
+        "source_id": "os_downloads_api_boundaryline",
+        "method": "fixed_api_endpoint",
+        "download_request": "https://api.os.uk/downloads/v1/products/BoundaryLine/downloads?area=GB&format=GeoPackage&redirect=true"
+      },
+      "ingest": {
+        "strategy": "split_layers_to_tables",
+        "target_srid": 27700,
+        "promote_to_multi": true
+      },
+      "validation_overrides": {
+        "code_column_regex": "^(Area_Code|Census_Code|PD_ID|Name)$",
+        "name_column_regex": "^(Name|County|Distric_Bo|Ward|Parish)$",
+        "allow_duplicate_codes": true
+      },
+      "validation": {
+        "geometry_checks": {
+          "st_isvalid": true
+        },
+        "row_count_sanity": {
+          "min": 1
+        }
+      }
+    }
+  ],
+  "legacy_field_mappings": {
+    "initial_hack_fields": [
+      {
+        "hack_label": "OA",
+        "code_field": "OA21CD",
+        "name_field": null,
+        "family_id": "oa_2021_ew"
+      },
+      {
+        "hack_label": "LSOA",
+        "code_field": "LSOA21CD",
+        "name_field": "LSOA21NM",
+        "family_id": "lsoa_2021_ew"
+      },
+      {
+        "hack_label": "MSOA",
+        "code_field": "MSOA21CD",
+        "name_field": "MSOA21NM",
+        "family_id": "msoa_2021_ew"
+      },
+      {
+        "hack_label": "WARD",
+        "code_field": "WD19CD (example vintage)",
+        "name_field": "WD19NM",
+        "family_id": "wards_uk"
+      },
+      {
+        "hack_label": "DISTRICT",
+        "code_field": "LAD17CD (example vintage)",
+        "name_field": "LAD17NM",
+        "family_id": "lad_uk"
+      },
+      {
+        "hack_label": "COUNTY",
+        "code_field": "CTYUA19CD (example vintage)",
+        "name_field": "CTYUA19NM",
+        "family_id": "ctyua_uk"
+      },
+      {
+        "hack_label": "REGION",
+        "code_field": "RGN19CD (example vintage)",
+        "name_field": "RGN19NM",
+        "family_id": "regions_en"
+      },
+      {
+        "hack_label": "NATION",
+        "code_field": "CTRY21CD",
+        "name_field": "CTRY21NM",
+        "family_id": "countries_uk"
+      }
+    ],
+    "note": "The ingest script should not hard-code year suffixes; it should infer the correct code/name fields from the dataset columns using regex patterns in each boundary_family."
+  },
+  "optional_dynamic_harvest_rules": [
+    {
+      "rule_id": "ons_all_boundaries_latest",
+      "enabled_by_default": false,
+      "description": "Harvest any additional ONS-published boundary datasets not explicitly enumerated in boundary_families, selecting the latest vintage per geography family and per variant.",
+      "source_id": "ons_ckan_datagovuk",
+      "ckan_organisation": "office-for-national-statistics",
+      "ckan_query": "Boundaries",
+      "filters": {
+        "tags_any": [
+          "BDY_ADM",
+          "BDY_ELE",
+          "BDY_CENSUS",
+          "BDY_STAT",
+          "BDY_HEALTH",
+          "BDY_BUA"
+        ],
+        "resource_format_preference": [
+          "GeoPackage",
+          "Shapefile"
+        ]
+      },
+      "grouping_strategy": {
+        "family_key_from_title": "extract leading geography phrase before first '(' and normalise whitespace",
+        "variant_from_title": "regex \\b(BFC|BFE|BGC|BUC|BSC)\\b",
+        "vintage_from_title": "month+year or year patterns",
+        "select_latest": true
+      },
+      "ingest": {
+        "target_schema": "boundaries_extra",
+        "table_naming": "ons_extra__{family_key}__{variant}__{vintage_id}"
+      }
+    }
+  ]
+}

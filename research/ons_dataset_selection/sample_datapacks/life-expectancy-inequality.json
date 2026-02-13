@@ -1,0 +1,203 @@
+{
+  "datapack_id": "life-expectancy-inequality",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "life-expectancy-inequality",
+    "tile_label": "Are life outcomes improving fairly across places?",
+    "intent_tags": [
+      "life-expectancy",
+      "health-inequality",
+      "outcomes"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "life-expectancy-inequality-card",
+    "headline": "Life expectancy trend with inequality context",
+    "summary": "Use life expectancy baseline and link to avoidable mortality and deprivation views.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "UK",
+      "country",
+      "region",
+      "local-authority"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "annual"
+    },
+    "release_frequency": "annual",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "life-expectancy-at-birth",
+    "dataset_title": "Life expectancy at birth and at age 65",
+    "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies",
+    "provider": "ONS",
+    "dataset_family": "health-and-life-outcomes",
+    "geography_levels": [
+      "UK",
+      "country",
+      "region",
+      "local-authority"
+    ],
+    "time_granularity": "annual",
+    "latest_release_date": "2025-09-01",
+    "fitness_for_use_score": 88,
+    "confidence": "high",
+    "explainability_note": "Core mortality outcome indicator for area and group comparisons.",
+    "known_limitations": [
+      "Short periods may be noisy for smaller areas."
+    ],
+    "comparability_warnings": [
+      "Use confidence intervals and pooled years for small geographies."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "avoidable-mortality",
+      "dataset_title": "Avoidable mortality",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthinequalities",
+      "provider": "ONS",
+      "dataset_family": "health-and-life-outcomes",
+      "geography_levels": [
+        "country",
+        "region"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2025-09-01",
+      "fitness_for_use_score": 79,
+      "confidence": "medium",
+      "explainability_note": "Cause-specific context for life expectancy differences.",
+      "known_limitations": [
+        "Coding changes may affect trend continuity."
+      ],
+      "comparability_warnings": [
+        "Check ICD transition notes."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "deprivation-deciles-health",
+      "dataset_title": "Health outcomes by deprivation decile",
+      "dataset_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare",
+      "provider": "ONS",
+      "dataset_family": "health-inequalities",
+      "geography_levels": [
+        "England"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2025-09-01",
+      "fitness_for_use_score": 75,
+      "confidence": "medium",
+      "explainability_note": "Inequality context for distributional analysis.",
+      "known_limitations": [
+        "Geography coverage differs from UK-wide series."
+      ],
+      "comparability_warnings": [
+        "Do not compare unlike denominator frames."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "le-to-avoidable",
+      "from_dataset_id": "life-expectancy-at-birth",
+      "to_dataset_id": "avoidable-mortality",
+      "link_type": "complementary_context",
+      "link_reason": "Adds cause-based explanatory context.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "le-to-deprivation",
+      "from_dataset_id": "life-expectancy-at-birth",
+      "to_dataset_id": "deprivation-deciles-health",
+      "link_type": "same_measure_different_geography",
+      "link_reason": "Distributional inequality view complements area averages.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "life-expectancy-inequality-chart-1",
+      "chart_type": "line",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "period",
+      "y_field": "years",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

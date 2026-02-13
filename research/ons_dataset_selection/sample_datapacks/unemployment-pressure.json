@@ -1,0 +1,199 @@
+{
+  "datapack_id": "unemployment-pressure",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "unemployment-pressure",
+    "tile_label": "Is unemployment rising where I live?",
+    "intent_tags": [
+      "unemployment",
+      "labour-market",
+      "local-trends"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "unemployment-pressure-card",
+    "headline": "Unemployment pressure with vacancies and claimant context",
+    "summary": "Pair LFS unemployment with vacancies and claimant count for fuller interpretation.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "UK",
+      "region"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "monthly"
+    },
+    "release_frequency": "monthly",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "unemployment-rate-lfs",
+    "dataset_title": "Unemployment rate (Labour Force Survey)",
+    "dataset_url": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment",
+    "provider": "ONS",
+    "dataset_family": "labour-market",
+    "geography_levels": [
+      "UK",
+      "region"
+    ],
+    "time_granularity": "monthly",
+    "latest_release_date": "2026-01-01",
+    "fitness_for_use_score": 90,
+    "confidence": "high",
+    "explainability_note": "Primary labour slack signal for national and regional trend.",
+    "known_limitations": [
+      "Survey-based; subject to sampling uncertainty."
+    ],
+    "comparability_warnings": [
+      "Short-term movements should be interpreted with confidence intervals."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "vacancies",
+      "dataset_title": "Vacancies and jobs in the UK",
+      "dataset_url": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment",
+      "provider": "ONS",
+      "dataset_family": "labour-market",
+      "geography_levels": [
+        "UK"
+      ],
+      "time_granularity": "monthly",
+      "latest_release_date": "2026-01-01",
+      "fitness_for_use_score": 84,
+      "confidence": "high",
+      "explainability_note": "Demand-side labour context.",
+      "known_limitations": [
+        "Vacancies can be volatile by sector."
+      ],
+      "comparability_warnings": [
+        "Vacancies and unemployment are related but not interchangeable."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "claimant-count",
+      "dataset_title": "Claimant count",
+      "dataset_url": "https://www.ons.gov.uk/employmentandlabourmarket",
+      "provider": "ONS",
+      "dataset_family": "labour-market",
+      "geography_levels": [
+        "UK",
+        "local-authority"
+      ],
+      "time_granularity": "monthly",
+      "latest_release_date": "2026-01-01",
+      "fitness_for_use_score": 78,
+      "confidence": "medium",
+      "explainability_note": "Administrative support for sub-national monitoring.",
+      "known_limitations": [
+        "Policy rules affect eligibility and comparability."
+      ],
+      "comparability_warnings": [
+        "Not equivalent to unemployment rate."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "unemp-to-vacancies",
+      "from_dataset_id": "unemployment-rate-lfs",
+      "to_dataset_id": "vacancies",
+      "link_type": "complementary_context",
+      "link_reason": "Combines labour supply and demand perspectives.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "unemp-to-claimant",
+      "from_dataset_id": "unemployment-rate-lfs",
+      "to_dataset_id": "claimant-count",
+      "link_type": "same_measure_different_geography",
+      "link_reason": "Administrative local signal complements survey rates.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "unemployment-pressure-chart-1",
+      "chart_type": "line",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "period",
+      "y_field": "rate",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

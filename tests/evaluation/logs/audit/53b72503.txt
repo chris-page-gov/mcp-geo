@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 53b72503
+Timestamp: 2026-01-20T20:22:26.885187
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "List available ONS observation dimensions"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.dimensions
+········································
+Timestamp: 2026-01-20T20:22:26.890046
+Duration: 2.2ms
+Status: SUCCESS
+
+Inputs:
+{}
+
+Outputs:
+{'dimensions': {'geography': ['K02000001'], 'measure': ['chained_volume_measure'], 'seasonalAdjustment': ['seasonally_adjusted'], 'time': ['2023 Q1', '2023 Q2', '2023 Q3', '2023 Q4', '2024 Q1']}, 'live': False}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "List available ONS observation dimensions", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "List"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "ons_data.dimensions", "response": {"dimensions": {"geography": ["K02000001"], "measure": ["chained_volume_measure"], "seasonalAdjustment": ["seasonally_adjusted"], "time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1"]}, "live": false}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 4.9ms
+Success: True

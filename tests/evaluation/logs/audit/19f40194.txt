@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 19f40194
+Timestamp: 2026-01-20T20:49:48.890251
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Render a map with invalid bbox values"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: map_render
+Confidence: 0.85
+Recommended Tool: os_maps.render
+Workflow Steps: ['os_maps.render']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_maps.render
+········································
+Timestamp: 2026-01-20T20:49:48.893542
+Duration: 1.7ms
+Status: ERROR
+
+Inputs:
+{'bbox': ['x', 1, 2, 3]}
+
+Outputs:
+{'isError': True, 'code': 'INVALID_INPUT', 'message': 'bbox values must be numeric'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Render a map with invalid bbox values", "intent": "map_render", "confidence": 0.85, "recommended_tool": "os_maps.render", "recommended_parameters": {}, "explanation": "Return a static map descriptor for a bounding box.", "workflow_steps": ["os_maps.render"], "alternative_tools": ["os_vector_tiles.descriptor"], "guidance": "Use os_maps.render with a bbox to obtain a static map URL template."}}, {"tool": "os_maps.render", "response": {"isError": true, "code": "INVALID_INPUT", "message": "bbox values must be numeric"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.3ms
+Success: True

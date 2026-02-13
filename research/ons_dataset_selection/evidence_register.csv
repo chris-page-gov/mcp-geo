@@ -1,0 +1,11 @@
+evidence_id,source_name,source_url,evidence_type,summary,relevance,notes
+ons-site-structure,Office for National Statistics,https://www.ons.gov.uk,official_portal,Primary publication platform for UK official statistics,high,Search prioritises bulletins over datasets
+ons-timeseries-api,ONS Time Series API,https://api.ons.gov.uk,tapi,Machine-accessible statistical series,high,Requires prior series knowledge
+ons-census-2021,ONS Census 2021,https://www.ons.gov.uk/census,official_statistics,Aggregated census outputs and topic summaries,high,Separate interaction model from core ONS datasets
+eurostat-discovery,Eurostat,https://ec.europa.eu/eurostat,international_comparator,SDMX-aligned dataset families and navigation,high,Strong related-dataset linking
+oecd-data,OECD Data,https://data.oecd.org,international_comparator,Indicator-led statistical discovery,medium,Limited geography depth
+un-sdg,UN SDG Data,https://sdgs.un.org/goals,elicitation_model,Goal-target-indicator hierarchy,medium,Excellent intent capture
+statcan,Statistics Canada,https://www.statcan.gc.ca,international_comparator,Question-led statistical navigation,high,Strong plain-language metadata
+sdmx-standard,SDMX,https://sdmx.org,standard,International statistical metadata standard,high,Complex but foundational
+hci-stat-selection,HCI Statistical Selection Research,various,academic,Research on faceted and task-led data discovery,medium,Supports elicitation flows
+misuse-official-stats,UK Code of Practice for Statistics,https://code.statisticsauthority.gov.uk,governance,Guidance on correct statistical use,high,Key for AI safeguards

@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Geo - Statistics Dashboard</title>
+    <style>
+      :root {
+        --bg-1: #fff5e9;
+        --bg-2: #eef3ff;
+        --ink: #1c1f2b;
+        --muted: #5c657a;
+        --accent: #f08c4a;
+        --accent-2: #3a6ea5;
+        --panel: rgba(255, 255, 255, 0.88);
+        --line: rgba(28, 31, 43, 0.1);
+        --shadow: 0 22px 55px rgba(33, 40, 55, 0.18);
+        --radius: 18px;
+        --font: "Manrope", "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--ink);
+        background: radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 42%, var(--bg-2) 100%);
+      }
+
+      .shell {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .title {
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .status .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #c6cbd6;
+      }
+
+      .status.connected .dot {
+        background: #46b27c;
+      }
+
+      .controls {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+
+      .control-card {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 16px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .control-card h4 {
+        margin: 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .field input,
+      .field select {
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        font-size: 13px;
+        font-family: var(--font);
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .actions button {
+        border: none;
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .actions .primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .actions .ghost {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+        max-height: 180px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .list-item {
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      .list-item.active {
+        border-color: var(--accent);
+        background: rgba(240, 140, 74, 0.12);
+      }
+
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .error {
+        background: rgba(232, 93, 93, 0.12);
+        color: #a43737;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .card {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 16px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        animation: drift 0.6s ease-out both;
+      }
+
+      .card:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+
+      .card:nth-child(3) {
+        animation-delay: 0.16s;
+      }
+
+      .card h4 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .card .value {
+        font-size: 22px;
+        font-weight: 600;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 20px;
+        margin-top: 22px;
+      }
+
+      .chart {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        min-height: 300px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bars {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        height: 220px;
+        margin-top: 20px;
+      }
+
+      .bar {
+        flex: 1;
+        background: linear-gradient(180deg, var(--accent), #f7c39e);
+        border-radius: 10px 10px 6px 6px;
+      }
+
+      .table {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        font-size: 13px;
+      }
+
+      .table table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .table th,
+      .table td {
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .payload {
+        margin-top: 16px;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(28, 31, 43, 0.05);
+        font-size: 12px;
+        color: var(--muted);
+        height: 120px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      @keyframes drift {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 960px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div>
+          <div class="title">Statistics Dashboard</div>
+          <div class="subtitle">Compare observations across selected areas.</div>
+        </div>
+        <div class="status" id="status">
+          <span class="dot"></span>
+          <span>Awaiting host</span>
+        </div>
+      </header>
+
+      <section class="controls">
+        <div class="control-card">
+          <h4>Dataset discovery</h4>
+          <div class="field">
+            <label for="datasetSearch">Search datasets</label>
+            <input id="datasetSearch" placeholder="e.g. housing, unemployment" />
+          </div>
+          <div class="field">
+            <label for="datasetLimit">Results limit</label>
+            <select id="datasetLimit">
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button class="primary" id="datasetSearchButton" type="button">Search</button>
+            <button class="ghost" id="datasetPrev" type="button">Prev</button>
+            <button class="ghost" id="datasetNext" type="button">Next</button>
+          </div>
+          <div class="meta-row" id="datasetMeta">No search yet.</div>
+          <div class="list" id="datasetResults"></div>
+        </div>
+
+        <div class="control-card">
+          <h4>Dataset selection</h4>
+          <div class="field">
+            <label for="datasetInput">Dataset ID</label>
+            <input id="datasetInput" placeholder="dataset id" />
+          </div>
+          <div class="field">
+            <label for="editionInput">Edition</label>
+            <input id="editionInput" list="editionList" placeholder="edition" />
+            <datalist id="editionList"></datalist>
+          </div>
+          <div class="field">
+            <label for="versionInput">Version</label>
+            <input id="versionInput" list="versionList" placeholder="version" />
+            <datalist id="versionList"></datalist>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="loadDimensions" type="button">Load dimensions</button>
+            <button class="ghost" id="loadEditions" type="button">Load editions</button>
+            <button class="ghost" id="loadVersions" type="button">Load versions</button>
+          </div>
+          <div class="meta-row" id="editionMeta">No editions loaded.</div>
+          <div class="meta-row" id="versionMeta">No versions loaded.</div>
+          <div class="meta-row" id="dimensionMeta">No dimensions loaded.</div>
+        </div>
+
+        <div class="control-card">
+          <h4>Dimensions</h4>
+          <div class="field">
+            <label for="geoDimSelect">Geography dimension</label>
+            <select id="geoDimSelect"></select>
+          </div>
+          <div class="field">
+            <label for="measureDimSelect">Measure dimension</label>
+            <select id="measureDimSelect"></select>
+          </div>
+          <div class="field">
+            <label for="timeDimSelect">Time dimension</label>
+            <select id="timeDimSelect"></select>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="loadOptions" type="button">Load options</button>
+          </div>
+          <div class="meta-row" id="optionMeta">No options loaded.</div>
+        </div>
+
+        <div class="control-card">
+          <h4>Selections</h4>
+          <div class="field">
+            <label>Areas (first 50 shown)</label>
+            <div class="list" id="geoOptions"></div>
+          </div>
+          <div class="field">
+            <label>Measure</label>
+            <select id="measureSelect"></select>
+          </div>
+          <div class="field">
+            <label>Time</label>
+            <select id="timeSelect"></select>
+          </div>
+          <div class="actions">
+            <button class="primary" id="runQuery" type="button">Run comparison</button>
+          </div>
+          <div class="meta-row" id="selectionMeta">No selections yet.</div>
+          <div class="error" id="queryError" style="display:none;"></div>
+        </div>
+      </section>
+
+      <section class="cards">
+        <div class="card">
+          <h4>Latest value</h4>
+          <div class="value" id="latestValue">—</div>
+        </div>
+        <div class="card">
+          <h4>Average</h4>
+          <div class="value" id="avgValue">—</div>
+        </div>
+        <div class="card">
+          <h4>Range</h4>
+          <div class="value" id="rangeValue">—</div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="chart">
+          <div class="bars" id="barChart"></div>
+        </div>
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="resultTable"></tbody>
+          </table>
+          <div id="payload" class="payload">Waiting for MCP host payload...</div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const payload = document.getElementById("payload");
+      const datasetSearch = document.getElementById("datasetSearch");
+      const datasetLimit = document.getElementById("datasetLimit");
+      const datasetSearchButton = document.getElementById("datasetSearchButton");
+      const datasetPrev = document.getElementById("datasetPrev");
+      const datasetNext = document.getElementById("datasetNext");
+      const datasetResults = document.getElementById("datasetResults");
+      const datasetMeta = document.getElementById("datasetMeta");
+      const datasetInput = document.getElementById("datasetInput");
+      const editionInput = document.getElementById("editionInput");
+      const versionInput = document.getElementById("versionInput");
+      const editionList = document.getElementById("editionList");
+      const versionList = document.getElementById("versionList");
+      const loadDimensions = document.getElementById("loadDimensions");
+      const loadEditions = document.getElementById("loadEditions");
+      const loadVersions = document.getElementById("loadVersions");
+      const editionMeta = document.getElementById("editionMeta");
+      const versionMeta = document.getElementById("versionMeta");
+      const dimensionMeta = document.getElementById("dimensionMeta");
+      const geoDimSelect = document.getElementById("geoDimSelect");
+      const measureDimSelect = document.getElementById("measureDimSelect");
+      const timeDimSelect = document.getElementById("timeDimSelect");
+      const loadOptions = document.getElementById("loadOptions");
+      const optionMeta = document.getElementById("optionMeta");
+      const geoOptions = document.getElementById("geoOptions");
+      const measureSelect = document.getElementById("measureSelect");
+      const timeSelect = document.getElementById("timeSelect");
+      const runQuery = document.getElementById("runQuery");
+      const selectionMeta = document.getElementById("selectionMeta");
+      const queryError = document.getElementById("queryError");
+      const latestValue = document.getElementById("latestValue");
+      const avgValue = document.getElementById("avgValue");
+      const rangeValue = document.getElementById("rangeValue");
+      const barChart = document.getElementById("barChart");
+      const resultTable = document.getElementById("resultTable");
+
+      const pendingCalls = new Map();
+      let rpcId = 0;
+      const state = {
+        hostReady: false,
+        datasets: [],
+        dimensions: [],
+        dimensionGroups: { geography: [], measure: [], time: [] },
+        selectedAreas: new Set(),
+        editions: [],
+        versions: [],
+        datasetOffset: 0,
+        datasetTotal: null,
+      };
+
+      function postToHost(message) {
+        if (window.parent) {
+          window.parent.postMessage(message, "*");
+        }
+      }
+
+      function rpcCall(method, params) {
+        rpcId += 1;
+        const id = rpcId;
+        postToHost({ jsonrpc: "2.0", id, method, params });
+        return new Promise((resolve, reject) => {
+          pendingCalls.set(id, { resolve, reject });
+          setTimeout(() => {
+            if (pendingCalls.has(id)) {
+              pendingCalls.delete(id);
+              reject(new Error("RPC timeout"));
+            }
+          }, 15000);
+        });
+      }
+
+      function rpcNotify(method, params) {
+        postToHost({ jsonrpc: "2.0", method, params });
+      }
+
+      function sanitizeToolName(toolName) {
+        if (typeof toolName !== "string") {
+          return toolName;
+        }
+        return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
+      }
+
+      async function requestTool(tool, args) {
+        try {
+          return await rpcCall("tools/call", { name: tool, arguments: args || {} });
+        } catch (err) {
+          const message = String(err?.message || "");
+          const sanitized = sanitizeToolName(tool);
+          const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
+          if (sanitized && sanitized !== tool && looksMissing) {
+            return await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+          }
+          throw err;
+        }
+      }
+
+      async function requestToolStrict(tool, args) {
+        const response = await requestTool(tool, args);
+        const payload = response?.data || response;
+        if (payload && payload.isError) {
+          throw new Error(payload.message || "Tool call failed");
+        }
+        return response;
+      }
+
+      function updateStatus(text, connected) {
+        statusEl.classList.toggle("connected", connected);
+        statusEl.querySelector("span:last-child").textContent = text;
+      }
+
+      async function refreshDatasetSelection() {
+        editionInput.value = "";
+        versionInput.value = "";
+        editionList.innerHTML = "";
+        versionList.innerHTML = "";
+        editionMeta.textContent = "Loading editions...";
+        versionMeta.textContent = "Load versions after selecting an edition.";
+        await loadEditionsList();
+        if (editionInput.value) {
+          await loadVersionsList();
+        }
+        if (versionInput.value) {
+          await loadDims();
+        }
+      }
+
+      function renderDatasetResults(results) {
+        datasetResults.innerHTML = "";
+        results.forEach((item) => {
+          const el = document.createElement("div");
+          el.className = "list-item";
+          el.innerHTML = `<strong>${item.id}</strong><div>${item.title || ""}</div><div>${item.description || ""}</div><div class="meta-row">${item.state || "unknown state"}</div>`;
+          el.addEventListener("click", async () => {
+            datasetInput.value = item.id || "";
+            await refreshDatasetSelection();
+            datasetResults.querySelectorAll(".list-item").forEach((n) => n.classList.remove("active"));
+            el.classList.add("active");
+          });
+          datasetResults.appendChild(el);
+        });
+      }
+
+      function populateDatalist(listEl, values) {
+        listEl.innerHTML = "";
+        values.forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          listEl.appendChild(option);
+        });
+      }
+
+      function populateSelect(selectEl, values, placeholder) {
+        selectEl.innerHTML = "";
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = placeholder;
+        selectEl.appendChild(placeholderOption);
+        values.forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          selectEl.appendChild(option);
+        });
+      }
+
+      function classifyDimensionId(id) {
+        const value = String(id || "").toLowerCase();
+        if (!value) {
+          return "measure";
+        }
+        const timeHints = ["time", "date", "year", "quarter", "month", "week", "day", "yyyy", "yy", "q1", "q2", "q3", "q4"];
+        const geoHints = [
+          "geo",
+          "geography",
+          "region",
+          "area",
+          "nuts",
+          "lsoa",
+          "msoa",
+          "oa",
+          "ward",
+          "local",
+          "authority",
+          "lad",
+          "gss",
+          "pcon",
+          "country",
+          "nation",
+        ];
+        const measureHints = [
+          "measure",
+          "metric",
+          "indicator",
+          "variable",
+          "type",
+          "price",
+          "index",
+          "category",
+          "unit",
+          "sex",
+          "age",
+          "industry",
+          "sic",
+          "occupation",
+        ];
+        if (timeHints.some((hint) => value.includes(hint))) {
+          return "time";
+        }
+        if (geoHints.some((hint) => value.includes(hint))) {
+          return "geography";
+        }
+        if (measureHints.some((hint) => value.includes(hint))) {
+          return "measure";
+        }
+        return "measure";
+      }
+
+      function renderGeoOptions(options) {
+        geoOptions.innerHTML = "";
+        options.forEach((code) => {
+          const item = document.createElement("label");
+          item.className = "list-item";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.value = code;
+          input.checked = state.selectedAreas.has(code);
+          input.addEventListener("change", () => {
+            if (input.checked) {
+              state.selectedAreas.add(code);
+            } else {
+              state.selectedAreas.delete(code);
+            }
+            selectionMeta.textContent = `${state.selectedAreas.size} area(s) selected`;
+          });
+          const span = document.createElement("span");
+          span.textContent = code;
+          item.appendChild(input);
+          item.appendChild(span);
+          geoOptions.appendChild(item);
+        });
+      }
+
+      function readNumeric(value) {
+        if (typeof value === "number") {
+          return value;
+        }
+        if (typeof value === "string") {
+          const parsed = Number.parseFloat(value);
+          return Number.isFinite(parsed) ? parsed : null;
+        }
+        return null;
+      }
+
+      function observationValue(obs) {
+        if (!obs || typeof obs !== "object") {
+          return null;
+        }
+        if ("observation" in obs) {
+          return readNumeric(obs.observation);
+        }
+        if ("value" in obs) {
+          return readNumeric(obs.value);
+        }
+        return null;
+      }
+
+      function renderSeries(series) {
+        barChart.innerHTML = "";
+        resultTable.innerHTML = "";
+        if (!series.length) {
+          latestValue.textContent = "—";
+          avgValue.textContent = "—";
+          rangeValue.textContent = "—";
+          return;
+        }
+        const values = series.map((item) => item.value).filter((val) => Number.isFinite(val));
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        latestValue.textContent = values[values.length - 1]?.toFixed(2) || "—";
+        avgValue.textContent = avg.toFixed(2);
+        rangeValue.textContent = `${min.toFixed(2)} - ${max.toFixed(2)}`;
+        series.forEach((item) => {
+          const bar = document.createElement("div");
+          bar.className = "bar";
+          bar.style.height = `${(item.value / max) * 100}%`;
+          barChart.appendChild(bar);
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${item.area}</td><td>${item.value.toFixed(2)}</td>`;
+          resultTable.appendChild(row);
+        });
+      }
+
+      async function searchDatasets() {
+        queryError.style.display = "none";
+        const term = datasetSearch.value.trim();
+        if (!term) {
+          return;
+        }
+        try {
+          const limit = Number(datasetLimit.value || 20);
+          const response = await requestToolStrict("ons_search.query", {
+            term,
+            limit,
+            offset: state.datasetOffset,
+          });
+          state.datasets = response?.data?.results || response?.results || [];
+          state.datasetTotal = response?.data?.total || response?.total || null;
+          const totalLabel = state.datasetTotal ? ` of ${state.datasetTotal}` : "";
+          datasetMeta.textContent = `Showing ${state.datasetOffset + 1}-${state.datasetOffset + state.datasets.length}${totalLabel}.`;
+          renderDatasetResults(state.datasets);
+        } catch (err) {
+          datasetMeta.textContent = "Dataset search failed.";
+        }
+      }
+
+      async function loadDims() {
+        queryError.style.display = "none";
+        const dataset = datasetInput.value.trim();
+        const edition = editionInput.value.trim();
+        const version = versionInput.value.trim();
+        if (!dataset || !edition || !version) {
+          dimensionMeta.textContent = "Dataset, edition, and version are required.";
+          return;
+        }
+        try {
+          const response = await requestToolStrict("ons_codes.list", { dataset, edition, version });
+          state.dimensions = response?.data?.dimensions || response?.dimensions || [];
+          const groups = { geography: [], measure: [], time: [] };
+          state.dimensions.forEach((dim) => {
+            groups[classifyDimensionId(dim)].push(dim);
+          });
+          if (!groups.geography.length) {
+            groups.geography = state.dimensions.slice();
+          }
+          if (!groups.time.length) {
+            groups.time = state.dimensions.slice();
+          }
+          if (!groups.measure.length) {
+            groups.measure = state.dimensions.slice();
+          }
+          state.dimensionGroups = groups;
+          dimensionMeta.textContent = `Dimensions: ${state.dimensions.length}. Geography: ${groups.geography.length}, Measure: ${groups.measure.length}, Time: ${groups.time.length}.`;
+          populateSelect(geoDimSelect, groups.geography, "Select geography dimension");
+          populateSelect(measureDimSelect, groups.measure, "Select measure dimension");
+          populateSelect(timeDimSelect, groups.time, "Select time dimension");
+          if (groups.geography.length === 1) {
+            geoDimSelect.value = groups.geography[0];
+          }
+          if (groups.measure.length === 1) {
+            measureDimSelect.value = groups.measure[0];
+          }
+          if (groups.time.length === 1) {
+            timeDimSelect.value = groups.time[0];
+          }
+        } catch (err) {
+          dimensionMeta.textContent = err?.message || "Failed to load dimensions.";
+        }
+      }
+
+      async function loadEditionsList() {
+        queryError.style.display = "none";
+        const dataset = datasetInput.value.trim();
+        if (!dataset) {
+          editionMeta.textContent = "Dataset is required.";
+          return;
+        }
+        try {
+          const response = await requestToolStrict("ons_data.editions", { dataset });
+          const editions = response?.data?.editions || response?.editions || [];
+          state.editions = editions;
+          const editionIds = editions.map((ed) => ed.id).filter(Boolean);
+          populateDatalist(editionList, editionIds);
+          editionMeta.textContent = `${editionIds.length} edition(s) available.`;
+          if (editionIds.length === 1) {
+            editionInput.value = editionIds[0];
+          }
+        } catch (err) {
+          editionMeta.textContent = err?.message || "Failed to load editions.";
+        }
+      }
+
+      async function loadVersionsList() {
+        queryError.style.display = "none";
+        const dataset = datasetInput.value.trim();
+        const edition = editionInput.value.trim();
+        if (!dataset || !edition) {
+          versionMeta.textContent = "Dataset and edition are required.";
+          return;
+        }
+        try {
+          const response = await requestToolStrict("ons_data.versions", { dataset, edition });
+          const versions = response?.data?.versions || response?.versions || [];
+          state.versions = versions;
+          const versionIds = versions.map((ver) => ver.id).filter(Boolean);
+          populateDatalist(versionList, versionIds);
+          versionMeta.textContent = `${versionIds.length} version(s) available.`;
+          if (versionIds.length === 1) {
+            versionInput.value = versionIds[0];
+          }
+        } catch (err) {
+          versionMeta.textContent = err?.message || "Failed to load versions.";
+        }
+      }
+
+      async function loadDimOptions() {
+        queryError.style.display = "none";
+        const dataset = datasetInput.value.trim();
+        const edition = editionInput.value.trim();
+        const version = versionInput.value.trim();
+        const geoDim = geoDimSelect.value;
+        const measureDim = measureDimSelect.value;
+        const timeDim = timeDimSelect.value;
+        if (!dataset || !edition || !version) {
+          optionMeta.textContent = "Dataset, edition, and version are required.";
+          return;
+        }
+        if (!geoDim || !measureDim || !timeDim) {
+          optionMeta.textContent = "Select geography, measure, and time dimensions.";
+          return;
+        }
+        try {
+          const [geoRes, measureRes, timeRes] = await Promise.all([
+            requestToolStrict("ons_codes.options", { dataset, edition, version, dimension: geoDim }),
+            requestToolStrict("ons_codes.options", { dataset, edition, version, dimension: measureDim }),
+            requestToolStrict("ons_codes.options", { dataset, edition, version, dimension: timeDim }),
+          ]);
+          const geoOptionsList = geoRes?.data?.options || geoRes?.options || [];
+          const measureOptions = measureRes?.data?.options || measureRes?.options || [];
+          const timeOptions = timeRes?.data?.options || timeRes?.options || [];
+          optionMeta.textContent = `Areas: ${geoOptionsList.length}, Measures: ${measureOptions.length}, Time: ${timeOptions.length}`;
+          renderGeoOptions(geoOptionsList.slice(0, 50));
+          populateSelect(measureSelect, measureOptions.slice(0, 100), "Select a measure");
+          populateSelect(timeSelect, timeOptions.slice(0, 100), "Select a time");
+        } catch (err) {
+          optionMeta.textContent = err?.message || "Failed to load options.";
+        }
+      }
+
+      async function runComparison() {
+        queryError.style.display = "none";
+        const dataset = datasetInput.value.trim();
+        const edition = editionInput.value.trim();
+        const version = versionInput.value.trim();
+        const measure = measureSelect.value;
+        const time = timeSelect.value;
+        const geos = Array.from(state.selectedAreas).slice(0, 10);
+        if (!dataset || !edition || !version || !measure || !time || geos.length === 0) {
+          queryError.textContent = "Pick dataset/edition/version, measure, time, and at least one area.";
+          queryError.style.display = "block";
+          return;
+        }
+        const series = [];
+        for (const geo of geos) {
+          try {
+            const response = await requestToolStrict("ons_data.query", {
+              dataset,
+              edition,
+              version,
+              geography: geo,
+              measure,
+              timeRange: time,
+              limit: 1,
+              page: 1,
+            });
+            const results = response?.data?.results || response?.results || [];
+            const value = observationValue(results[0]);
+            if (value !== null) {
+              series.push({ area: geo, value });
+            }
+          } catch (err) {
+            queryError.textContent = "Query failed for some areas.";
+            queryError.style.display = "block";
+          }
+        }
+        renderSeries(series);
+      }
+
+      function applyConfig(config) {
+        if (!config || typeof config !== "object") {
+          return;
+        }
+        const payload = { ...config };
+        if (payload.tool) {
+          delete payload.tool;
+        }
+        if (payload.dataset) {
+          datasetInput.value = payload.dataset;
+        }
+        if (payload.areaCodes && Array.isArray(payload.areaCodes)) {
+          payload.areaCodes.forEach((code) => state.selectedAreas.add(code));
+        }
+        if (payload.measure) {
+          measureSelect.value = payload.measure;
+        }
+      }
+
+      window.addEventListener("message", (event) => {
+        if (!event || !event.data || typeof event.data !== "object") {
+          return;
+        }
+        const message = event.data;
+        if (message.jsonrpc !== "2.0") {
+          return;
+        }
+        payload.textContent = JSON.stringify(message, null, 2);
+        if (message.id !== undefined && (message.result !== undefined || message.error)) {
+          const pending = pendingCalls.get(message.id);
+          if (pending) {
+            pendingCalls.delete(message.id);
+            if (message.error) {
+              pending.reject(new Error(message.error.message || "RPC error"));
+            } else {
+              pending.resolve(message.result);
+            }
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/tool-input") {
+          applyConfig(message.params?.arguments || {});
+          return;
+        }
+        if (message.method === "ui/notifications/host-context-changed") {
+          return;
+        }
+      });
+
+      datasetSearchButton.addEventListener("click", () => {
+        state.datasetOffset = 0;
+        searchDatasets();
+      });
+      datasetLimit.addEventListener("change", () => {
+        state.datasetOffset = 0;
+      });
+      datasetPrev.addEventListener("click", () => {
+        const limit = Number(datasetLimit.value || 20);
+        state.datasetOffset = Math.max(0, state.datasetOffset - limit);
+        searchDatasets();
+      });
+      datasetNext.addEventListener("click", () => {
+        const limit = Number(datasetLimit.value || 20);
+        if (state.datasetTotal && state.datasetOffset + limit >= state.datasetTotal) {
+          return;
+        }
+        state.datasetOffset += limit;
+        searchDatasets();
+      });
+      loadDimensions.addEventListener("click", loadDims);
+      loadEditions.addEventListener("click", loadEditionsList);
+      loadVersions.addEventListener("click", loadVersionsList);
+      loadOptions.addEventListener("click", loadDimOptions);
+      runQuery.addEventListener("click", runComparison);
+      datasetInput.addEventListener("change", () => {
+        refreshDatasetSelection();
+      });
+      editionInput.addEventListener("change", () => {
+        versionInput.value = "";
+        versionList.innerHTML = "";
+        versionMeta.textContent = "Load versions after selecting an edition.";
+      });
+
+      updateStatus("Awaiting host", false);
+
+      if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(() => {
+          rpcNotify("ui/notifications/size-changed", {
+            width: document.documentElement.scrollWidth,
+            height: document.documentElement.scrollHeight
+          });
+        });
+        resizeObserver.observe(document.body);
+      }
+
+      async function initializeUi() {
+        try {
+          await rpcCall("ui/initialize", {
+            appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] }
+          });
+          state.hostReady = true;
+          updateStatus("Host connected", true);
+          rpcNotify("ui/notifications/initialized", {});
+        } catch (err) {
+          updateStatus("Host connection failed", false);
+        }
+      }
+
+      initializeUi();
+    </script>
+  </body>
+</html>

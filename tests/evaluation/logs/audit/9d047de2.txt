@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 9d047de2
+Timestamp: 2026-01-20T20:49:48.903373
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Westminster data"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: statistics
+Confidence: 0.83
+Recommended Tool: ons_data.query
+Workflow Steps: ['ons_data.dimensions', 'ons_data.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: ons_data.query
+········································
+Timestamp: 2026-01-20T20:49:48.905947
+Duration: 1.2ms
+Status: SUCCESS
+
+Inputs:
+{'geography': 'K02000001', 'limit': 2}
+
+Outputs:
+{'results': [{'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q1', 'value': 525.1}, {'geography': 'K02000001', 'measure': 'chained_volume_measure', 'seasonalAdjustment': 'seasonally_adjusted', 'time': '2023 Q2', 'value': 526.3}], 'count': 5, 'limit': 2, 'page': 1, 'nextPageToken': '2'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Westminster data", "intent": "statistics", "confidence": 0.83, "recommended_tool": "ons_data.query", "recommended_parameters": {}, "explanation": "Query ONS observations; use dimensions to discover valid filters.", "workflow_steps": ["ons_data.dimensions", "ons_data.query"], "alternative_tools": ["ons_data.dimensions", "ons_search.query"], "guidance": "Use ons_data.dimensions to find valid filters, then ons_data.query for observations."}}, {"tool": "ons_data.query", "response": {"results": [{"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q1", "value": 525.1}, {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q2", "value": 526.3}], "count": 5, "limit": 2, "page": 1, "nextPageToken": "2"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 2.6ms
+Success: True

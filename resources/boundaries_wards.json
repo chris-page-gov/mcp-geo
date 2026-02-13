@@ -1,0 +1,13 @@
+{
+  "provenance": {
+    "source": "Sample Ward Boundaries (synthetic subset)",
+    "license": "Open Government Licence v3",
+    "version": "2025.11.03-alpha"
+  },
+  "features": [
+    {"code": "E05000644", "name": "St James's", "level": "WARD", "bbox": [-0.1405,51.5003,-0.1234,51.5092]},
+    {"code": "E05000645", "name": "West End", "level": "WARD", "bbox": [-0.1450,51.5090,-0.1290,51.5160]},
+    {"code": "E05010822", "name": "St Michael's", "level": "WARD", "bbox": [-1.5200,52.3960,-1.5000,52.4050]},
+    {"code": "E05009702", "name": "Jericho and Osney", "level": "WARD", "bbox": [-1.2750,51.7480,-1.2550,51.7600]}
+  ]
+}

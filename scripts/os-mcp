@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""Backward-compatible wrapper for the MCP stdio adapter.
+
+This thin wrapper preserves the original script path `scripts/os-mcp` used in tests,
+documentation, and `mcp.json` while delegating to the refactored module entry point
+`scripts.os_mcp.main`.
+"""
+from scripts.os_mcp import main as _main
+
+if __name__ == "__main__":  # pragma: no cover
+    _main()

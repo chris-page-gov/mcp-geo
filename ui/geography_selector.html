@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Geo - Geography Selector</title>
+    <link
+      rel="stylesheet"
+      href="vendor/maplibre-gl.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        --bg-1: #eef5f2;
+        --bg-2: #f6efe2;
+        --ink: #14201f;
+        --muted: #4b5a57;
+        --accent: #1a9b8b;
+        --accent-2: #f0a868;
+        --accent-3: #1c4f6d;
+        --panel: rgba(255, 255, 255, 0.88);
+        --line: rgba(20, 32, 31, 0.12);
+        --shadow: 0 20px 50px rgba(20, 32, 31, 0.18);
+        --radius: 18px;
+        --font-display: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+        --font-body: "IBM Plex Sans", "Space Grotesk", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font-body);
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 45%, var(--bg-2) 100%),
+          repeating-linear-gradient(45deg, rgba(20, 32, 31, 0.05) 0 1px, transparent 1px 18px);
+      }
+
+      .shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 28px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .title {
+        font-family: var(--font-display);
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 6px;
+        max-width: 520px;
+      }
+
+      .status-pill {
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(26, 155, 139, 0.12);
+        color: var(--accent);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
+        gap: 22px;
+        margin-top: 26px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 20px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: floatIn 0.7s ease-out;
+      }
+
+      .panel::after {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border-radius: 14px;
+        border: 1px dashed rgba(20, 32, 31, 0.08);
+        pointer-events: none;
+      }
+
+      .panel h3 {
+        margin: 0 0 12px;
+        font-size: 16px;
+        font-family: var(--font-display);
+      }
+
+      .control-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        animation-delay: 0.05s;
+      }
+
+      .map-panel {
+        min-height: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        animation-delay: 0.12s;
+      }
+
+      .pill-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--accent-3);
+        background: rgba(28, 79, 109, 0.12);
+      }
+
+      .section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .segment {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .segment button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .segment button.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        font-size: 14px;
+        background: #fff;
+        font-family: var(--font-body);
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: linear-gradient(120deg, var(--accent), #147d70);
+        color: #fff;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .results {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .result-card {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(20, 32, 31, 0.12);
+      }
+
+      .result-meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .result-error {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid #e2a7a7;
+        background: #fff0f0;
+        color: #8d2f2f;
+        font-size: 12px;
+      }
+
+      .selection-summary {
+        display: grid;
+        gap: 8px;
+        background: rgba(26, 155, 139, 0.08);
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .selection-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .selection-item {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .drag-box {
+        position: absolute;
+        border: 2px dashed rgba(26, 155, 139, 0.8);
+        background: rgba(26, 155, 139, 0.15);
+        pointer-events: none;
+        display: none;
+        z-index: 3;
+      }
+
+      .map-shell {
+        flex: 1;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        position: relative;
+        min-height: 380px;
+        background:
+          linear-gradient(140deg, rgba(26, 155, 139, 0.18), transparent 60%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(20, 32, 31, 0.08) 0px,
+            rgba(20, 32, 31, 0.08) 1px,
+            transparent 1px,
+            transparent 24px
+          );
+      }
+
+      #map {
+        position: absolute;
+        inset: 0;
+      }
+
+      .map-overlay {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+      }
+
+      .zoom-ladder {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .zoom-step {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(20, 32, 31, 0.08);
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .zoom-step.active {
+        background: rgba(26, 155, 139, 0.18);
+        color: var(--accent);
+      }
+
+      .layer-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+      }
+
+      .layer-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .layer-toggle input {
+        accent-color: var(--accent);
+      }
+
+      .debug-badges {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .debug-badge {
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(26, 155, 139, 0.12);
+        color: var(--accent);
+        font-size: 11px;
+        letter-spacing: 0.02em;
+      }
+
+      .payload {
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(20, 32, 31, 0.05);
+        font-size: 12px;
+        color: var(--muted);
+        height: 120px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      .diagnostics {
+        margin-top: 12px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .diagnostics-output {
+        height: 160px;
+      }
+
+      .cache-panel .cache-controls,
+      .cache-panel .cache-search {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+      }
+
+      .cache-panel input {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(15, 22, 21, 0.12);
+        font-size: 12px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      @keyframes floatIn {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1020px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div>
+          <div class="title">Geography Selector</div>
+          <div class="subtitle">
+            Progressive disclosure for UK geographies. Search by free text, postcode, UPRN, or area
+            name and surface the right boundaries as you zoom.
+          </div>
+        </div>
+        <div class="status-pill" id="status">Awaiting host</div>
+      </header>
+
+      <section class="grid">
+        <aside class="panel control-panel">
+          <div class="section">
+            <h3>Search mode</h3>
+            <div class="segment" id="modeButtons"></div>
+          </div>
+
+          <div class="section">
+            <div class="field">
+              <label for="queryInput">Search</label>
+              <input id="queryInput" placeholder="Enter area name, postcode, or UPRN" />
+            </div>
+            <div class="field">
+              <label for="levelSelect">Level focus</label>
+              <select id="levelSelect">
+                <option value="local_auth">Local Authority</option>
+                <option value="parl_const">Parliamentary Constituency</option>
+                <option value="ward">Ward</option>
+                <option value="msoa">MSOA</option>
+                <option value="lsoa">LSOA</option>
+                <option value="oa">OA</option>
+                <option value="built_up_area">Built-up Area</option>
+                <option value="postcode">Postcode</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="mapStyleSelect">Map style</label>
+              <select id="mapStyleSelect">
+                <option value="osm">OpenStreetMap (fallback)</option>
+                <optgroup label="OS VTS (EPSG:3857)">
+                  <option value="os_OS_VTS_3857_Light.json">OS Light</option>
+                  <option value="os_OS_VTS_3857_Dark.json">OS Dark</option>
+                  <option value="os_OS_VTS_3857_Road.json">OS Road</option>
+                  <option value="os_OS_VTS_3857_Outdoor.json">OS Outdoor</option>
+                  <option value="os_OS_VTS_3857_Greyscale.json">OS Greyscale</option>
+                  <option value="os_OS_VTS_3857_No_Labels.json">OS No Labels</option>
+                  <option value="os_OS_VTS_3857_Black_and_White.json">OS Black &amp; White</option>
+                  <option value="os_OS_VTS_3857_ESRI.json">OS ESRI</option>
+                  <option value="os_OS_VTS_3857_3D.json">OS 3D</option>
+                </optgroup>
+                <optgroup label="OS VTS OpenData (EPSG:3857)">
+                  <option value="os_OS_VTS_3857_Open_Light.json">OS Open Light</option>
+                  <option value="os_OS_VTS_3857_Open_Dark.json">OS Open Dark</option>
+                  <option value="os_OS_VTS_3857_Open_Road.json">OS Open Road</option>
+                  <option value="os_OS_VTS_3857_Open_Outdoor.json">OS Open Outdoor</option>
+                  <option value="os_OS_VTS_3857_Open_Greyscale.json">OS Open Greyscale</option>
+                  <option value="os_OS_VTS_3857_Open_Black_and_White.json">OS Open Black &amp; White</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="field">
+              <label for="mapOpacity">Map opacity</label>
+              <input id="mapOpacity" type="range" min="0.15" max="1" step="0.05" value="0.8" />
+            </div>
+            <div class="result-meta">Tip: Ctrl/Cmd-click results to multi-select UPRNs.</div>
+            <button class="cta" id="searchButton" type="button">Run search</button>
+          </div>
+
+          <div class="section">
+            <h3>Results</h3>
+            <div class="results" id="results"></div>
+          </div>
+
+          <div class="section">
+            <h3>Selection mode</h3>
+            <div class="segment" id="selectionModeButtons"></div>
+            <div class="result-meta">Drag on map to add/remove from selection.</div>
+          </div>
+
+          <div class="section">
+            <h3>Selected geography</h3>
+            <div class="selection-summary" id="selectionSummary">
+              <div class="result-meta">No selection yet.</div>
+            </div>
+            <button class="cta" id="sendSelection" type="button">Send selection</button>
+            <button class="ghost" id="clearSelection" type="button">Clear selection</button>
+          </div>
+
+          <div class="section">
+            <h3>Host payload</h3>
+            <div id="payload" class="payload">Waiting for MCP host payload...</div>
+          </div>
+        </aside>
+
+        <div class="panel map-panel">
+          <div class="pill-row">
+            <span class="pill">OS Vector Tiles ready</span>
+            <span class="pill">MasterMap depth at zoom 15+</span>
+            <span class="pill">Boundaries + AddressBase layers</span>
+          </div>
+          <div class="map-shell">
+            <div id="map"></div>
+            <div id="dragBox" class="drag-box"></div>
+            <div class="map-overlay">
+              <div><strong>Zoom ladder</strong></div>
+              <div class="zoom-ladder" id="zoomLadder"></div>
+            </div>
+          </div>
+          <div class="section">
+            <h3>Layers</h3>
+            <div class="layer-list" id="layerList"></div>
+            <div class="debug-badges" id="debugBadges"></div>
+            <div class="diagnostics">
+              <div class="result-meta">Diagnostics</div>
+              <pre id="diagnostics" class="payload diagnostics-output">Waiting for map diagnostics...</pre>
+            </div>
+            <div class="diagnostics cache-panel">
+              <div class="result-meta">Cache status</div>
+              <div class="cache-controls">
+                <button id="cacheStatusButton" class="primary-outline">Load cache status</button>
+                <button id="cacheRefreshButton" class="primary-outline">Refresh cache</button>
+              </div>
+              <div class="cache-search">
+                <input id="cacheSearchInput" type="text" placeholder="Search cache (name or id)" />
+                <input id="cacheLevelInput" type="text" placeholder="Level (optional)" />
+                <button id="cacheSearchButton" class="primary-outline">Search cache</button>
+              </div>
+              <pre id="cacheStatus" class="payload diagnostics-output">Cache status not loaded.</pre>
+              <pre id="cacheSearchResults" class="payload diagnostics-output">Cache search results will appear here.</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="vendor/maplibre-gl.js"></script>
+    <script>
+      const modes = [
+        { id: "free", label: "Free text", tool: "os_places.search" },
+        { id: "area", label: "Area name", tool: "admin_lookup.find_by_name" },
+        { id: "postcode", label: "Postcode", tool: "os_places.by_postcode" },
+        { id: "uprn", label: "UPRN", tool: "os_places.by_uprn" },
+        { id: "gss", label: "GSS code", tool: "admin_lookup.area_geometry" },
+      ];
+
+      const zoomSteps = [
+        { min: 0, label: "Nation / Region" },
+        { min: 6, label: "Local Authority" },
+        { min: 9, label: "Wards" },
+        { min: 11, label: "MSOA / LSOA" },
+        { min: 13, label: "Output Areas" },
+        { min: 15, label: "Buildings / UPRN" },
+      ];
+
+      const layerDefinitions = [
+        { id: "boundaries", label: "Boundaries", color: "#1a9b8b" },
+        { id: "addresses", label: "Address Points", color: "#f0a868" },
+      ];
+      const vectorSrs = "3857";
+      const POSTCODE_REGEX = /^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$/;
+
+      const defaultMode = modes.find((mode) => mode.id === "free") || modes[0];
+      const state = {
+        mode: defaultMode,
+        map: null,
+        sourcesReady: false,
+        sourcesInitializing: false,
+        mapMutationQueue: new Map(),
+        selection: null,
+        hostReady: false,
+        vectorTiles: null,
+        selectedAddresses: new Map(),
+        selectedAreas: new Map(),
+        containingAreasCache: new Map(),
+        areaGeometryCache: new Map(),
+        addressResults: [],
+        boundaryFeatures: [],
+        addressPointCount: 0,
+        resultCount: 0,
+        lastMapError: null,
+        lastMapErrorDetail: null,
+        adminLookupStatus: null,
+        adminLookupDetail: null,
+        adminLookupMeta: null,
+        lastSourceEvent: null,
+        sourceLoaded: {
+          boundaries: null,
+          addresses: null,
+        },
+        layerVisibility: {
+          boundaries: true,
+          addresses: true,
+        },
+        selectionMode: "pan",
+        sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      };
+
+      const statusEl = document.getElementById("status");
+      const modeButtons = document.getElementById("modeButtons");
+      const selectionModeButtons = document.getElementById("selectionModeButtons");
+      const queryInput = document.getElementById("queryInput");
+      const levelSelect = document.getElementById("levelSelect");
+      const resultsEl = document.getElementById("results");
+      const selectionEl = document.getElementById("selectionSummary");
+      const payloadEl = document.getElementById("payload");
+      const zoomLadderEl = document.getElementById("zoomLadder");
+      const layerListEl = document.getElementById("layerList");
+      const debugBadgesEl = document.getElementById("debugBadges");
+      const diagnosticsEl = document.getElementById("diagnostics");
+      const cacheStatusEl = document.getElementById("cacheStatus");
+      const cacheSearchResultsEl = document.getElementById("cacheSearchResults");
+      const cacheStatusButton = document.getElementById("cacheStatusButton");
+      const cacheRefreshButton = document.getElementById("cacheRefreshButton");
+      const cacheSearchButton = document.getElementById("cacheSearchButton");
+      const cacheSearchInput = document.getElementById("cacheSearchInput");
+      const cacheLevelInput = document.getElementById("cacheLevelInput");
+      const mapStyleSelect = document.getElementById("mapStyleSelect");
+      const mapOpacity = document.getElementById("mapOpacity");
+      const clearSelectionButton = document.getElementById("clearSelection");
+      const dragBox = document.getElementById("dragBox");
+
+      const pendingCalls = new Map();
+      let rpcId = 0;
+      let diagnosticsFrame = null;
+      let mapMutationFlushScheduled = false;
+
+      function postToHost(message) {
+        if (window.parent) {
+          window.parent.postMessage(message, "*");
+        }
+      }
+
+      function rpcCall(method, params) {
+        rpcId += 1;
+        const id = rpcId;
+        postToHost({ jsonrpc: "2.0", id, method, params });
+        return new Promise((resolve, reject) => {
+          pendingCalls.set(id, { resolve, reject });
+          setTimeout(() => {
+            if (pendingCalls.has(id)) {
+              pendingCalls.delete(id);
+              reject(new Error("RPC timeout"));
+            }
+          }, 15000);
+        });
+      }
+
+      function rpcNotify(method, params) {
+        postToHost({ jsonrpc: "2.0", method, params });
+      }
+
+      function sanitizeToolName(toolName) {
+        if (typeof toolName !== "string") {
+          return toolName;
+        }
+        return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
+      }
+
+      async function requestTool(tool, args) {
+        try {
+          return await rpcCall("tools/call", { name: tool, arguments: args || {} });
+        } catch (err) {
+          const message = String(err?.message || "");
+          const sanitized = sanitizeToolName(tool);
+          const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
+          if (sanitized && sanitized !== tool && looksMissing) {
+            return await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+          }
+          throw err;
+        }
+      }
+
+      function buildSegmentButtons() {
+        modes.forEach((mode) => {
+          const btn = document.createElement("button");
+          btn.textContent = mode.label;
+          btn.addEventListener("click", () => {
+            state.mode = mode;
+            document.querySelectorAll(".segment button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            logUiEvent("mode_change", { mode: mode.id });
+            scheduleDiagnosticsUpdate();
+          });
+          if (mode === state.mode) {
+            btn.classList.add("active");
+          }
+          modeButtons.appendChild(btn);
+        });
+      }
+
+      function buildSelectionModeButtons() {
+        const modes = [
+          { id: "pan", label: "Pan" },
+          { id: "add", label: "Add (+)" },
+          { id: "remove", label: "Remove (-)" },
+        ];
+        modes.forEach((mode) => {
+          const btn = document.createElement("button");
+          btn.textContent = mode.label;
+          btn.addEventListener("click", () => {
+            state.selectionMode = mode.id;
+            selectionModeButtons.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+          });
+          if (mode.id === state.selectionMode) {
+            btn.classList.add("active");
+          }
+          selectionModeButtons.appendChild(btn);
+        });
+      }
+
+      function buildZoomLadder() {
+        zoomSteps.forEach((step) => {
+          const chip = document.createElement("div");
+          chip.className = "zoom-step";
+          chip.textContent = step.label;
+          chip.addEventListener("click", () => {
+            if (state.map) {
+              state.map.easeTo({ zoom: step.min, duration: 500 });
+            }
+          });
+          zoomLadderEl.appendChild(chip);
+          step.el = chip;
+        });
+      }
+
+      function updateZoomLadder(zoom) {
+        zoomSteps.forEach((step) => {
+          const active = zoom >= step.min && (!step.max || zoom < step.max);
+          step.el.classList.toggle("active", active);
+        });
+      }
+
+      function buildLayerToggles() {
+        layerDefinitions.forEach((layer) => {
+          const wrapper = document.createElement("label");
+          wrapper.className = "layer-toggle";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = true;
+          state.layerVisibility[layer.id] = true;
+          input.addEventListener("change", () => toggleLayer(layer.id, input.checked));
+          const span = document.createElement("span");
+          span.textContent = layer.label;
+          wrapper.appendChild(input);
+          wrapper.appendChild(span);
+          layerListEl.appendChild(wrapper);
+        });
+      }
+
+      function applyLayerVisibility() {
+        if (!state.map) {
+          return;
+        }
+        Object.entries(state.layerVisibility).forEach(([layerId, isVisible]) => {
+          toggleLayer(layerId, Boolean(isVisible));
+        });
+      }
+
+      function scheduleDiagnosticsUpdate() {
+        if (diagnosticsFrame) {
+          return;
+        }
+        const run = () => {
+          diagnosticsFrame = null;
+          updateDebugBadges();
+          updateDiagnostics();
+        };
+        if (typeof requestAnimationFrame === "function") {
+          diagnosticsFrame = requestAnimationFrame(run);
+        } else {
+          diagnosticsFrame = setTimeout(run, 0);
+        }
+      }
+
+      function updateDebugBadges() {
+        if (!debugBadgesEl) {
+          return;
+        }
+        const mode = state.mode?.label || state.mode?.id || "unknown";
+        const addrCount = state.addressResults.length;
+        const cardCount = state.resultCount || 0;
+        const pointCount = state.addressPointCount || 0;
+        const boundaryCount = state.boundaryFeatures.length;
+        const maplibreStatus = window.maplibregl ? (state.map ? "ready" : "loaded") : "missing";
+        const sources = state.sourcesReady
+          ? "ready"
+          : state.sourcesInitializing
+          ? "loading"
+          : maplibreStatus === "missing"
+          ? "blocked"
+          : "idle";
+        const addressLayer = state.map?.getLayer?.("addresses-circle")
+          ? state.map.getLayoutProperty("addresses-circle", "visibility") || "visible"
+          : "missing";
+        const boundaryLayer = state.map?.getLayer?.("boundaries-fill")
+          ? state.map.getLayoutProperty("boundaries-fill", "visibility") || "visible"
+          : "missing";
+        const errorLabel = state.lastMapError
+          ? `Error: ${String(state.lastMapError).slice(0, 40)}`
+          : null;
+        const adminLookupLabel = state.adminLookupStatus
+          ? `Admin lookup: ${state.adminLookupStatus.replace(/_/g, " ")}`
+          : null;
+        const style = mapStyleSelect?.value || "n/a";
+        debugBadgesEl.innerHTML = `
+          <span class="debug-badge">Mode: ${mode}</span>
+          <span class="debug-badge">Cards: ${cardCount}</span>
+          <span class="debug-badge">Addresses: ${addrCount}</span>
+          <span class="debug-badge">UPRN dots: ${pointCount}</span>
+          <span class="debug-badge">Boundaries: ${boundaryCount}</span>
+          <span class="debug-badge">Sources: ${sources}</span>
+          <span class="debug-badge">MapLibre: ${maplibreStatus}</span>
+          <span class="debug-badge">Addr layer: ${addressLayer}</span>
+          <span class="debug-badge">Boundary layer: ${boundaryLayer}</span>
+          ${adminLookupLabel ? `<span class="debug-badge">${adminLookupLabel}</span>` : ""}
+          ${errorLabel ? `<span class="debug-badge">${errorLabel}</span>` : ""}
+          <span class="debug-badge">Style: ${style}</span>
+        `;
+      }
+
+      function redactSecrets(text) {
+        if (!text) {
+          return text;
+        }
+        let out = String(text);
+        out = out.replace(
+          /([?&](?:key|api_key|apikey|token|access_token|authorization)=)[^&#\s]+/gi,
+          "$1REDACTED"
+        );
+        out = out.replace(/\b(Bearer)\s+[A-Za-z0-9\-._~+/]+=*/gi, "$1 REDACTED");
+        out = out.replace(/\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
+        return out;
+      }
+
+      function getSourceFeatureCount(source) {
+        if (!source) {
+          return null;
+        }
+        const data = source._data || source._options?.data;
+        if (data && Array.isArray(data.features)) {
+          return data.features.length;
+        }
+        return null;
+      }
+
+      function setAdminLookupStatus(status, detail, meta) {
+        state.adminLookupStatus = status;
+        state.adminLookupDetail = detail || null;
+        state.adminLookupMeta = meta || null;
+        scheduleDiagnosticsUpdate();
+      }
+
+      function updateAdminLookupStatusFromMeta(meta) {
+        if (!meta || typeof meta !== "object") {
+          return;
+        }
+        if (meta.source === "cache" || meta.fallback) {
+          setAdminLookupStatus("fallback_path", "Using cached boundaries", meta);
+          return;
+        }
+        if (meta.allFailed) {
+          setAdminLookupStatus("all_sources_failed", "All live sources failed", meta);
+          return;
+        }
+        if (meta.partial) {
+          setAdminLookupStatus("partial_live_results", "Partial live results", meta);
+          return;
+        }
+        if (meta.geometryMissing) {
+          setAdminLookupStatus("bbox_fallback", "Geometry missing, using bbox", meta);
+          return;
+        }
+        setAdminLookupStatus("live_ok", "Live sources ok", meta);
+      }
+
+      function getRenderedFeatureCount(layerId) {
+        if (!state.map || !state.map.getLayer(layerId)) {
+          return null;
+        }
+        const canvas = state.map.getCanvas();
+        const width = canvas?.width || 0;
+        const height = canvas?.height || 0;
+        if (!width || !height) {
+          return null;
+        }
+        try {
+          const bbox = [
+            [0, 0],
+            [width, height],
+          ];
+          return state.map.queryRenderedFeatures(bbox, { layers: [layerId] }).length;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function summarizeCoordinates(addresses) {
+        let minLat = Infinity;
+        let maxLat = -Infinity;
+        let minLon = Infinity;
+        let maxLon = -Infinity;
+        let valid = 0;
+        let invalid = 0;
+        addresses.forEach((entry) => {
+          const lat = Number(entry.lat ?? entry.latitude);
+          const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            invalid += 1;
+            return;
+          }
+          valid += 1;
+          minLat = Math.min(minLat, lat);
+          maxLat = Math.max(maxLat, lat);
+          minLon = Math.min(minLon, lon);
+          maxLon = Math.max(maxLon, lon);
+        });
+        if (!valid) {
+          return { valid, invalid, range: null };
+        }
+        const outOfRange =
+          Math.abs(minLat) > 90 ||
+          Math.abs(maxLat) > 90 ||
+          Math.abs(minLon) > 180 ||
+          Math.abs(maxLon) > 180;
+        return {
+          valid,
+          invalid,
+          range: {
+            lat: [Number(minLat.toFixed(6)), Number(maxLat.toFixed(6))],
+            lon: [Number(minLon.toFixed(6)), Number(maxLon.toFixed(6))],
+          },
+          outOfRange,
+        };
+      }
+
+      function countPointsInView(addresses, bounds) {
+        if (!bounds) {
+          return null;
+        }
+        let inView = 0;
+        addresses.forEach((entry) => {
+          const lat = Number(entry.lat ?? entry.latitude);
+          const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            return;
+          }
+          if (lon >= bounds.west && lon <= bounds.east && lat >= bounds.south && lat <= bounds.north) {
+            inView += 1;
+          }
+        });
+        return inView;
+      }
+
+      function coordinateCacheKey(lat, lon) {
+        const latNum = Number(lat);
+        const lonNum = Number(lon);
+        if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
+          return null;
+        }
+        return `${latNum.toFixed(5)},${lonNum.toFixed(5)}`;
+      }
+
+      function findFocusMatch(results, focusLevel) {
+        if (!Array.isArray(results) || !focusLevel) {
+          return null;
+        }
+        return results.find(
+          (entry) => String(entry.level || "").toLowerCase() === focusLevel.toLowerCase()
+        );
+      }
+
+      async function fetchContainingAreas(lat, lon) {
+        const key = coordinateCacheKey(lat, lon);
+        if (!key) {
+          return [];
+        }
+        if (state.containingAreasCache.has(key)) {
+          return state.containingAreasCache.get(key) || [];
+        }
+        const data = await adminLookupService.containingAreas(lat, lon);
+        updateAdminLookupStatusFromMeta(data?.meta);
+        const results = Array.isArray(data?.results) ? data.results : [];
+        state.containingAreasCache.set(key, results);
+        return results;
+      }
+
+      async function fetchAreaGeometry(id) {
+        if (!id) {
+          return null;
+        }
+        if (state.areaGeometryCache.has(id)) {
+          return state.areaGeometryCache.get(id);
+        }
+        let geo = null;
+        try {
+          const zoom = state.map ? state.map.getZoom() : null;
+          geo = await adminLookupService.areaGeometry(id, true, zoom);
+          updateAdminLookupStatusFromMeta(geo?.meta);
+        } catch (err) {
+          state.lastMapError = err?.message || "Boundary geometry fetch failed";
+          if (err?.code === "ADMIN_LOOKUP_API_ERROR") {
+            updateAdminLookupStatusFromMeta(err?.details?.meta || { allFailed: true });
+          }
+          const zoom = state.map ? state.map.getZoom() : null;
+          geo = await adminLookupService.areaGeometry(id, false, zoom);
+          updateAdminLookupStatusFromMeta(geo?.meta);
+        }
+        const record = geo
+          ? {
+              id,
+              name: geo.name || null,
+              level: geo.level || null,
+              geometry: geo.geometry || null,
+              bbox: geo.bbox || null,
+            }
+          : null;
+        if (record && (record.geometry || record.bbox)) {
+          state.areaGeometryCache.set(id, record);
+        }
+        return record;
+      }
+
+      function updateDiagnostics() {
+        if (!diagnosticsEl) {
+          return;
+        }
+        const map = state.map;
+        let center = null;
+        let bounds = null;
+        let styleLoaded = null;
+        let mapLoaded = null;
+        let tilesLoaded = null;
+        if (map) {
+          try {
+            const c = map.getCenter();
+            center = { lng: Number(c.lng.toFixed(6)), lat: Number(c.lat.toFixed(6)) };
+          } catch (err) {
+            center = null;
+          }
+          try {
+            const b = map.getBounds();
+            bounds = {
+              west: Number(b.getWest().toFixed(6)),
+              south: Number(b.getSouth().toFixed(6)),
+              east: Number(b.getEast().toFixed(6)),
+              north: Number(b.getNorth().toFixed(6)),
+            };
+          } catch (err) {
+            bounds = null;
+          }
+          if (typeof map.isStyleLoaded === "function") {
+            styleLoaded = map.isStyleLoaded();
+          }
+          if (typeof map.loaded === "function") {
+            mapLoaded = map.loaded();
+          }
+          if (typeof map.areTilesLoaded === "function") {
+            tilesLoaded = map.areTilesLoaded();
+          }
+        }
+        const coordsSummary = summarizeCoordinates(state.addressResults);
+        const inViewCount = countPointsInView(state.addressResults, bounds);
+        const diagnostics = {
+          timestamp: new Date().toISOString(),
+          mode: state.mode?.id || "unknown",
+          style: mapStyleSelect?.value || "n/a",
+          maplibre: window.maplibregl ? (map ? "ready" : "loaded") : "missing",
+          workerUrl: window.maplibregl?.workerUrl || null,
+          styleLoaded,
+          mapLoaded,
+          tilesLoaded,
+          center,
+          bounds,
+          zoom: map ? Number(map.getZoom().toFixed(2)) : null,
+          sources: {
+            ready: state.sourcesReady,
+            initializing: state.sourcesInitializing,
+            boundaries: getSourceFeatureCount(map?.getSource("boundaries")),
+            addresses: getSourceFeatureCount(map?.getSource("addresses")),
+          },
+          sourceLoaded: state.sourceLoaded,
+          lastSourceEvent: state.lastSourceEvent,
+          rendered: {
+            boundaries: getRenderedFeatureCount("boundaries-fill"),
+            addresses: getRenderedFeatureCount("addresses-circle"),
+          },
+          data: {
+            addressCount: state.addressResults.length,
+            addressPoints: state.addressPointCount,
+            boundaryCount: state.boundaryFeatures.length,
+            coordinates: coordsSummary,
+            inView: inViewCount,
+          },
+          adminLookup: {
+            status: state.adminLookupStatus || null,
+            detail: state.adminLookupDetail || null,
+            meta: state.adminLookupMeta || null,
+          },
+          lastMapError: state.lastMapError || null,
+          lastMapErrorDetail: state.lastMapErrorDetail || null,
+        };
+        diagnosticsEl.textContent = JSON.stringify(diagnostics, null, 2);
+      }
+
+      async function loadCacheStatus(refresh = false) {
+        if (!cacheStatusEl) {
+          return;
+        }
+        cacheStatusEl.textContent = "Loading cache status...";
+        try {
+          const data = await safeToolCall("admin_lookup.get_cache_status", { refresh });
+          cacheStatusEl.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          cacheStatusEl.textContent = JSON.stringify(
+            { error: err?.message || "Cache status failed", details: err?.details || null },
+            null,
+            2
+          );
+        }
+      }
+
+      async function searchCache() {
+        if (!cacheSearchResultsEl) {
+          return;
+        }
+        const query = cacheSearchInput?.value?.trim() || "";
+        const level = cacheLevelInput?.value?.trim() || "";
+        cacheSearchResultsEl.textContent = "Searching cache...";
+        try {
+          const data = await safeToolCall("admin_lookup.search_cache", {
+            query: query || undefined,
+            level: level || undefined,
+            limit: 25,
+            includeGeometry: false,
+          });
+          cacheSearchResultsEl.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          cacheSearchResultsEl.textContent = JSON.stringify(
+            { error: err?.message || "Cache search failed", details: err?.details || null },
+            null,
+            2
+          );
+        }
+      }
+
+      function rewriteOsRequest(url) {
+        const proxyBase = state.proxyBase;
+          if (!proxyBase) {
+            return null;
+          }
+        try {
+          const resolved = new URL(url, proxyBase);
+          const proxyOrigin = new URL(proxyBase).origin;
+          const isOsApi = resolved.hostname === "api.os.uk";
+          const isProxy = resolved.origin === proxyOrigin;
+          if (!isOsApi && !isProxy) {
+            return null;
+          }
+          // Local-first: do not accept secrets from the UI. Proxy OS vector tiles through the MCP server,
+          // which injects OS_API_KEY server-side.
+          if (isOsApi && resolved.pathname.startsWith("/maps/vector/v1/")) {
+            const rel = resolved.pathname.replace("/maps/vector/v1/", "");
+            const proxied = new URL(proxyBase);
+            proxied.pathname = `/maps/vector/${rel}`;
+            proxied.search = resolved.search;
+            resolved.href = proxied.href;
+          }
+          if (resolved.pathname.includes("/maps/vector/vts") && !resolved.searchParams.has("srs")) {
+            resolved.searchParams.set("srs", vectorSrs);
+          }
+          return resolved.toString();
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function initMap() {
+        if (!window.maplibregl) {
+          return;
+        }
+        const proxyBase = state.proxyBase;
+        const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
+        const shouldUseLocalWorker =
+          window.location.protocol === "file:" || window.location.origin === "null";
+        maplibregl.workerUrl =
+          shouldUseLocalWorker || !proxyBase
+            ? localWorkerUrl
+            : `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+        const fallbackStyle = {
+          version: 8,
+          sources: {},
+          layers: [{ id: "background", type: "background", paint: { "background-color": "#f3f0e9" } }],
+        };
+        state.map = new maplibregl.Map({
+          container: "map",
+          style: fallbackStyle,
+          center: [-0.135, 51.503],
+          zoom: 11,
+          transformRequest: (url) => {
+            const rewritten = rewriteOsRequest(url);
+            if (rewritten) {
+              return { url: rewritten };
+            }
+            return undefined;
+          },
+        });
+        state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
+        state.map.on("load", () => {
+          addSourcesAndLayers();
+          updateZoomLadder(state.map.getZoom());
+          state.map.resize();
+          scheduleDiagnosticsUpdate();
+        });
+        state.map.on("error", (event) => {
+          if (event?.error) {
+            state.lastMapError = redactSecrets(event.error.message || "Map error");
+            state.lastMapErrorDetail = {
+              message: redactSecrets(event.error.message || "Map error"),
+              name: event.error.name || null,
+              sourceId: event.sourceId || null,
+              resourceType: event.resourceType || null,
+              tile: event.tile
+                ? { x: event.tile.x, y: event.tile.y, z: event.tile.z }
+                : null,
+            };
+            scheduleDiagnosticsUpdate();
+          }
+        });
+        state.map.on("sourcedata", (event) => {
+          if (!event || !event.sourceId) {
+            return;
+          }
+          if (event.sourceId === "boundaries" || event.sourceId === "addresses") {
+            try {
+              state.sourceLoaded[event.sourceId] = state.map.isSourceLoaded(event.sourceId);
+            } catch (err) {
+              state.sourceLoaded[event.sourceId] = null;
+            }
+          }
+          state.lastSourceEvent = {
+            sourceId: event.sourceId,
+            type: event.type,
+            isSourceLoaded: event.isSourceLoaded ?? null,
+            dataType: event.dataType || null,
+            sourceDataType: event.sourceDataType || null,
+            time: new Date().toISOString(),
+          };
+          scheduleDiagnosticsUpdate();
+        });
+        state.map.on("style.load", () => {
+          state.lastMapError = null;
+          state.lastMapErrorDetail = null;
+          addSourcesAndLayers();
+          scheduleMapMutationFlush();
+          state.map.resize();
+          scheduleDiagnosticsUpdate();
+        });
+        state.map.on("moveend", () => scheduleDiagnosticsUpdate());
+        state.map.on("idle", () => scheduleDiagnosticsUpdate());
+        state.map.on("zoom", () => updateZoomLadder(state.map.getZoom()));
+        state.map.on("mousemove", (event) => {
+          if (!state.map.getLayer("boundaries-fill")) {
+            setHoverBoundary(null);
+            return;
+          }
+          const features = state.map.queryRenderedFeatures(event.point, { layers: ["boundaries-fill"] });
+          if (features && features.length) {
+            setHoverBoundary(features[0]);
+          } else {
+            setHoverBoundary(null);
+          }
+        });
+        state.map.on("click", (event) => {
+          const rawEvent = event.originalEvent || event;
+          const addresses = state.map.getLayer("addresses-circle")
+            ? state.map.queryRenderedFeatures(event.point, { layers: ["addresses-circle"] })
+            : [];
+          if (addresses.length) {
+            const addressProps = addresses[0].properties || {};
+            if (addressProps.uprn && state.selectedAddresses.has(addressProps.uprn) && !(rawEvent.ctrlKey || rawEvent.metaKey)) {
+              updateSelectedAddressesLayer();
+            }
+            selectResult(
+              { title: addressProps.address || addressProps.uprn || "Address", subtitle: "UPRN", meta: addressProps.uprn, addresses: [addressProps] },
+              rawEvent
+            );
+            return;
+          }
+          const boundaries = state.map.getLayer("boundaries-fill")
+            ? state.map.queryRenderedFeatures(event.point, { layers: ["boundaries-fill"] })
+            : [];
+          if (boundaries.length) {
+            const boundaryProps = boundaries[0].properties || {};
+            selectResult(
+              { id: boundaryProps.id, name: boundaryProps.name, level: boundaryProps.level, title: boundaryProps.name, subtitle: boundaryProps.level, bbox: boundaryProps.bbox },
+              rawEvent
+            );
+          }
+        });
+        const canvas = state.map.getCanvasContainer();
+        let dragStart = null;
+        const onMouseMove = (event) => {
+          if (!dragStart) {
+            return;
+          }
+          const rect = canvas.getBoundingClientRect();
+          const current = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+          const minX = Math.min(dragStart.x, current.x);
+          const maxX = Math.max(dragStart.x, current.x);
+          const minY = Math.min(dragStart.y, current.y);
+          const maxY = Math.max(dragStart.y, current.y);
+          dragBox.style.display = "block";
+          dragBox.style.left = `${minX}px`;
+          dragBox.style.top = `${minY}px`;
+          dragBox.style.width = `${maxX - minX}px`;
+          dragBox.style.height = `${maxY - minY}px`;
+        };
+        const onMouseUp = (event) => {
+          if (!dragStart) {
+            return;
+          }
+          const rect = canvas.getBoundingClientRect();
+          const end = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+          dragBox.style.display = "none";
+          const box = [
+            [Math.min(dragStart.x, end.x), Math.min(dragStart.y, end.y)],
+            [Math.max(dragStart.x, end.x), Math.max(dragStart.y, end.y)],
+          ];
+          dragStart = null;
+          state.map.dragPan.enable();
+          const mode = state.selectionMode;
+          if (mode === "pan") {
+            return;
+          }
+          const addresses = state.map.getLayer("addresses-circle")
+            ? state.map.queryRenderedFeatures(box, { layers: ["addresses-circle"] })
+            : [];
+          addresses.forEach((feature) => {
+            const props = feature.properties || {};
+            const uprn = props.uprn || props.address;
+            if (!uprn) {
+              return;
+            }
+            if (mode === "add") {
+              state.selectedAddresses.set(uprn, props);
+            } else if (mode === "remove") {
+              state.selectedAddresses.delete(uprn);
+            }
+          });
+          updateSelectedAddressesLayer();
+          renderSelectionSummary();
+        };
+        canvas.addEventListener("mousedown", (event) => {
+          if (state.selectionMode === "pan") {
+            return;
+          }
+          state.map.dragPan.disable();
+          const rect = canvas.getBoundingClientRect();
+          dragStart = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp, { once: true });
+        });
+        document.addEventListener("mouseup", () => {
+          document.removeEventListener("mousemove", onMouseMove);
+        });
+      }
+
+      function addSourcesAndLayers() {
+        if (!state.map) {
+          return;
+        }
+        if (state.sourcesInitializing) {
+          return;
+        }
+        state.sourcesInitializing = true;
+        state.lastMapError = null;
+        if (typeof state.map.isStyleLoaded === "function" && !state.map.isStyleLoaded()) {
+          state.sourcesInitializing = false;
+          state.lastMapError = "Style not loaded";
+          scheduleDiagnosticsUpdate();
+          state.map.once("style.load", addSourcesAndLayers);
+          return;
+        }
+        try {
+          if (!state.map.getSource("boundaries")) {
+            state.map.addSource("boundaries", { type: "geojson", data: featureCollection([]) });
+          }
+          if (!state.map.getLayer("boundaries-fill")) {
+            state.map.addLayer({
+              id: "boundaries-fill",
+              type: "fill",
+              source: "boundaries",
+              paint: { "fill-color": "#1a9b8b", "fill-opacity": 0.3 },
+            });
+          }
+          if (!state.map.getLayer("boundaries-line")) {
+            state.map.addLayer({
+              id: "boundaries-line",
+              type: "line",
+              source: "boundaries",
+              paint: { "line-color": "#1a9b8b", "line-width": 2, "line-opacity": 0.9 },
+            });
+          }
+          if (!state.map.getSource("boundaries-hover")) {
+            state.map.addSource("boundaries-hover", { type: "geojson", data: featureCollection([]) });
+          }
+          if (!state.map.getLayer("boundaries-hover-line")) {
+            state.map.addLayer({
+              id: "boundaries-hover-line",
+              type: "line",
+              source: "boundaries-hover",
+              paint: { "line-color": "#ff7a2f", "line-width": 3 },
+            });
+          }
+
+          if (!state.map.getSource("addresses")) {
+            state.map.addSource("addresses", { type: "geojson", data: featureCollection([]) });
+          }
+          if (!state.map.getLayer("addresses-circle")) {
+            state.map.addLayer({
+              id: "addresses-circle",
+              type: "circle",
+              source: "addresses",
+              paint: { "circle-radius": 6, "circle-color": "#f0a868", "circle-stroke-width": 1, "circle-stroke-color": "#fff" },
+            });
+          }
+          if (!state.map.getSource("addresses-selected")) {
+            state.map.addSource("addresses-selected", { type: "geojson", data: featureCollection([]) });
+          }
+          if (!state.map.getLayer("addresses-selected")) {
+            state.map.addLayer({
+              id: "addresses-selected",
+              type: "circle",
+              source: "addresses-selected",
+              paint: {
+                "circle-radius": 8,
+                "circle-color": "#0b6c7d",
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "#fff",
+              },
+            });
+          }
+
+        } catch (err) {
+          state.sourcesInitializing = false;
+          state.lastMapError = err?.message || "Layer add failed";
+          scheduleDiagnosticsUpdate();
+          return;
+        }
+
+        state.sourcesReady = true;
+        state.sourcesInitializing = false;
+        updateBaseMapOpacity();
+        applyLayerVisibility();
+        scheduleMapMutationFlush();
+        if (state.addressResults.length) {
+          setAddresses(state.addressResults);
+          updateSelectedAddressesLayer();
+        }
+        if (state.boundaryFeatures.length) {
+          const boundarySource = state.map.getSource("boundaries");
+          if (boundarySource) {
+            boundarySource.setData(featureCollection(state.boundaryFeatures));
+          } else {
+            state.sourcesReady = false;
+          }
+        }
+        scheduleDiagnosticsUpdate();
+      }
+
+      function ensureOverlaySources() {
+        if (!state.map) {
+          return false;
+        }
+        const boundariesReady = state.map.getSource("boundaries");
+        const addressesReady = state.map.getSource("addresses");
+        const selectedReady = state.map.getSource("addresses-selected");
+        if (!boundariesReady || !addressesReady || !selectedReady) {
+          state.sourcesReady = false;
+        }
+        if (
+          (!state.sourcesReady || !boundariesReady || !addressesReady || !selectedReady) &&
+          !state.sourcesInitializing
+        ) {
+          addSourcesAndLayers();
+        }
+        return Boolean(state.sourcesReady && boundariesReady && addressesReady && selectedReady);
+      }
+
+      function enqueueMapMutation(key, handler) {
+        if (!state.mapMutationQueue) {
+          state.mapMutationQueue = new Map();
+        }
+        return new Promise((resolve) => {
+          state.mapMutationQueue.set(key, { handler, resolve });
+          scheduleMapMutationFlush();
+        });
+      }
+
+      function scheduleMapMutationFlush() {
+        if (mapMutationFlushScheduled) {
+          return;
+        }
+        mapMutationFlushScheduled = true;
+        Promise.resolve().then(() => {
+          mapMutationFlushScheduled = false;
+          void flushMapMutations();
+        });
+      }
+
+      async function flushMapMutations() {
+        if (!state.map || !state.sourcesReady || !state.mapMutationQueue?.size) {
+          return;
+        }
+        const pending = new Map(state.mapMutationQueue);
+        state.mapMutationQueue.clear();
+        for (const entry of pending.values()) {
+          try {
+            await entry.handler();
+            entry.resolve(true);
+          } catch (err) {
+            entry.resolve(false);
+          }
+        }
+      }
+
+      function toggleLayer(layerId, isVisible) {
+        if (!state.map) {
+          return;
+        }
+        state.layerVisibility[layerId] = isVisible;
+        const mapping = {
+          boundaries: ["boundaries-fill", "boundaries-line"],
+          addresses: ["addresses-circle"],
+        };
+        (mapping[layerId] || []).forEach((id) => {
+          if (state.map.getLayer(id)) {
+            state.map.setLayoutProperty(id, "visibility", isVisible ? "visible" : "none");
+          }
+        });
+        logUiEvent("layer_toggle", { layer: layerId, enabled: isVisible });
+      }
+
+      function featureCollection(features) {
+        return { type: "FeatureCollection", features };
+      }
+
+      function bboxToPolygon(bbox) {
+        const [minLon, minLat, maxLon, maxLat] = bbox;
+        return {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [minLon, minLat],
+              [maxLon, minLat],
+              [maxLon, maxLat],
+              [minLon, maxLat],
+              [minLon, minLat],
+            ]],
+          },
+        };
+      }
+
+      function arcgisGeometryToGeoJson(geometry) {
+        if (!geometry) {
+          return null;
+        }
+        if (geometry.type) {
+          if (geometry.type === "Feature") {
+            return geometry;
+          }
+          if (geometry.type === "FeatureCollection") {
+            return geometry.features && geometry.features.length ? geometry.features[0] : null;
+          }
+          if (geometry.coordinates) {
+            return { type: "Feature", properties: {}, geometry };
+          }
+        }
+        if (geometry.rings) {
+          return {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "Polygon", coordinates: geometry.rings },
+          };
+        }
+        if (geometry.x !== undefined && geometry.y !== undefined) {
+          return {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "Point", coordinates: [geometry.x, geometry.y] },
+          };
+        }
+        return null;
+      }
+
+      function geometryBounds(geometry) {
+        if (!geometry || !geometry.coordinates) {
+          return null;
+        }
+        const bounds = new maplibregl.LngLatBounds();
+        const extendCoords = (coords) => {
+          coords.forEach((coord) => bounds.extend(coord));
+        };
+        if (geometry.type === "Polygon") {
+          extendCoords(geometry.coordinates[0] || []);
+          return bounds;
+        }
+        if (geometry.type === "MultiPolygon") {
+          geometry.coordinates.forEach((polygon) => {
+            extendCoords(polygon[0] || []);
+          });
+          return bounds;
+        }
+        return null;
+      }
+
+      function setBoundaries(features) {
+        const polygons = features.map((f) => ({
+          ...bboxToPolygon(f.bbox),
+          properties: { name: f.name, level: f.level, id: f.id, bbox: f.bbox },
+        }));
+        state.boundaryFeatures = polygons;
+        scheduleDiagnosticsUpdate();
+        if (!ensureOverlaySources()) {
+          void enqueueMapMutation("boundaries", () => setBoundaries(features));
+          return;
+        }
+        const boundarySource = state.map?.getSource("boundaries");
+        if (!boundarySource) {
+          state.sourcesReady = false;
+          return;
+        }
+        if (!state.map || !state.sourcesReady) {
+          return;
+        }
+        boundarySource.setData(featureCollection(polygons));
+        if (polygons.length) {
+          const bounds = polygons.reduce((acc, poly) => {
+            const coords = poly.geometry.coordinates[0];
+            return coords.reduce((inner, coord) => inner.extend(coord), acc);
+          }, new maplibregl.LngLatBounds(polygons[0].geometry.coordinates[0][0], polygons[0].geometry.coordinates[0][0]));
+          state.map.fitBounds(bounds, { padding: 50, duration: 800 });
+        }
+      }
+
+      function setBoundaryGeometry(geometry) {
+        const feature = arcgisGeometryToGeoJson(geometry);
+        if (!feature) {
+          return;
+        }
+        state.boundaryFeatures = [feature];
+        scheduleDiagnosticsUpdate();
+        if (!ensureOverlaySources()) {
+          void enqueueMapMutation("boundary-geometry", () => setBoundaryGeometry(geometry));
+          return;
+        }
+        const boundarySource = state.map?.getSource("boundaries");
+        if (!boundarySource) {
+          state.sourcesReady = false;
+          return;
+        }
+        boundarySource.setData(featureCollection([feature]));
+        const bounds = geometryBounds(feature.geometry);
+        if (bounds) {
+          state.map.fitBounds(bounds, { padding: 50, duration: 800 });
+        }
+      }
+
+      function setHoverBoundary(feature) {
+        if (!state.map || !state.sourcesReady) {
+          void enqueueMapMutation("boundary-hover", () => setHoverBoundary(feature));
+          return;
+        }
+        const source = state.map.getSource("boundaries-hover");
+        if (!source) {
+          return;
+        }
+        if (!feature) {
+          source.setData(featureCollection([]));
+          return;
+        }
+        source.setData(featureCollection([feature]));
+      }
+
+      function setAddresses(addresses) {
+        state.addressResults = addresses;
+        const points = addresses
+          .map((a) => {
+            const lat = Number(a.lat ?? a.latitude);
+            const lon = Number(a.lon ?? a.longitude ?? a.lng);
+            if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+              return null;
+            }
+            return {
+              type: "Feature",
+              properties: a,
+              geometry: { type: "Point", coordinates: [lon, lat] },
+            };
+          })
+          .filter(Boolean);
+        state.addressPointCount = points.length;
+        scheduleDiagnosticsUpdate();
+        if (!ensureOverlaySources()) {
+          void enqueueMapMutation("addresses", () => setAddresses(addresses));
+          return;
+        }
+        const addressesSource = state.map?.getSource("addresses");
+        if (!addressesSource) {
+          state.sourcesReady = false;
+          return;
+        }
+        addressesSource.setData(featureCollection(points));
+        if (points.length) {
+          const bounds = points.reduce(
+            (acc, feature) => acc.extend(feature.geometry.coordinates),
+            new maplibregl.LngLatBounds(points[0].geometry.coordinates, points[0].geometry.coordinates)
+          );
+          state.map.fitBounds(bounds, { padding: 60, duration: 800, maxZoom: 17 });
+        }
+      }
+
+      function updateSelectedAddressesLayer() {
+        if (!ensureOverlaySources()) {
+          void enqueueMapMutation("addresses-selected", () => updateSelectedAddressesLayer());
+          return;
+        }
+        const selectedSource = state.map?.getSource("addresses-selected");
+        if (!selectedSource) {
+          state.sourcesReady = false;
+          return;
+        }
+        const points = [...state.selectedAddresses.values()]
+          .map((a) => {
+            const lat = Number(a.lat ?? a.latitude);
+            const lon = Number(a.lon ?? a.longitude ?? a.lng);
+            if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+              return null;
+            }
+            return {
+              type: "Feature",
+              properties: a,
+              geometry: { type: "Point", coordinates: [lon, lat] },
+            };
+          })
+          .filter(Boolean);
+        selectedSource.setData(featureCollection(points));
+        scheduleDiagnosticsUpdate();
+      }
+
+      function renderResults(items) {
+        resultsEl.innerHTML = "";
+        state.resultCount = items.length;
+        if (!items.length) {
+          resultsEl.innerHTML = '<div class="result-meta">No results yet.</div>';
+          scheduleDiagnosticsUpdate();
+          return;
+        }
+        items.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "result-card";
+          card.innerHTML = `<strong>${item.title}</strong><div class="result-meta">${item.subtitle}</div>`;
+          card.addEventListener("click", (event) => selectResult(item, event));
+          resultsEl.appendChild(card);
+        });
+        scheduleDiagnosticsUpdate();
+      }
+
+      function previewResults(items) {
+        if (state.map && !state.sourcesReady) {
+          addSourcesAndLayers();
+        }
+        const areas = items.filter((item) => item.bbox);
+        if (areas.length) {
+          mapAdapter.setBoundaries(areas);
+        }
+        const addresses = items.flatMap((item) => item.addresses || []);
+        if (addresses.length) {
+          state.addressResults = addresses;
+          mapAdapter.setAddresses(addresses);
+        }
+      }
+
+      async function maybeDrawFocusBoundary(address) {
+        if (!address || !state.map) {
+          return;
+        }
+        const zoom = state.map.getZoom();
+        if (zoom < 8) {
+          return;
+        }
+        const focusLevel = mapFocusLevel(levelSelect.value);
+        if (!focusLevel) {
+          return;
+        }
+        try {
+          const results = await fetchContainingAreas(address.lat, address.lon);
+          const match = findFocusMatch(results, focusLevel);
+          if (!match || !match.id) {
+            return;
+          }
+          const geo = await fetchAreaGeometry(match.id);
+          if (geo?.geometry) {
+            mapAdapter.setBoundaryGeometry(geo.geometry);
+          } else if (geo?.bbox) {
+            mapAdapter.setBoundaries([{ id: match.id, name: match.name, level: match.level, bbox: geo.bbox }]);
+          }
+        } catch (err) {
+          return;
+        }
+      }
+
+      async function drawFocusBoundariesForAddresses(addresses) {
+        if (!addresses.length || !state.map) {
+          return;
+        }
+        if (!ensureOverlaySources()) {
+          return;
+        }
+        const zoom = state.map.getZoom();
+        if (zoom < 8) {
+          return;
+        }
+        const focusLevel = mapFocusLevel(levelSelect.value);
+        if (!focusLevel) {
+          return;
+        }
+        const ids = new Set();
+        const uniqueAddresses = [];
+        const seenCoords = new Set();
+        for (const address of addresses) {
+          const key = coordinateCacheKey(address.lat, address.lon);
+          if (!key || seenCoords.has(key)) {
+            continue;
+          }
+          seenCoords.add(key);
+          uniqueAddresses.push(address);
+          if (uniqueAddresses.length >= 5) {
+            break;
+          }
+        }
+        const containmentResults = await Promise.allSettled(
+          uniqueAddresses.map((address) => fetchContainingAreas(address.lat, address.lon))
+        );
+        containmentResults.forEach((result) => {
+          if (result.status !== "fulfilled") {
+            return;
+          }
+          const match = findFocusMatch(result.value, focusLevel);
+          if (match && match.id) {
+            ids.add(match.id);
+          }
+        });
+        if (!ids.size) {
+          return;
+        }
+        const features = [];
+        const geometryResults = await Promise.allSettled(
+          [...ids].map((id) => fetchAreaGeometry(id))
+        );
+        geometryResults.forEach((result) => {
+          if (result.status !== "fulfilled") {
+            return;
+          }
+          const geo = result.value;
+          if (!geo) {
+            return;
+          }
+          if (geo.geometry) {
+            const feature = arcgisGeometryToGeoJson(geo.geometry);
+            if (feature) {
+              feature.properties = { id: geo.id, name: geo.name, level: geo.level };
+              features.push(feature);
+            }
+          } else if (geo.bbox) {
+            features.push({
+              ...bboxToPolygon(geo.bbox),
+              properties: { id: geo.id, name: geo.name, level: geo.level },
+            });
+          }
+        });
+        if (features.length && state.map) {
+          state.boundaryFeatures = features;
+          const boundarySource = state.map.getSource("boundaries");
+          if (!boundarySource) {
+            state.sourcesReady = false;
+            scheduleDiagnosticsUpdate();
+            return;
+          }
+          boundarySource.setData(featureCollection(features));
+        }
+      }
+
+      function mapFocusLevel(value) {
+        const mapping = {
+          local_auth: "DISTRICT",
+          parl_const: null,
+          ward: "WARD",
+          msoa: "MSOA",
+          lsoa: "LSOA",
+          oa: "OA",
+          built_up_area: null,
+          postcode: null,
+        };
+        return mapping[value] || null;
+      }
+
+      function renderError(message) {
+        resultsEl.innerHTML = `<div class="result-error">${message}</div>`;
+        state.resultCount = 0;
+        scheduleDiagnosticsUpdate();
+      }
+
+      function renderSelectionSummary() {
+        const addressEntries = [...state.selectedAddresses.entries()];
+        const areaEntries = [...state.selectedAreas.entries()];
+        if (!addressEntries.length && !areaEntries.length) {
+          selectionEl.innerHTML = '<div class="result-meta">No selection yet.</div>';
+          return;
+        }
+        const addressHtml = addressEntries
+          .map(([uprn, entry]) =>
+            `<button class="selection-item" data-kind="address" data-key="${uprn}">${entry.address || uprn}</button>`
+          )
+          .join("");
+        const areaHtml = areaEntries
+          .map(([id, entry]) =>
+            `<button class="selection-item" data-kind="area" data-key="${id}">${entry.name || id}</button>`
+          )
+          .join("");
+        selectionEl.innerHTML = `
+          <div class="result-meta">Selected UPRNs (${addressEntries.length})</div>
+          <div class="selection-list">${addressHtml || '<div class="result-meta">None</div>'}</div>
+          <div class="result-meta">Selected areas (${areaEntries.length})</div>
+          <div class="selection-list">${areaHtml || '<div class="result-meta">None</div>'}</div>
+        `;
+      }
+
+      async function selectResult(item, event) {
+        state.selection = item;
+        const multi = event && (event.ctrlKey || event.metaKey);
+        if (item.id && !item.bbox) {
+          try {
+            const data = await fetchAreaGeometry(item.id);
+            if (data?.bbox) {
+              item.bbox = data.bbox;
+            }
+            if (data?.geometry) {
+              item.geometry = data.geometry;
+            }
+          } catch (err) {
+            // ignore geometry errors, fallback to bbox if available
+          }
+        }
+        if (item.addresses && item.addresses.length) {
+          const entry = item.addresses[0];
+          const uprn = entry.uprn || entry.address || item.meta;
+          if (!multi) {
+            // keep existing selections to allow incremental adds
+          }
+          if (state.selectedAddresses.has(uprn)) {
+            state.selectedAddresses.delete(uprn);
+          } else {
+            state.selectedAddresses.set(uprn, entry);
+          }
+          mapAdapter.setSelection();
+          const lat = Number(entry.lat ?? entry.latitude);
+          const lon = Number(entry.lon ?? entry.longitude ?? entry.lng);
+          if (state.map && Number.isFinite(lat) && Number.isFinite(lon)) {
+            state.map.flyTo({ center: [lon, lat], zoom: Math.max(state.map.getZoom(), 16), duration: 600 });
+          }
+        }
+        if (item.bbox && typeof item.bbox === "string") {
+          try {
+            item.bbox = JSON.parse(item.bbox);
+          } catch (err) {
+            item.bbox = null;
+          }
+        }
+        if (item.bbox && typeof item.bbox === "string") {
+          try {
+            item.bbox = JSON.parse(item.bbox);
+          } catch (err) {
+            item.bbox = null;
+          }
+        }
+        if (item.bbox && item.id) {
+          if (!multi) {
+            state.selectedAreas.clear();
+          }
+          if (state.selectedAreas.has(item.id)) {
+            state.selectedAreas.delete(item.id);
+          } else {
+            state.selectedAreas.set(item.id, item);
+          }
+        }
+        renderSelectionSummary();
+        if (item.geometry) {
+          mapAdapter.setBoundaryGeometry(item.geometry);
+        } else if (item.bbox) {
+          mapAdapter.setBoundaries([item]);
+        }
+        logUiEvent("select_result", summarizeSelection(item));
+      }
+
+      function normalizePostcode(raw) {
+        return raw.replace(/\s+/g, "").toUpperCase();
+      }
+
+      function isLikelyGss(value) {
+        return /^[EWNS][0-9]{8}$/i.test(value.trim());
+      }
+
+      function isLikelyUprn(value) {
+        return /^[0-9]{6,12}$/.test(value.trim());
+      }
+
+      async function runSearch() {
+        const query = queryInput.value.trim();
+        if (!query) {
+          return;
+        }
+        statusEl.textContent = "Searching...";
+        const level = levelSelect.value;
+        const mode = state.mode.id;
+        let results = [];
+        logUiEvent("search", { query, mode, level });
+
+        try {
+          if (mode === "postcode") {
+            const postcode = normalizePostcode(query);
+            const data = await placesService.byPostcode(postcode);
+            const uprns = (data.uprns || []).map((entry) => ({
+              title: entry.address || `UPRN ${entry.uprn}`,
+              subtitle: entry.classificationDescription || entry.classification || "Address",
+              meta: entry.uprn,
+              addresses: [entry],
+            }));
+            results = uprns;
+          } else if (mode === "uprn") {
+            const data = await placesService.byUprn(query);
+            const item = data.result || data;
+            if (!item) {
+              renderError("No UPRN match found.");
+              return;
+            }
+            results = [
+              {
+                title: item.address || `UPRN ${query}`,
+                subtitle: item.classificationDescription || "Address",
+                meta: item.uprn || query,
+                addresses: [item],
+              },
+            ];
+          } else if (mode === "gss") {
+            const zoom = state.map ? state.map.getZoom() : null;
+            const data = await adminLookupService.areaGeometry(query, true, zoom);
+            if (!data || !data.bbox) {
+              renderError("No geometry returned for that code.");
+              return;
+            }
+            results = [
+              {
+                id: query,
+                name: query,
+                level,
+                title: query,
+                subtitle: "Boundary bbox",
+                bbox: data.bbox,
+                geometry: data.geometry,
+              },
+            ];
+          } else if (mode === "free") {
+            const trimmed = query.trim();
+            if (isLikelyGss(trimmed)) {
+              const zoom = state.map ? state.map.getZoom() : null;
+              const data = await adminLookupService.areaGeometry(trimmed, true, zoom);
+              if (data && data.bbox) {
+                results = [
+                  {
+                    id: trimmed,
+                    name: trimmed,
+                    level,
+                    title: trimmed,
+                    subtitle: "Boundary bbox",
+                    bbox: data.bbox,
+                    geometry: data.geometry,
+                  },
+                ];
+              } else {
+                renderError("No geometry returned for that code.");
+                return;
+              }
+            } else if (isLikelyUprn(trimmed)) {
+              const data = await placesService.byUprn(trimmed);
+              const item = data.result || data;
+              if (!item) {
+                renderError("No UPRN match found.");
+                return;
+              }
+              results = [
+                {
+                  title: item.address || `UPRN ${trimmed}`,
+                  subtitle: item.classificationDescription || "Address",
+                  meta: item.uprn || trimmed,
+                  addresses: [item],
+                },
+              ];
+            } else if (POSTCODE_REGEX.test(normalizePostcode(trimmed))) {
+              const postcode = normalizePostcode(trimmed);
+              const data = await placesService.byPostcode(postcode);
+              const uprns = (data.uprns || []).map((entry) => ({
+                title: entry.address || `UPRN ${entry.uprn}`,
+                subtitle: entry.classificationDescription || entry.classification || "Address",
+                meta: entry.uprn,
+                addresses: [entry],
+              }));
+              results = uprns;
+            } else {
+              const data = await placesService.search(trimmed);
+              const entries = (data.results || []).map((entry) => ({
+                title: entry.address || "Address",
+                subtitle: entry.classificationDescription || entry.classification || "Address",
+                meta: entry.uprn,
+                addresses: [entry],
+              }));
+              results = entries;
+            }
+          } else {
+            const data = await adminLookupService.findByName(query);
+            results = (data.results || [])
+              .filter((area) => !level || area.level?.toLowerCase().includes(level) || true)
+              .map((area) => ({
+                ...area,
+                title: area.name,
+                subtitle: area.level || "Area",
+              }));
+          }
+        } catch (err) {
+          renderError(err?.message || "Search failed. Check server connection and API keys.");
+          statusEl.textContent = "Search failed";
+          return;
+        }
+
+        renderResults(results);
+        previewResults(results);
+        if (results.length) {
+          drawFocusBoundariesForAddresses(results.flatMap((item) => item.addresses || []));
+        }
+        scheduleDiagnosticsUpdate();
+        statusEl.textContent = "Ready";
+        if (results.length === 1) {
+          selectResult(results[0]);
+        }
+      }
+
+      async function safeToolCall(tool, args) {
+        if (!state.hostReady) {
+          throw new Error("MCP host not connected. Run via an MCP client.");
+        }
+        const result = await requestTool(tool, args);
+        const payload = result && result.data ? result.data : result;
+        if (payload && payload.isError) {
+          const err = new Error(payload.message || "Tool call failed.");
+          err.code = payload.code;
+          err.details = payload;
+          throw err;
+        }
+        if (payload) {
+          return payload;
+        }
+        throw new Error("Tool call failed.");
+      }
+
+      const placesService = {
+        search: (text) => safeToolCall("os_places.search", { text }),
+        byPostcode: (postcode) => safeToolCall("os_places.by_postcode", { postcode }),
+        byUprn: (uprn) => safeToolCall("os_places.by_uprn", { uprn }),
+      };
+
+      const adminLookupService = {
+        findByName: (text) => safeToolCall("admin_lookup.find_by_name", { text }),
+        containingAreas: (lat, lon) => safeToolCall("admin_lookup.containing_areas", { lat, lon }),
+        areaGeometry: (id, includeGeometry, zoom) => {
+          const payload = { id, includeGeometry };
+          if (Number.isFinite(zoom)) {
+            payload.zoom = Number(zoom.toFixed(2));
+          }
+          return safeToolCall("admin_lookup.area_geometry", payload);
+        },
+      };
+
+      function summarizeSelection(item) {
+        if (!item) {
+          return {};
+        }
+        const summary = {
+          id: item.id || item.meta || null,
+          name: item.name || item.title || null,
+          level: item.level || null,
+        };
+        if (item.addresses && item.addresses.length) {
+          summary.uprn = item.addresses[0].uprn || null;
+        }
+        return summary;
+      }
+
+      async function logUiEvent(eventType, payload) {
+        if (!state.hostReady) {
+          return;
+        }
+        try {
+          await requestTool("os_apps.log_event", {
+            eventType,
+            source: "geography-selector",
+            sessionId: state.sessionId,
+            payload: payload || {},
+            context: {
+              mode: state.mode?.id || null,
+              level: levelSelect.value || null,
+            },
+          });
+        } catch (err) {
+          return;
+        }
+      }
+
+      function applyConfig(config) {
+        if (!config) {
+          return;
+        }
+        const payload = { ...config };
+        if (payload.tool) {
+          delete payload.tool;
+        }
+        if (payload.level) {
+          levelSelect.value = payload.level;
+        }
+        if (payload.searchTerm) {
+          queryInput.value = payload.searchTerm;
+        }
+        if (payload.vectorTiles) {
+          state.vectorTiles = payload.vectorTiles;
+        }
+        if (payload.proxyBase) {
+          state.proxyBase = payload.proxyBase;
+        }
+        if (payload.initialView && state.map) {
+          state.map.flyTo({
+            center: [payload.initialView.lng, payload.initialView.lat],
+            zoom: payload.initialZoom || 10
+          });
+        }
+      }
+
+      function applyHostContext(hostContext) {
+        if (!hostContext || typeof hostContext !== "object") {
+          return;
+        }
+        const mcpGeo = hostContext.mcpGeo || {};
+        if (mcpGeo.proxyBase) {
+          state.proxyBase = mcpGeo.proxyBase;
+        }
+        if (mcpGeo.vectorTiles) {
+          state.vectorTiles = mcpGeo.vectorTiles;
+        }
+        if (state.map && window.maplibregl) {
+            const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
+            const shouldUseLocalWorker =
+              window.location.protocol === "file:" || window.location.origin === "null";
+            maplibregl.workerUrl =
+              shouldUseLocalWorker || !state.proxyBase
+                ? localWorkerUrl
+                : `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+          }
+      }
+
+      function applyVectorTiles() {
+        if (!state.map) {
+          return;
+        }
+        if (!mapStyleSelect.value.startsWith("os_")) {
+          return;
+        }
+        const styleName = mapStyleSelect.value.replace("os_", "") || "OS_VTS_3857_Light.json";
+        const proxyBase = state.proxyBase;
+          if (!proxyBase) {
+            showOsWarning();
+            return;
+          }
+        const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${vectorSrs}`;
+        if (styleUrl) {
+          state.sourcesReady = false;
+          state.sourcesInitializing = false;
+          state.map.setStyle(styleUrl);
+          state.map.once("error", (event) => {
+            const msg = String(event?.error?.message || "");
+            if (!/(\\b401\\b|\\b403\\b|OS API key|NO_API_KEY|Unauthorized|Forbidden)/i.test(msg)) {
+              return;
+            }
+            statusEl.textContent = "OS connection unavailable (set OS_API_KEY in the MCP server env)";
+            mapStyleSelect.value = "osm";
+            applyMapStyle("osm");
+          });
+          state.map.once("style.load", () => {
+            addSourcesAndLayers();
+            scheduleMapMutationFlush();
+            updateBaseMapOpacity();
+            updateSelectedAddressesLayer();
+          });
+        }
+      }
+
+      function applyMapStyle(styleId) {
+        if (!state.map) {
+          return;
+        }
+        if (styleId.startsWith("os_")) {
+          state.lastMapError = null;
+          applyVectorTiles();
+          scheduleDiagnosticsUpdate();
+          return;
+        }
+        const proxyBase = state.proxyBase;
+          const osmTiles = proxyBase
+            ? `${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
+            : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+        const fallbackStyle = {
+          version: 8,
+          sources: {
+            osm: {
+              type: "raster",
+              tiles: [osmTiles],
+              tileSize: 256,
+            },
+          },
+          layers: [{ id: "osm", type: "raster", source: "osm" }],
+        };
+        state.sourcesReady = false;
+        state.sourcesInitializing = false;
+        state.lastMapError = null;
+        state.map.setStyle(fallbackStyle);
+        state.map.once("style.load", () => {
+          addSourcesAndLayers();
+          scheduleMapMutationFlush();
+          updateBaseMapOpacity();
+          updateSelectedAddressesLayer();
+        });
+        scheduleDiagnosticsUpdate();
+      }
+
+      function updateBaseMapOpacity() {
+        if (!state.map) {
+          return;
+        }
+        const value = Number(mapOpacity.value);
+        const style = state.map.getStyle();
+        if (!style || !Array.isArray(style.layers)) {
+          return;
+        }
+        style.layers.forEach((layer) => {
+          const id = layer.id || "";
+          if (id.startsWith("boundaries") || id.startsWith("addresses") || id.startsWith("highways")) {
+            return;
+          }
+          const type = layer.type;
+          try {
+            if (type === "raster") {
+              state.map.setPaintProperty(id, "raster-opacity", value);
+            } else if (type === "background") {
+              state.map.setPaintProperty(id, "background-opacity", value);
+            } else if (type === "fill") {
+              state.map.setPaintProperty(id, "fill-opacity", value);
+            } else if (type === "line") {
+              state.map.setPaintProperty(id, "line-opacity", value);
+            } else if (type === "circle") {
+              state.map.setPaintProperty(id, "circle-opacity", value);
+            } else if (type === "symbol") {
+              state.map.setPaintProperty(id, "text-opacity", value);
+              state.map.setPaintProperty(id, "icon-opacity", value);
+            }
+          } catch (err) {
+            return;
+          }
+        });
+      }
+
+      function createMapAdapter() {
+        return {
+          init: initMap,
+          setStyle: applyMapStyle,
+          setAddresses,
+          setBoundaries,
+          setBoundaryGeometry,
+          setSelection: updateSelectedAddressesLayer,
+          setOpacity: updateBaseMapOpacity,
+          setHoverBoundary,
+        };
+      }
+
+      const mapAdapter = createMapAdapter();
+
+      async function bootstrapTiles() {
+        return;
+      }
+
+      document.getElementById("searchButton").addEventListener("click", runSearch);
+      document.getElementById("sendSelection").addEventListener("click", () => {
+        if (state.selection) {
+          rpcCall("ui/update-model-context", {
+            structuredContent: { selection: summarizeSelection(state.selection) }
+          }).catch(() => null);
+          logUiEvent("send_selection", summarizeSelection(state.selection));
+        }
+      });
+      selectionEl.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!target || !target.dataset) {
+          return;
+        }
+        const kind = target.dataset.kind;
+        const key = target.dataset.key;
+        if (kind === "address") {
+          const entry = state.selectedAddresses.get(key);
+          if (entry && entry.lat && entry.lon && state.map) {
+            state.map.flyTo({ center: [entry.lon, entry.lat], zoom: 17 });
+          }
+        }
+        if (kind === "area") {
+          const entry = state.selectedAreas.get(key);
+          if (entry && entry.bbox) {
+            mapAdapter.setBoundaries([entry]);
+          }
+        }
+      });
+
+      clearSelectionButton.addEventListener("click", () => {
+        state.selection = null;
+        state.selectedAddresses.clear();
+        state.selectedAreas.clear();
+        state.addressResults = [];
+        state.boundaryFeatures = [];
+        state.addressPointCount = 0;
+        renderSelectionSummary();
+        if (state.map) {
+          if (!ensureOverlaySources()) {
+            scheduleDiagnosticsUpdate();
+            return;
+          }
+          const boundarySource = state.map.getSource("boundaries");
+          const addressSource = state.map.getSource("addresses");
+          const selectedSource = state.map.getSource("addresses-selected");
+          if (boundarySource) {
+            boundarySource.setData(featureCollection([]));
+          }
+          if (addressSource) {
+            addressSource.setData(featureCollection([]));
+          }
+          if (selectedSource) {
+            selectedSource.setData(featureCollection([]));
+          }
+          mapAdapter.setHoverBoundary(null);
+        }
+        scheduleDiagnosticsUpdate();
+      });
+      mapStyleSelect.addEventListener("change", () => mapAdapter.setStyle(mapStyleSelect.value));
+      mapOpacity.addEventListener("input", () => mapAdapter.setOpacity());
+      levelSelect.addEventListener("change", () => {
+        if (state.addressResults.length) {
+          drawFocusBoundariesForAddresses(state.addressResults);
+        }
+      });
+      if (cacheStatusButton) {
+        cacheStatusButton.addEventListener("click", () => loadCacheStatus(false));
+      }
+      if (cacheRefreshButton) {
+        cacheRefreshButton.addEventListener("click", () => loadCacheStatus(true));
+      }
+      if (cacheSearchButton) {
+        cacheSearchButton.addEventListener("click", () => searchCache());
+      }
+
+      window.addEventListener("message", (event) => {
+        if (!event || !event.data || typeof event.data !== "object") {
+          return;
+        }
+        const message = event.data;
+        if (message.jsonrpc !== "2.0") {
+          return;
+        }
+        payloadEl.textContent = JSON.stringify(message, null, 2);
+        if (message.id !== undefined && (message.result !== undefined || message.error)) {
+          const pending = pendingCalls.get(message.id);
+          if (pending) {
+            pendingCalls.delete(message.id);
+            if (message.error) {
+              pending.reject(new Error(message.error.message || "RPC error"));
+            } else {
+              pending.resolve(message.result);
+            }
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/tool-input") {
+          applyConfig(message.params?.arguments || {});
+          if (state.hostReady) {
+            mapAdapter.setStyle(mapStyleSelect.value);
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/host-context-changed") {
+          applyHostContext(message.params || {});
+          return;
+        }
+      });
+
+      buildSegmentButtons();
+      buildSelectionModeButtons();
+      buildZoomLadder();
+      buildLayerToggles();
+      try {
+        mapAdapter.init();
+      } catch (err) {
+        state.lastMapError = redactSecrets(err?.message || "Map init error");
+        state.lastMapErrorDetail = { message: state.lastMapError };
+      }
+      renderResults([]);
+      renderSelectionSummary();
+      scheduleDiagnosticsUpdate();
+
+      if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(() => {
+          rpcNotify("ui/notifications/size-changed", {
+            width: document.documentElement.scrollWidth,
+            height: document.documentElement.scrollHeight
+          });
+        });
+        resizeObserver.observe(document.body);
+      }
+
+      async function initializeUi() {
+        try {
+          const result = await rpcCall("ui/initialize", {
+            appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] }
+          });
+          state.hostReady = true;
+          statusEl.textContent = "Host connected";
+          applyHostContext(result?.hostContext || {});
+          mapAdapter.setStyle(mapStyleSelect.value);
+          logUiEvent("host_ready", { name: "geography-selector" });
+          rpcNotify("ui/notifications/initialized", {});
+        } catch (err) {
+          statusEl.textContent = "Host connection failed";
+        }
+      }
+
+      initializeUi();
+    </script>
+  </body>
+</html>

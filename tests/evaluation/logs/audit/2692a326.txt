@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 2692a326
+Timestamp: 2026-01-20T20:49:46.762002
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Vector tiles descriptor"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: vector_tiles
+Confidence: 0.9
+Recommended Tool: os_vector_tiles.descriptor
+Workflow Steps: ['os_vector_tiles.descriptor']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_vector_tiles.descriptor
+········································
+Timestamp: 2026-01-20T20:49:46.769843
+Duration: 4.3ms
+Status: SUCCESS
+
+Inputs:
+{}
+
+Outputs:
+{'vectorTiles': {'style': 'light', 'styleUrl': 'https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}', 'tileTemplate': 'https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}'}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Vector tiles descriptor", "intent": "vector_tiles", "confidence": 0.9, "recommended_tool": "os_vector_tiles.descriptor", "recommended_parameters": {}, "explanation": "Return OS vector tiles style and template URLs.", "workflow_steps": ["os_vector_tiles.descriptor"], "alternative_tools": ["os_maps.render"], "guidance": "Use os_vector_tiles.descriptor for tile/style templates; inject OS_API_KEY client-side."}}, {"tool": "os_vector_tiles.descriptor", "response": {"vectorTiles": {"style": "light", "styleUrl": "https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}", "tileTemplate": "https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}"}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 7.9ms
+Success: True

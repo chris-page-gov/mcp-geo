@@ -1,0 +1,202 @@
+{
+  "datapack_id": "housing-space-pressure",
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T08:04:56Z",
+  "tile": {
+    "tile_id": "housing-space-pressure",
+    "tile_label": "Where are household space pressures highest?",
+    "intent_tags": [
+      "housing",
+      "census",
+      "small-area"
+    ],
+    "persona_tags": [
+      "policy_analyst",
+      "public_user",
+      "ai_agent"
+    ],
+    "elicitation_questions": [
+      "Which place do you need?",
+      "What period are you comparing?",
+      "Do you need levels, rates, or index change?"
+    ]
+  },
+  "data_card": {
+    "card_id": "housing-space-pressure-card",
+    "headline": "Household space pressure with composition context",
+    "summary": "Use Census overcrowding for structural local insight, not short-term change.",
+    "why_this_dataset": "Highest fit for intent, geography availability, and release discipline.",
+    "why_not_others": [
+      "Alternative series have mismatched geography or frequency.",
+      "Some related series are provisional and not directly comparable."
+    ],
+    "geography_coverage": [
+      "output-area",
+      "lsoa",
+      "local-authority"
+    ],
+    "time_coverage": {
+      "start_period": "2010",
+      "end_period": "latest",
+      "frequency": "annual"
+    },
+    "release_frequency": "annual",
+    "revision_status": "mixed",
+    "accessibility_notes": [
+      "Include plain-language caveat summary above chart.",
+      "Provide table view and downloadable CSV alternative.",
+      "Do not rely on colour alone for chart distinction."
+    ]
+  },
+  "primary_dataset": {
+    "dataset_id": "census-overcrowding-rooms",
+    "dataset_title": "Census overcrowding and under-occupancy by rooms",
+    "dataset_url": "https://www.ons.gov.uk/census",
+    "provider": "ONS",
+    "dataset_family": "census-derived-indicators",
+    "geography_levels": [
+      "output-area",
+      "lsoa",
+      "local-authority"
+    ],
+    "time_granularity": "annual",
+    "latest_release_date": "2024-12-01",
+    "fitness_for_use_score": 80,
+    "confidence": "medium",
+    "explainability_note": "Small-area household space pressure indicator.",
+    "known_limitations": [
+      "Census-based indicator is not high-frequency."
+    ],
+    "comparability_warnings": [
+      "Do not treat as monthly market signal."
+    ],
+    "provenance": {
+      "source_name": "Office for National Statistics",
+      "source_url": "https://www.ons.gov.uk/",
+      "retrieved_at": "2026-02-07T08:04:56Z",
+      "licence": "Open Government Licence v3.0",
+      "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+      "quality_note": "Illustrative sample; verify latest release metadata before production use."
+    }
+  },
+  "related_datasets": [
+    {
+      "dataset_id": "household-size-census",
+      "dataset_title": "Household size distribution (Census)",
+      "dataset_url": "https://www.ons.gov.uk/census",
+      "provider": "ONS",
+      "dataset_family": "census-derived-indicators",
+      "geography_levels": [
+        "output-area",
+        "lsoa"
+      ],
+      "time_granularity": "annual",
+      "latest_release_date": "2024-12-01",
+      "fitness_for_use_score": 77,
+      "confidence": "medium",
+      "explainability_note": "Composition context for overcrowding.",
+      "known_limitations": [
+        "Census periodicity limits short-term tracking."
+      ],
+      "comparability_warnings": [
+        "Compare within same census framework."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "dataset_id": "private-rental-prices-index",
+      "dataset_title": "Private rental prices index",
+      "dataset_url": "https://www.ons.gov.uk/economy/inflationandpriceindices",
+      "provider": "ONS",
+      "dataset_family": "housing",
+      "geography_levels": [
+        "UK",
+        "region"
+      ],
+      "time_granularity": "monthly",
+      "latest_release_date": "2026-01-01",
+      "fitness_for_use_score": 81,
+      "confidence": "medium",
+      "explainability_note": "Market pressure context.",
+      "known_limitations": [
+        "Different concept from household overcrowding."
+      ],
+      "comparability_warnings": [
+        "Avoid direct causal claims."
+      ],
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "link_edges": [
+    {
+      "edge_id": "overcrowding-to-household-size",
+      "from_dataset_id": "census-overcrowding-rooms",
+      "to_dataset_id": "household-size-census",
+      "link_type": "methodological_dependency",
+      "link_reason": "Household size composition helps interpret overcrowding levels.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    },
+    {
+      "edge_id": "overcrowding-to-rent-index",
+      "from_dataset_id": "census-overcrowding-rooms",
+      "to_dataset_id": "private-rental-prices-index",
+      "link_type": "complementary_context",
+      "link_reason": "Links structural housing conditions with market pressures.",
+      "provenance": {
+        "source_name": "Office for National Statistics",
+        "source_url": "https://www.ons.gov.uk/",
+        "retrieved_at": "2026-02-07T08:04:56Z",
+        "licence": "Open Government Licence v3.0",
+        "method_note": "Curated for MCP Geo dataset selection prototype using ONS statistical and derived indicator patterns.",
+        "quality_note": "Illustrative sample; verify latest release metadata before production use."
+      }
+    }
+  ],
+  "chart_templates": [
+    {
+      "chart_id": "housing-space-pressure-chart-1",
+      "chart_type": "map",
+      "purpose": "Show change over time with clear comparability notes.",
+      "x_field": "area_code",
+      "y_field": "overcrowding_rate",
+      "accessibility_notes": [
+        "Add data labels option.",
+        "Offer keyboard-navigable table fallback."
+      ]
+    }
+  ],
+  "ai_safe_controls": {
+    "misuse_risk_level": "medium",
+    "required_caveat_display": true,
+    "must_check_comparability": true,
+    "must_show_release_date": true,
+    "must_show_revision_status": true,
+    "disallow_unqualified_ranking": true,
+    "prompt_guardrails": [
+      "Do not claim causal relationships without supporting design.",
+      "State if geographies or vintages are not directly comparable.",
+      "Always disclose if series is provisional or revised."
+    ]
+  }
+}

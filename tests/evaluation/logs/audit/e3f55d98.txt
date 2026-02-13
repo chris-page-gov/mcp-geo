@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: e3f55d98
+Timestamp: 2026-01-20T20:22:27.986805
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "St James's"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: admin_lookup.find_by_name
+········································
+Timestamp: 2026-01-20T20:22:27.990092
+Duration: 1.6ms
+Status: SUCCESS
+
+Inputs:
+{'text': 'St James'}
+
+Outputs:
+{'results': [{'id': 'E05000644', 'level': 'WARD', 'name': "St James's Ward (historic)"}]}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "St James's", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "St James"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "admin_lookup.find_by_name", "response": {"results": [{"id": "E05000644", "level": "WARD", "name": "St James's Ward (historic)"}]}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.3ms
+Success: True

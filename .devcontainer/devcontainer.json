@@ -1,0 +1,57 @@
+{
+  "name": "os-mcp-dev",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "app",
+  "workspaceFolder": "/workspaces/mcp-geo",
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+
+      // Yarn's legacy Debian APT repo regularly causes devcontainer builds to fail
+      // due to key rotations/expiry. This repo uses npm, so keep Yarn off APT.
+      "installYarnUsingApt": false
+    }
+  },
+  "containerEnv": {
+    "OS_API_KEY": "${localEnv:OS_API_KEY}",
+    "STDIO_KEY": "${localEnv:STDIO_KEY}",
+    "BEARER_TOKENS": "${localEnv:BEARER_TOKENS}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "MCP_GEO_LIVE_DB_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
+    "BOUNDARY_CACHE_ENABLED": "true",
+    "BOUNDARY_CACHE_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
+    "PYTHONPATH": "/workspaces/mcp-geo",
+    "CODEX_HOME": "/home/vscode/.codex"
+  },
+  "mounts": [
+    "source=mcp-geo-codex,target=/home/vscode/.codex,type=volume"
+  ],
+  "forwardPorts": [
+    8000,
+    5173,
+    8899,
+    5432
+  ],
+  "postCreateCommand": "pip install --upgrade pip && pip install .[dev,boundaries] && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
+  "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
+  "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "docker.docker",
+        "openai.chatgpt",
+        "ms-vscode.live-server"
+      ]
+    }
+  },
+  "updateRemoteUserUID": true
+}

@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: fd4d6d98
+Timestamp: 2026-01-20T20:49:46.981898
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Nearest addresses to 51.5034,-0.1276"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: address_lookup
+Confidence: 0.8
+Recommended Tool: os_places.search
+Workflow Steps: ['os_places.search']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_places.nearest
+········································
+Timestamp: 2026-01-20T20:49:47.181112
+Duration: 197.2ms
+Status: SUCCESS
+
+Inputs:
+{'lat': 51.5034, 'lon': -0.1276}
+
+Outputs:
+{'results': [{'uprn': '100023336956', 'address': 'PRIME MINISTER & FIRST LORD OF THE TREASURY, 10, DOWNING STREET, LONDON, SW1A 2AA', 'lat': 51.503541, 'lon': -0.1276702, 'classification': None}]}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Nearest addresses to 51.5034,-0.1276", "intent": "address_lookup", "confidence": 0.8, "recommended_tool": "os_places.search", "recommended_parameters": {"text": "Nearest addresses to 51.5034,-0.1276"}, "explanation": "Free-text address search using OS Places.", "workflow_steps": ["os_places.search"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.nearest", "response": {"results": [{"uprn": "100023336956", "address": "PRIME MINISTER & FIRST LORD OF THE TREASURY, 10, DOWNING STREET, LONDON, SW1A 2AA", "lat": 51.503541, "lon": -0.1276702, "classification": null}]}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 199.3ms
+Success: True

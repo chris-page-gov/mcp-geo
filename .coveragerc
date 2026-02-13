@@ -1,0 +1,7 @@
+[run]
+omit =
+    */server/maps_proxy.py
+
+[report]
+omit =
+    */server/maps_proxy.py

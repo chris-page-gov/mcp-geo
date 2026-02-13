@@ -51,6 +51,15 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Local logs
+logs/
+# Local data capture (DB volumes, live API dumps)
+data/
+
+# Playground build artifacts
+playground/node_modules/
+playground/test-results/
+
 # Translations
 *.mo
 *.pot
@@ -205,3 +214,13 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Vendor snapshots (store as release artifacts, not in git)
+docs/vendor/**/_snapshot/
+docs/vendor/**/_snapshot_noscript/
+
+# Spec package exports
+docs/spec_package/build/

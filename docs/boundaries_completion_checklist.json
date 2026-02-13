@@ -1,0 +1,153 @@
+{
+  "checklist_version": "1.0.0",
+  "final_status_values": {
+    "pass": "COMPLETE_BOUNDARIES_INGESTED_AND_VALIDATED",
+    "fail": "INCOMPLETE_BOUNDARIES_INGEST_OR_VALIDATION_FAILED"
+  },
+  "scope": {
+    "iterate_over": "boundary_families",
+    "required_variants_path": "completion_definition.required_variants",
+    "optional_variants_path": "completion_definition.allowed_optional_variants"
+  },
+  "required_run_artifacts": [
+    {
+      "artifact_id": "run_report_json",
+      "type": "json",
+      "must_include_fields": [
+        "manifest_version",
+        "run_started_at",
+        "run_finished_at",
+        "resolved_resources",
+        "downloads",
+        "ingestions",
+        "validations",
+        "exceptions"
+      ]
+    },
+    {
+      "artifact_id": "evidence_store",
+      "type": "directory",
+      "must_contain": [
+        "ckan_package_show_responses",
+        "source_page_metadata",
+        "checksums"
+      ]
+    }
+  ],
+  "family_checks": [
+    {
+      "check_id": "resolve_required_variant_sources",
+      "severity": "error",
+      "description": "For each required variant, resolve a concrete download target OR record not_published with evidence.",
+      "inputs": [
+        "family.family_id",
+        "family.template",
+        "family.discover*",
+        "family.downloads*",
+        "required_variants"
+      ],
+      "pass_condition": "For every required variant: (resolved.download_url exists) OR (resolved.status == 'not_published' AND resolved.evidence_ref exists).",
+      "failure_message": "Missing resolvable source for one or more required variants without not_published evidence.",
+      "outputs": [
+        "resolved_resources[{family_id}][{variant}] = {status, download_url, evidence_ref, source_id}"
+      ]
+    },
+    {
+      "check_id": "download_and_readability",
+      "severity": "error",
+      "description": "Download archives and ensure GDAL/OGR can read at least one layer; store checksum and file inventory.",
+      "pass_condition": "For each resolved download_url: download_status == 'ok' AND gdal_readable == true AND sha256 exists.",
+      "failure_message": "Download failed, archive unreadable, or checksum missing.",
+      "outputs": [
+        "downloads[{family_id}][{variant}] = {download_status, bytes, sha256, file_list, gdal_readable}"
+      ]
+    },
+    {
+      "check_id": "ingest_to_postgis",
+      "severity": "error",
+      "description": "Ingest each dataset/variant into PostGIS with expected schema/table naming; ensure geom column and target SRID.",
+      "pass_condition": "For each table: ingest_status == 'ok' AND geom_column_exists == true AND srid == target_srid.",
+      "failure_message": "Ingestion failed or geometry column/SRID not as expected.",
+      "outputs": [
+        "ingestions[{family_id}][{variant}] = {schema, table, ingest_status, geom_column_exists, srid, row_count}"
+      ]
+    },
+    {
+      "check_id": "schema_fields_present",
+      "severity": "error",
+      "description": "Validate expected code/name fields exist (using regex patterns if specified).",
+      "pass_condition": "code_field_present == true AND (name_field_required => name_field_present == true).",
+      "failure_message": "Expected geography code/name fields missing.",
+      "outputs": [
+        "validations[{family_id}][{variant}].schema = {code_field_present, name_field_present, detected_code_field, detected_name_field}"
+      ]
+    },
+    {
+      "check_id": "code_uniqueness",
+      "severity": "error",
+      "description": "Geography code must be unique within each {family_id, variant, vintage} table.",
+      "pass_condition": "duplicate_code_count == 0",
+      "failure_message": "Duplicate geography codes found.",
+      "sql_templates": {
+        "duplicate_check": "SELECT COUNT(*) AS dupes FROM (SELECT {code_col}, COUNT(*) c FROM {schema}.{table} GROUP BY {code_col} HAVING COUNT(*) > 1) t;"
+      },
+      "outputs": [
+        "validations[{family_id}][{variant}].uniqueness = {duplicate_code_count}"
+      ]
+    },
+    {
+      "check_id": "geometry_validity",
+      "severity": "error",
+      "description": "All geometries must be valid, or repaired with repair counts logged.",
+      "pass_condition": "(invalid_geom_count == 0) OR (repair_attempted == true AND post_repair_invalid_geom_count == 0)",
+      "failure_message": "Invalid geometries remain after optional repair.",
+      "sql_templates": {
+        "invalid_count": "SELECT COUNT(*) AS invalids FROM {schema}.{table} WHERE NOT ST_IsValid(geom);"
+      },
+      "outputs": [
+        "validations[{family_id}][{variant}].geometry = {invalid_geom_count, repair_attempted, post_repair_invalid_geom_count}"
+      ]
+    },
+    {
+      "check_id": "row_count_sanity",
+      "severity": "error",
+      "description": "Each table must meet its minimum expected row count threshold.",
+      "pass_condition": "row_count >= row_count_min",
+      "failure_message": "Row count below minimum threshold (likely wrong layer, wrong geography, or incomplete ingest).",
+      "outputs": [
+        "validations[{family_id}][{variant}].row_count = {row_count, row_count_min}"
+      ]
+    },
+    {
+      "check_id": "required_variant_coverage",
+      "severity": "error",
+      "description": "All required variants must be present unless explicitly not_published with evidence.",
+      "pass_condition": "For each required variant: (ingest_status == 'ok') OR (resolved.status == 'not_published' AND evidence_ref exists).",
+      "failure_message": "Required variant missing without an authorised not_published record.",
+      "outputs": [
+        "validations[{family_id}].variant_coverage = {required_variants_met, missing_required_variants}"
+      ]
+    }
+  ],
+  "global_checks": [
+    {
+      "check_id": "run_report_reproducible",
+      "severity": "error",
+      "description": "A machine-readable run report must be produced with all required fields and per-family outcomes.",
+      "pass_condition": "run_report_exists == true AND required_fields_present == true AND all_family_ids_covered == true",
+      "failure_message": "Run report missing or incomplete.",
+      "outputs": [
+        "run_report_summary = {run_report_exists, required_fields_present, all_family_ids_covered}"
+      ]
+    }
+  ],
+  "status_evaluation": {
+    "pass_when": "All checks with severity == 'error' pass for all boundary_families AND global_checks pass.",
+    "fail_when": "Any check with severity == 'error' fails.",
+    "emit": {
+      "final_status_field": "pipeline_status",
+      "per_family_status_field": "family_status",
+      "error_list_field": "errors"
+    }
+  }
+}

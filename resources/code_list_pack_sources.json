@@ -1,0 +1,22 @@
+{
+  "version": "2026-02-11",
+  "kind": "code_lists",
+  "packs": [
+    {
+      "id": "ons_geography_codes",
+      "title": "ONS Geography Codes",
+      "sourceUrl": "https://api.beta.ons.gov.uk/v1/code-lists",
+      "sourceType": "ons_api",
+      "format": "JSON",
+      "notes": "Refresh pulls selected code-list payloads into the local hybrid cache."
+    },
+    {
+      "id": "nomis_codelists",
+      "title": "NOMIS Codelists",
+      "sourceUrl": "https://www.nomisweb.co.uk/api/v01/dataset/def.sdmx.json",
+      "sourceType": "nomis_api",
+      "format": "JSON",
+      "notes": "Used to seed common codelist references for workflow tools."
+    }
+  ]
+}

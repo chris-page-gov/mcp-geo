@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 90599991
+Timestamp: 2026-01-20T20:49:47.674057
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Lookup postcode ZZ99ZZ"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: address_lookup
+Confidence: 0.95
+Recommended Tool: os_places.by_postcode
+Workflow Steps: ['os_places.by_postcode']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_places.by_postcode
+········································
+Timestamp: 2026-01-20T20:49:48.889644
+Duration: 1214.5ms
+Status: SUCCESS
+
+Inputs:
+{'postcode': 'ZZ99ZZ'}
+
+Outputs:
+{'uprns': [], 'provenance': {'source': 'os_places', 'timestamp': 1768942188.8885417}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Lookup postcode ZZ99ZZ", "intent": "address_lookup", "confidence": 0.95, "recommended_tool": "os_places.by_postcode", "recommended_parameters": {"postcode": "ZZ99ZZ"}, "explanation": "Lookup addresses and UPRNs for a postcode using OS Places.", "workflow_steps": ["os_places.by_postcode"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.by_postcode", "response": {"uprns": [], "provenance": {"source": "os_places", "timestamp": 1768942188.8885417}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 1215.6ms
+Success: True

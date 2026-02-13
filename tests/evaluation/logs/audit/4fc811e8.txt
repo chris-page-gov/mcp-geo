@@ -1,0 +1,50 @@
+============================================================
+AUDIT LOG: 4fc811e8
+Timestamp: 2026-01-20T20:49:47.660478
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Build a map stack for Westminster (tiles + static)"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_vector_tiles.descriptor
+········································
+Timestamp: 2026-01-20T20:49:47.663150
+Duration: 1.3ms
+Status: SUCCESS
+
+Inputs:
+{}
+
+Outputs:
+{'vectorTiles': {'style': 'light', 'styleUrl': 'https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}', 'tileTemplate': 'https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}'}}
+
+### Tool Call 2: os_maps.render
+········································
+Timestamp: 2026-01-20T20:49:47.664193
+Duration: 1.0ms
+Status: SUCCESS
+
+Inputs:
+{'bbox': [-0.15, 51.49, -0.12, 51.51]}
+
+Outputs:
+{'render': {'urlTemplate': 'https://api.os.uk/maps/v1/raster/wms?bbox=-0.15,51.49,-0.12,51.51&key={API_KEY}', 'layer': 'raster'}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Build a map stack for Westminster (tiles + static)", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Westminster"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_vector_tiles.descriptor", "response": {"vectorTiles": {"style": "light", "styleUrl": "https://api.os.uk/maps/vector/v1/styles/light.json?key={API_KEY}", "tileTemplate": "https://api.os.uk/maps/vector/v1/tiles/{z}/{x}/{y}.pbf?key={API_KEY}"}}}, {"tool": "os_maps.render", "response": {"render": {"urlTemplate": "https://api.os.uk/maps/v1/raster/wms?bbox=-0.15,51.49,-0.12,51.51&key={API_KEY}", "layer": "raster"}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.7ms
+Success: True

@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-geo"
+version = "0.2.12"
+description = "MCP server for geospatial and ONS tools"
+authors = [ { name = "DCMS-TECH" } ]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "loguru",
+    "requests",
+    "pillow",  # Static OSM multi-tile rendering for larger map sizes
+    "httpx",  # required by starlette.testclient used in tests
+    "openpyxl",  # XLSX generation for filter output
+    "pyproj",  # WGS84 -> BNG conversion for os_names.nearest
+]
+
+[project.scripts]
+mcp-geo-stdio = "scripts.os_mcp:main"
+
+mcp-geo-trace = "scripts.mcp_stdio_trace_proxy:cli"
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov", "httpx", "anyio", "psycopg[binary]"]
+dev = [
+    "ruff",
+    "mypy",
+    "types-requests",
+    "pytest",
+    "pytest-cov",
+    "httpx",
+    "anyio",
+    "psycopg[binary]",
+]
+boundaries = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely", "psycopg[binary]"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "UP", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["server", "tools"]
+
+[tool.mypy]
+python_version = 3.11
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+no_implicit_optional = true
+show_error_codes = true
+pretty = true
+exclude = ["migrations/", "build/"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+allow_untyped_defs = true
+allow_incomplete_defs = true
+
+[tool.mypy-server]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+
+[tool.setuptools]
+packages = ["server", "tools", "scripts"]

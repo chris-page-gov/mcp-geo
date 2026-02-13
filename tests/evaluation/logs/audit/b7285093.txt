@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: b7285093
+Timestamp: 2026-01-20T20:22:27.749140
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Inspect an NGD feature id"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: feature_search
+Confidence: 1.0
+Recommended Tool: os_features.query
+Workflow Steps: ['os_features.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_apps.render_feature_inspector
+········································
+Timestamp: 2026-01-20T20:22:27.752342
+Duration: 1.4ms
+Status: SUCCESS
+
+Inputs:
+{'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}
+
+Outputs:
+{'status': 'ready', 'config': {'collectionId': 'buildings', 'featureId': 'osgb1000000123456'}, 'instructions': 'Open the feature inspector to review properties and linked identifiers.', 'uiResourceUris': ['ui://mcp-geo/feature-inspector'], '_meta': {'uiResourceUris': ['ui://mcp-geo/feature-inspector'], 'audience': ['user']}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Inspect an NGD feature id", "intent": "feature_search", "confidence": 1.0, "recommended_tool": "os_features.query", "recommended_parameters": {}, "explanation": "Query OS NGD feature collections by bbox and collection.", "workflow_steps": ["os_features.query"], "alternative_tools": ["os_names.find", "os_vector_tiles.descriptor"], "guidance": "Use os_features.query with a collection and bbox. Collections map to NGD feature sets."}}, {"tool": "os_apps.render_feature_inspector", "response": {"status": "ready", "config": {"collectionId": "buildings", "featureId": "osgb1000000123456"}, "instructions": "Open the feature inspector to review properties and linked identifiers.", "uiResourceUris": ["ui://mcp-geo/feature-inspector"], "_meta": {"uiResourceUris": ["ui://mcp-geo/feature-inspector"], "audience": ["user"]}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 3.3ms
+Success: True

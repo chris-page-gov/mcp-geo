@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 172ff2f7
+Timestamp: 2026-01-20T20:49:47.466194
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Find building features in a Westminster bbox"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: feature_search
+Confidence: 1.0
+Recommended Tool: os_features.query
+Workflow Steps: ['os_features.query']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_features.query
+········································
+Timestamp: 2026-01-20T20:49:47.621204
+Duration: 151.0ms
+Status: ERROR
+
+Inputs:
+{'collection': 'buildings', 'bbox': [-0.15, 51.49, -0.12, 51.51]}
+
+Outputs:
+{'isError': True, 'code': 'OS_API_ERROR', 'message': 'OS API error: <?xml version="1.0" encoding="UTF-8"?>\n<ExceptionReport version="1.1.0" xmlns="http://www.opengis.net/ows/1.1"\n  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n  xsi:schemaLocation="http://www.'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Find building features in a Westminster bbox", "intent": "feature_search", "confidence": 1.0, "recommended_tool": "os_features.query", "recommended_parameters": {"collection": "buildings"}, "explanation": "Query OS NGD feature collections by bbox and collection.", "workflow_steps": ["os_features.query"], "alternative_tools": ["os_names.find", "os_vector_tiles.descriptor"], "guidance": "Use os_features.query with a collection and bbox. Collections map to NGD feature sets."}}, {"tool": "os_features.query", "response": {"isError": true, "code": "OS_API_ERROR", "message": "OS API error: <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ExceptionReport version=\"1.1.0\" xmlns=\"http://www.opengis.net/ows/1.1\"\n  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n  xsi:schemaLocation=\"http://www."}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 155.1ms
+Success: True

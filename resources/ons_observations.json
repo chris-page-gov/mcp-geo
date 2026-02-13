@@ -1,0 +1,22 @@
+{
+  "dataset": "UK GDP Quarterly (sample)",
+  "provenance": {
+    "source": "ONS API (simulated subset)",
+    "license": "Open Government Licence v3",
+    "version": "2025.09.17-alpha",
+    "note": "Synthetic compact sample for testing"
+  },
+  "dimensions": {
+    "geography": ["K02000001"],
+    "measure": ["chained_volume_measure"],
+    "seasonalAdjustment": ["seasonally_adjusted"],
+    "time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1"]
+  },
+  "observations": [
+    {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q1", "value": 525.1},
+    {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q2", "value": 526.3},
+    {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q3", "value": 527.0},
+    {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2023 Q4", "value": 528.4},
+    {"geography": "K02000001", "measure": "chained_volume_measure", "seasonalAdjustment": "seasonally_adjusted", "time": "2024 Q1", "value": 529.2}
+  ]
+}

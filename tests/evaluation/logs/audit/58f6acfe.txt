@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 58f6acfe
+Timestamp: 2026-01-20T20:49:45.804674
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "UPRNs for SW1A 1AA"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: address_lookup
+Confidence: 0.95
+Recommended Tool: os_places.by_postcode
+Workflow Steps: ['os_places.by_postcode']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_places.by_postcode
+········································
+Timestamp: 2026-01-20T20:49:46.012898
+Duration: 206.7ms
+Status: SUCCESS
+
+Inputs:
+{'postcode': 'SW1A1AA'}
+
+Outputs:
+{'uprns': [{'uprn': '10033544614', 'address': 'BUCKINGHAM PALACE, LONDON, SW1A 1AA', 'lat': 51.5010102, 'lon': -0.1415628, 'classification': None, 'classificationDescription': None, 'local_custodian_code': 5990, 'localCustodianName': 'Westminster City Council'}], 'provenance': {'source': 'os_places', 'timestamp': 1768942186.011771}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "UPRNs for SW1A 1AA", "intent": "address_lookup", "confidence": 0.95, "recommended_tool": "os_places.by_postcode", "recommended_parameters": {"postcode": "SW1A1AA"}, "explanation": "Lookup addresses and UPRNs for a postcode using OS Places.", "workflow_steps": ["os_places.by_postcode"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_places.by_postcode", "response": {"uprns": [{"uprn": "10033544614", "address": "BUCKINGHAM PALACE, LONDON, SW1A 1AA", "lat": 51.5010102, "lon": -0.1415628, "classification": null, "classificationDescription": null, "local_custodian_code": 5990, "localCustodianName": "Westminster City Council"}], "provenance": {"source": "os_places", "timestamp": 1768942186.011771}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 208.3ms
+Success: True

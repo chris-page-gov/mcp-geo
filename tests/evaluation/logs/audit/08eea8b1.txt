@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 08eea8b1
+Timestamp: 2026-01-20T20:22:27.263804
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Resolve linked IDs for UPRN 100021892956"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: address_lookup
+Confidence: 0.95
+Recommended Tool: os_places.by_uprn
+Workflow Steps: ['os_places.by_uprn']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_linked_ids.get
+········································
+Timestamp: 2026-01-20T20:22:27.544733
+Duration: 276.8ms
+Status: SUCCESS
+
+Inputs:
+{'identifier': '100021892956'}
+
+Outputs:
+{'identifiers': {'title': "Welcome to Ordnance Survey's APIs", 'description': 'Access geospatial data made available by OS under one of the following categories : mapping / features / search / download / positioning.', 'links': [{'href': 'https://api.os.uk/', 'rel': 'self', 'type': 'application/json', 'title': 'Self link', 'description': 'This document.'}, {'href': 'https://api.os.uk/maps', 'rel': 'api-grouping', 'type': 'application/json', 'title': 'OS Mapping APIs', 'description': 'The available Mapping APIs offered by Ordnance Survey. These are provided in a range of forms including : Web Map Tile Services and Vector Tile Services.'}, {'href': 'https://api.os.uk/features', 'rel': 'api-grouping', 'type': 'application/json', 'title': 'OS Features APIs', 'description': 'The available Features APIs offered by Ordnance Survey.'}, {'href': 'https://api.os.uk/search', 'rel': 'api-grouping', 'type': 'application/json', 'title': 'OS Search APIs', 'description': 'The available Search APIs offered by Ordnance Survey. These are provided as RESTful or Remote Procedure Call services.'}, {'href': 'https://api.os.uk/downloads', 'rel': 'api-grouping', 'type': 'application/json', 'title': 'OS Downloads API', 'description': 'The available Download APIs offered by Ordnance Survey. These provide access to bulk data through RESTful services.'}, {'href': 'https://api.os.uk/positioning', 'rel': 'api-grouping', 'type': 'application/json', 'title': 'OS Positioning APIs', 'description': 'The available Positioning APIs offered by Ordnance Survey.'}]}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Resolve linked IDs for UPRN 100021892956", "intent": "address_lookup", "confidence": 0.95, "recommended_tool": "os_places.by_uprn", "recommended_parameters": {"uprn": "100021892956"}, "explanation": "Lookup a specific address by UPRN using OS Places.", "workflow_steps": ["os_places.by_uprn"], "alternative_tools": ["os_places.search", "os_places.nearest"], "guidance": "Use OS Places for postcodes, UPRNs, or free-text address search. Postcodes return multiple UPRNs; UPRN returns a single address."}}, {"tool": "os_linked_ids.get", "response": {"identifiers": {"title": "Welcome to Ordnance Survey's APIs", "description": "Access geospatial data made available by OS under one of the following categories : mapping / features / search / download / positioning.", "links": [{"href": "https://api.os.uk/", "rel": "self", "type": "application/json", "title": "Self link", "description": "This document."}, {"href": "https://api.os.uk/maps", "rel": "api-grouping", "type": "application/json", "title": "OS Mapping APIs", "description": "The available Mapping APIs offered by Ordnance Survey. These are provided in a range of forms including : Web Map Tile Services and Vector Tile Services."}, {"href": "https://api.os.uk/features", "rel": "api-grouping", "type": "application/json", "title": "OS Features APIs", "description": "The available Features APIs offered by Ordnance Survey."}, {"href": "https://api.os.uk/search", "rel": "api-grouping", "type": "application/json", "title": "OS Search APIs", "description": "The available Search APIs offered by Ordnance Survey. These are provided as RESTful or Remote Procedure Call services."}, {"href": "https://api.os.uk/downloads", "rel": "api-grouping", "type": "application/json", "title": "OS Downloads API", "description": "The available Download APIs offered by Ordnance Survey. These provide access to bulk data through RESTful services."}, {"href": "https://api.os.uk/positioning", "rel": "api-grouping", "type": "application/json", "title": "OS Positioning APIs", "description": "The available Positioning APIs offered by Ordnance Survey."}]}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 281.0ms
+Success: True

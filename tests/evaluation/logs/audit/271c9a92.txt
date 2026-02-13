@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 271c9a92
+Timestamp: 2026-01-20T20:22:26.895804
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Open a map so I can select wards"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: interactive_selection
+Confidence: 0.9
+Recommended Tool: os_apps.render_geography_selector
+Workflow Steps: ['os_apps.render_geography_selector']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_apps.render_geography_selector
+········································
+Timestamp: 2026-01-20T20:22:26.899856
+Duration: 1.6ms
+Status: SUCCESS
+
+Inputs:
+{'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}
+
+Outputs:
+{'status': 'ready', 'config': {'level': 'ward', 'focusName': 'Westminster', 'focusLevel': 'local_auth'}, 'instructions': 'Open the geography selector widget to choose areas interactively.', 'uiResourceUris': ['ui://mcp-geo/geography-selector'], '_meta': {'uiResourceUris': ['ui://mcp-geo/geography-selector'], 'audience': ['user']}}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Open a map so I can select wards", "intent": "interactive_selection", "confidence": 0.9, "recommended_tool": "os_apps.render_geography_selector", "recommended_parameters": {"level": "ward", "focusName": "Open", "focusLevel": "local_auth"}, "explanation": "Open an interactive map to select geographic areas.", "workflow_steps": ["os_apps.render_geography_selector"], "alternative_tools": ["admin_lookup.find_by_name"], "guidance": "Open the geography selector widget and choose the right level (OA/LSOA/MSOA/ward, etc.)."}}, {"tool": "os_apps.render_geography_selector", "response": {"status": "ready", "config": {"level": "ward", "focusName": "Westminster", "focusLevel": "local_auth"}, "instructions": "Open the geography selector widget to choose areas interactively.", "uiResourceUris": ["ui://mcp-geo/geography-selector"], "_meta": {"uiResourceUris": ["ui://mcp-geo/geography-selector"], "audience": ["user"]}}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 4.1ms
+Success: True

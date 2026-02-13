@@ -1,0 +1,26 @@
+{
+  "version": "2026-02-11",
+  "kind": "code_lists",
+  "cacheMode": "hybrid_fetch_cache",
+  "generatedAt": "2026-02-11T00:00:00Z",
+  "packs": [
+    {
+      "id": "ons_geography_codes",
+      "title": "ONS Geography Codes",
+      "status": "manifest_only",
+      "cachePath": null,
+      "sha256": null,
+      "bytes": null,
+      "sourceUrl": "https://api.beta.ons.gov.uk/v1/code-lists"
+    },
+    {
+      "id": "nomis_codelists",
+      "title": "NOMIS Codelists",
+      "status": "manifest_only",
+      "cachePath": null,
+      "sha256": null,
+      "bytes": null,
+      "sourceUrl": "https://www.nomisweb.co.uk/api/v01/dataset/def.sdmx.json"
+    }
+  ]
+}

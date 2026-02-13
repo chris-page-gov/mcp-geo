@@ -1,0 +1,328 @@
+{
+  "version": "1.0.0",
+  "created_at_utc": "2026-02-07T07:58:51Z",
+  "scope_note": "Phase 2 taxonomy options for ONS dataset selection in MCP Geo (scope B: statistical + derived indicators; excludes text-only bulletins and methodology PDFs).",
+  "taxonomy_options": [
+    {
+      "scheme_id": "thematic-official-ons",
+      "scheme_name": "Thematic Official ONS Tree",
+      "design_intent": "Mirror ONS top-level themes so users can start from familiar official categories.",
+      "entry_mode": "browse-first",
+      "primary_grouping_keys": [
+        "ons_theme",
+        "ons_subtheme",
+        "dataset_family",
+        "geography_level",
+        "time_granularity"
+      ],
+      "tile_generation_rules": [
+        "Create top tiles from ONS top-level themes.",
+        "Promote frequently used subthemes into second-level tiles.",
+        "Attach 'local view available' badge where sub-national geographies exist.",
+        "Prefer dataset cards over bulletin pages."
+      ],
+      "strengths": [
+        "High trust and recognisability for UK users.",
+        "Low training burden for analysts already using ONS.",
+        "Simple governance and provenance traceability."
+      ],
+      "weaknesses": [
+        "Ambiguous for cross-theme questions (e.g., cost of living + wages + housing).",
+        "Can hide best dataset if user does not know domain jargon.",
+        "Not optimal for novice question-to-dataset selection."
+      ],
+      "best_for_personas": [
+        "policy_analyst",
+        "statistician",
+        "returning_ons_user"
+      ],
+      "minimum_required_metadata": [
+        "dataset_id",
+        "title",
+        "summary",
+        "ons_theme",
+        "ons_subtheme",
+        "geography_coverage",
+        "time_coverage",
+        "release_frequency",
+        "revision_status",
+        "source_name",
+        "source_url",
+        "retrieved_at",
+        "licence",
+        "method_note",
+        "quality_note"
+      ],
+      "example_tiles": [
+        {
+          "tile_id": "inflation-and-prices",
+          "tile_label": "Inflation and prices",
+          "question_examples": [
+            "How fast are prices rising?",
+            "What is current inflation compared with last year?"
+          ]
+        },
+        {
+          "tile_id": "population-and-migration",
+          "tile_label": "Population and migration",
+          "question_examples": [
+            "Is my area growing?",
+            "How has migration changed over time?"
+          ]
+        }
+      ]
+    },
+    {
+      "scheme_id": "standards-first-sdmx",
+      "scheme_name": "Standards-First SDMX Concept Model",
+      "design_intent": "Use SDMX-style structural metadata for precise, machine-robust selection and interoperability.",
+      "entry_mode": "structure-first",
+      "primary_grouping_keys": [
+        "concept_scheme",
+        "dataflow",
+        "dimension_set",
+        "measure",
+        "attribute_set",
+        "code_list",
+        "version"
+      ],
+      "tile_generation_rules": [
+        "Generate tiles from concept domains and common dimensions.",
+        "Offer dimension-driven drill-down (geography, time, sex, age, industry).",
+        "Auto-warn when requested comparison crosses incompatible code lists or vintages."
+      ],
+      "strengths": [
+        "Highest precision and interoperability.",
+        "Strong fit for AI agents and API-driven workflows.",
+        "Supports comparability checks and reproducible queries."
+      ],
+      "weaknesses": [
+        "Steep learning curve for non-specialists.",
+        "Requires robust metadata normalisation pipeline.",
+        "Can feel technical without guidance layer."
+      ],
+      "best_for_personas": [
+        "ai_agent",
+        "data_engineer",
+        "advanced_analyst"
+      ],
+      "minimum_required_metadata": [
+        "dataset_id",
+        "dataflow_id",
+        "version",
+        "dimensions",
+        "measures",
+        "attributes",
+        "code_lists",
+        "valid_combinations",
+        "geography_dimension",
+        "time_dimension",
+        "source_name",
+        "source_url",
+        "retrieved_at",
+        "licence",
+        "method_note",
+        "quality_note"
+      ],
+      "example_tiles": [
+        {
+          "tile_id": "select-by-geography-dimension",
+          "tile_label": "Select by geography dimension",
+          "question_examples": [
+            "Show datasets with local authority breakdowns.",
+            "Find series available at region and UK levels."
+          ]
+        },
+        {
+          "tile_id": "select-by-measure-and-frequency",
+          "tile_label": "Select by measure and frequency",
+          "question_examples": [
+            "Monthly index measures only.",
+            "Quarterly rates with revisions."
+          ]
+        }
+      ]
+    },
+    {
+      "scheme_id": "question-first-elicitation",
+      "scheme_name": "Question-First Elicitation Tree",
+      "design_intent": "Convert vague user intent into precise dataset choices through guided questions.",
+      "entry_mode": "intent-first",
+      "primary_grouping_keys": [
+        "user_intent",
+        "decision_context",
+        "target_population",
+        "geography_need",
+        "time_need",
+        "indicator_type"
+      ],
+      "tile_generation_rules": [
+        "Top tiles represent common user questions and decisions.",
+        "Use 4-step elicitation: topic -> place -> period -> measure type.",
+        "Return ranked candidate datasets with explanations and exclusions."
+      ],
+      "strengths": [
+        "Best for novices and mixed audiences.",
+        "Reduces wrong-dataset selection.",
+        "Naturally supports explainability ('why this dataset')."
+      ],
+      "weaknesses": [
+        "Needs carefully tuned prompts and ranking logic.",
+        "May hide advanced options unless progressive disclosure is implemented.",
+        "Requires ongoing evaluation of question funnels."
+      ],
+      "best_for_personas": [
+        "service_designer",
+        "local_policy_user",
+        "journalist",
+        "public_user"
+      ],
+      "minimum_required_metadata": [
+        "dataset_id",
+        "question_tags",
+        "decision_tags",
+        "geography_coverage",
+        "time_coverage",
+        "indicator_kind",
+        "fitness_for_use_score",
+        "confidence",
+        "explainability_note",
+        "known_limitations",
+        "comparability_warnings",
+        "source_name",
+        "source_url",
+        "retrieved_at",
+        "licence",
+        "method_note",
+        "quality_note"
+      ],
+      "elicitation_flow_template": [
+        "what_are_you_trying_to_understand",
+        "which_place_or_places",
+        "which_time_period",
+        "what_kind_of_measure",
+        "do_you_need_comparison_or_trend",
+        "show_ranked_datasets_with_reasons"
+      ],
+      "example_tiles": [
+        {
+          "tile_id": "how-is-my-area-changing",
+          "tile_label": "How is my area changing?",
+          "question_examples": [
+            "Is population ageing in my area?",
+            "Are incomes keeping up with inflation locally?"
+          ]
+        },
+        {
+          "tile_id": "where-are-pressures-rising",
+          "tile_label": "Where are pressures rising?",
+          "question_examples": [
+            "Which areas show worsening affordability?",
+            "Where is unemployment increasing fastest?"
+          ]
+        }
+      ]
+    },
+    {
+      "scheme_id": "hybrid-adaptive-ranking",
+      "scheme_name": "Hybrid Adaptive Ranking (Recommended)",
+      "design_intent": "Combine official themes + SDMX structure + question elicitation with adaptive ranking.",
+      "entry_mode": "multi-entry",
+      "primary_grouping_keys": [
+        "intent",
+        "official_theme",
+        "structural_match_score",
+        "comparability_risk",
+        "user_profile"
+      ],
+      "tile_generation_rules": [
+        "Allow entry from question tiles, theme tiles, or advanced structure filters.",
+        "Rank candidates using weighted score: intent fit, geography fit, temporal fit, quality, comparability risk.",
+        "Always show 'why selected' and 'why not selected' notes."
+      ],
+      "ranking_formula": {
+        "score_range": "0-100",
+        "weights": {
+          "intent_fit": 0.3,
+          "geography_fit": 0.2,
+          "time_fit": 0.15,
+          "quality_signal": 0.15,
+          "comparability_safety": 0.1,
+          "freshness_release_alignment": 0.1
+        }
+      },
+      "strengths": [
+        "Best expected accuracy across mixed user groups.",
+        "Supports both human and AI selection paths.",
+        "Explicit safety controls for misuse and comparability errors."
+      ],
+      "weaknesses": [
+        "Most complex to implement and maintain.",
+        "Needs telemetry and governance for model drift.",
+        "Requires transparent auditing of ranking behaviour."
+      ],
+      "best_for_personas": [
+        "all_personas"
+      ],
+      "minimum_required_metadata": [
+        "all_fields_from_other_schemes",
+        "selection_rationale",
+        "excluded_candidates",
+        "comparability_risk_level",
+        "provisional_or_final_flag",
+        "last_release_date",
+        "next_release_date",
+        "source_name",
+        "source_url",
+        "retrieved_at",
+        "licence",
+        "method_note",
+        "quality_note"
+      ],
+      "recommendation": {
+        "is_recommended": true,
+        "reason": "Balances discoverability, precision, and safety; aligns with MCP Geo tile-card-graph model."
+      }
+    }
+  ],
+  "trade_off_matrix": [
+    {
+      "scheme_id": "thematic-official-ons",
+      "selection_speed_novice": 4,
+      "selection_correctness_novice": 3,
+      "selection_correctness_expert": 4,
+      "interoperability_for_ai": 2,
+      "implementation_complexity": 2
+    },
+    {
+      "scheme_id": "standards-first-sdmx",
+      "selection_speed_novice": 1,
+      "selection_correctness_novice": 2,
+      "selection_correctness_expert": 5,
+      "interoperability_for_ai": 5,
+      "implementation_complexity": 4
+    },
+    {
+      "scheme_id": "question-first-elicitation",
+      "selection_speed_novice": 5,
+      "selection_correctness_novice": 4,
+      "selection_correctness_expert": 3,
+      "interoperability_for_ai": 3,
+      "implementation_complexity": 3
+    },
+    {
+      "scheme_id": "hybrid-adaptive-ranking",
+      "selection_speed_novice": 4,
+      "selection_correctness_novice": 5,
+      "selection_correctness_expert": 5,
+      "interoperability_for_ai": 5,
+      "implementation_complexity": 5
+    }
+  ],
+  "phase_2_definition_of_done": {
+    "three_or_more_competing_grouping_schemes": true,
+    "trade_offs_explicit": true,
+    "tile_mapping_examples_included": true,
+    "recommended_scheme_declared": true
+  }
+}

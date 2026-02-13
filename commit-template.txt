@@ -1,0 +1,16 @@
+# Commit Message Template
+# -----------------------
+# <type>(<scope>): <subject>
+#
+# Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci
+# Scope: optional — e.g. ingest, schema, scanner, docs
+# Subject: imperative, lower-case, no trailing period
+#
+# Body (wrap at 72 chars). Explain motivation and contrast with previous behavior.
+#
+# Footer examples:
+# BREAKING CHANGE: <description>
+# Closes #123
+# Co-authored-by: Name <user@example.com>
+#
+# Lines starting with '#' are ignored.

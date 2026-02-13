@@ -1,0 +1,45 @@
+{
+  "version": "2026-02-11",
+  "profiles": [
+    {
+      "id": "labour_market_area_compare",
+      "title": "Labour Market Area Comparison",
+      "whenToUse": "Use when users ask for unemployment/employment comparisons across places.",
+      "recommendedTools": [
+        "admin_lookup.find_by_name",
+        "nomis.datasets",
+        "nomis.query"
+      ],
+      "steps": [
+        "Resolve area names to the target geography level (WARD/LSOA/MSOA).",
+        "Find a suitable dataset with nomis.datasets using q + limit.",
+        "Query selected dataset with geography/time/measures filters in nomis.query."
+      ],
+      "notes": [
+        "Prefer NOMIS for labour-market and census-style questions.",
+        "If query includes very local geographies (OA/LSOA/MSOA), keep NOMIS as default provider."
+      ]
+    },
+    {
+      "id": "census_theme_profile",
+      "title": "Census Theme Workflow",
+      "whenToUse": "Use for census themes such as health, qualifications, housing, or ethnicity.",
+      "recommendedTools": [
+        "nomis.datasets",
+        "nomis.concepts",
+        "nomis.codelists",
+        "nomis.query"
+      ],
+      "steps": [
+        "Discover candidate census datasets using keywords and q + limit.",
+        "Inspect concepts/codelists to confirm dimensions and valid options.",
+        "Run nomis.query with explicit geography and time parameters."
+      ],
+      "notes": [
+        "Use includeRaw=true on nomis.datasets only when full metadata is necessary.",
+        "Avoid unfiltered dataset scans in interactive clients."
+      ]
+    }
+  ],
+  "defaultProfile": "labour_market_area_compare"
+}

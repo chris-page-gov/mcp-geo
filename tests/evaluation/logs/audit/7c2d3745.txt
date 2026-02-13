@@ -1,0 +1,38 @@
+============================================================
+AUDIT LOG: 7c2d3745
+Timestamp: 2026-01-20T20:22:27.972959
+============================================================
+
+## 1. QUERY
+------------------------------------------------------------
+User Question: "Render a map with invalid bbox values"
+
+## 2. ROUTING DECISION
+------------------------------------------------------------
+Intent Detected: place_lookup
+Confidence: 0.8
+Recommended Tool: admin_lookup.find_by_name
+Workflow Steps: ['admin_lookup.find_by_name']
+
+## 3. TOOL CALLS
+------------------------------------------------------------
+### Tool Call 1: os_maps.render
+········································
+Timestamp: 2026-01-20T20:22:27.977460
+Duration: 1.9ms
+Status: ERROR
+
+Inputs:
+{'bbox': ['x', 1, 2, 3]}
+
+Outputs:
+{'isError': True, 'code': 'INVALID_INPUT', 'message': 'bbox values must be numeric'}
+
+## 4. RESPONSE
+------------------------------------------------------------
+[{"tool": "os_mcp.route_query", "response": {"query": "Render a map with invalid bbox values", "intent": "place_lookup", "confidence": 0.8, "recommended_tool": "admin_lookup.find_by_name", "recommended_parameters": {"text": "Render"}, "explanation": "Find administrative areas by name using bundled boundaries.", "workflow_steps": ["admin_lookup.find_by_name"], "alternative_tools": ["admin_lookup.area_geometry", "os_names.find"], "guidance": "Use admin_lookup.find_by_name for administrative areas, then area_geometry for a bbox."}}, {"tool": "os_maps.render", "response": {"isError": true, "code": "INVALID_INPUT", "message": "bbox values must be numeric"}}]
+
+## 5. METRICS
+------------------------------------------------------------
+Duration: 4.5ms
+Success: True
