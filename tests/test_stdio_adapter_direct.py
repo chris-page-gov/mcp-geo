@@ -70,6 +70,19 @@ def test_stdio_initialize_falls_back_to_latest_protocol():
     assert result.get("protocolVersion") == PROTOCOL_VERSION
 
 
+def test_stdio_initialize_records_capability_summary():
+    stdio_adapter.handle_initialize(
+        {
+            "protocolVersion": "2025-03-26",
+            "capabilities": {"tools": {}, "elicitation": {"form": {}}},
+        }
+    )
+    summary = stdio_adapter.CLIENT_CAPABILITY_SUMMARY
+    assert summary.get("requestedProtocolVersion") == "2025-03-26"
+    assert summary.get("supports", {}).get("tools") is True
+    assert summary.get("supports", {}).get("elicitationForm") is True
+
+
 def test_tool_names_sanitized_and_resolvable():
     result = stdio_adapter.handle_list_tools({})
     names = [t["name"] for t in result["tools"]]
@@ -155,6 +168,21 @@ def test_tool_schema_const_is_sanitized():
     assert const == "os_places_by_postcode"
 
 
+def test_tools_list_uses_default_toolset_from_env(monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "maps_tiles")
+    result = stdio_adapter.handle_list_tools({})
+    names = {tool["name"] for tool in result["tools"]}
+    assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
+
+
+def test_tools_list_explicit_toolset_overrides_default(monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "maps_tiles")
+    result = stdio_adapter.handle_list_tools({"toolset": "ons_selection"})
+    names = {tool["name"] for tool in result["tools"]}
+    assert names
+    assert all(name.startswith("ons_") for name in names)
+
+
 def test_read_headers_invalid_content_length():
     buf = io.StringIO("Content-Length: nope\r\n\r\n")
     length, error = stdio_adapter._read_headers(buf)
@@ -231,6 +259,48 @@ def test_stats_routing_elicitation_cancel_returns_error(monkeypatch):
         stdio_adapter._set_elicitation_handler(None)
     assert call.get("ok") is False
     assert call.get("status") == 409
+    data = call.get("data", {})
+    assert data.get("code") == "ELICITATION_CANCELLED"
+
+
+def test_select_toolsets_elicitation_applies_choices(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(
+        lambda _params: {
+            "action": "accept",
+            "content": {"includeToolsets": ["core_router", "maps_tiles"]},
+        }
+    )
+    try:
+        call = stdio_adapter.handle_call_tool(
+            {
+                "name": "os_mcp.select_toolsets",
+                "arguments": {},
+            }
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    filters = data.get("effectiveFilters", {})
+    assert filters.get("includeToolsets") == ["core_router", "maps_tiles"]
+
+
+def test_select_toolsets_elicitation_cancel_returns_error(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(lambda _params: {"action": "cancel"})
+    try:
+        call = stdio_adapter.handle_call_tool(
+            {
+                "name": "os_mcp.select_toolsets",
+                "arguments": {},
+            }
+        )
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+    assert call.get("ok") is False
     data = call.get("data", {})
     assert data.get("code") == "ELICITATION_CANCELLED"
 

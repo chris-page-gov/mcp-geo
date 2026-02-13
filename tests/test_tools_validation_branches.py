@@ -9,6 +9,13 @@ def test_os_names_find_missing_text():
     assert resp.status_code == 400
     assert resp.json()['code'] == 'INVALID_INPUT'
 
+
+def test_os_names_find_invalid_limit():
+    resp = client.post('/tools/call', json={'tool': 'os_names.find', 'text': 'London', 'limit': 0})
+    assert resp.status_code == 400
+    assert resp.json()['code'] == 'INVALID_INPUT'
+
+
 def test_os_names_nearest_bad_coords():
     resp = client.post('/tools/call', json={'tool': 'os_names.nearest', 'lat': 'x', 'lon': 'y'})
     assert resp.status_code == 400
@@ -18,6 +25,13 @@ def test_os_places_search_missing_text():
     resp = client.post('/tools/call', json={'tool': 'os_places.search', 'text': ''})
     assert resp.status_code == 400
     assert resp.json()['code'] == 'INVALID_INPUT'
+
+
+def test_os_places_search_invalid_limit():
+    resp = client.post('/tools/call', json={'tool': 'os_places.search', 'text': 'foo', 'limit': 9999})
+    assert resp.status_code == 400
+    assert resp.json()['code'] == 'INVALID_INPUT'
+
 
 def test_os_places_by_uprn_missing():
     resp = client.post('/tools/call', json={'tool': 'os_places.by_uprn', 'uprn': ''})

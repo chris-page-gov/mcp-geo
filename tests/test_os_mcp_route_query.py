@@ -184,3 +184,43 @@ def test_stats_routing_rejects_invalid_comparison_level():
     assert resp.status_code == 400
     body = resp.json()
     assert body.get("code") == "INVALID_INPUT"
+
+
+def test_select_toolsets_infers_from_query():
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.select_toolsets", "query": "Render a static map for Coventry"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    filters = body.get("effectiveFilters", {})
+    include = filters.get("includeToolsets", [])
+    assert "core_router" in include
+    assert "maps_tiles" in include
+    assert body.get("matchedToolCount", 0) >= 1
+
+
+def test_select_toolsets_explicit_filters():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "includeToolsets": ["core_router"],
+            "excludeToolsets": ["apps_ui"],
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    filters = body.get("effectiveFilters", {})
+    assert filters.get("includeToolsets") == ["core_router"]
+    assert filters.get("excludeToolsets") == ["apps_ui"]
+
+
+def test_select_toolsets_rejects_invalid_max_tools():
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.select_toolsets", "maxTools": 0},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"

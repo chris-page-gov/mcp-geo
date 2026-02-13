@@ -67,6 +67,31 @@ def test_os_names_find_requests_wgs84(monkeypatch):
     resp = client.post("/tools/call", json={"tool": "os_names.find", "text": "London"})
     assert resp.status_code == 200
     assert "output_srs" not in captured
+    assert captured["maxresults"] == 25
+
+
+def test_os_names_find_respects_limit(monkeypatch):
+    from tools import os_names
+
+    captured = {}
+
+    def fake_get_json(url, params):
+        captured.update(params)
+        return 200, {"results": []}
+
+    fake_client = type(
+        "C",
+        (),
+        {
+            "get_json": staticmethod(fake_get_json),
+            "base_names": "http://example",
+        },
+    )()
+    monkeypatch.setattr(os_names, "client", fake_client)
+    client = TestClient(app)
+    resp = client.post("/tools/call", json={"tool": "os_names.find", "text": "London", "limit": 40})
+    assert resp.status_code == 200
+    assert captured["maxresults"] == 40
 
 
 def test_os_names_nearest_bng_coords(monkeypatch):

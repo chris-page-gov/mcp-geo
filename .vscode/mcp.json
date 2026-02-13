@@ -22,6 +22,7 @@
         "NOMIS_UID": "${env:NOMIS_UID}",
         "NOMIS_SIGNATURE": "${env:NOMIS_SIGNATURE}",
         "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_TOOLS_DEFAULT_TOOLSET": "starter",
         "MCP_APPS_CONTENT_MODE": "embedded",
         "UI_EVENT_LOG_PATH": "logs/ui-events.vscode.jsonl"
       },
@@ -54,6 +55,7 @@
         "NOMIS_UID": "${env:NOMIS_UID}",
         "NOMIS_SIGNATURE": "${env:NOMIS_SIGNATURE}",
         "MCP_STDIO_UI_SUPPORTED": "1",
+        "MCP_TOOLS_DEFAULT_TOOLSET": "starter",
         "MCP_APPS_CONTENT_MODE": "embedded",
         "UI_EVENT_LOG_PATH": "logs/ui-events.vscode-trace.jsonl"
       },

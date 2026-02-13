@@ -20,13 +20,13 @@ _DEFAULT_COLLECTION_BASES: dict[str, str] = {
 }
 
 _DEFAULT_LIMITS: dict[str, int] = {
-    "uprns": 2000,
-    "buildings": 1000,
-    "road_links": 2000,
-    "path_links": 2000,
+    "uprns": 100,
+    "buildings": 100,
+    "road_links": 100,
+    "path_links": 100,
 }
 
-_MAX_LIMIT = 10_000
+_MAX_LIMIT = 500
 
 _NGD_COLLECTION_CACHE_TTL_SECONDS = 3600.0
 _NGD_COLLECTION_CACHE: dict[str, Any] = {"stored_at": 0.0, "latest_by_base": {}}
@@ -433,4 +433,3 @@ register(
         handler=_export,
     )
 )
-

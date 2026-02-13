@@ -72,7 +72,7 @@ Legend: Done, Partial, Not started
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search fallback transparency now includes fallback reasons and cache maturity snapshots, and cache status exposes staleness metadata. |
 | Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/, scripts/pack_cache_refresh.py | Boundary/code-list hybrid fetch-cache manifests + indexes are now exposed (`boundary-pack-sources`, `code-list-pack-sources`, `boundary-packs-index`, `code-list-packs-index`); full pack acquisition depends on refresh runs and source availability. |
-| Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | route_query + descriptor for tool discovery. |
+| Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | `route_query` + descriptor for tool discovery, plus `os_mcp.select_toolsets` for post-init discovery filter selection. |
 | Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
 | Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
@@ -98,6 +98,12 @@ core tools. Current implementation coverage is:
 - Streamable HTTP `/mcp` endpoint added for MCP clients.
 - MCP-Apps UI support aligned to finalized ext-apps spec (JSON-RPC `ui/initialize`, no skybridge).
 - Tool search (`/tools/search`) plus routing tool (`os_mcp.route_query`).
+- Default startup toolset filters for discovery (`MCP_TOOLS_DEFAULT_*`) so
+  clients that call `tools/list` without filters can receive a curated subset
+  (for example `starter`) instead of the full tool schema set.
+- Initialize-time capability/protocol summaries now emit in STDIO/HTTP logs for
+  auditability, and `os_mcp.select_toolsets` can use MCP form elicitation as a
+  post-init discovery step in both transports.
 - Conditional resources with weak ETags and `If-None-Match` support.
 - STDIO adapter compatibility adjustments (arguments/params, name normalization).
 - OS API auth failures now classified into missing/invalid/expired key errors.

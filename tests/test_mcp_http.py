@@ -28,6 +28,31 @@ def test_mcp_http_initialize_sets_session_header(client):
     assert "mcp-session-id" in resp.headers
 
 
+def test_mcp_http_initialize_records_capability_summary(client):
+    from server.mcp import http_transport
+
+    resp = client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": "init-summary",
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {"tools": {}, "elicitation": {"form": {}}},
+            },
+        },
+    )
+    assert resp.status_code == 200
+    session_id = resp.headers.get("mcp-session-id")
+    assert session_id
+    state = http_transport._SESSION_STATE.get(session_id, {})
+    summary = state.get("capabilitySummary", {})
+    assert summary.get("requestedProtocolVersion") == "2025-03-26"
+    assert summary.get("supports", {}).get("tools") is True
+    assert summary.get("supports", {}).get("elicitationForm") is True
+
+
 def test_mcp_http_list_tools_sanitized(client):
     init_resp = client.post("/mcp", json=_initialize_payload())
     session_id = init_resp.headers.get("mcp-session-id")
@@ -56,6 +81,20 @@ def test_mcp_http_list_tools_toolset_filter(client):
     names = [tool["name"] for tool in tools]
     assert all(name.startswith("ons_") for name in names)
     assert "toolsets" in payload["result"]
+
+
+def test_mcp_http_list_tools_uses_default_toolset_env(client, monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "maps_tiles")
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload("list-default-toolset-1", "tools/list", {}),
+    )
+    payload = resp.json()
+    names = {tool["name"] for tool in payload["result"]["tools"]}
+    assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
 
 
 def test_mcp_http_search_tools_toolset_filters(client):
@@ -443,3 +482,103 @@ def test_mcp_http_ons_select_elicitation_stream(monkeypatch, tmp_path):
     assert result.get("ok") is True
     data = result.get("data", {})
     assert data.get("needsElicitation") is False
+
+
+def test_mcp_http_select_toolsets_elicitation_stream(monkeypatch):
+    monkeypatch.setenv("MCP_HTTP_ELICITATION_ENABLED", "1")
+    monkeypatch.setenv("MCP_HTTP_ELICITATION_TIMEOUT_SECONDS", "5")
+
+    main_client = TestClient(app)
+    init_resp = main_client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": "init-1",
+            "method": "initialize",
+            "params": {"capabilities": {"elicitation": {"form": {}}}},
+        },
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    tool_call = {
+        "jsonrpc": "2.0",
+        "id": "call-toolsets-1",
+        "method": "tools/call",
+        "params": {"name": "os_mcp.select_toolsets", "arguments": {}},
+    }
+
+    events = queue.Queue()
+    captured = {}
+
+    def _stream():
+        stream_client = TestClient(app)
+        with stream_client.stream(
+            "POST",
+            "/mcp",
+            headers={
+                "mcp-session-id": session_id,
+                "accept": "text/event-stream, application/json",
+            },
+            json=tool_call,
+        ) as resp:
+            assert resp.status_code == 200
+            assert resp.headers.get("content-type", "").startswith("text/event-stream")
+            for raw in resp.iter_lines():
+                if raw is None:
+                    continue
+                line = raw.decode() if isinstance(raw, (bytes, bytearray)) else raw
+                if not isinstance(line, str) or not line.startswith("data:"):
+                    continue
+                data = line[len("data:"):].strip()
+                if not data:
+                    continue
+                msg = json.loads(data)
+                if msg.get("method") == "elicitation/create":
+                    captured["elicitation"] = msg
+                if msg.get("id") == "call-toolsets-1" and isinstance(msg.get("result"), dict):
+                    captured["tool_response"] = msg
+                    events.put(("tool_response", msg.get("id")))
+
+    t = threading.Thread(target=_stream, daemon=True)
+    t.start()
+    elicitation_id = "elicitation-1"
+    accepted = False
+    for _ in range(20):
+        resp = main_client.post(
+            "/mcp",
+            headers={"mcp-session-id": session_id},
+            json={
+                "jsonrpc": "2.0",
+                "id": elicitation_id,
+                "result": {
+                    "action": "accept",
+                    "content": {"includeToolsets": ["core_router", "maps_tiles"]},
+                },
+            },
+        )
+        if resp.status_code == 202:
+            accepted = True
+            break
+        time.sleep(0.05)
+    assert accepted is True
+
+    kind, _ = events.get(timeout=5)
+    assert kind == "tool_response"
+    t.join(timeout=5)
+
+    elicitation = captured.get("elicitation", {})
+    params = elicitation.get("params", {})
+    schema = params.get("requestedSchema", {})
+    props = schema.get("properties", {})
+    assert "includeToolsets" in props
+    assert "excludeToolsets" in props
+
+    tool_response = captured.get("tool_response", {})
+    result = tool_response.get("result", {})
+    assert result.get("ok") is True
+    data = result.get("data", {})
+    assert data.get("effectiveFilters", {}).get("includeToolsets") == [
+        "core_router",
+        "maps_tiles",
+    ]

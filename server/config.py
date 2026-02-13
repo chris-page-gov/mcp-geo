@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     OPENAI_WIDGET_DOMAIN: str = ""
     MCP_APPS_RESOURCE_LINK: bool = False
     MCP_APPS_CONTENT_MODE: str = ""
+    MCP_TOOLS_DEFAULT_TOOLSET: str = ""
+    MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS: str = ""
+    MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS: str = ""
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

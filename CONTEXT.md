@@ -95,9 +95,9 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.14% coverage, 688 passed, 6 skipped) on 2026-02-13.
+- Latest full test run: `pytest -q` (90.02% coverage, 708 passed, 6 skipped) on 2026-02-13.
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
-- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.16% coverage, 683 passed, 6 skipped) on 2026-02-13.
+- Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.03% coverage, 703 passed, 6 skipped) on 2026-02-13.
 
 ## Key Conventions
 
@@ -107,6 +107,23 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-13: Hardened Claude/STDIO payload sizing for map workflows by adding
+  explicit limits to `os_places.search` and `os_names.find`, reducing
+  `os_map.inventory` default/max limits to avoid oversized overlay payloads,
+  and truncating oversized STDIO tool `content` text with a pointer to
+  `result.data` for full structured payloads.
+- 2026-02-13: Added initialize-time client support summaries (requested protocol,
+  negotiated protocol, and capability booleans) to STDIO and HTTP logs for
+  traceable protocol/capability conclusions without increasing tool payloads.
+- 2026-02-13: Added `os_mcp.select_toolsets` as a post-init discovery control
+  tool with query-driven toolset inference and MCP form-elicitation support in
+  both STDIO and Streamable HTTP transports.
+- 2026-02-13: Added startup discovery throttling via default toolset filters for
+  `tools/list`/`tools/describe`/MCP `tools/list` when clients omit filters.
+  New env knobs: `MCP_TOOLS_DEFAULT_TOOLSET`,
+  `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`, and
+  `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`; added curated `starter` toolset for
+  low-context client initialization.
 - 2026-02-13: Applied post-review hardening updates for PR #1: included OS vector
   stylesheet submodule path in Docker build context, removed `EXPOSE 8000` from
   STDIO-default image, aligned getting-started docs with Playwright port

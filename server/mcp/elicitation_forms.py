@@ -187,3 +187,89 @@ def apply_ons_select_elicitation_result(
 
     return changed, None
 
+
+def _coerce_toolset_list(value: Any) -> Optional[List[str]]:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        values = [str(item).strip() for item in value if isinstance(item, str) and item.strip()]
+        return values or None
+    if isinstance(value, str) and value.strip():
+        parts = [part.strip() for part in re.split(r"[,\n;]+", value) if part.strip()]
+        return parts or None
+    return None
+
+
+def build_toolset_selection_elicitation_params(
+    *,
+    query: str,
+    toolset_names: List[str],
+    default_include: Optional[List[str]] = None,
+    default_exclude: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    include_default = [item for item in (default_include or []) if item in toolset_names]
+    exclude_default = [item for item in (default_exclude or []) if item in toolset_names]
+    return {
+        "mode": "form",
+        "message": "Choose discovery toolsets for this session before listing tools.",
+        "requestedSchema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "title": "Query hint (optional)",
+                    "description": "Optional natural-language goal to auto-recommend toolsets.",
+                    "default": query,
+                },
+                "includeToolsets": {
+                    "type": "array",
+                    "title": "Include toolsets",
+                    "description": "Pick toolsets to include when calling tools/list.",
+                    "items": {"type": "string", "enum": toolset_names},
+                    "default": include_default,
+                },
+                "excludeToolsets": {
+                    "type": "array",
+                    "title": "Exclude toolsets",
+                    "description": "Optional toolsets to exclude from tools/list.",
+                    "items": {"type": "string", "enum": toolset_names},
+                    "default": exclude_default,
+                },
+            },
+            "required": [],
+        },
+        "_meta": {"reason": "os_mcp_select_toolsets"},
+    }
+
+
+def apply_toolset_selection_elicitation_result(
+    payload: Dict[str, Any],
+    response: Dict[str, Any],
+) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    action = response.get("action")
+    if action in {"cancel", "decline"}:
+        return False, {
+            "isError": True,
+            "code": "ELICITATION_CANCELLED",
+            "message": "User cancelled or declined toolset selection.",
+            "action": action,
+        }
+    if action != "accept":
+        return False, {
+            "isError": True,
+            "code": "ELICITATION_INVALID_RESULT",
+            "message": "Client returned an invalid elicitation result.",
+        }
+    content = response.get("content")
+    if not isinstance(content, dict):
+        return True, None
+    query = content.get("query")
+    if isinstance(query, str) and query.strip():
+        payload["query"] = query.strip()
+    include = _coerce_toolset_list(content.get("includeToolsets"))
+    if include is not None:
+        payload["includeToolsets"] = include
+    exclude = _coerce_toolset_list(content.get("excludeToolsets"))
+    if exclude is not None:
+        payload["excludeToolsets"] = exclude
+    return True, None

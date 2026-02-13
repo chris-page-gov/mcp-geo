@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from server.mcp.tool_search import (
+    apply_default_toolset_filters,
     filter_tool_names_by_toolsets,
     get_tool_metadata,
     get_toolset_catalog,
@@ -129,12 +130,19 @@ def list_tools_endpoint(
     excludeToolsets: str | None = None,
 ) -> Any:
     names = list_tools()
+    parsed_include_toolsets = parse_toolset_list(includeToolsets)
+    parsed_exclude_toolsets = parse_toolset_list(excludeToolsets)
+    toolset, parsed_include_toolsets, parsed_exclude_toolsets = apply_default_toolset_filters(
+        toolset=toolset,
+        include_toolsets=parsed_include_toolsets,
+        exclude_toolsets=parsed_exclude_toolsets,
+    )
     try:
         filtered_names = filter_tool_names_by_toolsets(
             names,
             toolset=toolset,
-            include_toolsets=parse_toolset_list(includeToolsets),
-            exclude_toolsets=parse_toolset_list(excludeToolsets),
+            include_toolsets=parsed_include_toolsets,
+            exclude_toolsets=parsed_exclude_toolsets,
         )
     except ValueError as exc:
         return JSONResponse(
@@ -396,13 +404,20 @@ def describe_tools(
     excludeToolsets: str | None = None,
 ):
     original_names = list_tools()
+    parsed_include_toolsets = parse_toolset_list(includeToolsets)
+    parsed_exclude_toolsets = parse_toolset_list(excludeToolsets)
+    toolset, parsed_include_toolsets, parsed_exclude_toolsets = apply_default_toolset_filters(
+        toolset=toolset,
+        include_toolsets=parsed_include_toolsets,
+        exclude_toolsets=parsed_exclude_toolsets,
+    )
     try:
         filtered_names = set(
             filter_tool_names_by_toolsets(
                 original_names,
                 toolset=toolset,
-                include_toolsets=parse_toolset_list(includeToolsets),
-                exclude_toolsets=parse_toolset_list(excludeToolsets),
+                include_toolsets=parsed_include_toolsets,
+                exclude_toolsets=parsed_exclude_toolsets,
             )
         )
     except ValueError as exc:

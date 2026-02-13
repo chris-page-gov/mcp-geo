@@ -11,8 +11,14 @@ from server.protocol import (
     SUPPORTED_PROTOCOL_VERSIONS,
 )
 from server.mcp.resource_catalog import MCP_APPS_MIME, SKILLS_RESOURCE
-from server.mcp.tool_search import get_tool_search_config
-from tools.registry import Tool, ToolResult, register
+from server.mcp.tool_search import (
+    apply_default_toolset_filters,
+    filter_tool_names_by_toolsets,
+    get_tool_search_config,
+    get_toolset_catalog,
+    parse_toolset_list,
+)
+from tools.registry import Tool, ToolResult, all_tools, register
 
 
 class QueryIntent(str, Enum):
@@ -243,6 +249,23 @@ FEATURE_COLLECTIONS = {
 }
 
 NOMIS_WORKFLOW_URI = "resource://mcp-geo/nomis-workflows"
+
+INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
+    QueryIntent.ADDRESS_LOOKUP: ["core_router", "places_names"],
+    QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
+    QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
+    QueryIntent.STATISTICS: ["core_router", "ons_data"],
+    QueryIntent.AREA_COMPARISON: ["core_router", "apps_ui", "ons_data"],
+    QueryIntent.FEATURE_SEARCH: ["core_router", "features_layers"],
+    QueryIntent.BOUNDARY_FETCH: ["core_router", "admin_boundaries"],
+    QueryIntent.INTERACTIVE_SELECTION: ["core_router", "apps_ui", "admin_boundaries"],
+    QueryIntent.ROUTE_PLANNING: ["core_router", "apps_ui", "maps_tiles"],
+    QueryIntent.DATASET_DISCOVERY: ["core_router", "ons_selection", "ons_data"],
+    QueryIntent.MAP_RENDER: ["core_router", "maps_tiles"],
+    QueryIntent.VECTOR_TILES: ["core_router", "maps_tiles"],
+    QueryIntent.LINKED_IDS: ["core_router", "places_names"],
+    QueryIntent.UNKNOWN: ["starter"],
+}
 
 
 def _match_patterns(query: str, patterns: list[str]) -> float:
@@ -801,6 +824,129 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
     return guidance.get(intent, guidance[QueryIntent.UNKNOWN])
 
 
+def _compact_toolset_catalog() -> dict[str, dict[str, Any]]:
+    raw_catalog = get_toolset_catalog()
+    compact: dict[str, dict[str, Any]] = {}
+    for name, details in raw_catalog.items():
+        compact[name] = {
+            "count": details.get("count", 0),
+            "patterns": details.get("patterns", []),
+        }
+    return compact
+
+
+def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
+    intent, _confidence, _params, context = _classify_query(query)
+    recommended = list(INTENT_TOOLSET_MAP.get(intent, ["starter"]))
+    if intent in {QueryIntent.STATISTICS, QueryIntent.DATASET_DISCOVERY}:
+        if context.get("nomis_preferred"):
+            recommended = ["core_router", "nomis_data"]
+        else:
+            recommended = ["core_router", "ons_selection", "ons_data"]
+    return recommended, {
+        "intent": intent.value,
+        "nomisPreferred": bool(context.get("nomis_preferred")),
+    }
+
+
+def _select_toolsets(payload: dict[str, Any]) -> ToolResult:
+    """Resolve toolset filters and return compact discovery guidance.
+
+    Request schema:
+    {
+      "type": "object",
+      "properties": {
+        "query": {"type": "string"},
+        "toolset": {"type": "string"},
+        "includeToolsets": {"type": ["array", "string"]},
+        "excludeToolsets": {"type": ["array", "string"]},
+        "maxTools": {"type": "integer"}
+      },
+      "required": []
+    }
+    """
+    query = payload.get("query")
+    if query is not None and not isinstance(query, str):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "query must be a string when provided",
+        }
+    query = query.strip() if isinstance(query, str) else ""
+    toolset = payload.get("toolset")
+    if toolset is not None and not isinstance(toolset, str):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "toolset must be a string when provided",
+        }
+    max_tools = payload.get("maxTools", 20)
+    if not isinstance(max_tools, int) or max_tools < 1 or max_tools > 200:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "maxTools must be an integer between 1 and 200",
+        }
+    try:
+        include_toolsets = parse_toolset_list(payload.get("includeToolsets"))
+        exclude_toolsets = parse_toolset_list(payload.get("excludeToolsets"))
+    except ValueError as exc:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": str(exc),
+        }
+
+    inferred: list[str] = []
+    inference_context: dict[str, Any] = {}
+    if query and not toolset and not include_toolsets:
+        inferred, inference_context = _infer_toolsets_from_query(query)
+        include_toolsets = inferred
+
+    toolset, include_toolsets, exclude_toolsets = apply_default_toolset_filters(
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
+    names = sorted(tool.name for tool in all_tools())
+    try:
+        filtered_names = filter_tool_names_by_toolsets(
+            names,
+            toolset=toolset,
+            include_toolsets=include_toolsets,
+            exclude_toolsets=exclude_toolsets,
+        )
+    except ValueError as exc:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": str(exc),
+        }
+    list_tools_params: dict[str, Any] = {}
+    if toolset:
+        list_tools_params["toolset"] = toolset
+    if include_toolsets:
+        list_tools_params["includeToolsets"] = include_toolsets
+    if exclude_toolsets:
+        list_tools_params["excludeToolsets"] = exclude_toolsets
+    notes: list[str] = []
+    if inferred:
+        notes.append("Applied query-based toolset inference.")
+    if not list_tools_params:
+        notes.append("No filters selected; all tools remain discoverable.")
+    return 200, {
+        "query": query or None,
+        "inference": inference_context or None,
+        "inferredIncludeToolsets": inferred,
+        "effectiveFilters": list_tools_params,
+        "listToolsParams": list_tools_params,
+        "matchedToolCount": len(filtered_names),
+        "matchedTools": filtered_names[:max_tools],
+        "toolsets": _compact_toolset_catalog(),
+        "notes": notes,
+    }
+
+
 def _descriptor(payload: dict[str, Any]) -> ToolResult:
     """Describe server capabilities and tool search configuration.
 
@@ -1155,5 +1301,58 @@ register(
             "required": ["provider", "nomisPreferred", "reasons", "recommendedTool"],
         },
         handler=_stats_routing,
+    )
+)
+
+register(
+    Tool(
+        name="os_mcp.select_toolsets",
+        description="Select discovery toolsets and return tools/list filter guidance.",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_mcp.select_toolsets"},
+                "query": {
+                    "type": "string",
+                    "description": "Optional natural-language query used to infer toolsets.",
+                },
+                "toolset": {
+                    "type": "string",
+                    "description": "Single named toolset shortcut (for tools/list toolset param).",
+                },
+                "includeToolsets": {
+                    "type": ["array", "string"],
+                    "description": "Toolsets to include (array or comma-separated string).",
+                },
+                "excludeToolsets": {
+                    "type": ["array", "string"],
+                    "description": "Toolsets to exclude (array or comma-separated string).",
+                },
+                "maxTools": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 200,
+                    "default": 20,
+                },
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "query": {"type": ["string", "null"]},
+                "inference": {"type": ["object", "null"]},
+                "inferredIncludeToolsets": {"type": "array", "items": {"type": "string"}},
+                "effectiveFilters": {"type": "object"},
+                "listToolsParams": {"type": "object"},
+                "matchedToolCount": {"type": "integer"},
+                "matchedTools": {"type": "array", "items": {"type": "string"}},
+                "toolsets": {"type": "object"},
+                "notes": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["effectiveFilters", "matchedToolCount", "matchedTools", "toolsets"],
+        },
+        handler=_select_toolsets,
     )
 )

@@ -225,6 +225,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
         "os_tiles_ota.collections",
         "os_tiles_ota.tilematrixsets",
         "os_tiles_ota.conformance",
+        "os_mcp.select_toolsets",
     }
     missing_tools = sorted((registered_tools - called_tools) - specialist_tools)
     assert not missing_tools, f"Missing tool coverage: {missing_tools}"

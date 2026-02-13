@@ -19,6 +19,8 @@ class NormalizedAddress(TypedDict, total=False):
 
 MAX_BBOX_AREA_M2 = 1_000_000.0
 MAX_BBOX_TILE_COUNT = 25
+_SEARCH_DEFAULT_LIMIT = 25
+_SEARCH_MAX_LIMIT = 200
 
 
 def _meters_per_degree(lat: float) -> tuple[float, float]:
@@ -157,20 +159,43 @@ def _parse_polygon(value: Any) -> dict[str, Any] | None:
         return {"type": "Polygon", "coordinates": [ring]}
     return None
 
+
+def _parse_limit(value: Any, *, default: int, maximum: int) -> int | None:
+    if value is None:
+        return default
+    try:
+        parsed = int(value)
+    except Exception:
+        return None
+    if parsed < 1 or parsed > maximum:
+        return None
+    return parsed
+
 # /search/places/v1/find
 
 def _places_search(payload: dict[str, Any]) -> ToolResult:
     text = str(payload.get("text", "")).strip()
     if not text:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing text query"}
-    params = {"query": text, "output_srs": "WGS84"}
+    limit = _parse_limit(
+        payload.get("limit", payload.get("maxresults")),
+        default=_SEARCH_DEFAULT_LIMIT,
+        maximum=_SEARCH_MAX_LIMIT,
+    )
+    if limit is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": f"limit must be an integer between 1 and {_SEARCH_MAX_LIMIT}",
+        }
+    params = {"query": text, "output_srs": "WGS84", "maxresults": limit}
     status, raw = client.get_json(f"{client.base_places}/find", params)
     if status != 200:
         return 501, raw
     body = cast(PlacesResponse, raw)
     norm = _norm_dpa_list(body)
     count = len(cast(list[Any], body.get("results", [])))
-    return 200, {"results": norm, "count": count}
+    return 200, {"results": norm, "count": count, "limit": limit, "truncated": count >= limit}
 
 # /search/places/v1/uprn
 
@@ -344,6 +369,7 @@ register(Tool(
         "properties": {
             "tool": {"type": "string", "const": "os_places.search"},
             "text": {"type": "string"},
+            "limit": {"type": "integer", "minimum": 1, "maximum": _SEARCH_MAX_LIMIT},
         },
         "required": ["text"],
         "additionalProperties": False,
@@ -353,6 +379,8 @@ register(Tool(
         "properties": {
             "results": {"type": "array"},
             "count": {"type": "number"},
+            "limit": {"type": "integer"},
+            "truncated": {"type": "boolean"},
         },
         "required": ["results"],
     },

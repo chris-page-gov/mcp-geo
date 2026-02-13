@@ -127,6 +127,9 @@ client compatibility; map back to canonical dotted names via
 `annotations.originalName`. Tool calls accept both sanitized and dotted names.
 Use `toolset`, `includeToolsets`, and `excludeToolsets` filters to focus discovery
 responses by capability groups (for example `ons_selection`, `maps_tiles`, `apps_ui`).
+For clients that always request `tools/list` with empty params, set
+`MCP_TOOLS_DEFAULT_TOOLSET=starter` (or
+`MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>`) to keep initialization payloads small.
 
 | Tool | Purpose |
 |------|---------|

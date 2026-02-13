@@ -82,6 +82,19 @@ Remediation:
   then run `./scripts/os-mcp` from that activated venv.
 - Devcontainer: rebuild/reopen the devcontainer so `postCreateCommand` installs dependencies inside the container.
 
+## Client context/window is exhausted after initialization
+If the client fails early with "context too long" style errors, it is usually
+because it requests `tools/list` with empty params and receives all tool schemas.
+
+Remediation:
+- Set `MCP_TOOLS_DEFAULT_TOOLSET=starter` for lean startup discovery.
+- Or set `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>` to scope startup tools to your workflow
+  (for example `core_router,places_names,maps_tiles`).
+- Keep explicit request filters available: clients can still pass `toolset`,
+  `includeToolsets`, or `excludeToolsets` on `tools/list` / `tools/describe`.
+- Avoid loading full trace logs into model context; inspect with `rg`, `head`, or `tail`
+  when diagnosing large traces.
+
 ## Claude error: `parent_message_uuid` must be a UUID
 If Claude shows an error like:
 

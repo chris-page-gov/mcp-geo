@@ -12,12 +12,26 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     Transformer = None  # type: ignore[assignment]
 
 # OS Names API basic handlers
+_FIND_DEFAULT_LIMIT = 25
+_FIND_MAX_LIMIT = 200
 
 def _parse_number(value: Any) -> float | None:
     try:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _parse_limit(value: Any, *, default: int, maximum: int) -> int | None:
+    if value is None:
+        return default
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    if parsed < 1 or parsed > maximum:
+        return None
+    return parsed
 
 
 def _extract_lat_lon(geometry: Any) -> tuple[float | None, float | None]:
@@ -76,9 +90,20 @@ def _names_find(payload: dict[str, Any]) -> ToolResult:
     text = str(payload.get("text", "")).strip()
     if not text:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing text"}
+    limit = _parse_limit(
+        payload.get("limit", payload.get("maxresults")),
+        default=_FIND_DEFAULT_LIMIT,
+        maximum=_FIND_MAX_LIMIT,
+    )
+    if limit is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": f"limit must be an integer between 1 and {_FIND_MAX_LIMIT}",
+        }
     status, raw = client.get_json(
         f"{client.base_names}/find",
-        {"query": text},
+        {"query": text, "maxresults": limit},
     )
     if status != 200:
         return 501, raw
@@ -98,7 +123,7 @@ def _names_find(payload: dict[str, Any]) -> ToolResult:
             "lat": lat,
             "lon": lon,
         })
-    return 200, {"results": out}
+    return 200, {"results": out, "count": len(out), "limit": limit, "truncated": len(out) >= limit}
 
 def _names_nearest(payload: dict[str, Any]) -> ToolResult:
     raw_lat = payload.get("lat")
@@ -156,8 +181,26 @@ def _names_nearest(payload: dict[str, Any]) -> ToolResult:
 register(Tool(
     name="os_names.find",
     description="Find place names",
-    input_schema={"type":"object","properties":{"tool":{"type":"string","const":"os_names.find"},"text":{"type":"string"}},"required":["text"],"additionalProperties":False},
-    output_schema={"type":"object","properties":{"results":{"type":"array"}},"required":["results"]},
+    input_schema={
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "os_names.find"},
+            "text": {"type": "string"},
+            "limit": {"type": "integer", "minimum": 1, "maximum": _FIND_MAX_LIMIT},
+        },
+        "required": ["text"],
+        "additionalProperties": False,
+    },
+    output_schema={
+        "type": "object",
+        "properties": {
+            "results": {"type": "array"},
+            "count": {"type": "integer"},
+            "limit": {"type": "integer"},
+            "truncated": {"type": "boolean"},
+        },
+        "required": ["results"],
+    },
     handler=_names_find
 ))
 

@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Added
+- Added a curated `starter` toolset to discovery metadata for lean MCP startup
+  capability exposure.
+- Added default toolset discovery knobs:
+  `MCP_TOOLS_DEFAULT_TOOLSET`,
+  `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`, and
+  `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`.
+- Added `os_mcp.select_toolsets`, a post-init tool that resolves
+  `tools/list` filter parameters (`toolset`, `includeToolsets`,
+  `excludeToolsets`) with optional query-based inference.
+
+### Changed
+- Updated STDIO/MCP and HTTP discovery handlers so `tools/list` and
+  `/tools/list`/`/tools/describe` apply default toolset filters when clients do
+  not pass explicit toolset parameters.
+- Updated initialize logging for STDIO and Streamable HTTP to emit a compact
+  client capability/protocol support summary suitable for audit traces.
+- Added MCP form-elicitation support for `os_mcp.select_toolsets` in both
+  STDIO and Streamable HTTP transports (post-init flow).
+- Tightened large-payload behavior for Claude/STDIO map flows:
+  `os_places.search` and `os_names.find` now enforce explicit result limits,
+  `os_map.inventory` defaults/max limits are reduced to transport-safe values,
+  and STDIO tool `content` text is truncated with a clear pointer to
+  `result.data` for full payloads.
 
 ## [0.3.0] - 2026-02-13
 ### Added

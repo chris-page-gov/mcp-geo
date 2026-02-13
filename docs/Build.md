@@ -64,6 +64,9 @@ pytest -q
 - `METRICS_ENABLED`: enable `/metrics` (default true).
 - `LOG_JSON`: loguru JSON output (default false).
 - `CORS_ALLOWED_ORIGINS`: comma-separated origins for browser clients (default `http://localhost:5173,http://127.0.0.1:5173`).
+- `MCP_TOOLS_DEFAULT_TOOLSET`: default toolset for `tools/list`/`tools/describe` when client passes no filters (for example `starter`).
+- `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`: default CSV include filters when no per-request filters are provided.
+- `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`: default CSV exclude filters when no per-request filters are provided.
 
 You can copy `.env.example` to `.env` for local use.
 

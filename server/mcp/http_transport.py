@@ -16,15 +16,19 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from server import stdio_adapter
 from server.mcp.elicitation_forms import (
     apply_ons_select_elicitation_result,
+    apply_toolset_selection_elicitation_result,
     build_ons_select_elicitation_params,
+    build_toolset_selection_elicitation_params,
     client_supports_elicitation_form,
 )
 from server.mcp.client_capabilities import (
     bool_env as _shared_bool_env,
     client_supports_ui as _shared_client_supports_ui,
+    summarize_client_capabilities as _summarize_client_capabilities,
     read_bool_env as _shared_read_bool_env,
     ui_fallback_for_tool as _shared_ui_fallback_for_tool,
 )
+from server.mcp.tool_search import get_toolset_catalog, resolve_default_toolset_filters_from_env
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.prompts import get_prompt, list_prompts
 from server.observability import record_tool_call
@@ -100,6 +104,28 @@ def _accepts_event_stream(request: Request) -> bool:
     accept_lower = accept.lower()
     # Some clients (and test harnesses) send "*/*"; treat that as compatible.
     return ("text/event-stream" in accept_lower) or ("*/*" in accept_lower) or (not accept_lower.strip())
+
+
+def _needs_toolset_elicitation(payload: Dict[str, Any]) -> bool:
+    if payload.get("skipElicitation") is True:
+        return False
+    return not any(payload.get(key) is not None for key in ("toolset", "includeToolsets", "excludeToolsets"))
+
+
+def _build_toolset_elicitation_params(payload: Dict[str, Any]) -> Dict[str, Any]:
+    catalog = get_toolset_catalog()
+    default_toolset, default_include, default_exclude = resolve_default_toolset_filters_from_env()
+    include_seed = list(default_include)
+    if default_toolset:
+        include_seed.append(default_toolset)
+    query = payload.get("query")
+    query_text = query.strip() if isinstance(query, str) else ""
+    return build_toolset_selection_elicitation_params(
+        query=query_text,
+        toolset_names=sorted(catalog.keys()),
+        default_include=include_seed,
+        default_exclude=default_exclude,
+    )
 
 
 def _sse_event(data: str, *, event_id: Optional[str] = None, retry_ms: Optional[int] = None) -> str:
@@ -184,11 +210,15 @@ def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[s
     protocol_version = negotiate_protocol_version(requested)
     capabilities = params.get("capabilities")
     session_state["capabilities"] = capabilities if isinstance(capabilities, dict) else {}
+    session_state["capabilitySummary"] = _summarize_client_capabilities(
+        capabilities=session_state["capabilities"],
+        requested_protocol_version=requested,
+        negotiated_protocol_version=protocol_version,
+    )
     session_state["protocolVersion"] = protocol_version
     logger.info(
-        "MCP initialize (http) protocol={protocol} capabilities={capabilities}",
-        protocol=protocol_version,
-        capabilities=session_state["capabilities"],
+        "MCP initialize (http) support_summary={summary}",
+        summary=session_state["capabilitySummary"],
     )
     return {
         "protocolVersion": protocol_version,
@@ -472,15 +502,95 @@ async def mcp_endpoint(request: Request):
             call_params["args"] = payload
             call_params["arguments"] = payload
             call_params["payload"] = payload
+            wants_elicitation = (
+                _bool_env("MCP_HTTP_ELICITATION_ENABLED", default=True)
+                and _accepts_event_stream(request)
+                and client_supports_elicitation_form(capabilities)
+            )
+            if resolved_name == "os_mcp.select_toolsets" and wants_elicitation:
+                if _needs_toolset_elicitation(payload):
+                    elicitation_params = _build_toolset_elicitation_params(payload)
+                    elicitation_id = _next_elicitation_request_id(session_state)
+                    fut = _register_pending(session_state, elicitation_id)
+
+                    async def _gen_toolset():
+                        try:
+                            yield _sse_event("", event_id=f"{elicitation_id}-prime")
+                            req_msg = {
+                                "jsonrpc": JSONRPC,
+                                "id": elicitation_id,
+                                "method": "elicitation/create",
+                                "params": elicitation_params,
+                            }
+                            yield _sse_event(
+                                json.dumps(req_msg, separators=(",", ":")),
+                                event_id=f"{elicitation_id}-request",
+                            )
+                            timeout_env = (
+                                os.getenv("MCP_HTTP_ELICITATION_TIMEOUT_SECONDS", "") or ""
+                            ).strip()
+                            timeout_s = 120.0
+                            if timeout_env:
+                                try:
+                                    timeout_s = float(timeout_env)
+                                except ValueError:
+                                    timeout_s = 120.0
+                            try:
+                                elicitation_result = await asyncio.wait_for(fut, timeout=timeout_s)
+                            except asyncio.TimeoutError:
+                                final_result = _call_tool(call_params, capabilities)
+                            else:
+                                if isinstance(elicitation_result, dict):
+                                    should_continue, elicitation_error = (
+                                        apply_toolset_selection_elicitation_result(
+                                            payload,
+                                            elicitation_result,
+                                        )
+                                    )
+                                    if should_continue:
+                                        final_result = _call_tool(call_params, capabilities)
+                                    else:
+                                        data = elicitation_error or {
+                                            "isError": True,
+                                            "code": "ELICITATION_CANCELLED",
+                                            "message": "Elicitation cancelled.",
+                                        }
+                                        final_result = {
+                                            "status": 409,
+                                            "ok": False,
+                                            "data": data,
+                                            "isError": True,
+                                            "content": stdio_adapter._tool_content_from_data(
+                                                data,
+                                                allow_resource=False,
+                                            ),
+                                        }
+                                else:
+                                    final_result = _call_tool(call_params, capabilities)
+                            yield _sse_event(
+                                json.dumps(_resp_success(msg_id, final_result), separators=(",", ":")),
+                                event_id=f"{elicitation_id}-response",
+                            )
+                        finally:
+                            with _SESSION_LOCK:
+                                pending = session_state.get("pending")
+                                if isinstance(pending, dict):
+                                    pending.pop(elicitation_id, None)
+
+                    stream_headers = dict(headers)
+                    stream_headers.setdefault("cache-control", "no-cache")
+                    return StreamingResponse(
+                        _gen_toolset(),
+                        media_type="text/event-stream",
+                        headers=stream_headers,
+                    )
             initial_result = _call_tool(call_params, capabilities)
             data = initial_result.get("data") if isinstance(initial_result, dict) else None
             if (
                 resolved_name == "ons_select.search"
                 and isinstance(data, dict)
                 and data.get("needsElicitation") is True
-                and _bool_env("MCP_HTTP_ELICITATION_ENABLED", default=True)
-                and _accepts_event_stream(request)
-                and client_supports_elicitation_form(capabilities)
+                and wants_elicitation
             ):
                 query = data.get("query") or payload.get("query") or payload.get("q") or ""
                 if isinstance(query, str) and query.strip():

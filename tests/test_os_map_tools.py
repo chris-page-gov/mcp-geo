@@ -191,6 +191,12 @@ def test_os_map_parsers_cover_edge_cases() -> None:
     assert os_map._parse_layers("uprns, buildings, nope") == ["uprns", "buildings"]
     assert os_map._parse_layers(123) is None
 
+    defaults = os_map._parse_limits(None)
+    assert defaults["uprns"] == 100
+    assert defaults["buildings"] == 100
+    assert defaults["road_links"] == 100
+    assert defaults["path_links"] == 100
+
     limits = os_map._parse_limits({"uprns": "x", "buildings": 0, "road_links": 999999, "nope": 1})
     assert limits["uprns"] == os_map._DEFAULT_LIMITS["uprns"]
     assert limits["buildings"] == os_map._DEFAULT_LIMITS["buildings"]
@@ -434,6 +440,17 @@ def test_os_map_inventory_error_branches(monkeypatch) -> None:  # type: ignore[n
     status, payload = os_map._inventory({"bbox": bbox, "layers": ["buildings"]})
     assert status == 200
     assert payload["layers"]["buildings"]["code"] == "MISSING_TOOL"
+
+    # Upstream failure from os_features.query should be surfaced on the layer.
+    def failing_features(name: str):  # type: ignore[no-untyped-def]
+        if name == "os_features.query":
+            return DummyTool((500, {"isError": True, "code": "OS_API_ERROR", "message": "fail"}))
+        return orig_get_tool(name)
+
+    monkeypatch.setattr(os_map, "get_tool", failing_features)
+    status, payload = os_map._inventory({"bbox": bbox, "layers": ["buildings"]})
+    assert status == 200
+    assert payload["layers"]["buildings"]["code"] == "OS_API_ERROR"
 
     # No collection mapping (simulated by removing default mapping).
     def has_features_tool(name: str):  # type: ignore[no-untyped-def]

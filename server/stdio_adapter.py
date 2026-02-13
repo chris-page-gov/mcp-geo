@@ -41,25 +41,30 @@ from server.mcp.resource_catalog import (
 from server.mcp.prompts import get_prompt as get_prompt_def, list_prompts as list_prompt_defs
 from tools.os_apps import build_ui_tool_meta
 from server.mcp.tool_search import (
+    apply_default_toolset_filters,
     filter_tools_by_toolsets,
     get_tool_metadata,
     get_toolset_catalog,
     parse_toolset_list,
+    resolve_default_toolset_filters_from_env,
     search_tools,
 )
 from server.mcp.elicitation_forms import (
     apply_ons_select_elicitation_result,
+    apply_toolset_selection_elicitation_result,
     build_ons_select_elicitation_params,
+    build_toolset_selection_elicitation_params,
 )
 from server.mcp.client_capabilities import (
     bool_env as _shared_bool_env,
     client_supports_ui as _shared_client_supports_ui,
+    summarize_client_capabilities as _summarize_client_capabilities,
     read_bool_env as _shared_read_bool_env,
     ui_fallback_for_tool as _shared_ui_fallback_for_tool,
 )
 from server import __version__ as SERVER_VERSION
 from server.observability import record_tool_call
-from server.protocol import PROTOCOL_VERSION, negotiate_protocol_version
+from server.protocol import negotiate_protocol_version
 from server.tool_naming import (
     build_tool_name_maps,
     resolve_tool_name,
@@ -68,6 +73,7 @@ from server.tool_naming import (
 )
 
 JSONRPC = "2.0"
+_STDIO_TOOL_CONTENT_MAX_BYTES_DEFAULT = 32_000
 
 RESOURCE_LIST: List[dict[str, Any]] = []
 RESOURCE_LIST.extend(list_skill_resources())
@@ -139,6 +145,7 @@ def _resolve_framing() -> Optional[str]:
     return None
 
 CLIENT_CAPABILITIES: Dict[str, Any] = {}
+CLIENT_CAPABILITY_SUMMARY: Dict[str, Any] = {}
 _ELICITATION_HANDLER: Optional[Callable[[Dict[str, Any]], Dict[str, Any] | None]] = None
 _ELICITATION_REQUEST_SEQ = 0
 
@@ -366,6 +373,54 @@ def _maybe_elicit_ons_select(payload: Dict[str, Any], data: Dict[str, Any]) -> b
     return changed
 
 
+def _maybe_elicit_select_toolsets(payload: Dict[str, Any]) -> tuple[bool, Dict[str, Any] | None]:
+    if not _bool_env("MCP_STDIO_ELICITATION_ENABLED", default=True):
+        return True, None
+    if not _client_supports_elicitation_form(CLIENT_CAPABILITIES):
+        return True, None
+    if _ELICITATION_HANDLER is None:
+        return True, None
+    if payload.get("skipElicitation") is True:
+        return True, None
+    has_explicit_filters = any(
+        payload.get(key) is not None for key in ("toolset", "includeToolsets", "excludeToolsets")
+    )
+    if has_explicit_filters:
+        return True, None
+    catalog = get_toolset_catalog()
+    default_toolset, default_include, default_exclude = resolve_default_toolset_filters_from_env()
+    include_seed = list(default_include)
+    if default_toolset:
+        include_seed.append(default_toolset)
+    query = payload.get("query")
+    query_text = query.strip() if isinstance(query, str) else ""
+    params = build_toolset_selection_elicitation_params(
+        query=query_text,
+        toolset_names=sorted(catalog.keys()),
+        default_include=include_seed,
+        default_exclude=default_exclude,
+    )
+    response = _ELICITATION_HANDLER(params)
+    if not isinstance(response, dict):
+        return False, {
+            "isError": True,
+            "code": "ELICITATION_UNAVAILABLE",
+            "message": "No elicitation response received from client.",
+        }
+    return apply_toolset_selection_elicitation_result(payload, response)
+
+
+def _tool_content_limit_bytes() -> int:
+    raw = os.getenv("MCP_STDIO_TOOL_CONTENT_MAX_BYTES", "").strip()
+    if not raw:
+        return _STDIO_TOOL_CONTENT_MAX_BYTES_DEFAULT
+    try:
+        value = int(raw)
+    except ValueError:
+        return _STDIO_TOOL_CONTENT_MAX_BYTES_DEFAULT
+    return max(512, value)
+
+
 def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict[str, Any]]:
     if data is None:
         return []
@@ -377,6 +432,17 @@ def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict
             text = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
         except TypeError:
             text = str(data)
+    encoded = text.encode("utf-8")
+    limit = _tool_content_limit_bytes()
+    if len(encoded) > limit:
+        # Keep a deterministic preview and point clients at structured result data.
+        preview_bytes = encoded[: max(0, limit - 240)]
+        preview = preview_bytes.decode("utf-8", errors="ignore")
+        omitted = len(encoded) - len(preview_bytes)
+        text = (
+            f"{preview}\n...[content truncated by stdio adapter; omitted {omitted} bytes. "
+            "Use result.data for complete payload.]"
+        )
     content.append({"type": "text", "text": text})
     return content
 
@@ -497,12 +563,17 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
 def handle_initialize(params: Dict[str, Any]) -> Any:
     requested = params.get("protocolVersion")
     protocol_version = negotiate_protocol_version(requested)
-    global CLIENT_CAPABILITIES
+    global CLIENT_CAPABILITIES, CLIENT_CAPABILITY_SUMMARY
     capabilities = params.get("capabilities")
     CLIENT_CAPABILITIES = capabilities if isinstance(capabilities, dict) else {}
-    logger.info(
-        "MCP initialize (stdio) capabilities={capabilities}",
+    CLIENT_CAPABILITY_SUMMARY = _summarize_client_capabilities(
         capabilities=CLIENT_CAPABILITIES,
+        requested_protocol_version=requested,
+        negotiated_protocol_version=protocol_version,
+    )
+    logger.info(
+        "MCP initialize (stdio) support_summary={summary}",
+        summary=CLIENT_CAPABILITY_SUMMARY,
     )
     return {
         "protocolVersion": protocol_version,
@@ -527,6 +598,11 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
         raise ValueError("toolset must be a string")
     include_toolsets = parse_toolset_list(_params.get("includeToolsets"))
     exclude_toolsets = parse_toolset_list(_params.get("excludeToolsets"))
+    toolset, include_toolsets, exclude_toolsets = apply_default_toolset_filters(
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
     tool_entries: list[dict[str, Any]] = []
     filtered_tools = filter_tools_by_toolsets(
         all_tools(),
@@ -647,6 +723,18 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
                 "message": "Elicitation cancelled.",
             }
             result: Dict[str, Any] = {"status": status, "ok": False, "data": data, "isError": True}
+            result["content"] = _tool_content_from_data(data, allow_resource=False)
+            return result
+    if resolved_name == "os_mcp.select_toolsets":
+        should_continue, elicitation_error = _maybe_elicit_select_toolsets(payload)
+        if not should_continue:
+            status = 409
+            data = elicitation_error or {
+                "isError": True,
+                "code": "ELICITATION_CANCELLED",
+                "message": "Elicitation cancelled.",
+            }
+            result = {"status": status, "ok": False, "data": data, "isError": True}
             result["content"] = _tool_content_from_data(data, allow_resource=False)
             return result
     started = time.perf_counter()

@@ -23,6 +23,7 @@ Set env vars for live data when you have keys:
 - `OS_API_KEY` (required) for Ordnance Survey tools
 - `ONS_LIVE_ENABLED=true` for live ONS datasets
 - `LOG_JSON=true` to force JSON logs (now default)
+- `MCP_TOOLS_DEFAULT_TOOLSET=starter` to reduce startup `tools/list` payloads for STDIO clients
 
 Optional: enable the PostGIS boundary cache for full admin boundaries:
 - `BOUNDARY_CACHE_ENABLED=true`

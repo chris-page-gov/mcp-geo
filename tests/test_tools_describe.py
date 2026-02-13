@@ -75,3 +75,19 @@ def test_tools_describe_toolset_filter():
     assert tools
     names = {tool["name"] for tool in tools}
     assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
+
+
+def test_tools_list_uses_default_toolset_env(monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "maps_tiles")
+    resp = client.get("/tools/list")
+    assert resp.status_code == 200
+    names = set(resp.json()["tools"])
+    assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
+
+
+def test_tools_describe_uses_default_toolset_env(monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "maps_tiles")
+    resp = client.get("/tools/describe")
+    assert resp.status_code == 200
+    names = {tool["name"] for tool in resp.json()["tools"]}
+    assert names == {"os_maps_render", "os_vector_tiles_descriptor"}

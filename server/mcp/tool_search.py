@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import difflib
+import os
 import re
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Sequence, Set
 
+from server.config import settings
 from tools.registry import Tool, all_tools
 
 
@@ -69,7 +71,29 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
 
+DEFAULT_TOOLSET_ENV = "MCP_TOOLS_DEFAULT_TOOLSET"
+DEFAULT_INCLUDE_TOOLSETS_ENV = "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"
+DEFAULT_EXCLUDE_TOOLSETS_ENV = "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS"
+
+STARTER_TOOLS: tuple[str, ...] = (
+    "admin_lookup.find_by_name",
+    "nomis.query",
+    "ons_data.query",
+    "ons_search.query",
+    "ons_select.search",
+    "os_apps.log_event",
+    "os_apps.render_boundary_explorer",
+    "os_apps.render_geography_selector",
+    "os_mcp.descriptor",
+    "os_mcp.route_query",
+    "os_mcp.stats_routing",
+    "os_names.find",
+    "os_places.by_postcode",
+    "os_places.search",
+)
+
 TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
+    "starter": STARTER_TOOLS,
     "core_router": ("os_mcp.*",),
     "places_names": ("os_places.*", "os_poi.*", "os_names.*", "os_linked_ids.get"),
     "features_layers": ("os_features.*", "os_map.inventory", "os_map.export"),
@@ -83,20 +107,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
 }
 
 ALWAYS_LOADED_TOOLS: Set[str] = {
-    "os_mcp.route_query",
-    "os_mcp.stats_routing",
-    "os_places.search",
-    "os_places.by_postcode",
-    "os_names.find",
-    "ons_search.query",
-    "ons_select.search",
-    "ons_data.query",
-    "nomis.query",
-    "admin_lookup.find_by_name",
-    "os_mcp.descriptor",
-    "os_apps.render_geography_selector",
-    "os_apps.render_boundary_explorer",
-    "os_apps.log_event",
+    *STARTER_TOOLS,
 }
 
 EXTERNAL_PREFIXES: Set[str] = {
@@ -180,6 +191,36 @@ def parse_toolset_list(value: Any) -> list[str]:
             raise ValueError("toolset filters must contain strings")
         return [item.strip() for item in value if item.strip()]
     raise ValueError("toolset filters must be a string or list of strings")
+
+
+def resolve_default_toolset_filters_from_env() -> tuple[str | None, list[str], list[str]]:
+    toolset_value = os.getenv(DEFAULT_TOOLSET_ENV)
+    if toolset_value is None:
+        toolset_value = getattr(settings, DEFAULT_TOOLSET_ENV, "")
+    include_value = os.getenv(DEFAULT_INCLUDE_TOOLSETS_ENV)
+    if include_value is None:
+        include_value = getattr(settings, DEFAULT_INCLUDE_TOOLSETS_ENV, "")
+    exclude_value = os.getenv(DEFAULT_EXCLUDE_TOOLSETS_ENV)
+    if exclude_value is None:
+        exclude_value = getattr(settings, DEFAULT_EXCLUDE_TOOLSETS_ENV, "")
+    toolset = (toolset_value or "").strip() or None
+    include = parse_toolset_list(include_value)
+    exclude = parse_toolset_list(exclude_value)
+    return toolset, include, exclude
+
+
+def apply_default_toolset_filters(
+    *,
+    toolset: str | None = None,
+    include_toolsets: Sequence[str] | None = None,
+    exclude_toolsets: Sequence[str] | None = None,
+) -> tuple[str | None, list[str], list[str]]:
+    include = [name for name in (include_toolsets or []) if isinstance(name, str) and name.strip()]
+    exclude = [name for name in (exclude_toolsets or []) if isinstance(name, str) and name.strip()]
+    explicit = bool((isinstance(toolset, str) and toolset.strip()) or include or exclude)
+    if explicit:
+        return toolset, include, exclude
+    return resolve_default_toolset_filters_from_env()
 
 
 def resolve_toolset_filters(
@@ -439,8 +480,14 @@ __all__ = [
     "generate_mcp_toolset_config",
     "get_tool_search_config",
     "TOOLSET_PATTERNS",
+    "STARTER_TOOLS",
+    "DEFAULT_TOOLSET_ENV",
+    "DEFAULT_INCLUDE_TOOLSETS_ENV",
+    "DEFAULT_EXCLUDE_TOOLSETS_ENV",
     "toolsets_for_tool",
     "parse_toolset_list",
+    "resolve_default_toolset_filters_from_env",
+    "apply_default_toolset_filters",
     "resolve_toolset_filters",
     "filter_tools_by_toolsets",
     "filter_tool_names_by_toolsets",

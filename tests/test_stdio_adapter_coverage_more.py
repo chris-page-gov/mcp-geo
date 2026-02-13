@@ -109,6 +109,16 @@ def test_tool_content_from_data_non_serializable_uses_str():
     assert "{" in content[0]["text"] or "set" in content[0]["text"]
 
 
+def test_tool_content_from_data_truncates_large_payload(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_TOOL_CONTENT_MAX_BYTES", "1024")
+    payload = {"items": [{"i": idx, "value": "x" * 120} for idx in range(100)]}
+    content = stdio_adapter._tool_content_from_data(payload)
+    assert content and content[0]["type"] == "text"
+    text = content[0]["text"]
+    assert "content truncated by stdio adapter" in text
+    assert "result.data" in text
+
+
 def test_extract_initial_view_invalid_lat_lng_returns_none():
     lat, lng, zoom = stdio_adapter._extract_initial_view({"initialLat": "nope", "initialLng": "nope"}, {})
     assert lat is None and lng is None and zoom is None

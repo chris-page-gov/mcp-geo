@@ -12,8 +12,8 @@ This repo includes a VS Code workspace MCP configuration at `.vscode/mcp.json`.
 
 Defined in `.vscode/mcp.json`:
 
-- `mcp-geo` (STDIO): runs `python3 scripts/vscode_mcp_stdio.py` from the workspace root and enables MCP-Apps UI.
-- `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py`.
+- `mcp-geo` (STDIO): runs `python3 scripts/vscode_mcp_stdio.py` from the workspace root, enables MCP-Apps UI, and defaults discovery to the `starter` toolset for lower-context initialization.
+- `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py` and the same `starter` default.
 - `mcp-geo-http` (HTTP): points to `http://127.0.0.1:8000/mcp` (you must run `uvicorn` yourself).
 
 The config uses a VS Code `inputs` prompt for `OS_API_KEY` and stores it in VS Code
