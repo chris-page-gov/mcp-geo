@@ -88,6 +88,9 @@ All notable changes to this project will be documented in this file.
 - Updated the full evaluation harness specialist-tool whitelist to include
   `os_offline.descriptor` and `os_offline.get`, avoiding false coverage-gap
   failures after adding offline map delivery tools.
+- Updated tool-name resolution to accept display-style aliases (for example
+  `Os names find`) by normalizing case/spacing/punctuation to canonical MCP
+  tool identifiers before dispatch.
 
 ## [0.3.1] - 2026-02-13
 ### Added

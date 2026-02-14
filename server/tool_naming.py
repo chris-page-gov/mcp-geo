@@ -53,6 +53,8 @@ def resolve_tool_name(requested: str, originals: Iterable[str]) -> str:
 
     - If `requested` is already an original, returns it.
     - If `requested` matches a sanitized alias, returns the corresponding original.
+    - If `requested` is a display-style alias (case/spacing/punctuation variants),
+      normalize and resolve it to the same canonical tool.
     - Otherwise returns `requested` unchanged.
     """
 
@@ -60,8 +62,43 @@ def resolve_tool_name(requested: str, originals: Iterable[str]) -> str:
     if requested in original_set:
         return requested
 
+    requested_stripped = requested.strip()
+    if requested_stripped in original_set:
+        return requested_stripped
+
+    original_casefold = {name.casefold(): name for name in original_set}
+    direct_casefold = original_casefold.get(requested_stripped.casefold())
+    if direct_casefold is not None:
+        return direct_casefold
+
     _original_to_sanitized, sanitized_to_original = build_tool_name_maps(original_set)
-    return sanitized_to_original.get(requested, requested)
+    direct = sanitized_to_original.get(requested_stripped)
+    if direct is not None:
+        return direct
+
+    sanitized_casefold = {alias.casefold(): original for alias, original in sanitized_to_original.items()}
+
+    # Accept display labels such as "Os names find" and punctuation variants.
+    normalized = _ALLOWED_TOOL_NAME_RE.sub("_", requested_stripped)
+    normalized_collapsed = re.sub(r"_+", "_", normalized).strip("_")
+    candidates = (
+        requested_stripped.casefold(),
+        normalized,
+        normalized.casefold(),
+        normalized_collapsed,
+        normalized_collapsed.casefold(),
+    )
+    for candidate in candidates:
+        if not candidate:
+            continue
+        resolved = sanitized_to_original.get(candidate)
+        if resolved is not None:
+            return resolved
+        resolved = sanitized_casefold.get(candidate.casefold())
+        if resolved is not None:
+            return resolved
+
+    return requested
 
 
 def rewrite_tool_schema(

@@ -99,6 +99,12 @@ def test_call_tool_accepts_arguments_payload():
     assert call["content"][0]["type"] == "text"
 
 
+def test_call_tool_accepts_display_style_name_alias():
+    call = stdio_adapter.handle_call_tool({"name": "Os mcp descriptor", "arguments": {}})
+    assert call.get("ok") is True
+    assert call.get("content")
+
+
 def test_ui_tools_emit_resource_content(monkeypatch):
     monkeypatch.setenv("MCP_STDIO_RESOURCE_CONTENT", "1")
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})

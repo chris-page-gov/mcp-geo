@@ -145,6 +145,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Hardened tool-name alias resolution in
+  `server/tool_naming.py` to accept display-style names (case/spacing/
+  punctuation variants such as `Os names find`) after a Claude map-flow trace
+  showed repeated unknown-tool failures presented as generic `Tool execution failed`.
 - 2026-02-14: Added `os_offline.descriptor` and `os_offline.get` to the
   evaluation harness specialist-tool allowlist in
   `tests/test_evaluation_harness_full.py` to prevent false missing-coverage
