@@ -2327,7 +2327,7 @@
         if (styleUrl) {
           state.sourcesReady = false;
           state.sourcesInitializing = false;
-          state.map.setStyle(styleUrl);
+          state.map.setStyle(styleUrl, { diff: false });
           state.map.once("error", (event) => {
             const msg = String(event?.error?.message || "");
             if (!/(\\b401\\b|\\b403\\b|OS API key|NO_API_KEY|Unauthorized|Forbidden)/i.test(msg)) {
@@ -2374,7 +2374,7 @@
         state.sourcesReady = false;
         state.sourcesInitializing = false;
         state.lastMapError = null;
-        state.map.setStyle(fallbackStyle);
+        state.map.setStyle(fallbackStyle, { diff: false });
         state.map.once("style.load", () => {
           addSourcesAndLayers();
           scheduleMapMutationFlush();

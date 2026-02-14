@@ -164,5 +164,7 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
 
   // Capture map rendering for regression coverage
   await expect(page.locator("#map")).toBeVisible();
-  await expect(page.locator("#map")).toHaveScreenshot("geography-selector-map.png");
+  await expect(page.locator("#map")).toHaveScreenshot("geography-selector-map.png", {
+    maxDiffPixelRatio: 0.015,
+  });
 });

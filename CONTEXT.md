@@ -50,6 +50,8 @@ assumptions change.
 - Keeping the completed phased progress program stable with full regression coverage.
 - Driving the OS catalog/tooling gap closure plan via parallel workstreams.
 - Prioritizing next major gap after gap closure: CI pipeline implementation.
+- Running map delivery interoperability research focused on reliable rendering across
+  MCP clients, browsers, and GIS workflows.
 
 ## Active Work
 
@@ -57,6 +59,8 @@ assumptions change.
 - Coordinate parallel OS gap workstreams and integration gates from
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.
 - Documentation pack and preparation for workshop/demo.
+- Deliver map delivery research package with personas, autonomous trials, and
+  evidence capture under `research/map_delivery_research_2026-02/`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -107,6 +111,12 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-13: Added a containerized map-delivery trial harness (Playwright
+  multi-browser config + runner + JSONL/PNG evidence capture) with
+  compatibility-first focus on static route and tool-driven render contracts.
+- 2026-02-13: Established map delivery layering policy for MCP Geo:
+  static map contract first, resource-backed overlays second, MCP-App widgets
+  as progressive enhancement, and GIS descriptors for professional workflows.
 - 2026-02-13: Captured OS VTS label rendering constraint from Claude/Desktop
   validation: custom symbol-layer text should use HTML/DOM marker overlays
   rather than glyph-backed symbol text on OS VTS basemaps.
