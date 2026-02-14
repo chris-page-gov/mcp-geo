@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-13
+Last updated: 2026-02-14
 
 ## Sources reviewed
 
@@ -59,6 +59,31 @@ Legend: pending, in_progress, done
 | MDR-03 Validate MCP server connectivity in devcontainer | done | Captured in-container baseline (`/health`, `initialize`, `os_maps.render`, `os_vector_tiles.descriptor`) with reproducible logs. |
 | MDR-04 Execute and evaluate map rendering trials | done | Final clean run: 8 passed, 4 skipped; generated trial summary report and artifacts. |
 | MDR-05 Produce detailed report and external source register | done | Added full report set in `research/map_delivery_research_2026-02/` including options, trial methodology/results, recommendations, and source register. |
+
+## Map delivery recommendations implementation plan (2026-02-14)
+
+Reference plan:
+- `/Users/crpage/repos/mcp-geo/docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MDR-I1 Canonical `os_maps.render` baseline docs | pending | none | Promote compatibility-first `os_maps.render` flow across README/getting-started/examples/tutorial docs. |
+| MDR-I2 Standard fallback skeleton contracts | pending | MDR-I1 | Define/align `map_card`, `overlay_bundle`, and `export_handoff` contract docs and conformance checklist. |
+| MDR-I3 Lean startup tool discovery guidance | pending | MDR-I1 | Standardize `starter`-first initialization docs and defer heavy discovery to post-init flows. |
+| MDR-I4 Browser/widget support matrix | pending | MDR-I1 | Publish host/browser matrix with capability modes, limits, and evidence links. |
+| MDR-N1 Deterministic host simulation utilities | pending | MDR-I2, MDR-I4 | Add deterministic UI resource test simulation across Chromium/Firefox/WebKit. |
+| MDR-N2 Widget-unsupported guidance fields | pending | MDR-I2 | Add explicit fallback guidance payload fields for non-UI hosts with stable transport behavior. |
+| MDR-N3 Mobile viewport + latency trial budgets | pending | MDR-N1 | Expand trial suite with mobile projects and scenario latency budget assertions/reporting. |
+| MDR-N4 Optional sidecar deployment profile | pending | MDR-I2 | Add Martin/pg_tileserv sidecar profile docs/runbook for scaled deployments. |
+| MDR-M1 PMTiles/MBTiles offline delivery | pending | MDR-N4 | Add offline-friendly map delivery option with packaging and retrieval contracts. |
+| MDR-M2 Map output quality checks | pending | MDR-N3 | Add automated checks for label density, contrast, and accessibility metadata. |
+| MDR-M3 Notebook scenario pack resources | pending | MDR-N3 | Integrate notebook-generated scenario packs into resource outputs with provenance metadata. |
+| MDR-E1 MCP/AI-host best-practice bundle | pending | MDR-I4 | Publish worker/CSP-safe client-side best-practice patterns for embedded map contexts. |
+| MDR-E2 Lightweight embedding style profiles | pending | MDR-E1 | Provide normalized lightweight style profiles for constrained AI-client embedding. |
+| MDR-E3 Progressive fallback official examples | pending | MDR-E1, MDR-E2 | Publish examples showing deterministic full-vector to static-card fallback progression. |
+| MDR-E4 Mixed UI/no-UI host guidance | pending | MDR-E1 | Publish predictable degradation guidance for mixed host fleets. |
 
 ## Progress against the original vision
 

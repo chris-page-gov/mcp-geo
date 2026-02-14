@@ -10,6 +10,12 @@ All notable changes to this project will be documented in this file.
   `research/map_delivery_research_2026-02/` with personas, longlist options,
   trial design/results, external source register, progress journal, and final
   recommendations report.
+- Added a detailed, dependency-tracked map delivery recommendations
+  implementation plan at
+  `docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`
+  with workstream IDs `MDR-I1` through `MDR-E4`.
+- Added map delivery planning status tracking in `PROGRESS.MD` and context
+  alignment updates in `CONTEXT.md` for the new workstream program.
 - Added containerized autonomous map trial tooling:
   - `playground/playwright.trials.config.js`
   - `playground/trials/tests/map_delivery_matrix.spec.js`
