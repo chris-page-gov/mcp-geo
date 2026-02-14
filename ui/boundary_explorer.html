@@ -12,7 +12,8 @@
     />
     <link
       rel="stylesheet"
-      href="vendor/maplibre-gl.css"
+      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
     />
     <style>
       :root {
@@ -592,7 +593,10 @@
       </div>
     </div>
 
-    <script src="vendor/maplibre-gl.js"></script>
+    <script
+      src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+      onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
+    ></script>
     <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.min.js"></script>
     <script>
       const hostStatusEl = document.getElementById("hostStatus");
@@ -734,11 +738,8 @@
       }
 
       function resolveWorkerUrl() {
-        const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
-        const shouldUseLocalWorker =
-          window.location.protocol === "file:" || window.location.origin === "null";
-        if (shouldUseLocalWorker || !state.proxyBase) {
-          return localWorkerUrl;
+        if (!state.proxyBase) {
+          return null;
         }
         return `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
       }
@@ -856,7 +857,10 @@
             return false;
           }
           try {
-            maplibregl.workerUrl = resolveWorkerUrl();
+            const workerUrl = resolveWorkerUrl();
+            if (workerUrl) {
+              maplibregl.workerUrl = workerUrl;
+            }
             const osmTiles = state.proxyBase
               ? `${state.proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
               : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -1997,7 +2001,10 @@
           const mcpGeo = ctx.mcpGeo || {};
           if (mcpGeo.proxyBase) state.proxyBase = mcpGeo.proxyBase;
           if (state.map && window.maplibregl) {
-            maplibregl.workerUrl = resolveWorkerUrl();
+            const workerUrl = resolveWorkerUrl();
+            if (workerUrl) {
+              maplibregl.workerUrl = workerUrl;
+            }
           }
           return;
         }

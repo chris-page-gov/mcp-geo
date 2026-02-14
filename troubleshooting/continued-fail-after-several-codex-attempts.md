@@ -254,3 +254,45 @@ Fix shipped:
 - Added explicit map-degraded mode when map runtime is unavailable.
 - Added `os_apps.log_event` telemetry (`host_ready`, `map_init_skipped`,
   `map_init_failed`, `window_error`, `unhandled_rejection`) for future diagnosis.
+
+## Follow-up finding: Claude still echoing embedded widget HTML (2026-02-14)
+
+New trace session (`tools/call` id `9` for `os_apps_render_boundary_explorer`)
+showed:
+- successful `resources/read ui://mcp-geo/boundary-explorer`
+- successful `tools/call` (`status=200`, `content=["text","resource"]`)
+- but no widget-side event calls (for example `os_apps_log_event`) afterward.
+
+Interpretation:
+- host can fetch MCP app HTML but still may not launch runtime when tool output
+  includes embedded HTML resource blocks in this Claude path.
+
+Mitigation shipped:
+- `server/stdio_adapter.py` now sets `contentMode=text` for
+  `os_apps.render_*` calls when `clientInfo.name` is Claude and the request did
+  not explicitly provide `contentMode`.
+- New env knob: `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `text` in
+  `scripts/claude-mcp-local`).
+
+## Follow-up finding: `ui://` relative MapLibre assets not resolved (2026-02-14)
+
+Observed in recorded boundary sessions:
+- widget HTML loaded, but client-side path entered `maplibre_missing` branch
+  (`window.maplibregl` undefined), then Claude agent fell back to generating a
+  separate non-widget map.
+
+Root cause:
+- `ui/geography_selector.html` and `ui/boundary_explorer.html` referenced
+  `vendor/maplibre-gl.js` and `vendor/maplibre-gl.css` as relative assets.
+- Some MCP hosts do not resolve relative subresources under `ui://` payloads.
+
+Fix shipped:
+- Switched both widget HTML files to absolute MapLibre CDN URLs (unpkg) with
+  jsDelivr `onerror` fallback.
+- Removed local-worker assumptions and now set `maplibre.workerUrl` only when
+  `proxyBase` is present.
+- Updated widget CSP domains in `server/mcp/resource_catalog.py` to include
+  `cdn.jsdelivr.net` and `tile.openstreetmap.org`.
+- Added regression assertions in:
+  - `tests/test_resources_ui_skills.py`
+  - `tests/test_resource_catalog.py`

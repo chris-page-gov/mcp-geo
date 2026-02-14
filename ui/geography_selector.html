@@ -6,7 +6,8 @@
     <title>MCP Geo - Geography Selector</title>
     <link
       rel="stylesheet"
-      href="vendor/maplibre-gl.css"
+      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
     />
     <link
       rel="stylesheet"
@@ -566,7 +567,10 @@
       </section>
     </div>
 
-    <script src="vendor/maplibre-gl.js"></script>
+    <script
+      src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+      onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
+    ></script>
     <script>
       const modes = [
         { id: "free", label: "Free text", tool: "os_places.search" },
@@ -1213,13 +1217,10 @@
           return;
         }
         const proxyBase = state.proxyBase;
-        const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
-        const shouldUseLocalWorker =
-          window.location.protocol === "file:" || window.location.origin === "null";
-        maplibregl.workerUrl =
-          shouldUseLocalWorker || !proxyBase
-            ? localWorkerUrl
-            : `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+        const workerUrl = proxyBase ? `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js` : null;
+        if (workerUrl) {
+          maplibregl.workerUrl = workerUrl;
+        }
         const fallbackStyle = {
           version: 8,
           sources: {},
@@ -2300,14 +2301,13 @@
           state.vectorTiles = mcpGeo.vectorTiles;
         }
         if (state.map && window.maplibregl) {
-            const localWorkerUrl = "vendor/maplibre-gl-csp-worker.js";
-            const shouldUseLocalWorker =
-              window.location.protocol === "file:" || window.location.origin === "null";
-            maplibregl.workerUrl =
-              shouldUseLocalWorker || !state.proxyBase
-                ? localWorkerUrl
-                : `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+          const workerUrl = state.proxyBase
+            ? `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`
+            : null;
+          if (workerUrl) {
+            maplibregl.workerUrl = workerUrl;
           }
+        }
       }
 
       function applyVectorTiles() {

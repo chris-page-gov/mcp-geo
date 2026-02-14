@@ -102,6 +102,15 @@ What is happening:
 Remediation:
 - Use a build that includes the 2026-02-14 boundary explorer runtime hardening
   (host init and map init decoupled, graceful map-degraded mode, telemetry).
+- Use a build that includes the 2026-02-14 MapLibre asset-path fix for MCP-Apps
+  widgets (`ui/geography_selector.html`, `ui/boundary_explorer.html`):
+  absolute CDN script/style URLs replaced prior `vendor/*` relative links.
+  Some hosts do not resolve `ui://...` relative subresources, which leaves
+  `window.maplibregl` undefined even when the HTML shell loads.
+- For Claude Desktop stdio sessions, prefer
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=text` so `os_apps.render_*` calls avoid
+  embedded HTML payload blocks that Claude may echo verbatim instead of
+  launching widget runtime.
 - Confirm trace sequence:
   - `tools/call` for `os_apps_render_boundary_explorer` returns `status=200`
   - then `resources/read` for `ui://mcp-geo/boundary-explorer`

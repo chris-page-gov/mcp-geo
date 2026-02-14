@@ -145,6 +145,15 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Identified `ui://`-relative widget assets (`vendor/maplibre-*`)
+  as a host-interop failure mode in Claude and updated geography/boundary
+  widgets to use absolute MapLibre CDN URLs with jsDelivr fallback, plus
+  proxy-only worker URL wiring and CSP domain updates.
+- 2026-02-14: Added Claude-specific stdio widget content-mode coercion in
+  `server/stdio_adapter.py` so `os_apps.render_*` defaults to `contentMode=text`
+  for Claude clients (unless explicitly overridden), addressing repeated
+  sessions where embedded HTML blocks were echoed in transcript instead of
+  launching widget runtime.
 - 2026-02-14: Diagnosed boundary explorer non-render in Claude as a widget
   bootstrap coupling bug in `ui/boundary_explorer.html`: map runtime failures
   (`maplibre` missing/worker init issues) could prevent reliable

@@ -117,6 +117,25 @@ def test_build_ui_meta_includes_widget_domain(monkeypatch: MonkeyPatch) -> None:
     assert meta["openai/widgetCSP"]["connect_domains"] == ["self"]
 
 
+def test_ui_resources_include_maplibre_fallback_csp_domains() -> None:
+    ui_resources = resource_catalog.list_ui_resources()
+    by_uri = {entry["uri"]: entry for entry in ui_resources}
+    for uri in (
+        "ui://mcp-geo/geography-selector",
+        "ui://mcp-geo/boundary-explorer",
+    ):
+        entry = by_uri[uri]
+        meta = entry.get("_meta", {}).get("ui", {})
+        csp = meta.get("csp", {})
+        connect_domains = set(csp.get("connectDomains", []))
+        resource_domains = set(csp.get("resourceDomains", []))
+        assert "https://unpkg.com" in connect_domains
+        assert "https://cdn.jsdelivr.net" in connect_domains
+        assert "https://tile.openstreetmap.org" in connect_domains
+        assert "https://unpkg.com" in resource_domains
+        assert "https://cdn.jsdelivr.net" in resource_domains
+
+
 def test_latest_run_report_path_missing_dir(monkeypatch: MonkeyPatch, tmp_path) -> None:
     missing_dir = tmp_path / "missing"
     monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", missing_dir)

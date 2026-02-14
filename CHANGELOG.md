@@ -65,6 +65,15 @@ All notable changes to this project will be documented in this file.
   an explicit degraded mode (instead of aborting host init), with `os_apps.log_event`
   telemetry for `host_ready`, `map_init_skipped`, `map_init_failed`, and runtime
   script errors.
+- Updated stdio Claude interop for MCP-Apps tools by introducing
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `text` in `scripts/claude-mcp-local`)
+  and auto-applying that mode to `os_apps.render_*` calls when the client is
+  Claude and no explicit `contentMode` is provided.
+- Updated map widgets (`ui/geography_selector.html`,
+  `ui/boundary_explorer.html`) to load MapLibre via absolute CDN URLs with
+  jsDelivr fallback instead of `ui://`-relative `vendor/*` paths, and to set
+  MapLibre worker URLs only when `proxyBase` is available. This addresses
+  Claude runs where widget HTML loaded but `window.maplibregl` stayed undefined.
 - Updated troubleshooting guidance for Claude/Desktop startup and execution
   failures where UI shows `Tool execution failed` despite trace-confirmed
   `status=200` tool responses, including the macOS `python3.14` permission

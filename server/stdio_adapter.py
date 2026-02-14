@@ -146,6 +146,7 @@ def _resolve_framing() -> Optional[str]:
 
 CLIENT_CAPABILITIES: Dict[str, Any] = {}
 CLIENT_CAPABILITY_SUMMARY: Dict[str, Any] = {}
+CLIENT_INFO: Dict[str, Any] = {}
 _ELICITATION_HANDLER: Optional[Callable[[Dict[str, Any]], Dict[str, Any] | None]] = None
 _ELICITATION_REQUEST_SEQ = 0
 
@@ -207,6 +208,24 @@ def _bool_env(name: str, default: bool = False) -> bool:
 
 def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
     return _shared_client_supports_ui(capabilities, override_env="MCP_STDIO_UI_SUPPORTED")
+
+
+def _is_claude_client() -> bool:
+    name = CLIENT_INFO.get("name")
+    if not isinstance(name, str):
+        return False
+    return name.strip().lower().startswith("claude")
+
+
+def _normalize_apps_content_mode(value: str) -> Optional[str]:
+    raw = value.strip().lower()
+    if raw in {"text", "plain"}:
+        return "text"
+    if raw in {"resource_link", "link"}:
+        return "resource_link"
+    if raw in {"embedded", "resource", "inline"}:
+        return "embedded"
+    return None
 
 
 def _client_supports_elicitation_form(capabilities: Dict[str, Any]) -> bool:
@@ -602,9 +621,11 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
 def handle_initialize(params: Dict[str, Any]) -> Any:
     requested = params.get("protocolVersion")
     protocol_version = negotiate_protocol_version(requested)
-    global CLIENT_CAPABILITIES, CLIENT_CAPABILITY_SUMMARY
+    global CLIENT_CAPABILITIES, CLIENT_CAPABILITY_SUMMARY, CLIENT_INFO
     capabilities = params.get("capabilities")
     CLIENT_CAPABILITIES = capabilities if isinstance(capabilities, dict) else {}
+    client_info = params.get("clientInfo")
+    CLIENT_INFO = client_info if isinstance(client_info, dict) else {}
     CLIENT_CAPABILITY_SUMMARY = _summarize_client_capabilities(
         capabilities=CLIENT_CAPABILITIES,
         requested_protocol_version=requested,
@@ -752,6 +773,15 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
     payload = dict(payload)
+    if (
+        resolved_name.startswith("os_apps.render_")
+        and "contentMode" not in payload
+        and _is_claude_client()
+    ):
+        preferred_mode_raw = os.getenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", "text")
+        preferred_mode = _normalize_apps_content_mode(preferred_mode_raw)
+        if preferred_mode:
+            payload["contentMode"] = preferred_mode
     if resolved_name == "os_mcp.stats_routing":
         should_continue, elicitation_error = _maybe_elicit_stats_routing(payload)
         if not should_continue:
