@@ -98,6 +98,7 @@ def test_call_tool_accepts_arguments_payload():
     assert call.get("ok") is True
     assert call.get("content")
     assert call["content"][0]["type"] == "text"
+    assert isinstance(call.get("structuredContent"), dict)
 
 
 def test_call_tool_accepts_display_style_name_alias():
@@ -123,6 +124,8 @@ def test_call_tool_display_style_alias_routes_to_os_tool(monkeypatch):
     assert call.get("isError") is True
     data = call.get("data", {})
     assert data.get("code") == "NO_API_KEY"
+    structured = call.get("structuredContent", {})
+    assert structured.get("code") == "NO_API_KEY"
 
 
 def test_ui_tools_emit_resource_content(monkeypatch):

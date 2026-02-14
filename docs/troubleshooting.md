@@ -157,6 +157,38 @@ Remediation:
 - Retry with `MCP_APPS_CONTENT_MODE=embedded` and `MCP_APPS_RESOURCE_LINK=0`.
 - If reproducible, report to Anthropic with timestamp and screenshot.
 
+## Claude shows `Tool execution failed` but MCP trace shows `status=200`
+If Claude UI reports `Tool execution failed` while `logs/claude-trace.jsonl`
+shows successful JSON-RPC responses (`server->client` with `result.status=200`),
+the host is typically rejecting the tool result shape after transport succeeds.
+
+What to check:
+- Confirm calls reached the server and returned success:
+  - `direction=client->server`, `method=tools/call`
+  - matching `direction=server->client`, same `id`, `result.status=200`
+- Confirm there are no trace parse errors for that session.
+
+Remediation:
+- Use a build that auto-populates MCP `structuredContent` for dict tool results
+  (added on 2026-02-14) so strict hosts can validate outputs against tool schemas.
+- Rebuild once with `MCP_GEO_DOCKER_BUILD=always`, then switch back to
+  `MCP_GEO_DOCKER_BUILD=missing` for normal use.
+- Keep `MCP_STDIO_FRAMING=line` for Claude Desktop.
+
+## macOS popup: `"python3.14" would like to access data from other apps`
+When Claude starts the MCP server through a Python wrapper (`python3` command in
+`claude_desktop_config.json`), macOS may show a one-time privacy prompt:
+`"python3.14" would like to access data from other apps`.
+
+Interpretation:
+- This is an OS-level TCC permission prompt for the Python host process.
+- It is not an MCP protocol error from `mcp-geo`.
+
+Action:
+- Allow once so Claude can continue launching the configured MCP wrapper.
+- If startup remains slow afterward, check whether
+  `MCP_GEO_DOCKER_BUILD=always` is forcing a full Docker rebuild each launch.
+
 ## General Debug Steps
 1. Capture correlationId from response headers/logs for traceability.
 2. Reproduce with minimal payload and add parameters progressively.

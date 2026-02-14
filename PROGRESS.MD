@@ -85,6 +85,16 @@ Legend: pending, in_progress, done
 | MDR-E3 Progressive fallback official examples | done | MDR-E1, MDR-E2 | Updated examples/tutorial docs with deterministic full UI -> partial UI -> no UI fallback sequences. |
 | MDR-E4 Mixed UI/no-UI host guidance | done | MDR-E1 | Expanded troubleshooting/architecture/support-matrix guidance for deterministic degradation across mixed host fleets. |
 
+## Claude interop troubleshooting (2026-02-14)
+
+Legend: pending, in_progress, done
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| CT-01 Correlate Claude UI failures with MCP stdio trace ids | done | Confirmed `tools/call` requests for Village Hotel flow returned `status=200` with no trace parse errors despite UI `Tool execution failed`. |
+| CT-02 Record startup-permission and rebuild pitfalls | done | Added troubleshooting guidance for macOS `python3.14` permission prompt and `MCP_GEO_DOCKER_BUILD` rebuild mode behavior. |
+| CT-03 Harden tool-call result shape for strict hosts | done | STDIO + HTTP now auto-populate `structuredContent` for dict payloads when not provided explicitly. |
+
 ## Progress against the original vision
 
 Legend: Done, Partial, Not started

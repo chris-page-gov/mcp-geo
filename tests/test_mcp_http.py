@@ -135,6 +135,7 @@ def test_mcp_http_call_tool_accepts_arguments(client):
     payload = resp.json()
     assert payload["result"]["ok"] is True
     assert payload["result"]["content"]
+    assert isinstance(payload["result"].get("structuredContent"), dict)
 
 
 def test_mcp_http_resources_get_ui(client):

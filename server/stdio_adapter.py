@@ -447,6 +447,15 @@ def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict
     return content
 
 
+def _default_structured_content(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a structured payload that omits transport-only wrapper keys."""
+    return {
+        key: value
+        for key, value in data.items()
+        if key not in {"content", "_meta", "structuredContent"}
+    }
+
+
 def _read_result(
     uri: str,
     mime_type: Optional[str],
@@ -803,8 +812,11 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             result["content"] = content_override
         else:
             result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
-        if "structuredContent" in data:
-            result["structuredContent"] = data["structuredContent"]
+        structured = data.get("structuredContent")
+        if isinstance(structured, dict):
+            result["structuredContent"] = structured
+        else:
+            result["structuredContent"] = _default_structured_content(data)
         meta = data.get("_meta")
         if isinstance(meta, dict):
             result["_meta"] = meta

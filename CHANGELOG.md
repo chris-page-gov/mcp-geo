@@ -56,6 +56,14 @@ All notable changes to this project will be documented in this file.
   (`resources/map_embedding_style_profiles.json`).
 
 ### Changed
+- Updated MCP tool-call response shaping (STDIO and Streamable HTTP) to always
+  include `structuredContent` for dict payloads when tools do not provide it
+  explicitly, improving compatibility with strict clients that validate
+  tool-result structure.
+- Updated troubleshooting guidance for Claude/Desktop startup and execution
+  failures where UI shows `Tool execution failed` despite trace-confirmed
+  `status=200` tool responses, including the macOS `python3.14` permission
+  prompt interpretation.
 - Hardened devcontainer setup for map validation workflows:
   - Added forwarded ports for Playwright test server, Inspector, and Jupyter.
   - Added Jupyter extension and post-create install of `jupyterlab` and `ipykernel`.

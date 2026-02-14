@@ -145,6 +145,14 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Hardened MCP tool-call result shape for strict hosts by always
+  emitting `structuredContent` when tool handlers return dict payloads (stdio
+  and HTTP transports). This was prompted by Claude traces showing `tools/call`
+  responses with `status=200` while UI still reported `Tool execution failed`.
+- 2026-02-14: Documented macOS startup prompt behavior
+  (`"python3.14" would like to access data from other apps`) and clarified it
+  as an OS-level permission event for the Python wrapper process, not an MCP
+  protocol/server failure.
 - 2026-02-14: Extended tool-name alias resolution to accept client/server
   namespaced forms (for example `mcp-geo:os_places_search`) after Claude
   surfaced a mismatch between prefixed discovery names and unprefixed call names.
