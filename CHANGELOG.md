@@ -66,7 +66,7 @@ All notable changes to this project will be documented in this file.
   telemetry for `host_ready`, `map_init_skipped`, `map_init_failed`, and runtime
   script errors.
 - Updated stdio Claude interop for MCP-Apps tools by introducing
-  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `text` in `scripts/claude-mcp-local`)
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `resource_link` in `scripts/claude-mcp-local`)
   and auto-applying that mode to `os_apps.render_*` calls when the client is
   Claude and no explicit `contentMode` is provided.
 - Updated map widgets (`ui/geography_selector.html`,

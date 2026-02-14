@@ -148,15 +148,16 @@ def test_ui_tools_include_resource_content_by_default(monkeypatch):
     assert "Open the geography selector" in content[0]["text"]
 
 
-def test_claude_defaults_ui_tool_content_mode_to_text(monkeypatch):
-    monkeypatch.setenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", "text")
+def test_claude_defaults_ui_tool_content_mode_to_resource_link(monkeypatch):
+    monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
     monkeypatch.setenv("MCP_APPS_CONTENT_MODE", "embedded")
     monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
     assert call.get("ok") is True
     content = call.get("content", [])
     assert content
-    assert all(block.get("type") == "text" for block in content if isinstance(block, dict))
+    assert any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+    assert not any(block.get("type") == "resource" for block in content if isinstance(block, dict))
 
 
 def test_claude_ui_content_mode_respects_explicit_override(monkeypatch):

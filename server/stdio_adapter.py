@@ -778,7 +778,10 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
         and "contentMode" not in payload
         and _is_claude_client()
     ):
-        preferred_mode_raw = os.getenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", "text")
+        # Claude should receive a UI-launchable content block by default.
+        # `resource_link` avoids embedding full HTML while still pointing hosts
+        # at the MCP-Apps resource URI.
+        preferred_mode_raw = os.getenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", "resource_link")
         preferred_mode = _normalize_apps_content_mode(preferred_mode_raw)
         if preferred_mode:
             payload["contentMode"] = preferred_mode

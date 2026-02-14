@@ -19,7 +19,7 @@ host/browser profile. It anchors to the compatibility-first order:
 | Playwright trial harness | WebKit desktop | supported | supported | unknown (host simulation not validated) | supported | none | 2026-02-13 | `research/map_delivery_research_2026-02/evidence/screenshots/webkit-desktop-trial-1-static-osm.png`, `research/map_delivery_research_2026-02/evidence/screenshots/webkit-desktop-trial-2-os-maps-render.png` |
 | Playwright trial harness | Chromium mobile | supported | supported | partial (simulated host path) | supported | none | 2026-02-14 | `research/map_delivery_research_2026-02/evidence/logs/playwright_trials_observations.jsonl` |
 | Playwright trial harness | WebKit mobile | supported | supported | unsupported/unknown | supported | none | 2026-02-14 | `research/map_delivery_research_2026-02/evidence/logs/playwright_trials_observations.jsonl` |
-| Claude Desktop (STDIO) | Host webview | supported | supported | partial (depends on ext-apps support + content mode) | supported | `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=text`, keep `MCP_APPS_RESOURCE_LINK=0` | 2026-02-14 | `docs/troubleshooting.md`, `logs/claude-trace.jsonl` |
+| Claude Desktop (STDIO) | Host webview | supported | supported | partial (depends on ext-apps support + content mode) | supported | `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=resource_link`, keep `MCP_APPS_RESOURCE_LINK=0` | 2026-02-14 | `docs/troubleshooting.md`, `logs/claude-trace.jsonl` |
 | MCP clients without `io.modelcontextprotocol/ui` | any | supported | supported | unsupported by definition | required | none | 2026-02-14 | `server/stdio_adapter.py`, `server/mcp/http_transport.py`, `server/mcp/client_capabilities.py` |
 
 ## Limits and operational notes
@@ -34,8 +34,8 @@ host/browser profile. It anchors to the compatibility-first order:
   MapLibre HTML helpers may fail there even when they work correctly in Safari/
   Chrome.
 - For Claude stdio widget calls, use
-  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=text` to avoid embedded HTML blocks being
-  surfaced as transcript output instead of launched widget runtime.
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=resource_link` to avoid embedded HTML
+  transcript dumps while still emitting a UI-launchable widget link block.
 - Boundary Explorer requires the 2026-02-14 runtime hardening path so host
   initialization can complete even when map runtime init degrades; otherwise
   some Claude sessions may show raw HTML fallback.

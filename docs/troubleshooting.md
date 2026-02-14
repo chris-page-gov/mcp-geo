@@ -108,9 +108,9 @@ Remediation:
   Some hosts do not resolve `ui://...` relative subresources, which leaves
   `window.maplibregl` undefined even when the HTML shell loads.
 - For Claude Desktop stdio sessions, prefer
-  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=text` so `os_apps.render_*` calls avoid
-  embedded HTML payload blocks that Claude may echo verbatim instead of
-  launching widget runtime.
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=resource_link` so `os_apps.render_*`
+  calls avoid embedded HTML payload blocks while still returning a
+  widget-launchable resource link.
 - Confirm trace sequence:
   - `tools/call` for `os_apps_render_boundary_explorer` returns `status=200`
   - then `resources/read` for `ui://mcp-geo/boundary-explorer`

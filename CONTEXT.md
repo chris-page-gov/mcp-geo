@@ -150,10 +150,10 @@ assumptions change.
   widgets to use absolute MapLibre CDN URLs with jsDelivr fallback, plus
   proxy-only worker URL wiring and CSP domain updates.
 - 2026-02-14: Added Claude-specific stdio widget content-mode coercion in
-  `server/stdio_adapter.py` so `os_apps.render_*` defaults to `contentMode=text`
+  `server/stdio_adapter.py` so `os_apps.render_*` defaults to `contentMode=resource_link`
   for Claude clients (unless explicitly overridden), addressing repeated
-  sessions where embedded HTML blocks were echoed in transcript instead of
-  launching widget runtime.
+  sessions where embedded HTML blocks were echoed in transcript while preserving
+  a UI-launchable resource block.
 - 2026-02-14: Diagnosed boundary explorer non-render in Claude as a widget
   bootstrap coupling bug in `ui/boundary_explorer.html`: map runtime failures
   (`maplibre` missing/worker init issues) could prevent reliable

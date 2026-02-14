@@ -268,11 +268,16 @@ Interpretation:
   includes embedded HTML resource blocks in this Claude path.
 
 Mitigation shipped:
-- `server/stdio_adapter.py` now sets `contentMode=text` for
+- `server/stdio_adapter.py` now sets `contentMode=resource_link` for
   `os_apps.render_*` calls when `clientInfo.name` is Claude and the request did
   not explicitly provide `contentMode`.
-- New env knob: `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `text` in
+- New env knob: `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `resource_link` in
   `scripts/claude-mcp-local`).
+
+Why this changed:
+- Later trace slice (`tools/call` id `7`, ts `1771081739`) showed that forcing
+  `contentMode=text` avoided embedded HTML but produced `content=["text"]`,
+  which is not a widget-launchable block for Claude UI hosts.
 
 ## Follow-up finding: `ui://` relative MapLibre assets not resolved (2026-02-14)
 
