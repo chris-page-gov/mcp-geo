@@ -28,6 +28,14 @@ All notable changes to this project will be documented in this file.
 - Added map-delivery fallback contract appendix
   `docs/spec_package/06a_map_delivery_fallback_contracts.md` defining
   `map_card`, `overlay_bundle`, and `export_handoff` schemas and conformance checks.
+- Added deterministic host-simulation fixtures and utilities for map trials:
+  `playground/trials/fixtures/host_capability_profiles.json`,
+  `playground/trials/tests/support/host_simulation.js`,
+  and `scripts/map_trials/host_simulation_profiles.py` (+ tests).
+- Added optional sidecar deployment assets for scaled map delivery:
+  `scripts/sidecar/docker-compose.map-sidecar.yml`,
+  `scripts/sidecar/smoke_sidecar_profile.sh`,
+  and `docs/sidecar_profile.md`.
 
 ### Changed
 - Hardened devcontainer setup for map validation workflows:
@@ -44,6 +52,15 @@ All notable changes to this project will be documented in this file.
   `docs/mcp_apps_alignment.md`,
   `docs/spec_package/06_api_contracts.md`,
   `research/map_delivery_research_2026-02/README.md`.
+- Updated map trial matrix execution to include mobile projects, deterministic
+  host-profile replay, and latency-budget assertions with per-observation
+  telemetry.
+- Updated trial summary reporting to include latency percentiles (`p50/p90/p95`)
+  and budget-compliance rollups.
+- Updated non-UI fallback payloads (STDIO + HTTP) to include explicit
+  widget-unsupported guidance fields and deterministic next-step tool hints.
+- Updated architecture/design/walkthrough spec docs with optional Martin +
+  pg_tileserv sidecar deployment guidance.
 
 ## [0.3.1] - 2026-02-13
 ### Added

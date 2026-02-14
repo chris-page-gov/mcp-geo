@@ -528,6 +528,20 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
         "center": {"lat": lat, "lng": lng},
         "bbox": bbox,
         "note": "Client does not support MCP-Apps UI; use render.urlTemplate with your API key.",
+        "widgetUnsupported": True,
+        "widgetUnsupportedReason": "ui_extension_not_advertised",
+        "degradationMode": "no_ui",
+        "guidance": {
+            "widgetUnsupported": True,
+            "widgetUnsupportedReason": "ui_extension_not_advertised",
+            "degradationMode": "no_ui",
+            "preferredNextTools": [
+                "os_maps.render",
+                "admin_lookup.area_geometry",
+                "os_map.inventory",
+            ],
+            "transportParity": ["stdio", "http"],
+        },
     }
     if zoom is not None:
         fallback["zoom"] = zoom
@@ -550,6 +564,9 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
         "areaCodes": area_codes or [],
         "dataset": dataset,
         "measure": measure,
+        "widgetUnsupported": True,
+        "widgetUnsupportedReason": "ui_extension_not_advertised",
+        "degradationMode": "no_ui",
         "suggestedTools": [
             "ons_search.query",
             "ons_data.dimensions",
@@ -557,6 +574,19 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
             "nomis.datasets",
             "nomis.query",
         ],
+        "guidance": {
+            "widgetUnsupported": True,
+            "widgetUnsupportedReason": "ui_extension_not_advertised",
+            "degradationMode": "no_ui",
+            "preferredNextTools": [
+                "ons_search.query",
+                "ons_data.dimensions",
+                "ons_data.query",
+                "nomis.datasets",
+                "nomis.query",
+            ],
+            "transportParity": ["stdio", "http"],
+        },
     }
 
 

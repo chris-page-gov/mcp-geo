@@ -70,6 +70,9 @@ assumptions change.
   `docs/spec_package/06_api_contracts.md`,
   `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
   `docs/map_delivery_support_matrix.md`.
+- Maintain deterministic host-simulation fixtures, latency-budget trial
+  reporting, and optional sidecar runbook assets under `playground/trials/`,
+  `scripts/map_trials/`, and `scripts/sidecar/`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -87,15 +90,15 @@ assumptions change.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
   evaluation plan).
 - In progress: map delivery recommendation implementation program (`MDR-I1` to
-  `MDR-E4`) is active; immediate wave (`MDR-I1` to `MDR-I4`) is complete.
+  `MDR-E4`) is active; immediate (`MDR-I1` to `MDR-I4`) and near-term
+  (`MDR-N1` to `MDR-N4`) waves are complete.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
 
 - High: CI pipeline; MCP-Apps client compatibility validation and docs.
-- High: map delivery near-term recommendations (deterministic host simulation,
-  explicit widget-unsupported guidance fields, mobile viewport + latency
-  budgets, optional sidecar profile).
+- High: map delivery medium-term recommendations (offline PMTiles/MBTiles
+  option, map output quality checks, notebook scenario-pack resources).
 - Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
   admin cache staleness policy; performance regression tests.
 - Medium: near-term map engineering recommendations (deterministic host simulation,
@@ -135,6 +138,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Completed near-term map-delivery recommendation wave
+  (`MDR-N1` to `MDR-N4`) by adding deterministic host simulation fixtures,
+  explicit fallback guidance fields, mobile latency budgets/reporting, and an
+  optional Martin/pg_tileserv sidecar deployment profile.
 - 2026-02-14: Completed immediate map-delivery recommendation wave
   (`MDR-I1` to `MDR-I4`) by promoting `os_maps.render` as canonical baseline,
   documenting stable fallback skeleton contracts, standardizing `starter`-first

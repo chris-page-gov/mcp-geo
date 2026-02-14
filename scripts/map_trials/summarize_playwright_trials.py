@@ -56,6 +56,62 @@ def to_rel(path: str | None, repo_root: Path) -> str | None:
         return str(p)
 
 
+def percentile(values: list[float], pct: float) -> float:
+    if not values:
+        return 0.0
+    if len(values) == 1:
+        return values[0]
+    rank = max(0.0, min(1.0, pct)) * (len(values) - 1)
+    lower = int(rank)
+    upper = min(lower + 1, len(values) - 1)
+    if lower == upper:
+        return values[lower]
+    weight = rank - lower
+    return values[lower] * (1.0 - weight) + values[upper] * weight
+
+
+def latency_summary(observations: list[dict]) -> dict[str, float]:
+    latencies: list[float] = []
+    budget_checks = 0
+    budget_passes = 0
+    for row in observations:
+        details = row.get("details", {})
+        if not isinstance(details, dict):
+            continue
+        latency = details.get("latencyMs")
+        if isinstance(latency, (int, float)):
+            latencies.append(float(latency))
+        budget = details.get("latencyBudgetMs")
+        passed = details.get("latencyPass")
+        if isinstance(budget, (int, float)) and isinstance(passed, bool):
+            budget_checks += 1
+            if passed:
+                budget_passes += 1
+    if not latencies:
+        return {
+            "samples": 0.0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "budgetChecks": float(budget_checks),
+            "budgetPasses": float(budget_passes),
+            "budgetPassRate": 0.0,
+        }
+    ordered = sorted(latencies)
+    pass_rate = (budget_passes / budget_checks) if budget_checks else 0.0
+    return {
+        "samples": float(len(ordered)),
+        "p50": percentile(ordered, 0.50),
+        "p90": percentile(ordered, 0.90),
+        "p95": percentile(ordered, 0.95),
+        "max": max(ordered),
+        "budgetChecks": float(budget_checks),
+        "budgetPasses": float(budget_passes),
+        "budgetPassRate": pass_rate,
+    }
+
+
 def build_markdown(
     *,
     repo_root: Path,
@@ -73,6 +129,19 @@ def build_markdown(
             + ", ".join(f"`{key}={value}`" for key, value in result_counts.items())
         )
     lines.append(f"- Observation rows: `{len(observations)}`")
+    latency = latency_summary(observations)
+    if latency["samples"] > 0:
+        lines.append(
+            "- Latency summary (ms): "
+            f"`p50={latency['p50']:.1f}`, `p90={latency['p90']:.1f}`, "
+            f"`p95={latency['p95']:.1f}`, `max={latency['max']:.1f}`"
+        )
+    if latency["budgetChecks"] > 0:
+        lines.append(
+            "- Latency budget compliance: "
+            f"`{int(latency['budgetPasses'])}/{int(latency['budgetChecks'])}` "
+            f"({latency['budgetPassRate'] * 100:.1f}%)"
+        )
     lines.append("")
 
     grouped: dict[str, list[dict]] = defaultdict(list)
@@ -82,16 +151,23 @@ def build_markdown(
     for trial_id in sorted(grouped):
         lines.append(f"## {trial_id}")
         lines.append("")
-        lines.append("| Browser | Status | Screenshot | Map panel |")
-        lines.append("| --- | --- | --- | --- |")
+        lines.append("| Browser | Status | Latency | Budget | Pass | Screenshot | Map panel |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- |")
         for row in sorted(grouped[trial_id], key=lambda item: item.get("browser", "")):
             details = row.get("details", {})
             screenshot = to_rel(details.get("screenshot"), repo_root)
             map_panel = to_rel(details.get("mapPanel"), repo_root)
             screenshot_md = f"`{screenshot}`" if screenshot else "-"
             map_panel_md = f"`{map_panel}`" if map_panel else "-"
+            latency_ms = details.get("latencyMs")
+            budget_ms = details.get("latencyBudgetMs")
+            latency_pass = details.get("latencyPass")
+            latency_md = f"`{latency_ms:.1f}`" if isinstance(latency_ms, (int, float)) else "-"
+            budget_md = f"`{budget_ms:.1f}`" if isinstance(budget_ms, (int, float)) else "-"
+            pass_md = "yes" if latency_pass is True else ("no" if latency_pass is False else "-")
             lines.append(
                 f"| {row.get('browser', '-')} | {row.get('status', '-')} | "
+                f"{latency_md} | {budget_md} | {pass_md} | "
                 f"{screenshot_md} | {map_panel_md} |"
             )
         lines.append("")

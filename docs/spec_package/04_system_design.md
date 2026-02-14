@@ -43,3 +43,15 @@
 ## Resilience
 
 - Circuit breaker + jittered retries for OS/ONS upstream calls.
+
+## Optional sidecar profile (scaled map delivery)
+
+- Optional deployment assets: `scripts/sidecar/docker-compose.map-sidecar.yml`
+  and `scripts/sidecar/smoke_sidecar_profile.sh`.
+- Sidecars:
+  - Martin (`http://<host>:3000`) for PostGIS vector tiles.
+  - pg_tileserv (`http://<host>:7800`) for table/function tile access.
+- Baseline compatibility contract remains mandatory:
+  `os_maps.render` first, widget enhancement second, deterministic fallback
+  skeletons (`map_card`, `overlay_bundle`, `export_handoff`) always available.
+- Operational guide: `docs/sidecar_profile.md`.

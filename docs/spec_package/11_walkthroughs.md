@@ -46,6 +46,18 @@ Expected outcome:
 Expected outcome:
 - Cache tables populated and validation OK.
 
+## 6) Optional sidecar profile smoke check
+
+1. Start the sidecar compose profile:
+   `docker compose -f scripts/sidecar/docker-compose.map-sidecar.yml up -d --wait`.
+2. Run the smoke script:
+   `./scripts/sidecar/smoke_sidecar_profile.sh`.
+3. Confirm baseline fallback path still works by calling `os_maps.render`.
+
+Expected outcome:
+- Martin and pg_tileserv endpoints respond.
+- MCP Geo map baseline remains available if sidecars are stopped.
+
 ## Reference screenshots (pending)
 
 ![Inspector connected to MCP Geo](images/inspector-tools-resources.png)

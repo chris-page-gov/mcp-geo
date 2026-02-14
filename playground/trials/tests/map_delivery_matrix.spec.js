@@ -2,6 +2,12 @@ import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
+import {
+  installDeterministicHostBridge,
+  loadHostCapabilityProfiles,
+  profileById,
+  roundTripUiInitialize,
+} from "./support/host_simulation.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +22,17 @@ const screenshotDir = path.join(evidenceRoot, "screenshots");
 const logDir = path.join(evidenceRoot, "logs");
 const trialLogPath = path.join(logDir, "playwright_trials_observations.jsonl");
 const syntheticTilePath = path.join(repoRoot, "playground/trials/fixtures/synthetic_osm_tile.png");
+const hostProfileCatalog = loadHostCapabilityProfiles(repoRoot);
+const uiSupportedProfile = profileById(hostProfileCatalog, "ui_supported_inline");
+const uiUnsupportedProfile = profileById(hostProfileCatalog, "ui_unsupported_static");
+
+const LATENCY_BUDGETS_MS = {
+  "trial-1-static-osm": { desktop: 8_000, mobile: 12_000 },
+  "trial-2-os-maps-render": { desktop: 10_000, mobile: 14_000 },
+  "trial-3-geography-selector": { desktop: 16_000, mobile: 22_000 },
+  "trial-4-boundary-explorer": { desktop: 20_000, mobile: 28_000 },
+  "trial-5-host-simulation": { desktop: 4_000, mobile: 6_000 },
+};
 
 function ensureEvidenceDirs() {
   fs.mkdirSync(screenshotDir, { recursive: true });
@@ -40,6 +57,26 @@ function writeObservation(testInfo, trialId, details) {
     details,
   };
   fs.appendFileSync(trialLogPath, `${JSON.stringify(record)}\n`, "utf-8");
+}
+
+function latencyBudgetMs(testInfo, trialId) {
+  const isMobile = testInfo.project.name.includes("mobile");
+  const budgetByClass = LATENCY_BUDGETS_MS[trialId] || {
+    desktop: 8_000,
+    mobile: 12_000,
+  };
+  return isMobile ? budgetByClass.mobile : budgetByClass.desktop;
+}
+
+function latencyDetails(testInfo, trialId, startedAtMs) {
+  const latencyMs = Date.now() - startedAtMs;
+  const latencyBudget = latencyBudgetMs(testInfo, trialId);
+  expect(latencyMs).toBeLessThanOrEqual(latencyBudget);
+  return {
+    latencyMs,
+    latencyBudgetMs: latencyBudget,
+    latencyPass: latencyMs <= latencyBudget,
+  };
 }
 
 async function captureEvidence(page, testInfo, label) {
@@ -81,9 +118,13 @@ async function mcpCall(request, payload, sessionId = null) {
 test.beforeAll(() => {
   ensureEvidenceDirs();
   expect(fs.existsSync(syntheticTilePath)).toBeTruthy();
+  expect(hostProfileCatalog.profiles.length).toBeGreaterThanOrEqual(2);
+  expect(uiSupportedProfile).not.toBeNull();
+  expect(uiUnsupportedProfile).not.toBeNull();
 });
 
 test("trial-1 static osm proxy map renders in browser", async ({ page }, testInfo) => {
+  const startedAt = Date.now();
   const staticMapUrl =
     "http://127.0.0.1:8000/maps/static/osm?bbox=-0.18,51.49,-0.05,51.54&size=640&zoom=13";
   await page.setContent(
@@ -110,6 +151,7 @@ test("trial-1 static osm proxy map renders in browser", async ({ page }, testInf
     dimensions,
     mapUrl: staticMapUrl,
     screenshot,
+    ...latencyDetails(testInfo, "trial-1-static-osm", startedAt),
   });
 });
 
@@ -117,6 +159,7 @@ test("trial-2 os_maps.render tool output produces renderable image", async (
   { request, page },
   testInfo
 ) => {
+  const startedAt = Date.now();
   const init = await mcpCall(request, {
     jsonrpc: "2.0",
     id: "trial-init",
@@ -176,6 +219,7 @@ test("trial-2 os_maps.render tool output produces renderable image", async (
     absoluteUrl,
     dimensions,
     screenshot,
+    ...latencyDetails(testInfo, "trial-2-os-maps-render", startedAt),
   });
 });
 
@@ -183,81 +227,14 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
   { page },
   testInfo
 ) => {
+  const startedAt = Date.now();
   test.skip(
-    testInfo.project.name !== "chromium-desktop",
+    !testInfo.project.name.startsWith("chromium"),
     "Widget host emulation is validated in Chromium for deterministic file:// behavior."
   );
-  await page.addInitScript(() => {
-    const addressResults = [
-      {
-        uprn: "1000000001",
-        address: "1 Trial Street",
-        lat: 51.5,
-        lon: -0.12,
-        classificationDescription: "Residential",
-      },
-      {
-        uprn: "1000000002",
-        address: "2 Trial Street",
-        lat: 51.501,
-        lon: -0.121,
-        classificationDescription: "Residential",
-      },
-    ];
-    window.addEventListener("message", (event) => {
-      const message = event.data;
-      if (!message || message.jsonrpc !== "2.0" || message.id === undefined) {
-        return;
-      }
-      const respond = (result) => {
-        window.postMessage({ jsonrpc: "2.0", id: message.id, result }, "*");
-      };
-      if (message.method === "ui/initialize") {
-        respond({
-          protocolVersion: "2026-01-26",
-          hostContext: {
-            displayMode: "inline",
-            availableDisplayModes: ["inline", "fullscreen"],
-            platform: "web",
-            userAgent: "playwright",
-            containerDimensions: { maxHeight: 700 },
-            mcpGeo: { proxyBase: "http://localhost:8000" },
-          },
-        });
-        return;
-      }
-      if (message.method === "tools/call") {
-        const name = message.params?.name || message.params?.tool;
-        if (name === "os_places.search") {
-          window.postMessage(
-            {
-              jsonrpc: "2.0",
-              id: message.id,
-              error: { code: -32000, message: "Tool not found on server: os_places.search" },
-            },
-            "*"
-          );
-          return;
-        }
-        if (name === "os_places_search") {
-          respond({ results: addressResults });
-          return;
-        }
-        if (name === "os_apps.log_event" || name === "os_apps_log_event") {
-          respond({ status: "logged" });
-          return;
-        }
-        if (name === "admin_lookup.containing_areas" || name === "admin_lookup_containing_areas") {
-          respond({ results: [] });
-          return;
-        }
-        if (name === "admin_lookup.area_geometry" || name === "admin_lookup_area_geometry") {
-          respond({});
-          return;
-        }
-        respond({});
-      }
-    });
+  await installDeterministicHostBridge(page, {
+    profile: uiSupportedProfile,
+    seed: 17,
   });
 
   const workerPath = path.resolve(repoRoot, "ui/vendor/maplibre-gl-csp-worker.js");
@@ -355,6 +332,8 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
     style: "osm",
     switchAfterOverlay: true,
     page: "ui/geography_selector.html",
+    hostProfile: uiSupportedProfile?.id || "unknown",
+    ...latencyDetails(testInfo, "trial-3-geography-selector", startedAt),
   });
 });
 
@@ -362,69 +341,14 @@ test("trial-4 boundary explorer imports local layers and highlights matches", as
   { page },
   testInfo
 ) => {
+  const startedAt = Date.now();
   test.skip(
-    testInfo.project.name !== "chromium-desktop",
+    !testInfo.project.name.startsWith("chromium"),
     "Widget host emulation is validated in Chromium for deterministic file:// behavior."
   );
-  await page.addInitScript(() => {
-    const inventory = {
-      layers: {
-        uprns: {
-          results: [
-            {
-              uprn: "1000000001",
-              lat: 51.505,
-              lon: -0.12,
-              address: "1 Test Street, London SW1A 1AA",
-            },
-            {
-              uprn: "1000000002",
-              lat: 51.5052,
-              lon: -0.1198,
-              address: "2 Test Street, London SW1A 1AA",
-            },
-          ],
-        },
-        buildings: { features: [] },
-        road_links: { features: [] },
-        path_links: { features: [] },
-      },
-    };
-    window.addEventListener("message", (event) => {
-      const message = event.data;
-      if (!message || message.jsonrpc !== "2.0" || message.id === undefined) {
-        return;
-      }
-      const respond = (result) => {
-        window.postMessage({ jsonrpc: "2.0", id: message.id, result }, "*");
-      };
-      if (message.method === "ui/initialize") {
-        respond({
-          protocolVersion: "2026-01-26",
-          hostContext: {
-            displayMode: "inline",
-            availableDisplayModes: ["inline", "fullscreen"],
-            platform: "web",
-            userAgent: "playwright",
-            containerDimensions: { maxHeight: 760 },
-            mcpGeo: { proxyBase: "http://localhost:8000" },
-          },
-        });
-        return;
-      }
-      if (message.method === "tools/call") {
-        const name = message.params?.name || message.params?.tool;
-        if (name === "os_map.inventory" || name === "os_map_inventory") {
-          respond(inventory);
-          return;
-        }
-        if (name === "os_apps.log_event" || name === "os_apps_log_event") {
-          respond({ status: "logged" });
-          return;
-        }
-        respond({});
-      }
-    });
+  await installDeterministicHostBridge(page, {
+    profile: uiSupportedProfile,
+    seed: 19,
   });
 
   const workerPath = path.resolve(repoRoot, "ui/vendor/maplibre-gl-csp-worker.js");
@@ -550,5 +474,36 @@ window.shp = async function () {
     mapPanel,
     style: "osm",
     highlightedUprns: 2,
+    hostProfile: uiSupportedProfile?.id || "unknown",
+    ...latencyDetails(testInfo, "trial-4-boundary-explorer", startedAt),
+  });
+});
+
+test("trial-5 deterministic host-simulation fixtures are stable across engines", async (
+  { page },
+  testInfo
+) => {
+  const startedAt = Date.now();
+  const selectedProfile =
+    testInfo.project.name === "chromium-desktop" || testInfo.project.name === "chromium-mobile"
+      ? uiSupportedProfile
+      : uiUnsupportedProfile;
+  await installDeterministicHostBridge(page, {
+    profile: selectedProfile,
+    seed: 23,
+  });
+  await page.setContent("<main><h1>Host simulation replay</h1></main>");
+  const initResult = await roundTripUiInitialize(page);
+  expect(initResult).toBeTruthy();
+  expect(initResult.protocolVersion).toBe("2026-01-26");
+  expect(initResult.hostContext?.platform).toBe("web");
+  expect(initResult.hostContext?.mcpGeo?.proxyBase).toBe("http://localhost:8000");
+  const screenshot = await captureEvidence(page, testInfo, "trial-5-host-simulation");
+  writeObservation(testInfo, "trial-5-host-simulation", {
+    screenshot,
+    hostProfile: selectedProfile?.id || "unknown",
+    degradationMode: selectedProfile?.degradationMode || "unknown",
+    fixtureVersion: hostProfileCatalog.version,
+    ...latencyDetails(testInfo, "trial-5-host-simulation", startedAt),
   });
 });

@@ -152,6 +152,8 @@ def test_static_map_fallback_includes_map_error_on_render_failure(monkeypatch):
         maps_tool.handler = original
     assert isinstance(fallback, dict)
     assert fallback.get("mapError", {}).get("status") == 500
+    assert fallback.get("guidance", {}).get("widgetUnsupported") is True
+    assert fallback.get("guidance", {}).get("preferredNextTools")
 
 
 def test_search_tools_validation_and_rewrite_skips_bad_entries(monkeypatch):
@@ -303,6 +305,7 @@ def test_tool_content_from_data_none_returns_empty():
 def test_stats_dashboard_fallback_area_codes_invalid_type_sets_empty_list():
     fallback = stdio_adapter._build_stats_dashboard_fallback({"areaCodes": "nope"})
     assert fallback and fallback.get("areaCodes") == []
+    assert fallback.get("guidance", {}).get("widgetUnsupported") is True
 
 
 def test_misc_handlers_cover_resource_templates_prompts_shutdown():

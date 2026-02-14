@@ -73,10 +73,10 @@ Legend: pending, in_progress, done
 | MDR-I2 Standard fallback skeleton contracts | done | MDR-I1 | Added `map_card`, `overlay_bundle`, and `export_handoff` schemas plus conformance checklist in spec package + alignment docs. |
 | MDR-I3 Lean startup tool discovery guidance | done | MDR-I1 | Standardized `starter`-first startup guidance and post-init scoped discovery in onboarding/troubleshooting docs. |
 | MDR-I4 Browser/widget support matrix | done | MDR-I1 | Published `docs/map_delivery_support_matrix.md` with capability modes, env toggles, verification dates, and evidence links. |
-| MDR-N1 Deterministic host simulation utilities | pending | MDR-I2, MDR-I4 | Add deterministic UI resource test simulation across Chromium/Firefox/WebKit. |
-| MDR-N2 Widget-unsupported guidance fields | pending | MDR-I2 | Add explicit fallback guidance payload fields for non-UI hosts with stable transport behavior. |
-| MDR-N3 Mobile viewport + latency trial budgets | pending | MDR-N1 | Expand trial suite with mobile projects and scenario latency budget assertions/reporting. |
-| MDR-N4 Optional sidecar deployment profile | pending | MDR-I2 | Add Martin/pg_tileserv sidecar profile docs/runbook for scaled deployments. |
+| MDR-N1 Deterministic host simulation utilities | done | MDR-I2, MDR-I4 | Added deterministic host-capability fixtures + reusable simulation utilities and replay-matrix script for multi-engine trial runs. |
+| MDR-N2 Widget-unsupported guidance fields | done | MDR-I2 | Extended fallback payloads with explicit guidance keys (`widgetUnsupported`, reason, degradation mode, preferred next tools) and transport-parity tests. |
+| MDR-N3 Mobile viewport + latency trial budgets | done | MDR-N1 | Added mobile Playwright trial projects and latency-budget assertions with percentile/compliance reporting in trial summaries. |
+| MDR-N4 Optional sidecar deployment profile | done | MDR-I2 | Added Martin/pg_tileserv optional sidecar compose/smoke assets and architecture/system/walkthrough runbook updates. |
 | MDR-M1 PMTiles/MBTiles offline delivery | pending | MDR-N4 | Add offline-friendly map delivery option with packaging and retrieval contracts. |
 | MDR-M2 Map output quality checks | pending | MDR-N3 | Add automated checks for label density, contrast, and accessibility metadata. |
 | MDR-M3 Notebook scenario pack resources | pending | MDR-N3 | Integrate notebook-generated scenario packs into resource outputs with provenance metadata. |

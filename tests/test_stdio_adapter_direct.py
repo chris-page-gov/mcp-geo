@@ -139,6 +139,9 @@ def test_ui_tools_fallback_to_static_map(monkeypatch):
     assert isinstance(fallback, dict)
     assert fallback.get("type") == "static_map"
     assert "render" in fallback
+    assert fallback.get("widgetUnsupported") is True
+    assert fallback.get("widgetUnsupportedReason") == "ui_extension_not_advertised"
+    assert fallback.get("guidance", {}).get("degradationMode") == "no_ui"
 
 
 def test_ui_tools_fallback_stats_dashboard(monkeypatch):
@@ -159,6 +162,8 @@ def test_ui_tools_fallback_stats_dashboard(monkeypatch):
     assert isinstance(fallback, dict)
     assert fallback.get("type") == "statistics_dashboard"
     assert "nomis.query" in fallback.get("suggestedTools", [])
+    assert fallback.get("widgetUnsupported") is True
+    assert fallback.get("guidance", {}).get("preferredNextTools")
 
 
 def test_tool_schema_const_is_sanitized():

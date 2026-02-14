@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: mcp_geo
+      POSTGRES_PASSWORD: mcp_geo
+      POSTGRES_DB: mcp_geo
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcp_geo -d mcp_geo"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  martin:
+    image: ghcr.io/maplibre/martin:v0.13.0
+    command: ["--listen-address", "0.0.0.0:3000", "--database-url", "postgres://mcp_geo:mcp_geo@postgis:5432/mcp_geo"]
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+  pgtileserv:
+    image: pramsey/pg_tileserv:latest
+    environment:
+      DATABASE_URL: postgres://mcp_geo:mcp_geo@postgis:5432/mcp_geo
+    ports:
+      - "7800:7800"
+    depends_on:
+      postgis:
+        condition: service_healthy
