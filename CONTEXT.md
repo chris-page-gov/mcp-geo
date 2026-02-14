@@ -145,6 +145,9 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Extended tool-name alias resolution to accept client/server
+  namespaced forms (for example `mcp-geo:os_places_search`) after Claude
+  surfaced a mismatch between prefixed discovery names and unprefixed call names.
 - 2026-02-14: Updated `os_poi.search|nearest|within` to use `dataset=DPA,LPI`
   after Claude trace replay showed OS Places rejecting `dataset=POI` with a
   hard 400, causing early map-workflow failures despite healthy map tools.

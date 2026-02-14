@@ -66,3 +66,10 @@ def test_tools_call_accepts_display_style_tool_name(client):
     assert resp.status_code == 200
     payload = resp.json()
     assert payload.get("server") == "mcp-geo"
+
+
+def test_tools_call_accepts_namespaced_tool_name(client):
+    resp = client.post("/tools/call", json={"tool": "mcp-geo:os_mcp_descriptor"})
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload.get("server") == "mcp-geo"

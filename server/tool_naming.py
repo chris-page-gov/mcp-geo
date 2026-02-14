@@ -63,40 +63,54 @@ def resolve_tool_name(requested: str, originals: Iterable[str]) -> str:
         return requested
 
     requested_stripped = requested.strip()
-    if requested_stripped in original_set:
-        return requested_stripped
+
+    lookup_inputs = [requested_stripped]
+    # Accept client-side server-qualified aliases like "mcp-geo:os_places_search"
+    # or "mcp-geo/os_places_search".
+    for separator in (":", "/"):
+        if separator not in requested_stripped:
+            continue
+        first = requested_stripped.split(separator, 1)[1].strip()
+        last = requested_stripped.rsplit(separator, 1)[1].strip()
+        for candidate in (first, last):
+            if candidate and candidate not in lookup_inputs:
+                lookup_inputs.append(candidate)
 
     original_casefold = {name.casefold(): name for name in original_set}
-    direct_casefold = original_casefold.get(requested_stripped.casefold())
-    if direct_casefold is not None:
-        return direct_casefold
-
     _original_to_sanitized, sanitized_to_original = build_tool_name_maps(original_set)
-    direct = sanitized_to_original.get(requested_stripped)
-    if direct is not None:
-        return direct
-
     sanitized_casefold = {alias.casefold(): original for alias, original in sanitized_to_original.items()}
 
-    # Accept display labels such as "Os names find" and punctuation variants.
-    normalized = _ALLOWED_TOOL_NAME_RE.sub("_", requested_stripped)
-    normalized_collapsed = re.sub(r"_+", "_", normalized).strip("_")
-    candidates = (
-        requested_stripped.casefold(),
-        normalized,
-        normalized.casefold(),
-        normalized_collapsed,
-        normalized_collapsed.casefold(),
-    )
-    for candidate in candidates:
-        if not candidate:
-            continue
-        resolved = sanitized_to_original.get(candidate)
-        if resolved is not None:
-            return resolved
-        resolved = sanitized_casefold.get(candidate.casefold())
-        if resolved is not None:
-            return resolved
+    for lookup in lookup_inputs:
+        if lookup in original_set:
+            return lookup
+
+        direct_casefold = original_casefold.get(lookup.casefold())
+        if direct_casefold is not None:
+            return direct_casefold
+
+        direct = sanitized_to_original.get(lookup)
+        if direct is not None:
+            return direct
+
+        # Accept display labels such as "Os names find" and punctuation variants.
+        normalized = _ALLOWED_TOOL_NAME_RE.sub("_", lookup)
+        normalized_collapsed = re.sub(r"_+", "_", normalized).strip("_")
+        candidates = (
+            lookup.casefold(),
+            normalized,
+            normalized.casefold(),
+            normalized_collapsed,
+            normalized_collapsed.casefold(),
+        )
+        for candidate in candidates:
+            if not candidate:
+                continue
+            resolved = sanitized_to_original.get(candidate)
+            if resolved is not None:
+                return resolved
+            resolved = sanitized_casefold.get(candidate.casefold())
+            if resolved is not None:
+                return resolved
 
     return requested
 

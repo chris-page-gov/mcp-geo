@@ -106,6 +106,12 @@ def test_call_tool_accepts_display_style_name_alias():
     assert call.get("content")
 
 
+def test_call_tool_accepts_namespaced_name_alias():
+    call = stdio_adapter.handle_call_tool({"name": "mcp-geo:os_mcp_descriptor", "arguments": {}})
+    assert call.get("ok") is True
+    assert call.get("content")
+
+
 def test_call_tool_display_style_alias_routes_to_os_tool(monkeypatch):
     from tools import os_common
 
