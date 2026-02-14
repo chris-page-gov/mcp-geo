@@ -25,6 +25,8 @@ It combines user research, standards/library landscape analysis, and containeriz
   (contrast/label-density/accessibility metadata + waiver handling).
 - `docs/map_delivery_support_matrix.md`: host/browser capability matrix with
   verification dates and evidence pointers.
+- `docs/map_embedding_best_practices.md`: mixed-host embedding bundle and
+  progressive fallback patterns.
 - `notebooks/map_delivery_option_tracker.ipynb`: optional notebook tracker.
 - `evidence/logs/*`: raw execution logs.
 - `evidence/screenshots/*`: trial screenshots.

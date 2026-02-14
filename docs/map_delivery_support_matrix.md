@@ -30,5 +30,7 @@ host/browser profile. It anchors to the compatibility-first order:
   that assume widget rendering is available.
 - Treat `resource_link` content blocks as opt-in until host-specific evidence
   confirms support.
+- Apply constrained profiles from
+  `resource://mcp-geo/map-embedding-style-profiles` for mixed/no-UI fleets.
 - Revalidate this matrix on every release that changes map tools, UI payload
   shape, or client capability negotiation.

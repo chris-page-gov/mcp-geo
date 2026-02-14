@@ -313,6 +313,7 @@ Read the boundary manifest resource:
 - MCP-Apps alignment notes: `docs/mcp_apps_alignment.md`
 - Browser/widget support matrix: `docs/map_delivery_support_matrix.md`
 - Notebook scenario packs: `docs/map_scenario_packs.md`
+- MCP/AI host embedding bundle: `docs/map_embedding_best_practices.md`
 
 ## Appendix: STDIO Docker (when to use it)
 

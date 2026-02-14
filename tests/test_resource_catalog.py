@@ -317,6 +317,7 @@ def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_p
         ("OS_CATALOG_PATH", "os-catalog"),
         ("LAYERS_CATALOG_PATH", "layers-catalog"),
         ("OFFLINE_MAP_CATALOG_PATH", "offline-map-catalog"),
+        ("MAP_EMBEDDING_STYLE_PROFILES_PATH", "map-embedding-style-profiles"),
         ("NOMIS_WORKFLOWS_PATH", "nomis-workflows"),
         ("BOUNDARY_PACK_SOURCES_PATH", "boundary-pack-sources"),
         ("CODE_LIST_PACK_SOURCES_PATH", "code-list-pack-sources"),

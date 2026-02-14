@@ -263,6 +263,18 @@ Fallback contract references:
 - `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 - `docs/map_delivery_support_matrix.md`
 
+## Progressive fallback walkthrough (full UI -> no UI)
+
+1. Try full UI:
+   `os_apps.render_geography_selector`.
+2. If host UI is partial/unsupported, keep `os_maps.render` + overlays.
+3. For constrained/offline hosts, use `os_offline.get` to deliver
+   `map_card`/`overlay_bundle`/`export_handoff`.
+4. Select a constrained profile from:
+   `resource://mcp-geo/map-embedding-style-profiles`.
+
+Mixed-fleet reference: `docs/map_embedding_best_practices.md`.
+
 ## Basic evaluation-style questions
 
 The upstream evaluation suite names tools like `search_geographic_areas` and `list_ons_datasets`.

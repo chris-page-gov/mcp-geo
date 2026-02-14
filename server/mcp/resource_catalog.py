@@ -22,6 +22,7 @@ CODE_LIST_PACK_SOURCES_PATH = ROOT / "resources" / "code_list_pack_sources.json"
 BOUNDARY_PACKS_INDEX_PATH = ROOT / "resources" / "boundary_packs_index.json"
 CODE_LIST_PACKS_INDEX_PATH = ROOT / "resources" / "code_list_packs_index.json"
 OFFLINE_MAP_CATALOG_PATH = ROOT / "resources" / "offline_map_catalog.json"
+MAP_EMBEDDING_STYLE_PROFILES_PATH = ROOT / "resources" / "map_embedding_style_profiles.json"
 EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 OFFLINE_PACKS_DIR = ROOT / "data" / "offline_packs"
@@ -224,6 +225,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": OFFLINE_MAP_CATALOG_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "maps"},
+    },
+    {
+        "slug": "map-embedding-style-profiles",
+        "name": "data_map_embedding_style_profiles",
+        "title": "Map Embedding Style Profiles",
+        "description": "Lightweight style profiles for constrained MCP/AI host embedding contexts.",
+        "path": MAP_EMBEDDING_STYLE_PROFILES_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "guide", "domain": "maps"},
     },
     {
         "slug": "nomis-workflows",
@@ -686,6 +696,13 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "offline-map-catalog"), None
         return (*_load_json_file(OFFLINE_MAP_CATALOG_PATH), None)
+    if slug == "map-embedding-style-profiles":
+        if not MAP_EMBEDDING_STYLE_PROFILES_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Map embedding style profiles not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "map-embedding-style-profiles"), None
+        return (*_load_json_file(MAP_EMBEDDING_STYLE_PROFILES_PATH), None)
     if slug == "nomis-workflows":
         if not NOMIS_WORKFLOWS_PATH.exists():
             content = json.dumps(

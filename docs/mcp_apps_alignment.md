@@ -49,6 +49,7 @@ Canonical fallback keys and conformance guidance are documented in:
 - Browser/host capability matrix: `docs/map_delivery_support_matrix.md`
 - Trial evidence index: `research/map_delivery_research_2026-02/README.md`
 - Troubleshooting modes/toggles: `docs/troubleshooting.md`
+- Embedding best-practice bundle: `docs/map_embedding_best_practices.md`
 
 ## CSP Allowlist (Geography Selector)
 The geography selector declares:

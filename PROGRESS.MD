@@ -80,10 +80,10 @@ Legend: pending, in_progress, done
 | MDR-M1 PMTiles/MBTiles offline delivery | done | MDR-N4 | Added `os_offline.descriptor`/`os_offline.get`, offline pack catalog/resources, and offline handoff contracts for PMTiles/MBTiles paths. |
 | MDR-M2 Map output quality checks | done | MDR-N3 | Added automated map quality checker (contrast, label-density proxy, accessibility metadata, waiver handling) with report artifacts. |
 | MDR-M3 Notebook scenario pack resources | done | MDR-N3 | Added notebook scenario-pack export script and `resource://mcp-geo/map-scenario-packs*` resources with provenance/hash metadata. |
-| MDR-E1 MCP/AI-host best-practice bundle | pending | MDR-I4 | Publish worker/CSP-safe client-side best-practice patterns for embedded map contexts. |
-| MDR-E2 Lightweight embedding style profiles | pending | MDR-E1 | Provide normalized lightweight style profiles for constrained AI-client embedding. |
-| MDR-E3 Progressive fallback official examples | pending | MDR-E1, MDR-E2 | Publish examples showing deterministic full-vector to static-card fallback progression. |
-| MDR-E4 Mixed UI/no-UI host guidance | pending | MDR-E1 | Publish predictable degradation guidance for mixed host fleets. |
+| MDR-E1 MCP/AI-host best-practice bundle | done | MDR-I4 | Published `docs/map_embedding_best_practices.md` with worker/CSP-safe embedding patterns and checklist templates. |
+| MDR-E2 Lightweight embedding style profiles | done | MDR-E1 | Added `resource://mcp-geo/map-embedding-style-profiles` with constrained profile definitions for mixed/no-UI hosts. |
+| MDR-E3 Progressive fallback official examples | done | MDR-E1, MDR-E2 | Updated examples/tutorial docs with deterministic full UI -> partial UI -> no UI fallback sequences. |
+| MDR-E4 Mixed UI/no-UI host guidance | done | MDR-E1 | Expanded troubleshooting/architecture/support-matrix guidance for deterministic degradation across mixed host fleets. |
 
 ## Progress against the original vision
 

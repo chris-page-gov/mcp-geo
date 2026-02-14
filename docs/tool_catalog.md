@@ -21,6 +21,10 @@ Offline delivery helpers (medium-term wave):
 - `os_offline.descriptor`
 - `os_offline.get`
 
+Ecosystem embedding bundle:
+- `docs/map_embedding_best_practices.md`
+- `resource://mcp-geo/map-embedding-style-profiles`
+
 | Tool | Version | Description |
 |------|---------|-------------|
 | admin_lookup.area_geometry | 0.1.0 | Return bbox geometry for a given area id |

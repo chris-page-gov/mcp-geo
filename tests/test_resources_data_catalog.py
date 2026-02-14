@@ -22,6 +22,7 @@ def test_resources_list_includes_data_catalog_entries() -> None:
     assert "resource://mcp-geo/os-catalog" in uris
     assert "resource://mcp-geo/layers-catalog" in uris
     assert "resource://mcp-geo/offline-map-catalog" in uris
+    assert "resource://mcp-geo/map-embedding-style-profiles" in uris
     assert "resource://mcp-geo/boundary-pack-sources" in uris
     assert "resource://mcp-geo/code-list-pack-sources" in uris
     assert "resource://mcp-geo/boundary-packs-index" in uris
@@ -38,6 +39,15 @@ def test_resources_read_boundary_manifest() -> None:
     payload = json.loads(contents[0]["text"])
     assert "manifest_version" in payload
     assert "boundary_families" in payload
+
+
+def test_resources_read_map_embedding_style_profiles() -> None:
+    resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/map-embedding-style-profiles"})
+    assert resp.status_code == 200
+    contents = resource_contents(resp)
+    payload = json.loads(contents[0]["text"])
+    profiles = payload.get("profiles", [])
+    assert any(row.get("id") == "compact_static" for row in profiles if isinstance(row, dict))
 
 
 def test_resources_read_boundary_cache_status() -> None:

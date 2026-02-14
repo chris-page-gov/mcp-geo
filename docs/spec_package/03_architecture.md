@@ -50,3 +50,14 @@ This profile is additive and must not replace the baseline compatibility path
 (`os_maps.render` plus fallback skeleton contracts).
 
 Reference runbook: `docs/sidecar_profile.md`
+
+## Mixed host fleet behavior
+
+MCP Geo is designed for mixed host fleets where some clients support MCP-Apps
+UI and others are data-only:
+
+- UI-capable hosts receive widget resources (`ui://`).
+- Non-UI hosts receive deterministic fallback contracts.
+- Both paths share the same map contract keys and provenance fields.
+
+Reference guidance: `docs/map_embedding_best_practices.md`

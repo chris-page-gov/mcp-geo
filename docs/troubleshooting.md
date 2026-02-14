@@ -72,6 +72,20 @@ Reference docs:
 - `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 - `docs/map_delivery_support_matrix.md`
 
+## Mixed UI / no-UI host fleet drift
+If one host renders widgets and another does not, enforce deterministic
+degradation instead of host-specific ad hoc payloads.
+
+Remediation:
+- Keep one fallback contract set (`map_card`, `overlay_bundle`, `export_handoff`).
+- Log and inspect `degradationMode` and `widgetUnsupportedReason`.
+- Use style profiles from
+  `resource://mcp-geo/map-embedding-style-profiles` for constrained hosts.
+- Validate both UI-supported and UI-unsupported replay fixtures in map trials.
+
+Reference bundle:
+- `docs/map_embedding_best_practices.md`
+
 ## OS VTS labels missing for custom symbol layers
 If custom label layers render without text on OS Vector Tile Service basemaps,
 the style is usually referencing glyph assets that are not available for

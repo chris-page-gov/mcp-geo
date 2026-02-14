@@ -58,6 +58,7 @@ References:
 - `docs/spec_package/06_api_contracts.md`
 - `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 - `docs/map_delivery_support_matrix.md`
+- `docs/map_embedding_best_practices.md`
 
 ## Getting Started (User Guide)
 
@@ -139,6 +140,8 @@ cross-client map reliability.
 For validated host/browser behavior by capability mode, see
 `docs/map_delivery_support_matrix.md`.
 For notebook-to-resource scenario pack workflow, see `docs/map_scenario_packs.md`.
+For mixed-host embedding and constrained-style patterns, see
+`docs/map_embedding_best_practices.md`.
 
 ## Client Tracing
 

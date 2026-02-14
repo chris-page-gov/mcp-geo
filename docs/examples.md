@@ -56,6 +56,39 @@ References:
 - `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 - `docs/map_delivery_support_matrix.md`
 
+## Progressive fallback examples (official pattern)
+
+Full UI host:
+
+```json
+POST /tools/call
+{ "tool": "os_apps.render_geography_selector", "level": "ward" }
+```
+
+Partial UI host:
+
+```json
+POST /tools/call
+{
+  "tool": "os_maps.render",
+  "bbox": [-0.18, 51.49, -0.05, 51.54],
+  "overlays": { "points": [{ "lat": 51.5034, "lon": -0.1276, "properties": { "label": "A" } }] }
+}
+```
+
+No UI host:
+
+```json
+POST /tools/call
+{ "tool": "os_offline.get", "packId": "gb_basemap_light_pmtiles" }
+```
+
+Style profile reference:
+
+```http
+GET /resources/read?uri=resource://mcp-geo/map-embedding-style-profiles
+```
+
 ## Tool Invocation Payloads
 
 ```

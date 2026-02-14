@@ -54,6 +54,8 @@ assumptions change.
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery
   order (`MDR-I*`, `MDR-N*`, `MDR-M*`, `MDR-E*`) with tracking updates per stage.
+- Keeping the completed map-delivery program artifacts synchronized across docs,
+  resources, scripts, and trial evidence outputs.
 
 ## Active Work
 
@@ -76,6 +78,9 @@ assumptions change.
 - Maintain offline map delivery contracts and scenario-pack resource lifecycle
   artifacts under `tools/os_offline.py`, `resources/offline_map_catalog.json`,
   and `data/map_scenario_packs/`.
+- Maintain ecosystem-facing embedding guidance and lightweight style profiles in
+  `docs/map_embedding_best_practices.md` and
+  `resource://mcp-geo/map-embedding-style-profiles`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -92,17 +97,15 @@ assumptions change.
   population, playground UI.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
   evaluation plan).
-- In progress: map delivery recommendation implementation program (`MDR-I1` to
-  `MDR-E4`) is active; immediate (`MDR-I1` to `MDR-I4`) and near-term
-  (`MDR-N1` to `MDR-N4`) and medium-term (`MDR-M1` to `MDR-M3`) waves are complete.
+- Done: map delivery recommendation implementation program (`MDR-I1` to
+  `MDR-E4`) complete across immediate, near-term, medium-term, and ecosystem
+  waves.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
 
 - High: CI pipeline; MCP-Apps client compatibility validation and docs.
-- High: map delivery ecosystem recommendations (best-practice bundle,
-  lightweight embedding style profiles, progressive fallback examples, mixed
-  UI/no-UI fleet guidance).
+- High: CI pipeline; MCP-Apps client compatibility validation and docs.
 - Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
   admin cache staleness policy; performance regression tests.
 - Medium: near-term map engineering recommendations (deterministic host simulation,
@@ -142,6 +145,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Completed ecosystem map-delivery recommendation wave
+  (`MDR-E1` to `MDR-E4`) by publishing an MCP/AI-host best-practice bundle,
+  constrained style profiles, progressive fallback examples, and mixed host
+  degradation guidance.
 - 2026-02-14: Completed medium-term map-delivery recommendation wave
   (`MDR-M1` to `MDR-M3`) by adding offline PMTiles/MBTiles handoff tooling and
   resources, automated map quality checks with waiver support, and

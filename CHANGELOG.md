@@ -49,6 +49,11 @@ All notable changes to this project will be documented in this file.
   `scripts/map_trials/export_notebook_scenario_pack.py`,
   `data/map_scenario_packs/*`,
   and `resource://mcp-geo/map-scenario-packs*`.
+- Added ecosystem map embedding guidance bundle:
+  `docs/map_embedding_best_practices.md`.
+- Added constrained map embedding style profiles resource:
+  `resource://mcp-geo/map-embedding-style-profiles`
+  (`resources/map_embedding_style_profiles.json`).
 
 ### Changed
 - Hardened devcontainer setup for map validation workflows:
@@ -78,6 +83,8 @@ All notable changes to this project will be documented in this file.
   notebook scenario-pack index/file resources with path-traversal guards.
 - Updated trial runner orchestration to include scenario-pack export and map
   quality checks in the standard map-delivery run sequence.
+- Updated docs/examples/tutorial/troubleshooting/architecture with deterministic
+  progressive fallback guidance for full UI, partial UI, and no-UI hosts.
 
 ## [0.3.1] - 2026-02-13
 ### Added
