@@ -145,6 +145,9 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Updated `os_poi.search|nearest|within` to use `dataset=DPA,LPI`
+  after Claude trace replay showed OS Places rejecting `dataset=POI` with a
+  hard 400, causing early map-workflow failures despite healthy map tools.
 - 2026-02-14: Hardened tool-name alias resolution in
   `server/tool_naming.py` to accept display-style names (case/spacing/
   punctuation variants such as `Os names find`) after a Claude map-flow trace

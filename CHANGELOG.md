@@ -91,6 +91,9 @@ All notable changes to this project will be documented in this file.
 - Updated tool-name resolution to accept display-style aliases (for example
   `Os names find`) by normalizing case/spacing/punctuation to canonical MCP
   tool identifiers before dispatch.
+- Updated `os_poi.search|nearest|within` to use the OS Places-supported
+  dataset parameter `DPA,LPI` (instead of rejected `POI`) so Claude map flows
+  no longer fail on POI-first discovery attempts.
 
 ## [0.3.1] - 2026-02-13
 ### Added
