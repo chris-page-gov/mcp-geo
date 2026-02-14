@@ -302,11 +302,30 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
   await page.goto(fileUrl);
   await expect(page.locator("#status")).toContainText("Host connected");
 
-  await page.selectOption("#mapStyleSelect", "osm");
-
   await page.fill("#queryInput", "Trial");
   await page.click("#searchButton");
 
+  await page.waitForFunction(() => {
+    const el = document.getElementById("diagnostics");
+    if (!el) {
+      return false;
+    }
+    try {
+      const data = JSON.parse(el.textContent || "{}");
+      return (
+        data?.data?.addressPoints >= 2 &&
+        data?.sources?.ready === true &&
+        data?.rendered?.addresses >= 2 &&
+        data?.mapLoaded === true &&
+        data?.lastMapError === null
+      );
+    } catch {
+      return false;
+    }
+  });
+
+  // Validate overlays survive a post-render style switch.
+  await page.selectOption("#mapStyleSelect", "osm");
   await page.waitForFunction(() => {
     const el = document.getElementById("diagnostics");
     if (!el) {
@@ -334,6 +353,7 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
     screenshot,
     mapPanel,
     style: "osm",
+    switchAfterOverlay: true,
     page: "ui/geography_selector.html",
   });
 });

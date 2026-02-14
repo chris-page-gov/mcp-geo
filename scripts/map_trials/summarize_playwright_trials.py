@@ -25,12 +25,18 @@ def load_result_stats(path: Path) -> dict[str, int]:
         return {}
     obj = json.loads(path.read_text(encoding="utf-8"))
     counts: dict[str, int] = defaultdict(int)
-    for suite in obj.get("suites", []):
+
+    def walk_suite(suite: dict) -> None:
         for spec in suite.get("specs", []):
             for test in spec.get("tests", []):
                 for result in test.get("results", []):
                     status = result.get("status") or "unknown"
                     counts[status] += 1
+        for child in suite.get("suites", []):
+            walk_suite(child)
+
+    for suite in obj.get("suites", []):
+        walk_suite(suite)
     return dict(sorted(counts.items()))
 
 

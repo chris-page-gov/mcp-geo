@@ -42,6 +42,15 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
   pytest -q
   ```
 
+### Command timeout guidance for agents
+
+- Set explicit `timeout_ms` for long-running commands; do not rely on short defaults.
+- Recommended minimums in this repo:
+  - Full regression `pytest -q`: `900000` (15 minutes).
+  - Containerized map trial runner `./scripts/run_map_delivery_trials.sh`: `300000` (5 minutes).
+  - Full Playwright suites (`npm --prefix playground run test` or `test:trials`): `300000` (5 minutes).
+- For unknown runtime commands, start at `300000` and increase if historical logs show longer runs.
+
 - Alternate entrypoint: `python run.py` (ensure it points to uvicorn).
 
 ## Coding Standards
@@ -169,4 +178,4 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 
 ---
 
-Last updated: 2026-01-21
+Last updated: 2026-02-14

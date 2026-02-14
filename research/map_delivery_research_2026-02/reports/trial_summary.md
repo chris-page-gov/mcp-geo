@@ -1,6 +1,6 @@
 # Playwright Trial Summary
 
-- Generated at (UTC): 2026-02-13T23:28:22.139739Z
+- Generated at (UTC): 2026-02-13T23:51:50.668983Z
 - Result counts: `passed=8`, `skipped=4`
 - Observation rows: `8`
 

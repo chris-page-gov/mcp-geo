@@ -37,6 +37,6 @@ python3 scripts/map_trials/summarize_playwright_trials.py
 ## Key Evidence Artifacts
 
 - Devcontainer MCP baseline: `research/map_delivery_research_2026-02/evidence/logs/devcontainer_mcp_baseline_2026-02-13_v2.log`
-- Trial run log: `research/map_delivery_research_2026-02/evidence/logs/map_delivery_trials_run_20260213T200601Z.log`
+- Trial run logs: `research/map_delivery_research_2026-02/evidence/logs/map_delivery_trials_run_*.log`
 - Trial observations JSONL: `research/map_delivery_research_2026-02/evidence/logs/playwright_trials_observations.jsonl`
 - Trial report JSON: `research/map_delivery_research_2026-02/evidence/logs/playwright_trials_results.json`
