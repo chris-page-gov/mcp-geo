@@ -85,6 +85,9 @@ All notable changes to this project will be documented in this file.
   quality checks in the standard map-delivery run sequence.
 - Updated docs/examples/tutorial/troubleshooting/architecture with deterministic
   progressive fallback guidance for full UI, partial UI, and no-UI hosts.
+- Updated the full evaluation harness specialist-tool whitelist to include
+  `os_offline.descriptor` and `os_offline.get`, avoiding false coverage-gap
+  failures after adding offline map delivery tools.
 
 ## [0.3.1] - 2026-02-13
 ### Added
