@@ -86,6 +86,28 @@ Remediation:
 - If prompting for API keys in HTML helpers, use password-style inputs
   (`<input type="password">`) to avoid accidental key disclosure on screen.
 
+## Claude shows raw Boundary Explorer HTML instead of rendering the widget
+If `os_apps_render_boundary_explorer` returns `status=200` and Claude also
+issues `resources/read` for `ui://mcp-geo/boundary-explorer`, but the chat
+shows raw `<!DOCTYPE html>` output, the widget likely failed during early JS
+bootstrap.
+
+What is happening:
+- In pre-fix builds, `ui/boundary_explorer.html` tied map initialization to host
+  initialization.
+- If MapLibre failed to load (or worker setup failed), the page threw before
+  reliably completing `ui/notifications/initialized`, and some hosts then fell
+  back to showing raw resource text.
+
+Remediation:
+- Use a build that includes the 2026-02-14 boundary explorer runtime hardening
+  (host init and map init decoupled, graceful map-degraded mode, telemetry).
+- Confirm trace sequence:
+  - `tools/call` for `os_apps_render_boundary_explorer` returns `status=200`
+  - then `resources/read` for `ui://mcp-geo/boundary-explorer`
+- Check UI telemetry events (`os_apps.log_event`) for `host_ready`,
+  `map_init_skipped`, or `map_init_failed` to classify runtime cause.
+
 ## Widget rendering unavailable in a host
 If the host does not advertise `io.modelcontextprotocol/ui` (or renders no
 widget output), use compatibility mode instead of retrying widget calls.

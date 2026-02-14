@@ -145,6 +145,12 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Diagnosed boundary explorer non-render in Claude as a widget
+  bootstrap coupling bug in `ui/boundary_explorer.html`: map runtime failures
+  (`maplibre` missing/worker init issues) could prevent reliable
+  `ui/notifications/initialized` completion. Fixed by decoupling host init from
+  map init, adding degraded-mode handling, and emitting `os_apps.log_event`
+  diagnostics for host/map runtime states.
 - 2026-02-14: Captured two recurring Claude troubleshooting outcomes in docs:
   tool-name namespace hints (`mcp-geo:<tool>`) can be client-side pre-dispatch
   mismatches, and inline-preview `maplibregl is not defined` errors are preview

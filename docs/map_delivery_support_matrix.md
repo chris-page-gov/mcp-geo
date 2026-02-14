@@ -33,6 +33,9 @@ host/browser profile. It anchors to the compatibility-first order:
 - Claude inline web previews are not a full browser runtime; external-CDN
   MapLibre HTML helpers may fail there even when they work correctly in Safari/
   Chrome.
+- Boundary Explorer requires the 2026-02-14 runtime hardening path so host
+  initialization can complete even when map runtime init degrades; otherwise
+  some Claude sessions may show raw HTML fallback.
 - Apply constrained profiles from
   `resource://mcp-geo/map-embedding-style-profiles` for mixed/no-UI fleets.
 - Revalidate this matrix on every release that changes map tools, UI payload

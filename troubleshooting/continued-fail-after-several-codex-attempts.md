@@ -233,3 +233,24 @@ Additional follow-up from later run:
 - Standalone MapLibre HTML helpers can fail in Claude inline preview with
   `maplibregl is not defined` while working normally in a real browser. Treat
   this as preview-runtime limitation, not MCP server failure.
+
+## Follow-up root cause: boundary explorer raw HTML fallback (2026-02-14)
+
+Observed sequence in `logs/claude-trace.jsonl`:
+- `tools/call` id `6` (`os_apps_render_boundary_explorer`) returned
+  `status=200`, `content=["text","resource"]`, and
+  `resourceUri=ui://mcp-geo/boundary-explorer`.
+- Claude then called `resources/read` id `8` for the same URI and received
+  `contents` successfully.
+
+Root cause in widget code (pre-fix):
+- `ui/boundary_explorer.html` coupled map startup with host startup.
+- If `maplibregl` was unavailable or map runtime init failed, the page could
+  fail before reliably completing the UI init handshake path, and Claude could
+  fall back to showing raw HTML.
+
+Fix shipped:
+- Decoupled host init from map init in `ui/boundary_explorer.html`.
+- Added explicit map-degraded mode when map runtime is unavailable.
+- Added `os_apps.log_event` telemetry (`host_ready`, `map_init_skipped`,
+  `map_init_failed`, `window_error`, `unhandled_rejection`) for future diagnosis.

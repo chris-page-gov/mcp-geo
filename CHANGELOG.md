@@ -60,6 +60,11 @@ All notable changes to this project will be documented in this file.
   include `structuredContent` for dict payloads when tools do not provide it
   explicitly, improving compatibility with strict clients that validate
   tool-result structure.
+- Hardened `ui/boundary_explorer.html` host bootstrap so UI initialization is
+  decoupled from MapLibre runtime initialization; map engine failures now enter
+  an explicit degraded mode (instead of aborting host init), with `os_apps.log_event`
+  telemetry for `host_ready`, `map_init_skipped`, `map_init_failed`, and runtime
+  script errors.
 - Updated troubleshooting guidance for Claude/Desktop startup and execution
   failures where UI shows `Tool execution failed` despite trace-confirmed
   `status=200` tool responses, including the macOS `python3.14` permission
