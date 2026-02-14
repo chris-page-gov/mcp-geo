@@ -94,6 +94,7 @@ Legend: pending, in_progress, done
 | CT-01 Correlate Claude UI failures with MCP stdio trace ids | done | Confirmed `tools/call` requests for Village Hotel flow returned `status=200` with no trace parse errors despite UI `Tool execution failed`. |
 | CT-02 Record startup-permission and rebuild pitfalls | done | Added troubleshooting guidance for macOS `python3.14` permission prompt and `MCP_GEO_DOCKER_BUILD` rebuild mode behavior. |
 | CT-03 Harden tool-call result shape for strict hosts | done | STDIO + HTTP now auto-populate `structuredContent` for dict payloads when not provided explicitly. |
+| CT-04 Capture Claude prefix + preview-runtime gotchas | done | Documented `mcp-geo:<tool>` namespace hint behavior and `maplibregl is not defined` inline-preview limits in troubleshooting/support-matrix docs. |
 
 ## Progress against the original vision
 

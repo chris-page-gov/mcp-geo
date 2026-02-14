@@ -225,3 +225,11 @@ Remediation shipped in repo:
 - Added explicit troubleshooting guidance in `docs/troubleshooting.md` covering:
   - `Tool execution failed` with `status=200` traces.
   - macOS `"python3.14" would like to access data from other apps` startup prompt.
+
+Additional follow-up from later run:
+
+- Claude can still emit an initial unprefixed call (for example `os_names_find`)
+  and immediately suggest the namespaced equivalent (`mcp-geo:os_names_find`).
+- Standalone MapLibre HTML helpers can fail in Claude inline preview with
+  `maplibregl is not defined` while working normally in a real browser. Treat
+  this as preview-runtime limitation, not MCP server failure.

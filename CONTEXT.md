@@ -145,6 +145,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Captured two recurring Claude troubleshooting outcomes in docs:
+  tool-name namespace hints (`mcp-geo:<tool>`) can be client-side pre-dispatch
+  mismatches, and inline-preview `maplibregl is not defined` errors are preview
+  runtime limits even when the same HTML works in a full browser.
 - 2026-02-14: Hardened MCP tool-call result shape for strict hosts by always
   emitting `structuredContent` when tool handlers return dict payloads (stdio
   and HTTP transports). This was prompted by Claude traces showing `tools/call`

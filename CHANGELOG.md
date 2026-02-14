@@ -64,6 +64,10 @@ All notable changes to this project will be documented in this file.
   failures where UI shows `Tool execution failed` despite trace-confirmed
   `status=200` tool responses, including the macOS `python3.14` permission
   prompt interpretation.
+- Updated troubleshooting and support-matrix guidance for two common Claude map
+  troubleshooting traps: server-prefixed tool-name hints (for example
+  `mcp-geo:os_names_find`) and inline-preview `maplibregl is not defined`
+  errors caused by preview sandbox constraints rather than MCP server failures.
 - Hardened devcontainer setup for map validation workflows:
   - Added forwarded ports for Playwright test server, Inspector, and Jupyter.
   - Added Jupyter extension and post-create install of `jupyterlab` and `ipykernel`.

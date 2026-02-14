@@ -55,6 +55,37 @@ Notes:
 - JSON trace lines with `direction=server->stderr` are diagnostics; they are not
   MCP JSON-RPC payloads.
 
+## Claude tool name mismatch: `Tool '<name>' not found` with `mcp-geo:<name>` hint
+If Claude reports a tool as not found and suggests a similarly named
+`mcp-geo:<tool_name>`, this is a client-side namespacing mismatch.
+
+What is happening:
+- Claude can namespace tool names by server id.
+- The model may still attempt an unprefixed call first.
+
+Remediation:
+- Retry the call with the suggested namespaced form (for example
+  `mcp-geo:os_names_find`).
+- Keep traces to verify whether the failed attempt reached MCP transport. If no
+  matching `client->server tools/call` exists, the failure was client-side
+  before server dispatch.
+
+## Claude preview error: `maplibregl is not defined`
+If a generated HTML map works in a normal browser but fails in Claude's inline
+web preview with `maplibregl is not defined`, the preview sandbox is blocking
+or not loading external JS dependencies.
+
+What is happening:
+- Inline preview is not equivalent to a full browser environment.
+- External CDN scripts and worker-based map stacks can fail in that sandbox.
+
+Remediation:
+- Open map HTML in a real browser for full MapLibre/OS VTS rendering.
+- For in-chat deterministic output, prefer `os_maps.render` static contracts or
+  MCP-Apps widget contracts rather than standalone external-CDN HTML.
+- If prompting for API keys in HTML helpers, use password-style inputs
+  (`<input type="password">`) to avoid accidental key disclosure on screen.
+
 ## Widget rendering unavailable in a host
 If the host does not advertise `io.modelcontextprotocol/ui` (or renders no
 widget output), use compatibility mode instead of retrying widget calls.
