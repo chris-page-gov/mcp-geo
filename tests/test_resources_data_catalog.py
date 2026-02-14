@@ -21,10 +21,13 @@ def test_resources_list_includes_data_catalog_entries() -> None:
     assert "resource://mcp-geo/ons-catalog" in uris
     assert "resource://mcp-geo/os-catalog" in uris
     assert "resource://mcp-geo/layers-catalog" in uris
+    assert "resource://mcp-geo/offline-map-catalog" in uris
     assert "resource://mcp-geo/boundary-pack-sources" in uris
     assert "resource://mcp-geo/code-list-pack-sources" in uris
     assert "resource://mcp-geo/boundary-packs-index" in uris
     assert "resource://mcp-geo/code-list-packs-index" in uris
+    assert "resource://mcp-geo/map-scenario-packs-index" in uris
+    assert "resource://mcp-geo/offline-packs-index" in uris
 
 
 def test_resources_read_boundary_manifest() -> None:
@@ -68,6 +71,38 @@ def test_resources_read_pack_indexes() -> None:
     assert code_payload["kind"] == "code_lists"
     assert code_payload["cacheMode"] == "hybrid_fetch_cache"
     assert isinstance(code_payload.get("packs"), list)
+
+
+def test_resources_read_map_scenario_pack_index_and_file() -> None:
+    index_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/map-scenario-packs-index"})
+    assert index_resp.status_code == 200
+    index_payload = json.loads(resource_contents(index_resp)[0]["text"])
+    items = index_payload.get("items", [])
+    assert any(item.get("name") == "map_delivery_option_tracker.sample.json" for item in items if isinstance(item, dict))
+
+    read_resp = client.get(
+        "/resources/read",
+        params={"uri": "resource://mcp-geo/map-scenario-packs/map_delivery_option_tracker.sample.json"},
+    )
+    assert read_resp.status_code == 200
+    payload = json.loads(resource_contents(read_resp)[0]["text"])
+    assert payload["packId"] == "map_delivery_option_tracker.sample"
+
+
+def test_resources_read_offline_pack_index_and_file() -> None:
+    index_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/offline-packs-index"})
+    assert index_resp.status_code == 200
+    index_payload = json.loads(resource_contents(index_resp)[0]["text"])
+    items = index_payload.get("items", [])
+    assert any(item.get("name") == "gb_basemap_light_pmtiles.pmtiles" for item in items if isinstance(item, dict))
+
+    read_resp = client.get(
+        "/resources/read",
+        params={"uri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles"},
+    )
+    assert read_resp.status_code == 200
+    payload_text = resource_contents(read_resp)[0]["text"]
+    assert "PMTILES_PLACEHOLDER" in payload_text
 
 
 def test_resources_list_includes_ons_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]

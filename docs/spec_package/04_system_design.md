@@ -55,3 +55,13 @@
   `os_maps.render` first, widget enhancement second, deterministic fallback
   skeletons (`map_card`, `overlay_bundle`, `export_handoff`) always available.
 - Operational guide: `docs/sidecar_profile.md`.
+
+## Offline and scenario-pack resources
+
+- Offline PMTiles/MBTiles catalog: `resource://mcp-geo/offline-map-catalog`.
+- Offline pack artifacts (when provisioned): `resource://mcp-geo/offline-packs/*`.
+- Notebook scenario-pack resources:
+  `resource://mcp-geo/map-scenario-packs-index` and
+  `resource://mcp-geo/map-scenario-packs/*`.
+- Offline tooling:
+  `os_offline.descriptor` and `os_offline.get`.

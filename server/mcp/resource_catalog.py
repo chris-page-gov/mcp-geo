@@ -21,8 +21,11 @@ BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
 CODE_LIST_PACK_SOURCES_PATH = ROOT / "resources" / "code_list_pack_sources.json"
 BOUNDARY_PACKS_INDEX_PATH = ROOT / "resources" / "boundary_packs_index.json"
 CODE_LIST_PACKS_INDEX_PATH = ROOT / "resources" / "code_list_packs_index.json"
+OFFLINE_MAP_CATALOG_PATH = ROOT / "resources" / "offline_map_catalog.json"
 EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
+OFFLINE_PACKS_DIR = ROOT / "data" / "offline_packs"
+MAP_SCENARIO_PACKS_DIR = ROOT / "data" / "map_scenario_packs"
 
 
 def _resolve_data_path(raw: str | None, default: str) -> Path:
@@ -41,6 +44,8 @@ ONS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-cache/"
 ONS_EXPORTS_PREFIX = f"{DATA_RESOURCE_PREFIX}ons-exports/"
 OS_CACHE_PREFIX = f"{DATA_RESOURCE_PREFIX}os-cache/"
 OS_EXPORTS_PREFIX = f"{DATA_RESOURCE_PREFIX}os-exports/"
+OFFLINE_PACKS_PREFIX = f"{DATA_RESOURCE_PREFIX}offline-packs/"
+MAP_SCENARIO_PACKS_PREFIX = f"{DATA_RESOURCE_PREFIX}map-scenario-packs/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
 
 
@@ -208,6 +213,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "title": "Layers Catalog",
         "description": "Catalog mapping user-friendly layer concepts to OS NGD collections and rendering hints.",
         "path": LAYERS_CATALOG_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "maps"},
+    },
+    {
+        "slug": "offline-map-catalog",
+        "name": "data_offline_map_catalog",
+        "title": "Offline Map Catalog",
+        "description": "PMTiles/MBTiles offline pack catalog and retrieval contracts.",
+        "path": OFFLINE_MAP_CATALOG_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "maps"},
     },
@@ -389,6 +403,18 @@ def _os_export_files() -> list[Path]:
     return sorted(path for path in OS_EXPORTS_DIR.glob("*.json") if path.is_file())
 
 
+def _offline_pack_files() -> list[Path]:
+    if not OFFLINE_PACKS_DIR.exists():
+        return []
+    return sorted(path for path in OFFLINE_PACKS_DIR.glob("*") if path.is_file())
+
+
+def _map_scenario_pack_files() -> list[Path]:
+    if not MAP_SCENARIO_PACKS_DIR.exists():
+        return []
+    return sorted(path for path in MAP_SCENARIO_PACKS_DIR.glob("*.json") if path.is_file())
+
+
 def list_data_resources() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
     for entry in DATA_RESOURCE_DEFS:
@@ -497,6 +523,44 @@ def list_data_resources() -> list[dict[str, Any]]:
                 "type": "data",
             }
         )
+    offline_pack_files = _offline_pack_files()
+    if offline_pack_files:
+        resources.append(
+            {
+                "uri": data_resource_uri("offline-packs-index"),
+                "name": "data_offline_packs_index",
+                "title": "Offline Pack Resource Index",
+                "description": "Index of PMTiles/MBTiles offline pack artifacts.",
+                "mimeType": "application/json",
+                "annotations": {"type": "index", "domain": "maps"},
+                "type": "data",
+            }
+        )
+    scenario_pack_files = _map_scenario_pack_files()
+    if scenario_pack_files:
+        resources.append(
+            {
+                "uri": data_resource_uri("map-scenario-packs-index"),
+                "name": "data_map_scenario_packs_index",
+                "title": "Map Scenario Packs Index",
+                "description": "Notebook-generated scenario packs with provenance metadata.",
+                "mimeType": "application/json",
+                "annotations": {"type": "index", "domain": "maps"},
+                "type": "data",
+            }
+        )
+        for path in scenario_pack_files:
+            resources.append(
+                {
+                    "uri": f"{MAP_SCENARIO_PACKS_PREFIX}{path.name}",
+                    "name": f"data_map_scenario_pack_{path.stem}",
+                    "title": f"Map Scenario Pack: {path.name}",
+                    "description": "Notebook-generated map scenario pack artifact.",
+                    "mimeType": "application/json",
+                    "annotations": {"type": "dataset", "domain": "maps"},
+                    "type": "data",
+                }
+            )
     return resources
 
 
@@ -540,6 +604,10 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
         return {"slug": slug}
     if slug == "os-exports-index":
         return {"slug": slug}
+    if slug == "offline-packs-index":
+        return {"slug": slug}
+    if slug == "map-scenario-packs-index":
+        return {"slug": slug}
     if isinstance(slug, str) and slug.startswith("exports/"):
         return {"slug": slug}
     if isinstance(slug, str) and slug.startswith("ons-exports/"):
@@ -548,6 +616,10 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
         return {"slug": slug}
     if isinstance(slug, str) and slug.startswith("os-exports/"):
         return {"slug": slug}
+    if isinstance(slug, str) and slug.startswith("offline-packs/"):
+        return {"slug": slug}
+    if isinstance(slug, str) and slug.startswith("map-scenario-packs/"):
+        return {"slug": slug}
     if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
         return {"slug": slug}
     if identifier.startswith(ONS_EXPORTS_PREFIX):
@@ -555,6 +627,10 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
     if identifier.startswith(OS_CACHE_PREFIX):
         return {"slug": slug}
     if identifier.startswith(OS_EXPORTS_PREFIX):
+        return {"slug": slug}
+    if identifier.startswith(OFFLINE_PACKS_PREFIX):
+        return {"slug": slug}
+    if identifier.startswith(MAP_SCENARIO_PACKS_PREFIX):
         return {"slug": slug}
     return None
 
@@ -603,6 +679,13 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "layers-catalog"), None
         return (*_load_json_file(LAYERS_CATALOG_PATH), None)
+    if slug == "offline-map-catalog":
+        if not OFFLINE_MAP_CATALOG_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Offline map catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "offline-map-catalog"), None
+        return (*_load_json_file(OFFLINE_MAP_CATALOG_PATH), None)
     if slug == "nomis-workflows":
         if not NOMIS_WORKFLOWS_PATH.exists():
             content = json.dumps(
@@ -748,6 +831,38 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             _etag_from_bytes(content.encode("utf-8"), "os-exports-index"),
             {"generatedAt": datetime.now(timezone.utc).isoformat()},
         )
+    if slug == "offline-packs-index":
+        items = []
+        for path in _offline_pack_files():
+            items.append(
+                {
+                    "name": path.name,
+                    "uri": f"{OFFLINE_PACKS_PREFIX}{path.name}",
+                    "bytes": path.stat().st_size,
+                }
+            )
+        content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "offline-packs-index"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
+    if slug == "map-scenario-packs-index":
+        items = []
+        for path in _map_scenario_pack_files():
+            items.append(
+                {
+                    "name": path.name,
+                    "uri": f"{MAP_SCENARIO_PACKS_PREFIX}{path.name}",
+                    "bytes": path.stat().st_size,
+                }
+            )
+        content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
+        return (
+            content,
+            _etag_from_bytes(content.encode("utf-8"), "map-scenario-packs-index"),
+            {"generatedAt": datetime.now(timezone.utc).isoformat()},
+        )
     if isinstance(slug, str) and slug.startswith("ons-cache/"):
         filename = slug.split("/", 1)[1]
         path = ONS_CACHE_DIR / filename
@@ -802,6 +917,40 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
         content, etag = _load_json_file(path)
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
+    if isinstance(slug, str) and slug.startswith("offline-packs/"):
+        filename = slug.split("/", 1)[1]
+        path = (OFFLINE_PACKS_DIR / filename).resolve()
+        packs_root = OFFLINE_PACKS_DIR.resolve()
+        if not str(path).startswith(str(packs_root)):
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid offline pack path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        if not path.exists() or not path.is_file():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Offline pack not found."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        raw = path.read_bytes()
+        content = raw.decode("utf-8", "replace")
+        etag = _etag_from_bytes(raw, slug)
+        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
+    if isinstance(slug, str) and slug.startswith("map-scenario-packs/"):
+        filename = slug.split("/", 1)[1]
+        path = (MAP_SCENARIO_PACKS_DIR / filename).resolve()
+        packs_root = MAP_SCENARIO_PACKS_DIR.resolve()
+        if not str(path).startswith(str(packs_root)):
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid scenario pack path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        if not path.exists() or not path.is_file():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Scenario pack not found."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
+        content, etag = _load_json_file(path)
+        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("ons-cache"):
         filename = slug.split("ons-cache", 1)[-1].lstrip("/")
         path = ONS_CACHE_DIR / filename
@@ -829,6 +978,8 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
 
 __all__ = [
     "DATA_RESOURCE_PREFIX",
+    "OFFLINE_PACKS_PREFIX",
+    "MAP_SCENARIO_PACKS_PREFIX",
     "OS_CACHE_PREFIX",
     "OS_EXPORTS_PREFIX",
     "ONS_CACHE_PREFIX",

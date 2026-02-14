@@ -87,6 +87,12 @@ POST /tools/call
 { "tool": "os_maps.render", "bbox": [-0.18, 51.49, -0.05, 51.54], "size": 640, "zoom": 13 }
 
 POST /tools/call
+{ "tool": "os_offline.descriptor" }
+
+POST /tools/call
+{ "tool": "os_offline.get", "packId": "gb_basemap_light_pmtiles", "bbox": [-0.18, 51.49, -0.05, 51.54] }
+
+POST /tools/call
 { "tool": "os_names.nearest", "lat": 51.5034, "lon": -0.1276 }
 
 POST /tools/call

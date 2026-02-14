@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-02-14T01:18:09.426249Z",
+  "thresholds": {
+    "contrastFailMin": 0.2,
+    "contrastWarnMin": 0.28,
+    "labelDensityWarnMin": 0.22,
+    "labelDensityFailMin": 0.36
+  },
+  "statusCounts": {
+    "fail": 1,
+    "warning": 1
+  },
+  "checks": [
+    {
+      "trialId": "trial-3-geography-selector",
+      "browser": "chromium-desktop",
+      "status": "fail",
+      "findings": [
+        "contrast below fail threshold (0.196 < 0.20)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.1961,
+        "labelDensity": 0.1299
+      },
+      "mapPanel": "/Users/crpage/repos/mcp-geo/research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-trial-3-geography-selector-map-panel.png",
+      "accessibilityPresent": false
+    },
+    {
+      "trialId": "trial-4-boundary-explorer",
+      "browser": "chromium-desktop",
+      "status": "warning",
+      "findings": [
+        "contrast below warn threshold (0.231 < 0.28)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.2314,
+        "labelDensity": 0.2517
+      },
+      "mapPanel": "/Users/crpage/repos/mcp-geo/research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-trial-4-boundary-explorer-map-panel.png",
+      "accessibilityPresent": false
+    }
+  ]
+}

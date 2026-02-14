@@ -201,6 +201,7 @@ python3 scripts/map_trials/summarize_playwright_trials.py
 - Linked identifiers (UPRN/USRN/TOID): `os_linked_ids.get`
 - NGD features (bbox query): `os_features.query`
 - Maps metadata and vector tiles: `os_maps.render`, `os_vector_tiles.descriptor`
+- Offline map packs and handoff contracts: `os_offline.descriptor`, `os_offline.get`
 
 #### Vector tile styles (OS VTS)
 
@@ -311,6 +312,7 @@ Read the boundary manifest resource:
 - Evaluation suite and questions: `docs/evaluation.md`
 - MCP-Apps alignment notes: `docs/mcp_apps_alignment.md`
 - Browser/widget support matrix: `docs/map_delivery_support_matrix.md`
+- Notebook scenario packs: `docs/map_scenario_packs.md`
 
 ## Appendix: STDIO Docker (when to use it)
 

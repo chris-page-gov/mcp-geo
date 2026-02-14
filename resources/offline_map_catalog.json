@@ -1,0 +1,49 @@
+{
+  "version": "2026-02-14",
+  "retrievalContracts": [
+    {
+      "id": "pmtiles-stream",
+      "format": "pmtiles",
+      "mode": "resource_uri",
+      "notes": "Preferred for browser and notebook clients with HTTP range support."
+    },
+    {
+      "id": "mbtiles-download",
+      "format": "mbtiles",
+      "mode": "download",
+      "notes": "Preferred for desktop GIS workflows that expect SQLite tile packages."
+    }
+  ],
+  "packs": [
+    {
+      "id": "gb_basemap_light_pmtiles",
+      "title": "Great Britain Basemap (Light)",
+      "format": "pmtiles",
+      "version": "2026.02.14",
+      "resourceUri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles",
+      "bounds": [-8.65, 49.85, 1.80, 60.95],
+      "minZoom": 4,
+      "maxZoom": 14,
+      "provenance": {
+        "source": "OS OpenData",
+        "license": "OGL v3",
+        "generatedAt": "2026-02-14T00:00:00Z"
+      }
+    },
+    {
+      "id": "gb_transport_mbtiles",
+      "title": "Great Britain Transport Overlay",
+      "format": "mbtiles",
+      "version": "2026.02.14",
+      "resourceUri": "resource://mcp-geo/offline-packs/gb_transport_mbtiles.mbtiles",
+      "bounds": [-8.65, 49.85, 1.80, 60.95],
+      "minZoom": 6,
+      "maxZoom": 16,
+      "provenance": {
+        "source": "OS OpenRoads + local transforms",
+        "license": "OGL v3",
+        "generatedAt": "2026-02-14T00:00:00Z"
+      }
+    }
+  ]
+}

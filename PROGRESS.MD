@@ -77,9 +77,9 @@ Legend: pending, in_progress, done
 | MDR-N2 Widget-unsupported guidance fields | done | MDR-I2 | Extended fallback payloads with explicit guidance keys (`widgetUnsupported`, reason, degradation mode, preferred next tools) and transport-parity tests. |
 | MDR-N3 Mobile viewport + latency trial budgets | done | MDR-N1 | Added mobile Playwright trial projects and latency-budget assertions with percentile/compliance reporting in trial summaries. |
 | MDR-N4 Optional sidecar deployment profile | done | MDR-I2 | Added Martin/pg_tileserv optional sidecar compose/smoke assets and architecture/system/walkthrough runbook updates. |
-| MDR-M1 PMTiles/MBTiles offline delivery | pending | MDR-N4 | Add offline-friendly map delivery option with packaging and retrieval contracts. |
-| MDR-M2 Map output quality checks | pending | MDR-N3 | Add automated checks for label density, contrast, and accessibility metadata. |
-| MDR-M3 Notebook scenario pack resources | pending | MDR-N3 | Integrate notebook-generated scenario packs into resource outputs with provenance metadata. |
+| MDR-M1 PMTiles/MBTiles offline delivery | done | MDR-N4 | Added `os_offline.descriptor`/`os_offline.get`, offline pack catalog/resources, and offline handoff contracts for PMTiles/MBTiles paths. |
+| MDR-M2 Map output quality checks | done | MDR-N3 | Added automated map quality checker (contrast, label-density proxy, accessibility metadata, waiver handling) with report artifacts. |
+| MDR-M3 Notebook scenario pack resources | done | MDR-N3 | Added notebook scenario-pack export script and `resource://mcp-geo/map-scenario-packs*` resources with provenance/hash metadata. |
 | MDR-E1 MCP/AI-host best-practice bundle | pending | MDR-I4 | Publish worker/CSP-safe client-side best-practice patterns for embedded map contexts. |
 | MDR-E2 Lightweight embedding style profiles | pending | MDR-E1 | Provide normalized lightweight style profiles for constrained AI-client embedding. |
 | MDR-E3 Progressive fallback official examples | pending | MDR-E1, MDR-E2 | Publish examples showing deterministic full-vector to static-card fallback progression. |

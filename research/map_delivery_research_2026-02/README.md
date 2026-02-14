@@ -21,6 +21,8 @@ It combines user research, standards/library landscape analysis, and containeriz
 - `05_external_scan_os_and_community.md`: OS docs/repos plus open-source mapping MCP server review.
 - `06_recommendations_and_report.md`: final evaluation, selected options, and roadmap.
 - `reports/trial_summary.md`: generated matrix summary from JSON logs.
+- `reports/map_quality_report.json`: automated quality-check report
+  (contrast/label-density/accessibility metadata + waiver handling).
 - `docs/map_delivery_support_matrix.md`: host/browser capability matrix with
   verification dates and evidence pointers.
 - `notebooks/map_delivery_option_tracker.ipynb`: optional notebook tracker.
@@ -34,6 +36,8 @@ From repo root:
 ```bash
 ./scripts/run_map_delivery_trials.sh
 python3 scripts/map_trials/summarize_playwright_trials.py
+python3 scripts/map_trials/map_quality_checks.py
+python3 scripts/map_trials/export_notebook_scenario_pack.py
 ```
 
 ## Key Evidence Artifacts

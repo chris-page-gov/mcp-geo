@@ -6,6 +6,7 @@ import json
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 
 def load_observations(path: Path) -> list[dict]:
@@ -38,6 +39,15 @@ def load_result_stats(path: Path) -> dict[str, int]:
     for suite in obj.get("suites", []):
         walk_suite(suite)
     return dict(sorted(counts.items()))
+
+
+def load_quality_report(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    obj = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(obj, dict):
+        return {}
+    return obj
 
 
 def to_rel(path: str | None, repo_root: Path) -> str | None:
@@ -117,6 +127,7 @@ def build_markdown(
     repo_root: Path,
     observations: list[dict],
     result_counts: dict[str, int],
+    quality_report: dict[str, Any],
     generated_at: datetime,
 ) -> str:
     lines: list[str] = []
@@ -142,7 +153,25 @@ def build_markdown(
             f"`{int(latency['budgetPasses'])}/{int(latency['budgetChecks'])}` "
             f"({latency['budgetPassRate'] * 100:.1f}%)"
         )
+    quality_counts = quality_report.get("statusCounts")
+    if isinstance(quality_counts, dict) and quality_counts:
+        lines.append(
+            "- Quality status counts: "
+            + ", ".join(f"`{key}={value}`" for key, value in sorted(quality_counts.items()))
+        )
     lines.append("")
+
+    quality_lookup: dict[tuple[str, str], str] = {}
+    checks = quality_report.get("checks")
+    if isinstance(checks, list):
+        for row in checks:
+            if not isinstance(row, dict):
+                continue
+            trial = row.get("trialId")
+            browser = row.get("browser")
+            status = row.get("status")
+            if isinstance(trial, str) and isinstance(browser, str) and isinstance(status, str):
+                quality_lookup[(trial, browser)] = status
 
     grouped: dict[str, list[dict]] = defaultdict(list)
     for row in observations:
@@ -151,8 +180,8 @@ def build_markdown(
     for trial_id in sorted(grouped):
         lines.append(f"## {trial_id}")
         lines.append("")
-        lines.append("| Browser | Status | Latency | Budget | Pass | Screenshot | Map panel |")
-        lines.append("| --- | --- | --- | --- | --- | --- | --- |")
+        lines.append("| Browser | Status | Quality | Latency | Budget | Pass | Screenshot | Map panel |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- | --- |")
         for row in sorted(grouped[trial_id], key=lambda item: item.get("browser", "")):
             details = row.get("details", {})
             screenshot = to_rel(details.get("screenshot"), repo_root)
@@ -162,11 +191,13 @@ def build_markdown(
             latency_ms = details.get("latencyMs")
             budget_ms = details.get("latencyBudgetMs")
             latency_pass = details.get("latencyPass")
+            quality_status = quality_lookup.get((trial_id, row.get("browser", "")), "-")
             latency_md = f"`{latency_ms:.1f}`" if isinstance(latency_ms, (int, float)) else "-"
             budget_md = f"`{budget_ms:.1f}`" if isinstance(budget_ms, (int, float)) else "-"
             pass_md = "yes" if latency_pass is True else ("no" if latency_pass is False else "-")
             lines.append(
                 f"| {row.get('browser', '-')} | {row.get('status', '-')} | "
+                f"{quality_status} | "
                 f"{latency_md} | {budget_md} | {pass_md} | "
                 f"{screenshot_md} | {map_panel_md} |"
             )
@@ -197,6 +228,11 @@ def parse_args() -> argparse.Namespace:
         default="research/map_delivery_research_2026-02/reports/trial_summary.md",
         help="Output markdown path.",
     )
+    parser.add_argument(
+        "--quality",
+        default="research/map_delivery_research_2026-02/reports/map_quality_report.json",
+        help="Optional map quality report path.",
+    )
     return parser.parse_args()
 
 
@@ -205,10 +241,12 @@ def main() -> int:
     repo_root = Path(args.repo_root).resolve()
     observations = load_observations((repo_root / args.observations).resolve())
     result_counts = load_result_stats((repo_root / args.results).resolve())
+    quality_report = load_quality_report((repo_root / args.quality).resolve())
     content = build_markdown(
         repo_root=repo_root,
         observations=observations,
         result_counts=result_counts,
+        quality_report=quality_report,
         generated_at=datetime.now(tz=UTC),
     )
 

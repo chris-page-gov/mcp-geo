@@ -58,6 +58,18 @@ Expected outcome:
 - Martin and pg_tileserv endpoints respond.
 - MCP Geo map baseline remains available if sidecars are stopped.
 
+## 7) Offline pack + scenario-pack retrieval
+
+1. Call `os_offline.descriptor` to list offline packs.
+2. Call `os_offline.get` with `packId` to receive
+   `map_card`/`overlay_bundle`/`export_handoff`.
+3. Read `resource://mcp-geo/map-scenario-packs-index` and retrieve a scenario
+   pack resource.
+
+Expected outcome:
+- Offline handoff contracts are deterministic.
+- Scenario packs include notebook provenance metadata.
+
 ## Reference screenshots (pending)
 
 ![Inspector connected to MCP Geo](images/inspector-tools-resources.png)

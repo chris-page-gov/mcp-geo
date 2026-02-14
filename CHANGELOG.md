@@ -36,6 +36,19 @@ All notable changes to this project will be documented in this file.
   `scripts/sidecar/docker-compose.map-sidecar.yml`,
   `scripts/sidecar/smoke_sidecar_profile.sh`,
   and `docs/sidecar_profile.md`.
+- Added offline map delivery tooling and resources:
+  `tools/os_offline.py` (`os_offline.descriptor`, `os_offline.get`),
+  `resources/offline_map_catalog.json`,
+  `resource://mcp-geo/offline-map-catalog`,
+  and `resource://mcp-geo/offline-packs*`.
+- Added map quality-check automation with waiver support:
+  `scripts/map_trials/map_quality_checks.py`,
+  `research/map_delivery_research_2026-02/reports/map_quality_report.json`,
+  and `research/map_delivery_research_2026-02/reports/map_quality_waivers.json`.
+- Added notebook scenario-pack export and resources:
+  `scripts/map_trials/export_notebook_scenario_pack.py`,
+  `data/map_scenario_packs/*`,
+  and `resource://mcp-geo/map-scenario-packs*`.
 
 ### Changed
 - Hardened devcontainer setup for map validation workflows:
@@ -61,6 +74,10 @@ All notable changes to this project will be documented in this file.
   widget-unsupported guidance fields and deterministic next-step tool hints.
 - Updated architecture/design/walkthrough spec docs with optional Martin +
   pg_tileserv sidecar deployment guidance.
+- Updated resources catalog and retrieval handlers to expose offline pack and
+  notebook scenario-pack index/file resources with path-traversal guards.
+- Updated trial runner orchestration to include scenario-pack export and map
+  quality checks in the standard map-delivery run sequence.
 
 ## [0.3.1] - 2026-02-13
 ### Added

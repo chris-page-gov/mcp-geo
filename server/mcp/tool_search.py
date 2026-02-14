@@ -38,6 +38,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "os_net": ToolCategory.FEATURES,
     "os_downloads": ToolCategory.UTILITY,
     "os_map": ToolCategory.MAPS,
+    "os_offline": ToolCategory.MAPS,
     "admin_lookup": ToolCategory.ADMIN,
     "ons_data": ToolCategory.STATISTICS,
     "ons_search": ToolCategory.STATISTICS,
@@ -61,6 +62,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_net": ["positioning", "osnet", "rinex", "station", "gnss"],
     "os_downloads": ["downloads", "product", "export", "package"],
     "os_map": ["map", "inventory", "export", "layers", "aggregation", "boundary"],
+    "os_offline": ["map", "offline", "pmtiles", "mbtiles", "pack", "descriptor", "handoff"],
     "admin_lookup": ["admin", "boundary", "hierarchy", "areas"],
     "ons_data": ["ons", "statistics", "observations", "dataset"],
     "ons_search": ["ons", "search", "dataset", "discover"],
@@ -98,6 +100,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
     "places_names": ("os_places.*", "os_poi.*", "os_names.*", "os_linked_ids.get"),
     "features_layers": ("os_features.*", "os_map.inventory", "os_map.export"),
     "maps_tiles": ("os_maps.render", "os_vector_tiles.descriptor"),
+    "offline_maps": ("os_offline.*",),
     "qgis_linkage": ("os_qgis.*",),
     "admin_boundaries": ("admin_lookup.*",),
     "ons_selection": ("ons_select.search", "ons_search.query", "ons_codes.*"),
@@ -122,6 +125,7 @@ EXTERNAL_PREFIXES: Set[str] = {
     "os_tiles_ota",
     "os_net",
     "os_downloads",
+    "os_offline",
     "ons_data",
     "ons_search",
     "ons_select",
@@ -325,6 +329,7 @@ def get_tool_search_system_prompt() -> str:
         "- os_places.search: free text address search\n"
         "- os_places.by_postcode: lookup UPRNs and addresses\n"
         "- os_poi.search: search points of interest (amenities/services)\n"
+        "- os_offline.descriptor: inspect offline PMTiles/MBTiles pack contracts\n"
         "- admin_lookup.find_by_name: find administrative areas by name (use level/levels to reduce noise)\n"
         "- ons_select.search: rank ONS datasets with explainability\n"
         "- ons_search.query: discover ONS datasets (live API search)\n"

@@ -73,6 +73,9 @@ assumptions change.
 - Maintain deterministic host-simulation fixtures, latency-budget trial
   reporting, and optional sidecar runbook assets under `playground/trials/`,
   `scripts/map_trials/`, and `scripts/sidecar/`.
+- Maintain offline map delivery contracts and scenario-pack resource lifecycle
+  artifacts under `tools/os_offline.py`, `resources/offline_map_catalog.json`,
+  and `data/map_scenario_packs/`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -91,14 +94,15 @@ assumptions change.
   evaluation plan).
 - In progress: map delivery recommendation implementation program (`MDR-I1` to
   `MDR-E4`) is active; immediate (`MDR-I1` to `MDR-I4`) and near-term
-  (`MDR-N1` to `MDR-N4`) waves are complete.
+  (`MDR-N1` to `MDR-N4`) and medium-term (`MDR-M1` to `MDR-M3`) waves are complete.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
 
 - High: CI pipeline; MCP-Apps client compatibility validation and docs.
-- High: map delivery medium-term recommendations (offline PMTiles/MBTiles
-  option, map output quality checks, notebook scenario-pack resources).
+- High: map delivery ecosystem recommendations (best-practice bundle,
+  lightweight embedding style profiles, progressive fallback examples, mixed
+  UI/no-UI fleet guidance).
 - Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
   admin cache staleness policy; performance regression tests.
 - Medium: near-term map engineering recommendations (deterministic host simulation,
@@ -138,6 +142,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Completed medium-term map-delivery recommendation wave
+  (`MDR-M1` to `MDR-M3`) by adding offline PMTiles/MBTiles handoff tooling and
+  resources, automated map quality checks with waiver support, and
+  notebook-derived scenario-pack resources with provenance metadata.
 - 2026-02-14: Completed near-term map-delivery recommendation wave
   (`MDR-N1` to `MDR-N4`) by adding deterministic host simulation fixtures,
   explicit fallback guidance fields, mobile latency budgets/reporting, and an

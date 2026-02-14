@@ -151,6 +151,7 @@ test("trial-1 static osm proxy map renders in browser", async ({ page }, testInf
     dimensions,
     mapUrl: staticMapUrl,
     screenshot,
+    accessibility: { altText: "Static OSM proxy map showing Westminster bbox." },
     ...latencyDetails(testInfo, "trial-1-static-osm", startedAt),
   });
 });
@@ -219,6 +220,7 @@ test("trial-2 os_maps.render tool output produces renderable image", async (
     absoluteUrl,
     dimensions,
     screenshot,
+    accessibility: { altText: "Rendered os_maps.render output image." },
     ...latencyDetails(testInfo, "trial-2-os-maps-render", startedAt),
   });
 });
@@ -333,6 +335,7 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
     switchAfterOverlay: true,
     page: "ui/geography_selector.html",
     hostProfile: uiSupportedProfile?.id || "unknown",
+    accessibility: { altText: "Geography selector map with address overlays." },
     ...latencyDetails(testInfo, "trial-3-geography-selector", startedAt),
   });
 });
@@ -475,6 +478,7 @@ window.shp = async function () {
     style: "osm",
     highlightedUprns: 2,
     hostProfile: uiSupportedProfile?.id || "unknown",
+    accessibility: { altText: "Boundary explorer map with local-layer highlights." },
     ...latencyDetails(testInfo, "trial-4-boundary-explorer", startedAt),
   });
 });
@@ -504,6 +508,7 @@ test("trial-5 deterministic host-simulation fixtures are stable across engines",
     hostProfile: selectedProfile?.id || "unknown",
     degradationMode: selectedProfile?.degradationMode || "unknown",
     fixtureVersion: hostProfileCatalog.version,
+    accessibility: { altText: "Host simulation replay probe screen." },
     ...latencyDetails(testInfo, "trial-5-host-simulation", startedAt),
   });
 });

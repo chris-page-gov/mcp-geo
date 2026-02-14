@@ -138,6 +138,7 @@ cross-client map reliability.
 
 For validated host/browser behavior by capability mode, see
 `docs/map_delivery_support_matrix.md`.
+For notebook-to-resource scenario pack workflow, see `docs/map_scenario_packs.md`.
 
 ## Client Tracing
 
@@ -168,6 +169,8 @@ For clients that always request `tools/list` with empty params, set
 | os_linked_ids.get | Relationship lookup between UPRN/USRN/TOID |
 | os_maps.render | Static map render metadata (proxy URL) |
 | os_vector_tiles.descriptor | Vector tiles style/source descriptor |
+| os_offline.descriptor | Offline PMTiles/MBTiles pack catalog + retrieval contracts |
+| os_offline.get | Offline map handoff payloads (`map_card`, `overlay_bundle`, `export_handoff`) |
 | admin_lookup.containing_areas | Administrative area containment for a point |
 | admin_lookup.reverse_hierarchy | Ancestor chain for an administrative area |
 | admin_lookup.area_geometry | Bounding box geometry for an area |

@@ -18,6 +18,11 @@ devcontainer exec --workspace-folder "$REPO_ROOT" \
   bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/host_simulation_profiles.py --out research/map_delivery_research_2026-02/evidence/logs/host_simulation_replay_matrix.json" \
   | tee -a "$RUN_LOG"
 
+echo "[map-trials] exporting notebook scenario pack artifacts..."
+devcontainer exec --workspace-folder "$REPO_ROOT" \
+  bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/export_notebook_scenario_pack.py" \
+  | tee -a "$RUN_LOG"
+
 echo "[map-trials] executing Playwright trial matrix inside devcontainer..."
 devcontainer exec --workspace-folder "$REPO_ROOT" \
   bash -lc "cd /workspaces/mcp-geo && npm --prefix playground run test:trials" \
@@ -31,6 +36,11 @@ devcontainer exec --workspace-folder "$REPO_ROOT" \
 echo "[map-trials] generating markdown summary from this run..."
 devcontainer exec --workspace-folder "$REPO_ROOT" \
   bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/summarize_playwright_trials.py" \
+  | tee -a "$RUN_LOG"
+
+echo "[map-trials] running map quality checks..."
+devcontainer exec --workspace-folder "$REPO_ROOT" \
+  bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/map_quality_checks.py" \
   | tee -a "$RUN_LOG"
 
 echo "[map-trials] run log: $RUN_LOG"

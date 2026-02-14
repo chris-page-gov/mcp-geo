@@ -53,6 +53,8 @@ Detailed fallback schema guidance lives in
 
 ## Fallback skeleton snippets
 
+Offline workflows can request these contracts via `os_offline.get`.
+
 ### `map_card`
 
 ```json

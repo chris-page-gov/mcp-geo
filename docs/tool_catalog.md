@@ -17,6 +17,10 @@ Contract definitions and conformance checklist:
 - `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 - `docs/map_delivery_support_matrix.md`
 
+Offline delivery helpers (medium-term wave):
+- `os_offline.descriptor`
+- `os_offline.get`
+
 | Tool | Version | Description |
 |------|---------|-------------|
 | admin_lookup.area_geometry | 0.1.0 | Return bbox geometry for a given area id |
@@ -2818,4 +2822,3 @@ Contract definitions and conformance checklist:
   "type": "object"
 }
 ```
-
