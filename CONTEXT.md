@@ -145,6 +145,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Added `os_offline.descriptor` and `os_offline.get` to the
+  evaluation harness specialist-tool allowlist in
+  `tests/test_evaluation_harness_full.py` to prevent false missing-coverage
+  failures after MDR-M1 offline tool registration.
 - 2026-02-14: Completed ecosystem map-delivery recommendation wave
   (`MDR-E1` to `MDR-E4`) by publishing an MCP/AI-host best-practice bundle,
   constrained style profiles, progressive fallback examples, and mixed host
