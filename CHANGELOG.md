@@ -23,6 +23,11 @@ All notable changes to this project will be documented in this file.
   - `scripts/map_trials/summarize_playwright_trials.py`
 - Added notebook-based trial tracking starter at
   `research/map_delivery_research_2026-02/notebooks/map_delivery_option_tracker.ipynb`.
+- Added a browser/widget capability matrix at `docs/map_delivery_support_matrix.md`
+  with verification dates, capability modes, env toggles, and evidence pointers.
+- Added map-delivery fallback contract appendix
+  `docs/spec_package/06a_map_delivery_fallback_contracts.md` defining
+  `map_card`, `overlay_bundle`, and `export_handoff` schemas and conformance checks.
 
 ### Changed
 - Hardened devcontainer setup for map validation workflows:
@@ -30,6 +35,15 @@ All notable changes to this project will be documented in this file.
   - Added Jupyter extension and post-create install of `jupyterlab` and `ipykernel`.
   - Added container env defaults for trial workspace and expanded CORS dev origins.
   - Expanded base image packages (`jq`, `postgresql-client`, `libspatialindex-dev`).
+- Updated map and onboarding docs to make `os_maps.render` the canonical
+  compatibility baseline and standardize lean `starter`-first discovery guidance:
+  `README.md`, `docs/getting_started.md`, `docs/examples.md`,
+  `docs/tutorial.md`, `docs/ChatGPT_setup_chat.md`, and `docs/troubleshooting.md`.
+- Updated map-delivery alignment docs and research index links to reference the
+  fallback contract definitions and support matrix:
+  `docs/mcp_apps_alignment.md`,
+  `docs/spec_package/06_api_contracts.md`,
+  `research/map_delivery_research_2026-02/README.md`.
 
 ## [0.3.1] - 2026-02-13
 ### Added

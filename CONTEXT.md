@@ -52,8 +52,8 @@ assumptions change.
 - Prioritizing next major gap after gap closure: CI pipeline implementation.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
-- Converting map delivery research recommendations into a tracked, phased
-  implementation program before feature execution.
+- Executing the map delivery recommendation workstreams in phased delivery
+  order (`MDR-I*`, `MDR-N*`, `MDR-M*`, `MDR-E*`) with tracking updates per stage.
 
 ## Active Work
 
@@ -66,6 +66,10 @@ assumptions change.
 - Track recommendation-delivery workstreams in
   `docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`
   and synchronize statuses in `PROGRESS.MD`.
+- Maintain compatibility-first map docs/contracts and support matrix links in
+  `docs/spec_package/06_api_contracts.md`,
+  `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
+  `docs/map_delivery_support_matrix.md`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -82,16 +86,16 @@ assumptions change.
   population, playground UI.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
   evaluation plan).
-- Planned: map delivery recommendation implementation program (`MDR-I1` to
-  `MDR-E4`) is documented and tracked; execution not started.
+- In progress: map delivery recommendation implementation program (`MDR-I1` to
+  `MDR-E4`) is active; immediate wave (`MDR-I1` to `MDR-I4`) is complete.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
 
 - High: CI pipeline; MCP-Apps client compatibility validation and docs.
-- High: map delivery immediate recommendations (canonical `os_maps.render`
-  baseline docs, standardized fallback skeleton payloads, lean startup toolset
-  guidance, browser/widget support matrix).
+- High: map delivery near-term recommendations (deterministic host simulation,
+  explicit widget-unsupported guidance fields, mobile viewport + latency
+  budgets, optional sidecar profile).
 - Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
   admin cache staleness policy; performance regression tests.
 - Medium: near-term map engineering recommendations (deterministic host simulation,
@@ -131,6 +135,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Completed immediate map-delivery recommendation wave
+  (`MDR-I1` to `MDR-I4`) by promoting `os_maps.render` as canonical baseline,
+  documenting stable fallback skeleton contracts, standardizing `starter`-first
+  startup guidance, and publishing `docs/map_delivery_support_matrix.md`.
 - 2026-02-14: Ratified a detailed, dependency-tracked map delivery
   recommendations implementation plan in
   `docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`

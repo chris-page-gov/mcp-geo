@@ -69,10 +69,10 @@ Legend: pending, in_progress, done
 
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
-| MDR-I1 Canonical `os_maps.render` baseline docs | pending | none | Promote compatibility-first `os_maps.render` flow across README/getting-started/examples/tutorial docs. |
-| MDR-I2 Standard fallback skeleton contracts | pending | MDR-I1 | Define/align `map_card`, `overlay_bundle`, and `export_handoff` contract docs and conformance checklist. |
-| MDR-I3 Lean startup tool discovery guidance | pending | MDR-I1 | Standardize `starter`-first initialization docs and defer heavy discovery to post-init flows. |
-| MDR-I4 Browser/widget support matrix | pending | MDR-I1 | Publish host/browser matrix with capability modes, limits, and evidence links. |
+| MDR-I1 Canonical `os_maps.render` baseline docs | done | none | Updated README/getting-started/examples/tutorial docs to lead map workflows with `os_maps.render` and explicit fallback ordering. |
+| MDR-I2 Standard fallback skeleton contracts | done | MDR-I1 | Added `map_card`, `overlay_bundle`, and `export_handoff` schemas plus conformance checklist in spec package + alignment docs. |
+| MDR-I3 Lean startup tool discovery guidance | done | MDR-I1 | Standardized `starter`-first startup guidance and post-init scoped discovery in onboarding/troubleshooting docs. |
+| MDR-I4 Browser/widget support matrix | done | MDR-I1 | Published `docs/map_delivery_support_matrix.md` with capability modes, env toggles, verification dates, and evidence links. |
 | MDR-N1 Deterministic host simulation utilities | pending | MDR-I2, MDR-I4 | Add deterministic UI resource test simulation across Chromium/Firefox/WebKit. |
 | MDR-N2 Widget-unsupported guidance fields | pending | MDR-I2 | Add explicit fallback guidance payload fields for non-UI hosts with stable transport behavior. |
 | MDR-N3 Mobile viewport + latency trial budgets | pending | MDR-N1 | Expand trial suite with mobile projects and scenario latency budget assertions/reporting. |

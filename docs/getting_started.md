@@ -50,7 +50,27 @@ echo BOUNDARY_CACHE_DSN
 
 See `docs/boundary_cache.md` for ingest + validation steps.
 
-## 2) Use MCP Inspector (recommended)
+## 2) Validate canonical map delivery baseline
+
+Before testing widgets, verify the compatibility-first map path:
+
+1. Call `os_maps.render` with a bbox.
+2. Render the returned image URL in any browser/client.
+3. Layer optional overlay payloads separately.
+4. Use `os_apps.render_*` only after host UI support is confirmed.
+
+Example MCP tool call:
+
+```json
+{"jsonrpc":"2.0","id":"map-1","method":"tools/call","params":{"name":"os_maps.render","arguments":{"bbox":[-0.18,51.49,-0.05,51.54],"size":640,"zoom":13}}}
+```
+
+Contract and host references:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
+## 3) Use MCP Inspector (recommended)
 
 MCP Inspector is the fastest way to browse tools and try calls without writing
 code. Point it at the HTTP MCP endpoint:
@@ -111,7 +131,7 @@ In Inspector you can:
 - Call tools and inspect structured outputs
 - Validate MCP-Apps UI resources (if supported)
 
-## 3) Use the Playground (web UI)
+## 4) Use the Playground (web UI)
 
 The playground is a lightweight MCP client built with Svelte + Vite. It uses
 the MCP TypeScript SDK to connect over HTTP and records tool calls and prompt
@@ -172,7 +192,7 @@ For automated map delivery validation (containerized trial matrix + evidence cap
 python3 scripts/map_trials/summarize_playwright_trials.py
 ```
 
-## 4) What data is available
+## 5) What data is available
 
 ### Ordnance Survey (OS)
 
@@ -252,7 +272,7 @@ Note: `os_names.nearest` accepts WGS84 lat/lon (`EPSG:4326`) and converts to
 British National Grid automatically. Use `coordSystem: "EPSG:27700"` if you
 already have BNG eastings/northings.
 
-## 5) Quick inspection examples
+## 6) Quick inspection examples
 
 List tools:
 
@@ -284,12 +304,13 @@ Read the boundary manifest resource:
 {"jsonrpc":"2.0","id":"5","method":"resources/read","params":{"uri":"resource://mcp-geo/boundary-manifest"}}
 ```
 
-## 6) Where to go next
+## 7) Where to go next
 
 - Detailed walkthrough: `docs/tutorial.md`
 - Tool catalog: `docs/tool_catalog.md`
 - Evaluation suite and questions: `docs/evaluation.md`
 - MCP-Apps alignment notes: `docs/mcp_apps_alignment.md`
+- Browser/widget support matrix: `docs/map_delivery_support_matrix.md`
 
 ## Appendix: STDIO Docker (when to use it)
 

@@ -55,6 +55,23 @@ Notes:
 - JSON trace lines with `direction=server->stderr` are diagnostics; they are not
   MCP JSON-RPC payloads.
 
+## Widget rendering unavailable in a host
+If the host does not advertise `io.modelcontextprotocol/ui` (or renders no
+widget output), use compatibility mode instead of retrying widget calls.
+
+Remediation:
+- Start with `os_maps.render` and treat it as the canonical baseline.
+- Consume fallback skeleton contracts (`map_card`, `overlay_bundle`,
+  `export_handoff`) from tool outputs.
+- Keep startup discovery lean with `MCP_TOOLS_DEFAULT_TOOLSET=starter`.
+- Use targeted post-init discovery (`toolset` / `includeToolsets`) only when
+  you need additional tools.
+
+Reference docs:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
 ## OS VTS labels missing for custom symbol layers
 If custom label layers render without text on OS Vector Tile Service basemaps,
 the style is usually referencing glyph assets that are not available for

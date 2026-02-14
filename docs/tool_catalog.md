@@ -2,6 +2,21 @@
 
 Auto-generated list of current tools, their descriptions, versions, and JSON Schemas.
 
+## Map delivery contracts (compatibility baseline)
+
+For map workflows, treat `os_maps.render` as the canonical baseline and apply
+fallbacks in this order:
+
+1. `map_card`
+2. `overlay_bundle`
+3. `export_handoff`
+
+Contract definitions and conformance checklist:
+
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
 | Tool | Version | Description |
 |------|---------|-------------|
 | admin_lookup.area_geometry | 0.1.0 | Return bbox geometry for a given area id |
@@ -2803,5 +2818,4 @@ Auto-generated list of current tools, their descriptions, versions, and JSON Sch
   "type": "object"
 }
 ```
-
 

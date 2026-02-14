@@ -45,6 +45,20 @@ Then visit:
 
 Set `OS_API_KEY` in the environment (or `.env`) for all Ordnance Survey calls. The server assumes it is present; missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
+## Canonical Map Delivery Baseline
+
+Use this order for reliable cross-host map delivery:
+
+1. `os_maps.render` (static contract baseline; works without widgets)
+2. `overlay_bundle` layers for map annotations and features
+3. `os_apps.render_*` widgets only when the host advertises MCP-Apps UI support
+4. Explicit fallback skeletons (`map_card`, `overlay_bundle`, `export_handoff`)
+
+References:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
 ## Getting Started (User Guide)
 
 See `docs/getting_started.md` for a quick way to discover available data, run
@@ -121,6 +135,9 @@ See `research/map_delivery_research_2026-02/README.md` for the map delivery
 research pack covering personas, map delivery option analysis, containerized
 Playwright trials, screenshots/log evidence, and final recommendations for
 cross-client map reliability.
+
+For validated host/browser behavior by capability mode, see
+`docs/map_delivery_support_matrix.md`.
 
 ## Client Tracing
 

@@ -29,6 +29,27 @@ removes legacy OpenAI Apps (skybridge) compatibility.
   MCP methods like `tools/call` and `resources/read`.
 - The MapLibre CSP worker is served locally at `/maps/worker/maplibre-gl-csp-worker.js`.
 
+## Compatibility-first delivery order
+
+MCP Geo uses a deterministic layering policy for map delivery:
+
+1. `os_maps.render` (static map contract)
+2. `overlay_bundle` structured overlays
+3. MCP-Apps widget resources (`ui://`) when UI is supported
+4. Fallback skeletons (`map_card`, `overlay_bundle`, `export_handoff`) for
+   partial/no-UI hosts
+
+Canonical fallback keys and conformance guidance are documented in:
+
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+
+## Host support references
+
+- Browser/host capability matrix: `docs/map_delivery_support_matrix.md`
+- Trial evidence index: `research/map_delivery_research_2026-02/README.md`
+- Troubleshooting modes/toggles: `docs/troubleshooting.md`
+
 ## CSP Allowlist (Geography Selector)
 The geography selector declares:
 - `connectDomains`: `self`, `https://api.os.uk`
