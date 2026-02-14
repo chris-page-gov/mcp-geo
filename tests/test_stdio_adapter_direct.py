@@ -1,6 +1,7 @@
 import io, json, re
 
 from server import stdio_adapter
+from server.config import settings
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.config import settings
 from server.protocol import PROTOCOL_VERSION
@@ -103,6 +104,19 @@ def test_call_tool_accepts_display_style_name_alias():
     call = stdio_adapter.handle_call_tool({"name": "Os mcp descriptor", "arguments": {}})
     assert call.get("ok") is True
     assert call.get("content")
+
+
+def test_call_tool_display_style_alias_routes_to_os_tool(monkeypatch):
+    from tools import os_common
+
+    monkeypatch.setattr(settings, "OS_API_KEY", "", raising=False)
+    monkeypatch.setattr(os_common.client, "api_key", "")
+    call = stdio_adapter.handle_call_tool(
+        {"name": "Os names find", "arguments": {"text": "Village Hotel Coventry"}}
+    )
+    assert call.get("isError") is True
+    data = call.get("data", {})
+    assert data.get("code") == "NO_API_KEY"
 
 
 def test_ui_tools_emit_resource_content(monkeypatch):
