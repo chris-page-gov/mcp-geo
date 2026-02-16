@@ -17,6 +17,7 @@ command stable by delegating to the appropriate interpreter.
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -41,8 +42,48 @@ def _pick_python() -> str:
     return sys.executable
 
 
+def _python_has_module(python: str, module: str) -> bool:
+    probe = subprocess.run(
+        [python, "-c", f"import {module}"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return probe.returncode == 0
+
+
+def _user_site_for_python(python: str) -> str:
+    probe = subprocess.run(
+        [python, "-c", "import site; print(site.getusersitepackages() or '')"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if probe.returncode != 0:
+        return ""
+    return probe.stdout.strip()
+
+
+def _ensure_user_site(python: str) -> None:
+    # Keep startup deterministic: only relax PYTHONNOUSERSITE if the selected
+    # interpreter cannot import required dependencies.
+    if _python_has_module(python, "loguru"):
+        return
+    os.environ.pop("PYTHONNOUSERSITE", None)
+    user_site = _user_site_for_python(python)
+    if not user_site:
+        return
+
+    current = os.environ.get("PYTHONPATH", "")
+    paths = [p for p in current.split(os.pathsep) if p]
+    if user_site not in paths:
+        paths.insert(0, user_site)
+        os.environ["PYTHONPATH"] = os.pathsep.join(paths)
+
+
 def main() -> int:
     python = _pick_python()
+    _ensure_user_site(python)
     server = _repo_root() / "scripts" / "os-mcp"
     if not server.exists():
         print(f"mcp-geo: missing stdio entrypoint at {server}", file=sys.stderr)
@@ -56,4 +97,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

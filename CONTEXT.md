@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-14
+Last updated: 2026-02-16
 Owner: @chris-page-gov
 
 ## Purpose
@@ -145,6 +145,11 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-14: Codex MCP startup can time out when `scripts/claude-mcp-local`
+  is configured with `MCP_GEO_DOCKER_BUILD=always` (Docker build exceeds Codex
+  handshake window). For Codex MCP registration, keep the same wrapper command
+  chain but use `MCP_GEO_DOCKER_BUILD=missing` to allow reliable initialize +
+  tool-call negotiation.
 - 2026-02-14: Identified `ui://`-relative widget assets (`vendor/maplibre-*`)
   as a host-interop failure mode in Claude and updated geography/boundary
   widgets to use absolute MapLibre CDN URLs with jsDelivr fallback, plus
@@ -154,6 +159,10 @@ assumptions change.
   for Claude clients (unless explicitly overridden), addressing repeated
   sessions where embedded HTML blocks were echoed in transcript while preserving
   a UI-launchable resource block.
+- 2026-02-14: Verified residual Claude UI limitation via trace: after
+  `resource_link` tool results, Claude performs `resources/read ui://...` but
+  widget runtime bridge events (`os_apps.log_event`) still do not appear,
+  indicating host-side mount/bridge failure outside MCP server control.
 - 2026-02-14: Diagnosed boundary explorer non-render in Claude as a widget
   bootstrap coupling bug in `ui/boundary_explorer.html`: map runtime failures
   (`maplibre` missing/worker init issues) could prevent reliable
@@ -188,6 +197,15 @@ assumptions change.
   failures after MDR-M1 offline tool registration.
 - 2026-02-14: Completed ecosystem map-delivery recommendation wave
   (`MDR-E1` to `MDR-E4`) by publishing an MCP/AI-host best-practice bundle,
+- 2026-02-16: Hardened devcontainer MCP startup so STDIO uses repo code instead
+  of site-packages (`scripts/os-mcp` file-based import), keeps repo root ahead
+  of user site-packages (`scripts/os_mcp.py`), and forces user site visibility
+  in the VS Code stdio wrapper (`scripts/vscode_mcp_stdio.py`).
+- 2026-02-16: Made devcontainer installs align with the STDIO interpreter
+  (`python3 -m pip` in post-create) and added a post-start loguru check to
+  auto-install repo deps when missing.
+- 2026-02-16: Added devcontainer HTTP auto-start toggle and documented STDIO
+  dependency recovery steps in `docs/getting_started.md`.
   constrained style profiles, progressive fallback examples, and mixed host
   degradation guidance.
 - 2026-02-14: Completed medium-term map-delivery recommendation wave

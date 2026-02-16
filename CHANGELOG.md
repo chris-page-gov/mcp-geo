@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added devcontainer HTTP auto-start toggle (`MCP_GEO_DEVCONTAINER_START_HTTP`).
+- Added devcontainer STDIO registration toggle (`MCP_GEO_DEVCONTAINER_REGISTER_STDIO`).
 - Added a map delivery interoperability research pack under
   `research/map_delivery_research_2026-02/` with personas, longlist options,
   trial design/results, external source register, progress journal, and final
@@ -56,6 +58,9 @@ All notable changes to this project will be documented in this file.
   (`resources/map_embedding_style_profiles.json`).
 
 ### Changed
+- Updated devcontainer installs to use `python3 -m pip` and added a post-start loguru check to ensure STDIO deps are present.
+- Updated STDIO wrappers to prefer repo code and keep user site-packages behind the repo on `sys.path`.
+- Updated VS Code stdio wrapper to re-enable user site-packages when disabled by the host.
 - Updated MCP tool-call response shaping (STDIO and Streamable HTTP) to always
   include `structuredContent` for dict payloads when tools do not provide it
   explicitly, improving compatibility with strict clients that validate
@@ -74,6 +79,10 @@ All notable changes to this project will be documented in this file.
   jsDelivr fallback instead of `ui://`-relative `vendor/*` paths, and to set
   MapLibre worker URLs only when `proxyBase` is available. This addresses
   Claude runs where widget HTML loaded but `window.maplibregl` stayed undefined.
+- Added troubleshooting evidence that some Claude sessions still fetch
+  `ui://...` resources (`resource_link` + `resources/read`) without launching
+  widget bridge/runtime (`os_apps.log_event` never emitted), isolating the
+  residual issue to host-side UI mount/bridge behavior.
 - Updated troubleshooting guidance for Claude/Desktop startup and execution
   failures where UI shows `Tool execution failed` despite trace-confirmed
   `status=200` tool responses, including the macOS `python3.14` permission

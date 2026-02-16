@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${MCP_GEO_DEVCONTAINER_REGISTER_STDIO:-1}" =~ ^(0|false|no)$ ]]; then
+  exit 0
+fi
+
 # Registers the MCP server with the local Codex MCP registry (if available).
 # No-op when codex isn't installed.
 

@@ -3,7 +3,14 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-14
+Last updated: 2026-02-16
+
+## Devcontainer STDIO stability (2026-02-16)
+
+- Done: force STDIO to load repo code, not site-packages (`scripts/os-mcp` file-based import).
+- Done: ensure repo root stays ahead of user site-packages (`scripts/os_mcp.py`).
+- Done: make VS Code stdio wrapper include user site-packages (`scripts/vscode_mcp_stdio.py`).
+- Done: align devcontainer installs with `python3` and auto-install deps when `loguru` is missing.
 
 ## Sources reviewed
 
@@ -98,6 +105,7 @@ Legend: pending, in_progress, done
 | CT-05 Fix boundary explorer host-init coupling failure | done | Hardened `ui/boundary_explorer.html` so `ui/initialize` completes even when map runtime init fails (`maplibre` missing/worker issues), with explicit telemetry and degraded-mode diagnostics. |
 | CT-06 Avoid embedded widget payload mode for Claude stdio | done | `server/stdio_adapter.py` now applies Claude-specific default `contentMode=resource_link` for `os_apps.render_*` calls (unless explicitly overridden) via `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE`, reducing raw-HTML transcript fallbacks while preserving widget-launchable content blocks. |
 | CT-07 Remove `ui://`-relative MapLibre asset dependency in widgets | done | Updated geography/boundary widget HTML to use absolute MapLibre CDN URLs (with jsDelivr fallback) and proxy-only worker URL wiring, plus CSP domain updates/tests; this prevents `window.maplibregl` missing in hosts that do not resolve `vendor/*` under `ui://` resources. |
+| CT-08 Confirm host runtime limitation after `resource_link` adoption | done | Latest Claude trace confirms `tools/call` + `resources/read` success for `ui://` widgets and no follow-on `os_apps_log_event` activity, isolating remaining failure to client runtime mount/bridge behavior. |
 
 ## Progress against the original vision
 

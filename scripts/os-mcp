@@ -5,7 +5,21 @@ This thin wrapper preserves the original script path `scripts/os-mcp` used in te
 documentation, and `mcp.json` while delegating to the refactored module entry point
 `scripts.os_mcp.main`.
 """
-from scripts.os_mcp import main as _main
+import importlib.util
+import sys
+from pathlib import Path
+
+_repo_root = Path(__file__).resolve().parents[1]
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+
+_os_mcp_path = _repo_root / "scripts" / "os_mcp.py"
+_spec = importlib.util.spec_from_file_location("mcp_geo_os_mcp", _os_mcp_path)
+if _spec is None or _spec.loader is None:
+    raise SystemExit(f"mcp-geo: failed to load {_os_mcp_path}")
+_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_module)
+_main = _module.main
 
 if __name__ == "__main__":  # pragma: no cover
     _main()

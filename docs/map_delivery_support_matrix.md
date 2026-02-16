@@ -36,6 +36,10 @@ host/browser profile. It anchors to the compatibility-first order:
 - For Claude stdio widget calls, use
   `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=resource_link` to avoid embedded HTML
   transcript dumps while still emitting a UI-launchable widget link block.
+- Latest Claude evidence (2026-02-14): tool results now emit `resource_link`
+  and Claude performs `resources/read` on `ui://...`, but widget bridge events
+  (`os_apps.log_event`) still do not appear in trace, indicating host-side
+  runtime mount/bridge failure.
 - Boundary Explorer requires the 2026-02-14 runtime hardening path so host
   initialization can complete even when map runtime init degrades; otherwise
   some Claude sessions may show raw HTML fallback.

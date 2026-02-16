@@ -279,6 +279,20 @@ Why this changed:
   `contentMode=text` avoided embedded HTML but produced `content=["text"]`,
   which is not a widget-launchable block for Claude UI hosts.
 
+## Follow-up finding: `resource_link` + `resources/read` still not mounting widget (2026-02-14)
+
+Latest session (around 16:06-16:09):
+- `tools/call os_apps_render_boundary_explorer` returned
+  `content=["text","resource_link"]` and URI `ui://mcp-geo/boundary-explorer`.
+- Claude immediately requested `resources/read` for the same URI.
+- No subsequent `os_apps_log_event` calls were observed.
+
+Interpretation:
+- Claude fetched the widget resource but still did not mount/bridge the
+  MCP-Apps runtime (no iframe host bridge activity reached server-side tools).
+- This isolates the remaining failure to client runtime behavior, not tool
+  dispatch, resource resolution, or widget HTML/CSP payload content.
+
 ## Follow-up finding: `ui://` relative MapLibre assets not resolved (2026-02-14)
 
 Observed in recorded boundary sessions:

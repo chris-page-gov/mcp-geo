@@ -117,6 +117,12 @@ Remediation:
 - Check UI telemetry events (`os_apps.log_event`) for `host_ready`,
   `map_init_skipped`, or `map_init_failed` to classify runtime cause.
 
+If trace shows `content=["text","resource_link"]` plus successful
+`resources/read` for the same `ui://` URI, but still no
+`os_apps.log_event` calls afterward:
+- the client fetched the resource but did not mount/bridge the widget runtime.
+- this is a host-side MCP-Apps runtime limitation, not an MCP server/tool error.
+
 ## Widget rendering unavailable in a host
 If the host does not advertise `io.modelcontextprotocol/ui` (or renders no
 widget output), use compatibility mode instead of retrying widget calls.

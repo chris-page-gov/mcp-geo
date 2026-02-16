@@ -39,6 +39,18 @@ Devcontainer note:
   - `6274`/`6277` (MCP Inspector UI/proxy),
   - `8888` (Jupyter Lab for notebook-based map analysis).
 
+Devcontainer startup modes (HTTP vs STDIO):
+- STDIO requires the repo dependencies to be installed in the same Python used by VS Code
+  inside the devcontainer. If you see `ModuleNotFoundError: loguru`, run:
+  `python3 -m pip install -e ".[dev,boundaries,test]"`
+  and reload the MCP server.
+- HTTP auto-start: set `MCP_GEO_DEVCONTAINER_START_HTTP=1` before starting the devcontainer.
+  This runs `python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload`
+  in the background and logs to `logs/devcontainer-http.log`.
+- STDIO registration (Codex): enabled by default when the `codex` CLI is available.
+  Disable it with `MCP_GEO_DEVCONTAINER_REGISTER_STDIO=0`.
+- Run both: set `MCP_GEO_DEVCONTAINER_START_HTTP=1` and leave STDIO registration enabled.
+
 ```bash
 export BOUNDARY_CACHE_ENABLED=true
 export BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo

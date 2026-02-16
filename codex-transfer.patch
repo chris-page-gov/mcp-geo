@@ -1,0 +1,392 @@
+diff --git a/.devcontainer/devcontainer.json b/.devcontainer/devcontainer.json
+index a96214c..106987a 100644
+--- a/.devcontainer/devcontainer.json
++++ b/.devcontainer/devcontainer.json
+@@ -27,7 +27,8 @@
+     "CORS_ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173",
+     "MCP_MAP_TRIALS_DIR": "/workspaces/mcp-geo/research/map_delivery_research_2026-02",
+     "PYTHONPATH": "/workspaces/mcp-geo",
+-    "CODEX_HOME": "/home/vscode/.codex"
++    "CODEX_HOME": "/home/vscode/.codex",
++    "MCP_GEO_DEVCONTAINER_START_HTTP": "1"
+   },
+   "mounts": [
+     "source=mcp-geo-codex,target=/home/vscode/.codex,type=volume"
+@@ -42,7 +43,7 @@
+     8899,
+     5432
+   ],
+-  "postCreateCommand": "pip install --upgrade pip && pip install .[dev,boundaries,test] jupyterlab ipykernel && (python -m ipykernel install --user --name mcp-geo --display-name 'Python (mcp-geo)' || true) && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
++  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install .[dev,boundaries,test] jupyterlab ipykernel && (python -m ipykernel install --user --name mcp-geo --display-name 'Python (mcp-geo)' || true) && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
+   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
+   "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
+   "customizations": {
+diff --git a/.vscode/mcp.json b/.vscode/mcp.json
+index 7f6c12a..f5f929c 100644
+--- a/.vscode/mcp.json
++++ b/.vscode/mcp.json
+@@ -49,7 +49,7 @@
+       ],
+       "cwd": ".",
+       "env": {
+-        "OS_API_KEY": "${input:osApiKey}",
++        "OS_API_KEY": "${input:osApiKey}",
+         "ONS_LIVE_ENABLED": "${env:ONS_LIVE_ENABLED}",
+         "NOMIS_LIVE_ENABLED": "${env:NOMIS_LIVE_ENABLED}",
+         "NOMIS_UID": "${env:NOMIS_UID}",
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 7039cb1..e2cc1a5 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
+ ## [Unreleased]
+ 
+ ### Added
++- Added devcontainer HTTP auto-start toggle (`MCP_GEO_DEVCONTAINER_START_HTTP`).
++- Added devcontainer STDIO registration toggle (`MCP_GEO_DEVCONTAINER_REGISTER_STDIO`).
+ - Added a map delivery interoperability research pack under
+   `research/map_delivery_research_2026-02/` with personas, longlist options,
+   trial design/results, external source register, progress journal, and final
+@@ -56,6 +58,9 @@ All notable changes to this project will be documented in this file.
+   (`resources/map_embedding_style_profiles.json`).
+ 
+ ### Changed
++- Updated devcontainer installs to use `python3 -m pip` and added a post-start loguru check to ensure STDIO deps are present.
++- Updated STDIO wrappers to prefer repo code and keep user site-packages behind the repo on `sys.path`.
++- Updated VS Code stdio wrapper to re-enable user site-packages when disabled by the host.
+ - Updated MCP tool-call response shaping (STDIO and Streamable HTTP) to always
+   include `structuredContent` for dict payloads when tools do not provide it
+   explicitly, improving compatibility with strict clients that validate
+@@ -74,6 +79,10 @@ All notable changes to this project will be documented in this file.
+   jsDelivr fallback instead of `ui://`-relative `vendor/*` paths, and to set
+   MapLibre worker URLs only when `proxyBase` is available. This addresses
+   Claude runs where widget HTML loaded but `window.maplibregl` stayed undefined.
++- Added troubleshooting evidence that some Claude sessions still fetch
++  `ui://...` resources (`resource_link` + `resources/read`) without launching
++  widget bridge/runtime (`os_apps.log_event` never emitted), isolating the
++  residual issue to host-side UI mount/bridge behavior.
+ - Updated troubleshooting guidance for Claude/Desktop startup and execution
+   failures where UI shows `Tool execution failed` despite trace-confirmed
+   `status=200` tool responses, including the macOS `python3.14` permission
+diff --git a/CONTEXT.md b/CONTEXT.md
+index 339d1d2..92c0bdf 100644
+--- a/CONTEXT.md
++++ b/CONTEXT.md
+@@ -1,6 +1,6 @@
+ # MCP Geo Context
+ 
+-Last updated: 2026-02-14
++Last updated: 2026-02-16
+ Owner: @chris-page-gov
+ 
+ ## Purpose
+@@ -145,6 +145,11 @@ assumptions change.
+ 
+ ## Decisions Log
+ 
++- 2026-02-14: Codex MCP startup can time out when `scripts/claude-mcp-local`
++  is configured with `MCP_GEO_DOCKER_BUILD=always` (Docker build exceeds Codex
++  handshake window). For Codex MCP registration, keep the same wrapper command
++  chain but use `MCP_GEO_DOCKER_BUILD=missing` to allow reliable initialize +
++  tool-call negotiation.
+ - 2026-02-14: Identified `ui://`-relative widget assets (`vendor/maplibre-*`)
+   as a host-interop failure mode in Claude and updated geography/boundary
+   widgets to use absolute MapLibre CDN URLs with jsDelivr fallback, plus
+@@ -154,6 +159,10 @@ assumptions change.
+   for Claude clients (unless explicitly overridden), addressing repeated
+   sessions where embedded HTML blocks were echoed in transcript while preserving
+   a UI-launchable resource block.
++- 2026-02-14: Verified residual Claude UI limitation via trace: after
++  `resource_link` tool results, Claude performs `resources/read ui://...` but
++  widget runtime bridge events (`os_apps.log_event`) still do not appear,
++  indicating host-side mount/bridge failure outside MCP server control.
+ - 2026-02-14: Diagnosed boundary explorer non-render in Claude as a widget
+   bootstrap coupling bug in `ui/boundary_explorer.html`: map runtime failures
+   (`maplibre` missing/worker init issues) could prevent reliable
+@@ -188,6 +197,15 @@ assumptions change.
+   failures after MDR-M1 offline tool registration.
+ - 2026-02-14: Completed ecosystem map-delivery recommendation wave
+   (`MDR-E1` to `MDR-E4`) by publishing an MCP/AI-host best-practice bundle,
++- 2026-02-16: Hardened devcontainer MCP startup so STDIO uses repo code instead
++  of site-packages (`scripts/os-mcp` file-based import), keeps repo root ahead
++  of user site-packages (`scripts/os_mcp.py`), and forces user site visibility
++  in the VS Code stdio wrapper (`scripts/vscode_mcp_stdio.py`).
++- 2026-02-16: Made devcontainer installs align with the STDIO interpreter
++  (`python3 -m pip` in post-create) and added a post-start loguru check to
++  auto-install repo deps when missing.
++- 2026-02-16: Added devcontainer HTTP auto-start toggle and documented STDIO
++  dependency recovery steps in `docs/getting_started.md`.
+   constrained style profiles, progressive fallback examples, and mixed host
+   degradation guidance.
+ - 2026-02-14: Completed medium-term map-delivery recommendation wave
+diff --git a/PROGRESS.MD b/PROGRESS.MD
+index 7f9b472..a538d9c 100644
+--- a/PROGRESS.MD
++++ b/PROGRESS.MD
+@@ -3,7 +3,14 @@
+ This file tracks how the implementation compares to the original proposal and
+ later documentation as the MCP specification evolved.
+ 
+-Last updated: 2026-02-14
++Last updated: 2026-02-16
++
++## Devcontainer STDIO stability (2026-02-16)
++
++- Done: force STDIO to load repo code, not site-packages (`scripts/os-mcp` file-based import).
++- Done: ensure repo root stays ahead of user site-packages (`scripts/os_mcp.py`).
++- Done: make VS Code stdio wrapper include user site-packages (`scripts/vscode_mcp_stdio.py`).
++- Done: align devcontainer installs with `python3` and auto-install deps when `loguru` is missing.
+ 
+ ## Sources reviewed
+ 
+@@ -98,6 +105,7 @@ Legend: pending, in_progress, done
+ | CT-05 Fix boundary explorer host-init coupling failure | done | Hardened `ui/boundary_explorer.html` so `ui/initialize` completes even when map runtime init fails (`maplibre` missing/worker issues), with explicit telemetry and degraded-mode diagnostics. |
+ | CT-06 Avoid embedded widget payload mode for Claude stdio | done | `server/stdio_adapter.py` now applies Claude-specific default `contentMode=resource_link` for `os_apps.render_*` calls (unless explicitly overridden) via `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE`, reducing raw-HTML transcript fallbacks while preserving widget-launchable content blocks. |
+ | CT-07 Remove `ui://`-relative MapLibre asset dependency in widgets | done | Updated geography/boundary widget HTML to use absolute MapLibre CDN URLs (with jsDelivr fallback) and proxy-only worker URL wiring, plus CSP domain updates/tests; this prevents `window.maplibregl` missing in hosts that do not resolve `vendor/*` under `ui://` resources. |
++| CT-08 Confirm host runtime limitation after `resource_link` adoption | done | Latest Claude trace confirms `tools/call` + `resources/read` success for `ui://` widgets and no follow-on `os_apps_log_event` activity, isolating remaining failure to client runtime mount/bridge behavior. |
+ 
+ ## Progress against the original vision
+ 
+diff --git a/docs/getting_started.md b/docs/getting_started.md
+index be3c7a4..18d3c98 100644
+--- a/docs/getting_started.md
++++ b/docs/getting_started.md
+@@ -39,6 +39,18 @@ Devcontainer note:
+   - `6274`/`6277` (MCP Inspector UI/proxy),
+   - `8888` (Jupyter Lab for notebook-based map analysis).
+ 
++Devcontainer startup modes (HTTP vs STDIO):
++- STDIO requires the repo dependencies to be installed in the same Python used by VS Code
++  inside the devcontainer. If you see `ModuleNotFoundError: loguru`, run:
++  `python3 -m pip install -e ".[dev,boundaries,test]"`
++  and reload the MCP server.
++- HTTP auto-start: set `MCP_GEO_DEVCONTAINER_START_HTTP=1` before starting the devcontainer.
++  This runs `python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload`
++  in the background and logs to `logs/devcontainer-http.log`.
++- STDIO registration (Codex): enabled by default when the `codex` CLI is available.
++  Disable it with `MCP_GEO_DEVCONTAINER_REGISTER_STDIO=0`.
++- Run both: set `MCP_GEO_DEVCONTAINER_START_HTTP=1` and leave STDIO registration enabled.
++
+ ```bash
+ export BOUNDARY_CACHE_ENABLED=true
+ export BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo
+diff --git a/docs/map_delivery_support_matrix.md b/docs/map_delivery_support_matrix.md
+index 6d6a1cc..9235097 100644
+--- a/docs/map_delivery_support_matrix.md
++++ b/docs/map_delivery_support_matrix.md
+@@ -36,6 +36,10 @@ host/browser profile. It anchors to the compatibility-first order:
+ - For Claude stdio widget calls, use
+   `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=resource_link` to avoid embedded HTML
+   transcript dumps while still emitting a UI-launchable widget link block.
++- Latest Claude evidence (2026-02-14): tool results now emit `resource_link`
++  and Claude performs `resources/read` on `ui://...`, but widget bridge events
++  (`os_apps.log_event`) still do not appear in trace, indicating host-side
++  runtime mount/bridge failure.
+ - Boundary Explorer requires the 2026-02-14 runtime hardening path so host
+   initialization can complete even when map runtime init degrades; otherwise
+   some Claude sessions may show raw HTML fallback.
+diff --git a/docs/troubleshooting.md b/docs/troubleshooting.md
+index ba94ce7..5947b46 100644
+--- a/docs/troubleshooting.md
++++ b/docs/troubleshooting.md
+@@ -117,6 +117,12 @@ Remediation:
+ - Check UI telemetry events (`os_apps.log_event`) for `host_ready`,
+   `map_init_skipped`, or `map_init_failed` to classify runtime cause.
+ 
++If trace shows `content=["text","resource_link"]` plus successful
++`resources/read` for the same `ui://` URI, but still no
++`os_apps.log_event` calls afterward:
++- the client fetched the resource but did not mount/bridge the widget runtime.
++- this is a host-side MCP-Apps runtime limitation, not an MCP server/tool error.
++
+ ## Widget rendering unavailable in a host
+ If the host does not advertise `io.modelcontextprotocol/ui` (or renders no
+ widget output), use compatibility mode instead of retrying widget calls.
+diff --git a/scripts/devcontainer_mcp_setup.sh b/scripts/devcontainer_mcp_setup.sh
+index 03c13ba..4265734 100755
+--- a/scripts/devcontainer_mcp_setup.sh
++++ b/scripts/devcontainer_mcp_setup.sh
+@@ -1,6 +1,10 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
+ 
++if [[ "${MCP_GEO_DEVCONTAINER_REGISTER_STDIO:-1}" =~ ^(0|false|no)$ ]]; then
++  exit 0
++fi
++
+ # Registers the MCP server with the local Codex MCP registry (if available).
+ # No-op when codex isn't installed.
+ 
+diff --git a/scripts/devcontainer_post_start.sh b/scripts/devcontainer_post_start.sh
+index 0874aef..d37b44b 100755
+--- a/scripts/devcontainer_post_start.sh
++++ b/scripts/devcontainer_post_start.sh
+@@ -20,8 +20,44 @@ if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+   fi
+ fi
+ 
+-python -m pip install --user -e ".[test]" >/dev/null 2>&1 || true
++if ! python3 - <<'PY' >/dev/null 2>&1
++try:
++    import loguru
++except Exception:
++    raise SystemExit(1)
++PY
++then
++  python3 -m pip install -e ".[dev,boundaries,test]" >/dev/null 2>&1 || true
++fi
+ 
+ if [[ -x "./scripts/devcontainer_mcp_setup.sh" ]]; then
+   ./scripts/devcontainer_mcp_setup.sh >/dev/null 2>&1 || true
+ fi
++
++start_http="${MCP_GEO_DEVCONTAINER_START_HTTP:-}"
++if [[ "${start_http}" =~ ^(1|true|yes)$ ]]; then
++  mkdir -p logs
++  http_running="0"
++
++  if [[ -f logs/devcontainer-http.pid ]]; then
++    pid=$(cat logs/devcontainer-http.pid 2>/dev/null || true)
++    if [[ -n "${pid}" ]] && ps -p "${pid}" >/dev/null 2>&1; then
++      http_running="1"
++    fi
++  fi
++
++  if [[ "${http_running}" == "0" ]] && command -v lsof >/dev/null 2>&1; then
++    if lsof -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
++      http_running="1"
++    fi
++  fi
++
++  if [[ "${http_running}" == "0" ]]; then
++    if command -v setsid >/dev/null 2>&1; then
++      setsid python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload         > logs/devcontainer-http.log 2>&1 < /dev/null &
++    else
++      nohup python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload         > logs/devcontainer-http.log 2>&1 < /dev/null &
++    fi
++    echo $! > logs/devcontainer-http.pid
++  fi
++fi
+diff --git a/scripts/os-mcp b/scripts/os-mcp
+index a896d10..263455b 100755
+--- a/scripts/os-mcp
++++ b/scripts/os-mcp
+@@ -5,7 +5,21 @@ This thin wrapper preserves the original script path `scripts/os-mcp` used in te
+ documentation, and `mcp.json` while delegating to the refactored module entry point
+ `scripts.os_mcp.main`.
+ """
+-from scripts.os_mcp import main as _main
++import importlib.util
++import sys
++from pathlib import Path
++
++_repo_root = Path(__file__).resolve().parents[1]
++if str(_repo_root) not in sys.path:
++    sys.path.insert(0, str(_repo_root))
++
++_os_mcp_path = _repo_root / "scripts" / "os_mcp.py"
++_spec = importlib.util.spec_from_file_location("mcp_geo_os_mcp", _os_mcp_path)
++if _spec is None or _spec.loader is None:
++    raise SystemExit(f"mcp-geo: failed to load {_os_mcp_path}")
++_module = importlib.util.module_from_spec(_spec)
++_spec.loader.exec_module(_module)
++_main = _module.main
+ 
+ if __name__ == "__main__":  # pragma: no cover
+     _main()
+diff --git a/scripts/os_mcp.py b/scripts/os_mcp.py
+index 3e68aa7..8ce8b9d 100644
+--- a/scripts/os_mcp.py
++++ b/scripts/os_mcp.py
+@@ -5,7 +5,9 @@ Allows console script and direct invocation to remain stable after refactor.
+ """
+ from __future__ import annotations
+ 
++import os
+ import sys
++import site
+ from pathlib import Path
+ 
+ 
+@@ -13,6 +15,21 @@ _repo_root = Path(__file__).resolve().parents[1]
+ if str(_repo_root) not in sys.path:
+     sys.path.insert(0, str(_repo_root))
+ 
++# VS Code can disable user site-packages; add them explicitly for stdio runs.
++os.environ.pop("PYTHONNOUSERSITE", None)
++_user_site = site.getusersitepackages()
++if _user_site:
++    try:
++        sys.path.remove(_user_site)
++    except ValueError:
++        pass
++    sys.path.append(_user_site)
++
++# Ensure repo root stays ahead of user site-packages.
++if str(_repo_root) in sys.path:
++    sys.path.remove(str(_repo_root))
++    sys.path.insert(0, str(_repo_root))
++
+ from server.stdio_adapter import main  # re-export
+ 
+ if __name__ == "__main__":  # pragma: no cover
+diff --git a/scripts/vscode_mcp_stdio.py b/scripts/vscode_mcp_stdio.py
+index 19eb442..8a71946 100644
+--- a/scripts/vscode_mcp_stdio.py
++++ b/scripts/vscode_mcp_stdio.py
+@@ -18,6 +18,7 @@ from __future__ import annotations
+ 
+ import os
+ import sys
++import site
+ from pathlib import Path
+ 
+ 
+@@ -41,7 +42,22 @@ def _pick_python() -> str:
+     return sys.executable
+ 
+ 
++def _ensure_user_site() -> None:
++    # VS Code may disable user site-packages; force-add to keep devcontainer installs visible.
++    os.environ.pop("PYTHONNOUSERSITE", None)
++    user_site = site.getusersitepackages()
++    if not user_site:
++        return
++
++    current = os.environ.get("PYTHONPATH", "")
++    paths = [p for p in current.split(os.pathsep) if p]
++    if user_site not in paths:
++        paths.insert(0, user_site)
++        os.environ["PYTHONPATH"] = os.pathsep.join(paths)
++
++
+ def main() -> int:
++    _ensure_user_site()
+     python = _pick_python()
+     server = _repo_root() / "scripts" / "os-mcp"
+     if not server.exists():
+diff --git a/troubleshooting/continued-fail-after-several-codex-attempts.md b/troubleshooting/continued-fail-after-several-codex-attempts.md
+index 22bf830..2483762 100644
+--- a/troubleshooting/continued-fail-after-several-codex-attempts.md
++++ b/troubleshooting/continued-fail-after-several-codex-attempts.md
+@@ -279,6 +279,20 @@ Why this changed:
+   `contentMode=text` avoided embedded HTML but produced `content=["text"]`,
+   which is not a widget-launchable block for Claude UI hosts.
+ 
++## Follow-up finding: `resource_link` + `resources/read` still not mounting widget (2026-02-14)
++
++Latest session (around 16:06-16:09):
++- `tools/call os_apps_render_boundary_explorer` returned
++  `content=["text","resource_link"]` and URI `ui://mcp-geo/boundary-explorer`.
++- Claude immediately requested `resources/read` for the same URI.
++- No subsequent `os_apps_log_event` calls were observed.
++
++Interpretation:
++- Claude fetched the widget resource but still did not mount/bridge the
++  MCP-Apps runtime (no iframe host bridge activity reached server-side tools).
++- This isolates the remaining failure to client runtime behavior, not tool
++  dispatch, resource resolution, or widget HTML/CSP payload content.
++
+ ## Follow-up finding: `ui://` relative MapLibre assets not resolved (2026-02-14)
+ 
+ Observed in recorded boundary sessions:

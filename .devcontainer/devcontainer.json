@@ -35,14 +35,10 @@
   "forwardPorts": [
     8000,
     5173,
-    4173,
-    6274,
-    6277,
-    8888,
     8899,
     5432
   ],
-  "postCreateCommand": "pip install --upgrade pip && pip install .[dev,boundaries,test] jupyterlab ipykernel && (python -m ipykernel install --user --name mcp-geo --display-name 'Python (mcp-geo)' || true) && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
+  "postCreateCommand": "pip install --upgrade pip && pip install .[dev,boundaries] && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
   "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
   "customizations": {
@@ -50,7 +46,6 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-toolsai.jupyter",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
