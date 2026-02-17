@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-16
+Last updated: 2026-02-17
 Owner: @chris-page-gov
 
 ## Purpose
@@ -81,6 +81,11 @@ assumptions change.
 - Maintain ecosystem-facing embedding guidance and lightweight style profiles in
   `docs/map_embedding_best_practices.md` and
   `resource://mcp-geo/map-embedding-style-profiles`.
+- Maintain presentation story-gallery scenarios, screenshot evidence, and
+  slide-ready reporting outputs under `playground/trials/fixtures/`,
+  `playground/trials/tests/`, and
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md` +
+  `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -197,6 +202,8 @@ assumptions change.
   failures after MDR-M1 offline tool registration.
 - 2026-02-14: Completed ecosystem map-delivery recommendation wave
   (`MDR-E1` to `MDR-E4`) by publishing an MCP/AI-host best-practice bundle,
+  constrained style profiles, progressive fallback examples, and mixed host
+  degradation guidance.
 - 2026-02-16: Hardened devcontainer MCP startup so STDIO uses repo code instead
   of site-packages (`scripts/os-mcp` file-based import), keeps repo root ahead
   of user site-packages (`scripts/os_mcp.py`), and forces user site visibility
@@ -206,8 +213,12 @@ assumptions change.
   auto-install repo deps when missing.
 - 2026-02-16: Added devcontainer HTTP auto-start toggle and documented STDIO
   dependency recovery steps in `docs/getting_started.md`.
-  constrained style profiles, progressive fallback examples, and mixed host
-  degradation guidance.
+- 2026-02-17: Added a presentation-focused map story gallery with six
+  real-world layered scenarios, automated screenshot capture in Playwright
+  trials, and a generated story-gallery report mapping map-tool coverage to
+  slide-ready evidence artifacts.
+- 2026-02-17: Added `story_gallery_slides.md` with one slide per scenario and
+  speaker notes to speed Wednesday presentation assembly.
 - 2026-02-14: Completed medium-term map-delivery recommendation wave
   (`MDR-M1` to `MDR-M3`) by adding offline PMTiles/MBTiles handoff tooling and
   resources, automated map quality checks with waiver support, and

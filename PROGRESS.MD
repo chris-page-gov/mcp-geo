@@ -3,7 +3,23 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-16
+Last updated: 2026-02-17
+
+## Presentation story gallery (2026-02-17)
+
+- Done: added six real-world layered map story scenarios under
+  `playground/trials/fixtures/map_story_scenarios.json` covering map/render,
+  inventory/export, boundary, routing, raster/WMTS/WFS capability, and
+  dashboard/widget pathways.
+- Done: added automated screenshot capture for story scenarios via
+  `playground/trials/tests/map_story_gallery.spec.js` with per-story evidence
+  logging.
+- Done: added slide/report generation script
+  `scripts/map_trials/summarize_story_gallery.py` producing
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md`.
+- Done: added slide deck
+  `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`
+  with one slide per scenario and speaker notes for presentation delivery.
 
 ## Devcontainer STDIO stability (2026-02-16)
 

@@ -56,6 +56,12 @@ All notable changes to this project will be documented in this file.
 - Added constrained map embedding style profiles resource:
   `resource://mcp-geo/map-embedding-style-profiles`
   (`resources/map_embedding_style_profiles.json`).
+- Added presentation-ready map story gallery assets:
+  `playground/trials/fixtures/map_story_scenarios.json`,
+  `playground/trials/tests/map_story_gallery.spec.js`,
+  `scripts/map_trials/summarize_story_gallery.py`,
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md`,
+  and `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`.
 
 ### Changed
 - Updated devcontainer installs to use `python3 -m pip` and added a post-start loguru check to ensure STDIO deps are present.
@@ -118,6 +124,11 @@ All notable changes to this project will be documented in this file.
   notebook scenario-pack index/file resources with path-traversal guards.
 - Updated trial runner orchestration to include scenario-pack export and map
   quality checks in the standard map-delivery run sequence.
+- Updated map trial orchestration/docs to generate a story-gallery report for
+  slide production workflows.
+- Updated getting-started docs with VS Code Playwright extension considerations
+  for devcontainer runs (extension context, browser install verification,
+  OS key/env requirements, port overrides, and demo smoke command).
 - Updated docs/examples/tutorial/troubleshooting/architecture with deterministic
   progressive fallback guidance for full UI, partial UI, and no-UI hosts.
 - Updated the full evaluation harness specialist-tool whitelist to include

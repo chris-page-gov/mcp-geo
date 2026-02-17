@@ -1,0 +1,652 @@
+{
+  "version": "2026-02-16",
+  "stories": [
+    {
+      "id": "story-1-coventry-boundary-change",
+      "title": "Coventry election boundary change impact",
+      "persona": "Election planning analyst",
+      "question": "How do proposed 2026 ward boundaries change campaign focus around CV1 3HB?",
+      "decision": "Shift canvassing and polling logistics toward Spon End edge streets where boundary movement changes local representation.",
+      "bbox": [-1.57, 52.392, -1.49, 52.425],
+      "zoom": 13,
+      "tools": [
+        "os_maps.render",
+        "admin_lookup.containing_areas",
+        "admin_lookup.area_geometry",
+        "os_apps.render_boundary_explorer",
+        "os_map.inventory"
+      ],
+      "talkingPoints": [
+        "Compare current vs proposed ward shells to explain voter communication changes.",
+        "Pinpoint the CV1 3HB reference point and adjacent street-level impact zone.",
+        "Use boundary explorer workflow for interactive verification before publishing briefs."
+      ],
+      "overlays": {
+        "points": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "CV1 3HB", "color": "#ffffff", "stroke": "#1f2937", "radius": 6},
+              "geometry": {"type": "Point", "coordinates": [-1.52695, 52.40803]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Community Hub", "color": "#93c5fd", "stroke": "#1d4ed8", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-1.5332, 52.4121]}
+            }
+          ]
+        },
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "label": "Boundary movement corridor",
+                "stroke": "#f59e0b",
+                "strokeWidth": 3,
+                "dashArray": "10 6"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-1.539, 52.420],
+                  [-1.532, 52.414],
+                  [-1.524, 52.409],
+                  [-1.520, 52.402],
+                  [-1.528, 52.397]
+                ]
+              }
+            }
+          ]
+        },
+        "polygons": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "label": "Current Sherbourne",
+                "stroke": "#2563eb",
+                "strokeWidth": 3,
+                "fill": "rgba(37,99,235,0.18)"
+              },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-1.553, 52.421],
+                  [-1.524, 52.421],
+                  [-1.515, 52.409],
+                  [-1.523, 52.397],
+                  [-1.548, 52.398],
+                  [-1.557, 52.409],
+                  [-1.553, 52.421]
+                ]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "label": "Proposed 2026",
+                "stroke": "#f59e0b",
+                "strokeWidth": 3,
+                "fill": "rgba(245,158,11,0.14)"
+              },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-1.551, 52.423],
+                  [-1.519, 52.421],
+                  [-1.509, 52.407],
+                  [-1.520, 52.395],
+                  [-1.545, 52.396],
+                  [-1.557, 52.408],
+                  [-1.551, 52.423]
+                ]]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "story-2-village-hotel-catchment",
+      "title": "Village Hotel Coventry service catchment",
+      "persona": "Local service operations manager",
+      "question": "Which nearby postcode clusters fall within practical service coverage of Village Hotel Coventry?",
+      "decision": "Prioritize staffing and delivery windows for the business park and Spon End edge based on multi-ring catchment overlap.",
+      "bbox": [-1.565, 52.396, -1.535, 52.412],
+      "zoom": 14,
+      "tools": [
+        "os_maps.render",
+        "os_places.by_postcode",
+        "os_places.radius",
+        "os_map.inventory",
+        "os_apps.render_geography_selector"
+      ],
+      "talkingPoints": [
+        "Plot known postcodes around the hotel to demonstrate practical address intelligence.",
+        "Overlay two service rings to explain service-level commitments.",
+        "Cross-check with geography selector before committing local operational zones."
+      ],
+      "overlays": {
+        "points": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Village Hotel", "color": "#f59e0b", "stroke": "#7c2d12", "radius": 7},
+              "geometry": {"type": "Point", "coordinates": [-1.54668, 52.40296]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "CV4 9DG", "color": "#60a5fa", "stroke": "#1e3a8a", "radius": 4},
+              "geometry": {"type": "Point", "coordinates": [-1.5483, 52.4041]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "CV4 9DH", "color": "#60a5fa", "stroke": "#1e3a8a", "radius": 4},
+              "geometry": {"type": "Point", "coordinates": [-1.5458, 52.4037]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "CV5 6UB", "color": "#34d399", "stroke": "#065f46", "radius": 4},
+              "geometry": {"type": "Point", "coordinates": [-1.5534, 52.4030]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "CV1 3HB", "color": "#f87171", "stroke": "#7f1d1d", "radius": 4},
+              "geometry": {"type": "Point", "coordinates": [-1.52695, 52.40803]}
+            }
+          ]
+        },
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Primary corridor", "stroke": "#ef4444", "strokeWidth": 3},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-1.562, 52.406],
+                  [-1.553, 52.405],
+                  [-1.542, 52.403],
+                  [-1.536, 52.402]
+                ]
+              }
+            }
+          ]
+        },
+        "polygons": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "label": "Core 500m catchment",
+                "stroke": "#f59e0b",
+                "strokeWidth": 2,
+                "fill": "rgba(245,158,11,0.20)"
+              },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-1.551, 52.403],
+                  [-1.549, 52.406],
+                  [-1.545, 52.4068],
+                  [-1.5425, 52.4048],
+                  [-1.5422, 52.4017],
+                  [-1.5448, 52.3996],
+                  [-1.5489, 52.3998],
+                  [-1.551, 52.403]
+                ]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "label": "Extended 900m catchment",
+                "stroke": "#6366f1",
+                "strokeWidth": 2,
+                "fill": "rgba(99,102,241,0.14)"
+              },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-1.556, 52.404],
+                  [-1.552, 52.409],
+                  [-1.545, 52.4102],
+                  [-1.539, 52.4065],
+                  [-1.538, 52.4002],
+                  [-1.544, 52.3968],
+                  [-1.552, 52.3982],
+                  [-1.556, 52.404]
+                ]]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "story-3-coventry-route-layering",
+      "title": "Coventry multi-route reliability planning",
+      "persona": "Transport network coordinator",
+      "question": "Which route alignment best balances reliability and accessibility between station and key civic destinations?",
+      "decision": "Use the preferred corridor for primary service while retaining an alternate route through Spon End during disruption windows.",
+      "bbox": [-1.55, 52.395, -1.5, 52.42],
+      "zoom": 13,
+      "tools": [
+        "os_maps.render",
+        "os_vector_tiles.descriptor",
+        "os_apps.render_route_planner",
+        "os_map.inventory"
+      ],
+      "talkingPoints": [
+        "Compare preferred and fallback routes on the same frame.",
+        "Highlight interchange points to explain passenger impact.",
+        "Use vector style descriptor output when moving to richer interactive clients."
+      ],
+      "overlays": {
+        "points": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Station", "color": "#22c55e", "stroke": "#14532d", "radius": 6},
+              "geometry": {"type": "Point", "coordinates": [-1.5139, 52.4008]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Spon End", "color": "#f97316", "stroke": "#7c2d12", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-1.5270, 52.4080]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "University", "color": "#38bdf8", "stroke": "#0c4a6e", "radius": 6},
+              "geometry": {"type": "Point", "coordinates": [-1.5618, 52.4067]}
+            }
+          ]
+        },
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Preferred route", "stroke": "#2563eb", "strokeWidth": 4},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-1.514, 52.401],
+                  [-1.520, 52.404],
+                  [-1.527, 52.408],
+                  [-1.537, 52.409],
+                  [-1.548, 52.408],
+                  [-1.562, 52.407]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "label": "Fallback route",
+                "stroke": "#ef4444",
+                "strokeWidth": 3,
+                "dashArray": "8 6"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-1.514, 52.401],
+                  [-1.518, 52.399],
+                  [-1.525, 52.399],
+                  [-1.536, 52.402],
+                  [-1.548, 52.405],
+                  [-1.562, 52.407]
+                ]
+              }
+            }
+          ]
+        },
+        "polygons": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "High-priority accessibility zone", "stroke": "#16a34a", "strokeWidth": 2, "fill": "rgba(22,163,74,0.14)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-1.533, 52.411],
+                  [-1.523, 52.411],
+                  [-1.520, 52.406],
+                  [-1.530, 52.404],
+                  [-1.535, 52.407],
+                  [-1.533, 52.411]
+                ]]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "story-4-bristol-flood-layer-stack",
+      "title": "Bristol flood resilience response map",
+      "persona": "Local resilience forum planner",
+      "question": "Which critical facilities are exposed when flood zones and evacuation corridors are viewed together?",
+      "decision": "Prioritize flood barrier deployment near river-adjacent facilities and pre-stage diversion signage along the highlighted route spine.",
+      "bbox": [-2.62, 51.445, -2.54, 51.49],
+      "zoom": 12,
+      "tools": [
+        "os_maps.render",
+        "os_maps.wmts_capabilities",
+        "os_maps.raster_tile",
+        "os_features.wfs_capabilities"
+      ],
+      "talkingPoints": [
+        "Show layered flood extents against operational assets.",
+        "Demonstrate how raster and capability endpoints support resilient map delivery.",
+        "Use route overlays to explain contingency movement plans."
+      ],
+      "overlays": {
+        "points": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Care Home", "color": "#ffffff", "stroke": "#991b1b", "radius": 6},
+              "geometry": {"type": "Point", "coordinates": [-2.586, 51.462]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Primary School", "color": "#fef08a", "stroke": "#854d0e", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-2.571, 51.468]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Substation", "color": "#c4b5fd", "stroke": "#4c1d95", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-2.559, 51.458]}
+            }
+          ]
+        },
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Evacuation spine", "stroke": "#f97316", "strokeWidth": 4},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-2.604, 51.450],
+                  [-2.595, 51.455],
+                  [-2.584, 51.461],
+                  [-2.571, 51.468],
+                  [-2.559, 51.476]
+                ]
+              }
+            }
+          ]
+        },
+        "polygons": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Flood zone 3", "stroke": "#dc2626", "strokeWidth": 3, "fill": "rgba(220,38,38,0.20)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-2.602, 51.452],
+                  [-2.589, 51.454],
+                  [-2.576, 51.460],
+                  [-2.571, 51.468],
+                  [-2.586, 51.470],
+                  [-2.600, 51.463],
+                  [-2.602, 51.452]
+                ]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Flood zone 2", "stroke": "#f59e0b", "strokeWidth": 2, "fill": "rgba(245,158,11,0.14)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-2.611, 51.448],
+                  [-2.592, 51.450],
+                  [-2.572, 51.458],
+                  [-2.563, 51.472],
+                  [-2.581, 51.482],
+                  [-2.606, 51.476],
+                  [-2.611, 51.448]
+                ]]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "story-5-manchester-inventory-export",
+      "title": "Manchester development inventory and export",
+      "persona": "Urban growth programme lead",
+      "question": "Can we evidence building intensity, street connectivity, and address points in one exportable planning snapshot?",
+      "decision": "Approve a phased data pack export for planning committee review, focusing investment along the mixed-use corridor.",
+      "bbox": [-2.27, 53.467, -2.22, 53.495],
+      "zoom": 14,
+      "tools": [
+        "os_maps.render",
+        "os_map.inventory",
+        "os_map.export",
+        "os_apps.render_feature_inspector",
+        "os_features.query"
+      ],
+      "talkingPoints": [
+        "Combine address points, building footprints, and network links in a single map frame.",
+        "Use exported inventory snapshots to support governance and audit trails.",
+        "Drill into specific features in the feature inspector for committee Q&A."
+      ],
+      "overlays": {
+        "points": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "UPRN cluster A", "color": "#93c5fd", "stroke": "#1e3a8a", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-2.251, 53.484]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "UPRN cluster B", "color": "#93c5fd", "stroke": "#1e3a8a", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-2.244, 53.479]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "UPRN cluster C", "color": "#93c5fd", "stroke": "#1e3a8a", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-2.236, 53.487]}
+            }
+          ]
+        },
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Road links", "stroke": "#ef4444", "strokeWidth": 3},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-2.266, 53.474],
+                  [-2.255, 53.478],
+                  [-2.244, 53.482],
+                  [-2.231, 53.488]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Path links", "stroke": "#10b981", "strokeWidth": 2, "dashArray": "6 5"},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-2.262, 53.489],
+                  [-2.250, 53.486],
+                  [-2.238, 53.484],
+                  [-2.225, 53.481]
+                ]
+              }
+            }
+          ]
+        },
+        "polygons": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Building footprint 1", "stroke": "#1d4ed8", "strokeWidth": 2, "fill": "rgba(29,78,216,0.18)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-2.253, 53.482],
+                  [-2.249, 53.482],
+                  [-2.249, 53.485],
+                  [-2.253, 53.485],
+                  [-2.253, 53.482]
+                ]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Building footprint 2", "stroke": "#1d4ed8", "strokeWidth": 2, "fill": "rgba(29,78,216,0.18)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-2.244, 53.477],
+                  [-2.240, 53.477],
+                  [-2.240, 53.480],
+                  [-2.244, 53.480],
+                  [-2.244, 53.477]
+                ]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Building footprint 3", "stroke": "#1d4ed8", "strokeWidth": 2, "fill": "rgba(29,78,216,0.18)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-2.236, 53.486],
+                  [-2.232, 53.486],
+                  [-2.232, 53.489],
+                  [-2.236, 53.489],
+                  [-2.236, 53.486]
+                ]]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "story-6-westminster-policy-layering",
+      "title": "Westminster policy briefing with layered indicators",
+      "persona": "Policy and analytics adviser",
+      "question": "How do ward boundaries, active travel corridors, and environmental indicators combine for cabinet-level decisions?",
+      "decision": "Target investment to corridor-adjacent wards where transport upgrades and air-quality improvements align.",
+      "bbox": [-0.175, 51.49, -0.105, 51.535],
+      "zoom": 13,
+      "tools": [
+        "os_maps.render",
+        "os_apps.render_statistics_dashboard",
+        "os_apps.render_ui_probe",
+        "os_apps.render_geography_selector",
+        "os_vector_tiles.descriptor"
+      ],
+      "talkingPoints": [
+        "Layer strategic indicators on top of ward context for decision briefings.",
+        "Use statistics dashboard after map-based area selection to quantify options.",
+        "Confirm host UI capability with probe tool before interactive demo sessions."
+      ],
+      "overlays": {
+        "points": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "AQ monitor A", "color": "#fde047", "stroke": "#92400e", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-0.146, 51.508]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "AQ monitor B", "color": "#fde047", "stroke": "#92400e", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-0.132, 51.515]}
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "AQ monitor C", "color": "#fde047", "stroke": "#92400e", "radius": 5},
+              "geometry": {"type": "Point", "coordinates": [-0.120, 51.522]}
+            }
+          ]
+        },
+        "lines": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Active travel corridor", "stroke": "#16a34a", "strokeWidth": 4},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [-0.167, 51.500],
+                  [-0.155, 51.506],
+                  [-0.144, 51.512],
+                  [-0.133, 51.519],
+                  [-0.119, 51.526]
+                ]
+              }
+            }
+          ]
+        },
+        "polygons": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {"label": "Priority ward cluster", "stroke": "#2563eb", "strokeWidth": 2, "fill": "rgba(37,99,235,0.16)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-0.162, 51.525],
+                  [-0.139, 51.526],
+                  [-0.132, 51.513],
+                  [-0.146, 51.503],
+                  [-0.164, 51.509],
+                  [-0.162, 51.525]
+                ]]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {"label": "Improvement focus zone", "stroke": "#f97316", "strokeWidth": 2, "fill": "rgba(249,115,22,0.14)"},
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [-0.149, 51.519],
+                  [-0.127, 51.521],
+                  [-0.120, 51.509],
+                  [-0.136, 51.500],
+                  [-0.151, 51.507],
+                  [-0.149, 51.519]
+                ]]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

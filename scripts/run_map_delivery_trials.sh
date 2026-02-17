@@ -38,6 +38,11 @@ devcontainer exec --workspace-folder "$REPO_ROOT" \
   bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/summarize_playwright_trials.py" \
   | tee -a "$RUN_LOG"
 
+echo "[map-trials] generating story gallery report for presentation workflows..."
+devcontainer exec --workspace-folder "$REPO_ROOT" \
+  bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/summarize_story_gallery.py" \
+  | tee -a "$RUN_LOG"
+
 echo "[map-trials] running map quality checks..."
 devcontainer exec --workspace-folder "$REPO_ROOT" \
   bash -lc "cd /workspaces/mcp-geo && python scripts/map_trials/map_quality_checks.py" \

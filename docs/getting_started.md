@@ -197,12 +197,44 @@ cd playground
 npx playwright install --with-deps
 ```
 
+### VS Code Playwright extension in a devcontainer
+
+If you install the Playwright VS Code extension, use these container-specific
+checks:
+
+- Install the extension in the **Dev Container** context (not only on host
+  macOS), so test discovery/debugging runs against container paths and Node.
+- Re-run `npx playwright install --with-deps` inside the container if browser
+  launches fail. The devcontainer post-create step is tolerant (`|| true`) and
+  can hide install errors.
+- Keep `OS_API_KEY` available in container env for OS-backed map demos; without
+  it, basemap and OS-backed layer steps will degrade.
+- Trials default to `http://127.0.0.1:8000`; if that port is occupied, set
+  `MCP_GEO_TRIAL_BASE_URL` to the active server base URL.
+- Prefer headless execution for reliable demo rehearsals. Use traces,
+  screenshots, and videos for evidence when headed debug sessions are unstable.
+- If Chromium crashes under load, increase container shared memory (`/dev/shm`)
+  in your compose runtime.
+
+Quick smoke command for presentation readiness:
+
+```bash
+npm --prefix playground run test:trials -- --project=chromium-desktop playground/trials/tests/map_story_gallery.spec.js
+```
+
 For automated map delivery validation (containerized trial matrix + evidence capture):
 
 ```bash
 ./scripts/run_map_delivery_trials.sh
 python3 scripts/map_trials/summarize_playwright_trials.py
+python3 scripts/map_trials/summarize_story_gallery.py
 ```
+
+Presentation-ready story gallery output is written to
+`research/map_delivery_research_2026-02/reports/story_gallery_report.md`,
+using screenshots under `research/map_delivery_research_2026-02/evidence/screenshots/`.
+If local port `8000` is occupied, set `MCP_GEO_TRIAL_BASE_URL` (for example
+`http://127.0.0.1:8010`) when running targeted story-gallery trials.
 
 ## 5) What data is available
 
