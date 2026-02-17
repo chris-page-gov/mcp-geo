@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-geo"
-version = "0.3.1"
+version = "0.3.2"
 description = "MCP server for geospatial and ONS tools"
 authors = [ { name = "DCMS-TECH" } ]
 readme = "README.md"

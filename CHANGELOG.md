@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-02-17
+
 ### Added
 - Added devcontainer HTTP auto-start toggle (`MCP_GEO_DEVCONTAINER_START_HTTP`).
 - Added devcontainer STDIO registration toggle (`MCP_GEO_DEVCONTAINER_REGISTER_STDIO`).
