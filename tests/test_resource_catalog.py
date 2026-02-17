@@ -282,6 +282,23 @@ def test_offline_pack_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None
     assert meta is not None
 
 
+def test_offline_pack_large_file_omits_inline_blob(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir()
+    pack_file = packs_dir / "large.pmtiles"
+    pack_file.write_bytes(b"P" * (resource_catalog.OFFLINE_PACK_INLINE_MAX_BYTES + 1))
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs/large.pmtiles"})
+    payload = json.loads(content)
+    assert payload["encoding"] == "external"
+    assert payload["blobOmitted"] is True
+    assert payload["inlineMaxBytes"] == resource_catalog.OFFLINE_PACK_INLINE_MAX_BYTES
+    assert "blob" not in payload
+    assert etag
+    assert meta is not None
+
+
 def test_load_data_content_unknown_slug_returns_not_found() -> None:
     content, etag, meta = resource_catalog.load_data_content({"slug": "does-not-exist"})
     payload = json.loads(content)

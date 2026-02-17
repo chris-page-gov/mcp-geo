@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -29,6 +30,8 @@ def test_os_offline_descriptor_single_pack_lookup() -> None:
 
 
 def test_os_offline_get_returns_handoff_contracts() -> None:
+    from tools import os_offline
+
     resp = client.post(
         "/tools/call",
         json={
@@ -43,6 +46,39 @@ def test_os_offline_get_returns_handoff_contracts() -> None:
     assert body["overlay_bundle"]["type"] == "overlay_bundle"
     assert body["export_handoff"]["type"] == "export_handoff"
     assert body["export_handoff"]["format"] == "mbtiles"
+    pack_path = os_offline._OFFLINE_PACKS_DIR / "gb_transport_mbtiles.mbtiles"
+    expected_hash = f"sha256:{hashlib.sha256(pack_path.read_bytes()).hexdigest()}"
+    assert body["export_handoff"]["hash"] == expected_hash
+
+
+def test_os_offline_get_export_hash_stable_across_bbox() -> None:
+    first = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_offline.get",
+            "packId": "gb_transport_mbtiles",
+            "bbox": [-0.18, 51.49, -0.05, 51.54],
+        },
+    )
+    second = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_offline.get",
+            "packId": "gb_transport_mbtiles",
+            "bbox": [-1.0, 50.0, 0.2, 52.0],
+        },
+    )
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["export_handoff"]["hash"] == second.json()["export_handoff"]["hash"]
+
+
+def test_os_offline_pack_hash_prefers_declared_sha256() -> None:
+    from tools import os_offline
+
+    declared = "a" * 64
+    digest = os_offline._pack_hash({"sha256": f"sha256:{declared}"})
+    assert digest == f"sha256:{declared}"
 
 
 def test_os_offline_get_invalid_bbox_and_unknown_pack() -> None:

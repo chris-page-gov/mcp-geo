@@ -10,6 +10,7 @@ from tools.registry import Tool, ToolResult, register
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _OFFLINE_CATALOG_PATH = _REPO_ROOT / "resources" / "offline_map_catalog.json"
+_OFFLINE_PACKS_DIR = _REPO_ROOT / "data" / "offline_packs"
 _DEFAULT_BBOX = [-0.18, 51.49, -0.05, 51.54]
 
 
@@ -71,10 +72,40 @@ def _normalize_bbox(raw: Any) -> list[float] | None:
     return out
 
 
-def _pack_hash(pack: dict[str, Any], bbox: list[float]) -> str:
-    digest = hashlib.sha256(
-        json.dumps({"pack": pack.get("id"), "bbox": bbox}, ensure_ascii=True, sort_keys=True).encode("utf-8")
-    ).hexdigest()
+def _path_within(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _pack_hash(pack: dict[str, Any]) -> str:
+    declared = str(pack.get("sha256", "")).strip().lower()
+    if declared:
+        if declared.startswith("sha256:"):
+            declared = declared.split(":", 1)[1]
+        if len(declared) == 64 and all(ch in "0123456789abcdef" for ch in declared):
+            return f"sha256:{declared}"
+
+    resource_uri = str(pack.get("resourceUri", "")).strip()
+    prefix = "resource://mcp-geo/offline-packs/"
+    if resource_uri.startswith(prefix):
+        filename = resource_uri[len(prefix):]
+        candidate = (_OFFLINE_PACKS_DIR / filename).resolve()
+        if _path_within(candidate, _OFFLINE_PACKS_DIR.resolve()) and candidate.exists():
+            return f"sha256:{_sha256_file(candidate)}"
+
+    stable_source = resource_uri or str(pack.get("id", ""))
+    digest = hashlib.sha256(stable_source.encode("utf-8")).hexdigest()
     return f"sha256:{digest}"
 
 
@@ -139,7 +170,9 @@ def _offline_get(payload: dict[str, Any]) -> ToolResult:
         "title": title,
         "bbox": bbox,
         "render": {
-            "imageUrl": "/maps/static/osm?bbox=%s,%s,%s,%s&size=640&zoom=13" % tuple(bbox),
+            "imageUrl": (
+                f"/maps/static/osm?bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}&size=640&zoom=13"
+            ),
             "offlinePackUri": download_uri,
         },
         "guidance": guidance,
@@ -165,7 +198,7 @@ def _offline_get(payload: dict[str, Any]) -> ToolResult:
         "resourceUri": download_uri,
         "format": format_name,
         "generatedAt": generated_at,
-        "hash": _pack_hash(pack, bbox),
+        "hash": _pack_hash(pack),
         "provenance": {
             "catalogVersion": catalog.get("version", "unknown"),
             "packVersion": pack.get("version"),

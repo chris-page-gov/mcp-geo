@@ -49,6 +49,7 @@ OS_EXPORTS_PREFIX = f"{DATA_RESOURCE_PREFIX}os-exports/"
 OFFLINE_PACKS_PREFIX = f"{DATA_RESOURCE_PREFIX}offline-packs/"
 MAP_SCENARIO_PACKS_PREFIX = f"{DATA_RESOURCE_PREFIX}map-scenario-packs/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
+OFFLINE_PACK_INLINE_MAX_BYTES = 512 * 1024
 
 
 def data_resource_uri(name: str) -> str:
@@ -437,18 +438,33 @@ def _offline_pack_media_type(path: Path) -> str:
     return "application/octet-stream"
 
 
-def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], bytes]:
-    raw = path.read_bytes()
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], str]:
+    size_bytes = path.stat().st_size
+    sha256 = _sha256_file(path)
     payload = {
         "name": path.name,
         "uri": uri,
         "mediaType": _offline_pack_media_type(path),
-        "encoding": "base64",
-        "bytes": len(raw),
-        "sha256": hashlib.sha256(raw).hexdigest(),
-        "blob": base64.b64encode(raw).decode("ascii"),
+        "bytes": size_bytes,
+        "sha256": sha256,
     }
-    return payload, raw
+    if size_bytes <= OFFLINE_PACK_INLINE_MAX_BYTES:
+        payload["encoding"] = "base64"
+        payload["blob"] = base64.b64encode(path.read_bytes()).decode("ascii")
+    else:
+        payload["encoding"] = "external"
+        payload["blobOmitted"] = True
+        payload["inlineMaxBytes"] = OFFLINE_PACK_INLINE_MAX_BYTES
+        payload["message"] = "Offline pack too large for inline payload; retrieve via resource URI."
+    return payload, sha256
 
 
 def _offline_pack_files() -> list[Path]:
@@ -986,9 +1002,9 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                 {"isError": True, "code": "NOT_FOUND", "message": "Offline pack not found."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        payload, raw = _offline_pack_payload(path=path, uri=f"{OFFLINE_PACKS_PREFIX}{filename}")
+        payload, sha256 = _offline_pack_payload(path=path, uri=f"{OFFLINE_PACKS_PREFIX}{filename}")
         content = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
-        etag = _etag_from_bytes(raw, slug)
+        etag = _etag_from_bytes(sha256.encode("ascii"), slug)
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("map-scenario-packs/"):
         filename = slug.split("/", 1)[1]
