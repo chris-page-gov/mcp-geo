@@ -25,7 +25,7 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
     "os_maps.raster_tile": "Raster tile retrieval",
     "admin_lookup.containing_areas": "Point-in-area administrative lookup",
     "admin_lookup.area_geometry": "Area geometry retrieval",
-    "os_places.by_postcode": "Address/U PRN lookup by postcode",
+    "os_places.by_postcode": "Address/UPRN lookup by postcode",
     "os_places.radius": "Radius-based address search",
     "os_features.query": "Feature query by collection + bbox",
     "os_features.wfs_capabilities": "WFS capability discovery",
@@ -147,7 +147,6 @@ def build_tool_coverage(stories: list[dict[str, Any]]) -> dict[str, list[str]]:
 def markdown_for_story(
     *,
     repo_root: Path,
-    report_dir: Path,
     story: dict[str, Any],
     browser: str | None,
     row: dict[str, Any] | None,
@@ -255,14 +254,12 @@ def build_markdown(
 
     lines.append("## Slide Storyboards")
     lines.append("")
-    report_dir = report_path.parent
     for story in stories:
         story_id = str(story.get("id") or "")
         browser, row = pick_observation_for_story(story_id, latest_rows)
         lines.append(
             markdown_for_story(
                 repo_root=repo_root,
-                report_dir=report_dir,
                 story=story,
                 browser=browser,
                 row=row,

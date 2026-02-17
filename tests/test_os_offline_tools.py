@@ -81,6 +81,66 @@ def test_os_offline_pack_hash_prefers_declared_sha256() -> None:
     assert digest == f"sha256:{declared}"
 
 
+def test_os_offline_pack_hash_uses_digest_cache(monkeypatch, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_offline
+
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    pack_file = packs_dir / "cached.pmtiles"
+    pack_file.write_bytes(b"PACK-DATA")
+
+    monkeypatch.setattr(os_offline, "_OFFLINE_PACKS_DIR", packs_dir)
+    os_offline._PACK_SHA256_CACHE.clear()
+
+    calls = {"count": 0}
+
+    def _fake_sha256_file(path: Path) -> str:
+        calls["count"] += 1
+        return "b" * 64
+
+    monkeypatch.setattr(os_offline, "_sha256_file", _fake_sha256_file)
+    pack = {"resourceUri": "resource://mcp-geo/offline-packs/cached.pmtiles"}
+    assert os_offline._pack_hash(pack) == f"sha256:{'b' * 64}"
+    assert os_offline._pack_hash(pack) == f"sha256:{'b' * 64}"
+    assert calls["count"] == 1
+
+
+def test_os_offline_pack_hash_falls_back_to_stable_id_hash() -> None:
+    from tools import os_offline
+
+    digest = os_offline._pack_hash({"id": "pack-no-uri-no-declared-hash"})
+    assert digest.startswith("sha256:")
+    assert len(digest.split(":", 1)[1]) == 64
+
+
+def test_os_offline_rejects_empty_pack_id() -> None:
+    descriptor = client.post(
+        "/tools/call",
+        json={"tool": "os_offline.descriptor", "packId": ""},
+    )
+    assert descriptor.status_code == 400
+    assert descriptor.json()["code"] == "INVALID_INPUT"
+
+    getter = client.post(
+        "/tools/call",
+        json={"tool": "os_offline.get", "packId": ""},
+    )
+    assert getter.status_code == 400
+    assert getter.json()["code"] == "INVALID_INPUT"
+
+
+def test_os_offline_catalog_helpers_cover_invalid_shapes(monkeypatch, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_offline
+
+    invalid_shape = tmp_path / "invalid_shape.json"
+    invalid_shape.write_text("[]", encoding="utf-8")
+    monkeypatch.setattr(os_offline, "_OFFLINE_CATALOG_PATH", invalid_shape)
+    status, catalog = os_offline._load_catalog()
+    assert status == 500
+    assert catalog is None
+    assert os_offline._catalog_packs({"packs": "not-a-list"}) == []
+
+
 def test_os_offline_get_invalid_bbox_and_unknown_pack() -> None:
     bad_bbox = client.post(
         "/tools/call",

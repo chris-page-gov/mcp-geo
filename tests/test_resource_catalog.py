@@ -277,6 +277,7 @@ def test_offline_pack_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None
     payload = json.loads(content)
     assert payload["encoding"] == "base64"
     assert payload["mediaType"] == "application/vnd.pmtiles"
+    assert payload["downloadUrl"].startswith("/resources/download?uri=")
     assert b"PMTILES" in base64.b64decode(payload["blob"])
     assert etag
     assert meta is not None
@@ -294,9 +295,58 @@ def test_offline_pack_large_file_omits_inline_blob(monkeypatch: MonkeyPatch, tmp
     assert payload["encoding"] == "external"
     assert payload["blobOmitted"] is True
     assert payload["inlineMaxBytes"] == resource_catalog.OFFLINE_PACK_INLINE_MAX_BYTES
+    assert payload["downloadUrl"].startswith("/resources/download?uri=")
     assert "blob" not in payload
     assert etag
     assert meta is not None
+
+
+def test_resolve_offline_pack_download(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    pack_file = packs_dir / "demo.pmtiles"
+    pack_file.write_bytes(b"PMTILES")
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    resolved = resource_catalog.resolve_offline_pack_download(
+        "resource://mcp-geo/offline-packs/demo.pmtiles"
+    )
+    assert resolved is not None
+    path, media_type = resolved
+    assert path == pack_file.resolve()
+    assert media_type == "application/vnd.pmtiles"
+
+
+def test_offline_pack_media_type_variants(tmp_path) -> None:
+    assert resource_catalog._offline_pack_media_type(tmp_path / "demo.mbtiles") == "application/vnd.sqlite3"
+    assert resource_catalog._offline_pack_media_type(tmp_path / "demo.bin") == "application/octet-stream"
+
+
+def test_resolve_offline_pack_download_rejects_invalid(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+
+    assert resource_catalog.resolve_offline_pack_download("resource://mcp-geo/offline-packs/") is None
+    assert resource_catalog.resolve_offline_pack_download("resource://mcp-geo/not-offline/demo.pmtiles") is None
+    assert (
+        resource_catalog.resolve_offline_pack_download(
+            "resource://mcp-geo/offline-packs/../../etc/passwd"
+        )
+        is None
+    )
+    assert (
+        resource_catalog.resolve_offline_pack_download(
+            "resource://mcp-geo/offline-packs/missing.pmtiles"
+        )
+        is None
+    )
+
+
+def test_pack_file_helpers_missing_dirs(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", tmp_path / "missing-offline")
+    monkeypatch.setattr(resource_catalog, "MAP_SCENARIO_PACKS_DIR", tmp_path / "missing-scenario")
+    assert resource_catalog._offline_pack_files() == []
+    assert resource_catalog._map_scenario_pack_files() == []
 
 
 def test_load_data_content_unknown_slug_returns_not_found() -> None:
@@ -349,6 +399,11 @@ def test_resolve_data_resource_additional_os_prefixes() -> None:
     assert resource_catalog.resolve_data_resource("resource://mcp-geo/offline-packs/demo.pmtiles") == {
         "slug": "offline-packs/demo.pmtiles"
     }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/ons-exports") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-cache") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-exports") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/offline-packs") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/map-scenario-packs") is None
 
 
 def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_path) -> None:

@@ -12,6 +12,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 _OFFLINE_CATALOG_PATH = _REPO_ROOT / "resources" / "offline_map_catalog.json"
 _OFFLINE_PACKS_DIR = _REPO_ROOT / "data" / "offline_packs"
 _DEFAULT_BBOX = [-0.18, 51.49, -0.05, 51.54]
+_PACK_SHA256_CACHE: dict[tuple[str, int, int], str] = {}
 
 
 def _now_iso() -> str:
@@ -88,6 +89,20 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _sha256_file_cached(path: Path) -> str:
+    stat = path.stat()
+    key = (str(path), stat.st_mtime_ns, stat.st_size)
+    cached = _PACK_SHA256_CACHE.get(key)
+    if cached:
+        return cached
+    digest = _sha256_file(path)
+    _PACK_SHA256_CACHE[key] = digest
+    stale_keys = [cache_key for cache_key in _PACK_SHA256_CACHE if cache_key[0] == str(path) and cache_key != key]
+    for stale_key in stale_keys:
+        _PACK_SHA256_CACHE.pop(stale_key, None)
+    return digest
+
+
 def _pack_hash(pack: dict[str, Any]) -> str:
     declared = str(pack.get("sha256", "")).strip().lower()
     if declared:
@@ -102,7 +117,7 @@ def _pack_hash(pack: dict[str, Any]) -> str:
         filename = resource_uri[len(prefix):]
         candidate = (_OFFLINE_PACKS_DIR / filename).resolve()
         if _path_within(candidate, _OFFLINE_PACKS_DIR.resolve()) and candidate.exists():
-            return f"sha256:{_sha256_file(candidate)}"
+            return f"sha256:{_sha256_file_cached(candidate)}"
 
     stable_source = resource_uri or str(pack.get("id", ""))
     digest = hashlib.sha256(stable_source.encode("utf-8")).hexdigest()

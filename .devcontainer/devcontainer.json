@@ -38,7 +38,7 @@
     8899,
     5432
   ],
-  "postCreateCommand": "pip install --upgrade pip && pip install .[dev,boundaries] && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
+  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install .[dev,boundaries] && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
   "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
   "customizations": {

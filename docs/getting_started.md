@@ -34,7 +34,12 @@ Devcontainer note:
   `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
 - The PostGIS *host* port is random by default; set `MCP_GEO_POSTGIS_HOST_PORT=5433`
   before starting the devcontainer if you want it pinned.
-- Additional devcontainer-forwarded ports useful for map workflows:
+- Default devcontainer-forwarded ports:
+  - `8000` (MCP Geo HTTP API),
+  - `5173` (Playground dev server),
+  - `8899` (boundary cache debug service),
+  - `5432` (PostGIS).
+- Optional workflow ports can be forwarded manually from the VS Code Ports panel:
   - `4173` (Playwright/Vite map trial server),
   - `6274`/`6277` (MCP Inspector UI/proxy),
   - `8888` (Jupyter Lab for notebook-based map analysis).

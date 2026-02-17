@@ -6,6 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
 from server.config import settings
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -438,6 +439,10 @@ def _offline_pack_media_type(path: Path) -> str:
     return "application/octet-stream"
 
 
+def _offline_pack_download_url(uri: str) -> str:
+    return f"/resources/download?uri={quote(uri, safe='')}"
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -452,6 +457,7 @@ def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], str]
     payload = {
         "name": path.name,
         "uri": uri,
+        "downloadUrl": _offline_pack_download_url(uri),
         "mediaType": _offline_pack_media_type(path),
         "bytes": size_bytes,
         "sha256": sha256,
@@ -463,8 +469,26 @@ def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], str]
         payload["encoding"] = "external"
         payload["blobOmitted"] = True
         payload["inlineMaxBytes"] = OFFLINE_PACK_INLINE_MAX_BYTES
-        payload["message"] = "Offline pack too large for inline payload; retrieve via resource URI."
+        payload["message"] = "Offline pack too large for inline payload; use downloadUrl."
     return payload, sha256
+
+
+def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
+    slug = uri
+    if uri.startswith(OFFLINE_PACKS_PREFIX):
+        slug = f"offline-packs/{uri[len(OFFLINE_PACKS_PREFIX):]}"
+    if not slug.startswith("offline-packs/"):
+        return None
+    filename = slug.split("/", 1)[1] if "/" in slug else ""
+    if not filename:
+        return None
+    path = (OFFLINE_PACKS_DIR / filename).resolve()
+    packs_root = OFFLINE_PACKS_DIR.resolve()
+    if not _is_path_within(path, packs_root):
+        return None
+    if not path.exists() or not path.is_file():
+        return None
+    return path, _offline_pack_media_type(path)
 
 
 def _offline_pack_files() -> list[Path]:
@@ -1065,6 +1089,7 @@ __all__ = [
     "load_skill_content",
     "load_ui_content",
     "resolve_data_resource",
+    "resolve_offline_pack_download",
     "resolve_skill_resource",
     "resolve_ui_resource",
 ]

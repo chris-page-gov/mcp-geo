@@ -150,6 +150,14 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-17: Added offline pack binary retrieval endpoint
+  (`GET /resources/download?uri=resource://mcp-geo/offline-packs/<file>`) so
+  large PMTiles/MBTiles resources no longer require inlined base64 payloads in
+  `resources/read` responses while preserving a deterministic download path for
+  map handoff workflows.
+- 2026-02-17: Hardened `os_offline.get` artifact hash performance by honoring
+  declared `sha256` in `resources/offline_map_catalog.json` and caching fallback
+  file digests by `(path, mtime, size)` when runtime hashing is needed.
 - 2026-02-14: Codex MCP startup can time out when `scripts/claude-mcp-local`
   is configured with `MCP_GEO_DOCKER_BUILD=always` (Docker build exceeds Codex
   handshake window). For Codex MCP registration, keep the same wrapper command

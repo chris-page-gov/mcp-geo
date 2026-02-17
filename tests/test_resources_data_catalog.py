@@ -119,6 +119,16 @@ def test_resources_read_offline_pack_index_and_file() -> None:
     assert b"PMTILES_PLACEHOLDER" in blob
 
 
+def test_resources_download_offline_pack_file() -> None:
+    resp = client.get(
+        "/resources/download",
+        params={"uri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles"},
+    )
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("application/vnd.pmtiles")
+    assert b"PMTILES_PLACEHOLDER" in resp.content
+
+
 def test_resources_list_includes_ons_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
     from server.mcp import resource_catalog
 
