@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.map_trials import export_notebook_scenario_pack as scenario_pack_export
 from scripts.map_trials.export_notebook_scenario_pack import export_scenario_pack
 
 
@@ -36,3 +37,13 @@ def test_export_scenario_pack_uses_default_when_no_markdown_headings(tmp_path: P
     out_path = export_scenario_pack(notebook_path=notebook_path, out_dir=tmp_path / "packs")
     payload = json.loads(out_path.read_text(encoding="utf-8"))
     assert payload["scenarios"][0]["id"] == "notebook-default"
+
+
+def test_export_scenario_pack_uses_repo_relative_source_path(monkeypatch, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    notebook_path = tmp_path / "research" / "demo.ipynb"
+    notebook_path.parent.mkdir(parents=True, exist_ok=True)
+    notebook_path.write_text(json.dumps({"cells": []}), encoding="utf-8")
+    monkeypatch.setattr(scenario_pack_export, "_repo_root", lambda: tmp_path)
+    out_path = export_scenario_pack(notebook_path=notebook_path, out_dir=tmp_path / "packs")
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
+    assert payload["sourceNotebook"] == "research/demo.ipynb"

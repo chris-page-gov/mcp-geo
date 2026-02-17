@@ -1,6 +1,6 @@
 # Bug Report: MCP-Apps UI Widget Host Runtime Not Starting After Successful `resources/read`
 
-Sumbitted as https://github.com/modelcontextprotocol/modelcontextprotocol/issues/2247 
+Submitted as https://github.com/modelcontextprotocol/modelcontextprotocol/issues/2247 
 20250214-16:50
 
 **Component:** Claude client (claude.ai / Claude in Chrome extension)

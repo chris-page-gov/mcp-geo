@@ -9,6 +9,7 @@ from scripts.map_trials.map_quality_checks import (
     build_report,
     classify,
     image_quality_metrics,
+    latest_rows,
 )
 
 
@@ -82,3 +83,23 @@ def test_build_report_includes_status_counts(tmp_path: Path) -> None:
     report = build_report(repo_root=tmp_path, observations=observations, waivers={})
     assert "statusCounts" in report
     assert report["checks"]
+    assert report["checks"][0]["mapPanel"] == "panel.png"
+
+
+def test_latest_rows_prefers_newer_timestamp_not_last_index() -> None:
+    rows = [
+        {
+            "trialId": "trial-1",
+            "browser": "chromium-desktop",
+            "timestamp": "2026-02-17T10:00:00Z",
+            "details": {"value": "newest"},
+        },
+        {
+            "trialId": "trial-1",
+            "browser": "chromium-desktop",
+            "timestamp": "2026-02-17T09:00:00Z",
+            "details": {"value": "older"},
+        },
+    ]
+    latest = latest_rows(rows)
+    assert latest[("trial-1", "chromium-desktop")]["details"]["value"] == "newest"

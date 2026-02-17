@@ -3,9 +3,10 @@
 This appendix defines stable compatibility skeletons for map delivery across
 full-UI, partial-UI, and no-UI MCP hosts.
 
-## Contract ordering
+## Degradation ordering
 
-Map responses should degrade in this fixed order:
+When a host progressively loses UI capability, map responses should degrade in
+this fixed order:
 
 1. Full UI (`os_apps.render_*` + `ui://` resource)
 2. `map_card`

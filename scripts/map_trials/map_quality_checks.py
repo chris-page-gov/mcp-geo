@@ -43,15 +43,39 @@ def load_observations(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _parse_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    normalized = value.strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed
+
+
 def latest_rows(rows: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
-    latest: dict[tuple[str, str], tuple[str, int, dict[str, Any]]] = {}
+    latest: dict[tuple[str, str], tuple[datetime | None, int, dict[str, Any]]] = {}
     for index, row in enumerate(rows):
         trial = str(row.get("trialId", ""))
         browser = str(row.get("browser", ""))
-        ts = str(row.get("timestamp", ""))
+        ts = _parse_timestamp(row.get("timestamp"))
         key = (trial, browser)
         current = latest.get(key)
-        if current is None or ts >= current[0] or index > current[1]:
+        if current is None:
+            latest[key] = (ts, index, row)
+            continue
+        current_ts, current_index, _ = current
+        if ts is not None and current_ts is not None:
+            if ts > current_ts or (ts == current_ts and index > current_index):
+                latest[key] = (ts, index, row)
+            continue
+        if ts is not None and current_ts is None:
+            latest[key] = (ts, index, row)
+            continue
+        if ts is None and current_ts is None and index > current_index:
             latest[key] = (ts, index, row)
     return {key: value[2] for key, value in latest.items()}
 
@@ -68,6 +92,13 @@ def resolve_path(path_text: str | None, repo_root: Path) -> Path | None:
     if path.is_absolute():
         return path
     return (repo_root / path).resolve()
+
+
+def to_relative(path: Path, repo_root: Path) -> str:
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
 
 
 def image_quality_metrics(path: Path) -> QualityMetrics:
@@ -195,7 +226,7 @@ def build_report(*, repo_root: Path, observations: list[dict[str, Any]], waivers
                     "contrast": round(metrics.contrast, 4),
                     "labelDensity": round(metrics.label_density, 4),
                 },
-                "mapPanel": str(map_panel),
+                "mapPanel": to_relative(map_panel, repo_root),
                 "accessibilityPresent": accessibility_present,
             }
         )

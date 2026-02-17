@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-14T01:18:09.426249Z",
+  "generatedAt": "2026-02-17T09:18:38.923729Z",
   "thresholds": {
     "contrastFailMin": 0.2,
     "contrastWarnMin": 0.28,
@@ -7,10 +7,101 @@
     "labelDensityFailMin": 0.36
   },
   "statusCounts": {
-    "fail": 1,
-    "warning": 1
+    "warning": 2,
+    "fail": 6
   },
   "checks": [
+    {
+      "trialId": "story-1-coventry-boundary-change",
+      "browser": "chromium-desktop",
+      "status": "warning",
+      "findings": [
+        "label density above warn threshold (0.347 >= 0.22)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.298,
+        "labelDensity": 0.3469
+      },
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-1-coventry-boundary-change-map-panel.png",
+      "accessibilityPresent": true
+    },
+    {
+      "trialId": "story-2-village-hotel-catchment",
+      "browser": "chromium-desktop",
+      "status": "fail",
+      "findings": [
+        "label density above fail threshold (0.437 >= 0.36)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.3216,
+        "labelDensity": 0.4365
+      },
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-2-village-hotel-catchment-map-panel.png",
+      "accessibilityPresent": true
+    },
+    {
+      "trialId": "story-3-coventry-route-layering",
+      "browser": "chromium-desktop",
+      "status": "fail",
+      "findings": [
+        "contrast below warn threshold (0.271 < 0.28)",
+        "label density above fail threshold (0.376 >= 0.36)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.2706,
+        "labelDensity": 0.3764
+      },
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-3-coventry-route-layering-map-panel.png",
+      "accessibilityPresent": true
+    },
+    {
+      "trialId": "story-4-bristol-flood-layer-stack",
+      "browser": "chromium-desktop",
+      "status": "fail",
+      "findings": [
+        "label density above fail threshold (0.390 >= 0.36)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.2941,
+        "labelDensity": 0.39
+      },
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-4-bristol-flood-layer-stack-map-panel.png",
+      "accessibilityPresent": true
+    },
+    {
+      "trialId": "story-5-manchester-inventory-export",
+      "browser": "chromium-desktop",
+      "status": "fail",
+      "findings": [
+        "label density above fail threshold (0.467 >= 0.36)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.3569,
+        "labelDensity": 0.4667
+      },
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-5-manchester-inventory-export-map-panel.png",
+      "accessibilityPresent": true
+    },
+    {
+      "trialId": "story-6-westminster-policy-layering",
+      "browser": "chromium-desktop",
+      "status": "fail",
+      "findings": [
+        "label density above fail threshold (0.461 >= 0.36)"
+      ],
+      "waiver": null,
+      "metrics": {
+        "contrast": 0.3529,
+        "labelDensity": 0.4608
+      },
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-6-westminster-policy-layering-map-panel.png",
+      "accessibilityPresent": true
+    },
     {
       "trialId": "trial-3-geography-selector",
       "browser": "chromium-desktop",
@@ -23,7 +114,7 @@
         "contrast": 0.1961,
         "labelDensity": 0.1299
       },
-      "mapPanel": "/Users/crpage/repos/mcp-geo/research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-trial-3-geography-selector-map-panel.png",
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-trial-3-geography-selector-map-panel.png",
       "accessibilityPresent": false
     },
     {
@@ -38,7 +129,7 @@
         "contrast": 0.2314,
         "labelDensity": 0.2517
       },
-      "mapPanel": "/Users/crpage/repos/mcp-geo/research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-trial-4-boundary-explorer-map-panel.png",
+      "mapPanel": "research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-trial-4-boundary-explorer-map-panel.png",
       "accessibilityPresent": false
     }
   ]

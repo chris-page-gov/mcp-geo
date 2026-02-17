@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import base64
 import hashlib
-from pathlib import Path
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from server.config import settings
@@ -417,6 +418,37 @@ def _os_export_files() -> list[Path]:
     if not OS_EXPORTS_DIR.exists():
         return []
     return sorted(path for path in OS_EXPORTS_DIR.glob("*.json") if path.is_file())
+
+
+def _is_path_within(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _offline_pack_media_type(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if suffix == ".pmtiles":
+        return "application/vnd.pmtiles"
+    if suffix == ".mbtiles":
+        return "application/vnd.sqlite3"
+    return "application/octet-stream"
+
+
+def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], bytes]:
+    raw = path.read_bytes()
+    payload = {
+        "name": path.name,
+        "uri": uri,
+        "mediaType": _offline_pack_media_type(path),
+        "encoding": "base64",
+        "bytes": len(raw),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+        "blob": base64.b64encode(raw).decode("ascii"),
+    }
+    return payload, raw
 
 
 def _offline_pack_files() -> list[Path]:
@@ -944,7 +976,7 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         filename = slug.split("/", 1)[1]
         path = (OFFLINE_PACKS_DIR / filename).resolve()
         packs_root = OFFLINE_PACKS_DIR.resolve()
-        if not str(path).startswith(str(packs_root)):
+        if not _is_path_within(path, packs_root):
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid offline pack path."}
             )
@@ -954,15 +986,15 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                 {"isError": True, "code": "NOT_FOUND", "message": "Offline pack not found."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        raw = path.read_bytes()
-        content = raw.decode("utf-8", "replace")
+        payload, raw = _offline_pack_payload(path=path, uri=f"{OFFLINE_PACKS_PREFIX}{filename}")
+        content = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
         etag = _etag_from_bytes(raw, slug)
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("map-scenario-packs/"):
         filename = slug.split("/", 1)[1]
         path = (MAP_SCENARIO_PACKS_DIR / filename).resolve()
         packs_root = MAP_SCENARIO_PACKS_DIR.resolve()
-        if not str(path).startswith(str(packs_root)):
+        if not _is_path_within(path, packs_root):
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid scenario pack path."}
             )

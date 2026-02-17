@@ -22,6 +22,14 @@ def _sha256(path: Path) -> str:
     return f"sha256:{digest}"
 
 
+def _repo_relative(path: Path, repo_root: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(repo_root))
+    except ValueError:
+        return str(resolved)
+
+
 def _extract_scenarios(notebook: dict[str, Any]) -> list[dict[str, str]]:
     scenarios: list[dict[str, str]] = []
     seen: set[str] = set()
@@ -67,9 +75,11 @@ def export_scenario_pack(*, notebook_path: Path, out_dir: Path) -> Path:
     generated_at = _iso_now()
     scenarios = _extract_scenarios(notebook_obj)
     pack_id = notebook_path.stem.replace(" ", "_")
+    repo_root = _repo_root()
+    source_notebook = _repo_relative(notebook_path, repo_root)
     payload = {
         "packId": pack_id,
-        "sourceNotebook": str(notebook_path),
+        "sourceNotebook": source_notebook,
         "generatedAt": generated_at,
         "hash": notebook_hash,
         "scenarios": scenarios,

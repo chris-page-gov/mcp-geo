@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 
 from fastapi.testclient import TestClient
@@ -111,8 +112,11 @@ def test_resources_read_offline_pack_index_and_file() -> None:
         params={"uri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles"},
     )
     assert read_resp.status_code == 200
-    payload_text = resource_contents(read_resp)[0]["text"]
-    assert "PMTILES_PLACEHOLDER" in payload_text
+    payload = json.loads(resource_contents(read_resp)[0]["text"])
+    assert payload["encoding"] == "base64"
+    assert payload["mediaType"] == "application/vnd.pmtiles"
+    blob = base64.b64decode(payload["blob"])
+    assert b"PMTILES_PLACEHOLDER" in blob
 
 
 def test_resources_list_includes_ons_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]

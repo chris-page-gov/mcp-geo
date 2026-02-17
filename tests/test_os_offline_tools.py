@@ -74,3 +74,19 @@ def test_os_offline_missing_catalog(monkeypatch, tmp_path: Path) -> None:  # typ
     get_resp = client.post("/tools/call", json={"tool": "os_offline.get", "packId": "x"})
     assert get_resp.status_code == 404
     assert get_resp.json()["code"] == "NOT_FOUND"
+
+
+def test_os_offline_catalog_load_failure_returns_500(monkeypatch, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_offline
+
+    broken_catalog = tmp_path / "broken_catalog.json"
+    broken_catalog.write_text("{not-json", encoding="utf-8")
+    monkeypatch.setattr(os_offline, "_OFFLINE_CATALOG_PATH", broken_catalog)
+
+    desc = client.post("/tools/call", json={"tool": "os_offline.descriptor"})
+    assert desc.status_code == 500
+    assert desc.json()["code"] == "CATALOG_LOAD_FAILED"
+
+    get_resp = client.post("/tools/call", json={"tool": "os_offline.get", "packId": "x"})
+    assert get_resp.status_code == 500
+    assert get_resp.json()["code"] == "CATALOG_LOAD_FAILED"

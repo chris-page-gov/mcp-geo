@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 from pathlib import Path
 
@@ -273,7 +274,10 @@ def test_offline_pack_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None
     assert meta is not None
 
     content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs/demo.pmtiles"})
-    assert "PMTILES" in content
+    payload = json.loads(content)
+    assert payload["encoding"] == "base64"
+    assert payload["mediaType"] == "application/vnd.pmtiles"
+    assert b"PMTILES" in base64.b64decode(payload["blob"])
     assert etag
     assert meta is not None
 
@@ -367,6 +371,12 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     Path(resource_catalog.OFFLINE_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.MAP_SCENARIO_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+    evil_offline = tmp_path / "offline_packs_evil"
+    evil_offline.mkdir(parents=True, exist_ok=True)
+    (evil_offline / "secret.pmtiles").write_text("SECRET", encoding="utf-8")
+    evil_scenario = tmp_path / "map_scenario_packs_evil"
+    evil_scenario.mkdir(parents=True, exist_ok=True)
+    (evil_scenario / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
 
     content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../../etc/passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
@@ -379,8 +389,16 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
 
     content, _, _ = resource_catalog.load_data_content({"slug": "offline-packs/../../etc/passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content(
+        {"slug": "offline-packs/../offline_packs_evil/secret.pmtiles"}
+    )
+    assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "map-scenario-packs/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content(
+        {"slug": "map-scenario-packs/../map_scenario_packs_evil/secret.json"}
+    )
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "exports/../../etc/passwd"})

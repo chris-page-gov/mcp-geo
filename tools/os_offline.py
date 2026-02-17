@@ -33,6 +33,16 @@ def _load_catalog() -> tuple[int, dict[str, Any] | None]:
     return 200, parsed
 
 
+def _catalog_error(status: int) -> ToolResult:
+    if status == 404:
+        return _error("Offline map catalog not found.", code="NOT_FOUND", status=404)
+    return _error(
+        "Offline map catalog could not be loaded.",
+        code="CATALOG_LOAD_FAILED",
+        status=500,
+    )
+
+
 def _catalog_packs(catalog: dict[str, Any]) -> list[dict[str, Any]]:
     packs = catalog.get("packs")
     if not isinstance(packs, list):
@@ -71,7 +81,7 @@ def _pack_hash(pack: dict[str, Any], bbox: list[float]) -> str:
 def _offline_descriptor(payload: dict[str, Any]) -> ToolResult:
     status, catalog = _load_catalog()
     if status != 200 or catalog is None:
-        return _error("Offline map catalog not found.", code="NOT_FOUND", status=404)
+        return _catalog_error(status)
     requested_pack = payload.get("packId")
     if requested_pack is None:
         return 200, {
@@ -98,7 +108,7 @@ def _offline_descriptor(payload: dict[str, Any]) -> ToolResult:
 def _offline_get(payload: dict[str, Any]) -> ToolResult:
     status, catalog = _load_catalog()
     if status != 200 or catalog is None:
-        return _error("Offline map catalog not found.", code="NOT_FOUND", status=404)
+        return _catalog_error(status)
 
     pack_id = payload.get("packId")
     if not isinstance(pack_id, str) or not pack_id.strip():

@@ -3,7 +3,6 @@ import io, json, re
 from server import stdio_adapter
 from server.config import settings
 from server.mcp.resource_catalog import MCP_APPS_MIME
-from server.config import settings
 from server.protocol import PROTOCOL_VERSION
 
 def frame(msg: dict) -> bytes:
