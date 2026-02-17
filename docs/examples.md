@@ -1,5 +1,94 @@
 # MCP Geo Examples
 
+## Canonical map delivery flow (widget optional)
+
+Start map workflows with `os_maps.render`; do not require widgets for baseline
+success.
+
+```json
+POST /tools/call
+{
+  "tool": "os_maps.render",
+  "bbox": [-0.18, 51.49, -0.05, 51.54],
+  "size": 640,
+  "zoom": 13
+}
+```
+
+Typical fallback skeletons for non-UI hosts:
+
+```json
+{
+  "type": "map_card",
+  "title": "Westminster map",
+  "bbox": [-0.18, 51.49, -0.05, 51.54],
+  "render": {"imageUrl": "/maps/static/osm?bbox=-0.18,51.49,-0.05,51.54&size=640&zoom=13"},
+  "guidance": {
+    "widgetUnsupported": true,
+    "widgetUnsupportedReason": "ui_extension_not_advertised",
+    "degradationMode": "no_ui",
+    "preferredNextTools": ["os_maps.render", "admin_lookup.area_geometry"]
+  }
+}
+```
+
+```json
+{
+  "type": "overlay_bundle",
+  "layers": [
+    {"id": "input_points", "kind": "point", "featureCollection": {"type": "FeatureCollection", "features": []}}
+  ]
+}
+```
+
+```json
+{
+  "type": "export_handoff",
+  "resourceUri": "resource://mcp-geo/os-exports/example.json",
+  "format": "json",
+  "generatedAt": "2026-02-14T00:00:00Z",
+  "hash": "sha256:..."
+}
+```
+
+References:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
+## Progressive fallback examples (official pattern)
+
+Full UI host:
+
+```json
+POST /tools/call
+{ "tool": "os_apps.render_geography_selector", "level": "ward" }
+```
+
+Partial UI host:
+
+```json
+POST /tools/call
+{
+  "tool": "os_maps.render",
+  "bbox": [-0.18, 51.49, -0.05, 51.54],
+  "overlays": { "points": [{ "lat": 51.5034, "lon": -0.1276, "properties": { "label": "A" } }] }
+}
+```
+
+No UI host:
+
+```json
+POST /tools/call
+{ "tool": "os_offline.get", "packId": "gb_basemap_light_pmtiles" }
+```
+
+Style profile reference:
+
+```http
+GET /resources/read?uri=resource://mcp-geo/map-embedding-style-profiles
+```
+
 ## Tool Invocation Payloads
 
 ```
@@ -26,6 +115,15 @@ POST /tools/call
 
 POST /tools/call
 { "tool": "os_names.find", "text": "Downing" }
+
+POST /tools/call
+{ "tool": "os_maps.render", "bbox": [-0.18, 51.49, -0.05, 51.54], "size": 640, "zoom": 13 }
+
+POST /tools/call
+{ "tool": "os_offline.descriptor" }
+
+POST /tools/call
+{ "tool": "os_offline.get", "packId": "gb_basemap_light_pmtiles", "bbox": [-0.18, 51.49, -0.05, 51.54] }
 
 POST /tools/call
 { "tool": "os_names.nearest", "lat": 51.5034, "lon": -0.1276 }
@@ -66,6 +164,20 @@ POST /tools/call
 ```
 
 ## Tool Search and MCP-Apps
+
+Lean startup discovery (recommended for initialization):
+
+```
+POST /tools/list
+{ "toolset": "starter" }
+```
+
+Defer broad discovery until after initialization:
+
+```
+POST /tools/list
+{ "includeToolsets": ["maps_tiles", "apps_ui", "admin_boundaries"] }
+```
 
 ```
 POST /tools/search

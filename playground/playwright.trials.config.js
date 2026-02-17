@@ -35,6 +35,14 @@ export default defineConfig({
       name: "webkit-desktop",
       use: { ...devices["Desktop Safari"] },
     },
+    {
+      name: "chromium-mobile",
+      use: { ...devices["Pixel 7"] },
+    },
+    {
+      name: "webkit-mobile",
+      use: { ...devices["iPhone 13"] },
+    },
   ],
   webServer: {
     command: "cd .. && python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --log-level warning",

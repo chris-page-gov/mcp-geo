@@ -12,7 +12,8 @@
     />
     <link
       rel="stylesheet"
-      href="vendor/maplibre-gl.css"
+      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
     />
     <style>
       :root {
@@ -592,7 +593,10 @@
       </div>
     </div>
 
-    <script src="vendor/maplibre-gl.js"></script>
+    <script
+      src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+      onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
+    ></script>
     <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.min.js"></script>
     <script>
       const hostStatusEl = document.getElementById("hostStatus");
@@ -635,6 +639,7 @@
         hostReady: false,
         proxyBase: null,
         map: null,
+        mapInitError: null,
         boundaries: [],
         boundaryById: new Map(),
         hoveredBoundaryId: null,
@@ -651,6 +656,7 @@
         excludedUprns: new Set(),
         localLayers: [],
         osAvailable: true,
+        sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
 
       function postToHost(message) {
@@ -697,6 +703,59 @@
           }
           throw err;
         }
+      }
+
+      async function logUiEvent(eventType, payload) {
+        if (!state.hostReady) {
+          return;
+        }
+        try {
+          await requestTool("os_apps.log_event", {
+            eventType,
+            source: "boundary-explorer",
+            sessionId: state.sessionId,
+            payload: payload || {},
+            context: {
+              level: levelSelect.value || null,
+              detailLevel: detailLevel.value || null,
+              maplibreLoaded: !!window.maplibregl,
+            },
+          });
+        } catch (err) {
+          return;
+        }
+      }
+
+      function describeError(err) {
+        if (!err) {
+          return { message: "Unknown error" };
+        }
+        return {
+          message: String(err.message || err),
+          name: err.name || null,
+          stack: err.stack || null,
+        };
+      }
+
+      function resolveWorkerUrl() {
+        if (!state.proxyBase) {
+          return null;
+        }
+        return `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+      }
+
+      function recordMapInitIssue(code, detail) {
+        state.mapInitError = {
+          code,
+          detail,
+          maplibreLoaded: !!window.maplibregl,
+          proxyBase: state.proxyBase || null,
+          location: {
+            origin: window.location.origin || null,
+            protocol: window.location.protocol || null,
+          },
+        };
+        debugEl.textContent = JSON.stringify({ mapInit: state.mapInitError }, null, 2);
       }
 
       function featureCollection(features) {
@@ -787,50 +846,79 @@
 
       const mapAdapter = {
         init() {
-          const proxyBase = state.proxyBase;
-            const osmTiles = proxyBase
-              ? `${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
-              : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-            if (window.maplibregl) {
-              maplibregl.workerUrl = proxyBase
-                ? `${proxyBase}/maps/worker/maplibre-gl-csp-worker.js`
-                : "vendor/maplibre-gl-csp-worker.js";
+          if (!window.maplibregl) {
+            recordMapInitIssue("MAPLIBRE_MISSING", {
+              reason: "window.maplibregl is undefined",
+            });
+            showInfo(
+              "Map engine unavailable in this host runtime. The widget is loaded but the map canvas cannot initialize here."
+            );
+            void logUiEvent("map_init_skipped", { reason: "maplibre_missing" });
+            return false;
+          }
+          try {
+            const workerUrl = resolveWorkerUrl();
+            if (workerUrl) {
+              maplibregl.workerUrl = workerUrl;
             }
+            const osmTiles = state.proxyBase
+              ? `${state.proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
+              : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
             const fallbackStyle = {
               version: 8,
               sources: {
                 osm: {
                   type: "raster",
                   tiles: [osmTiles],
-                tileSize: 256,
+                  tileSize: 256,
+                },
               },
-            },
-            layers: [{ id: "osm", type: "raster", source: "osm" }],
-          };
-          const map = new maplibregl.Map({
-            container: "map",
-            style: fallbackStyle,
-            center: [-0.12, 51.505],
-            zoom: 10,
-            attributionControl: true,
-          });
-          state.map = map;
-          map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
-          map.on("style.load", () => {
-            ensureSourcesAndLayers();
-            applyLayerVisibility();
-          });
-          map.on("mousemove", onMapMove);
-          map.on("click", onMapClick);
+              layers: [{ id: "osm", type: "raster", source: "osm" }],
+            };
+            const map = new maplibregl.Map({
+              container: "map",
+              style: fallbackStyle,
+              center: [-0.12, 51.505],
+              zoom: 10,
+              attributionControl: true,
+            });
+            state.map = map;
+            map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
+            map.on("style.load", () => {
+              ensureSourcesAndLayers();
+              applyLayerVisibility();
+            });
+            map.on("error", (event) => {
+              const detail = {
+                message: String(event?.error?.message || "Map runtime error"),
+                sourceId: event?.sourceId || null,
+                resourceType: event?.resourceType || null,
+              };
+              debugEl.textContent = JSON.stringify({ mapError: detail }, null, 2);
+              void logUiEvent("map_error", detail);
+            });
+            map.on("mousemove", onMapMove);
+            map.on("click", onMapClick);
+            return true;
+          } catch (err) {
+            const detail = describeError(err);
+            recordMapInitIssue("MAP_INIT_FAILED", detail);
+            showInfo(
+              "Map initialization failed in this host runtime. Try fullscreen mode or a desktop browser."
+            );
+            void logUiEvent("map_init_failed", detail);
+            return false;
+          }
         },
         setBasemap(styleId) {
-          if (!state.map) return;
+          if (!state.map || !window.maplibregl) return;
           const proxyBase = state.proxyBase;
+          if (styleId && styleId.startsWith("os_")) {
             if (!proxyBase) {
               showOsWarning();
+              showInfo("OS basemap unavailable: host did not provide proxyBase.");
               return;
             }
-          if (styleId && styleId.startsWith("os_")) {
             const styleName = styleId.replace("os_", "");
             const styleUrl = `${proxyBase}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=3857`;
             try {
@@ -851,12 +939,15 @@
             }
             return;
           }
+          const osmTiles = proxyBase
+            ? `${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`
+            : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
           const fallbackStyle = {
             version: 8,
             sources: {
               osm: {
                 type: "raster",
-                tiles: [`${proxyBase}/maps/raster/osm/{z}/{x}/{y}.png`],
+                tiles: [osmTiles],
                 tileSize: 256,
               },
             },
@@ -867,9 +958,10 @@
             ensureSourcesAndLayers();
             applyLayerVisibility();
           });
+          hideOsWarning();
         },
         fitBbox(bbox) {
-          if (!state.map || !bbox || bbox.length !== 4) return;
+          if (!state.map || !window.maplibregl || !bbox || bbox.length !== 4) return;
           const bounds = new maplibregl.LngLatBounds([bbox[0], bbox[1]], [bbox[2], bbox[3]]);
           state.map.fitBounds(bounds, { padding: 40, duration: 700 });
         },
@@ -1909,12 +2001,30 @@
           const mcpGeo = ctx.mcpGeo || {};
           if (mcpGeo.proxyBase) state.proxyBase = mcpGeo.proxyBase;
           if (state.map && window.maplibregl) {
-              maplibregl.workerUrl = state.proxyBase
-                ? `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`
-                : "vendor/maplibre-gl-csp-worker.js";
+            const workerUrl = resolveWorkerUrl();
+            if (workerUrl) {
+              maplibregl.workerUrl = workerUrl;
             }
+          }
           return;
         }
+      });
+
+      window.addEventListener("error", (event) => {
+        const detail = {
+          message: String(event?.message || "Unhandled window error"),
+          filename: event?.filename || null,
+          lineno: event?.lineno || null,
+          colno: event?.colno || null,
+        };
+        debugEl.textContent = JSON.stringify({ clientError: detail }, null, 2);
+        void logUiEvent("window_error", detail);
+      });
+
+      window.addEventListener("unhandledrejection", (event) => {
+        const detail = describeError(event?.reason);
+        debugEl.textContent = JSON.stringify({ rejection: detail }, null, 2);
+        void logUiEvent("unhandled_rejection", detail);
       });
 
       async function initializeUi() {
@@ -1928,11 +2038,28 @@
           const hostContext = result && result.hostContext ? result.hostContext : {};
           const mcpGeo = hostContext.mcpGeo || {};
           if (mcpGeo.proxyBase) state.proxyBase = mcpGeo.proxyBase;
-          mapAdapter.init();
-          rpcNotify("ui/notifications/initialized", {});
+          const mapReady = mapAdapter.init();
+          if (!mapReady) {
+            hostStatusEl.textContent = "Host connected (map degraded)";
+            hostStatusEl.classList.add("warn");
+          }
+          rpcNotify("ui/notifications/initialized", {
+            mapReady,
+            maplibreLoaded: !!window.maplibregl,
+          });
+          await logUiEvent("host_ready", {
+            mapReady,
+            maplibreLoaded: !!window.maplibregl,
+            proxyBase: state.proxyBase || null,
+          });
         } catch (err) {
           hostStatusEl.textContent = "Host connection failed";
           hostStatusEl.classList.add("warn");
+          debugEl.textContent = JSON.stringify(
+            { hostInitializeError: describeError(err) },
+            null,
+            2
+          );
         }
       }
 

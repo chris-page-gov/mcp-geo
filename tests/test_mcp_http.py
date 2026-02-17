@@ -135,6 +135,7 @@ def test_mcp_http_call_tool_accepts_arguments(client):
     payload = resp.json()
     assert payload["result"]["ok"] is True
     assert payload["result"]["content"]
+    assert isinstance(payload["result"].get("structuredContent"), dict)
 
 
 def test_mcp_http_resources_get_ui(client):
@@ -324,7 +325,11 @@ def test_mcp_http_ui_tool_fallback_and_meta(client, monkeypatch):
         ),
     )
     result = resp.json()["result"]
-    assert result["data"]["fallback"]["type"] == "static_map"
+    fallback = result["data"]["fallback"]
+    assert fallback["type"] == "static_map"
+    assert fallback["widgetUnsupported"] is True
+    assert fallback["widgetUnsupportedReason"] == "ui_extension_not_advertised"
+    assert fallback["guidance"]["degradationMode"] == "no_ui"
     resp = client.post(
         "/mcp",
         headers={"mcp-session-id": session_id},
@@ -357,6 +362,8 @@ def test_mcp_http_ui_stats_dashboard_fallback(client, monkeypatch):
     fallback = result["data"]["fallback"]
     assert fallback["type"] == "statistics_dashboard"
     assert "nomis.query" in fallback.get("suggestedTools", [])
+    assert fallback["widgetUnsupported"] is True
+    assert fallback["guidance"]["degradationMode"] == "no_ui"
 
 
 def _write_catalog(tmp_path, items):

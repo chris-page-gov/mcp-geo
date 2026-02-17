@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 
 from fastapi.testclient import TestClient
@@ -21,10 +22,14 @@ def test_resources_list_includes_data_catalog_entries() -> None:
     assert "resource://mcp-geo/ons-catalog" in uris
     assert "resource://mcp-geo/os-catalog" in uris
     assert "resource://mcp-geo/layers-catalog" in uris
+    assert "resource://mcp-geo/offline-map-catalog" in uris
+    assert "resource://mcp-geo/map-embedding-style-profiles" in uris
     assert "resource://mcp-geo/boundary-pack-sources" in uris
     assert "resource://mcp-geo/code-list-pack-sources" in uris
     assert "resource://mcp-geo/boundary-packs-index" in uris
     assert "resource://mcp-geo/code-list-packs-index" in uris
+    assert "resource://mcp-geo/map-scenario-packs-index" in uris
+    assert "resource://mcp-geo/offline-packs-index" in uris
 
 
 def test_resources_read_boundary_manifest() -> None:
@@ -35,6 +40,15 @@ def test_resources_read_boundary_manifest() -> None:
     payload = json.loads(contents[0]["text"])
     assert "manifest_version" in payload
     assert "boundary_families" in payload
+
+
+def test_resources_read_map_embedding_style_profiles() -> None:
+    resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/map-embedding-style-profiles"})
+    assert resp.status_code == 200
+    contents = resource_contents(resp)
+    payload = json.loads(contents[0]["text"])
+    profiles = payload.get("profiles", [])
+    assert any(row.get("id") == "compact_static" for row in profiles if isinstance(row, dict))
 
 
 def test_resources_read_boundary_cache_status() -> None:
@@ -68,6 +82,51 @@ def test_resources_read_pack_indexes() -> None:
     assert code_payload["kind"] == "code_lists"
     assert code_payload["cacheMode"] == "hybrid_fetch_cache"
     assert isinstance(code_payload.get("packs"), list)
+
+
+def test_resources_read_map_scenario_pack_index_and_file() -> None:
+    index_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/map-scenario-packs-index"})
+    assert index_resp.status_code == 200
+    index_payload = json.loads(resource_contents(index_resp)[0]["text"])
+    items = index_payload.get("items", [])
+    assert any(item.get("name") == "map_delivery_option_tracker.sample.json" for item in items if isinstance(item, dict))
+
+    read_resp = client.get(
+        "/resources/read",
+        params={"uri": "resource://mcp-geo/map-scenario-packs/map_delivery_option_tracker.sample.json"},
+    )
+    assert read_resp.status_code == 200
+    payload = json.loads(resource_contents(read_resp)[0]["text"])
+    assert payload["packId"] == "map_delivery_option_tracker.sample"
+
+
+def test_resources_read_offline_pack_index_and_file() -> None:
+    index_resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/offline-packs-index"})
+    assert index_resp.status_code == 200
+    index_payload = json.loads(resource_contents(index_resp)[0]["text"])
+    items = index_payload.get("items", [])
+    assert any(item.get("name") == "gb_basemap_light_pmtiles.pmtiles" for item in items if isinstance(item, dict))
+
+    read_resp = client.get(
+        "/resources/read",
+        params={"uri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles"},
+    )
+    assert read_resp.status_code == 200
+    payload = json.loads(resource_contents(read_resp)[0]["text"])
+    assert payload["encoding"] == "base64"
+    assert payload["mediaType"] == "application/vnd.pmtiles"
+    blob = base64.b64decode(payload["blob"])
+    assert b"PMTILES_PLACEHOLDER" in blob
+
+
+def test_resources_download_offline_pack_file() -> None:
+    resp = client.get(
+        "/resources/download",
+        params={"uri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles"},
+    )
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("application/vnd.pmtiles")
+    assert b"PMTILES_PLACEHOLDER" in resp.content
 
 
 def test_resources_list_includes_ons_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]

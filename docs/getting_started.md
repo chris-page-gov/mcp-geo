@@ -34,10 +34,27 @@ Devcontainer note:
   `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
 - The PostGIS *host* port is random by default; set `MCP_GEO_POSTGIS_HOST_PORT=5433`
   before starting the devcontainer if you want it pinned.
-- Additional devcontainer-forwarded ports useful for map workflows:
+- Default devcontainer-forwarded ports:
+  - `8000` (MCP Geo HTTP API),
+  - `5173` (Playground dev server),
+  - `8899` (boundary cache debug service),
+  - `5432` (PostGIS).
+- Optional workflow ports can be forwarded manually from the VS Code Ports panel:
   - `4173` (Playwright/Vite map trial server),
   - `6274`/`6277` (MCP Inspector UI/proxy),
   - `8888` (Jupyter Lab for notebook-based map analysis).
+
+Devcontainer startup modes (HTTP vs STDIO):
+- STDIO requires the repo dependencies to be installed in the same Python used by VS Code
+  inside the devcontainer. If you see `ModuleNotFoundError: loguru`, run:
+  `python3 -m pip install -e ".[dev,boundaries,test]"`
+  and reload the MCP server.
+- HTTP auto-start: set `MCP_GEO_DEVCONTAINER_START_HTTP=1` before starting the devcontainer.
+  This runs `python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload`
+  in the background and logs to `logs/devcontainer-http.log`.
+- STDIO registration (Codex): enabled by default when the `codex` CLI is available.
+  Disable it with `MCP_GEO_DEVCONTAINER_REGISTER_STDIO=0`.
+- Run both: set `MCP_GEO_DEVCONTAINER_START_HTTP=1` and leave STDIO registration enabled.
 
 ```bash
 export BOUNDARY_CACHE_ENABLED=true
@@ -50,7 +67,27 @@ echo BOUNDARY_CACHE_DSN
 
 See `docs/boundary_cache.md` for ingest + validation steps.
 
-## 2) Use MCP Inspector (recommended)
+## 2) Validate canonical map delivery baseline
+
+Before testing widgets, verify the compatibility-first map path:
+
+1. Call `os_maps.render` with a bbox.
+2. Render the returned image URL in any browser/client.
+3. Layer optional overlay payloads separately.
+4. Use `os_apps.render_*` only after host UI support is confirmed.
+
+Example MCP tool call:
+
+```json
+{"jsonrpc":"2.0","id":"map-1","method":"tools/call","params":{"name":"os_maps.render","arguments":{"bbox":[-0.18,51.49,-0.05,51.54],"size":640,"zoom":13}}}
+```
+
+Contract and host references:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
+## 3) Use MCP Inspector (recommended)
 
 MCP Inspector is the fastest way to browse tools and try calls without writing
 code. Point it at the HTTP MCP endpoint:
@@ -111,7 +148,7 @@ In Inspector you can:
 - Call tools and inspect structured outputs
 - Validate MCP-Apps UI resources (if supported)
 
-## 3) Use the Playground (web UI)
+## 4) Use the Playground (web UI)
 
 The playground is a lightweight MCP client built with Svelte + Vite. It uses
 the MCP TypeScript SDK to connect over HTTP and records tool calls and prompt
@@ -165,14 +202,46 @@ cd playground
 npx playwright install --with-deps
 ```
 
+### VS Code Playwright extension in a devcontainer
+
+If you install the Playwright VS Code extension, use these container-specific
+checks:
+
+- Install the extension in the **Dev Container** context (not only on host
+  macOS), so test discovery/debugging runs against container paths and Node.
+- Re-run `npx playwright install --with-deps` inside the container if browser
+  launches fail. The devcontainer post-create step is tolerant (`|| true`) and
+  can hide install errors.
+- Keep `OS_API_KEY` available in container env for OS-backed map demos; without
+  it, basemap and OS-backed layer steps will degrade.
+- Trials default to `http://127.0.0.1:8000`; if that port is occupied, set
+  `MCP_GEO_TRIAL_BASE_URL` to the active server base URL.
+- Prefer headless execution for reliable demo rehearsals. Use traces,
+  screenshots, and videos for evidence when headed debug sessions are unstable.
+- If Chromium crashes under load, increase container shared memory (`/dev/shm`)
+  in your compose runtime.
+
+Quick smoke command for presentation readiness:
+
+```bash
+npm --prefix playground run test:trials -- --project=chromium-desktop playground/trials/tests/map_story_gallery.spec.js
+```
+
 For automated map delivery validation (containerized trial matrix + evidence capture):
 
 ```bash
 ./scripts/run_map_delivery_trials.sh
 python3 scripts/map_trials/summarize_playwright_trials.py
+python3 scripts/map_trials/summarize_story_gallery.py
 ```
 
-## 4) What data is available
+Presentation-ready story gallery output is written to
+`research/map_delivery_research_2026-02/reports/story_gallery_report.md`,
+using screenshots under `research/map_delivery_research_2026-02/evidence/screenshots/`.
+If local port `8000` is occupied, set `MCP_GEO_TRIAL_BASE_URL` (for example
+`http://127.0.0.1:8010`) when running targeted story-gallery trials.
+
+## 5) What data is available
 
 ### Ordnance Survey (OS)
 
@@ -181,6 +250,7 @@ python3 scripts/map_trials/summarize_playwright_trials.py
 - Linked identifiers (UPRN/USRN/TOID): `os_linked_ids.get`
 - NGD features (bbox query): `os_features.query`
 - Maps metadata and vector tiles: `os_maps.render`, `os_vector_tiles.descriptor`
+- Offline map packs and handoff contracts: `os_offline.descriptor`, `os_offline.get`
 
 #### Vector tile styles (OS VTS)
 
@@ -252,7 +322,7 @@ Note: `os_names.nearest` accepts WGS84 lat/lon (`EPSG:4326`) and converts to
 British National Grid automatically. Use `coordSystem: "EPSG:27700"` if you
 already have BNG eastings/northings.
 
-## 5) Quick inspection examples
+## 6) Quick inspection examples
 
 List tools:
 
@@ -284,12 +354,15 @@ Read the boundary manifest resource:
 {"jsonrpc":"2.0","id":"5","method":"resources/read","params":{"uri":"resource://mcp-geo/boundary-manifest"}}
 ```
 
-## 6) Where to go next
+## 7) Where to go next
 
 - Detailed walkthrough: `docs/tutorial.md`
 - Tool catalog: `docs/tool_catalog.md`
 - Evaluation suite and questions: `docs/evaluation.md`
 - MCP-Apps alignment notes: `docs/mcp_apps_alignment.md`
+- Browser/widget support matrix: `docs/map_delivery_support_matrix.md`
+- Notebook scenario packs: `docs/map_scenario_packs.md`
+- MCP/AI host embedding bundle: `docs/map_embedding_best_practices.md`
 
 ## Appendix: STDIO Docker (when to use it)
 

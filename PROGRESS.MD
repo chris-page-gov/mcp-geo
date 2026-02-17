@@ -3,7 +3,30 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-14
+Last updated: 2026-02-17
+
+## Presentation story gallery (2026-02-17)
+
+- Done: added six real-world layered map story scenarios under
+  `playground/trials/fixtures/map_story_scenarios.json` covering map/render,
+  inventory/export, boundary, routing, raster/WMTS/WFS capability, and
+  dashboard/widget pathways.
+- Done: added automated screenshot capture for story scenarios via
+  `playground/trials/tests/map_story_gallery.spec.js` with per-story evidence
+  logging.
+- Done: added slide/report generation script
+  `scripts/map_trials/summarize_story_gallery.py` producing
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md`.
+- Done: added slide deck
+  `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`
+  with one slide per scenario and speaker notes for presentation delivery.
+
+## Devcontainer STDIO stability (2026-02-16)
+
+- Done: force STDIO to load repo code, not site-packages (`scripts/os-mcp` file-based import).
+- Done: ensure repo root stays ahead of user site-packages (`scripts/os_mcp.py`).
+- Done: make VS Code stdio wrapper include user site-packages (`scripts/vscode_mcp_stdio.py`).
+- Done: align devcontainer installs with `python3` and auto-install deps when `loguru` is missing.
 
 ## Sources reviewed
 
@@ -69,21 +92,36 @@ Legend: pending, in_progress, done
 
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
-| MDR-I1 Canonical `os_maps.render` baseline docs | pending | none | Promote compatibility-first `os_maps.render` flow across README/getting-started/examples/tutorial docs. |
-| MDR-I2 Standard fallback skeleton contracts | pending | MDR-I1 | Define/align `map_card`, `overlay_bundle`, and `export_handoff` contract docs and conformance checklist. |
-| MDR-I3 Lean startup tool discovery guidance | pending | MDR-I1 | Standardize `starter`-first initialization docs and defer heavy discovery to post-init flows. |
-| MDR-I4 Browser/widget support matrix | pending | MDR-I1 | Publish host/browser matrix with capability modes, limits, and evidence links. |
-| MDR-N1 Deterministic host simulation utilities | pending | MDR-I2, MDR-I4 | Add deterministic UI resource test simulation across Chromium/Firefox/WebKit. |
-| MDR-N2 Widget-unsupported guidance fields | pending | MDR-I2 | Add explicit fallback guidance payload fields for non-UI hosts with stable transport behavior. |
-| MDR-N3 Mobile viewport + latency trial budgets | pending | MDR-N1 | Expand trial suite with mobile projects and scenario latency budget assertions/reporting. |
-| MDR-N4 Optional sidecar deployment profile | pending | MDR-I2 | Add Martin/pg_tileserv sidecar profile docs/runbook for scaled deployments. |
-| MDR-M1 PMTiles/MBTiles offline delivery | pending | MDR-N4 | Add offline-friendly map delivery option with packaging and retrieval contracts. |
-| MDR-M2 Map output quality checks | pending | MDR-N3 | Add automated checks for label density, contrast, and accessibility metadata. |
-| MDR-M3 Notebook scenario pack resources | pending | MDR-N3 | Integrate notebook-generated scenario packs into resource outputs with provenance metadata. |
-| MDR-E1 MCP/AI-host best-practice bundle | pending | MDR-I4 | Publish worker/CSP-safe client-side best-practice patterns for embedded map contexts. |
-| MDR-E2 Lightweight embedding style profiles | pending | MDR-E1 | Provide normalized lightweight style profiles for constrained AI-client embedding. |
-| MDR-E3 Progressive fallback official examples | pending | MDR-E1, MDR-E2 | Publish examples showing deterministic full-vector to static-card fallback progression. |
-| MDR-E4 Mixed UI/no-UI host guidance | pending | MDR-E1 | Publish predictable degradation guidance for mixed host fleets. |
+| MDR-I1 Canonical `os_maps.render` baseline docs | done | none | Updated README/getting-started/examples/tutorial docs to lead map workflows with `os_maps.render` and explicit fallback ordering. |
+| MDR-I2 Standard fallback skeleton contracts | done | MDR-I1 | Added `map_card`, `overlay_bundle`, and `export_handoff` schemas plus conformance checklist in spec package + alignment docs. |
+| MDR-I3 Lean startup tool discovery guidance | done | MDR-I1 | Standardized `starter`-first startup guidance and post-init scoped discovery in onboarding/troubleshooting docs. |
+| MDR-I4 Browser/widget support matrix | done | MDR-I1 | Published `docs/map_delivery_support_matrix.md` with capability modes, env toggles, verification dates, and evidence links. |
+| MDR-N1 Deterministic host simulation utilities | done | MDR-I2, MDR-I4 | Added deterministic host-capability fixtures + reusable simulation utilities and replay-matrix script for multi-engine trial runs. |
+| MDR-N2 Widget-unsupported guidance fields | done | MDR-I2 | Extended fallback payloads with explicit guidance keys (`widgetUnsupported`, reason, degradation mode, preferred next tools) and transport-parity tests. |
+| MDR-N3 Mobile viewport + latency trial budgets | done | MDR-N1 | Added mobile Playwright trial projects and latency-budget assertions with percentile/compliance reporting in trial summaries. |
+| MDR-N4 Optional sidecar deployment profile | done | MDR-I2 | Added Martin/pg_tileserv optional sidecar compose/smoke assets and architecture/system/walkthrough runbook updates. |
+| MDR-M1 PMTiles/MBTiles offline delivery | done | MDR-N4 | Added `os_offline.descriptor`/`os_offline.get`, offline pack catalog/resources, and offline handoff contracts for PMTiles/MBTiles paths. |
+| MDR-M2 Map output quality checks | done | MDR-N3 | Added automated map quality checker (contrast, label-density proxy, accessibility metadata, waiver handling) with report artifacts. |
+| MDR-M3 Notebook scenario pack resources | done | MDR-N3 | Added notebook scenario-pack export script and `resource://mcp-geo/map-scenario-packs*` resources with provenance/hash metadata. |
+| MDR-E1 MCP/AI-host best-practice bundle | done | MDR-I4 | Published `docs/map_embedding_best_practices.md` with worker/CSP-safe embedding patterns and checklist templates. |
+| MDR-E2 Lightweight embedding style profiles | done | MDR-E1 | Added `resource://mcp-geo/map-embedding-style-profiles` with constrained profile definitions for mixed/no-UI hosts. |
+| MDR-E3 Progressive fallback official examples | done | MDR-E1, MDR-E2 | Updated examples/tutorial docs with deterministic full UI -> partial UI -> no UI fallback sequences. |
+| MDR-E4 Mixed UI/no-UI host guidance | done | MDR-E1 | Expanded troubleshooting/architecture/support-matrix guidance for deterministic degradation across mixed host fleets. |
+
+## Claude interop troubleshooting (2026-02-14)
+
+Legend: pending, in_progress, done
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| CT-01 Correlate Claude UI failures with MCP stdio trace ids | done | Confirmed `tools/call` requests for Village Hotel flow returned `status=200` with no trace parse errors despite UI `Tool execution failed`. |
+| CT-02 Record startup-permission and rebuild pitfalls | done | Added troubleshooting guidance for macOS `python3.14` permission prompt and `MCP_GEO_DOCKER_BUILD` rebuild mode behavior. |
+| CT-03 Harden tool-call result shape for strict hosts | done | STDIO + HTTP now auto-populate `structuredContent` for dict payloads when not provided explicitly. |
+| CT-04 Capture Claude prefix + preview-runtime gotchas | done | Documented `mcp-geo:<tool>` namespace hint behavior and `maplibregl is not defined` inline-preview limits in troubleshooting/support-matrix docs. |
+| CT-05 Fix boundary explorer host-init coupling failure | done | Hardened `ui/boundary_explorer.html` so `ui/initialize` completes even when map runtime init fails (`maplibre` missing/worker issues), with explicit telemetry and degraded-mode diagnostics. |
+| CT-06 Avoid embedded widget payload mode for Claude stdio | done | `server/stdio_adapter.py` now applies Claude-specific default `contentMode=resource_link` for `os_apps.render_*` calls (unless explicitly overridden) via `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE`, reducing raw-HTML transcript fallbacks while preserving widget-launchable content blocks. |
+| CT-07 Remove `ui://`-relative MapLibre asset dependency in widgets | done | Updated geography/boundary widget HTML to use absolute MapLibre CDN URLs (with jsDelivr fallback) and proxy-only worker URL wiring, plus CSP domain updates/tests; this prevents `window.maplibregl` missing in hosts that do not resolve `vendor/*` under `ui://` resources. |
+| CT-08 Confirm host runtime limitation after `resource_link` adoption | done | Latest Claude trace confirms `tools/call` + `resources/read` success for `ui://` widgets and no follow-on `os_apps_log_event` activity, isolating remaining failure to client runtime mount/bridge behavior. |
 
 ## Progress against the original vision
 

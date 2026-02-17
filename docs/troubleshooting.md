@@ -55,6 +55,105 @@ Notes:
 - JSON trace lines with `direction=server->stderr` are diagnostics; they are not
   MCP JSON-RPC payloads.
 
+## Claude tool name mismatch: `Tool '<name>' not found` with `mcp-geo:<name>` hint
+If Claude reports a tool as not found and suggests a similarly named
+`mcp-geo:<tool_name>`, this is a client-side namespacing mismatch.
+
+What is happening:
+- Claude can namespace tool names by server id.
+- The model may still attempt an unprefixed call first.
+
+Remediation:
+- Retry the call with the suggested namespaced form (for example
+  `mcp-geo:os_names_find`).
+- Keep traces to verify whether the failed attempt reached MCP transport. If no
+  matching `client->server tools/call` exists, the failure was client-side
+  before server dispatch.
+
+## Claude preview error: `maplibregl is not defined`
+If a generated HTML map works in a normal browser but fails in Claude's inline
+web preview with `maplibregl is not defined`, the preview sandbox is blocking
+or not loading external JS dependencies.
+
+What is happening:
+- Inline preview is not equivalent to a full browser environment.
+- External CDN scripts and worker-based map stacks can fail in that sandbox.
+
+Remediation:
+- Open map HTML in a real browser for full MapLibre/OS VTS rendering.
+- For in-chat deterministic output, prefer `os_maps.render` static contracts or
+  MCP-Apps widget contracts rather than standalone external-CDN HTML.
+- If prompting for API keys in HTML helpers, use password-style inputs
+  (`<input type="password">`) to avoid accidental key disclosure on screen.
+
+## Claude shows raw Boundary Explorer HTML instead of rendering the widget
+If `os_apps_render_boundary_explorer` returns `status=200` and Claude also
+issues `resources/read` for `ui://mcp-geo/boundary-explorer`, but the chat
+shows raw `<!DOCTYPE html>` output, the widget likely failed during early JS
+bootstrap.
+
+What is happening:
+- In pre-fix builds, `ui/boundary_explorer.html` tied map initialization to host
+  initialization.
+- If MapLibre failed to load (or worker setup failed), the page threw before
+  reliably completing `ui/notifications/initialized`, and some hosts then fell
+  back to showing raw resource text.
+
+Remediation:
+- Use a build that includes the 2026-02-14 boundary explorer runtime hardening
+  (host init and map init decoupled, graceful map-degraded mode, telemetry).
+- Use a build that includes the 2026-02-14 MapLibre asset-path fix for MCP-Apps
+  widgets (`ui/geography_selector.html`, `ui/boundary_explorer.html`):
+  absolute CDN script/style URLs replaced prior `vendor/*` relative links.
+  Some hosts do not resolve `ui://...` relative subresources, which leaves
+  `window.maplibregl` undefined even when the HTML shell loads.
+- For Claude Desktop stdio sessions, prefer
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE=resource_link` so `os_apps.render_*`
+  calls avoid embedded HTML payload blocks while still returning a
+  widget-launchable resource link.
+- Confirm trace sequence:
+  - `tools/call` for `os_apps_render_boundary_explorer` returns `status=200`
+  - then `resources/read` for `ui://mcp-geo/boundary-explorer`
+- Check UI telemetry events (`os_apps.log_event`) for `host_ready`,
+  `map_init_skipped`, or `map_init_failed` to classify runtime cause.
+
+If trace shows `content=["text","resource_link"]` plus successful
+`resources/read` for the same `ui://` URI, but still no
+`os_apps.log_event` calls afterward:
+- the client fetched the resource but did not mount/bridge the widget runtime.
+- this is a host-side MCP-Apps runtime limitation, not an MCP server/tool error.
+
+## Widget rendering unavailable in a host
+If the host does not advertise `io.modelcontextprotocol/ui` (or renders no
+widget output), use compatibility mode instead of retrying widget calls.
+
+Remediation:
+- Start with `os_maps.render` and treat it as the canonical baseline.
+- Consume fallback skeleton contracts (`map_card`, `overlay_bundle`,
+  `export_handoff`) from tool outputs.
+- Keep startup discovery lean with `MCP_TOOLS_DEFAULT_TOOLSET=starter`.
+- Use targeted post-init discovery (`toolset` / `includeToolsets`) only when
+  you need additional tools.
+
+Reference docs:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
+## Mixed UI / no-UI host fleet drift
+If one host renders widgets and another does not, enforce deterministic
+degradation instead of host-specific ad hoc payloads.
+
+Remediation:
+- Keep one fallback contract set (`map_card`, `overlay_bundle`, `export_handoff`).
+- Log and inspect `degradationMode` and `widgetUnsupportedReason`.
+- Use style profiles from
+  `resource://mcp-geo/map-embedding-style-profiles` for constrained hosts.
+- Validate both UI-supported and UI-unsupported replay fixtures in map trials.
+
+Reference bundle:
+- `docs/map_embedding_best_practices.md`
+
 ## OS VTS labels missing for custom symbol layers
 If custom label layers render without text on OS Vector Tile Service basemaps,
 the style is usually referencing glyph assets that are not available for
@@ -125,6 +224,38 @@ Remediation:
 - Restart Claude Desktop.
 - Retry with `MCP_APPS_CONTENT_MODE=embedded` and `MCP_APPS_RESOURCE_LINK=0`.
 - If reproducible, report to Anthropic with timestamp and screenshot.
+
+## Claude shows `Tool execution failed` but MCP trace shows `status=200`
+If Claude UI reports `Tool execution failed` while `logs/claude-trace.jsonl`
+shows successful JSON-RPC responses (`server->client` with `result.status=200`),
+the host is typically rejecting the tool result shape after transport succeeds.
+
+What to check:
+- Confirm calls reached the server and returned success:
+  - `direction=client->server`, `method=tools/call`
+  - matching `direction=server->client`, same `id`, `result.status=200`
+- Confirm there are no trace parse errors for that session.
+
+Remediation:
+- Use a build that auto-populates MCP `structuredContent` for dict tool results
+  (added on 2026-02-14) so strict hosts can validate outputs against tool schemas.
+- Rebuild once with `MCP_GEO_DOCKER_BUILD=always`, then switch back to
+  `MCP_GEO_DOCKER_BUILD=missing` for normal use.
+- Keep `MCP_STDIO_FRAMING=line` for Claude Desktop.
+
+## macOS popup: `"python3.14" would like to access data from other apps`
+When Claude starts the MCP server through a Python wrapper (`python3` command in
+`claude_desktop_config.json`), macOS may show a one-time privacy prompt:
+`"python3.14" would like to access data from other apps`.
+
+Interpretation:
+- This is an OS-level TCC permission prompt for the Python host process.
+- It is not an MCP protocol error from `mcp-geo`.
+
+Action:
+- Allow once so Claude can continue launching the configured MCP wrapper.
+- If startup remains slow afterward, check whether
+  `MCP_GEO_DOCKER_BUILD=always` is forcing a full Docker rebuild each launch.
 
 ## General Debug Steps
 1. Capture correlationId from response headers/logs for traceability.

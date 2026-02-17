@@ -45,7 +45,8 @@ via `mcp-geo-stdio` (installed) or `scripts/os-mcp` (repo-local wrapper).
       "args": [],
       "env": {
         "OS_API_KEY": "your-api-key-here",
-        "ONS_LIVE_ENABLED": "true"
+        "ONS_LIVE_ENABLED": "true",
+        "MCP_TOOLS_DEFAULT_TOOLSET": "starter"
       }
     }
   }
@@ -56,6 +57,7 @@ Notes:
 - If you installed the package, swap `command` to `mcp-geo-stdio`.
 - If your client supports `cwd`, set it to the repo root when using `./scripts/os-mcp`.
 - Remove `ONS_LIVE_ENABLED` or set it to `"false"` if you want sample ONS data only.
+- Keep `MCP_TOOLS_DEFAULT_TOOLSET=starter` for lean startup discovery.
 - `mcp.json` includes a ready-to-copy entry using the same settings.
 - Claude Desktop enforces tool name patterns; the stdio adapter normalizes dotted names to underscores in list/search results. Use the names shown in your client (the server still accepts original names).
 
@@ -240,6 +242,38 @@ Fetch a resource:
 ```bash
 curl -sS "$BASE_URL/resources/read?name=ons_observations"
 ```
+
+## Map baseline first (works without widgets)
+
+Use this sequence before attempting MCP-Apps rendering:
+
+1. Call `os_maps.render`.
+2. Display the static image URL.
+3. Add overlay payloads (`overlay_bundle`) if needed.
+4. Only then call `os_apps.render_*` when UI support is confirmed.
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"os_maps.render","bbox":[-0.18,51.49,-0.05,51.54],"size":640,"zoom":13}'
+```
+
+Fallback contract references:
+- `docs/spec_package/06_api_contracts.md`
+- `docs/spec_package/06a_map_delivery_fallback_contracts.md`
+- `docs/map_delivery_support_matrix.md`
+
+## Progressive fallback walkthrough (full UI -> no UI)
+
+1. Try full UI:
+   `os_apps.render_geography_selector`.
+2. If host UI is partial/unsupported, keep `os_maps.render` + overlays.
+3. For constrained/offline hosts, use `os_offline.get` to deliver
+   `map_card`/`overlay_bundle`/`export_handoff`.
+4. Select a constrained profile from:
+   `resource://mcp-geo/map-embedding-style-profiles`.
+
+Mixed-fleet reference: `docs/map_embedding_best_practices.md`.
 
 ## Basic evaluation-style questions
 

@@ -1,8 +1,8 @@
 import io, json, re
 
 from server import stdio_adapter
-from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.config import settings
+from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.protocol import PROTOCOL_VERSION
 
 def frame(msg: dict) -> bytes:
@@ -97,6 +97,34 @@ def test_call_tool_accepts_arguments_payload():
     assert call.get("ok") is True
     assert call.get("content")
     assert call["content"][0]["type"] == "text"
+    assert isinstance(call.get("structuredContent"), dict)
+
+
+def test_call_tool_accepts_display_style_name_alias():
+    call = stdio_adapter.handle_call_tool({"name": "Os mcp descriptor", "arguments": {}})
+    assert call.get("ok") is True
+    assert call.get("content")
+
+
+def test_call_tool_accepts_namespaced_name_alias():
+    call = stdio_adapter.handle_call_tool({"name": "mcp-geo:os_mcp_descriptor", "arguments": {}})
+    assert call.get("ok") is True
+    assert call.get("content")
+
+
+def test_call_tool_display_style_alias_routes_to_os_tool(monkeypatch):
+    from tools import os_common
+
+    monkeypatch.setattr(settings, "OS_API_KEY", "", raising=False)
+    monkeypatch.setattr(os_common.client, "api_key", "")
+    call = stdio_adapter.handle_call_tool(
+        {"name": "Os names find", "arguments": {"text": "Village Hotel Coventry"}}
+    )
+    assert call.get("isError") is True
+    data = call.get("data", {})
+    assert data.get("code") == "NO_API_KEY"
+    structured = call.get("structuredContent", {})
+    assert structured.get("code") == "NO_API_KEY"
 
 
 def test_ui_tools_emit_resource_content(monkeypatch):
@@ -117,6 +145,32 @@ def test_ui_tools_include_resource_content_by_default(monkeypatch):
     assert content
     assert content[0]["type"] == "text"
     assert "Open the geography selector" in content[0]["text"]
+
+
+def test_claude_defaults_ui_tool_content_mode_to_resource_link(monkeypatch):
+    monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
+    monkeypatch.setenv("MCP_APPS_CONTENT_MODE", "embedded")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
+    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
+    assert call.get("ok") is True
+    content = call.get("content", [])
+    assert content
+    assert any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+    assert not any(block.get("type") == "resource" for block in content if isinstance(block, dict))
+
+
+def test_claude_ui_content_mode_respects_explicit_override(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", "text")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
+    call = stdio_adapter.handle_call_tool(
+        {
+            "name": "os_apps_render_geography_selector",
+            "arguments": {"contentMode": "embedded"},
+        }
+    )
+    assert call.get("ok") is True
+    content = call.get("content", [])
+    assert any(block.get("type") == "resource" for block in content if isinstance(block, dict))
 
 def test_stdio_client_supports_ui_nested(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_UI_SUPPORTED", raising=False)
@@ -139,6 +193,9 @@ def test_ui_tools_fallback_to_static_map(monkeypatch):
     assert isinstance(fallback, dict)
     assert fallback.get("type") == "static_map"
     assert "render" in fallback
+    assert fallback.get("widgetUnsupported") is True
+    assert fallback.get("widgetUnsupportedReason") == "ui_extension_not_advertised"
+    assert fallback.get("guidance", {}).get("degradationMode") == "no_ui"
 
 
 def test_ui_tools_fallback_stats_dashboard(monkeypatch):
@@ -159,6 +216,8 @@ def test_ui_tools_fallback_stats_dashboard(monkeypatch):
     assert isinstance(fallback, dict)
     assert fallback.get("type") == "statistics_dashboard"
     assert "nomis.query" in fallback.get("suggestedTools", [])
+    assert fallback.get("widgetUnsupported") is True
+    assert fallback.get("guidance", {}).get("preferredNextTools")
 
 
 def test_tool_schema_const_is_sanitized():

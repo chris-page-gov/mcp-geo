@@ -1,0 +1,53 @@
+{
+  "version": "2026-02-14",
+  "profiles": [
+    {
+      "id": "compact_static",
+      "label": "Compact static",
+      "targetHosts": ["no_ui", "low_bandwidth"],
+      "constraints": {
+        "maxResponseBytes": 120000,
+        "maxOverlayLayers": 2,
+        "maxPointFeatures": 200
+      },
+      "styleHints": {
+        "baseStyle": "OS_VTS_3857_Light",
+        "labelDensity": "low",
+        "lineWeight": "medium"
+      },
+      "fallbackOrder": ["map_card", "overlay_bundle", "export_handoff"]
+    },
+    {
+      "id": "lean_vector",
+      "label": "Lean vector",
+      "targetHosts": ["partial_ui", "ui_supported_constrained"],
+      "constraints": {
+        "maxResponseBytes": 300000,
+        "maxOverlayLayers": 4,
+        "maxPointFeatures": 750
+      },
+      "styleHints": {
+        "baseStyle": "OS_VTS_3857_Road",
+        "labelDensity": "medium",
+        "lineWeight": "medium"
+      },
+      "fallbackOrder": ["overlay_bundle", "map_card", "export_handoff"]
+    },
+    {
+      "id": "text_only_fallback",
+      "label": "Text-only fallback",
+      "targetHosts": ["text_only", "strict_sandbox"],
+      "constraints": {
+        "maxResponseBytes": 60000,
+        "maxOverlayLayers": 1,
+        "maxPointFeatures": 0
+      },
+      "styleHints": {
+        "baseStyle": "none",
+        "labelDensity": "none",
+        "lineWeight": "none"
+      },
+      "fallbackOrder": ["map_card", "export_handoff"]
+    }
+  ]
+}

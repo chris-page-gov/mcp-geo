@@ -10,14 +10,11 @@ RUN rm -f /etc/apt/sources.list.d/yarn.list || true && \
 		ca-certificates \
 		curl \
 		build-essential \
-		jq \
-		postgresql-client \
 		libpq-dev \
 		pkg-config \
 		gdal-bin \
 		libgdal-dev \
 		libgeos-dev \
-		libspatialindex-dev \
 		proj-bin \
 		libproj-dev && \
 	update-ca-certificates && \

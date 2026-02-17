@@ -1,0 +1,33 @@
+{
+  "version": "2026-02-14",
+  "profiles": [
+    {
+      "id": "ui_supported_inline",
+      "description": "Host advertises MCP-Apps UI support with inline display mode.",
+      "uiSupported": true,
+      "degradationMode": "full_ui",
+      "hostContext": {
+        "displayMode": "inline",
+        "availableDisplayModes": ["inline", "fullscreen"],
+        "platform": "web",
+        "userAgent": "playwright",
+        "containerDimensions": {"maxHeight": 760},
+        "mcpGeo": {"proxyBase": "http://localhost:8000"}
+      }
+    },
+    {
+      "id": "ui_unsupported_static",
+      "description": "Host does not support MCP-Apps UI and must consume fallback payloads.",
+      "uiSupported": false,
+      "degradationMode": "no_ui",
+      "hostContext": {
+        "displayMode": "inline",
+        "availableDisplayModes": ["inline"],
+        "platform": "web",
+        "userAgent": "playwright-no-ui",
+        "containerDimensions": {"maxHeight": 640},
+        "mcpGeo": {"proxyBase": "http://localhost:8000"}
+      }
+    }
+  ]
+}

@@ -12,6 +12,8 @@ operational behaviors, and the user experience expected from MCP tools and MCP-A
 4. Detailed design (components): `docs/spec_package/04_system_design.md`
 5. Data flows & cache pipeline: `docs/spec_package/05_data_flow_and_cache.md`
 6. API contracts & protocol: `docs/spec_package/06_api_contracts.md`
+6a. Map delivery fallback contracts appendix:
+   `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 7. Security & privacy: `docs/spec_package/07_security_privacy.md`
 8. Observability & operations: `docs/spec_package/08_observability_ops.md`
 9. Testing & quality: `docs/spec_package/09_testing_quality.md`

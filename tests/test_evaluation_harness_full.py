@@ -215,6 +215,8 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
         "os_linked_ids.product_version_info",
         "os_maps.wmts_capabilities",
         "os_maps.raster_tile",
+        "os_offline.descriptor",
+        "os_offline.get",
         "os_qgis.vector_tile_profile",
         "os_qgis.export_geopackage_descriptor",
         "os_net.rinex_years",

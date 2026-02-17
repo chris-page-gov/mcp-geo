@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCP Geo Boundary Explorer Host - CV1 3HB</title>
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .top { padding: 8px 12px; background: #0b1324; color: #dfe8ff; font-size: 13px; }
+    .top code { color: #91c9ff; }
+    iframe { width: 100%; height: calc(100% - 38px); border: 0; display: block; }
+  </style>
+</head>
+<body>
+  <div class="top">Boundary MCP-app host. Query: <code>CV1 3HB</code> -> <code>Sherbourne (WARD)</code>.</div>
+  <iframe id="app" src="/ui/boundary_explorer.html" title="Boundary Explorer"></iframe>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8011";
+    const iframe = document.getElementById("app");
+    let demoStarted = false;
+
+    function postToIframe(message) {
+      if (!iframe.contentWindow) return;
+      iframe.contentWindow.postMessage(message, "*");
+    }
+
+    async function callTool(name, args) {
+      const body = { tool: name, ...(args || {}) };
+      const resp = await fetch(`${API_BASE}/tools/call`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await resp.json();
+      if (!resp.ok || (json && json.isError)) {
+        const msg = (json && (json.message || json.code)) || `HTTP ${resp.status}`;
+        throw new Error(String(msg));
+      }
+      return json;
+    }
+
+    async function runDemo() {
+      if (demoStarted) return;
+      demoStarted = true;
+      // Set initial query + level and execute search.
+      await new Promise((r) => setTimeout(r, 600));
+      const doc = iframe.contentWindow && iframe.contentWindow.document;
+      if (!doc) return;
+      const searchInput = doc.getElementById("searchInput");
+      const levelSelect = doc.getElementById("levelSelect");
+      const searchButton = doc.getElementById("searchButton");
+      if (searchInput) searchInput.value = "Sherbourne";
+      if (levelSelect) levelSelect.value = "WARD";
+      if (searchButton) searchButton.click();
+
+      // Add first match to paint boundary and fit map.
+      for (let i = 0; i < 30; i += 1) {
+        await new Promise((r) => setTimeout(r, 300));
+        const toggle = doc.querySelector(".result [data-action='toggle']");
+        if (toggle) {
+          toggle.click();
+          break;
+        }
+      }
+    }
+
+    window.addEventListener("message", async (event) => {
+      const msg = event.data;
+      if (!msg || msg.jsonrpc !== "2.0") return;
+      if (event.source !== iframe.contentWindow) return;
+
+      if (msg.id === undefined) {
+        // notifications from widget
+        if (msg.method === "ui/notifications/initialized") {
+          void runDemo();
+        }
+        return;
+      }
+
+      const reply = (payload) => postToIframe({ jsonrpc: "2.0", id: msg.id, ...payload });
+
+      try {
+        if (msg.method === "ui/initialize") {
+          reply({
+            result: {
+              protocolVersion: "2026-01-26",
+              hostContext: {
+                displayMode: "inline",
+                availableDisplayModes: ["inline", "fullscreen"],
+                platform: "web",
+                userAgent: navigator.userAgent,
+                containerDimensions: { maxHeight: 880 },
+                mcpGeo: { proxyBase: API_BASE },
+              },
+            },
+          });
+
+          // Send initial tool-input config shortly after init.
+          setTimeout(() => {
+            postToIframe({
+              jsonrpc: "2.0",
+              method: "ui/notifications/tool-input",
+              params: {
+                arguments: {
+                  searchTerm: "Sherbourne",
+                  level: "WARD",
+                  detailLevel: "postcode",
+                },
+              },
+            });
+          }, 50);
+          return;
+        }
+
+        if (msg.method === "tools/call") {
+          const params = msg.params || {};
+          const name = params.name || params.tool;
+          const args = params.arguments || params.args || {};
+          const result = await callTool(name, args);
+          reply({ result });
+          return;
+        }
+
+        reply({ result: {} });
+      } catch (err) {
+        reply({
+          error: {
+            code: -32000,
+            message: String(err && err.message ? err.message : err),
+          },
+        });
+      }
+    });
+  </script>
+</body>
+</html>

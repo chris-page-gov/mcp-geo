@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, Header, Query, Response
+from fastapi.responses import FileResponse
 
 from server.mcp.resource_catalog import (
     DATA_RESOURCE_PREFIX,
@@ -12,6 +13,7 @@ from server.mcp.resource_catalog import (
     load_skill_content,
     load_ui_content,
     resolve_data_resource,
+    resolve_offline_pack_download,
     resolve_skill_resource,
     resolve_ui_resource,
 )
@@ -171,3 +173,14 @@ def read_resource(
                 return _read_result(uri_value, "application/json", content, meta)
 
     raise HTTPException(status_code=404, detail="Resource not found")
+
+
+@router.get("/resources/download")
+def download_resource(
+    uri: str = Query(...),
+) -> FileResponse:
+    resolved = resolve_offline_pack_download(uri)
+    if not resolved:
+        raise HTTPException(status_code=404, detail="Offline pack not found")
+    path, media_type = resolved
+    return FileResponse(path=str(path), filename=path.name, media_type=media_type)

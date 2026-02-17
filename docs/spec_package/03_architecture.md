@@ -39,3 +39,25 @@ flowchart TB
 - **Boundary cache**: PostGIS-backed admin boundaries cache, served by admin tools.
 - **MCP-Apps UI**: HTML resources delivered by `resources/read`.
 
+## Optional map sidecar profile
+
+For higher-throughput vector delivery, MCP Geo can run with optional sidecars:
+
+- Martin (vector tiles from PostGIS)
+- pg_tileserv (table/function tile endpoints)
+
+This profile is additive and must not replace the baseline compatibility path
+(`os_maps.render` plus fallback skeleton contracts).
+
+Reference runbook: `docs/sidecar_profile.md`
+
+## Mixed host fleet behavior
+
+MCP Geo is designed for mixed host fleets where some clients support MCP-Apps
+UI and others are data-only:
+
+- UI-capable hosts receive widget resources (`ui://`).
+- Non-UI hosts receive deterministic fallback contracts.
+- Both paths share the same map contract keys and provenance fields.
+
+Reference guidance: `docs/map_embedding_best_practices.md`

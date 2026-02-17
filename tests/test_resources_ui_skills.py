@@ -32,6 +32,20 @@ def test_resources_get_ui_uri():
     assert "ui" in contents[0].get("_meta", {})
     assert "Geography Selector" in contents[0]["text"]
 
+
+def test_map_widgets_use_absolute_maplibre_assets():
+    for uri in ("ui://mcp-geo/geography-selector", "ui://mcp-geo/boundary-explorer"):
+        resp = client.get("/resources/read", params={"uri": uri})
+        assert resp.status_code == 200
+        contents = resource_contents(resp)
+        html = contents[0]["text"]
+        assert "vendor/maplibre-gl.js" not in html
+        assert "vendor/maplibre-gl.css" not in html
+        assert "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" in html
+        assert "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" in html
+        assert "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js" in html
+        assert "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" in html
+
 def test_resources_list_pagination():
     resp = client.get("/resources/list", params={"limit": 1, "page": 1})
     assert resp.status_code == 200

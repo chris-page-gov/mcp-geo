@@ -1,0 +1,17 @@
+{
+  "packId": "map_delivery_option_tracker",
+  "sourceNotebook": "research/map_delivery_research_2026-02/notebooks/map_delivery_option_tracker.ipynb",
+  "generatedAt": "2026-02-17T09:18:26.448715Z",
+  "hash": "sha256:cb597c59a11fc8180ca792129f5bcb3cb108b54aa3d3d40b2b93120fc0cb703b",
+  "scenarios": [
+    {
+      "id": "notebook-default",
+      "title": "Notebook scenario export",
+      "description": "Fallback scenario generated when no markdown headings were found."
+    }
+  ],
+  "provenance": {
+    "generator": "scripts/map_trials/export_notebook_scenario_pack.py",
+    "sourceNotebookHash": "sha256:cb597c59a11fc8180ca792129f5bcb3cb108b54aa3d3d40b2b93120fc0cb703b"
+  }
+}

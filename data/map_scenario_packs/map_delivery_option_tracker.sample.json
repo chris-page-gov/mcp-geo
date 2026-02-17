@@ -1,0 +1,22 @@
+{
+  "packId": "map_delivery_option_tracker.sample",
+  "sourceNotebook": "research/map_delivery_research_2026-02/notebooks/map_delivery_option_tracker.ipynb",
+  "generatedAt": "2026-02-14T00:00:00Z",
+  "hash": "sha256:sample",
+  "scenarios": [
+    {
+      "id": "static-baseline",
+      "title": "Static map baseline delivery",
+      "description": "Verify os_maps.render baseline succeeds before widget usage."
+    },
+    {
+      "id": "fallback-contract",
+      "title": "Fallback skeleton consistency",
+      "description": "Validate map_card, overlay_bundle, and export_handoff key stability."
+    }
+  ],
+  "provenance": {
+    "owner": "mcp-geo",
+    "notes": "Sample deterministic scenario pack for resource retrieval tests."
+  }
+}

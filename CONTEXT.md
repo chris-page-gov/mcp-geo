@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-14
+Last updated: 2026-02-17
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,8 +52,10 @@ assumptions change.
 - Prioritizing next major gap after gap closure: CI pipeline implementation.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
-- Converting map delivery research recommendations into a tracked, phased
-  implementation program before feature execution.
+- Executing the map delivery recommendation workstreams in phased delivery
+  order (`MDR-I*`, `MDR-N*`, `MDR-M*`, `MDR-E*`) with tracking updates per stage.
+- Keeping the completed map-delivery program artifacts synchronized across docs,
+  resources, scripts, and trial evidence outputs.
 
 ## Active Work
 
@@ -66,6 +68,24 @@ assumptions change.
 - Track recommendation-delivery workstreams in
   `docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`
   and synchronize statuses in `PROGRESS.MD`.
+- Maintain compatibility-first map docs/contracts and support matrix links in
+  `docs/spec_package/06_api_contracts.md`,
+  `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
+  `docs/map_delivery_support_matrix.md`.
+- Maintain deterministic host-simulation fixtures, latency-budget trial
+  reporting, and optional sidecar runbook assets under `playground/trials/`,
+  `scripts/map_trials/`, and `scripts/sidecar/`.
+- Maintain offline map delivery contracts and scenario-pack resource lifecycle
+  artifacts under `tools/os_offline.py`, `resources/offline_map_catalog.json`,
+  and `data/map_scenario_packs/`.
+- Maintain ecosystem-facing embedding guidance and lightweight style profiles in
+  `docs/map_embedding_best_practices.md` and
+  `resource://mcp-geo/map-embedding-style-profiles`.
+- Maintain presentation story-gallery scenarios, screenshot evidence, and
+  slide-ready reporting outputs under `playground/trials/fixtures/`,
+  `playground/trials/tests/`, and
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md` +
+  `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -82,16 +102,15 @@ assumptions change.
   population, playground UI.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
   evaluation plan).
-- Planned: map delivery recommendation implementation program (`MDR-I1` to
-  `MDR-E4`) is documented and tracked; execution not started.
+- Done: map delivery recommendation implementation program (`MDR-I1` to
+  `MDR-E4`) complete across immediate, near-term, medium-term, and ecosystem
+  waves.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
 
 - High: CI pipeline; MCP-Apps client compatibility validation and docs.
-- High: map delivery immediate recommendations (canonical `os_maps.render`
-  baseline docs, standardized fallback skeleton payloads, lean startup toolset
-  guidance, browser/widget support matrix).
+- High: CI pipeline; MCP-Apps client compatibility validation and docs.
 - Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
   admin cache staleness policy; performance regression tests.
 - Medium: near-term map engineering recommendations (deterministic host simulation,
@@ -131,6 +150,95 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-17: Added offline pack binary retrieval endpoint
+  (`GET /resources/download?uri=resource://mcp-geo/offline-packs/<file>`) so
+  large PMTiles/MBTiles resources no longer require inlined base64 payloads in
+  `resources/read` responses while preserving a deterministic download path for
+  map handoff workflows.
+- 2026-02-17: Hardened `os_offline.get` artifact hash performance by honoring
+  declared `sha256` in `resources/offline_map_catalog.json` and caching fallback
+  file digests by `(path, mtime, size)` when runtime hashing is needed.
+- 2026-02-14: Codex MCP startup can time out when `scripts/claude-mcp-local`
+  is configured with `MCP_GEO_DOCKER_BUILD=always` (Docker build exceeds Codex
+  handshake window). For Codex MCP registration, keep the same wrapper command
+  chain but use `MCP_GEO_DOCKER_BUILD=missing` to allow reliable initialize +
+  tool-call negotiation.
+- 2026-02-14: Identified `ui://`-relative widget assets (`vendor/maplibre-*`)
+  as a host-interop failure mode in Claude and updated geography/boundary
+  widgets to use absolute MapLibre CDN URLs with jsDelivr fallback, plus
+  proxy-only worker URL wiring and CSP domain updates.
+- 2026-02-14: Added Claude-specific stdio widget content-mode coercion in
+  `server/stdio_adapter.py` so `os_apps.render_*` defaults to `contentMode=resource_link`
+  for Claude clients (unless explicitly overridden), addressing repeated
+  sessions where embedded HTML blocks were echoed in transcript while preserving
+  a UI-launchable resource block.
+- 2026-02-14: Verified residual Claude UI limitation via trace: after
+  `resource_link` tool results, Claude performs `resources/read ui://...` but
+  widget runtime bridge events (`os_apps.log_event`) still do not appear,
+  indicating host-side mount/bridge failure outside MCP server control.
+- 2026-02-14: Diagnosed boundary explorer non-render in Claude as a widget
+  bootstrap coupling bug in `ui/boundary_explorer.html`: map runtime failures
+  (`maplibre` missing/worker init issues) could prevent reliable
+  `ui/notifications/initialized` completion. Fixed by decoupling host init from
+  map init, adding degraded-mode handling, and emitting `os_apps.log_event`
+  diagnostics for host/map runtime states.
+- 2026-02-14: Captured two recurring Claude troubleshooting outcomes in docs:
+  tool-name namespace hints (`mcp-geo:<tool>`) can be client-side pre-dispatch
+  mismatches, and inline-preview `maplibregl is not defined` errors are preview
+  runtime limits even when the same HTML works in a full browser.
+- 2026-02-14: Hardened MCP tool-call result shape for strict hosts by always
+  emitting `structuredContent` when tool handlers return dict payloads (stdio
+  and HTTP transports). This was prompted by Claude traces showing `tools/call`
+  responses with `status=200` while UI still reported `Tool execution failed`.
+- 2026-02-14: Documented macOS startup prompt behavior
+  (`"python3.14" would like to access data from other apps`) and clarified it
+  as an OS-level permission event for the Python wrapper process, not an MCP
+  protocol/server failure.
+- 2026-02-14: Extended tool-name alias resolution to accept client/server
+  namespaced forms (for example `mcp-geo:os_places_search`) after Claude
+  surfaced a mismatch between prefixed discovery names and unprefixed call names.
+- 2026-02-14: Updated `os_poi.search|nearest|within` to use `dataset=DPA,LPI`
+  after Claude trace replay showed OS Places rejecting `dataset=POI` with a
+  hard 400, causing early map-workflow failures despite healthy map tools.
+- 2026-02-14: Hardened tool-name alias resolution in
+  `server/tool_naming.py` to accept display-style names (case/spacing/
+  punctuation variants such as `Os names find`) after a Claude map-flow trace
+  showed repeated unknown-tool failures presented as generic `Tool execution failed`.
+- 2026-02-14: Added `os_offline.descriptor` and `os_offline.get` to the
+  evaluation harness specialist-tool allowlist in
+  `tests/test_evaluation_harness_full.py` to prevent false missing-coverage
+  failures after MDR-M1 offline tool registration.
+- 2026-02-14: Completed ecosystem map-delivery recommendation wave
+  (`MDR-E1` to `MDR-E4`) by publishing an MCP/AI-host best-practice bundle,
+  constrained style profiles, progressive fallback examples, and mixed host
+  degradation guidance.
+- 2026-02-16: Hardened devcontainer MCP startup so STDIO uses repo code instead
+  of site-packages (`scripts/os-mcp` file-based import), keeps repo root ahead
+  of user site-packages (`scripts/os_mcp.py`), and forces user site visibility
+  in the VS Code stdio wrapper (`scripts/vscode_mcp_stdio.py`).
+- 2026-02-16: Made devcontainer installs align with the STDIO interpreter
+  (`python3 -m pip` in post-create) and added a post-start loguru check to
+  auto-install repo deps when missing.
+- 2026-02-16: Added devcontainer HTTP auto-start toggle and documented STDIO
+  dependency recovery steps in `docs/getting_started.md`.
+- 2026-02-17: Added a presentation-focused map story gallery with six
+  real-world layered scenarios, automated screenshot capture in Playwright
+  trials, and a generated story-gallery report mapping map-tool coverage to
+  slide-ready evidence artifacts.
+- 2026-02-17: Added `story_gallery_slides.md` with one slide per scenario and
+  speaker notes to speed Wednesday presentation assembly.
+- 2026-02-14: Completed medium-term map-delivery recommendation wave
+  (`MDR-M1` to `MDR-M3`) by adding offline PMTiles/MBTiles handoff tooling and
+  resources, automated map quality checks with waiver support, and
+  notebook-derived scenario-pack resources with provenance metadata.
+- 2026-02-14: Completed near-term map-delivery recommendation wave
+  (`MDR-N1` to `MDR-N4`) by adding deterministic host simulation fixtures,
+  explicit fallback guidance fields, mobile latency budgets/reporting, and an
+  optional Martin/pg_tileserv sidecar deployment profile.
+- 2026-02-14: Completed immediate map-delivery recommendation wave
+  (`MDR-I1` to `MDR-I4`) by promoting `os_maps.render` as canonical baseline,
+  documenting stable fallback skeleton contracts, standardizing `starter`-first
+  startup guidance, and publishing `docs/map_delivery_support_matrix.md`.
 - 2026-02-14: Ratified a detailed, dependency-tracked map delivery
   recommendations implementation plan in
   `docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`

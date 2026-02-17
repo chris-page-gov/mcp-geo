@@ -49,7 +49,7 @@ def test_os_poi_search_success(monkeypatch):
     assert body["count"] == 1
     assert body["results"][0]["name"] == "Cafe Example"
     assert captured["url"].endswith("/find")
-    assert captured["params"]["dataset"] == "POI"
+    assert captured["params"]["dataset"] == "DPA,LPI"
     assert captured["params"]["maxresults"] == 5
     assert captured["params"]["output_srs"] == "WGS84"
 
@@ -82,7 +82,7 @@ def test_os_poi_nearest_success(monkeypatch):
     body = resp.json()
     assert body["count"] == 1
     assert captured["url"].endswith("/nearest")
-    assert captured["params"]["dataset"] == "POI"
+    assert captured["params"]["dataset"] == "DPA,LPI"
     assert captured["params"]["point"] == "51.5,-0.1"
     assert captured["params"]["radius"] == 500
 
@@ -115,7 +115,7 @@ def test_os_poi_within_success(monkeypatch):
     body = resp.json()
     assert body["count"] == 1
     assert captured["url"].endswith("/bbox")
-    assert captured["params"]["dataset"] == "POI"
+    assert captured["params"]["dataset"] == "DPA,LPI"
     assert captured["params"]["bbox"] == "51.4,-0.2,51.6,-0.1"
 
 

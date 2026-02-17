@@ -352,8 +352,11 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
                 data,
                 allow_resource=allow_resource,
             )
-        if "structuredContent" in data:
-            result["structuredContent"] = data["structuredContent"]
+        structured = data.get("structuredContent")
+        if isinstance(structured, dict):
+            result["structuredContent"] = structured
+        else:
+            result["structuredContent"] = stdio_adapter._default_structured_content(data)
         meta = data.get("_meta")
         if isinstance(meta, dict):
             result["_meta"] = meta

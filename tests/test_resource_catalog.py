@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 from pathlib import Path
 
@@ -117,6 +118,25 @@ def test_build_ui_meta_includes_widget_domain(monkeypatch: MonkeyPatch) -> None:
     assert meta["openai/widgetCSP"]["connect_domains"] == ["self"]
 
 
+def test_ui_resources_include_maplibre_fallback_csp_domains() -> None:
+    ui_resources = resource_catalog.list_ui_resources()
+    by_uri = {entry["uri"]: entry for entry in ui_resources}
+    for uri in (
+        "ui://mcp-geo/geography-selector",
+        "ui://mcp-geo/boundary-explorer",
+    ):
+        entry = by_uri[uri]
+        meta = entry.get("_meta", {}).get("ui", {})
+        csp = meta.get("csp", {})
+        connect_domains = set(csp.get("connectDomains", []))
+        resource_domains = set(csp.get("resourceDomains", []))
+        assert "https://unpkg.com" in connect_domains
+        assert "https://cdn.jsdelivr.net" in connect_domains
+        assert "https://tile.openstreetmap.org" in connect_domains
+        assert "https://unpkg.com" in resource_domains
+        assert "https://cdn.jsdelivr.net" in resource_domains
+
+
 def test_latest_run_report_path_missing_dir(monkeypatch: MonkeyPatch, tmp_path) -> None:
     missing_dir = tmp_path / "missing"
     monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", missing_dir)
@@ -220,6 +240,115 @@ def test_os_cache_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
     assert meta is None
 
 
+def test_map_scenario_pack_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "map_scenario_packs"
+    packs_dir.mkdir()
+    pack_file = packs_dir / "demo.json"
+    pack_file.write_text('{"packId":"demo","scenarios":[]}', encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "MAP_SCENARIO_PACKS_DIR", packs_dir)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "map-scenario-packs-index"})
+    payload = json.loads(content)
+    assert payload["items"][0]["name"] == "demo.json"
+    assert etag
+    assert meta is not None
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "map-scenario-packs/demo.json"})
+    payload = json.loads(content)
+    assert payload["packId"] == "demo"
+    assert etag
+    assert meta is not None
+
+
+def test_offline_pack_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir()
+    pack_file = packs_dir / "demo.pmtiles"
+    pack_file.write_text("PMTILES", encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs-index"})
+    payload = json.loads(content)
+    assert payload["items"][0]["name"] == "demo.pmtiles"
+    assert etag
+    assert meta is not None
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs/demo.pmtiles"})
+    payload = json.loads(content)
+    assert payload["encoding"] == "base64"
+    assert payload["mediaType"] == "application/vnd.pmtiles"
+    assert payload["downloadUrl"].startswith("/resources/download?uri=")
+    assert b"PMTILES" in base64.b64decode(payload["blob"])
+    assert etag
+    assert meta is not None
+
+
+def test_offline_pack_large_file_omits_inline_blob(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir()
+    pack_file = packs_dir / "large.pmtiles"
+    pack_file.write_bytes(b"P" * (resource_catalog.OFFLINE_PACK_INLINE_MAX_BYTES + 1))
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs/large.pmtiles"})
+    payload = json.loads(content)
+    assert payload["encoding"] == "external"
+    assert payload["blobOmitted"] is True
+    assert payload["inlineMaxBytes"] == resource_catalog.OFFLINE_PACK_INLINE_MAX_BYTES
+    assert payload["downloadUrl"].startswith("/resources/download?uri=")
+    assert "blob" not in payload
+    assert etag
+    assert meta is not None
+
+
+def test_resolve_offline_pack_download(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    pack_file = packs_dir / "demo.pmtiles"
+    pack_file.write_bytes(b"PMTILES")
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    resolved = resource_catalog.resolve_offline_pack_download(
+        "resource://mcp-geo/offline-packs/demo.pmtiles"
+    )
+    assert resolved is not None
+    path, media_type = resolved
+    assert path == pack_file.resolve()
+    assert media_type == "application/vnd.pmtiles"
+
+
+def test_offline_pack_media_type_variants(tmp_path) -> None:
+    assert resource_catalog._offline_pack_media_type(tmp_path / "demo.mbtiles") == "application/vnd.sqlite3"
+    assert resource_catalog._offline_pack_media_type(tmp_path / "demo.bin") == "application/octet-stream"
+
+
+def test_resolve_offline_pack_download_rejects_invalid(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+
+    assert resource_catalog.resolve_offline_pack_download("resource://mcp-geo/offline-packs/") is None
+    assert resource_catalog.resolve_offline_pack_download("resource://mcp-geo/not-offline/demo.pmtiles") is None
+    assert (
+        resource_catalog.resolve_offline_pack_download(
+            "resource://mcp-geo/offline-packs/../../etc/passwd"
+        )
+        is None
+    )
+    assert (
+        resource_catalog.resolve_offline_pack_download(
+            "resource://mcp-geo/offline-packs/missing.pmtiles"
+        )
+        is None
+    )
+
+
+def test_pack_file_helpers_missing_dirs(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", tmp_path / "missing-offline")
+    monkeypatch.setattr(resource_catalog, "MAP_SCENARIO_PACKS_DIR", tmp_path / "missing-scenario")
+    assert resource_catalog._offline_pack_files() == []
+    assert resource_catalog._map_scenario_pack_files() == []
+
+
 def test_load_data_content_unknown_slug_returns_not_found() -> None:
     content, etag, meta = resource_catalog.load_data_content({"slug": "does-not-exist"})
     payload = json.loads(content)
@@ -258,6 +387,23 @@ def test_resolve_data_resource_additional_os_prefixes() -> None:
     assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-exports/demo.json") == {
         "slug": "os-exports/demo.json"
     }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/map-scenario-packs-index") == {
+        "slug": "map-scenario-packs-index"
+    }
+    assert resource_catalog.resolve_data_resource(
+        "resource://mcp-geo/map-scenario-packs/demo.json"
+    ) == {"slug": "map-scenario-packs/demo.json"}
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/offline-packs-index") == {
+        "slug": "offline-packs-index"
+    }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/offline-packs/demo.pmtiles") == {
+        "slug": "offline-packs/demo.pmtiles"
+    }
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/ons-exports") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-cache") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/os-exports") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/offline-packs") is None
+    assert resource_catalog.resolve_data_resource("resource://mcp-geo/map-scenario-packs") is None
 
 
 def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_path) -> None:
@@ -265,6 +411,8 @@ def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_p
     cases: list[tuple[str, str]] = [
         ("OS_CATALOG_PATH", "os-catalog"),
         ("LAYERS_CATALOG_PATH", "layers-catalog"),
+        ("OFFLINE_MAP_CATALOG_PATH", "offline-map-catalog"),
+        ("MAP_EMBEDDING_STYLE_PROFILES_PATH", "map-embedding-style-profiles"),
         ("NOMIS_WORKFLOWS_PATH", "nomis-workflows"),
         ("BOUNDARY_PACK_SOURCES_PATH", "boundary-pack-sources"),
         ("CODE_LIST_PACK_SOURCES_PATH", "code-list-pack-sources"),
@@ -284,13 +432,23 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", tmp_path / "ons_exports")
     monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", tmp_path / "os_cache")
     monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", tmp_path / "os_exports")
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", tmp_path / "offline_packs")
+    monkeypatch.setattr(resource_catalog, "MAP_SCENARIO_PACKS_DIR", tmp_path / "map_scenario_packs")
     monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", tmp_path / "exports")
 
     # Ensure base directories exist for deterministic root resolution.
     Path(resource_catalog.ONS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OS_CACHE_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+    Path(resource_catalog.OFFLINE_PACKS_DIR).mkdir(parents=True, exist_ok=True)
+    Path(resource_catalog.MAP_SCENARIO_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+    evil_offline = tmp_path / "offline_packs_evil"
+    evil_offline.mkdir(parents=True, exist_ok=True)
+    (evil_offline / "secret.pmtiles").write_text("SECRET", encoding="utf-8")
+    evil_scenario = tmp_path / "map_scenario_packs_evil"
+    evil_scenario.mkdir(parents=True, exist_ok=True)
+    (evil_scenario / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
 
     content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../../etc/passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
@@ -299,6 +457,20 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "offline-packs/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content(
+        {"slug": "offline-packs/../offline_packs_evil/secret.pmtiles"}
+    )
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "map-scenario-packs/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content(
+        {"slug": "map-scenario-packs/../map_scenario_packs_evil/secret.json"}
+    )
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "exports/../../etc/passwd"})
@@ -311,15 +483,21 @@ def test_load_data_content_not_found_export_and_cache_files(
     ons_exports = tmp_path / "ons_exports"
     os_cache = tmp_path / "os_cache"
     os_exports = tmp_path / "os_exports"
+    offline_packs = tmp_path / "offline_packs"
+    scenario_packs = tmp_path / "map_scenario_packs"
     exports = tmp_path / "exports"
     ons_exports.mkdir()
     os_cache.mkdir()
     os_exports.mkdir()
+    offline_packs.mkdir()
+    scenario_packs.mkdir()
     exports.mkdir()
 
     monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", ons_exports)
     monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", os_cache)
     monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", offline_packs)
+    monkeypatch.setattr(resource_catalog, "MAP_SCENARIO_PACKS_DIR", scenario_packs)
     monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", exports)
 
     content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/missing.json"})
@@ -329,6 +507,12 @@ def test_load_data_content_not_found_export_and_cache_files(
     assert json.loads(content).get("code") == "NOT_FOUND"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/missing.json"})
+    assert json.loads(content).get("code") == "NOT_FOUND"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "offline-packs/missing.pmtiles"})
+    assert json.loads(content).get("code") == "NOT_FOUND"
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "map-scenario-packs/missing.json"})
     assert json.loads(content).get("code") == "NOT_FOUND"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "exports/missing.json"})

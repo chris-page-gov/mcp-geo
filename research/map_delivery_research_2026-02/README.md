@@ -21,6 +21,16 @@ It combines user research, standards/library landscape analysis, and containeriz
 - `05_external_scan_os_and_community.md`: OS docs/repos plus open-source mapping MCP server review.
 - `06_recommendations_and_report.md`: final evaluation, selected options, and roadmap.
 - `reports/trial_summary.md`: generated matrix summary from JSON logs.
+- `reports/story_gallery_report.md`: slide-ready user-story gallery with map
+  screenshots and functionality coverage matrix.
+- `reports/story_gallery_slides.md`: one-slide-per-story presentation deck
+  with speaker notes for demo narration.
+- `reports/map_quality_report.json`: automated quality-check report
+  (contrast/label-density/accessibility metadata + waiver handling).
+- `docs/map_delivery_support_matrix.md`: host/browser capability matrix with
+  verification dates and evidence pointers.
+- `docs/map_embedding_best_practices.md`: mixed-host embedding bundle and
+  progressive fallback patterns.
 - `notebooks/map_delivery_option_tracker.ipynb`: optional notebook tracker.
 - `evidence/logs/*`: raw execution logs.
 - `evidence/screenshots/*`: trial screenshots.
@@ -32,6 +42,9 @@ From repo root:
 ```bash
 ./scripts/run_map_delivery_trials.sh
 python3 scripts/map_trials/summarize_playwright_trials.py
+python3 scripts/map_trials/summarize_story_gallery.py
+python3 scripts/map_trials/map_quality_checks.py
+python3 scripts/map_trials/export_notebook_scenario_pack.py
 ```
 
 ## Key Evidence Artifacts
@@ -40,3 +53,4 @@ python3 scripts/map_trials/summarize_playwright_trials.py
 - Trial run logs: `research/map_delivery_research_2026-02/evidence/logs/map_delivery_trials_run_*.log`
 - Trial observations JSONL: `research/map_delivery_research_2026-02/evidence/logs/playwright_trials_observations.jsonl`
 - Trial report JSON: `research/map_delivery_research_2026-02/evidence/logs/playwright_trials_results.json`
+- Support matrix: `docs/map_delivery_support_matrix.md`

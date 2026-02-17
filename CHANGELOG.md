@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-02-17
+
 ### Added
+- Added devcontainer HTTP auto-start toggle (`MCP_GEO_DEVCONTAINER_START_HTTP`).
+- Added devcontainer STDIO registration toggle (`MCP_GEO_DEVCONTAINER_REGISTER_STDIO`).
 - Added a map delivery interoperability research pack under
   `research/map_delivery_research_2026-02/` with personas, longlist options,
   trial design/results, external source register, progress journal, and final
@@ -23,13 +27,124 @@ All notable changes to this project will be documented in this file.
   - `scripts/map_trials/summarize_playwright_trials.py`
 - Added notebook-based trial tracking starter at
   `research/map_delivery_research_2026-02/notebooks/map_delivery_option_tracker.ipynb`.
+- Added a browser/widget capability matrix at `docs/map_delivery_support_matrix.md`
+  with verification dates, capability modes, env toggles, and evidence pointers.
+- Added map-delivery fallback contract appendix
+  `docs/spec_package/06a_map_delivery_fallback_contracts.md` defining
+  `map_card`, `overlay_bundle`, and `export_handoff` schemas and conformance checks.
+- Added deterministic host-simulation fixtures and utilities for map trials:
+  `playground/trials/fixtures/host_capability_profiles.json`,
+  `playground/trials/tests/support/host_simulation.js`,
+  and `scripts/map_trials/host_simulation_profiles.py` (+ tests).
+- Added optional sidecar deployment assets for scaled map delivery:
+  `scripts/sidecar/docker-compose.map-sidecar.yml`,
+  `scripts/sidecar/smoke_sidecar_profile.sh`,
+  and `docs/sidecar_profile.md`.
+- Added offline map delivery tooling and resources:
+  `tools/os_offline.py` (`os_offline.descriptor`, `os_offline.get`),
+  `resources/offline_map_catalog.json`,
+  `resource://mcp-geo/offline-map-catalog`,
+  and `resource://mcp-geo/offline-packs*`.
+- Added map quality-check automation with waiver support:
+  `scripts/map_trials/map_quality_checks.py`,
+  `research/map_delivery_research_2026-02/reports/map_quality_report.json`,
+  and `research/map_delivery_research_2026-02/reports/map_quality_waivers.json`.
+- Added notebook scenario-pack export and resources:
+  `scripts/map_trials/export_notebook_scenario_pack.py`,
+  `data/map_scenario_packs/*`,
+  and `resource://mcp-geo/map-scenario-packs*`.
+- Added ecosystem map embedding guidance bundle:
+  `docs/map_embedding_best_practices.md`.
+- Added constrained map embedding style profiles resource:
+  `resource://mcp-geo/map-embedding-style-profiles`
+  (`resources/map_embedding_style_profiles.json`).
+- Added presentation-ready map story gallery assets:
+  `playground/trials/fixtures/map_story_scenarios.json`,
+  `playground/trials/tests/map_story_gallery.spec.js`,
+  `scripts/map_trials/summarize_story_gallery.py`,
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md`,
+  and `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`.
 
 ### Changed
+- Updated devcontainer installs to use `python3 -m pip` and added a post-start loguru check to ensure STDIO deps are present.
+- Updated STDIO wrappers to prefer repo code and keep user site-packages behind the repo on `sys.path`.
+- Updated VS Code stdio wrapper to re-enable user site-packages when disabled by the host.
+- Updated MCP tool-call response shaping (STDIO and Streamable HTTP) to always
+  include `structuredContent` for dict payloads when tools do not provide it
+  explicitly, improving compatibility with strict clients that validate
+  tool-result structure.
+- Hardened `ui/boundary_explorer.html` host bootstrap so UI initialization is
+  decoupled from MapLibre runtime initialization; map engine failures now enter
+  an explicit degraded mode (instead of aborting host init), with `os_apps.log_event`
+  telemetry for `host_ready`, `map_init_skipped`, `map_init_failed`, and runtime
+  script errors.
+- Updated stdio Claude interop for MCP-Apps tools by introducing
+  `MCP_STDIO_CLAUDE_APPS_CONTENT_MODE` (default `resource_link` in `scripts/claude-mcp-local`)
+  and auto-applying that mode to `os_apps.render_*` calls when the client is
+  Claude and no explicit `contentMode` is provided.
+- Updated map widgets (`ui/geography_selector.html`,
+  `ui/boundary_explorer.html`) to load MapLibre via absolute CDN URLs with
+  jsDelivr fallback instead of `ui://`-relative `vendor/*` paths, and to set
+  MapLibre worker URLs only when `proxyBase` is available. This addresses
+  Claude runs where widget HTML loaded but `window.maplibregl` stayed undefined.
+- Added troubleshooting evidence that some Claude sessions still fetch
+  `ui://...` resources (`resource_link` + `resources/read`) without launching
+  widget bridge/runtime (`os_apps.log_event` never emitted), isolating the
+  residual issue to host-side UI mount/bridge behavior.
+- Updated troubleshooting guidance for Claude/Desktop startup and execution
+  failures where UI shows `Tool execution failed` despite trace-confirmed
+  `status=200` tool responses, including the macOS `python3.14` permission
+  prompt interpretation.
+- Updated troubleshooting and support-matrix guidance for two common Claude map
+  troubleshooting traps: server-prefixed tool-name hints (for example
+  `mcp-geo:os_names_find`) and inline-preview `maplibregl is not defined`
+  errors caused by preview sandbox constraints rather than MCP server failures.
 - Hardened devcontainer setup for map validation workflows:
   - Added forwarded ports for Playwright test server, Inspector, and Jupyter.
   - Added Jupyter extension and post-create install of `jupyterlab` and `ipykernel`.
   - Added container env defaults for trial workspace and expanded CORS dev origins.
   - Expanded base image packages (`jq`, `postgresql-client`, `libspatialindex-dev`).
+- Updated map and onboarding docs to make `os_maps.render` the canonical
+  compatibility baseline and standardize lean `starter`-first discovery guidance:
+  `README.md`, `docs/getting_started.md`, `docs/examples.md`,
+  `docs/tutorial.md`, `docs/ChatGPT_setup_chat.md`, and `docs/troubleshooting.md`.
+- Updated map-delivery alignment docs and research index links to reference the
+  fallback contract definitions and support matrix:
+  `docs/mcp_apps_alignment.md`,
+  `docs/spec_package/06_api_contracts.md`,
+  `research/map_delivery_research_2026-02/README.md`.
+- Updated map trial matrix execution to include mobile projects, deterministic
+  host-profile replay, and latency-budget assertions with per-observation
+  telemetry.
+- Updated trial summary reporting to include latency percentiles (`p50/p90/p95`)
+  and budget-compliance rollups.
+- Updated non-UI fallback payloads (STDIO + HTTP) to include explicit
+  widget-unsupported guidance fields and deterministic next-step tool hints.
+- Updated architecture/design/walkthrough spec docs with optional Martin +
+  pg_tileserv sidecar deployment guidance.
+- Updated resources catalog and retrieval handlers to expose offline pack and
+  notebook scenario-pack index/file resources with path-traversal guards.
+- Updated trial runner orchestration to include scenario-pack export and map
+  quality checks in the standard map-delivery run sequence.
+- Updated map trial orchestration/docs to generate a story-gallery report for
+  slide production workflows.
+- Updated getting-started docs with VS Code Playwright extension considerations
+  for devcontainer runs (extension context, browser install verification,
+  OS key/env requirements, port overrides, and demo smoke command).
+- Updated docs/examples/tutorial/troubleshooting/architecture with deterministic
+  progressive fallback guidance for full UI, partial UI, and no-UI hosts.
+- Updated the full evaluation harness specialist-tool whitelist to include
+  `os_offline.descriptor` and `os_offline.get`, avoiding false coverage-gap
+  failures after adding offline map delivery tools.
+- Updated tool-name resolution to accept display-style aliases (for example
+  `Os names find`) by normalizing case/spacing/punctuation to canonical MCP
+  tool identifiers before dispatch.
+- Updated `os_poi.search|nearest|within` to use the OS Places-supported
+  dataset parameter `DPA,LPI` (instead of rejected `POI`) so Claude map flows
+  no longer fail on POI-first discovery attempts.
+- Updated tool-name resolution to accept server-prefixed aliases like
+  `mcp-geo:os_places_search` and `mcp-geo/os_places_search` in addition to
+  canonical dotted/sanitized forms.
 
 ## [0.3.1] - 2026-02-13
 ### Added

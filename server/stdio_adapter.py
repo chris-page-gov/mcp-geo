@@ -146,6 +146,7 @@ def _resolve_framing() -> Optional[str]:
 
 CLIENT_CAPABILITIES: Dict[str, Any] = {}
 CLIENT_CAPABILITY_SUMMARY: Dict[str, Any] = {}
+CLIENT_INFO: Dict[str, Any] = {}
 _ELICITATION_HANDLER: Optional[Callable[[Dict[str, Any]], Dict[str, Any] | None]] = None
 _ELICITATION_REQUEST_SEQ = 0
 
@@ -207,6 +208,24 @@ def _bool_env(name: str, default: bool = False) -> bool:
 
 def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
     return _shared_client_supports_ui(capabilities, override_env="MCP_STDIO_UI_SUPPORTED")
+
+
+def _is_claude_client() -> bool:
+    name = CLIENT_INFO.get("name")
+    if not isinstance(name, str):
+        return False
+    return name.strip().lower().startswith("claude")
+
+
+def _normalize_apps_content_mode(value: str) -> Optional[str]:
+    raw = value.strip().lower()
+    if raw in {"text", "plain"}:
+        return "text"
+    if raw in {"resource_link", "link"}:
+        return "resource_link"
+    if raw in {"embedded", "resource", "inline"}:
+        return "embedded"
+    return None
 
 
 def _client_supports_elicitation_form(capabilities: Dict[str, Any]) -> bool:
@@ -447,6 +466,15 @@ def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict
     return content
 
 
+def _default_structured_content(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a structured payload that omits transport-only wrapper keys."""
+    return {
+        key: value
+        for key, value in data.items()
+        if key not in {"content", "_meta", "structuredContent"}
+    }
+
+
 def _read_result(
     uri: str,
     mime_type: Optional[str],
@@ -528,6 +556,20 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
         "center": {"lat": lat, "lng": lng},
         "bbox": bbox,
         "note": "Client does not support MCP-Apps UI; use render.urlTemplate with your API key.",
+        "widgetUnsupported": True,
+        "widgetUnsupportedReason": "ui_extension_not_advertised",
+        "degradationMode": "no_ui",
+        "guidance": {
+            "widgetUnsupported": True,
+            "widgetUnsupportedReason": "ui_extension_not_advertised",
+            "degradationMode": "no_ui",
+            "preferredNextTools": [
+                "os_maps.render",
+                "admin_lookup.area_geometry",
+                "os_map.inventory",
+            ],
+            "transportParity": ["stdio", "http"],
+        },
     }
     if zoom is not None:
         fallback["zoom"] = zoom
@@ -550,6 +592,9 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
         "areaCodes": area_codes or [],
         "dataset": dataset,
         "measure": measure,
+        "widgetUnsupported": True,
+        "widgetUnsupportedReason": "ui_extension_not_advertised",
+        "degradationMode": "no_ui",
         "suggestedTools": [
             "ons_search.query",
             "ons_data.dimensions",
@@ -557,15 +602,30 @@ def _build_stats_dashboard_fallback(payload: Dict[str, Any]) -> Optional[Dict[st
             "nomis.datasets",
             "nomis.query",
         ],
+        "guidance": {
+            "widgetUnsupported": True,
+            "widgetUnsupportedReason": "ui_extension_not_advertised",
+            "degradationMode": "no_ui",
+            "preferredNextTools": [
+                "ons_search.query",
+                "ons_data.dimensions",
+                "ons_data.query",
+                "nomis.datasets",
+                "nomis.query",
+            ],
+            "transportParity": ["stdio", "http"],
+        },
     }
 
 
 def handle_initialize(params: Dict[str, Any]) -> Any:
     requested = params.get("protocolVersion")
     protocol_version = negotiate_protocol_version(requested)
-    global CLIENT_CAPABILITIES, CLIENT_CAPABILITY_SUMMARY
+    global CLIENT_CAPABILITIES, CLIENT_CAPABILITY_SUMMARY, CLIENT_INFO
     capabilities = params.get("capabilities")
     CLIENT_CAPABILITIES = capabilities if isinstance(capabilities, dict) else {}
+    client_info = params.get("clientInfo")
+    CLIENT_INFO = client_info if isinstance(client_info, dict) else {}
     CLIENT_CAPABILITY_SUMMARY = _summarize_client_capabilities(
         capabilities=CLIENT_CAPABILITIES,
         requested_protocol_version=requested,
@@ -713,6 +773,18 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
     payload = dict(payload)
+    if (
+        resolved_name.startswith("os_apps.render_")
+        and "contentMode" not in payload
+        and _is_claude_client()
+    ):
+        # Claude should receive a UI-launchable content block by default.
+        # `resource_link` avoids embedding full HTML while still pointing hosts
+        # at the MCP-Apps resource URI.
+        preferred_mode_raw = os.getenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", "resource_link")
+        preferred_mode = _normalize_apps_content_mode(preferred_mode_raw)
+        if preferred_mode:
+            payload["contentMode"] = preferred_mode
     if resolved_name == "os_mcp.stats_routing":
         should_continue, elicitation_error = _maybe_elicit_stats_routing(payload)
         if not should_continue:
@@ -773,8 +845,11 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             result["content"] = content_override
         else:
             result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
-        if "structuredContent" in data:
-            result["structuredContent"] = data["structuredContent"]
+        structured = data.get("structuredContent")
+        if isinstance(structured, dict):
+            result["structuredContent"] = structured
+        else:
+            result["structuredContent"] = _default_structured_content(data)
         meta = data.get("_meta")
         if isinstance(meta, dict):
             result["_meta"] = meta

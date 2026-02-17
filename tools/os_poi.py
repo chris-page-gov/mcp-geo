@@ -7,6 +7,8 @@ from tools.registry import Tool, ToolResult, register
 
 MAX_LIMIT = 100
 DEFAULT_LIMIT = 20
+# OS Places no longer accepts "POI" for dataset; use supported address datasets.
+PLACES_DATASET = "DPA,LPI"
 
 
 def _invalid(message: str) -> ToolResult:
@@ -114,7 +116,7 @@ def _search(payload: dict[str, Any]) -> ToolResult:
 
     params: dict[str, Any] = {
         "query": text,
-        "dataset": "POI",
+        "dataset": PLACES_DATASET,
         "output_srs": "WGS84",
         "maxresults": limit,
     }
@@ -134,7 +136,7 @@ def _search(payload: dict[str, Any]) -> ToolResult:
     return 200, {
         "results": results,
         "count": len(results),
-        "provenance": {"source": "os_poi", "dataset": "POI"},
+        "provenance": {"source": "os_poi", "dataset": PLACES_DATASET},
     }
 
 
@@ -152,7 +154,7 @@ def _nearest(payload: dict[str, Any]) -> ToolResult:
         "point": f"{lat},{lon}",
         "srs": "WGS84",
         "output_srs": "WGS84",
-        "dataset": "POI",
+        "dataset": PLACES_DATASET,
         "maxresults": limit,
     }
     max_distance = payload.get("maxDistanceMeters")
@@ -169,7 +171,7 @@ def _nearest(payload: dict[str, Any]) -> ToolResult:
     return 200, {
         "results": results,
         "count": len(results),
-        "provenance": {"source": "os_poi", "dataset": "POI"},
+        "provenance": {"source": "os_poi", "dataset": PLACES_DATASET},
     }
 
 
@@ -186,7 +188,7 @@ def _within(payload: dict[str, Any]) -> ToolResult:
         "bbox": f"{min_lat},{min_lon},{max_lat},{max_lon}",
         "srs": "WGS84",
         "output_srs": "WGS84",
-        "dataset": "POI",
+        "dataset": PLACES_DATASET,
         "maxresults": limit,
     }
     status, raw = client.get_json(f"{client.base_places}/bbox", params)
@@ -196,7 +198,7 @@ def _within(payload: dict[str, Any]) -> ToolResult:
     return 200, {
         "results": results,
         "count": len(results),
-        "provenance": {"source": "os_poi", "dataset": "POI"},
+        "provenance": {"source": "os_poi", "dataset": PLACES_DATASET},
     }
 
 

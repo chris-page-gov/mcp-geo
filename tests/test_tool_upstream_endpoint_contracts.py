@@ -208,7 +208,7 @@ def test_os_tool_upstream_url_contracts(monkeypatch):
     poi_calls = [
         (url, params)
         for url, params, _ in calls
-        if isinstance(params, dict) and params.get("dataset") == "POI"
+        if isinstance(params, dict) and params.get("dataset") == "DPA,LPI"
     ]
     assert any(url.endswith("/search/places/v1/find") for url, _ in poi_calls)
     assert any(url.endswith("/search/places/v1/nearest") for url, _ in poi_calls)
