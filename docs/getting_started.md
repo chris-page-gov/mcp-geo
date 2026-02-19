@@ -157,6 +157,15 @@ events to the server's `/playground/*` endpoints.
 From the repo root:
 
 ```bash
+./scripts/run-playground-demo.sh
+```
+
+This checks for running services on ports 8000/5173, starts the HTTP server and
+playground UI if needed, and writes logs under `logs/`.
+
+Manual alternative:
+
+```bash
 cd playground
 npm install
 npm run dev
