@@ -39,6 +39,41 @@ Response:
 { "isError": true, "code": "INVALID_INPUT", "message": "..." }
 ```
 
+## `os_features.query` reliability contract
+
+`os_features.query` now follows a bounded-response contract designed for
+stdio-host reliability:
+
+1. `numberReturned` always equals `len(features)`.
+2. `count` is the returned feature count (same as `numberReturned`).
+3. `numberMatched` is included only when reliable (`null` otherwise).
+4. `limit` is clamped to NGD-safe max (`<=100`) with warning metadata.
+5. `delivery=inline|resource|auto` is supported for large payload handoff.
+
+Representative response envelope:
+
+```json
+{
+  "collection": "lnd-fts-land-3",
+  "features": [],
+  "count": 0,
+  "numberMatched": null,
+  "numberReturned": 0,
+  "nextPageToken": "100",
+  "delivery": "inline",
+  "hints": {
+    "warnings": ["RESULT_LIMIT_CLAMPED", "LOCAL_FILTER_PARTIAL_SCAN"],
+    "filterApplied": "local",
+    "scan": {
+      "mode": "local",
+      "pagesScanned": 1,
+      "pageBudget": 1,
+      "partial": true
+    }
+  }
+}
+```
+
 ## Canonical map delivery contract order
 
 All host profiles should use this order:

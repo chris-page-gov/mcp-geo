@@ -9,11 +9,25 @@ All notable changes to this project will be documented in this file.
 - Added a detailed peatland-survey reliability implementation program at
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   to operationalize Section F findings from the forensic/deep-research report.
+- Added protected-landscape lookup tooling for survey AOI resolution:
+  `tools/os_landscape.py` (`os_landscape.find`, `os_landscape.get`) with
+  deterministic Bowland fixture coverage in
+  `resources/protected_landscapes_england.json`.
+- Added `resource://mcp-geo/protected-landscapes-england` to data resources for
+  discoverable protected-landscape provenance and geometry fallback.
 
 ### Changed
 - Updated planning trackers to include the new `PSR-*` workstreams in
   `PROGRESS.MD`, synchronized report index links in `docs/reports/README.md`,
   and refreshed execution context in `CONTEXT.md`.
+- Completed peatland reliability streams `PSR-INT-0` through `PSR-ROU-8`:
+  `os_features.query` now enforces `limit<=100` clamps, deterministic polygon
+  validation, structured `hints` metadata (`warnings`, `filterApplied`, `scan`),
+  timeout degrade behavior, and `delivery=inline|resource|auto` large-payload
+  handoff.
+- Hardened `os_mcp.route_query` with `environmental_survey` intent routing for
+  peatland-survey prompts and AOI-first/counts-first/geometry-last survey plans
+  anchored on `os_landscape.*` + bounded `os_features.query`.
 
 ## [0.3.2] - 2026-02-17
 

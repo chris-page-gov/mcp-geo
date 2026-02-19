@@ -22,6 +22,7 @@ def test_resources_list_includes_data_catalog_entries() -> None:
     assert "resource://mcp-geo/ons-catalog" in uris
     assert "resource://mcp-geo/os-catalog" in uris
     assert "resource://mcp-geo/layers-catalog" in uris
+    assert "resource://mcp-geo/protected-landscapes-england" in uris
     assert "resource://mcp-geo/offline-map-catalog" in uris
     assert "resource://mcp-geo/map-embedding-style-profiles" in uris
     assert "resource://mcp-geo/boundary-pack-sources" in uris

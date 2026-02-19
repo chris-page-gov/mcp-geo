@@ -37,15 +37,15 @@ Legend: pending, in_progress, done
 
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
-| PSR-INT-0 Contract freeze + scaffolding | pending | none | Freeze shared count/paging/warning contracts and guardrail helper boundaries for downstream streams. |
-| PSR-COR-1 Count + pagination correctness | pending | PSR-INT-0 | Fix `numberReturned` semantics and document `count`/`numberMatched` behavior. |
-| PSR-GRD-2 Query guardrails + thin defaults | pending | PSR-INT-0 | Enforce hard `limit` caps, default thin mode, and explicit clamp warnings. |
-| PSR-REL-3 Timeout/retry/degrade policy | pending | PSR-INT-0 | Add configurable connect/read timeouts, bounded retries, and degrade sequence for upstream failures. |
-| PSR-RES-4 Resource-backed large payload delivery | pending | PSR-INT-0 | Ensure `inline|resource|auto` avoids host truncation for heavy feature responses. |
-| PSR-GEO-5 Polygon validation + normalization | pending | PSR-INT-0 | Validate polygon inputs deterministically and normalize accepted geometry forms. |
-| PSR-CQL-6 Filter provenance + scan budgets | pending | PSR-COR-1, PSR-GRD-2 | Expose `filterApplied` and partial-scan metadata to remove silent local filtering ambiguity. |
-| PSR-BND-7 Protected-landscape boundaries | pending | PSR-INT-0 | Add AONB/National Landscape lookup paths to avoid ward fallback for Bowland-like queries. |
-| PSR-ROU-8 Survey-intent routing hardening | pending | PSR-GRD-2, PSR-BND-7 | Route peatland survey prompts through AOI-first, counts-first, geometry-last safe flows. |
+| PSR-INT-0 Contract freeze + scaffolding | done | none | Added PSR config knobs + shared warning/policy helpers in `server/config.py` and `tools/os_common.py`; stabilized `os_features.query` warning/scan contract shape. |
+| PSR-COR-1 Count + pagination correctness | done | PSR-INT-0 | `os_features.query` now keeps `numberReturned == len(features)` and standardizes `count` as returned count for all result types. |
+| PSR-GRD-2 Query guardrails + thin defaults | done | PSR-INT-0 | Enforced `limit<=100` clamping, bbox-area clamp guardrail, strict boolean validation, and thin-property defaults with warning telemetry. |
+| PSR-REL-3 Timeout/retry/degrade policy | done | PSR-INT-0 | Added configurable connect/read/retry settings and timeout-triggered degrade path (reduced bbox/limit + geometry-disable warning) for features queries. |
+| PSR-RES-4 Resource-backed large payload delivery | done | PSR-INT-0 | Added `delivery=inline|resource|auto` to `os_features.query` with resource export handoff metadata (`resourceUri`, `bytes`, `sha256`). |
+| PSR-GEO-5 Polygon validation + normalization | done | PSR-INT-0 | Added deterministic polygon validation (closure, bounds, vertex caps, distinct vertices) with explicit `INVALID_INPUT` errors. |
+| PSR-CQL-6 Filter provenance + scan budgets | done | PSR-COR-1, PSR-GRD-2 | Added structured `hints.filterApplied` + `hints.scan` metadata and explicit partial-scan warnings for local post-filter workflows. |
+| PSR-BND-7 Protected-landscape boundaries | done | PSR-INT-0 | Added `os_landscape.find` / `os_landscape.get` and `resource://mcp-geo/protected-landscapes-england` with Bowland fixture coverage. |
+| PSR-ROU-8 Survey-intent routing hardening | done | PSR-GRD-2, PSR-BND-7 | `os_mcp.route_query` now classifies peatland survey prompts as `environmental_survey` and returns AOI-first survey plans using `os_landscape.*` + bounded `os_features.query`. |
 | PSR-PEA-9 Peat-specific evidence layer integration | pending | PSR-BND-7 | Integrate peat extent/depth/condition layer discovery/query paths with clear provenance. |
 | PSR-E2E-10 Golden scenario + release readiness | pending | all PSR workstreams | Add deterministic floor-question scenario tests and demo-ready output criteria. |
 
@@ -156,7 +156,7 @@ Legend: Done, Partial, Not started
 | OS Places (geocoder) | Done | tools/os_places.py, docs/examples.md | search/by_postcode/by_uprn/nearest/within implemented. |
 | OS Names (gazetteer) | Done | tools/os_names.py | find + nearest. |
 | OS Linked Identifiers | Done | tools/os_linked_ids.py | Supports identifier lookups plus `identifiers`, `feature_types`, and `product_version_info` surfaces. |
-| OS Features (NGD / OGC Features) | Partial | tools/os_features.py | Supports bbox or polygon queries, attribute filters, resultType hits, field projection, sorting, queryables fetch, collections listing/latest mapping, plus WFS and WFS archive capabilities. Feature-by-id and CRS options still pending. |
+| OS Features (NGD / OGC Features) | Done | tools/os_features.py | Supports bbox/polygon queries, attribute filters, resultType hits, field projection, sorting, queryables fetch, collections listing/latest mapping, WFS/WFS archive capabilities, and PSR reliability controls (guardrails, warning hints, timeout degrade, resource delivery, and count correctness). Feature-by-id and explicit CRS variants remain optional follow-on enhancements. |
 | OS Maps (render) | Partial | tools/os_maps.py, server/maps_proxy.py | Static map proxy URL plus overlay-ready render contract delivered, with WMTS capabilities and raster ZXY tile retrieval. Full end-to-end client rendering orchestration still pending. |
 | OS NGD Tiles (OTA) | Done | tools/os_tiles_ota.py | Added OTA discovery surfaces: collections, tilematrixsets, conformance. |
 | OS Downloads API | Done | tools/os_downloads.py | Added product/download listing plus export prepare/get with resource-backed delivery. |

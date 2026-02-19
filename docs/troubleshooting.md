@@ -36,6 +36,28 @@ Remediation:
   If using `scripts/claude-mcp-local`, set `MCP_GEO_DOCKER_BUILD=always` at least once so the Docker image is rebuilt.
 - Confirm the `collection` id is valid and enabled for your OS Data Hub key.
 
+## `os_features.query` warnings and partial scans
+`os_features.query` now emits structured hint metadata:
+
+- `hints.warnings`: guardrail/degrade warning codes.
+- `hints.filterApplied`: `none`, `upstream`, or `local`.
+- `hints.scan`: scan mode + partial status for local post-filter paths.
+
+Common warning codes:
+
+- `RESULT_LIMIT_CLAMPED`: requested `limit` exceeded NGD-safe cap (`<=100`).
+- `BBOX_AREA_CLAMPED`: requested bbox exceeded configured area guardrail.
+- `LOCAL_FILTER_PARTIAL_SCAN`: local filter/polygon scan is partial (avoid hard inferences).
+- `TIMEOUT_DEGRADE_APPLIED`: timeout fallback reduced bbox/limit.
+- `TIMEOUT_GEOMETRY_DISABLED`: geometry was disabled after timeout degrade.
+
+Recommended handling:
+
+- Treat `LOCAL_FILTER_PARTIAL_SCAN` as incomplete evidence; narrow AOI or rerun with
+  a smaller bbox before asserting analytical conclusions.
+- Prefer `delivery=auto` for large feature queries in stdio-heavy hosts to avoid
+  response truncation and context pressure.
+
 ## MCP-Apps UI "unsupported format"
 If the client reports an unsupported format error after calling an `os_apps.render_*`
 tool, it is usually rejecting the `resource_link` content block.

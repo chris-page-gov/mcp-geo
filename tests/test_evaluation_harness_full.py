@@ -224,6 +224,8 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
         "os_net.station_log",
         "os_places.radius",
         "os_places.polygon",
+        "os_landscape.find",
+        "os_landscape.get",
         "os_tiles_ota.collections",
         "os_tiles_ota.tilematrixsets",
         "os_tiles_ota.conformance",

@@ -101,6 +101,17 @@ def test_route_query_poi_search():
     assert body["recommended_tool"] == "os_poi.search"
 
 
+def test_route_query_environmental_survey_bowland():
+    body = _route("Do a peatland site survey on the forrest of Bowland")
+    assert body["intent"] == "environmental_survey"
+    assert body["recommended_tool"] == "os_landscape.find"
+    assert body["recommended_parameters"]["text"] == "Forest of Bowland"
+    plan = body.get("surveyPlan")
+    assert isinstance(plan, list)
+    assert plan
+    assert plan[0]["tool"] == "os_landscape.find"
+
+
 def test_route_query_unknown():
     body = _route("asdfghjkl qwertyuiop")
     assert body["intent"] == "unknown"

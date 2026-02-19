@@ -47,6 +47,52 @@ _AUTH_INVALID_TOKENS = (
 )
 
 
+def add_warning(warnings: list[str], code: str) -> None:
+    if code not in warnings:
+        warnings.append(code)
+
+
+def _positive_float(value: Any, fallback: float) -> float:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return fallback
+    if parsed <= 0:
+        return fallback
+    return parsed
+
+
+def _bounded_int(value: Any, fallback: int, *, minimum: int = 1, maximum: int = 10) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return fallback
+    if parsed < minimum:
+        return minimum
+    if parsed > maximum:
+        return maximum
+    return parsed
+
+
+def features_request_policy() -> dict[str, Any]:
+    return {
+        "connectTimeoutSeconds": _positive_float(
+            getattr(settings, "OS_FEATURES_TIMEOUT_CONNECT_SECONDS", 2.0),
+            2.0,
+        ),
+        "readTimeoutSeconds": _positive_float(
+            getattr(settings, "OS_FEATURES_TIMEOUT_READ_SECONDS", 12.0),
+            12.0,
+        ),
+        "retries": _bounded_int(getattr(settings, "OS_FEATURES_RETRIES", 3), 3),
+        "degradedLimit": _bounded_int(
+            getattr(settings, "OS_FEATURES_TIMEOUT_DEGRADED_LIMIT", 25),
+            25,
+            maximum=100,
+        ),
+    }
+
+
 def classify_os_api_key_error(status_code: int, body: str | None) -> tuple[str, str] | None:
     if status_code not in (401, 403):
         return None
@@ -69,9 +115,34 @@ class OSClient:
     base_maps = "https://api.os.uk/maps/v1"
     base_vector_tiles = "https://api.os.uk/maps/vector/v1"
 
-    def __init__(self, api_key: str | None = None, retries: int = DEFAULT_RETRIES):
+    def __init__(
+        self,
+        api_key: str | None = None,
+        retries: int | None = None,
+        connect_timeout: float | None = None,
+        read_timeout: float | None = None,
+    ):
         self.api_key = api_key or getattr(settings, "OS_API_KEY", "")
-        self.retries = retries
+        configured_retries = (
+            retries
+            if retries is not None
+            else getattr(settings, "OS_HTTP_RETRIES", DEFAULT_RETRIES)
+        )
+        self.retries = _bounded_int(configured_retries, DEFAULT_RETRIES)
+        configured_connect = (
+            connect_timeout
+            if connect_timeout is not None
+            else getattr(settings, "OS_HTTP_TIMEOUT_CONNECT_SECONDS", DEFAULT_TIMEOUT)
+        )
+        configured_read = (
+            read_timeout
+            if read_timeout is not None
+            else getattr(settings, "OS_HTTP_TIMEOUT_READ_SECONDS", DEFAULT_TIMEOUT)
+        )
+        self.timeout: float | tuple[float, float] = (
+            _positive_float(configured_connect, float(DEFAULT_TIMEOUT)),
+            _positive_float(configured_read, float(DEFAULT_TIMEOUT)),
+        )
         self._breaker = get_circuit_breaker("os")
 
     def _auth_params(self) -> dict[str, Any]:
@@ -79,8 +150,38 @@ class OSClient:
             return {}
         return {"key": self.api_key}
 
+    def _effective_timeout(
+        self,
+        timeout: float | tuple[float, float] | None,
+    ) -> float | tuple[float, float]:
+        if timeout is None:
+            return self.timeout
+        if isinstance(timeout, (int, float)):
+            return _positive_float(timeout, float(DEFAULT_TIMEOUT))
+        if (
+            isinstance(timeout, tuple)
+            and len(timeout) == 2
+            and all(isinstance(value, (int, float)) for value in timeout)
+        ):
+            connect, read = timeout
+            return (
+                _positive_float(connect, float(DEFAULT_TIMEOUT)),
+                _positive_float(read, float(DEFAULT_TIMEOUT)),
+            )
+        return self.timeout
+
+    def _effective_retries(self, retries: int | None) -> int:
+        if retries is None:
+            return self.retries
+        return _bounded_int(retries, self.retries)
+
     def get_json(
-        self, url: str, params: dict[str, Any] | None = None
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+        *,
+        timeout: float | tuple[float, float] | None = None,
+        retries: int | None = None,
     ) -> tuple[int, dict[str, Any]]:
         if not self.api_key:
             return 501, {
@@ -101,10 +202,12 @@ class OSClient:
                 "code": "CIRCUIT_OPEN",
                 "message": "OS upstream circuit breaker is open.",
             }
+        max_attempts = self._effective_retries(retries)
+        request_timeout = self._effective_timeout(timeout)
         last_exc: Exception | None = None
-        for attempt in range(1, self.retries + 1):
+        for attempt in range(1, max_attempts + 1):
             try:
-                resp = requests.get(url, params=merged, timeout=DEFAULT_TIMEOUT)
+                resp = requests.get(url, params=merged, timeout=request_timeout)
                 if resp.status_code != 200:
                     if resp.status_code >= 500:
                         self._breaker.record_failure()
@@ -184,7 +287,7 @@ class OSClient:
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 self._breaker.record_failure()
-                if attempt == self.retries:
+                if attempt == max_attempts:
                     log_upstream_error(
                         service="os",
                         code="UPSTREAM_CONNECT_ERROR",
@@ -219,7 +322,7 @@ class OSClient:
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after retries: {last_exc}",
+            "message": f"Failed after {max_attempts} attempt(s): {last_exc}",
         }
 
     def post_json(
@@ -227,6 +330,9 @@ class OSClient:
         url: str,
         body: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        *,
+        timeout: float | tuple[float, float] | None = None,
+        retries: int | None = None,
     ) -> tuple[int, dict[str, Any]]:
         if not self.api_key:
             return 501, {
@@ -247,10 +353,17 @@ class OSClient:
                 "code": "CIRCUIT_OPEN",
                 "message": "OS upstream circuit breaker is open.",
             }
+        max_attempts = self._effective_retries(retries)
+        request_timeout = self._effective_timeout(timeout)
         last_exc: Exception | None = None
-        for attempt in range(1, self.retries + 1):
+        for attempt in range(1, max_attempts + 1):
             try:
-                resp = requests.post(url, params=merged, json=body or {}, timeout=DEFAULT_TIMEOUT)
+                resp = requests.post(
+                    url,
+                    params=merged,
+                    json=body or {},
+                    timeout=request_timeout,
+                )
                 if resp.status_code != 200:
                     if resp.status_code >= 500:
                         self._breaker.record_failure()
@@ -330,7 +443,7 @@ class OSClient:
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 self._breaker.record_failure()
-                if attempt == self.retries:
+                if attempt == max_attempts:
                     log_upstream_error(
                         service="os",
                         code="UPSTREAM_CONNECT_ERROR",
@@ -365,13 +478,16 @@ class OSClient:
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after retries: {last_exc}",
+            "message": f"Failed after {max_attempts} attempt(s): {last_exc}",
         }
 
     def get_bytes(
         self,
         url: str,
         params: dict[str, Any] | None = None,
+        *,
+        timeout: float | tuple[float, float] | None = None,
+        retries: int | None = None,
     ) -> tuple[int, dict[str, Any]]:
         if not self.api_key:
             return 501, {
@@ -392,10 +508,12 @@ class OSClient:
                 "code": "CIRCUIT_OPEN",
                 "message": "OS upstream circuit breaker is open.",
             }
+        max_attempts = self._effective_retries(retries)
+        request_timeout = self._effective_timeout(timeout)
         last_exc: Exception | None = None
-        for attempt in range(1, self.retries + 1):
+        for attempt in range(1, max_attempts + 1):
             try:
-                resp = requests.get(url, params=merged, timeout=DEFAULT_TIMEOUT)
+                resp = requests.get(url, params=merged, timeout=request_timeout)
                 if resp.status_code != 200:
                     if resp.status_code >= 500:
                         self._breaker.record_failure()
@@ -461,7 +579,7 @@ class OSClient:
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 self._breaker.record_failure()
-                if attempt == self.retries:
+                if attempt == max_attempts:
                     log_upstream_error(
                         service="os",
                         code="UPSTREAM_CONNECT_ERROR",
@@ -496,7 +614,7 @@ class OSClient:
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after retries: {last_exc}",
+            "message": f"Failed after {max_attempts} attempt(s): {last_exc}",
         }
 
 

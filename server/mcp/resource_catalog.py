@@ -18,6 +18,7 @@ ONS_CACHE_DIR = ROOT / "data" / "cache" / "ons"
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
+PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
 BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
 CODE_LIST_PACK_SOURCES_PATH = ROOT / "resources" / "code_list_pack_sources.json"
@@ -225,6 +226,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": LAYERS_CATALOG_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "maps"},
+    },
+    {
+        "slug": "protected-landscapes-england",
+        "name": "data_protected_landscapes_england",
+        "title": "Protected Landscapes (England)",
+        "description": "AONB/National Landscape lookup dataset used for AOI-first survey routing.",
+        "path": PROTECTED_LANDSCAPES_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "dataset", "domain": "boundaries"},
     },
     {
         "slug": "offline-map-catalog",

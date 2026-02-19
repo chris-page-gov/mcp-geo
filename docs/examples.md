@@ -138,6 +138,12 @@ POST /tools/call
 { "tool": "os_features.query", "collection": "buildings", "bbox": [-0.14,51.50,-0.12,51.51] }
 
 POST /tools/call
+{ "tool": "os_landscape.find", "text": "Forest of Bowland" }
+
+POST /tools/call
+{ "tool": "os_landscape.get", "id": "aonb-forest-of-bowland", "includeGeometry": true }
+
+POST /tools/call
 { "tool": "os_linked_ids.get", "identifier": "100021892956" }
 
 POST /tools/call
@@ -231,6 +237,16 @@ User: Show building feature IDs in small Westminster box.
 Assistant (internal): os_features.query { collection: "buildings", bbox: [...] }
 Assistant: Lists feature IDs and geometry types.
 
+### 4. Peatland Survey Routing (AOI First)
+User: Do a peatland site survey on the forrest of Bowland.
+Assistant (internal sequence):
+1. os_mcp.route_query { query: "Do a peatland site survey on the forrest of Bowland" }
+2. os_landscape.find { text: "Forest of Bowland" }
+3. os_landscape.get { id: "<id-from-find>", includeGeometry: true }
+4. os_features.query { collection: "wtr-fts-water-3", bbox: "<aoi-bbox>", resultType: "hits", includeGeometry: false, limit: 25 }
+5. os_features.query { collection: "lnd-fts-land-3", bbox: "<aoi-bbox>", resultType: "hits", includeGeometry: false, limit: 25 }
+Assistant: Returns AOI provenance first, then bounded evidence counts, then optional geometry pages.
+
 ### 5. ONS Dimensions & Query
 User: What observation dimensions are available?
 Assistant (internal): ons_data.dimensions {}
@@ -275,7 +291,7 @@ Example get filter output response:
 
 Future enhancement: CSV/XLSX output with `format` parameter (planned) and streaming for large result sets.
 
-### 4. Linked Identifiers
+### 5. Linked Identifiers
 User: Given this UPRN 100021892956 what other IDs exist?
 Assistant (internal): os_linked_ids.get { identifier: "100021892956" }
 Assistant: Presents related USRNs / TOIDs if present.

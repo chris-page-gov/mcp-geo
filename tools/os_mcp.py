@@ -35,6 +35,7 @@ class QueryIntent(str, Enum):
     MAP_RENDER = "map_render"
     VECTOR_TILES = "vector_tiles"
     LINKED_IDS = "linked_ids"
+    ENVIRONMENTAL_SURVEY = "environmental_survey"
     UNKNOWN = "unknown"
 
 
@@ -115,6 +116,15 @@ FEATURE_SEARCH_PATTERNS = [
     ),
     r"\bfeatures?\b",
     r"\bngd\b",
+]
+
+SURVEY_PATTERNS = [
+    r"\bpeatland\b",
+    r"\bpeat\b",
+    r"\bsite survey\b",
+    r"\benvironmental survey\b",
+    r"\bhabitat survey\b",
+    r"\bhydrolog(y|ical)\b",
 ]
 
 POI_PATTERNS = [
@@ -264,6 +274,12 @@ INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.MAP_RENDER: ["core_router", "maps_tiles"],
     QueryIntent.VECTOR_TILES: ["core_router", "maps_tiles"],
     QueryIntent.LINKED_IDS: ["core_router", "places_names"],
+    QueryIntent.ENVIRONMENTAL_SURVEY: [
+        "core_router",
+        "features_layers",
+        "admin_boundaries",
+        "protected_landscapes",
+    ],
     QueryIntent.UNKNOWN: ["starter"],
 }
 
@@ -340,6 +356,26 @@ def _extract_place_name(query: str) -> str | None:
             continue
         if word.lower() not in stop_words:
             return word
+    return None
+
+
+def _extract_landscape_focus(query: str) -> str | None:
+    query_norm = query.strip()
+    if not query_norm:
+        return None
+    if re.search(r"\bforrest of bowland\b", query_norm, re.IGNORECASE):
+        return "Forest of Bowland"
+    if re.search(r"\bforest of bowland\b", query_norm, re.IGNORECASE):
+        return "Forest of Bowland"
+    match = re.search(
+        r"\b(?:survey|on|for)\s+(?:the\s+)?([A-Za-z][A-Za-z\s-]{3,80})$",
+        query_norm,
+        re.IGNORECASE,
+    )
+    if match:
+        candidate = match.group(1).strip(" .")
+        if candidate:
+            return candidate
     return None
 
 
@@ -449,6 +485,18 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     level_mentions = _find_level_mentions(query_lower)
     if level_mentions:
         context["levels"] = level_mentions
+
+    if any(re.search(pattern, query_lower) for pattern in SURVEY_PATTERNS):
+        focus = _extract_landscape_focus(query) or _extract_place_name(query)
+        if focus:
+            context["survey_focus"] = focus
+        context["survey_intent"] = True
+        return (
+            QueryIntent.ENVIRONMENTAL_SURVEY,
+            0.94,
+            {"text": focus or query},
+            context,
+        )
 
     postcode = _extract_postcode(query)
     if postcode:
@@ -601,6 +649,63 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     return best_intent, best_score, params, context
 
 
+def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
+    landscape_name = focus or "Forest of Bowland"
+    return [
+        {
+            "step": 1,
+            "goal": "Resolve an authoritative protected-landscape AOI.",
+            "tool": "os_landscape.find",
+            "parameters": {"text": landscape_name, "limit": 3},
+        },
+        {
+            "step": 2,
+            "goal": "Fetch the AOI geometry by id.",
+            "tool": "os_landscape.get",
+            "parameters": {"id": "<id-from-step-1>", "includeGeometry": True},
+        },
+        {
+            "step": 3,
+            "goal": "Profile hydrology context counts first (no geometry).",
+            "tool": "os_features.query",
+            "parameters": {
+                "collection": "wtr-fts-water-3",
+                "bbox": "<aoi-bbox>",
+                "resultType": "hits",
+                "limit": 25,
+                "includeGeometry": False,
+                "thinMode": True,
+            },
+        },
+        {
+            "step": 4,
+            "goal": "Profile habitat proxies counts first (no geometry).",
+            "tool": "os_features.query",
+            "parameters": {
+                "collection": "lnd-fts-land-3",
+                "bbox": "<aoi-bbox>",
+                "resultType": "hits",
+                "limit": 25,
+                "includeGeometry": False,
+                "thinMode": True,
+            },
+        },
+        {
+            "step": 5,
+            "goal": "Fetch sampled geometry only after counts are stable.",
+            "tool": "os_features.query",
+            "parameters": {
+                "collection": "lnd-fts-land-3",
+                "bbox": "<aoi-bbox>",
+                "limit": 25,
+                "includeGeometry": True,
+                "thinMode": True,
+                "delivery": "auto",
+            },
+        },
+    ]
+
+
 def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[str, list[str], str]:
     if intent == QueryIntent.ADDRESS_LOOKUP:
         mode = context.get("address_mode")
@@ -663,6 +768,15 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "os_features.query",
             ["os_features.query"],
             "Query OS NGD feature collections by bbox and collection.",
+        )
+    if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
+        return (
+            "os_landscape.find",
+            ["os_landscape.find", "os_landscape.get", "os_features.query"],
+            (
+                "Run an AOI-first environmental survey flow: resolve protected-landscape boundary, "
+                "profile counts with thin NGD queries, then fetch geometry in bounded pages."
+            ),
         )
     if intent == QueryIntent.STATISTICS:
         if context.get("nomis_preferred"):
@@ -751,6 +865,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
         QueryIntent.BOUNDARY_FETCH: ["resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
+        QueryIntent.ENVIRONMENTAL_SURVEY: [
+            "os_landscape.get",
+            "os_features.collections",
+            "admin_lookup.find_by_name",
+        ],
         QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_select.search", "nomis.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],
         QueryIntent.INTERACTIVE_SELECTION: ["os_apps.render_boundary_explorer", "admin_lookup.find_by_name"],
@@ -787,6 +906,11 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         ),
         QueryIntent.FEATURE_SEARCH: (
             "Use os_features.query with a collection and bbox. Collections map to NGD feature sets."
+        ),
+        QueryIntent.ENVIRONMENTAL_SURVEY: (
+            "Use AOI-first sequencing: os_landscape.find -> os_landscape.get -> "
+            "os_features.query (hits/thin/geometry-last). This avoids place-search "
+            "fallbacks and reduces large-response risk."
         ),
         QueryIntent.STATISTICS: (
             "Use NOMIS for labour/census or deep local geographies; otherwise use ONS datasets. "
@@ -1032,7 +1156,8 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         "explanation": {"type": "string"},
         "workflow_steps": {"type": "array"},
         "alternative_tools": {"type": "array"},
-        "guidance": {"type": "string"}
+        "guidance": {"type": "string"},
+        "surveyPlan": {"type": "array"}
       },
       "required": ["intent", "confidence", "recommended_tool", "workflow_steps"]
     }
@@ -1052,7 +1177,7 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         if (tool.startswith("nomis.") or bool(context.get("nomis_preferred")))
         else None
     )
-    return 200, {
+    response: dict[str, Any] = {
         "query": query,
         "intent": intent.value,
         "confidence": round(confidence, 2),
@@ -1064,6 +1189,11 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         "guidance": _get_guidance_for_intent(intent),
         "workflow_profile_uri": workflow_profile_uri,
     }
+    if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
+        focus_raw = context.get("survey_focus")
+        focus = focus_raw if isinstance(focus_raw, str) else None
+        response["surveyPlan"] = _build_survey_plan(focus)
+    return 200, response
 
 
 def _stats_routing(payload: dict[str, Any]) -> ToolResult:

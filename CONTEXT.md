@@ -73,6 +73,8 @@ assumptions change.
 - Track peatland survey reliability workstreams in
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   and synchronize statuses in `PROGRESS.MD`.
+- Execute remaining peatland streams (`PSR-PEA-9`, `PSR-E2E-10`) now that
+  `PSR-INT-0` through `PSR-ROU-8` are implemented and test-covered.
 - Maintain compatibility-first map docs/contracts and support matrix links in
   `docs/spec_package/06_api_contracts.md`,
   `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
@@ -103,15 +105,16 @@ assumptions change.
   WS-MAP-4, WS-POS-5, WS-QGIS-6, and WS-OBS-7 (OS Downloads, OS Net, OTA discovery, raster/WMTS,
   WFS capabilities, Places radius/polygon, Linked IDs extra paths, QGIS descriptors, and
   delivery-fallback/export-lifecycle observability).
-- Partial: OS Features, OS Maps render, ONS data tooling, admin lookup caching, resources
+- Partial: OS Maps render, ONS data tooling, admin lookup caching, resources
   population, playground UI.
 - Done: ONS dataset selection research pack (taxonomy, datapack schema, linking rules,
   evaluation plan).
 - Done: map delivery recommendation implementation program (`MDR-I1` to
   `MDR-E4`) complete across immediate, near-term, medium-term, and ecosystem
   waves.
-- Planned: peatland survey reliability implementation program (`PSR-INT-0` to
-  `PSR-E2E-10`) documented and queued for staged delivery.
+- In progress: peatland survey reliability implementation program (`PSR-*`);
+  streams `PSR-INT-0` through `PSR-ROU-8` are complete, with `PSR-PEA-9` and
+  `PSR-E2E-10` remaining.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -157,6 +160,17 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-19: Implemented peatland reliability streams `PSR-INT-0` through
+  `PSR-ROU-8`:
+  - `os_features.query` now applies hard limit clamping (`<=100`), structured
+    hints (`warnings`, `filterApplied`, `scan`), deterministic polygon
+    validation, timeout degrade behavior, and resource-backed
+    `delivery=inline|resource|auto`.
+  - Added protected-landscape support via `os_landscape.find`,
+    `os_landscape.get`, and
+    `resource://mcp-geo/protected-landscapes-england` (Bowland coverage).
+  - Hardened `os_mcp.route_query` for peatland survey prompts with
+    `environmental_survey` intent and AOI-first survey plan guidance.
 - 2026-02-19: Added a dependency-tracked peatland survey reliability
   implementation plan at
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`

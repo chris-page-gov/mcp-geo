@@ -1,0 +1,47 @@
+{
+  "version": "2026-02-19",
+  "scope": "england",
+  "source": {
+    "name": "Area of Outstanding Natural Beauty (England)",
+    "provider": "Planning Data / Natural England",
+    "datasetUrl": "https://www.planning.data.gov.uk/dataset/area-of-outstanding-natural-beauty",
+    "notes": [
+      "Dataset is mirrored into MCP Geo as a deterministic fallback fixture for route safety.",
+      "Geometry in this fixture is simplified for reliable demo-time AOI routing."
+    ]
+  },
+  "landscapes": [
+    {
+      "id": "aonb-forest-of-bowland",
+      "name": "Forest of Bowland National Landscape",
+      "designation": "AONB",
+      "authority": "Natural England",
+      "reference": "area-of-outstanding-natural-beauty:13",
+      "aliases": [
+        "Forest of Bowland",
+        "Forrest of Bowland",
+        "Bowland AONB",
+        "Bowland National Landscape"
+      ],
+      "bbox": [-2.95, 53.78, -2.4, 54.15],
+      "centroid": [-2.675, 53.965],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-2.95, 53.78],
+            [-2.4, 53.78],
+            [-2.4, 54.15],
+            [-2.95, 54.15],
+            [-2.95, 53.78]
+          ]
+        ]
+      },
+      "provenance": {
+        "dataset": "Area of Outstanding Natural Beauty (England)",
+        "licence": "Open Government Licence v3.0",
+        "lastReviewed": "2026-02-19"
+      }
+    }
+  ]
+}
