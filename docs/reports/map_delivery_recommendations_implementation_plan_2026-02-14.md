@@ -19,27 +19,32 @@ into a tracked, dependency-aware implementation program for MCP Geo.
 3. Progress tracking is present in repo-standard docs.
 4. Ecosystem requests to OS/community are captured as external-facing deliverables.
 
+## Implementation status (2026-02-19)
+
+This planning program has been fully implemented and is now complete in the
+tracked repo state. `PROGRESS.MD` is the source of truth for execution status.
+
 ## Program board
 
 Legend: pending, in_progress, done
 
 | ID | Phase | Status | Dependencies | Primary outcome |
 | --- | --- | --- | --- | --- |
-| MDR-I1 | Immediate | pending | none | `os_maps.render` is documented as the canonical compatibility baseline. |
-| MDR-I2 | Immediate | pending | MDR-I1 | Fallback skeleton payloads are standardized (`map_card`, `overlay_bundle`, `export_handoff`). |
-| MDR-I3 | Immediate | pending | MDR-I1 | Lean startup discovery (`starter`) is default in docs and client setup examples. |
-| MDR-I4 | Immediate | pending | MDR-I1 | Browser/widget support matrix is published and linked from setup docs. |
-| MDR-N1 | Near-term | pending | MDR-I2, MDR-I4 | Deterministic host-simulation utilities exist for UI resource tests across engines. |
-| MDR-N2 | Near-term | pending | MDR-I2 | Tool payloads expose explicit widget-unsupported guidance fields. |
-| MDR-N3 | Near-term | pending | MDR-N1 | Trial suite includes mobile viewport projects and latency-budget assertions. |
-| MDR-N4 | Near-term | pending | MDR-I2 | Optional PostGIS/vector-tile sidecar deployment profile is documented and tested. |
-| MDR-M1 | Medium-term | pending | MDR-N4 | PMTiles/MBTiles delivery option is available for offline-friendly deployments. |
-| MDR-M2 | Medium-term | pending | MDR-N3 | Map output quality checks cover label density, contrast, and accessibility metadata. |
-| MDR-M3 | Medium-term | pending | MDR-N3 | Notebook-generated scenario packs are integrated into resource outputs. |
-| MDR-E1 | Ecosystem | pending | MDR-I4 | Client-side best-practice bundle for MCP/AI-hosted map embedding is published. |
-| MDR-E2 | Ecosystem | pending | MDR-E1 | Lightweight style profiles for constrained AI embedding contexts are published. |
-| MDR-E3 | Ecosystem | pending | MDR-E1, MDR-E2 | Official examples show progressive fallback from full vector map to static card. |
-| MDR-E4 | Ecosystem | pending | MDR-E1 | Mixed UI/no-UI host guidance is documented with deterministic degradation paths. |
+| MDR-I1 | Immediate | done | none | `os_maps.render` is documented as the canonical compatibility baseline. |
+| MDR-I2 | Immediate | done | MDR-I1 | Fallback skeleton payloads are standardized (`map_card`, `overlay_bundle`, `export_handoff`). |
+| MDR-I3 | Immediate | done | MDR-I1 | Lean startup discovery (`starter`) is default in docs and client setup examples. |
+| MDR-I4 | Immediate | done | MDR-I1 | Browser/widget support matrix is published and linked from setup docs. |
+| MDR-N1 | Near-term | done | MDR-I2, MDR-I4 | Deterministic host-simulation utilities exist for UI resource tests across engines. |
+| MDR-N2 | Near-term | done | MDR-I2 | Tool payloads expose explicit widget-unsupported guidance fields. |
+| MDR-N3 | Near-term | done | MDR-N1 | Trial suite includes mobile viewport projects and latency-budget assertions. |
+| MDR-N4 | Near-term | done | MDR-I2 | Optional PostGIS/vector-tile sidecar deployment profile is documented and tested. |
+| MDR-M1 | Medium-term | done | MDR-N4 | PMTiles/MBTiles delivery option is available for offline-friendly deployments. |
+| MDR-M2 | Medium-term | done | MDR-N3 | Map output quality checks cover label density, contrast, and accessibility metadata. |
+| MDR-M3 | Medium-term | done | MDR-N3 | Notebook-generated scenario packs are integrated into resource outputs. |
+| MDR-E1 | Ecosystem | done | MDR-I4 | Client-side best-practice bundle for MCP/AI-hosted map embedding is published. |
+| MDR-E2 | Ecosystem | done | MDR-E1 | Lightweight style profiles for constrained AI embedding contexts are published. |
+| MDR-E3 | Ecosystem | done | MDR-E1, MDR-E2 | Official examples show progressive fallback from full vector map to static card. |
+| MDR-E4 | Ecosystem | done | MDR-E1 | Mixed UI/no-UI host guidance is documented with deterministic degradation paths. |
 
 ## Detailed workstreams
 

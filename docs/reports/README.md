@@ -15,3 +15,7 @@ This folder contains human-readable run reports and investigation summaries.
 ## Map Delivery Planning
 
 - 2026-02-14: [Map delivery recommendations implementation plan](map_delivery_recommendations_implementation_plan_2026-02-14.md)
+
+## Survey Reliability Planning
+
+- 2026-02-19: [Peatland survey reliability implementation plan](peatland_survey_reliability_implementation_plan_2026-02-19.md)

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-17
+Last updated: 2026-02-19
 Owner: @chris-page-gov
 
 ## Purpose
@@ -56,6 +56,8 @@ assumptions change.
   order (`MDR-I*`, `MDR-N*`, `MDR-M*`, `MDR-E*`) with tracking updates per stage.
 - Keeping the completed map-delivery program artifacts synchronized across docs,
   resources, scripts, and trial evidence outputs.
+- Driving the new peatland survey reliability hardening program (`PSR-*`) based
+  on the 2026-02-19 forensic/deep-research implementation plan.
 
 ## Active Work
 
@@ -67,6 +69,9 @@ assumptions change.
   evidence capture under `research/map_delivery_research_2026-02/`.
 - Track recommendation-delivery workstreams in
   `docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`
+  and synchronize statuses in `PROGRESS.MD`.
+- Track peatland survey reliability workstreams in
+  `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   and synchronize statuses in `PROGRESS.MD`.
 - Maintain compatibility-first map docs/contracts and support matrix links in
   `docs/spec_package/06_api_contracts.md`,
@@ -105,6 +110,8 @@ assumptions change.
 - Done: map delivery recommendation implementation program (`MDR-I1` to
   `MDR-E4`) complete across immediate, near-term, medium-term, and ecosystem
   waves.
+- Planned: peatland survey reliability implementation program (`PSR-INT-0` to
+  `PSR-E2E-10`) documented and queued for staged delivery.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -150,6 +157,11 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-19: Added a dependency-tracked peatland survey reliability
+  implementation plan at
+  `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
+  and synchronized tracker entries in `PROGRESS.MD` to drive Section F
+  remediation (`PSR-*` workstreams).
 - 2026-02-17: Added offline pack binary retrieval endpoint
   (`GET /resources/download?uri=resource://mcp-geo/offline-packs/<file>`) so
   large PMTiles/MBTiles resources no longer require inlined base64 payloads in

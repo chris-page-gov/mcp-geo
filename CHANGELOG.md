@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added a detailed peatland-survey reliability implementation program at
+  `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
+  to operationalize Section F findings from the forensic/deep-research report.
+
+### Changed
+- Updated planning trackers to include the new `PSR-*` workstreams in
+  `PROGRESS.MD`, synchronized report index links in `docs/reports/README.md`,
+  and refreshed execution context in `CONTEXT.md`.
+
 ## [0.3.2] - 2026-02-17
 
 ### Added

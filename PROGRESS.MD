@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-17
+Last updated: 2026-02-19
 
 ## Presentation story gallery (2026-02-17)
 
@@ -27,6 +27,27 @@ Last updated: 2026-02-17
 - Done: ensure repo root stays ahead of user site-packages (`scripts/os_mcp.py`).
 - Done: make VS Code stdio wrapper include user site-packages (`scripts/vscode_mcp_stdio.py`).
 - Done: align devcontainer installs with `python3` and auto-install deps when `loguru` is missing.
+
+## Peatland survey reliability implementation plan (2026-02-19)
+
+Reference plan:
+- `/Users/crpage/repos/mcp-geo/docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| PSR-INT-0 Contract freeze + scaffolding | pending | none | Freeze shared count/paging/warning contracts and guardrail helper boundaries for downstream streams. |
+| PSR-COR-1 Count + pagination correctness | pending | PSR-INT-0 | Fix `numberReturned` semantics and document `count`/`numberMatched` behavior. |
+| PSR-GRD-2 Query guardrails + thin defaults | pending | PSR-INT-0 | Enforce hard `limit` caps, default thin mode, and explicit clamp warnings. |
+| PSR-REL-3 Timeout/retry/degrade policy | pending | PSR-INT-0 | Add configurable connect/read timeouts, bounded retries, and degrade sequence for upstream failures. |
+| PSR-RES-4 Resource-backed large payload delivery | pending | PSR-INT-0 | Ensure `inline|resource|auto` avoids host truncation for heavy feature responses. |
+| PSR-GEO-5 Polygon validation + normalization | pending | PSR-INT-0 | Validate polygon inputs deterministically and normalize accepted geometry forms. |
+| PSR-CQL-6 Filter provenance + scan budgets | pending | PSR-COR-1, PSR-GRD-2 | Expose `filterApplied` and partial-scan metadata to remove silent local filtering ambiguity. |
+| PSR-BND-7 Protected-landscape boundaries | pending | PSR-INT-0 | Add AONB/National Landscape lookup paths to avoid ward fallback for Bowland-like queries. |
+| PSR-ROU-8 Survey-intent routing hardening | pending | PSR-GRD-2, PSR-BND-7 | Route peatland survey prompts through AOI-first, counts-first, geometry-last safe flows. |
+| PSR-PEA-9 Peat-specific evidence layer integration | pending | PSR-BND-7 | Integrate peat extent/depth/condition layer discovery/query paths with clear provenance. |
+| PSR-E2E-10 Golden scenario + release readiness | pending | all PSR workstreams | Add deterministic floor-question scenario tests and demo-ready output criteria. |
 
 ## Sources reviewed
 
