@@ -224,3 +224,14 @@ docs/vendor/**/_snapshot_noscript/
 
 # Spec package exports
 docs/spec_package/build/
+
+# Microsoft Office lock/temp files (created while docs are open)
+~$*.doc
+~$*.docx
+~$*.dotx
+~$*.xls
+~$*.xlsx
+~$*.xlsm
+~$*.ppt
+~$*.pptx
+~$*.pptm
