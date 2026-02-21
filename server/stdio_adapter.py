@@ -202,12 +202,12 @@ def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[
 
 def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> Dict[str, Any]:
     correlation_id = str(uuid.uuid4())
-    logger.exception(
-        "MCP stdio internal error correlation_id={} method={} msg_id={} error={}",
+    logger.error(
+        "MCP stdio internal error correlation_id={} method={} msg_id={} error_type={}",
         correlation_id,
         method,
         msg_id,
-        exc,
+        type(exc).__name__,
     )
     return _resp_error(msg_id, -32603, "Internal error", {"correlationId": correlation_id})
 

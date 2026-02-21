@@ -274,6 +274,25 @@ def test_main_sanitizes_internal_errors(monkeypatch):
     assert isinstance(error_msg.get("data", {}).get("correlationId"), str)
 
 
+def test_internal_error_logs_exception_type_only(monkeypatch):
+    captured: dict[str, object] = {}
+
+    def fake_error(message: str, *args: object) -> None:
+        captured["message"] = message
+        captured["args"] = args
+
+    monkeypatch.setattr(stdio_adapter.logger, "error", fake_error)
+    payload = stdio_adapter._internal_error(
+        "id-1", "tools/list", RuntimeError("secret-stdio-token")
+    )
+    assert payload["error"]["message"] == "Internal error"
+    assert isinstance(payload.get("error", {}).get("data", {}).get("correlationId"), str)
+
+    serialized = json.dumps(captured)
+    assert "secret-stdio-token" not in serialized
+    assert "RuntimeError" in serialized
+
+
 def test_main_elicitation_eof_cancels_prompt(monkeypatch):
     monkeypatch.setenv("MCP_STDIO_FRAMING", "line")
     monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")

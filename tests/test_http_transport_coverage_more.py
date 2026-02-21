@@ -210,3 +210,22 @@ def test_mcp_http_generic_internal_error_handler(monkeypatch):
     assert payload["message"] == "Internal error"
     assert "boom" not in json.dumps(payload)
     assert isinstance(payload.get("data", {}).get("correlationId"), str)
+
+
+def test_internal_error_logs_exception_type_only(monkeypatch):
+    captured: dict[str, object] = {}
+
+    def fake_error(message: str, *args: object) -> None:
+        captured["message"] = message
+        captured["args"] = args
+
+    monkeypatch.setattr(http_transport.logger, "error", fake_error)
+    payload = http_transport._internal_error(
+        "id-1", "tools/list", RuntimeError("secret-http-token")
+    )
+    assert payload["error"]["message"] == "Internal error"
+    assert isinstance(payload.get("error", {}).get("data", {}).get("correlationId"), str)
+
+    serialized = json.dumps(captured)
+    assert "secret-http-token" not in serialized
+    assert "RuntimeError" in serialized
