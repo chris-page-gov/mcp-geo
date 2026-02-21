@@ -10,18 +10,10 @@
     }
   },
   "status": {
-    "current": "partially_met",
+    "current": "fully_met",
     "target": "fully_met",
-    "overall_score": 52.0,
-    "blocking_revision_ids": [
-      "SBD-REV-001",
-      "SBD-REV-002",
-      "SBD-REV-003",
-      "SBD-REV-004",
-      "SBD-REV-005",
-      "SBD-REV-006",
-      "SBD-REV-007"
-    ]
+    "overall_score": 89.6,
+    "blocking_revision_ids": []
   },
   "standards": [
     {
@@ -264,12 +256,12 @@
       "id": "SBD-REV-001",
       "title": "Harden file resource path containment",
       "severity": "high",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "server/mcp/resource_catalog.py"
       ],
-      "todo": "#TODO# Replace every path boundary check using startswith/unchecked joins with canonical containment using Path.resolve() + relative_to helper.",
+      "todo": "#TODO# Completed 2026-02-21: Replaced string-prefix checks with canonical scoped resolution/containment checks and disallowed encoded/mixed separator traversal tokens.",
       "details": [
         "Fix branches: ons-cache, ons-exports, os-cache, os-exports, exports.",
         "Normalize before existence checks.",
@@ -285,14 +277,14 @@
       "id": "SBD-REV-002",
       "title": "Add traversal regression tests for resource handlers",
       "severity": "high",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         "SBD-REV-001"
       ],
       "files": [
         "tests/"
       ],
-      "todo": "#TODO# Add negative tests for traversal across all resource slug families.",
+      "todo": "#TODO# Completed 2026-02-21: Added traversal regression coverage for ons-cache/ons-exports/os-cache/os-exports/exports plus sibling-prefix and encoded/mixed separator cases.",
       "details": [
         "Cover on-disk branches: ons-cache, ons-exports, os-cache, os-exports, exports.",
         "Include sibling-prefix and mixed path separator cases."
@@ -306,14 +298,14 @@
       "id": "SBD-REV-003",
       "title": "Expand secrets redaction scope",
       "severity": "high",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "server/logging.py",
         "server/security.py",
         "server/main.py"
       ],
-      "todo": "#TODO# Redact NOMIS and token-like secrets globally, not only OS_API_KEY.",
+      "todo": "#TODO# Completed 2026-02-21: Added configured secret collection (OS + NOMIS) and key-name-based masking for signature/token/api_key/authorization-style fields.",
       "details": [
         "Include NOMIS_UID and NOMIS_SIGNATURE in redaction seed.",
         "Apply key-name-based masking for signature/token/api_key/authorization keys.",
@@ -328,14 +320,14 @@
       "id": "SBD-REV-004",
       "title": "Add log redaction verification tests",
       "severity": "high",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         "SBD-REV-003"
       ],
       "files": [
         "tests/"
       ],
-      "todo": "#TODO# Add tests proving credentials and token-like fields are masked in all log paths.",
+      "todo": "#TODO# Completed 2026-02-21: Added regression tests for upstream-log masking, nested token-like key masking, and generic exception redaction output.",
       "details": [
         "Cover upstream error logging with params payloads.",
         "Cover generic exception handler output.",
@@ -350,13 +342,13 @@
       "id": "SBD-REV-005",
       "title": "Sanitize internal exception responses in transports",
       "severity": "high",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "server/stdio_adapter.py",
         "server/mcp/http_transport.py"
       ],
-      "todo": "#TODO# Replace `Internal error: {exc}` with generic client-safe messages and correlation IDs.",
+      "todo": "#TODO# Completed 2026-02-21: Replaced raw exception leakage with generic `Internal error` responses and per-error correlation IDs in STDIO and HTTP transports.",
       "details": [
         "Keep full exception details only in server logs.",
         "Use consistent JSON-RPC code mapping for internal errors."
@@ -370,13 +362,13 @@
       "id": "SBD-REV-006",
       "title": "Normalize malformed JSON handling to 400 envelopes",
       "severity": "medium",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "server/mcp/tools.py",
         "server/mcp/playground.py"
       ],
-      "todo": "#TODO# Catch JSON decode failures locally and return structured INVALID_INPUT errors.",
+      "todo": "#TODO# Completed 2026-02-21: Added local malformed JSON guards for tools/playground endpoints with deterministic HTTP 400 INVALID_INPUT envelopes.",
       "details": [
         "Guard `await request.json()` with parse exception handling.",
         "Ensure response shape matches repository error model."
@@ -390,14 +382,14 @@
       "id": "SBD-REV-007",
       "title": "Use secure rate-limit defaults",
       "severity": "medium",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "server/config.py",
         ".env.example",
         "docs/"
       ],
-      "todo": "#TODO# Set RATE_LIMIT_BYPASS default to false and document explicit dev/test overrides.",
+      "todo": "#TODO# Completed 2026-02-21: Set secure RATE_LIMIT_BYPASS default to false, added explicit test/dev overrides, and updated environment/docs guidance.",
       "details": [
         "Align defaults with secure production posture.",
         "Keep test fixtures toggling bypass explicitly where required."
@@ -411,12 +403,12 @@
       "id": "SBD-REV-008",
       "title": "Fix logging format consistency and debug print",
       "severity": "low",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "server/main.py"
       ],
-      "todo": "#TODO# Replace `%s`-style loguru calls with `{}` formatting and remove raw startup print.",
+      "todo": "#TODO# Completed 2026-02-21: Removed raw startup print and migrated main request/error logging to loguru-compatible `{}` formatting.",
       "details": [
         "Ensure all audit log lines render structured fields consistently.",
         "Route startup diagnostics through logger only."
@@ -450,12 +442,12 @@
       "id": "SBD-REV-010",
       "title": "Verify internal artefact URL for codex trace citation",
       "severity": "low",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "files": [
         "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib"
       ],
-      "todo": "#TODO# Replace placeholder/local `file://` trace citation URL with a stable repository URL once the artefact path is finalized.",
+      "todo": "#TODO# Completed 2026-02-21: Replaced local `file://` codex trace citation URL with stable repository evidence reference.",
       "details": [
         "Current key: artefact_codex_trace_jsonl_2026_02_18.",
         "Use canonical repository location or signed archival reference."
@@ -473,64 +465,64 @@
         "id": "RUB-SBD",
         "name": "Safe-by-design architecture",
         "weight": 10,
-        "score": 3,
-        "weighted_points": 6.0
+        "score": 5,
+        "weighted_points": 10.0
       },
       {
         "id": "RUB-GRD",
         "name": "Guardrails",
         "weight": 8,
-        "score": 3,
-        "weighted_points": 4.8
+        "score": 5,
+        "weighted_points": 8.0
       },
       {
         "id": "RUB-PRV",
         "name": "Privacy and data protection (ICO/Five Safes)",
         "weight": 12,
-        "score": 2,
-        "weighted_points": 4.8
+        "score": 4,
+        "weighted_points": 9.6
       },
       {
         "id": "RUB-SEC",
         "name": "Secure development (NCSC)",
         "weight": 12,
-        "score": 2,
-        "weighted_points": 4.8
+        "score": 5,
+        "weighted_points": 12.0
       },
       {
         "id": "RUB-OWA",
         "name": "OWASP LLM control alignment",
         "weight": 10,
-        "score": 2,
-        "weighted_points": 4.0
+        "score": 4,
+        "weighted_points": 8.0
       },
       {
         "id": "RUB-PROV",
         "name": "Provenance and auditability (PROV/ATRS)",
         "weight": 12,
-        "score": 3,
-        "weighted_points": 7.2
+        "score": 4,
+        "weighted_points": 9.6
       },
       {
         "id": "RUB-TRN",
         "name": "Transparency and governance records",
         "weight": 8,
-        "score": 3,
-        "weighted_points": 4.8
+        "score": 4,
+        "weighted_points": 6.4
       },
       {
         "id": "RUB-RED",
         "name": "Sensitive data and redaction",
         "weight": 8,
-        "score": 1,
-        "weighted_points": 1.6
+        "score": 5,
+        "weighted_points": 8.0
       },
       {
         "id": "RUB-RSK",
         "name": "Risk management and resilience",
         "weight": 10,
-        "score": 2,
-        "weighted_points": 4.0
+        "score": 4,
+        "weighted_points": 8.0
       },
       {
         "id": "RUB-CIT",
@@ -541,10 +533,10 @@
       }
     ],
     "total_weight": 100,
-    "total_weighted_points": 52.0
+    "total_weighted_points": 89.6
   },
   "transition_plan": {
-    "objective": "Reach fully_met by resolving all blocking high/medium implementation revisions and finalizing residual low-priority evidence references.",
+    "objective": "Sustain fully_met by keeping blocking controls regression-tested and monitoring low-priority evidence hygiene.",
     "ordered_execution": [
       "SBD-REV-001",
       "SBD-REV-002",

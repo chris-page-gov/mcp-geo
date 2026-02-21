@@ -263,3 +263,23 @@ Weighted score = `(score / 5) * weight`.
   - `SBD-CODE-003` (error message sanitization)
   - `SBD-CODE-004` (secure rate-limit defaults)
   - `SBD-CODE-005` (malformed JSON handling)
+
+## Remediation Re-evaluation Update (2026-02-21)
+
+Post-review remediation has now been implemented and regression-tested in code:
+
+- `SBD-CODE-001`: completed (`server/mcp/resource_catalog.py`, `tests/test_resource_catalog.py`)
+- `SBD-CODE-002`: completed (`server/security.py`, `server/logging.py`, `server/main.py`, redaction tests)
+- `SBD-CODE-003`: completed (`server/stdio_adapter.py`, `server/mcp/http_transport.py`)
+- `SBD-CODE-004`: completed (`server/config.py`, docs/env defaults, explicit test bypass fixture)
+- `SBD-CODE-005`: completed (`server/mcp/tools.py`, `server/mcp/playground.py`, malformed JSON tests)
+- `SBD-CODE-006`: completed (`server/main.py` log formatting normalization)
+- `SBD-CODE-007`: completed (`server/main.py` startup print removed; logger startup message used)
+- `SBD-CODE-008`: completed (`server/mcp/tools.py` now logs import failures with diagnostics)
+- Citation housekeeping (`SBD-REV-010`): completed (`references.bib` codex-trace URL now stable repo reference)
+
+Updated status snapshot:
+
+- Current status: `fully_met`
+- Updated weighted score: `89.6 / 100`
+- Blocking dependencies: none
