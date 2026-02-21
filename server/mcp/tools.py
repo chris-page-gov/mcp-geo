@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
@@ -47,11 +48,17 @@ _IMPORT_MODULES = [
     "tools.os_apps",
 ]
 
+TOOL_IMPORT_ERRORS: list[str] = []
+
 for _mod in _IMPORT_MODULES:
     try:  # pragma: no cover - defensive import
         importlib.import_module(_mod)
-    except Exception:  # pragma: no cover
-        pass
+    except Exception as exc:  # pragma: no cover
+        TOOL_IMPORT_ERRORS.append(f"{_mod}: {exc}")
+        logger.warning("Failed to import tool module {} error={}", _mod, exc)
+
+if TOOL_IMPORT_ERRORS:
+    logger.warning("Tool registration completed with {} import errors", len(TOOL_IMPORT_ERRORS))
 
 if get("os_features.query") is None:
     register(

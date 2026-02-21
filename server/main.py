@@ -17,7 +17,7 @@ from .config import settings
 
 app = FastAPI(title="MCP Geo Server")
 configure_logging()
-print("[DEBUG] server/main.py loaded", flush=True)
+logger.info("MCP Geo server module loaded")
 cors_origins = [
     origin.strip()
     for origin in settings.CORS_ALLOWED_ORIGINS.split(",")
@@ -118,7 +118,7 @@ async def add_correlation_id_and_log(request: Request, call_next: Callable[[Requ
     process_time = (time.time() - start_time) * 1000
     response.headers["x-correlation-id"] = correlation_id
     logger.info(
-        "[end] %s %s correlation_id=%s status=%s time_ms=%.2f",
+        "[end] {} {} correlation_id={} status={} time_ms={:.2f}",
         request.method,
         request.url.path,
         correlation_id,
@@ -179,14 +179,14 @@ async def generic_exception_handler(request: Request, exc: Exception):
     tb: str | None = traceback.format_exc()
     if settings.DEBUG_ERRORS:
         logger.error(
-            "Unhandled error: %s correlation_id=%s\nTraceback:\n%s",
+            "Unhandled error: {} correlation_id={}\nTraceback:\n{}",
             safe_message,
             correlation_id,
             tb,
         )
     else:
         logger.error(
-            "Unhandled error: %s correlation_id=%s", safe_message, correlation_id
+            "Unhandled error: {} correlation_id={}", safe_message, correlation_id
         )
         tb = None
     content: dict[str, object] = {

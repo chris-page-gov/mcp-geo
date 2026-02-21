@@ -61,7 +61,7 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - `nextPageToken` for pagination (never snake case).
 - Logging via `loguru`; sensitive tokens masked (`server/security.py`).
 - Dynamic tool registration: Explicit import loop in `server/mcp/tools.py` ensures consistent registry population across agent/test environments.
-- Rate limiting: middleware in `server/main.py` (defaults: `RATE_LIMIT_PER_MIN=120`, `RATE_LIMIT_BYPASS=True` in `server/config.py`; over-limit returns `429` + `{code:"RATE_LIMITED"}`).
+- Rate limiting: middleware in `server/main.py` (defaults: `RATE_LIMIT_PER_MIN=207`, `RATE_LIMIT_BYPASS=False` in `server/config.py`; over-limit returns `429` + `{code:"RATE_LIMITED"}`).
 - Metrics: `GET /metrics` enabled by default (`METRICS_ENABLED=True` in `server/config.py`).
 
 ## Tools & Resources Conventions
