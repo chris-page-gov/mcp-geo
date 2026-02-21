@@ -1,0 +1,568 @@
+{
+  "meta": {
+    "project": "mcp-geo",
+    "generated_on": "2026-02-21",
+    "generator": "codex-gpt5",
+    "sources": {
+      "codebase_root": "/Users/crpage/repos/mcp-geo",
+      "latex_brief_root": "/Users/crpage/repos/mcp-geo/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP",
+      "report": "/Users/crpage/repos/mcp-geo/docs/reports/safe_by_design_review_2026-02-21.md"
+    }
+  },
+  "status": {
+    "current": "partially_met",
+    "target": "fully_met",
+    "overall_score": 52.0,
+    "blocking_revision_ids": [
+      "SBD-REV-001",
+      "SBD-REV-002",
+      "SBD-REV-003",
+      "SBD-REV-004",
+      "SBD-REV-005",
+      "SBD-REV-006",
+      "SBD-REV-007"
+    ]
+  },
+  "standards": [
+    {
+      "id": "ncsc_secure_ai_guidelines",
+      "title": "Guidelines for Secure AI System Development",
+      "url": "https://www.ncsc.gov.uk/files/Guidelines-for-secure-AI-system-development.pdf",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "ico_ai_data_protection",
+      "title": "Guidance on AI and data protection",
+      "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "data_ai_ethics_framework",
+      "title": "Data and AI Ethics Framework",
+      "url": "https://www.gov.uk/government/publications/data-ethics-framework/data-and-ai-ethics-framework",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "algorithmic_transparency_recording_standard",
+      "title": "Algorithmic Transparency Recording Standard Hub",
+      "url": "https://www.gov.uk/government/collections/algorithmic-transparency-recording-standard-hub",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "five_safes_framework",
+      "title": "About the Secure Research Service (Five Safes Framework)",
+      "url": "https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/secureresearchservice/aboutthesecureresearchservice",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "owasp_llm_top10",
+      "title": "OWASP Top 10 for LLM Applications 2025",
+      "url": "https://genai.owasp.org/llm-top-10/",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "prov_o",
+      "title": "W3C PROV-O",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "prov_dm",
+      "title": "W3C PROV-DM",
+      "url": "https://www.w3.org/TR/prov-dm/",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "dcat3",
+      "title": "W3C DCAT v3",
+      "url": "https://www.w3.org/TR/vocab-dcat-3/",
+      "accessed": "2026-02-21"
+    },
+    {
+      "id": "mcp_spec_2025_11_25",
+      "title": "MCP specification revision 2025-11-25",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/",
+      "accessed": "2026-02-21"
+    }
+  ],
+  "compliance_checklists": [
+    {
+      "id": "CHK-SBD-001",
+      "group": "safe-by-design",
+      "statement": "Every user-facing answer path includes provenance metadata (source, transform, limits).",
+      "verification": "Inspect response payload constructors and report generators; assert provenance block presence in tests.",
+      "anchors": [
+        "prov_o",
+        "prov_dm",
+        "algorithmic_transparency_recording_standard"
+      ]
+    },
+    {
+      "id": "CHK-SBD-002",
+      "group": "safe-by-design",
+      "statement": "Every high-impact workflow has explicit deny-safe defaults and fallback labeling.",
+      "verification": "Inspect routing and guardrail code paths; verify explicit default behavior and warning fields.",
+      "anchors": [
+        "ncsc_secure_ai_guidelines",
+        "data_ai_ethics_framework"
+      ]
+    },
+    {
+      "id": "CHK-GRD-001",
+      "group": "guardrails",
+      "statement": "Tool routes enforce intent-to-workflow mapping before heavy data calls.",
+      "verification": "Review route handlers for intent classification and sequencing constraints.",
+      "anchors": [
+        "mcp_spec_2025_11_25",
+        "owasp_llm_top10"
+      ]
+    },
+    {
+      "id": "CHK-GRD-002",
+      "group": "guardrails",
+      "statement": "Payload budgets and progressive disclosure are enforced in code, not only in docs.",
+      "verification": "Check limits, chunking, resource handoff logic, and tests for large responses.",
+      "anchors": [
+        "owasp_llm_top10",
+        "ncsc_secure_ai_guidelines"
+      ]
+    },
+    {
+      "id": "CHK-PRV-001",
+      "group": "privacy",
+      "statement": "Sensitive datasets require explicit authorization checks before retrieval.",
+      "verification": "Inspect endpoint/tool handlers for authz gates and policy checks.",
+      "anchors": [
+        "ico_ai_data_protection",
+        "five_safes_framework"
+      ]
+    },
+    {
+      "id": "CHK-PRV-002",
+      "group": "privacy",
+      "statement": "Sensitive responses default to aggregation/redaction unless explicitly authorized.",
+      "verification": "Inspect response shaping and policy hooks; run tests over restricted datasets.",
+      "anchors": [
+        "ico_ai_data_protection",
+        "data_ai_ethics_framework",
+        "five_safes_framework"
+      ]
+    },
+    {
+      "id": "CHK-RED-001",
+      "group": "redaction",
+      "statement": "All secret-bearing config fields and token-like keys are redacted from logs/errors.",
+      "verification": "Inject secret fixtures and assert they never appear in log/output snapshots.",
+      "anchors": [
+        "ncsc_secure_ai_guidelines",
+        "owasp_llm_top10"
+      ]
+    },
+    {
+      "id": "CHK-AUD-001",
+      "group": "auditability",
+      "statement": "Audit logs are structured and replayable into deterministic timelines.",
+      "verification": "Replay trace-to-report pipeline and compare with runtime events.",
+      "anchors": [
+        "algorithmic_transparency_recording_standard",
+        "prov_o"
+      ]
+    },
+    {
+      "id": "CHK-AUD-002",
+      "group": "auditability",
+      "statement": "Correlation IDs are propagated across request, tool calls, and responses.",
+      "verification": "Trace correlation IDs through middleware, transports, and tool-call records.",
+      "anchors": [
+        "algorithmic_transparency_recording_standard",
+        "mcp_spec_2025_11_25"
+      ]
+    },
+    {
+      "id": "CHK-PROV-001",
+      "group": "provenance",
+      "statement": "Provenance structure maps to PROV model concepts (entity/activity/agent).",
+      "verification": "Inspect provenance payload schema and mapping docs.",
+      "anchors": [
+        "prov_o",
+        "prov_dm"
+      ]
+    },
+    {
+      "id": "CHK-TRN-001",
+      "group": "transparency",
+      "statement": "Automation decisions can be documented and reviewed against ATRS expectations.",
+      "verification": "Check fields needed for ATRS records and assurance reporting.",
+      "anchors": [
+        "algorithmic_transparency_recording_standard"
+      ]
+    },
+    {
+      "id": "CHK-SEC-001",
+      "group": "secure-development",
+      "statement": "File/path resource access is traversal-safe with canonical containment checks.",
+      "verification": "Run traversal tests over all file-backed resource branches.",
+      "anchors": [
+        "ncsc_secure_ai_guidelines",
+        "owasp_llm_top10"
+      ]
+    },
+    {
+      "id": "CHK-SEC-002",
+      "group": "secure-development",
+      "statement": "Client error payloads do not expose raw internal exception details.",
+      "verification": "Trigger exceptions and inspect client-visible error envelopes.",
+      "anchors": [
+        "ncsc_secure_ai_guidelines",
+        "owasp_llm_top10"
+      ]
+    },
+    {
+      "id": "CHK-RSK-001",
+      "group": "risk-management",
+      "statement": "Rate limits, retries, and degraded-mode fallbacks are secure-by-default.",
+      "verification": "Validate config defaults and runtime behavior under pressure tests.",
+      "anchors": [
+        "ncsc_secure_ai_guidelines",
+        "owasp_llm_top10"
+      ]
+    },
+    {
+      "id": "CHK-STD-001",
+      "group": "standards",
+      "statement": "Resource metadata is catalog-compatible with DCAT v3 semantics.",
+      "verification": "Check catalog fields and mapping in resource descriptors.",
+      "anchors": [
+        "dcat3"
+      ]
+    },
+    {
+      "id": "CHK-STD-002",
+      "group": "standards",
+      "statement": "MCP transport behavior aligns with dated spec revision 2025-11-25.",
+      "verification": "Compare protocol handlers with spec method/shape requirements.",
+      "anchors": [
+        "mcp_spec_2025_11_25"
+      ]
+    },
+    {
+      "id": "CHK-STD-003",
+      "group": "standards",
+      "statement": "Governance claims in research outputs are cited to UK/standards authorities.",
+      "verification": "Audit claim-to-citation mapping and bibliography metadata integrity.",
+      "anchors": [
+        "ico_ai_data_protection",
+        "ncsc_secure_ai_guidelines",
+        "data_ai_ethics_framework",
+        "algorithmic_transparency_recording_standard",
+        "five_safes_framework"
+      ]
+    }
+  ],
+  "revisions": [
+    {
+      "id": "SBD-REV-001",
+      "title": "Harden file resource path containment",
+      "severity": "high",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "server/mcp/resource_catalog.py"
+      ],
+      "todo": "#TODO# Replace every path boundary check using startswith/unchecked joins with canonical containment using Path.resolve() + relative_to helper.",
+      "details": [
+        "Fix branches: ons-cache, ons-exports, os-cache, os-exports, exports.",
+        "Normalize before existence checks.",
+        "Reject traversal and sibling-prefix escapes with INVALID_INPUT envelope."
+      ],
+      "acceptance_criteria": [
+        "Traversal payloads (../, encoded separators, sibling-prefix) are rejected for every file-backed resource URI.",
+        "Existing valid resource reads remain functional.",
+        "No branch uses string prefix containment checks."
+      ]
+    },
+    {
+      "id": "SBD-REV-002",
+      "title": "Add traversal regression tests for resource handlers",
+      "severity": "high",
+      "status": "pending",
+      "dependencies": [
+        "SBD-REV-001"
+      ],
+      "files": [
+        "tests/"
+      ],
+      "todo": "#TODO# Add negative tests for traversal across all resource slug families.",
+      "details": [
+        "Cover on-disk branches: ons-cache, ons-exports, os-cache, os-exports, exports.",
+        "Include sibling-prefix and mixed path separator cases."
+      ],
+      "acceptance_criteria": [
+        "All malicious path test cases return INVALID_INPUT or NOT_FOUND without out-of-root file reads.",
+        "CI includes these tests in default pytest suite."
+      ]
+    },
+    {
+      "id": "SBD-REV-003",
+      "title": "Expand secrets redaction scope",
+      "severity": "high",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "server/logging.py",
+        "server/security.py",
+        "server/main.py"
+      ],
+      "todo": "#TODO# Redact NOMIS and token-like secrets globally, not only OS_API_KEY.",
+      "details": [
+        "Include NOMIS_UID and NOMIS_SIGNATURE in redaction seed.",
+        "Apply key-name-based masking for signature/token/api_key/authorization keys.",
+        "Ensure exception handler masking uses complete secret set."
+      ],
+      "acceptance_criteria": [
+        "No known credential appears in logs or API error payloads.",
+        "Redaction behavior is consistent for nested dict/list values."
+      ]
+    },
+    {
+      "id": "SBD-REV-004",
+      "title": "Add log redaction verification tests",
+      "severity": "high",
+      "status": "pending",
+      "dependencies": [
+        "SBD-REV-003"
+      ],
+      "files": [
+        "tests/"
+      ],
+      "todo": "#TODO# Add tests proving credentials and token-like fields are masked in all log paths.",
+      "details": [
+        "Cover upstream error logging with params payloads.",
+        "Cover generic exception handler output.",
+        "Cover nested structures."
+      ],
+      "acceptance_criteria": [
+        "Test fixtures with secret values never appear in captured log output.",
+        "Mask token is consistently applied."
+      ]
+    },
+    {
+      "id": "SBD-REV-005",
+      "title": "Sanitize internal exception responses in transports",
+      "severity": "high",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "server/stdio_adapter.py",
+        "server/mcp/http_transport.py"
+      ],
+      "todo": "#TODO# Replace `Internal error: {exc}` with generic client-safe messages and correlation IDs.",
+      "details": [
+        "Keep full exception details only in server logs.",
+        "Use consistent JSON-RPC code mapping for internal errors."
+      ],
+      "acceptance_criteria": [
+        "Client responses never include raw exception text.",
+        "Operational logs still allow diagnosis via correlation ID."
+      ]
+    },
+    {
+      "id": "SBD-REV-006",
+      "title": "Normalize malformed JSON handling to 400 envelopes",
+      "severity": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "server/mcp/tools.py",
+        "server/mcp/playground.py"
+      ],
+      "todo": "#TODO# Catch JSON decode failures locally and return structured INVALID_INPUT errors.",
+      "details": [
+        "Guard `await request.json()` with parse exception handling.",
+        "Ensure response shape matches repository error model."
+      ],
+      "acceptance_criteria": [
+        "Malformed JSON requests return HTTP 400 with deterministic error envelope.",
+        "No malformed JSON case reaches generic 500 handler."
+      ]
+    },
+    {
+      "id": "SBD-REV-007",
+      "title": "Use secure rate-limit defaults",
+      "severity": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "server/config.py",
+        ".env.example",
+        "docs/"
+      ],
+      "todo": "#TODO# Set RATE_LIMIT_BYPASS default to false and document explicit dev/test overrides.",
+      "details": [
+        "Align defaults with secure production posture.",
+        "Keep test fixtures toggling bypass explicitly where required."
+      ],
+      "acceptance_criteria": [
+        "Default runtime enforces limiter without extra configuration.",
+        "Tests/dev docs remain reproducible with explicit bypass config."
+      ]
+    },
+    {
+      "id": "SBD-REV-008",
+      "title": "Fix logging format consistency and debug print",
+      "severity": "low",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "server/main.py"
+      ],
+      "todo": "#TODO# Replace `%s`-style loguru calls with `{}` formatting and remove raw startup print.",
+      "details": [
+        "Ensure all audit log lines render structured fields consistently.",
+        "Route startup diagnostics through logger only."
+      ],
+      "acceptance_criteria": [
+        "No `%s` placeholder logging remains in main request/error paths.",
+        "Startup message appears through configured logger with redaction patcher."
+      ]
+    },
+    {
+      "id": "SBD-REV-009",
+      "title": "Resolve residual uncited governance statements in brief",
+      "severity": "low",
+      "status": "done",
+      "dependencies": [],
+      "files": [
+        "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex",
+        "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex"
+      ],
+      "todo": "#TODO# Completed 2026-02-21: Added standards citations to executive summary assurance sentence and governed middle-layer thesis sentence.",
+      "details": [
+        "Prefer PROV/ATRS for auditability claims.",
+        "Prefer NCSC/Data and AI Ethics Framework for governance assertions."
+      ],
+      "acceptance_criteria": [
+        "All core governance/safety claims in summary/thesis sections have explicit standards citations.",
+        "No document-structure rewrite required."
+      ]
+    },
+    {
+      "id": "SBD-REV-010",
+      "title": "Verify internal artefact URL for codex trace citation",
+      "severity": "low",
+      "status": "pending",
+      "dependencies": [],
+      "files": [
+        "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib"
+      ],
+      "todo": "#TODO# Replace placeholder/local `file://` trace citation URL with a stable repository URL once the artefact path is finalized.",
+      "details": [
+        "Current key: artefact_codex_trace_jsonl_2026_02_18.",
+        "Use canonical repository location or signed archival reference."
+      ],
+      "acceptance_criteria": [
+        "Citation resolves from external review context.",
+        "Metadata note accurately reflects access constraints if private."
+      ]
+    }
+  ],
+  "rubric": {
+    "scale": "0..5",
+    "dimensions": [
+      {
+        "id": "RUB-SBD",
+        "name": "Safe-by-design architecture",
+        "weight": 10,
+        "score": 3,
+        "weighted_points": 6.0
+      },
+      {
+        "id": "RUB-GRD",
+        "name": "Guardrails",
+        "weight": 8,
+        "score": 3,
+        "weighted_points": 4.8
+      },
+      {
+        "id": "RUB-PRV",
+        "name": "Privacy and data protection (ICO/Five Safes)",
+        "weight": 12,
+        "score": 2,
+        "weighted_points": 4.8
+      },
+      {
+        "id": "RUB-SEC",
+        "name": "Secure development (NCSC)",
+        "weight": 12,
+        "score": 2,
+        "weighted_points": 4.8
+      },
+      {
+        "id": "RUB-OWA",
+        "name": "OWASP LLM control alignment",
+        "weight": 10,
+        "score": 2,
+        "weighted_points": 4.0
+      },
+      {
+        "id": "RUB-PROV",
+        "name": "Provenance and auditability (PROV/ATRS)",
+        "weight": 12,
+        "score": 3,
+        "weighted_points": 7.2
+      },
+      {
+        "id": "RUB-TRN",
+        "name": "Transparency and governance records",
+        "weight": 8,
+        "score": 3,
+        "weighted_points": 4.8
+      },
+      {
+        "id": "RUB-RED",
+        "name": "Sensitive data and redaction",
+        "weight": 8,
+        "score": 1,
+        "weighted_points": 1.6
+      },
+      {
+        "id": "RUB-RSK",
+        "name": "Risk management and resilience",
+        "weight": 10,
+        "score": 2,
+        "weighted_points": 4.0
+      },
+      {
+        "id": "RUB-CIT",
+        "name": "Citation and standards traceability",
+        "weight": 10,
+        "score": 5,
+        "weighted_points": 10.0
+      }
+    ],
+    "total_weight": 100,
+    "total_weighted_points": 52.0
+  },
+  "transition_plan": {
+    "objective": "Reach fully_met by resolving all blocking high/medium implementation revisions and finalizing residual low-priority evidence references.",
+    "ordered_execution": [
+      "SBD-REV-001",
+      "SBD-REV-002",
+      "SBD-REV-003",
+      "SBD-REV-004",
+      "SBD-REV-005",
+      "SBD-REV-006",
+      "SBD-REV-007",
+      "SBD-REV-008",
+      "SBD-REV-009",
+      "SBD-REV-010"
+    ],
+    "fully_met_criteria": [
+      "All blocking high/medium revisions are complete and test-covered.",
+      "No known traversal path remains in resource handlers.",
+      "No secret leaks in logs/errors under credential-bearing test fixtures.",
+      "No transport/client response includes raw internal exception text.",
+      "Governance claim-to-citation mapping has no unresolved needs-improvement items."
+    ]
+  }
+}

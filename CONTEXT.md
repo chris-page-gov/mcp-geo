@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-19
+Last updated: 2026-02-21
 Owner: @chris-page-gov
 
 ## Purpose
@@ -50,6 +50,9 @@ assumptions change.
 - Keeping the completed phased progress program stable with full regression coverage.
 - Driving the OS catalog/tooling gap closure plan via parallel workstreams.
 - Prioritizing next major gap after gap closure: CI pipeline implementation.
+- Completing a safe-by-design/governance compliance review against UK standards
+  (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM guidance, W3C
+  provenance/catalog standards, and MCP `2025-11-25`.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery
@@ -93,6 +96,10 @@ assumptions change.
   `playground/trials/tests/`, and
   `research/map_delivery_research_2026-02/reports/story_gallery_report.md` +
   `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`.
+- Produce a dependency-tracked governance remediation backlog in
+  `safe-by-design.json` and score current repo compliance with an explicit rubric.
+- Keep the extracted Prism LaTeX brief citation set synchronized with
+  authoritative UK/standards anchors and bibliography integrity checks.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -160,6 +167,17 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-21: Completed safe-by-design governance/citation review deliverables:
+  added `docs/reports/safe_by_design_review_2026-02-21.md` and
+  `safe-by-design.json`, patched extracted Prism brief citations under
+  `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/`,
+  and refreshed canonical BibTeX metadata/URLs (including replacing dead Five
+  Safes reference URL).
+- 2026-02-21: Started a full safe-by-design/gov-assurance review and created a
+  dependency-tracked remediation log (`safe-by-design.json`) plus a scored
+  compliance rubric/report (`docs/reports/safe_by_design_review_2026-02-21.md`).
+  Initially identified a source dependency for Prism-authenticated content; this
+  was later resolved by using the extracted local LaTeX brief.
 - 2026-02-19: Implemented peatland reliability streams `PSR-INT-0` through
   `PSR-ROU-8`:
   - `os_features.query` now applies hard limit clamping (`<=100`), structured

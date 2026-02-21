@@ -3,7 +3,21 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-19
+Last updated: 2026-02-21
+
+## Safe-by-design governance and citation review (2026-02-21)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SBD-INT-0 Scope + source inventory | done | none | Confirmed and reviewed extracted Prism LaTeX brief mirror under `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/`. |
+| SBD-STD-1 Standards evidence mapping | done | SBD-INT-0 | Anchored checklist/rubric to NCSC, ICO, Data Ethics Framework, ATRS, Five Safes, OWASP LLM, PROV-O/PROV-DM/DCAT v3, and MCP `2025-11-25`. |
+| SBD-CIT-2 Citation-key integrity audit | done | SBD-INT-0 | Verified local TeX cite keys and generated BibTeX/TeX patch recommendations; found metadata gaps in `references.bib`. |
+| SBD-REV-3 Full code review + `#TODO#` findings | done | SBD-STD-1 | Produced prioritized security/governance findings with dependencies and remediation steps. |
+| SBD-LOG-4 Remediation tracker JSON | done | SBD-REV-3 | Added `safe-by-design.json` with dependency graph, acceptance criteria, and target `fully_met` status path. |
+| SBD-RUB-5 Compliance rubric + scoring | done | SBD-STD-1, SBD-REV-3 | Added weighted rubric and applied scores to current repo state in review report. |
+| SBD-CIT-6 Prism brief citation patch application | done | SBD-CIT-2 | Applied citation-strengthening updates to local extracted Prism brief under `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/` and refreshed canonical BibTeX URLs/metadata. |
 
 ## Presentation story gallery (2026-02-17)
 

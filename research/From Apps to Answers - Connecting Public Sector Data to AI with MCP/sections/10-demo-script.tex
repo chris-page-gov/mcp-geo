@@ -1,0 +1,200 @@
+\section{Demo script: MCP-Geo as the “middle layer” from apps to answers}
+
+\textbf{Evidence basis for this demo narrative:} transcript + tool trace + trace-derived forensic analyses \cite{artefact_claude_stopped_after_ngd_features_2026_02_18,artefact_codex_trace_jsonl_2026_02_18,artefact_floor_question_analysis_2026_02_19,artefact_forensic_study_mcp_geo_2026_02_19}.
+
+\textbf{Assurance framing references (for Q\&A):} Five Safes, ICO AI \& data protection, NCSC secure AI development guidance, ATRS, OWASP LLM controls, and MCP/provenance standards. \cite{five_safes_framework,ico_ai_data_protection,ncsc_secure_ai_guidelines,algorithmic_transparency_recording_standard,owasp_llm_top10,mcp_spec_2025_11_25,prov_o,dcat3}
+
+Audience: UK Government and wider public sector, mostly non-technical.
+Goal: show that MCP lets us shift from \textit{app-centric} integration to \textit{data-to-answers} capability, with governance and safety.
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{Setup (before the room)}
+\textbf{On screen:}
+\begin{itemize}[leftmargin=*]
+\item A simple slide with the title: \textbf{From Apps to Answers: Connecting Public Sector Data to AI with MCP}
+\item A single diagram: \textit{Data → Information → Answers} (with “MCP middle layer” as the bridge)
+\end{itemize}
+
+\textbf{Narration (10–15s):}
+\begin{itemize}[leftmargin=*]
+\item “Today I’m not demoing a clever app. I’m demoing a capability: connecting intelligence to the data we already hold.”
+\end{itemize}
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{The story hook (the floor question)}
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “Here’s a real question from a previous session: ‘Do a peatland site survey on the forrest of Bowland.’”
+\end{itemize}
+
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item The line in \texttt{claude-stopped-after-ngd-features.md} where the question appears (and the later ‘don’t use the web’ constraint).
+\item Then show a screenshot/clip of the final user-visible failure (“…could not be fully generated”).
+\end{itemize}
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “This is exactly the kind of moment that matters in the public sector: a live question, a live answer, and scrutiny.”
+\end{itemize}
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{2) Reconstruct “what actually happened” (trust via audit)}
+\textbf{Show (quickly):}
+\begin{itemize}[leftmargin=*]
+\item The timeline table (ids 15–31) from the forensic write-up.
+\item Highlight three moments with a pointer:
+\end{itemize}
+  1) \texttt{id=15} \textbf{worked} but was perceived as missing by the host
+  2) boundary fell back to a \textbf{ward} (proxy)
+  3) payload/latency spike (\texttt{id=30}, \texttt{id=31}) before the stop marker
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “MCP gives us auditability. We can see exactly which data sources we touched, how long they took, and where things degraded.” \cite{mcp_spec_2025_11_25,prov_o,algorithmic_transparency_recording_standard}
+\end{itemize}
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{3) The principle: why a “middle layer” matters}
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “If you remember one thing: the middle layer is where \textit{data becomes information}.”
+\item “APIs give access; MCP can give \textit{governed, intent-aware} access.” \cite{mcp_spec_2025_11_25,ncsc_secure_ai_guidelines,data_ai_ethics_framework}
+\end{itemize}
+
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item A slide with three boxes:
+\end{itemize}
+  - \textbf{Data:} raw datasets (OS, ONS, departmental data)
+  - \textbf{Middle layer:} routing, boundaries, guardrails, provenance
+  - \textbf{Answers:} plain-language responses, reports, maps
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{4) Demonstration part A: the “naïve” path (1 minute)}
+Purpose: show what happens without the middle layer’s guardrails.
+
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item In the console/log viewer: a single large \texttt{os\_features\_query} with geometry and high limit.
+\item Point out: “big payload”, “paging”, “timeouts can happen”.
+\end{itemize}
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “This is what an app-style integration often does: it pulls the data and hopes.”
+\end{itemize}
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{5) Demonstration part B: the “middle layer” path (3–4 minutes)}
+Purpose: show the same question handled with safe defaults and clearer meaning.
+
+\subsubsection{Step B1 — Resolve the area \textit{authoritatively}}
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item “Resolve named landscape boundary” (AONB/National Landscape) tool or dataset entry.
+\item If not implemented yet: show the design stub and explain how it would plug in.
+\end{itemize}
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “First: define the survey extent. If we can’t get the authoritative boundary, we label the fallback as a proxy.”
+\end{itemize}
+
+\subsubsection{Step B2 — Counts-first survey scan}
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item A lightweight call: \texttt{resultType=hits}, \texttt{includeGeometry=false}.
+\item Output: a tiny summary table of peat-indicator classes (counts only).
+\end{itemize}
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “Second: we ask the data an economical question first. We don’t drag the whole dataset into the chat.”
+\end{itemize}
+
+\subsubsection{Step B3 — Controlled enrichment}
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item Fetch geometry for a \textit{small} subset only.
+\item If result is large: show a \texttt{resource://...} handle returned instead of inline payload.
+\end{itemize}
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “Third: we enrich progressively. The model can ask follow-up questions, but within budgets.”
+\end{itemize}
+
+\subsubsection{Step B4 — Provenance block}
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item A generated “answer” that ends with:
+\end{itemize}
+  - boundary source and whether it’s authoritative/proxy
+  - datasets used
+  - completeness (paging)
+  - limitations and next steps
+
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “This is what makes it public-sector ready: you can defend the answer.” \cite{prov_o,algorithmic_transparency_recording_standard}
+\end{itemize}
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{6) How to handle Q\&A (scripted responses)}
+
+\subsubsection{Q: “Why didn’t it just use the peat map?”}
+\textbf{Answer:}
+\begin{itemize}[leftmargin=*]
+\item “Because we didn’t have that boundary/dataset wired in. That’s the point: MCP lets us add authoritative layers and route to them explicitly, rather than hard-coding a single app.”
+\end{itemize}
+
+\subsubsection{Q: “Did MCP fail?”}
+\textbf{Answer:}
+\begin{itemize}[leftmargin=*]
+\item “The trace shows the tool calls succeeded through the final step. The visible failure was host pressure after large outputs. The fix is in the middle layer: payload budgets, resource handles, and thin defaults.”
+\end{itemize}
+
+\subsubsection{Q: “What about sensitive data?”}
+\textbf{Answer:}
+\begin{itemize}[leftmargin=*]
+\item “Same pattern: the middle layer controls access. It can default to aggregation/redaction, record provenance, and require explicit privilege for sensitive layers.” \cite{ico_ai_data_protection,five_safes_framework,data_ai_ethics_framework}
+\end{itemize}
+
+\subsubsection{Q: “Isn’t this just an API?”}
+\textbf{Answer:}
+\begin{itemize}[leftmargin=*]
+\item “APIs are pipes. The middle layer adds: intent routing, policy, provenance, and audit — and it works across many datasets, not one app.” \cite{mcp_spec_2025_11_25,prov_o,algorithmic_transparency_recording_standard}
+\end{itemize}
+
+% (visual separator; keep it from appearing as an em-dash paragraph)
+\par\medskip\hrule\medskip
+
+\subsection{Close (30 seconds)}
+\textbf{Say:}
+\begin{itemize}[leftmargin=*]
+\item “Public sector is data-rich. The question is whether we can connect it safely to plain-language questions.”
+\item “MCP is a way to turn many datasets into a single governed capability: answers, not apps.” \cite{mcp_spec_2025_11_25,data_ai_ethics_framework}
+\end{itemize}
+
+\textbf{Show:}
+\begin{itemize}[leftmargin=*]
+\item A final slide with the 3 takeaways:
+\end{itemize}
+  1) \textbf{Define the area}
+  2) \textbf{Scan cheaply, enrich progressively}
+  3) \textbf{Always include provenance and limits}

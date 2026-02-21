@@ -1,0 +1,147 @@
+\section{Case study: “Do a peatland site survey on the forest of Bowland” (MCP-Geo)}
+
+\subsection{Scope and evidence (primary)}
+
+This case study is reconstructed from four artefacts, treated as \textbf{primary evidence} \cite{artefact_claude_stopped_after_ngd_features_2026_02_18,artefact_codex_trace_jsonl_2026_02_18,artefact_floor_question_analysis_2026_02_19,artefact_forensic_study_mcp_geo_2026_02_19}:
+
+\begin{itemize}[leftmargin=2em]
+  \item Claude transcript (floor question, tool excerpts, adapter truncation, final stop marker). \cite{artefact_claude_stopped_after_ngd_features_2026_02_18}
+  \item Tool trace (\texttt{codex-trace.jsonl}; JSONL of MCP tool calls). \cite{artefact_codex_trace_jsonl_2026_02_18}
+  \item Trace-derived deep analysis and timeline. \cite{artefact_floor_question_analysis_2026_02_19}
+  \item Forensic narrative and engineering recommendations. \cite{artefact_forensic_study_mcp_geo_2026_02_19}
+\end{itemize}
+
+The initiating floor question is:
+\begin{quote}
+“Do a peatland site survey on the forest of Bowland”. \cite{artefact_claude_stopped_after_ngd_features_2026_02_18}
+\end{quote}
+
+A second constraint introduced mid-session was:
+\begin{quote}
+“Don't use the web, use mcp-geo”. \cite{artefact_claude_stopped_after_ngd_features_2026_02_18}
+\end{quote}
+
+\subsection{Narrative reconstruction}
+
+\subsubsection*{Discovery attempt (correct tool, but perceived failure)}
+\begin{itemize}[leftmargin=2em]
+  \item The workflow started with an \textbf{OS Names} lookup for “Forest of Bowland”
+    (\texttt{os\_names\_find}, \texttt{id=15}) and received a \textbf{successful} response.
+  \item The transcript records a \textbf{user-visible} client/UI error (“No result received from client-side tool execution.”),
+    creating an early mismatch between what the MCP server did and what the host presented.
+\end{itemize}
+
+\noindent$\rightarrow$ \hangindent=1.8em \hangafter=1 \textbf{Consequence:} the workflow pivoted away from the “right” discovery path into address/POI approaches.
+
+\subsubsection*{Boundary/extent resolution failed (protected landscape not available)}
+\begin{itemize}[leftmargin=2em]
+  \item An administrative lookup for “Forest of Bowland” returned \textbf{no match}
+    (admin lookup, \texttt{id=16}).
+  \item A later admin lookup for “Bowland” returned an \textbf{electoral ward} (\texttt{id=19}).
+    The ward polygon was then pulled (\texttt{admin\_lookup\_area\_geometry}, \texttt{id=20}).
+\end{itemize}
+
+\noindent$\rightarrow$ \hangindent=1.8em \hangafter=1 \textbf{Consequence:} the “area of interest” became \textbf{the ward boundary}, not the \textbf{Forest of Bowland AONB / National Landscape} boundary.
+
+\subsubsection*{NGD feature interrogation escalated (schema → filters → geometry)}
+\begin{itemize}[leftmargin=2em]
+  \item Collection discovery and queryables/schema discovery were used effectively (\texttt{id=21--22}).
+  \item The workflow attempted “peat” detection by filtering on land-cover descriptions (\texttt{id=23}, \texttt{id=24}, then broader CQL in \texttt{id=25}).
+  \item The CQL request timed out upstream (\texttt{id=25}, status 501; \texttt{read timeout=5}).
+    The workflow then continued with narrower filters (\texttt{id=26}, \texttt{id=27}).
+\end{itemize}
+
+\noindent$\rightarrow$ \hangindent=1.8em \hangafter=1 \textbf{Consequence:} the workflow shifted into larger “sample pulls” and then geometry-heavy calls (\texttt{id=28} then \texttt{id=30}), increasing payload size and host pressure.
+
+\subsubsection*{Degradation → stop (payload + latency + host truncation)}
+\begin{itemize}[leftmargin=2em]
+  \item A large geometry-bearing land response occurred (\texttt{id=30}, response \textasciitilde{}555 kB).
+  \item A final geometry-bearing water query ran for a long time (\texttt{id=31}, latency \textasciitilde{}317 s; response \textasciitilde{}271 kB).
+\end{itemize}
+
+\noindent$\rightarrow$ \hangindent=1.8em \hangafter=1 \textbf{Consequence:} the experience looked like “the agent stopped”, even though the trace shows the final tool call returned HTTP 200.
+
+\subsection{Timeline table (tool discovery → calls → degradation → stop)}
+
+All timestamps are \textbf{UTC}. \cite{artefact_codex_trace_jsonl_2026_02_18,artefact_floor_question_analysis_2026_02_19,artefact_forensic_study_mcp_geo_2026_02_19}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{15 (14:34:37)} OS Names lookup succeeded, but the host reported “no result”.
+  \item \textbf{16 (14:35:11)} Admin lookup found no match for “Forest of Bowland”.
+  \item \textbf{19--20 (14:45:26--14:45:35)} “Bowland” resolved to a ward; ward geometry used as proxy AOI.
+  \item \textbf{21--22 (14:45:47--14:46:40)} Land collections and schema/queryables discovery succeeded.
+  \item \textbf{25 (14:47:40)} Upstream timeout (status 501; read timeout=5).
+  \item \textbf{30 (14:49:40)} Large geometry payload returned (\textasciitilde{}555 kB).
+  \item \textbf{31 (14:50:24)} Very long call (\textasciitilde{}317 s) followed by truncation/stop.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  x=1cm,y=1cm,
+  font=\scriptsize,
+  >=Latex,
+  event/.style={draw,rounded corners,fill=gray!6,inner sep=3pt,align=left},
+  call/.style={draw,rounded corners,fill=blue!6,inner sep=3pt,align=left},
+  fail/.style={draw,rounded corners,fill=red!6,inner sep=3pt,align=left},
+  heavy/.style={draw,rounded corners,fill=orange!10,inner sep=3pt,align=left},
+  axis/.style={draw,thick,-{Latex[length=3mm]}}
+]
+% timeline axis (taller canvas and explicit break)
+\draw[axis] (0,0) -- (16.8,0) node[right]{time};
+
+% ticks (compressed after last call)
+\foreach \x/\t in {0/14:34, 2/14:35, 7/14:45, 10/14:46, 12/14:47, 14/14:49, 15.2/14:50} {
+  \draw (\x,0.12) -- (\x,-0.12);
+\node[below] at (\x,-0.12) {\scriptsize \t};
+}
+% explicit time-break marker (not to scale)
+\draw[densely dashed,thick] (15.95,-0.45) -- (15.95,2.25);
+\node[fill=white,inner sep=1pt] at (15.95,0.85) {\scriptsize time break};
+\node at (15.8,0) {\normalsize$\cdots$};
+
+% events
+\node[call] (e15) at (0,1.65) {\textbf{id=15}\\OS Names\\\textit{host: ``no result''}};
+\draw[-{Latex[length=2.5mm]}] (0,0.15) -- (e15.south);
+
+\node[event] (e16) at (2,1.65) {\textbf{id=16}\\Admin lookup\\\textit{no match}};
+\draw[-{Latex[length=2.5mm]}] (2,0.15) -- (e16.south);
+
+\node[event] (e19) at (7,1.65) {\textbf{id=19--20}\\Ward proxy AOI\\resp \textasciitilde{}46.9 kB};
+\draw[-{Latex[length=2.5mm]}] (7,0.15) -- (e19.south);
+
+\node[call] (e21) at (10,1.65) {\textbf{id=21--22}\\Discovery+schema\\resp \textasciitilde{}26.7/41.5 kB};
+\draw[-{Latex[length=2.5mm]}] (10,0.15) -- (e21.south);
+
+\node[fail] (e25) at (12,1.65) {\textbf{id=25}\\Timeout\\501; 15.6 s};
+\draw[-{Latex[length=2.5mm]}] (12,0.15) -- (e25.south);
+
+\node[heavy] (e30) at (14,1.65) {\textbf{id=30}\\Large geometry\\resp \textasciitilde{}555 kB};
+\draw[-{Latex[length=2.5mm]}] (14,0.15) -- (e30.south);
+
+\node[heavy] (e31) at (15.2,1.65) {\textbf{id=31}\\Long call\\\textasciitilde{}317 s; resp \textasciitilde{}271 kB\\\textit{truncation/stop}};
+\draw[-{Latex[length=2.5mm]}] (15.2,0.15) -- (e31.south);
+
+% connectors
+\draw[->,thin] (e15.east) -- (e16.west);
+\draw[->,thin] (e16.east) -- (e19.west);
+\draw[->,thin] (e19.east) -- (e21.west);
+\draw[->,thin] (e21.east) -- (e25.west);
+\draw[->,thin] (e25.east) -- (e30.west);
+\draw[->,thin] (e30.east) -- (e31.west);
+\end{tikzpicture}%
+}
+\caption{Compressed timeline with payload/latency cues (not to scale after 14:50; ellipsis indicates compression).}
+\end{figure}
+
+\subsection{Confirmed turning points (discovery → failure → degradation → stop)}
+
+Evidence for turning points is taken from the transcript and tool trace. \cite{artefact_claude_stopped_after_ngd_features_2026_02_18,artefact_codex_trace_jsonl_2026_02_18}
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Discovery (but user-visible failure):} \texttt{id=15} succeeded, yet the host indicated “no result received”.
+  \item \textbf{Boundary failure:} \texttt{id=16} returned no match; \texttt{id=19–20} fell back to a ward polygon.
+  \item \textbf{Degradation:} schema fetch (\texttt{id=22}), upstream timeout (\texttt{id=25}), then geometry-heavy calls (\texttt{id=30}, \texttt{id=31}).
+  \item \textbf{Stop (user-visible):} adapter truncation appears before the final “could not be fully generated” marker.
+\end{enumerate}

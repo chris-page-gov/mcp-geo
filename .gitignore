@@ -225,6 +225,9 @@ docs/vendor/**/_snapshot_noscript/
 # Spec package exports
 docs/spec_package/build/
 
+# Research archives (raw source drops)
+research/Archive/
+
 # Microsoft Office lock/temp files (created while docs are open)
 ~$*.doc
 ~$*.docx

@@ -1,0 +1,128 @@
+\section{Failure taxonomy: MCP-Geo peatland survey incident}
+
+This taxonomy is designed for public-sector MCP servers where tool outputs must be safe, auditable, and reliable under real-time questioning.
+
+\textbf{Primary evidence used:} transcript + tool trace + trace-derived forensic analyses \cite{artefact_claude_stopped_after_ngd_features_2026_02_18,artefact_codex_trace_jsonl_2026_02_18,artefact_floor_question_analysis_2026_02_19,artefact_forensic_study_mcp_geo_2026_02_19}.
+
+Each failure mode includes: \textbf{definition}, \textbf{symptoms}, \textbf{evidence in this case (ids)}, \textbf{impact}, and \textbf{mitigations}. Evidence (ids, payload sizes, latency, and stop markers) is drawn from the tool trace and transcript. \cite{artefact_codex_trace_jsonl_2026_02_18,artefact_claude_stopped_after_ngd_features_2026_02_18}
+
+---
+
+\subsection*{\arabic{section}.F01 Discovery gap (tool routing not aligned to user intent)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} the system fails to route a user’s query to the most appropriate discovery tool(s) for that intent.
+\item \textbf{Symptoms:} extra “search” calls, meandering exploration, failure to establish an authoritative area-of-interest quickly.
+\item \textbf{Evidence:} \texttt{id=15} used an appropriate tool (OS Names), but the workflow immediately moved to Places/POI (\texttt{id=17–18}) after a host-perceived failure.
+\item \textbf{Impact:} slower answers; increased risk of anchoring on the wrong geometry.
+\item \textbf{Mitigations:} intent router; tool-choice hints; retry-on-host-mismatch; “names first” policy for landscapes.
+\end{itemize}
+
+\subsection*{\arabic{section}.F02 Host–server perception mismatch}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} MCP server returns a valid response, but the host/runtime reports it as missing/failed (or vice versa).
+\item \textbf{Symptoms:} “No result received…” despite trace indicating 200; sudden pivots.
+\item \textbf{Evidence:} \texttt{id=15} success vs transcript error.
+\item \textbf{Impact:} incorrect downstream decisions; trust erosion; harder audits (“what really happened?”).
+\item \textbf{Mitigations:} end-to-end correlation IDs; host acknowledgement receipts; deterministic replay; tool-result integrity checks.
+\end{itemize}
+
+\subsection*{\arabic{section}.F03 Semantic mismatch (using address/POI tools to locate a landscape)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} the wrong class of dataset is queried for the concept in the user’s question.
+\item \textbf{Symptoms:} results dominated by addresses, not areas; irrelevant hits.
+\item \textbf{Evidence:} Places/POI calls \texttt{id=17–18} produced address-like matches.
+\item \textbf{Impact:} wasted calls; incorrect anchors; higher cognitive load for the model/user.
+\item \textbf{Mitigations:} schema-level “intended use” metadata; tool router that blocks/penalises known-mismatch paths.
+\end{itemize}
+
+\subsection*{\arabic{section}.F04 Missing boundary datasets (designated/protected landscapes absent)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} the server lacks the boundary layers required to resolve common public-sector “named area” queries.
+\item \textbf{Symptoms:} falling back to administrative proxies (wards, districts) for non-admin entities.
+\item \textbf{Evidence:} \texttt{id=16} no admin match; \texttt{id=19–20} ward geometry used as proxy AOI.
+\item \textbf{Impact:} wrong survey extent; high risk of misleading conclusions.
+\item \textbf{Mitigations:} add boundary catalogue for AONB/National Landscapes, National Parks, SSSI, SAC/SPA, etc.; provenance labels “authoritative vs proxy”.
+\end{itemize}
+
+\subsection*{\arabic{section}.F05 Ontology / attribute mismatch (peat is not reliably represented by land-cover description)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} the attribute(s) used as a proxy do not capture the target phenomenon.
+\item \textbf{Symptoms:} “no peat” false negatives; overconfidence from sparse proxies.
+\item \textbf{Evidence:} direct \texttt{description="Peat"} filter (\texttt{id=23}) returned zero; later reasoning relied on heath/marsh proxies.
+\item \textbf{Impact:} mistaken claims; poor decision support.
+\item \textbf{Mitigations:} route to peat-specific authoritative datasets (e.g., England Peat Map) and/or habitat inventories; force “proxy-only” disclaimers when using land-cover.
+\end{itemize}
+
+\subsection*{\arabic{section}.F06 Filtering and pagination semantics mismatch (local post-filtering treated as global truth)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} filtering is applied only to the returned page but interpreted as matching the entire universe.
+\item \textbf{Symptoms:} “count=0” while the dataset is large; inconsistent counters.
+\item \textbf{Evidence:} inconsistencies in \texttt{numberReturned} vs empty \texttt{features} (\texttt{id=23}, \texttt{id=29}).
+\item \textbf{Impact:} broken analytics; misleading metrics; brittle automation.
+\item \textbf{Mitigations:} explicit “filterApplied: upstream|local”; scan budgets; correct counters; tests for empty results and pagination.
+\end{itemize}
+
+\subsection*{\arabic{section}.F07 Upstream reliability / timeout failure}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} the upstream service times out or fails under query load.
+\item \textbf{Symptoms:} 5xx with timeout; retries; degraded output quality.
+\item \textbf{Evidence:} \texttt{id=25} status 501 with \texttt{UPSTREAM\_CONNECT\_ERROR} and \texttt{read timeout=5}.
+\item \textbf{Impact:} partial answers; user-visible errors; repeated calls increase pressure further.
+\item \textbf{Mitigations:} configurable timeouts; adaptive retries; degrade plan (reduce bbox, drop geometry, lower limit).
+\end{itemize}
+
+\subsection*{\arabic{section}.F08 Payload and latency pressure (context bloat)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} large responses and long calls exhaust host/runtime limits, even when the MCP call succeeds.
+\item \textbf{Symptoms:} truncation markers; “response could not be fully generated”; sudden stop after heavy results.
+\item \textbf{Evidence:} \texttt{id=30} \textasciitilde{}555 kB; \texttt{id=31} \textasciitilde{}317 s latency with \textasciitilde{}271 kB response; transcript truncation then failure marker.
+\item \textbf{Impact:} session termination; inability to complete reasoning; audit outputs incomplete.
+\item \textbf{Mitigations:} thin defaults; progressive disclosure; resource-backed results; payload thresholds; “counts-first” policies.
+\end{itemize}
+
+\subsection*{\arabic{section}.F09 Input validation gaps (silent ignoring of polygon constraints)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} invalid inputs are accepted but ignored without explicit warnings, altering query meaning.
+\item \textbf{Symptoms:} polygon supplied but query runs as bbox-only; user believes a constraint applied.
+\item \textbf{Evidence:} polygon provided as a JSON string in \texttt{id=30} (likely ignored by parser).
+\item \textbf{Impact:} incorrect spatial constraint; larger-than-intended result sets; more payload pressure.
+\item \textbf{Mitigations:} strict input typing; reject invalid polygon types; warnings when a constraint is dropped.
+\end{itemize}
+
+\subsection*{\arabic{section}.F10 Audit and provenance insufficiency}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Definition:} outputs do not clearly state boundary sources, dataset limitations, and uncertainty.
+\item \textbf{Symptoms:} inability to defend conclusions; hard to replay why a choice was made.
+\item \textbf{Evidence:} ward boundary used as proxy without an authoritative AONB boundary available.
+\item \textbf{Impact:} reduced decision-quality; governance risk.
+\item \textbf{Mitigations:} mandatory provenance block; confidence labels; trace-to-report auto-generation.
+\end{itemize}
+
+---
+
+\subsection{How to use this taxonomy}
+
+\begin{itemize}[leftmargin=*]
+\item Use \textbf{F1–F4} to assess “can we find the right area and data quickly?”
+\item Use \textbf{F5–F6} to assess “are we measuring the right thing, correctly?”
+\item Use \textbf{F7–F9} to assess “will it work under pressure?”
+\item Use \textbf{F10} to assess “can we defend and audit the answer?”
+\end{itemize}
+
+\begin{quote}
+\textit{Standards note:} For provenance representations, see W3C PROV-O. \cite{prov_o}\\
+\end{quote}
+
+\begin{quote}
+\textit{Discovery note:} For catalogue interoperability concepts, see DCAT v3. \cite{dcat3}\\
+\end{quote}

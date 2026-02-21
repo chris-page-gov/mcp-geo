@@ -1,0 +1,17 @@
+\section{Risks and guardrails}
+
+\subsection{Risks}
+\begin{itemize}[leftmargin=*]
+  \item Over-claiming: confusing information retrieval with grounded, auditable answers.\cite{owasp_llm_top10,ncsc_secure_ai_guidelines}
+  \item Safety and privacy: mixed-sensitivity data access without sufficient end-to-end controls.\cite{ico_ai_data_protection,ncsc_secure_ai_guidelines,five_safes_framework}
+  \item Trust: inability to explain ``why'' an answer was produced, or to reproduce it later.\cite{prov_o,prov_dm,algorithmic_transparency_recording_standard}
+  \item Operational: cost blow-ups, latency, unreliable tool behaviour, and poor degradation modes.\cite{ncsc_secure_ai_guidelines,owasp_llm_top10}
+\end{itemize}
+
+\subsection{Guardrails (design commitments)}
+\begin{itemize}[leftmargin=*]
+  \item Explicit dataset scoping and permissions by default.\cite{five_safes_framework,ico_ai_data_protection}
+  \item Provenance-first outputs (sources, transformations, and uncertainty where relevant).\cite{prov_o,prov_dm}
+  \item Auditing and monitoring as first-class features.\cite{algorithmic_transparency_recording_standard,ncsc_secure_ai_guidelines}
+  \item Progressive disclosure: start simple and safe; expand capability as assurance matures.\cite{data_ai_ethics_framework}
+\end{itemize}

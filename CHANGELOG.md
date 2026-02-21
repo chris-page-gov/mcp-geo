@@ -15,11 +15,26 @@ All notable changes to this project will be documented in this file.
   `resources/protected_landscapes_england.json`.
 - Added `resource://mcp-geo/protected-landscapes-england` to data resources for
   discoverable protected-landscape provenance and geometry fallback.
+- Added a governance-focused safe-by-design review artifact at
+  `docs/reports/safe_by_design_review_2026-02-21.md` with a standards-anchored
+  citation audit, compliance checklist, rubric, and scored repo assessment.
+- Added `safe-by-design.json`, a dependency-tracked remediation backlog with
+  explicit acceptance criteria for transitioning governance controls to
+  `fully_met`.
 
 ### Changed
 - Updated planning trackers to include the new `PSR-*` workstreams in
   `PROGRESS.MD`, synchronized report index links in `docs/reports/README.md`,
   and refreshed execution context in `CONTEXT.md`.
+- Updated the extracted Prism LaTeX brief citations and requirements mapping
+  under `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/`
+  to strengthen UK governance/standards grounding (NCSC, ICO, Data and AI
+  Ethics Framework, ATRS, Five Safes, OWASP LLM, PROV/DCAT, MCP 2025-11-25).
+- Updated `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib`
+  with canonical standards URLs and metadata corrections, including replacement
+  of a dead ONS Five Safes URL.
+- Updated `.gitignore` to exclude `research/Archive/` raw archive drops from
+  version control.
 - Completed peatland reliability streams `PSR-INT-0` through `PSR-ROU-8`:
   `os_features.query` now enforces `limit<=100` clamps, deterministic polygon
   validation, structured `hints` metadata (`warnings`, `filterApplied`, `scan`),
@@ -28,6 +43,9 @@ All notable changes to this project will be documented in this file.
 - Hardened `os_mcp.route_query` with `environmental_survey` intent routing for
   peatland-survey prompts and AOI-first/counts-first/geometry-last survey plans
   anchored on `os_landscape.*` + bounded `os_features.query`.
+- Updated `CONTEXT.md` and `PROGRESS.MD` with active safe-by-design governance
+  review status, standards-alignment scope, and a citation-source dependency
+  note for the Prism-authenticated research brief.
 
 ## [0.3.2] - 2026-02-17
 

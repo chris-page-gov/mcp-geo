@@ -19,3 +19,7 @@ This folder contains human-readable run reports and investigation summaries.
 ## Survey Reliability Planning
 
 - 2026-02-19: [Peatland survey reliability implementation plan](peatland_survey_reliability_implementation_plan_2026-02-19.md)
+
+## Governance and Assurance
+
+- 2026-02-21: [Safe-by-design governance review](safe_by_design_review_2026-02-21.md)

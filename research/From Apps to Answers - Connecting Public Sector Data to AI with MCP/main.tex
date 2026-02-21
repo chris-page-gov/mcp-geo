@@ -1,0 +1,43 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\emergencystretch=2em
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx} % for \fbox/\parbox convenience (often already present)
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\setlist[itemize]{leftmargin=*}
+\setlist[enumerate]{leftmargin=*}
+\setlist[description]{leftmargin=0pt,labelsep=0.6em,style=unboxed,itemsep=0.25\baselineskip}
+
+\title{From Apps to Answers: Connecting Public Sector Data to AI with MCP\\
+\large Research brief (working draft)}
+\author{Chris Page}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\input{sections/01-executive-summary}
+\input{sections/02-problem-and-thesis}
+\input{sections/03-outcomes}
+\input{sections/04-research-questions}
+\input{sections/05-method-and-evidence}
+\input{sections/06-case-study-mcp-geo}
+\input{sections/07-deliverables-and-timeline}
+\input{sections/08-risks-and-guardrails}
+\input{sections/09-failure-taxonomy}
+\input{sections/11-requirements}
+\input{sections/10-demo-script}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

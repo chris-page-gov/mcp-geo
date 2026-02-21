@@ -1,0 +1,29 @@
+\begin{table}[ht]
+\centering
+\caption{Term mapping table. \textit{Our term} $\rightarrow$ \textit{academic / standards term(s)} $\rightarrow$ \textit{why it fits} $\rightarrow$ \textit{common pitfall}.}
+\label{tab:term-mapping}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.18\textwidth} >{\raggedright\arraybackslash}p{0.26\textwidth} >{\raggedright\arraybackslash}p{0.25\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Our term} & \textbf{Closest academic / standards term(s)} & \textbf{Why it fits} & \textbf{Common pitfall (warning slide)} \\
+\midrule
+Apps $\rightarrow$ Answers & Question-answering / decision support; ``data products''; information services & Shifts value from UI to reusable information capabilities & Treating it as a ``chat UI'' rather than governed services \\
+\addlinespace
+Middle layer & Semantic mediation; interoperability layer; semantic layer; data integration & Transformation from data $\rightarrow$ interpretable information & Trying to solve semantics with only ETL/joins \\
+\addlinespace
+Transform data into information & DIKW-style transformation (contested but useful as a narrative device) & Communicates value-add steps and increasing usefulness & DIKW can imply a neat linear ladder; reality is iterative and messy \cite{ackoff_data_to_wisdom1989} \\
+\addlinespace
+Capability catalogue & Data catalog + service registry; machine-readable API/tool descriptions & Discoverability is required for automation & Catalogues rot unless tied to operations + ownership \\
+\addlinespace
+Connect intelligence to data & Human--AI teaming; tool-augmented LLMs; RAG + tool use & Frames AI as a ``user'' of governed capabilities & Over-trusting model outputs without provenance \\
+\addlinespace
+Evidence-first answers & Provenance; reproducibility; auditability & Core to public-sector trust & Logging without meaningfully reviewable records \\
+\addlinespace
+Boundaries \& definitions & Ontologies/vocabularies; reference data; canonical identifiers & Geo is full of semantic mismatches & Assuming ``same label = same concept'' \\
+\addlinespace
+Safe-by-design & Secure-by-design; privacy by design; governance controls & Matches UK delivery expectations \cite{ncsc_secure_ai_guidelines,ico_ai_data_protection,data_ai_ethics_framework} & Bolting on controls after the demo works \\
+\bottomrule
+\end{tabularx}
+\end{table}

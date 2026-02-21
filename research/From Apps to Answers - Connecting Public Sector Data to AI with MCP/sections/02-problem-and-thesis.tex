@@ -1,0 +1,59 @@
+\section{Problem and thesis}
+
+\subsection{Problem}
+Public sector teams repeatedly face the same friction:
+\begin{itemize}[leftmargin=*]
+  \item The data exists, but it is hard to turn into usable answers at pace.\cite{oecd_data_driven_public_sector2019}
+  \item In practice it is distributed across systems with inconsistent definitions/terminology and access constraints that limit reuse.\cite{nao_data_across_gov}
+  \item The knowledge to query and interpret the data is concentrated in specialist teams.\cite{nao_data_across_gov}
+  \item In practice, people must learn local systems (dashboards, portals, bespoke apps) to get answers.\cite{kingsfund_interop_report}
+  \item This fragmentation makes cross-organisational work and end-to-end user journeys harder than they should be.\cite{nhs_england_interop}
+\end{itemize}
+
+\subsection{Thesis}
+\textbf{The interface is shifting from applications to questions.}
+\begin{itemize}[leftmargin=*]
+  \item Natural-language interfaces to data have a long history and remain a mature, active research area (NLIDB surveys). \cite{affolter_nlidb_survey2019}
+  \item Text-to-SQL work shows a growing ability to translate questions into structured queries, including modern deep learning approaches. \cite{katsogiannismeimarakis_text2sql_survey2023}
+  \item Recent surveys describe how large language models are being used to further improve text-to-SQL generation and related data querying workflows. \cite{zhu_llm_text2sql_survey2024}
+  \item In enterprise settings, conversational BI systems demonstrate how question-answering can be supported by semantic models/ontologies, not just raw querying. \cite{quamar_conversational_bi2020}
+  \item Guided analysis approaches show how systems can structure a conversation to support analysis while constraining user/model actions. \cite{meduri_birec2021}
+\end{itemize}
+
+\noindent Together, these strands motivate a governed ``middle layer'' so the shift can be made safe and effective in public sector contexts. \cite{data_ai_ethics_framework,ncsc_secure_ai_guidelines}
+
+In this brief, ``middle layer'' means the responsibilities that sit between raw data sources and question-answering:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Discovery}: what data and capabilities exist?
+  \item \textbf{Shaping}: how is raw data transformed into usable information (aggregation, overlays, validation)?
+  \item \textbf{Guardrails}: permissions, redaction, policy constraints, and safe defaults.
+  \item \textbf{Provenance}: what sources were used, what transformations were applied, and can we reproduce the result?
+  \item \textbf{Operations}: reliability, monitoring, cost controls, and degradation behaviour.
+\end{itemize}
+
+We argue that MCP can be treated as a practical, composable way to expose and govern these capabilities for both human and AI consumers.
+\cite{mcp_spec_2025_11_25,prov_dm,nist_ai_rmf10,data_ai_ethics_framework,algorithmic_transparency_recording_standard}
+
+\subsection{Key terms}
+\begin{center}
+\fbox{\parbox{0.95\linewidth}{%
+\textbf{Key terms used in this brief (see Table~\ref{tab:term-mapping})}\par
+\vspace{0.4\baselineskip}
+\begin{description}
+  \item[\textbf{Data}] Raw recorded facts (e.g., rows, logs, measurements) with limited value until interpreted.
+  \item[\textbf{Information}] Data organised into something usable for a question (tables, summaries, maps), with context.
+  \item[\textbf{Intelligence}] Information interpreted to support a decision: ``so what?'' and ``what next?'' in a domain.
+  \item[\textbf{Capability}] A reusable, well-scoped thing you can do (query, join, geocode, validate), not a whole app.
+  \item[\textbf{Provenance}] A trace of sources, transformations, and assumptions so results can be checked and reproduced.\cite{prov_dm}
+  \item[\textbf{Guardrails}] Rules and controls that constrain behaviour (access, policy, privacy, safe defaults) and log actions.\cite{ico_ai_data_protection,ncsc_secure_ai_guidelines,owasp_llm_top10}
+  \item[\textbf{Semantic mismatch}] When two systems use the same words differently (or different words for the same thing).
+  \item[\textbf{Middle layer}] The responsibilities between sources and answers: discovery, shaping, guardrails, provenance, ops.
+  \item[\textbf{MCP server}] A service that exposes tools/data to an AI client via the Model Context Protocol.\cite{mcp_spec_2025_11_25}
+  \item[\textbf{Tool/capability catalogue}] A searchable inventory of available tools, datasets, and constraints (with owners).
+\end{description}
+\vspace{0.25\baselineskip}
+\textit{Note:} Shannon-style information theory primarily formalises transmission and uncertainty, rather than semantic meaning.\cite{shannon1948}
+}}%
+\end{center}
+
+\input{sections/02a-term-mapping-table}
