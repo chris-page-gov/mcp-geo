@@ -168,6 +168,11 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-21: Addressed Codex review follow-up on PR #11 by removing raw
+  exception trace/text logging from MCP transport internal-error handlers
+  (`server/stdio_adapter.py`, `server/mcp/http_transport.py`) and by replacing
+  the global rate-limit-bypass test fixture with per-test limiter-state reset
+  while preserving secure default `RATE_LIMIT_BYPASS=false`.
 - 2026-02-21: Completed safe-by-design remediation implementation streams
   `SBD-REV-001` through `SBD-REV-008` and `SBD-REV-010`, including path
   containment hardening, redaction expansion, transport error sanitization,

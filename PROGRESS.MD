@@ -27,9 +27,9 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | SBD-REV-001/002 Path containment + traversal regressions | done | SBD-LOG-4 | Replaced prefix-based checks with canonical scoped path resolution in `server/mcp/resource_catalog.py`; added sibling-prefix and encoded/mixed-separator traversal tests in `tests/test_resource_catalog.py`. |
 | SBD-REV-003/004 Redaction expansion + verification tests | done | SBD-LOG-4 | Added configured secret collection + token-like key masking in `server/security.py`; wired to logging/exception paths; added redaction regression tests including upstream logging coverage. |
-| SBD-REV-005 Transport internal error sanitization | done | SBD-LOG-4 | STDIO + HTTP transports now return generic `Internal error` payloads with correlation IDs and no raw exception leakage. |
+| SBD-REV-005 Transport internal error sanitization | done | SBD-LOG-4 | STDIO + HTTP transports now return generic `Internal error` payloads with correlation IDs; follow-up hardening logs exception type only (no traceback/raw exception text). |
 | SBD-REV-006 Malformed JSON normalization | done | SBD-LOG-4 | `/tools/call`, `/tools/search`, and playground ingest endpoints now return deterministic HTTP 400 `INVALID_INPUT` envelopes on malformed JSON. |
-| SBD-REV-007 Secure rate-limit defaults | done | SBD-LOG-4 | Default `RATE_LIMIT_BYPASS` flipped to `false`; docs/env updated; tests now use explicit bypass fixture for deterministic suite behavior. |
+| SBD-REV-007 Secure rate-limit defaults | done | SBD-LOG-4 | Default `RATE_LIMIT_BYPASS` flipped to `false`; docs/env updated; tests now reset in-memory limiter state per test without enabling bypass globally. |
 | SBD-REV-008 Logging consistency cleanup | done | SBD-LOG-4 | Removed raw startup `print` and migrated `server/main.py` logging placeholders to loguru `{}` formatting. |
 | SBD-REV-010 Citation URL stabilization | done | SBD-CIT-6 | Replaced `file://` codex trace URL in Prism `references.bib` with stable repository evidence reference. |
 

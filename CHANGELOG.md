@@ -32,12 +32,15 @@ All notable changes to this project will be documented in this file.
     across logging/exception paths (`server/security.py`, `server/logging.py`,
     `server/main.py`) with verification tests
   - sanitized internal transport errors to generic client-safe messages with
-    correlation IDs (`server/stdio_adapter.py`, `server/mcp/http_transport.py`)
+    correlation IDs and exception-type-only server logs (no traceback/raw
+    exception text) (`server/stdio_adapter.py`, `server/mcp/http_transport.py`)
   - normalized malformed JSON handling for tools/playground ingest endpoints to
     deterministic HTTP 400 `INVALID_INPUT` envelopes
-  - set secure default `RATE_LIMIT_BYPASS=false` and documented explicit
-    test/dev overrides (`server/config.py`, `README.md`, `docs/Build.md`,
-    `docs/tutorial.md`, `.env.example`, `tests/conftest.py`)
+  - set secure default `RATE_LIMIT_BYPASS=false` and documented
+    test/dev overrides; tests now reset in-memory limiter state per test
+    instead of globally bypassing rate limiting (`server/config.py`,
+    `README.md`, `docs/Build.md`, `docs/tutorial.md`, `.env.example`,
+    `tests/conftest.py`)
   - removed raw startup print and `%s`-style loguru calls in `server/main.py`
     and added startup diagnostics through structured logging
   - replaced silent startup import swallowing with warning diagnostics in
