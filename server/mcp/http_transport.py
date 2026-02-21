@@ -205,6 +205,18 @@ def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[
     return {"jsonrpc": JSONRPC, "id": msg_id, "error": err}
 
 
+def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> Dict[str, Any]:
+    correlation_id = str(uuid.uuid4())
+    logger.exception(
+        "MCP http internal error correlation_id={} method={} msg_id={} error={}",
+        correlation_id,
+        method,
+        msg_id,
+        exc,
+    )
+    return _resp_error(msg_id, -32603, "Internal error", {"correlationId": correlation_id})
+
+
 def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[str, Any]:
     requested = params.get("protocolVersion")
     protocol_version = negotiate_protocol_version(requested)
@@ -406,6 +418,8 @@ def _dispatch(method: str, params: Dict[str, Any], session_state: Dict[str, Any]
 async def mcp_endpoint(request: Request):
     session_id, session_state = _get_session(request)
     headers = {"mcp-session-id": session_id}
+    msg_id: Any = None
+    method: str | None = None
     try:
         raw_body = await request.body()
     except Exception:
@@ -702,6 +716,6 @@ async def mcp_endpoint(request: Request):
     except Exception as exc:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content=_resp_error(msg_id, -32603, f"Internal error: {exc}"),
+            content=_internal_error(msg_id, method, exc),
             headers=headers,
         )

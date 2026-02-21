@@ -205,4 +205,8 @@ def test_mcp_http_generic_internal_error_handler(monkeypatch):
         json={"jsonrpc": "2.0", "id": "x", "method": "tools/list", "params": {}},
     )
     assert resp.status_code == 200
-    assert resp.json()["error"]["code"] == -32603
+    payload = resp.json()["error"]
+    assert payload["code"] == -32603
+    assert payload["message"] == "Internal error"
+    assert "boom" not in json.dumps(payload)
+    assert isinstance(payload.get("data", {}).get("correlationId"), str)

@@ -1,4 +1,5 @@
 import importlib
+import json
 import time
 from typing import Any
 
@@ -167,7 +168,17 @@ def list_tools_endpoint(
 
 @router.post("/tools/call")
 async def call_tool(request: Request):
-    data = await request.json()
+    try:
+        data = await request.json()
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Malformed JSON request body",
+            },
+        )
     if not isinstance(data, dict):
         return JSONResponse(
             status_code=400,
@@ -239,7 +250,17 @@ async def call_tool(request: Request):
 
 @router.post("/tools/search")
 async def search_tools_endpoint(request: Request):
-    data = await request.json()
+    try:
+        data = await request.json()
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Malformed JSON request body",
+            },
+        )
     if not isinstance(data, dict):
         return JSONResponse(
             status_code=400,

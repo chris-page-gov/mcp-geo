@@ -247,6 +247,33 @@ def test_main_emits_startup_and_exit_logs(monkeypatch):
     assert any("exiting" in (m.get("params", {}).get("message") or "") for m in logs)
 
 
+def test_main_sanitizes_internal_errors(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_FRAMING", "line")
+    monkeypatch.setitem(
+        stdio_adapter.HANDLERS,
+        "test/boom",
+        lambda _params: (_ for _ in ()).throw(RuntimeError("secret-stdio-error")),
+    )
+    stdin = io.StringIO(
+        "\n".join(
+            [
+                json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "test/boom", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "method": "exit"}),
+                "",
+            ]
+        )
+    )
+    stdout = io.StringIO()
+    stdio_adapter.main(stdin=stdin, stdout=stdout)
+    messages = [json.loads(line) for line in stdout.getvalue().splitlines() if line.strip()]
+    error_msg = next(item["error"] for item in messages if item.get("id") == 2)
+    assert error_msg["code"] == -32603
+    assert error_msg["message"] == "Internal error"
+    assert "secret-stdio-error" not in json.dumps(error_msg)
+    assert isinstance(error_msg.get("data", {}).get("correlationId"), str)
+
+
 def test_main_elicitation_eof_cancels_prompt(monkeypatch):
     monkeypatch.setenv("MCP_STDIO_FRAMING", "line")
     monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
