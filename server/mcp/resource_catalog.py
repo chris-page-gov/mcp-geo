@@ -440,6 +440,31 @@ def _is_path_within(path: Path, root: Path) -> bool:
     return True
 
 
+def _has_disallowed_path_tokens(relative_path: str) -> bool:
+    if not relative_path:
+        return True
+    lowered = relative_path.lower()
+    if "%2f" in lowered or "%5c" in lowered:
+        return True
+    if "\\" in relative_path or "\x00" in relative_path:
+        return True
+    if relative_path.startswith("/"):
+        return True
+    normalized = relative_path.replace("\\", "/")
+    parts = [part for part in normalized.split("/") if part]
+    return any(part in {".", ".."} for part in parts)
+
+
+def _resolve_scoped_path(root: Path, relative_path: str) -> Path | None:
+    if _has_disallowed_path_tokens(relative_path):
+        return None
+    resolved_root = root.resolve()
+    candidate = (resolved_root / relative_path).resolve()
+    if not _is_path_within(candidate, resolved_root):
+        return None
+    return candidate
+
+
 def _offline_pack_media_type(path: Path) -> str:
     suffix = path.suffix.lower()
     if suffix == ".pmtiles":
@@ -492,9 +517,8 @@ def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
     filename = slug.split("/", 1)[1] if "/" in slug else ""
     if not filename:
         return None
-    path = (OFFLINE_PACKS_DIR / filename).resolve()
-    packs_root = OFFLINE_PACKS_DIR.resolve()
-    if not _is_path_within(path, packs_root):
+    path = _resolve_scoped_path(OFFLINE_PACKS_DIR, filename)
+    if path is None:
         return None
     if not path.exists() or not path.is_file():
         return None
@@ -719,16 +743,6 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
     if isinstance(slug, str) and slug.startswith("map-scenario-packs/"):
         return {"slug": slug}
     if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
-        return {"slug": slug}
-    if identifier.startswith(ONS_EXPORTS_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(OS_CACHE_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(OS_EXPORTS_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(OFFLINE_PACKS_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(MAP_SCENARIO_PACKS_PREFIX):
         return {"slug": slug}
     return None
 
@@ -970,16 +984,20 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if isinstance(slug, str) and slug.startswith("ons-cache/"):
         filename = slug.split("/", 1)[1]
-        path = ONS_CACHE_DIR / filename
+        path = _resolve_scoped_path(ONS_CACHE_DIR, filename)
+        if path is None:
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid ONS cache path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
         if not path.exists():
             content = json.dumps({"isError": True, "code": "NOT_FOUND", "message": "ONS cache file not found."})
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
         return (*_load_json_file(path), None)
     if isinstance(slug, str) and slug.startswith("ons-exports/"):
         filename = slug.split("/", 1)[1]
-        path = (ONS_EXPORTS_DIR / filename).resolve()
-        exports_root = ONS_EXPORTS_DIR.resolve()
-        if not str(path).startswith(str(exports_root)):
+        path = _resolve_scoped_path(ONS_EXPORTS_DIR, filename)
+        if path is None:
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid ONS export path."}
             )
@@ -993,9 +1011,8 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("os-cache/"):
         filename = slug.split("/", 1)[1]
-        path = (OS_CACHE_DIR / filename).resolve()
-        cache_root = OS_CACHE_DIR.resolve()
-        if not str(path).startswith(str(cache_root)):
+        path = _resolve_scoped_path(OS_CACHE_DIR, filename)
+        if path is None:
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid OS cache path."}
             )
@@ -1008,9 +1025,8 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         return (*_load_json_file(path), None)
     if isinstance(slug, str) and slug.startswith("os-exports/"):
         filename = slug.split("/", 1)[1]
-        path = (OS_EXPORTS_DIR / filename).resolve()
-        exports_root = OS_EXPORTS_DIR.resolve()
-        if not str(path).startswith(str(exports_root)):
+        path = _resolve_scoped_path(OS_EXPORTS_DIR, filename)
+        if path is None:
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid OS export path."}
             )
@@ -1024,9 +1040,8 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("offline-packs/"):
         filename = slug.split("/", 1)[1]
-        path = (OFFLINE_PACKS_DIR / filename).resolve()
-        packs_root = OFFLINE_PACKS_DIR.resolve()
-        if not _is_path_within(path, packs_root):
+        path = _resolve_scoped_path(OFFLINE_PACKS_DIR, filename)
+        if path is None:
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid offline pack path."}
             )
@@ -1042,9 +1057,8 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("map-scenario-packs/"):
         filename = slug.split("/", 1)[1]
-        path = (MAP_SCENARIO_PACKS_DIR / filename).resolve()
-        packs_root = MAP_SCENARIO_PACKS_DIR.resolve()
-        if not _is_path_within(path, packs_root):
+        path = _resolve_scoped_path(MAP_SCENARIO_PACKS_DIR, filename)
+        if path is None:
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid scenario pack path."}
             )
@@ -1058,14 +1072,18 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
     if isinstance(slug, str) and slug.startswith("ons-cache"):
         filename = slug.split("ons-cache", 1)[-1].lstrip("/")
-        path = ONS_CACHE_DIR / filename
+        path = _resolve_scoped_path(ONS_CACHE_DIR, filename)
+        if path is None:
+            content = json.dumps(
+                {"isError": True, "code": "INVALID_INPUT", "message": "Invalid ONS cache path."}
+            )
+            return content, _etag_from_bytes(content.encode("utf-8"), slug), None
         if path.exists():
             return (*_load_json_file(path), None)
     if isinstance(slug, str) and slug.startswith("exports/"):
         rel = slug.split("/", 1)[1]
-        candidate = (EXPORTS_DIR / rel).resolve()
-        exports_root = EXPORTS_DIR.resolve()
-        if not str(candidate).startswith(str(exports_root)):
+        candidate = _resolve_scoped_path(EXPORTS_DIR, rel)
+        if candidate is None:
             content = json.dumps(
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid export path."}
             )

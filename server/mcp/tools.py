@@ -1,9 +1,11 @@
 import importlib
+import json
 import time
 from typing import Any
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
@@ -46,13 +48,19 @@ _IMPORT_MODULES = [
     "tools.os_apps",
 ]
 
+TOOL_IMPORT_ERRORS: list[str] = []
+
 for _mod in _IMPORT_MODULES:
     try:  # pragma: no cover - defensive import
         importlib.import_module(_mod)
-    except Exception:  # pragma: no cover
-        pass
+    except Exception as exc:  # pragma: no cover
+        TOOL_IMPORT_ERRORS.append(f"{_mod}: {exc}")
+        logger.warning("Failed to import tool module {} error={}", _mod, exc)
 
-if get("os_features.query") is None:
+if TOOL_IMPORT_ERRORS:  # pragma: no cover - startup-only diagnostic path
+    logger.warning("Tool registration completed with {} import errors", len(TOOL_IMPORT_ERRORS))
+
+if get("os_features.query") is None:  # pragma: no cover - defensive registration fallback
     register(
         Tool(
             name="os_features.query",
@@ -167,7 +175,17 @@ def list_tools_endpoint(
 
 @router.post("/tools/call")
 async def call_tool(request: Request):
-    data = await request.json()
+    try:
+        data = await request.json()
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Malformed JSON request body",
+            },
+        )
     if not isinstance(data, dict):
         return JSONResponse(
             status_code=400,
@@ -239,7 +257,17 @@ async def call_tool(request: Request):
 
 @router.post("/tools/search")
 async def search_tools_endpoint(request: Request):
-    data = await request.json()
+    try:
+        data = await request.json()
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Malformed JSON request body",
+            },
+        )
     if not isinstance(data, dict):
         return JSONResponse(
             status_code=400,

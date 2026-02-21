@@ -43,6 +43,23 @@ def test_check_rate_limit_limit_disabled_and_window_reset():
         settings.RATE_LIMIT_BYPASS = original_bypass
 
 
+def test_check_rate_limit_bypass_enabled():
+    import server.main as main
+
+    original_limit = settings.RATE_LIMIT_PER_MIN
+    original_bypass = settings.RATE_LIMIT_BYPASS
+    try:
+        settings.RATE_LIMIT_BYPASS = True
+        settings.RATE_LIMIT_PER_MIN = 1
+        main._rate_counters.clear()
+
+        assert main._check_rate_limit(_DummyRequest()) is True
+        assert ("127.0.0.1", "health") not in main._rate_counters
+    finally:
+        settings.RATE_LIMIT_PER_MIN = original_limit
+        settings.RATE_LIMIT_BYPASS = original_bypass
+
+
 def test_metrics_disabled_branch(monkeypatch):
     client = TestClient(app)
     monkeypatch.setattr(settings, "METRICS_ENABLED", False, raising=False)
@@ -55,11 +72,12 @@ def test_generic_exception_handler_non_debug_path(monkeypatch):
     from tools.registry import Tool, register
 
     def boom(_payload):
-        raise RuntimeError("non-debug crash")
+        raise RuntimeError(f"non-debug crash {settings.NOMIS_SIGNATURE}")
 
     name = f"temp.non_debug.{int(time.time() * 1000000)}"
     register(Tool(name=name, description="non-debug tool", handler=boom))
     monkeypatch.setattr(settings, "DEBUG_ERRORS", False, raising=False)
+    monkeypatch.setattr(settings, "NOMIS_SIGNATURE", "signature-secret-value", raising=False)
 
     client = TestClient(app, raise_server_exceptions=False)
     resp = client.post("/tools/call", json={"tool": name})
@@ -67,6 +85,8 @@ def test_generic_exception_handler_non_debug_path(monkeypatch):
     body = resp.json()
     assert body["code"] == "INTERNAL_ERROR"
     assert "traceback" not in body
+    assert "signature-secret-value" not in body["message"]
+    assert "[REDACTED]" in body["message"]
 
 
 def test_observability_json_size_and_cache_hit_edges():
@@ -128,3 +148,15 @@ def test_observability_delivery_fallback_metric_line():
         and 'transport="unit"' in line
         for line in lines
     )
+
+
+def test_record_latency_overflow_bucket():
+    import server.main as main
+
+    original_overflow = main._latency_overflow
+    main._latency_overflow = 0
+    try:
+        main._record_latency(999999.0)
+        assert main._latency_overflow == 1
+    finally:
+        main._latency_overflow = original_overflow

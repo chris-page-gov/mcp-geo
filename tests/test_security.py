@@ -1,4 +1,4 @@
-from server.security import mask_in_text, redact
+from server.security import configured_secrets, mask_in_text, mask_in_value, redact
 
 
 def test_redact_empty():
@@ -21,3 +21,30 @@ def test_mask_in_text():
     masked = mask_in_text(original, ["ABC123XYZ"])
     assert "[REDACTED]" in masked
     assert "ABC123XYZ" not in masked
+
+
+def test_mask_in_value_masks_sensitive_keys_and_nested_values():
+    value = {
+        "safe": "hello",
+        "signature": "sig-secret",
+        "nested": {
+            "authorization": "Bearer token-abc",
+            "api_key": "api-secret",
+            "list": [{"token": "tok-secret"}],
+        },
+    }
+    masked = mask_in_value(value, ["sig-secret", "token-abc", "api-secret", "tok-secret"])
+    assert masked["safe"] == "hello"
+    assert masked["signature"] == "[REDACTED]"
+    assert masked["nested"]["authorization"] == "[REDACTED]"
+    assert masked["nested"]["api_key"] == "[REDACTED]"
+    assert masked["nested"]["list"][0]["token"] == "[REDACTED]"
+
+
+def test_configured_secrets_collects_expected_settings():
+    class _Cfg:
+        OS_API_KEY = "os-secret"
+        NOMIS_UID = "nomis-uid"
+        NOMIS_SIGNATURE = "nomis-signature"
+
+    assert configured_secrets(_Cfg()) == ["os-secret", "nomis-uid", "nomis-signature"]

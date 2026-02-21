@@ -37,14 +37,11 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     logger = _StubLogger()
 
 from server.config import settings
-from server.security import mask_in_text, mask_in_value
+from server.security import configured_secrets, mask_in_text, mask_in_value
 
 
 def _build_redactions() -> list[str]:
-    secrets: list[str] = []
-    if settings.OS_API_KEY:
-        secrets.append(settings.OS_API_KEY)
-    return secrets
+    return configured_secrets(settings)
 
 
 def configure_logging() -> None:

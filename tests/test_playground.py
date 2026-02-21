@@ -25,6 +25,30 @@ def test_playground_invalid_payload():
     assert body.get("code") == "INVALID_INPUT"
 
 
+def test_playground_tool_call_rejects_malformed_json():
+    resp = client.post(
+        "/playground/tool_call",
+        data="{bad",
+        headers={"content-type": "application/json"},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+    assert body.get("message") == "Malformed JSON request body"
+
+
+def test_playground_events_rejects_malformed_json():
+    resp = client.post(
+        "/playground/events",
+        data="{bad",
+        headers={"content-type": "application/json"},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+    assert body.get("message") == "Malformed JSON request body"
+
+
 def test_playground_record_and_prune():
     _reset_orchestration()
     # Add more than MAX_TRANSCRIPT entries to trigger prune branch

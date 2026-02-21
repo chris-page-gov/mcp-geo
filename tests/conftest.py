@@ -31,3 +31,13 @@ def client():
 def disable_circuit_breaker(monkeypatch):
     from server.config import settings
     monkeypatch.setattr(settings, "CIRCUIT_BREAKER_ENABLED", False, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limit_state(monkeypatch):
+    from server import main
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "RATE_LIMIT_BYPASS", False, raising=False)
+    with main._rate_lock:
+        main._rate_counters.clear()
