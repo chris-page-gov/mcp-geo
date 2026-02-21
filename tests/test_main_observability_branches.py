@@ -55,11 +55,12 @@ def test_generic_exception_handler_non_debug_path(monkeypatch):
     from tools.registry import Tool, register
 
     def boom(_payload):
-        raise RuntimeError("non-debug crash")
+        raise RuntimeError(f"non-debug crash {settings.NOMIS_SIGNATURE}")
 
     name = f"temp.non_debug.{int(time.time() * 1000000)}"
     register(Tool(name=name, description="non-debug tool", handler=boom))
     monkeypatch.setattr(settings, "DEBUG_ERRORS", False, raising=False)
+    monkeypatch.setattr(settings, "NOMIS_SIGNATURE", "signature-secret-value", raising=False)
 
     client = TestClient(app, raise_server_exceptions=False)
     resp = client.post("/tools/call", json={"tool": name})
@@ -67,6 +68,8 @@ def test_generic_exception_handler_non_debug_path(monkeypatch):
     body = resp.json()
     assert body["code"] == "INTERNAL_ERROR"
     assert "traceback" not in body
+    assert "signature-secret-value" not in body["message"]
+    assert "[REDACTED]" in body["message"]
 
 
 def test_observability_json_size_and_cache_hit_edges():

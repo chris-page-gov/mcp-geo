@@ -11,7 +11,7 @@ from server import observability
 from server.mcp import http_transport, playground, resources, tools
 from server import maps_proxy
 from server.logging import configure_logging
-from server.security import mask_in_text
+from server.security import configured_secrets, mask_in_text
 
 from .config import settings
 
@@ -175,9 +175,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
     import traceback
     correlation_id = getattr(request.state, "correlation_id", None)
     raw_message = str(exc)
-    safe_message = mask_in_text(
-        raw_message, [getattr(settings, "OS_API_KEY", "")]
-    )
+    safe_message = mask_in_text(raw_message, configured_secrets(settings))
     tb: str | None = traceback.format_exc()
     if settings.DEBUG_ERRORS:
         logger.error(
