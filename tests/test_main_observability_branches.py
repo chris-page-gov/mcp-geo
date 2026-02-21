@@ -43,6 +43,23 @@ def test_check_rate_limit_limit_disabled_and_window_reset():
         settings.RATE_LIMIT_BYPASS = original_bypass
 
 
+def test_check_rate_limit_bypass_enabled():
+    import server.main as main
+
+    original_limit = settings.RATE_LIMIT_PER_MIN
+    original_bypass = settings.RATE_LIMIT_BYPASS
+    try:
+        settings.RATE_LIMIT_BYPASS = True
+        settings.RATE_LIMIT_PER_MIN = 1
+        main._rate_counters.clear()
+
+        assert main._check_rate_limit(_DummyRequest()) is True
+        assert ("127.0.0.1", "health") not in main._rate_counters
+    finally:
+        settings.RATE_LIMIT_PER_MIN = original_limit
+        settings.RATE_LIMIT_BYPASS = original_bypass
+
+
 def test_metrics_disabled_branch(monkeypatch):
     client = TestClient(app)
     monkeypatch.setattr(settings, "METRICS_ENABLED", False, raising=False)

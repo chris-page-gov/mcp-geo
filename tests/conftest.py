@@ -34,6 +34,10 @@ def disable_circuit_breaker(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def enable_rate_limit_bypass_for_tests(monkeypatch):
+def reset_rate_limit_state(monkeypatch):
+    from server import main
     from server.config import settings
-    monkeypatch.setattr(settings, "RATE_LIMIT_BYPASS", True, raising=False)
+
+    monkeypatch.setattr(settings, "RATE_LIMIT_BYPASS", False, raising=False)
+    with main._rate_lock:
+        main._rate_counters.clear()
