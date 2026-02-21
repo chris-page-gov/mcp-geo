@@ -744,16 +744,6 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
         return {"slug": slug}
     if identifier.startswith(ONS_CACHE_PREFIX) or slug.startswith("ons-cache/"):
         return {"slug": slug}
-    if identifier.startswith(ONS_EXPORTS_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(OS_CACHE_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(OS_EXPORTS_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(OFFLINE_PACKS_PREFIX):
-        return {"slug": slug}
-    if identifier.startswith(MAP_SCENARIO_PACKS_PREFIX):
-        return {"slug": slug}
     return None
 
 

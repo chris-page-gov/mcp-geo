@@ -57,10 +57,10 @@ for _mod in _IMPORT_MODULES:
         TOOL_IMPORT_ERRORS.append(f"{_mod}: {exc}")
         logger.warning("Failed to import tool module {} error={}", _mod, exc)
 
-if TOOL_IMPORT_ERRORS:
+if TOOL_IMPORT_ERRORS:  # pragma: no cover - startup-only diagnostic path
     logger.warning("Tool registration completed with {} import errors", len(TOOL_IMPORT_ERRORS))
 
-if get("os_features.query") is None:
+if get("os_features.query") is None:  # pragma: no cover - defensive registration fallback
     register(
         Tool(
             name="os_features.query",

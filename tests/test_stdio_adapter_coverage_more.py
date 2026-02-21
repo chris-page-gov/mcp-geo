@@ -323,6 +323,8 @@ def test_handle_get_resource_success_paths():
     assert data.get("contents") and data["contents"][0]["mimeType"] == "application/json"
     by_name = stdio_adapter.handle_get_resource({"name": "ui://mcp-geo/geography-selector"})
     assert by_name.get("contents") and by_name["contents"][0]["uri"].startswith("ui://mcp-geo/")
+    by_data_name = stdio_adapter.handle_get_resource({"name": "resource://mcp-geo/os-exports-index"})
+    assert by_data_name.get("contents") and by_data_name["contents"][0]["mimeType"] == "application/json"
 
 
 def test_tool_content_from_data_none_returns_empty():
@@ -361,6 +363,21 @@ def test_read_message_line_parse_error_and_skip_blank_line():
     assert error == "Parse error"
 
 
+def test_read_message_autodetect_line_mode_success_and_parse_error():
+    msg, framing, error = stdio_adapter._read_message(
+        io.StringIO('{"jsonrpc":"2.0","id":1}\n'),
+        None,
+    )
+    assert isinstance(msg, dict)
+    assert framing == "line"
+    assert error is None
+
+    msg, framing, error = stdio_adapter._read_message(io.StringIO("{bad}\n"), None)
+    assert msg is None
+    assert framing == "line"
+    assert error == "Parse error"
+
+
 def test_read_message_content_length_parse_error():
     body = "{bad}"
     stdin = io.StringIO(f"Content-Length: {len(body)}\r\n\r\n{body}")
@@ -368,3 +385,185 @@ def test_read_message_content_length_parse_error():
     assert msg is None
     assert framing == "content-length"
     assert error == "Parse error"
+
+
+def test_read_message_content_length_error_and_eof_paths():
+    msg, framing, error = stdio_adapter._read_message(
+        io.StringIO("Content-Length: nope\r\n\r\n"),
+        "content-length",
+    )
+    assert msg is None
+    assert framing == "content-length"
+    assert error == "Invalid Content-Length"
+
+    msg, framing, error = stdio_adapter._read_message(io.StringIO(""), "content-length")
+    assert msg is None
+    assert framing == "content-length"
+    assert error is None
+
+    msg, framing, error = stdio_adapter._read_message(
+        io.StringIO("Content-Length: 5\r\n\r\n"),
+        "content-length",
+    )
+    assert msg is None
+    assert framing == "content-length"
+    assert error is None
+
+
+def test_read_message_autodetect_content_length_error_paths():
+    msg, framing, error = stdio_adapter._read_message(io.StringIO("\n"), None)
+    assert msg is None
+    assert framing is None
+    assert error is None
+
+    msg, framing, error = stdio_adapter._read_message(
+        io.StringIO("Content-Length: nope\r\n\r\n"),
+        None,
+    )
+    assert msg is None
+    assert framing == "content-length"
+    assert error == "Invalid Content-Length"
+
+    msg, framing, error = stdio_adapter._read_message(
+        io.StringIO("Content-Length: 5\r\n\r\n"),
+        None,
+    )
+    assert msg is None
+    assert framing == "content-length"
+    assert error is None
+
+
+def test_main_handles_parse_error_and_missing_params_branch(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_FRAMING", "line")
+    stdin = io.StringIO(
+        "\n".join(
+            [
+                "{bad}",
+                json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}),
+                json.dumps({"jsonrpc": "2.0", "method": "exit"}),
+                "",
+            ]
+        )
+    )
+    stdout = io.StringIO()
+    stdio_adapter.main(stdin=stdin, stdout=stdout)
+    messages = [json.loads(line) for line in stdout.getvalue().splitlines() if line.strip()]
+    parse_error = next(item for item in messages if item.get("error", {}).get("code") == -32700)
+    assert parse_error["error"]["message"] == "Parse error"
+    tools_list = next(item for item in messages if item.get("id") == 2 and "result" in item)
+    assert "tools" in tools_list["result"]
+
+
+def test_main_maps_lookup_value_and_type_errors(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_FRAMING", "line")
+    monkeypatch.setitem(stdio_adapter.HANDLERS, "test/lookup", lambda _params: (_ for _ in ()).throw(LookupError("missing")))
+    monkeypatch.setitem(stdio_adapter.HANDLERS, "test/value", lambda _params: (_ for _ in ()).throw(ValueError("bad value")))
+    monkeypatch.setitem(stdio_adapter.HANDLERS, "test/type", lambda _params: (_ for _ in ()).throw(TypeError("bad type")))
+
+    stdin = io.StringIO(
+        "\n".join(
+            [
+                json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "test/lookup", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 3, "method": "test/value", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 4, "method": "test/type", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "method": "exit"}),
+                "",
+            ]
+        )
+    )
+    stdout = io.StringIO()
+    stdio_adapter.main(stdin=stdin, stdout=stdout)
+    messages = [json.loads(line) for line in stdout.getvalue().splitlines() if line.strip()]
+    by_id = {item.get("id"): item for item in messages if item.get("id") in {2, 3, 4}}
+    assert by_id[2]["error"]["code"] == 1001
+    assert by_id[3]["error"]["code"] == 1002
+    assert by_id[4]["error"]["code"] == 1003
+
+
+def test_helper_functions_cover_bool_env_and_modes(monkeypatch):
+    monkeypatch.setenv("STDIO_TEST_BOOL", "1")
+    assert stdio_adapter._read_bool_env("STDIO_TEST_BOOL") is True
+    assert stdio_adapter._bool_env("STDIO_TEST_BOOL", default=False) is True
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "Claude Desktop"})
+    assert stdio_adapter._is_claude_client() is True
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": 123})
+    assert stdio_adapter._is_claude_client() is False
+    assert stdio_adapter._normalize_apps_content_mode("text") == "text"
+    assert stdio_adapter._normalize_apps_content_mode("resource_link") == "resource_link"
+    assert stdio_adapter._normalize_apps_content_mode("embedded") == "embedded"
+
+
+def test_elicitation_early_return_branches(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "0")
+    changed = stdio_adapter._maybe_elicit_ons_select({}, {"needsElicitation": True, "query": "x"})
+    assert changed is False
+
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {})
+    changed = stdio_adapter._maybe_elicit_ons_select({}, {"needsElicitation": True, "query": "x"})
+    assert changed is False
+
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(None)
+    changed = stdio_adapter._maybe_elicit_ons_select({}, {"needsElicitation": True, "query": "x"})
+    assert changed is False
+
+    stdio_adapter._set_elicitation_handler(lambda _params: {"action": "accept"})
+    try:
+        changed = stdio_adapter._maybe_elicit_ons_select({}, {"needsElicitation": False, "query": "x"})
+        assert changed is False
+        changed = stdio_adapter._maybe_elicit_ons_select({}, {"needsElicitation": True, "query": ""})
+        assert changed is False
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+
+
+def test_select_toolset_elicitation_guard_branches(monkeypatch):
+    payload = {"query": "maps"}
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "0")
+    ok, error = stdio_adapter._maybe_elicit_select_toolsets(dict(payload))
+    assert ok is True and error is None
+
+    monkeypatch.setenv("MCP_STDIO_ELICITATION_ENABLED", "1")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {})
+    ok, error = stdio_adapter._maybe_elicit_select_toolsets(dict(payload))
+    assert ok is True and error is None
+
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {"elicitation": {"form": {}}})
+    stdio_adapter._set_elicitation_handler(None)
+    ok, error = stdio_adapter._maybe_elicit_select_toolsets(dict(payload))
+    assert ok is True and error is None
+
+    ok, error = stdio_adapter._maybe_elicit_select_toolsets({"skipElicitation": True})
+    assert ok is True and error is None
+
+    ok, error = stdio_adapter._maybe_elicit_select_toolsets({"toolset": "maps_tiles"})
+    assert ok is True and error is None
+
+    stdio_adapter._set_elicitation_handler(lambda _params: "bad")  # type: ignore[return-value]
+    try:
+        ok, error = stdio_adapter._maybe_elicit_select_toolsets(dict(payload))
+        assert ok is False
+        assert error and error.get("code") == "ELICITATION_UNAVAILABLE"
+    finally:
+        stdio_adapter._set_elicitation_handler(None)
+
+
+def test_tool_content_limit_bytes_invalid_env(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_TOOL_CONTENT_MAX_BYTES", "bad-value")
+    assert stdio_adapter._tool_content_limit_bytes() == stdio_adapter._STDIO_TOOL_CONTENT_MAX_BYTES_DEFAULT
+
+
+def test_stdio_validation_branches_for_toolset_and_prompt_success(monkeypatch):
+    with pytest.raises(ValueError):
+        stdio_adapter.handle_list_tools({"toolset": 123})  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        stdio_adapter.handle_search_tools({"query": "x", "toolset": 123})  # type: ignore[arg-type]
+    monkeypatch.setattr(stdio_adapter, "list_prompt_defs", lambda: [{"name": "demo"}])
+    monkeypatch.setattr(stdio_adapter, "get_prompt_def", lambda _name: {"messages": [{"role": "user"}]})
+    prompts = stdio_adapter.handle_list_prompts({}).get("prompts", [])
+    assert prompts[0]["name"] == "demo"
+    prompt = stdio_adapter.handle_get_prompt({"name": "demo"})
+    assert "messages" in prompt

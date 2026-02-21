@@ -131,3 +131,15 @@ def test_observability_delivery_fallback_metric_line():
         and 'transport="unit"' in line
         for line in lines
     )
+
+
+def test_record_latency_overflow_bucket():
+    import server.main as main
+
+    original_overflow = main._latency_overflow
+    main._latency_overflow = 0
+    try:
+        main._record_latency(999999.0)
+        assert main._latency_overflow == 1
+    finally:
+        main._latency_overflow = original_overflow
