@@ -429,6 +429,7 @@ def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_p
 
 
 def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(resource_catalog, "ONS_CACHE_DIR", tmp_path / "ons_cache")
     monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", tmp_path / "ons_exports")
     monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", tmp_path / "os_cache")
     monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", tmp_path / "os_exports")
@@ -437,26 +438,62 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", tmp_path / "exports")
 
     # Ensure base directories exist for deterministic root resolution.
+    Path(resource_catalog.ONS_CACHE_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.ONS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OS_CACHE_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OFFLINE_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.MAP_SCENARIO_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+
+    evil_ons_cache = tmp_path / "ons_cache_evil"
+    evil_ons_cache.mkdir(parents=True, exist_ok=True)
+    (evil_ons_cache / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_ons_exports = tmp_path / "ons_exports_evil"
+    evil_ons_exports.mkdir(parents=True, exist_ok=True)
+    (evil_ons_exports / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_os_cache = tmp_path / "os_cache_evil"
+    evil_os_cache.mkdir(parents=True, exist_ok=True)
+    (evil_os_cache / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_os_exports = tmp_path / "os_exports_evil"
+    evil_os_exports.mkdir(parents=True, exist_ok=True)
+    (evil_os_exports / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
     evil_offline = tmp_path / "offline_packs_evil"
     evil_offline.mkdir(parents=True, exist_ok=True)
     (evil_offline / "secret.pmtiles").write_text("SECRET", encoding="utf-8")
     evil_scenario = tmp_path / "map_scenario_packs_evil"
     evil_scenario.mkdir(parents=True, exist_ok=True)
     (evil_scenario / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_exports = tmp_path / "exports_evil"
+    evil_exports.mkdir(parents=True, exist_ok=True)
+    (evil_exports / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache/../ons_cache_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache/%2e%2e%2fetc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../ons_exports_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/..\\..\\etc\\passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/../../etc/passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/../os_cache_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/%2e%2e%2fetc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/../os_exports_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/..\\..\\etc\\passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "offline-packs/../../etc/passwd"})
@@ -474,6 +511,10 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "exports/../exports_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "exports/..\\..\\etc\\passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
 
