@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 
 ## Layered map reliability priority program (2026-02-21)
 
@@ -39,7 +39,7 @@ Legend: pending, in_progress, done, blocked
 | REV-VAL-0 Strict regression gate rerun | done | none | `pytest -q` rerun completed: `785 passed`, `6 skipped`, coverage gate **failed** at `86.69%` (`>=90%` required). |
 | REV-VAL-1 Full live harness rerun | done | REV-VAL-0 | `tests.evaluation.harness` (`--include-os-api --include-ons-live`) rerun after ONS fixes: `6290/6900` (`91.16%`), `67/69` passed, `rate_limit_429_total=0`. |
 | REV-VAL-2 Missing-tool live probe automation | done | REV-VAL-1 | Added `scripts/live_missing_tools_probe.py` (+ tests) and generated report `data/live_missing_tools_probe_report_2026-02-21.json`: `27/28` pass, `1/28` blocked (`os_features.wfs_archive_capabilities` -> `OS_API_KEY_INVALID`). |
-| REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved. |
+| REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved, with release-gated functional coverage now computed entitlement-aware (`75/75`, `100.0%`) by excluding optional-by-entitlement `os_features.wfs_archive_capabilities` from the release denominator while keeping explicit evidence tracking. |
 | REV-VAL-4 Static analysis gate check | done | REV-VAL-0 | `ruff check .` and `mypy server tools scripts` executed after installing `.[dev]`; both are currently red (`ruff`: `1172` findings, `mypy`: `175` errors). |
 
 ## Safe-by-design governance and citation review (2026-02-21)

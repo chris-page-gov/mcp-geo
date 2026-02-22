@@ -28,8 +28,9 @@ Feature: MCP Geo Live Tool Operability
 
   @REQ-LIVE-TOOLS-02
   Scenario: Functional live operability threshold
-    When I compute functional operability percentage
-    Then functional coverage must be at least 95%
+    When I compute release-gated functional operability percentage
+    Then optional-by-entitlement tools are excluded from the denominator
+    And release-gated functional coverage must be at least 95%
 
   @REQ-LIVE-TOOLS-03
   Scenario: Live harness quality floor
@@ -41,3 +42,9 @@ Feature: MCP Geo Live Tool Operability
     Given at least one tool is blocked by auth or entitlement
     Then the report must include tool name and normalized upstream error code
     And the blocker must be listed in release risk notes
+
+  @REQ-LIVE-TOOLS-05
+  Scenario: Optional entitlement tools are tracked explicitly
+    Given optional-by-entitlement tools are configured
+    Then each optional tool is listed in the report
+    And each listed optional tool has either functional or blocked_auth evidence

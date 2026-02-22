@@ -40,6 +40,17 @@ All notable changes to this project will be documented in this file.
   `PROGRESS.MD` to reflect the latest strict + live verification evidence,
   including explicit coverage-gate failure status and MCP-Apps widget
   implementation scope (`feature_inspector` / `route_planner` still static).
+- Hardened `os_mcp.route_query` intent classification to reduce live-evaluation
+  misclassification penalties: added explicit handling for linked-id phrasing,
+  dataset-discovery metadata prompts (dimensions/codes/versions/codelists/
+  concepts), widget/probe phrasing, utility/cache operations, and command-word
+  false positives in place-name extraction.
+- Updated live operability release-gate accounting to treat
+  `os_features.wfs_archive_capabilities` as optional-by-entitlement while still
+  requiring explicit evidence tracking; surfaced this as measurable
+  requirement data in `scripts/spec_tool_operability_coverage.py`,
+  `tests/test_spec_tool_operability_coverage.py`, and
+  `docs/spec_package/14_tool_operability*.{feature,md}`.
 - Hardened `ui/boundary_explorer.html` for constrained host windows by moving
   to a map-prioritized responsive layout at narrow widths, and updated boundary name
   search to retry across other admin levels when the selected level returns no

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 Owner: @chris-page-gov
 
 ## Purpose
@@ -194,6 +194,16 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Hardened `os_mcp.route_query` to improve measurable
+  intent-recognition quality against the evaluation bank: added explicit
+  handling for linked-id phrasing before UPRN address short-circuiting,
+  dataset-discovery metadata prompts, MCP-Apps widget/probe requests, cache and
+  utility operations, and reduced command-word false positives in place-name
+  extraction.
+- 2026-02-22: Updated live operability gating to treat
+  `os_features.wfs_archive_capabilities` as optional-by-entitlement in release
+  denominator calculations while keeping explicit blocker evidence and
+  requirement tracking (`REQ-LIVE-TOOLS-05`) in generated coverage artifacts.
 - 2026-02-21: Added reproducible live operability evidence tooling for
   full-tool validation: `scripts/live_missing_tools_probe.py` (covers tools
   missing from harness utilization) and

@@ -22,8 +22,13 @@
 - Combined live tool operability:
   - Report: `data/spec_tool_operability_coverage_2026-02-21.json`
   - Functional tools: `75/76` (`98.68%`)
+  - Release-gated functional tools (excluding optional entitlement):
+    `75/75` (`100.0%`)
   - Blocked by auth: `1/76` (`1.32%`)
   - Unresolved tools: `0`
+  - Optional-by-entitlement:
+    `os_features.wfs_archive_capabilities` (tracked/evidenced but excluded
+    from release-gated functional denominator)
 
 ## Quality standards
 
