@@ -53,6 +53,13 @@ All notable changes to this project will be documented in this file.
   `tools/ons_codes.py` to accept live payload shape `links.code.id` in
   addition to legacy top-level code fields, preventing false empty option sets
   for datasets like GDP.
+- Hardened live ONS observation handling in `tools/ons_data.py` so
+  `observations: null` payloads are normalized to empty result sets (instead of
+  integration failures), and single-token quarter/year requests now expand to
+  concrete time options with alias-version retry for `gdp` prompts.
+- Added regression coverage in `tests/test_ons_data.py` for null-observation
+  payload handling and single-token time expansion/alias-retry behavior in
+  `ons_data.get_observation`.
 - Updated live operability release-gate accounting to treat
   `os_features.wfs_archive_capabilities` as optional-by-entitlement while still
   requiring explicit evidence tracking; surfaced this as measurable

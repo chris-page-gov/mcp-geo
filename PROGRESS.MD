@@ -41,6 +41,7 @@ Legend: pending, in_progress, done, blocked
 | REV-VAL-2 Missing-tool live probe automation | done | REV-VAL-1 | Added `scripts/live_missing_tools_probe.py` (+ tests) and generated report `data/live_missing_tools_probe_report_2026-02-21.json`: `27/28` pass, `1/28` blocked (`os_features.wfs_archive_capabilities` -> `OS_API_KEY_INVALID`). |
 | REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved, with release-gated functional coverage now computed entitlement-aware (`75/75`, `100.0%`) by excluding optional-by-entitlement `os_features.wfs_archive_capabilities` from the release denominator while keeping explicit evidence tracking. |
 | REV-VAL-4 Static analysis gate check | done | REV-VAL-0 | `ruff check .` and `mypy server tools scripts` executed after installing `.[dev]`; both are currently red (`ruff`: `1172` findings, `mypy`: `175` errors). |
+| REV-VAL-5 Post-P1 full live harness rerun | done | REV-VAL-1 | `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live` on 2026-02-22: `6815/6900` (`98.77%`), `69/69` passed, `rate_limit_429_total=0`. |
 
 ## Live evaluation P1 follow-ups (2026-02-22)
 
@@ -51,17 +52,26 @@ Legend: pending, in_progress, done, blocked
 - Done: expanded ONS option-code parsing in `tools/ons_data.py` and
   `tools/ons_codes.py` to accept live option payload shape
   (`links.code.id`) in addition to legacy `id/option/value/code` fields.
+- Done: normalized live ONS `observations: null` payloads to deterministic
+  empty results in `tools/ons_data.py` (instead of `INTEGRATION_ERROR`) and
+  added single-token quarter/year expansion + alias-version retry so
+  `ons_data.get_observation` can resolve prompts like `2023 Q1` against live
+  monthly GDP dimensions.
 - Done: retained explicit OS Names regression coverage ensuring
   `os_names.find` / `os_names.nearest` do not send `output_srs`.
 - Verification:
-  `./.venv/bin/pytest -q --no-cov tests/test_ons_data.py tests/test_ons_codes_live.py tests/test_os_names_success.py`
-  (`27 passed`), live smoke via `TestClient` against `ons_data.query`
-  (`dataset=gdp`, `timeRange=2024 Q1-2024 Q2`) returned `200` with 6
-  observations, and focused live harness rerun
-  (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-ons-live --questions I008,I009`)
-  now scores `200/200` (`100%`). Additional focused live reruns for
-  `B007,B008,B016` (ONS dimensions/codes/versions) and `B004,B012`
-  (OS Names find/nearest) also now score `100%`.
+  `./.venv/bin/pytest -q --no-cov tests/test_ons_data.py` (`16 passed`) plus
+  focused live rerun
+  (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live --questions B004,B012,B007,B008,B016,I008,I009,I011`)
+  now scores `800/800` (`100%`), including `I011` at `100%`.
+- Remaining OS/ONS coverage deltas from the full 2026-02-22 rerun
+  (`6815/6900`):
+  - `B006` (`80%`): static map descriptor response keyword coverage.
+  - `E001` (`80%`): invalid-postcode response keyword coverage.
+  - `I002` (`90%`): ward-hierarchy intent confidence (`0.48`).
+  - `C001`/`C002` (`95%` each): boundary-cache efficiency (extra router call).
+  - `E004`/`E005`/`E006` (`97%` each): edge-case error handling remains
+    graceful but not maximum-score.
 
 ## Safe-by-design governance and citation review (2026-02-21)
 

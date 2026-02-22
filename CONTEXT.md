@@ -179,7 +179,7 @@ assumptions change.
 - Latest strict test run: `pytest -q` on 2026-02-21
   (`785 passed`, `6 skipped`, coverage gate failed at `86.69%` vs required `>=90%`).
 - Latest live harness run: `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live`
-  on 2026-02-21 (`6290/6900`, `91.16%`, `67/69` passed, `rate_limit_429_total=0`).
+  on 2026-02-22 (`6815/6900`, `98.77%`, `69/69` passed, `rate_limit_429_total=0`).
 - Latest full tool operability aggregation:
   `data/spec_tool_operability_coverage_2026-02-21.json` on 2026-02-21
   (`75/76` tools functional, `1/76` blocked by auth entitlement, `0` unresolved).
@@ -194,6 +194,13 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Closed remaining live-evaluation P1 ONS observation behavior by
+  normalizing `observations: null` payloads in `tools/ons_data.py` to empty
+  results (not integration failures) and by expanding single-token quarter/year
+  values (with alias-version retry) so `ons_data.get_observation` resolves
+  queries like `2023 Q1` against live monthly GDP dimensions. Added regression
+  tests in `tests/test_ons_data.py`; focused OS/ONS live rerun
+  (`B004,B012,B007,B008,B016,I008,I009,I011`) now scores `800/800` (`100%`).
 - 2026-02-22: Closed live-evaluation P1 ONS contract drift by updating
   `tools/ons_data.py` to fetch observations with implicit dimension filters
   first (only escalating to explicit paging when needed) and by accepting live
