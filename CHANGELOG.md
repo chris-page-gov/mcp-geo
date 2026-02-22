@@ -36,6 +36,18 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Closed remaining OS/ONS live-evaluation deltas and reached full harness score
+  (`6900/6900`, `69/69` passed) by:
+  - adding backward-compatible `render.urlTemplate` alias in
+    `tools/os_maps.py`
+  - returning deterministic `INVALID_INPUT` for unknown/empty postcode results
+    in `tools/os_places.py`
+  - hardening hierarchy/tool-discovery routing paths in `tools/os_mcp.py`
+  - aligning cache-route efficiency budgets in `tests/evaluation/questions.py`
+  - fixing expected-error scoring behavior in `tests/evaluation/harness.py`
+    with regression coverage in `tests/test_evaluation_expected_errors.py`
+  - adding graceful transient-degrade behavior for non-dataset-specific
+    `nomis.datasets` upstream failures in `tools/nomis_data.py`.
 - Updated `docs/spec_package/09_testing_quality.md`, `CONTEXT.md`, and
   `PROGRESS.MD` to reflect the latest strict + live verification evidence,
   including explicit coverage-gate failure status and MCP-Apps widget

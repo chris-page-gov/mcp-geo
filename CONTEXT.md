@@ -179,9 +179,9 @@ assumptions change.
 - Latest strict test run: `pytest -q` on 2026-02-21
   (`785 passed`, `6 skipped`, coverage gate failed at `86.69%` vs required `>=90%`).
 - Latest live harness run: `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live`
-  on 2026-02-22 (`6815/6900`, `98.77%`, `69/69` passed, `rate_limit_429_total=0`).
+  on 2026-02-22 (`6900/6900`, `100%`, `69/69` passed, `rate_limit_429_total=0`).
 - Latest full tool operability aggregation:
-  `data/spec_tool_operability_coverage_2026-02-21.json` on 2026-02-21
+  `data/spec_tool_operability_coverage_2026-02-22.json` on 2026-02-22
   (`75/76` tools functional, `1/76` blocked by auth entitlement, `0` unresolved).
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
 - Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.03% coverage, 703 passed, 6 skipped) on 2026-02-13.
@@ -194,6 +194,17 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Closed remaining OS/ONS live-evaluation deltas by implementing
+  map-render keyword compatibility (`render.urlTemplate` alias), deterministic
+  invalid-postcode handling in `os_places.by_postcode`, hierarchy/tool-discovery
+  routing hardening in `os_mcp.route_query`, and expected-error scoring fixes
+  in the evaluation harness; full live rerun now scores `6900/6900` (`100%`)
+  with `69/69` passed.
+- 2026-02-22: Added transient NOMIS dataset-catalog degradation behavior in
+  `tools/nomis_data.py` for non-dataset-specific `nomis.datasets` calls
+  (`UPSTREAM_CONNECT_ERROR`/`UPSTREAM_INVALID_RESPONSE`/`CIRCUIT_OPEN`),
+  preserving graceful responses during upstream instability while keeping
+  dataset-specific failures explicit.
 - 2026-02-22: Closed remaining live-evaluation P1 ONS observation behavior by
   normalizing `observations: null` payloads in `tools/ons_data.py` to empty
   results (not integration failures) and by expanding single-token quarter/year

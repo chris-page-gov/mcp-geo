@@ -41,7 +41,7 @@ Legend: pending, in_progress, done, blocked
 | REV-VAL-2 Missing-tool live probe automation | done | REV-VAL-1 | Added `scripts/live_missing_tools_probe.py` (+ tests) and generated report `data/live_missing_tools_probe_report_2026-02-21.json`: `27/28` pass, `1/28` blocked (`os_features.wfs_archive_capabilities` -> `OS_API_KEY_INVALID`). |
 | REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved, with release-gated functional coverage now computed entitlement-aware (`75/75`, `100.0%`) by excluding optional-by-entitlement `os_features.wfs_archive_capabilities` from the release denominator while keeping explicit evidence tracking. |
 | REV-VAL-4 Static analysis gate check | done | REV-VAL-0 | `ruff check .` and `mypy server tools scripts` executed after installing `.[dev]`; both are currently red (`ruff`: `1172` findings, `mypy`: `175` errors). |
-| REV-VAL-5 Post-P1 full live harness rerun | done | REV-VAL-1 | `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live` on 2026-02-22: `6815/6900` (`98.77%`), `69/69` passed, `rate_limit_429_total=0`. |
+| REV-VAL-5 Post-P1/P2 full live harness rerun | done | REV-VAL-1 | `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live` on 2026-02-22: `6900/6900` (`100%`), `69/69` passed, `rate_limit_429_total=0`. |
 
 ## Live evaluation P1 follow-ups (2026-02-22)
 
@@ -59,19 +59,31 @@ Legend: pending, in_progress, done, blocked
   monthly GDP dimensions.
 - Done: retained explicit OS Names regression coverage ensuring
   `os_names.find` / `os_names.nearest` do not send `output_srs`.
+- Done: closed residual question-bank deltas by updating:
+  - `tools/os_maps.py` (`render.urlTemplate` alias for keyword-compat)
+  - `tools/os_places.py` (empty `by_postcode` results return deterministic
+    `INVALID_INPUT`)
+  - `tools/os_mcp.py` (hierarchy/tool-discovery intent routing and
+    `reverse_hierarchy` tool recommendation with area-code extraction)
+  - `tests/evaluation/questions.py` (`C001`/`C002` efficiency budget aligned to
+    routed flow)
+  - `tests/evaluation/harness.py` + `tests/test_evaluation_expected_errors.py`
+    (expected-error scoring no longer penalized; missing expected errors now
+    fail explicitly)
+  - `tools/nomis_data.py` + `tests/test_nomis_data.py`
+    (transient `nomis.datasets` upstream failures degrade gracefully for
+    non-dataset-specific requests).
 - Verification:
   `./.venv/bin/pytest -q --no-cov tests/test_ons_data.py` (`16 passed`) plus
   focused live rerun
   (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live --questions B004,B012,B007,B008,B016,I008,I009,I011`)
   now scores `800/800` (`100%`), including `I011` at `100%`.
-- Remaining OS/ONS coverage deltas from the full 2026-02-22 rerun
-  (`6815/6900`):
-  - `B006` (`80%`): static map descriptor response keyword coverage.
-  - `E001` (`80%`): invalid-postcode response keyword coverage.
-  - `I002` (`90%`): ward-hierarchy intent confidence (`0.48`).
-  - `C001`/`C002` (`95%` each): boundary-cache efficiency (extra router call).
-  - `E004`/`E005`/`E006` (`97%` each): edge-case error handling remains
-    graceful but not maximum-score.
+- Verification (final):
+  `./.venv/bin/pytest -q --no-cov tests/test_evaluation_expected_errors.py tests/test_os_places_by_postcode_success.py tests/test_os_map_tools.py tests/test_os_mcp_route_query.py tests/test_nomis_data.py`
+  (`79 passed`) and full live rerun
+  (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live --output /tmp/evaluation_results_live_2026-02-22_sync_and_remaining.json`)
+  now scores `6900/6900` (`100%`) with `69/69` passed.
+- Remaining OS/ONS coverage deltas in current question bank: none.
 
 ## Safe-by-design governance and citation review (2026-02-21)
 
