@@ -55,9 +55,11 @@ Legend: pending, in_progress, done, blocked
   `os_names.find` / `os_names.nearest` do not send `output_srs`.
 - Verification:
   `./.venv/bin/pytest -q --no-cov tests/test_ons_data.py tests/test_ons_codes_live.py tests/test_os_names_success.py`
-  (`27 passed`), plus live smoke via `TestClient` against
-  `ons_data.query` (`dataset=gdp`, `timeRange=2024 Q1-2024 Q2`) returned `200`
-  with 6 observations.
+  (`27 passed`), live smoke via `TestClient` against `ons_data.query`
+  (`dataset=gdp`, `timeRange=2024 Q1-2024 Q2`) returned `200` with 6
+  observations, and focused live harness rerun
+  (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-ons-live --questions I008,I009`)
+  now scores `200/200` (`100%`).
 
 ## Safe-by-design governance and citation review (2026-02-21)
 
