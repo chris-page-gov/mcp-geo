@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added peat evidence-layer integration for survey workflows:
+  - `tools/os_peat.py` with `os_peat.layers` and `os_peat.evidence_paths`
+  - `resources/peat_layers_england.json`
+  - `resource://mcp-geo/peat-layers-england` catalog wiring
+  - contract coverage in `tests/test_os_peat.py`.
+- Added deterministic floor-question artifacts for peat survey release readiness:
+  - fixture `tests/fixtures/psr_peat_floor_question.json`
+  - HTTP + STDIO E2E contract tests in `tests/test_psr_peat_e2e.py`
+  - harness assertions for `I018` in `tests/test_evaluation_harness_full.py`.
+- Added repeatable non-runtime static analysis gate script
+  `scripts/check_non_runtime_quality.sh` to enforce strict `ruff` + `mypy`
+  checks on reliability-critical non-runtime surfaces.
 - Added reproducible full-tool live validation automation:
   `scripts/live_missing_tools_probe.py` (+ `tests/test_live_missing_tools_probe.py`)
   to probe tools not covered by the evaluation harness and classify
@@ -36,6 +48,16 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Updated peatland survey routing to include `os_peat.evidence_paths` in
+  AOI-first survey plans and alternatives (`tools/os_mcp.py`,
+  `tests/test_os_mcp_route_query.py`).
+- Updated runbook docs for peat survey execution/troubleshooting with explicit
+  AOI provenance + direct/proxy evidence separation expectations and OS key
+  dependency notes (`docs/examples.md`, `docs/troubleshooting.md`).
+- Updated peatland reliability planning/status trackers to mark
+  `PSR-PEA-9` and `PSR-E2E-10` complete (`PROGRESS.MD`, `CONTEXT.md`,
+  `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`,
+  `docs/spec_package/09_testing_quality.md`).
 - Closed remaining OS/ONS live-evaluation deltas and reached full harness score
   (`6900/6900`, `69/69` passed) by:
   - adding backward-compatible `render.urlTemplate` alias in

@@ -58,6 +58,22 @@ Recommended handling:
 - Prefer `delivery=auto` for large feature queries in stdio-heavy hosts to avoid
   response truncation and context pressure.
 
+## Peat survey flow returns metadata but proxy queries fail
+`os_peat.evidence_paths` can succeed while follow-on proxy calls fail with
+`NO_API_KEY` or `OS_API_KEY_INVALID`.
+
+What is happening:
+- `os_peat.evidence_paths` builds AOI-scoped evidence plans and always returns
+  direct/proxy separation, confidence, and caveats from MCP-owned metadata.
+- Proxy query execution (`queryPlan.tool = os_features.query`) still requires a
+  valid OS entitlement key.
+
+Remediation:
+- Set `OS_API_KEY` in the MCP server environment and restart.
+- Re-run `os_peat.evidence_paths`, then execute each proxy `queryPlan` call.
+- Treat direct layers as evidence pointers and proxy layers as context only
+  (not definitive peat-condition measurements).
+
 ## MCP-Apps UI "unsupported format"
 If the client reports an unsupported format error after calling an `os_apps.render_*`
 tool, it is usually rejecting the `resource_link` content block.

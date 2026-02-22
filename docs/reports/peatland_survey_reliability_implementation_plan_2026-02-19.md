@@ -58,17 +58,17 @@ Legend: pending, in_progress, done
 
 | ID | Status | Dependencies | Primary outcome |
 | --- | --- | --- | --- |
-| PSR-INT-0 | pending | none | Shared contract freeze and integration scaffolding for survey-hardening workstreams. |
-| PSR-COR-1 | pending | PSR-INT-0 | Correct `numberReturned`/`count` behavior and pagination semantics. |
-| PSR-GRD-2 | pending | PSR-INT-0 | Safe request defaults and hard caps (`limit`, geometry, bbox complexity). |
-| PSR-REL-3 | pending | PSR-INT-0 | Configurable timeout/retry/degrade policy for upstream failures. |
-| PSR-RES-4 | pending | PSR-INT-0 | Resource-backed delivery for oversized tool payloads. |
-| PSR-GEO-5 | pending | PSR-INT-0 | Polygon validation/normalization with deterministic errors. |
-| PSR-CQL-6 | pending | PSR-COR-1, PSR-GRD-2 | Explicit filter provenance and scan-budget reporting. |
-| PSR-BND-7 | pending | PSR-INT-0 | Protected-landscape boundary lookup tools/resources (AONB and related). |
-| PSR-ROU-8 | pending | PSR-GRD-2, PSR-BND-7 | Survey-intent routing and safe-by-default execution plans. |
-| PSR-PEA-9 | pending | PSR-BND-7 | Peat-specific evidence-layer integration (extent/depth/condition/erosion proxies). |
-| PSR-E2E-10 | pending | all above | Golden scenario tests, docs alignment, demo-readiness sign-off. |
+| PSR-INT-0 | done | none | Shared contract freeze and integration scaffolding for survey-hardening workstreams. |
+| PSR-COR-1 | done | PSR-INT-0 | Correct `numberReturned`/`count` behavior and pagination semantics. |
+| PSR-GRD-2 | done | PSR-INT-0 | Safe request defaults and hard caps (`limit`, geometry, bbox complexity). |
+| PSR-REL-3 | done | PSR-INT-0 | Configurable timeout/retry/degrade policy for upstream failures. |
+| PSR-RES-4 | done | PSR-INT-0 | Resource-backed delivery for oversized tool payloads. |
+| PSR-GEO-5 | done | PSR-INT-0 | Polygon validation/normalization with deterministic errors. |
+| PSR-CQL-6 | done | PSR-COR-1, PSR-GRD-2 | Explicit filter provenance and scan-budget reporting. |
+| PSR-BND-7 | done | PSR-INT-0 | Protected-landscape boundary lookup tools/resources (AONB and related). |
+| PSR-ROU-8 | done | PSR-GRD-2, PSR-BND-7 | Survey-intent routing and safe-by-default execution plans. |
+| PSR-PEA-9 | done | PSR-BND-7 | Peat-specific evidence-layer integration (extent/depth/condition/erosion proxies). |
+| PSR-E2E-10 | done | all above | Golden scenario tests, docs alignment, demo-readiness sign-off. |
 
 ## Shared contract deltas (target)
 
@@ -447,4 +447,3 @@ integration stream.
 3. Approve final warning/error code taxonomy for guardrail and degrade states.
 4. Set default inline payload threshold for `os_features.query` in STDIO-heavy
    environments.
-

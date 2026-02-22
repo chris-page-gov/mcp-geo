@@ -42,6 +42,7 @@ Legend: pending, in_progress, done, blocked
 | REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved, with release-gated functional coverage now computed entitlement-aware (`75/75`, `100.0%`) by excluding optional-by-entitlement `os_features.wfs_archive_capabilities` from the release denominator while keeping explicit evidence tracking. |
 | REV-VAL-4 Static analysis gate check | done | REV-VAL-0 | `ruff check .` and `mypy server tools scripts` executed after installing `.[dev]`; both are currently red (`ruff`: `1172` findings, `mypy`: `175` errors). |
 | REV-VAL-5 Post-P1/P2 full live harness rerun | done | REV-VAL-1 | `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live` on 2026-02-22: `6900/6900` (`100%`), `69/69` passed, `rate_limit_429_total=0`. |
+| REV-VAL-6 Non-runtime strict static gate restoration | done | REV-VAL-4 | Added `scripts/check_non_runtime_quality.sh` and restored strict static gating for reliability-critical non-runtime surfaces (`ruff` + `mypy --follow-imports=skip`), currently green (`All checks passed`, `Success: no issues found in 8 source files`). |
 
 ## Live evaluation P1 follow-ups (2026-02-22)
 
@@ -154,8 +155,8 @@ Legend: pending, in_progress, done
 | PSR-CQL-6 Filter provenance + scan budgets | done | PSR-COR-1, PSR-GRD-2 | Added structured `hints.filterApplied` + `hints.scan` metadata and explicit partial-scan warnings for local post-filter workflows. |
 | PSR-BND-7 Protected-landscape boundaries | done | PSR-INT-0 | Added `os_landscape.find` / `os_landscape.get` and `resource://mcp-geo/protected-landscapes-england` with Bowland fixture coverage. |
 | PSR-ROU-8 Survey-intent routing hardening | done | PSR-GRD-2, PSR-BND-7 | `os_mcp.route_query` now classifies peatland survey prompts as `environmental_survey` and returns AOI-first survey plans using `os_landscape.*` + bounded `os_features.query`. |
-| PSR-PEA-9 Peat-specific evidence layer integration | pending | PSR-BND-7 | Integrate peat extent/depth/condition layer discovery/query paths with clear provenance. |
-| PSR-E2E-10 Golden scenario + release readiness | pending | all PSR workstreams | Add deterministic floor-question scenario tests and demo-ready output criteria. |
+| PSR-PEA-9 Peat-specific evidence layer integration | done | PSR-BND-7 | Added `tools/os_peat.py` (`os_peat.layers`, `os_peat.evidence_paths`), `resources/peat_layers_england.json`, resource-catalog wiring (`resource://mcp-geo/peat-layers-england`), route-query integration, and unit/resource tests (`tests/test_os_peat.py`). |
+| PSR-E2E-10 Golden scenario + release readiness | done | all PSR workstreams | Added deterministic floor-question fixture (`tests/fixtures/psr_peat_floor_question.json`) and E2E assertions for HTTP + STDIO contracts (`tests/test_psr_peat_e2e.py`, `tests/test_evaluation_harness_full.py`) validating AOI provenance + direct/proxy separation + confidence + caveats; updated runbook docs (`docs/examples.md`, `docs/troubleshooting.md`). |
 
 ## Sources reviewed
 

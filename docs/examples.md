@@ -243,9 +243,11 @@ Assistant (internal sequence):
 1. os_mcp.route_query { query: "Do a peatland site survey on the forrest of Bowland" }
 2. os_landscape.find { text: "Forest of Bowland" }
 3. os_landscape.get { id: "<id-from-find>", includeGeometry: true }
-4. os_features.query { collection: "wtr-fts-water-3", bbox: "<aoi-bbox>", resultType: "hits", includeGeometry: false, limit: 25 }
-5. os_features.query { collection: "lnd-fts-land-3", bbox: "<aoi-bbox>", resultType: "hits", includeGeometry: false, limit: 25 }
-Assistant: Returns AOI provenance first, then bounded evidence counts, then optional geometry pages.
+4. os_peat.layers {}
+5. os_peat.evidence_paths { landscapeId: "<id-from-find>", limit: 25, resultType: "hits" }
+6. os_features.query { collection: "wtr-fts-water-3", bbox: "<aoi-bbox>", resultType: "hits", includeGeometry: false, limit: 25 }
+7. os_features.query { collection: "lnd-fts-land-3", bbox: "<aoi-bbox>", resultType: "hits", includeGeometry: false, limit: 25 }
+Assistant: Returns AOI provenance first, then peat direct/proxy evidence separation, confidence + caveats, then bounded proxy-count queries and optional geometry pages.
 
 ### 5. ONS Dimensions & Query
 User: What observation dimensions are available?

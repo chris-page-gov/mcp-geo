@@ -86,8 +86,9 @@ assumptions change.
 - Track peatland survey reliability workstreams in
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   and synchronize statuses in `PROGRESS.MD`.
-- Execute remaining peatland streams (`PSR-PEA-9`, `PSR-E2E-10`) now that
-  `PSR-INT-0` through `PSR-ROU-8` are implemented and test-covered.
+- Maintain completed peatland streams (`PSR-INT-0` through `PSR-E2E-10`) and
+  keep floor-question contracts (`os_peat.*`, AOI provenance, direct/proxy
+  evidence separation) stable across HTTP + STDIO.
 - Maintain compatibility-first map docs/contracts and support matrix links in
   `docs/spec_package/06_api_contracts.md`,
   `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
@@ -137,9 +138,12 @@ assumptions change.
 - Done: map delivery recommendation implementation program (`MDR-I1` to
   `MDR-E4`) complete across immediate, near-term, medium-term, and ecosystem
   waves.
-- In progress: peatland survey reliability implementation program (`PSR-*`);
-  streams `PSR-INT-0` through `PSR-ROU-8` are complete, with `PSR-PEA-9` and
-  `PSR-E2E-10` remaining.
+- Done: peatland survey reliability implementation program (`PSR-*`) including
+  `PSR-PEA-9` and `PSR-E2E-10` (peat evidence-layer integration plus
+  deterministic floor-question E2E contract coverage).
+- Done: strict non-runtime static quality gate restoration for reliability
+  surfaces via `scripts/check_non_runtime_quality.sh`
+  (`ruff` + `mypy --follow-imports=skip`).
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
