@@ -32,11 +32,34 @@ def test_route_query_postcode_lookup():
     assert body["recommended_parameters"]["postcode"] == "SW1A1AA"
 
 
+def test_route_query_postcode_geography_lookup():
+    body = _route("List all geographies for postcode SW1A 1AA")
+    assert body["intent"] == "address_lookup"
+    assert body["recommended_tool"] == "ons_geo.by_postcode"
+    assert body["recommended_parameters"]["postcode"] == "SW1A1AA"
+
+
+def test_route_query_postcode_geography_lookup_best_fit():
+    body = _route("Use NSPL best-fit geographies for postcode SW1A 1AA")
+    assert body["intent"] == "address_lookup"
+    assert body["recommended_tool"] == "ons_geo.by_postcode"
+    assert body["recommended_parameters"]["postcode"] == "SW1A1AA"
+    assert body["recommended_parameters"]["derivationMode"] == "best_fit"
+
+
 def test_route_query_uprn_lookup():
     body = _route("Lookup UPRN 100023336959")
     assert body["intent"] == "address_lookup"
     assert body["recommended_tool"] == "os_places.by_uprn"
     assert body["recommended_parameters"]["uprn"] == "100023336959"
+
+
+def test_route_query_uprn_geography_lookup():
+    body = _route("Which geographies does UPRN 100023336959 map to in exact mode")
+    assert body["intent"] == "address_lookup"
+    assert body["recommended_tool"] == "ons_geo.by_uprn"
+    assert body["recommended_parameters"]["uprn"] == "100023336959"
+    assert body["recommended_parameters"]["derivationMode"] == "exact"
 
 
 def test_route_query_boundary_fetch():

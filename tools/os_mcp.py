@@ -329,7 +329,7 @@ FEATURE_COLLECTIONS = {
 NOMIS_WORKFLOW_URI = "resource://mcp-geo/nomis-workflows"
 
 INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
-    QueryIntent.ADDRESS_LOOKUP: ["core_router", "places_names"],
+    QueryIntent.ADDRESS_LOOKUP: ["core_router", "places_names", "ons_geo_lookup"],
     QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
     QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
     QueryIntent.STATISTICS: ["core_router", "ons_data"],
@@ -374,6 +374,28 @@ def _extract_uprn(query: str) -> str | None:
     if not match:
         return None
     return match.group(0)
+
+
+def _is_geography_lookup_query(query_lower: str) -> bool:
+    patterns = [
+        r"\bgeograph(y|ies)\b",
+        r"\bonspd\b|\bonsud\b|\bnspl\b|\bnsul\b",
+        r"\bexact\b.*\bmode\b",
+        r"\bbest[- ]?fit\b",
+        (
+            r"\bwhich\b.*\b(ward|lsoa|msoa|oa|local authority|district|borough|region|"
+            r"constituenc(y|ies))\b"
+        ),
+    ]
+    return any(re.search(pattern, query_lower) for pattern in patterns)
+
+
+def _extract_derivation_mode(query_lower: str) -> str | None:
+    if re.search(r"\bnspl\b|\bnsul\b|\bbest[- ]?fit\b", query_lower):
+        return "best_fit"
+    if re.search(r"\bonspd\b|\bonsud\b|\bexact\b", query_lower):
+        return "exact"
+    return None
 
 
 def _extract_correlation_method(query: str) -> str | None:
@@ -689,10 +711,26 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
 
     postcode = _extract_postcode(query)
     if postcode:
+        if _is_geography_lookup_query(query_lower):
+            context["address_mode"] = "postcode_geography"
+            params: dict[str, Any] = {"postcode": postcode}
+            derivation_mode = _extract_derivation_mode(query_lower)
+            if derivation_mode:
+                context["derivation_mode"] = derivation_mode
+                params["derivationMode"] = derivation_mode
+            return QueryIntent.ADDRESS_LOOKUP, 0.95, params, context
         context["address_mode"] = "postcode"
         return QueryIntent.ADDRESS_LOOKUP, 0.95, {"postcode": postcode}, context
 
     if uprn and "uprn" in query_lower:
+        if _is_geography_lookup_query(query_lower):
+            context["address_mode"] = "uprn_geography"
+            params = {"uprn": uprn}
+            derivation_mode = _extract_derivation_mode(query_lower)
+            if derivation_mode:
+                context["derivation_mode"] = derivation_mode
+                params["derivationMode"] = derivation_mode
+            return QueryIntent.ADDRESS_LOOKUP, 0.95, params, context
         context["address_mode"] = "uprn"
         return QueryIntent.ADDRESS_LOOKUP, 0.95, {"uprn": uprn}, context
 
@@ -906,6 +944,31 @@ def _get_tool_for_intent(
 ) -> tuple[str, list[str], str]:
     if intent == QueryIntent.ADDRESS_LOOKUP:
         mode = context.get("address_mode")
+        derivation_mode = str(context.get("derivation_mode") or "")
+        if mode == "postcode_geography":
+            mode_hint = ""
+            if derivation_mode in {"exact", "best_fit"}:
+                mode_hint = f" using derivationMode={derivation_mode}"
+            return (
+                "ons_geo.by_postcode",
+                ["ons_geo.by_postcode", "ons_geo.cache_status"],
+                (
+                    "Lookup all ONS geographies for a postcode from local ONSPD/NSPL cache"
+                    f"{mode_hint}."
+                ),
+            )
+        if mode == "uprn_geography":
+            mode_hint = ""
+            if derivation_mode in {"exact", "best_fit"}:
+                mode_hint = f" using derivationMode={derivation_mode}"
+            return (
+                "ons_geo.by_uprn",
+                ["ons_geo.by_uprn", "ons_geo.cache_status"],
+                (
+                    "Lookup all ONS geographies for a UPRN from local ONSUD/NSUL cache"
+                    f"{mode_hint}."
+                ),
+            )
         if mode == "uprn":
             return (
                 "os_places.by_uprn",
@@ -1129,7 +1192,12 @@ def _get_tool_for_intent(
 
 def _get_alternative_tools(intent: QueryIntent) -> list[str]:
     alternatives = {
-        QueryIntent.ADDRESS_LOOKUP: ["os_places.search", "os_places.nearest"],
+        QueryIntent.ADDRESS_LOOKUP: [
+            "ons_geo.by_postcode",
+            "ons_geo.by_uprn",
+            "os_places.search",
+            "os_places.nearest",
+        ],
         QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
         QueryIntent.LINKED_IDS: [
             "os_linked_ids.identifiers",
@@ -1166,8 +1234,10 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
 def _get_guidance_for_intent(intent: QueryIntent) -> str:
     guidance = {
         QueryIntent.ADDRESS_LOOKUP: (
-            "Use OS Places for postcodes, UPRNs, or free-text address search. "
-            "Postcodes return multiple UPRNs; UPRN returns a single address."
+            "Use OS Places for address retrieval and free-text address search. "
+            "Use ons_geo.by_postcode / ons_geo.by_uprn when you need full geography "
+            "mappings for postcode/UPRN with exact (ONSPD/ONSUD) or best_fit "
+            "(NSPL/NSUL) derivation modes."
         ),
         QueryIntent.POI_LOOKUP: (
             "Use os_poi.search/nearest/within for amenities and points of interest. "
