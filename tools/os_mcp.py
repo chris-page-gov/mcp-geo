@@ -677,10 +677,11 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
 
     area_code = _extract_area_code(query)
     if re.search(r"\bhierarchy\b|\bancestor(s)?\b", query_lower):
-        context["place_mode"] = "reverse_hierarchy"
         if area_code:
+            context["place_mode"] = "reverse_hierarchy"
             return QueryIntent.PLACE_LOOKUP, 0.9, {"id": area_code}, context
-        return QueryIntent.PLACE_LOOKUP, 0.85, {}, context
+        context["place_mode"] = "hierarchy_lookup"
+        return QueryIntent.PLACE_LOOKUP, 0.85, {"text": place_name or query}, context
 
     uprn = _extract_uprn(query)
     if re.search(r"\blinked ids?\b|\blinked identifiers?\b|\bcrosswalk\b", query_lower):
@@ -961,6 +962,12 @@ def _get_tool_for_intent(
                 "admin_lookup.reverse_hierarchy",
                 ["admin_lookup.reverse_hierarchy"],
                 "Resolve the administrative hierarchy for a known area code.",
+            )
+        if place_mode == "hierarchy_lookup":
+            return (
+                "admin_lookup.find_by_name",
+                ["admin_lookup.find_by_name", "admin_lookup.reverse_hierarchy"],
+                "Resolve area code by name, then call reverse hierarchy with the selected id.",
             )
         if place_mode == "poi_nearest":
             return (

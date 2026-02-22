@@ -142,6 +142,14 @@ def test_route_query_hierarchy_phrase():
     assert body["recommended_parameters"]["id"] == "E05000644"
 
 
+def test_route_query_hierarchy_phrase_without_code_routes_to_name_lookup():
+    body = _route("Show hierarchy for Westminster")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "admin_lookup.find_by_name"
+    assert body["recommended_parameters"]["text"] == "Westminster"
+    assert "admin_lookup.reverse_hierarchy" in body.get("workflow_steps", [])
+
+
 def test_route_query_tool_discovery_phrase():
     body = _route("Find tools related to postcode search")
     assert body["intent"] == "unknown"

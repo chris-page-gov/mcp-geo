@@ -426,6 +426,7 @@ def _fetch_observations_paged(
     limit = int(params.get("limit", _OBSERVATIONS_FETCH_PAGE_LIMIT))
     explicit_paging = False
     retried_without_paging = False
+    paging_unsupported = False
     observations: list[dict[str, Any]] = []
     dimensions: dict[str, Any] | None = None
 
@@ -443,6 +444,7 @@ def _fetch_observations_paged(
             )
             if uses_paging and invalid_paging and not retried_without_paging:
                 retried_without_paging = True
+                paging_unsupported = True
                 explicit_paging = False
                 current_url = url
                 current_params = dict(base_filters)
@@ -496,7 +498,11 @@ def _fetch_observations_paged(
 
         # Start with implicit ONS filtering (dimension params only). If that looks
         # truncated without an advertised next link, retry with explicit paging.
-        if len(batch_raw) >= limit and (not isinstance(total, int) or len(observations) < total):
+        if (
+            not paging_unsupported
+            and len(batch_raw) >= limit
+            and (not isinstance(total, int) or len(observations) < total)
+        ):
             explicit_paging = True
             current_url = url
             page = 1

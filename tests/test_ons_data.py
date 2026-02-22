@@ -157,6 +157,47 @@ def test_ons_query_retries_observations_without_limit_page(monkeypatch):
     assert calls[2] == {"time": "Jan-24"}
 
 
+def test_ons_query_does_not_reenable_paging_after_limit_page_rejection(monkeypatch):
+    from tools import ons_data
+
+    calls: list[Dict[str, Any] | None] = []
+    implicit_calls = 0
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True):  # noqa: ARG001
+        nonlocal implicit_calls
+        if "observations" not in url:
+            return 500, {"isError": True, "code": "UNEXPECTED", "message": "unexpected URL"}
+        captured = dict(params) if isinstance(params, dict) else None
+        calls.append(captured)
+        if isinstance(captured, dict) and ("limit" in captured or "page" in captured):
+            return 400, {
+                "isError": True,
+                "code": "ONS_API_ERROR",
+                "message": "incorrect selection of query parameters: [limit page], these dimensions do not exist for this version of the dataset",  # noqa: E501
+            }
+        if isinstance(captured, dict) and "limit" not in captured and "page" not in captured:
+            implicit_calls += 1
+            if implicit_calls == 1:
+                return 200, {"observations": [{"id": "implicit-first"}]}
+            return 200, {"observations": [{"id": "implicit-fallback"}]}
+        return 500, {"isError": True, "code": "UNEXPECTED", "message": "unexpected params"}
+
+    monkeypatch.setattr(ons_data, "_OBSERVATIONS_FETCH_PAGE_LIMIT", 1)
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+
+    status, body = ons_data._fetch_observations_paged(
+        url="https://api.beta.ons.gov.uk/v1/datasets/gdp/editions/time-series/versions/1/observations",
+        filters={"time": "Jan-24"},
+    )
+
+    assert status == 200
+    assert body["observations"] == [{"id": "implicit-fallback"}]
+    assert len(calls) == 3
+    assert calls[0] == {"time": "Jan-24"}
+    assert calls[1] == {"limit": 1, "page": 1, "time": "Jan-24"}
+    assert calls[2] == {"time": "Jan-24"}
+
+
 def test_ons_query_handles_null_observations_payload(monkeypatch):
     from tools import ons_data
 
