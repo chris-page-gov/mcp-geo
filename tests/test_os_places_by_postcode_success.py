@@ -62,3 +62,16 @@ def test_os_places_by_postcode_skips_invalid(monkeypatch):
     assert len(data["uprns"]) == 1
     assert data["uprns"][0]["lat"] == 0.0
     assert data["uprns"][0]["lon"] == 0.0
+
+
+def test_os_places_by_postcode_empty_results_returns_invalid_input(monkeypatch):
+    def fake_get_json(url, params=None):  # noqa: ARG001
+        return 200, {"results": []}
+
+    monkeypatch.setattr(os_places.client, "get_json", fake_get_json)
+    client = TestClient(app)
+    resp = client.post("/tools/call", json={"tool": "os_places.by_postcode", "postcode": "ZZ99ZZ"})
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["isError"] is True
+    assert body["code"] == "INVALID_INPUT"

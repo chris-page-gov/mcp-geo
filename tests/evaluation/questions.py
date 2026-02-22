@@ -16,6 +16,7 @@ class Difficulty(str, Enum):
 class Intent(str, Enum):
     ADDRESS_LOOKUP = "address_lookup"
     PLACE_LOOKUP = "place_lookup"
+    ENVIRONMENTAL_SURVEY = "environmental_survey"
     STATISTICS = "statistics"
     AREA_COMPARISON = "area_comparison"
     FEATURE_SEARCH = "feature_search"
@@ -906,6 +907,34 @@ INTERMEDIATE_QUESTIONS = [
         ],
         tags=["ons", "search", "selection", "comparability"],
     ),
+    EvaluationQuestion(
+        id="I018",
+        question="Do a peatland site survey on the forrest of Bowland",
+        intent=Intent.ENVIRONMENTAL_SURVEY,
+        difficulty=Difficulty.INTERMEDIATE,
+        description=(
+            "Build AOI-scoped peat evidence paths with direct/proxy separation, confidence, and caveats."
+        ),
+        expected=ExpectedOutcome(
+            required_tools=["os_peat.layers", "os_peat.evidence_paths"],
+            max_tool_calls=3,
+            required_keywords=[
+                "aonb-forest-of-bowland",
+                "directLayerIds",
+                "proxyLayerIds",
+                "confidence",
+                "caveats",
+            ],
+        ),
+        tool_calls=[
+            ToolCallSpec("os_peat.layers", {}),
+            ToolCallSpec(
+                "os_peat.evidence_paths",
+                {"landscapeId": "aonb-forest-of-bowland", "limit": 25, "resultType": "hits"},
+            ),
+        ],
+        tags=["peat", "survey", "bowland"],
+    ),
 ]
 
 
@@ -1305,7 +1334,7 @@ CACHE_QUESTIONS = [
         description="Audit cache status for local PostGIS boundaries.",
         expected=ExpectedOutcome(
             required_tools=["admin_lookup.get_cache_status"],
-            max_tool_calls=1,
+            max_tool_calls=2,
         ),
         tool_calls=[ToolCallSpec("admin_lookup.get_cache_status", {})],
         tags=["cache", "admin"],
@@ -1318,7 +1347,7 @@ CACHE_QUESTIONS = [
         description="Search cache entries by name.",
         expected=ExpectedOutcome(
             required_tools=["admin_lookup.search_cache"],
-            max_tool_calls=1,
+            max_tool_calls=2,
         ),
         tool_calls=[ToolCallSpec("admin_lookup.search_cache", {"query": "Westminster", "limit": 5})],
         tags=["cache", "admin"],

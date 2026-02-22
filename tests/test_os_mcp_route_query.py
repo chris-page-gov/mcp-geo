@@ -75,6 +75,13 @@ def test_route_query_linked_ids():
     assert body["recommended_tool"] == "os_linked_ids.get"
 
 
+def test_route_query_linked_ids_overrides_uprn_address_mode():
+    body = _route("Resolve linked IDs for UPRN 100021892956")
+    assert body["intent"] == "linked_ids"
+    assert body["recommended_tool"] == "os_linked_ids.get"
+    assert body["recommended_parameters"]["identifier"] == "100021892956"
+
+
 def test_route_query_map_render():
     body = _route("Render a static map image for Westminster")
     assert body["intent"] == "map_render"
@@ -101,6 +108,103 @@ def test_route_query_poi_search():
     assert body["recommended_tool"] == "os_poi.search"
 
 
+def test_route_query_poi_phrase_routes_to_poi_lookup():
+    body = _route("Search points of interest for cafes in Westminster")
+    assert body["intent"] == "poi_lookup"
+    assert body["recommended_tool"] == "os_poi.search"
+
+
+def test_route_query_poi_acronym_with_coordinates_routes_to_poi_lookup():
+    body = _route("Find nearest POIs to 51.5034,-0.1276")
+    assert body["intent"] == "poi_lookup"
+    assert body["recommended_tool"] == "os_poi.nearest"
+
+
+def test_route_query_dataset_discovery_dimensions_phrase():
+    body = _route("List available ONS observation dimensions")
+    assert body["intent"] == "dataset_discovery"
+
+
+def test_route_query_dataset_discovery_nomis_concepts():
+    body = _route("List NOMIS concepts")
+    assert body["intent"] == "dataset_discovery"
+
+
+def test_route_query_statistics_for_ons_filter_creation():
+    body = _route("Create an ONS filter for UK GDPV 2024 Q1-Q2")
+    assert body["intent"] == "statistics"
+
+
+def test_route_query_hierarchy_phrase():
+    body = _route("Show the hierarchy for ward E05000644")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "admin_lookup.reverse_hierarchy"
+    assert body["recommended_parameters"]["id"] == "E05000644"
+
+
+def test_route_query_hierarchy_phrase_without_code_routes_to_name_lookup():
+    body = _route("Show hierarchy for Westminster")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "admin_lookup.find_by_name"
+    assert body["recommended_parameters"]["text"] == "Westminster"
+    assert "admin_lookup.reverse_hierarchy" in body.get("workflow_steps", [])
+
+
+def test_route_query_tool_discovery_phrase():
+    body = _route("Find tools related to postcode search")
+    assert body["intent"] == "unknown"
+    assert body["confidence"] >= 0.8
+
+
+def test_route_query_statistics_dashboard_area_comparison():
+    body = _route("Open the statistics dashboard for Westminster")
+    assert body["intent"] == "area_comparison"
+    assert body["recommended_tool"] == "os_apps.render_statistics_dashboard"
+
+
+def test_route_query_boundary_explorer_widget_phrase():
+    body = _route("Open the boundary explorer widget")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_boundary_explorer"
+
+
+def test_route_query_ui_probe_phrase():
+    body = _route("Probe MCP-Apps UI rendering mode support")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_ui_probe"
+
+
+def test_route_query_unknown_skills_guide_request():
+    body = _route("Fetch the MCP Geo skills guide")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "resources/read"
+
+
+def test_route_query_unknown_descriptor_request():
+    body = _route("Describe server capabilities and tool search config")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+
+
+def test_route_query_unknown_log_event_request():
+    body = _route("Log a UI event for analytics")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_apps.log_event"
+
+
+def test_route_query_unknown_cache_status_request():
+    body = _route("Show boundary cache status")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "admin_lookup.get_cache_status"
+
+
+def test_route_query_unknown_cache_search_request():
+    body = _route("Search the boundary cache for Westminster")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "admin_lookup.search_cache"
+    assert body["recommended_parameters"]["query"] == "Westminster"
+
+
 def test_route_query_environmental_survey_bowland():
     body = _route("Do a peatland site survey on the forrest of Bowland")
     assert body["intent"] == "environmental_survey"
@@ -110,6 +214,7 @@ def test_route_query_environmental_survey_bowland():
     assert isinstance(plan, list)
     assert plan
     assert plan[0]["tool"] == "os_landscape.find"
+    assert any(step.get("tool") == "os_peat.evidence_paths" for step in plan)
 
 
 def test_route_query_unknown():
@@ -133,7 +238,10 @@ def test_stats_routing_tool():
 def test_stats_routing_comparison_recommendations():
     resp = client.post(
         "/tools/call",
-        json={"tool": "os_mcp.stats_routing", "query": "Compare unemployment between Leeds and Manchester"},
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare unemployment between Leeds and Manchester",
+        },
     )
     assert resp.status_code == 200
     body = resp.json()
@@ -164,7 +272,9 @@ def test_stats_routing_respects_provider_preference_and_level():
     assert body["userSelections"]["providerPreference"] == "ONS"
     next_steps = body.get("nextSteps", [])
     admin_step = next(
-        step for step in next_steps if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
+        step
+        for step in next_steps
+        if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
     )
     assert "level=LSOA" in admin_step.get("note", "")
 
@@ -209,6 +319,26 @@ def test_select_toolsets_infers_from_query():
     assert "core_router" in include
     assert "maps_tiles" in include
     assert body.get("matchedToolCount", 0) >= 1
+
+
+def test_select_toolsets_poi_query_infers_places_names():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Search points of interest for cafes in Westminster",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "poi_lookup"
+    filters = body.get("effectiveFilters", {})
+    include = filters.get("includeToolsets", [])
+    assert "places_names" in include
+    assert "admin_boundaries" not in include
+    matched = body.get("matchedTools", [])
+    assert "os_poi.search" in matched
 
 
 def test_select_toolsets_explicit_filters():

@@ -22,6 +22,12 @@ _MULTI_TERM_SYNONYMS: dict[str, tuple[str, ...]] = {
     "education": ("qualification", "qualifications", "students"),
 }
 
+_NOMIS_TRANSIENT_CODES = {
+    "UPSTREAM_CONNECT_ERROR",
+    "UPSTREAM_INVALID_RESPONSE",
+    "CIRCUIT_OPEN",
+}
+
 
 def _require_live() -> ToolResult | None:
     if not settings.NOMIS_LIVE_ENABLED:
@@ -662,6 +668,42 @@ def _datasets(payload: dict[str, Any]) -> ToolResult:
     path = f"dataset/{suffix}" if not dataset else f"dataset/{dataset}/{suffix}"
     status, data = nomis_client.get_json(_build_url(path))
     if status != 200:
+        if (
+            not dataset
+            and isinstance(data, dict)
+            and str(data.get("code") or "").upper() in _NOMIS_TRANSIENT_CODES
+        ):
+            fallback_result: dict[str, Any] = {
+                "live": False,
+                "degraded": True,
+                "dataset": None,
+                "format": fmt,
+                "query": query,
+                "limit": limit,
+                "returned": 0,
+                "total": 0,
+                "truncated": False,
+                "datasets": [],
+                "hints": [
+                    "NOMIS dataset catalog is temporarily unavailable; returned an empty degraded summary.",
+                    "Retry nomis.datasets shortly or supply dataset=<id> directly to continue.",
+                ],
+                "upstreamError": {
+                    "status": status,
+                    "code": data.get("code"),
+                    "message": data.get("message"),
+                },
+                "data": {
+                    "datasets": [],
+                    "total": 0,
+                    "returned": 0,
+                    "truncated": False,
+                    "degraded": True,
+                },
+            }
+            if include_raw:
+                fallback_result["raw"] = data
+            return 200, fallback_result
         return status, data
     err = _extract_nomis_error(data)
     if err:

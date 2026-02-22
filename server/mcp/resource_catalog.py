@@ -19,6 +19,7 @@ ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
 PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
+PEAT_LAYERS_PATH = ROOT / "resources" / "peat_layers_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
 BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
 CODE_LIST_PACK_SOURCES_PATH = ROOT / "resources" / "code_list_pack_sources.json"
@@ -235,6 +236,17 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": PROTECTED_LANDSCAPES_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "dataset", "domain": "boundaries"},
+    },
+    {
+        "slug": "peat-layers-england",
+        "name": "data_peat_layers_england",
+        "title": "Peat Evidence Layers (England)",
+        "description": (
+            "Peat evidence/proxy layer registry with AOI query strategy, provenance, confidence, and caveats."
+        ),
+        "path": PEAT_LAYERS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "dataset", "domain": "environment"},
     },
     {
         "slug": "offline-map-catalog",
@@ -791,6 +803,20 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "layers-catalog"), None
         return (*_load_json_file(LAYERS_CATALOG_PATH), None)
+    if slug == "protected-landscapes-england":
+        if not PROTECTED_LANDSCAPES_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Protected landscapes catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "protected-landscapes-england"), None
+        return (*_load_json_file(PROTECTED_LANDSCAPES_PATH), None)
+    if slug == "peat-layers-england":
+        if not PEAT_LAYERS_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "Peat layers catalog not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "peat-layers-england"), None
+        return (*_load_json_file(PEAT_LAYERS_PATH), None)
     if slug == "offline-map-catalog":
         if not OFFLINE_MAP_CATALOG_PATH.exists():
             content = json.dumps(
@@ -900,8 +926,14 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "ons-cache-index":
         items = []
-        for path in _ons_cache_files():
-            items.append({"name": path.name, "uri": f"{ONS_CACHE_PREFIX}{path.name}", "bytes": path.stat().st_size})
+        for cache_path in _ons_cache_files():
+            items.append(
+                {
+                    "name": cache_path.name,
+                    "uri": f"{ONS_CACHE_PREFIX}{cache_path.name}",
+                    "bytes": cache_path.stat().st_size,
+                }
+            )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
         return (
             content,
@@ -910,12 +942,12 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "ons-exports-index":
         items = []
-        for path in _ons_export_files():
+        for export_path in _ons_export_files():
             items.append(
                 {
-                    "name": path.name,
-                    "uri": f"{ONS_EXPORTS_PREFIX}{path.name}",
-                    "bytes": path.stat().st_size,
+                    "name": export_path.name,
+                    "uri": f"{ONS_EXPORTS_PREFIX}{export_path.name}",
+                    "bytes": export_path.stat().st_size,
                 }
             )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
@@ -926,8 +958,14 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "os-cache-index":
         items = []
-        for path in _os_cache_files():
-            items.append({"name": path.name, "uri": f"{OS_CACHE_PREFIX}{path.name}", "bytes": path.stat().st_size})
+        for cache_path in _os_cache_files():
+            items.append(
+                {
+                    "name": cache_path.name,
+                    "uri": f"{OS_CACHE_PREFIX}{cache_path.name}",
+                    "bytes": cache_path.stat().st_size,
+                }
+            )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
         return (
             content,
@@ -936,12 +974,12 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "os-exports-index":
         items = []
-        for path in _os_export_files():
+        for export_path in _os_export_files():
             items.append(
                 {
-                    "name": path.name,
-                    "uri": f"{OS_EXPORTS_PREFIX}{path.name}",
-                    "bytes": path.stat().st_size,
+                    "name": export_path.name,
+                    "uri": f"{OS_EXPORTS_PREFIX}{export_path.name}",
+                    "bytes": export_path.stat().st_size,
                 }
             )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
@@ -952,12 +990,12 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "offline-packs-index":
         items = []
-        for path in _offline_pack_files():
+        for pack_path in _offline_pack_files():
             items.append(
                 {
-                    "name": path.name,
-                    "uri": f"{OFFLINE_PACKS_PREFIX}{path.name}",
-                    "bytes": path.stat().st_size,
+                    "name": pack_path.name,
+                    "uri": f"{OFFLINE_PACKS_PREFIX}{pack_path.name}",
+                    "bytes": pack_path.stat().st_size,
                 }
             )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
@@ -968,12 +1006,12 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "map-scenario-packs-index":
         items = []
-        for path in _map_scenario_pack_files():
+        for scenario_path in _map_scenario_pack_files():
             items.append(
                 {
-                    "name": path.name,
-                    "uri": f"{MAP_SCENARIO_PACKS_PREFIX}{path.name}",
-                    "bytes": path.stat().st_size,
+                    "name": scenario_path.name,
+                    "uri": f"{MAP_SCENARIO_PACKS_PREFIX}{scenario_path.name}",
+                    "bytes": scenario_path.stat().st_size,
                 }
             )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))

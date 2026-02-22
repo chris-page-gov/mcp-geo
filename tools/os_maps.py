@@ -498,6 +498,8 @@ def _maps_render(payload: dict[str, Any]):
 
     return 200, {
         "render": {
+            # Backward-compatible alias used by evaluation/docs expecting a template key.
+            "urlTemplate": image_url,
             "imageUrl": image_url,
             "imageWidth": size,
             "imageHeight": size,

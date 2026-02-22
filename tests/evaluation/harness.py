@@ -190,6 +190,8 @@ class EvaluationHarness:
                 error_messages.append(str(message))
                 if not spec.expect_error:
                     unexpected_errors.append(str(message))
+            elif spec.expect_error:
+                unexpected_errors.append(f"expected error not returned by {spec.name}")
 
         duration_ms = (time.time() - start_time) * 1000
         full_response = json.dumps(raw_responses)
@@ -268,12 +270,13 @@ class EvaluationHarness:
                 expected_values=question.expected.expected_values,
             )
         )
-        had_errors = bool(error_messages)
+        had_errors = bool(unexpected_errors)
         graceful = not unexpected_errors
+        scoring_errors = unexpected_errors if unexpected_errors else error_messages
         dimensions.append(
             self.rubric.score_error_handling(
                 had_errors=had_errors,
-                error_messages=error_messages,
+                error_messages=scoring_errors,
                 graceful_handling=graceful,
             )
         )

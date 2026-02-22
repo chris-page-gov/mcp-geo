@@ -366,6 +366,29 @@ def test_nomis_upstream_error_passthrough(monkeypatch):
     assert resp.status_code == 503
 
 
+def test_nomis_datasets_transient_upstream_error_degrades(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        return 501, {"isError": True, "code": "UPSTREAM_CONNECT_ERROR", "message": "timeout"}
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["degraded"] is True
+    assert body["live"] is False
+    assert body["datasets"] == []
+    assert body["upstreamError"]["code"] == "UPSTREAM_CONNECT_ERROR"
+
+    # Dataset-specific requests should still propagate upstream errors.
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "dataset": "NM_1_1"})
+    assert resp.status_code == 501
+
+
 def test_nomis_error_payloads(monkeypatch):
     from tools import nomis_common
     from server.config import settings

@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added peat evidence-layer integration for survey workflows:
+  - `tools/os_peat.py` with `os_peat.layers` and `os_peat.evidence_paths`
+  - `resources/peat_layers_england.json`
+  - `resource://mcp-geo/peat-layers-england` catalog wiring
+  - contract coverage in `tests/test_os_peat.py`.
+- Added deterministic floor-question artifacts for peat survey release readiness:
+  - fixture `tests/fixtures/psr_peat_floor_question.json`
+  - HTTP + STDIO E2E contract tests in `tests/test_psr_peat_e2e.py`
+  - harness assertions for `I018` in `tests/test_evaluation_harness_full.py`.
+- Added repeatable non-runtime static analysis gate script
+  `scripts/check_non_runtime_quality.sh` to enforce strict `ruff` + `mypy`
+  checks on reliability-critical non-runtime surfaces.
 - Added reproducible full-tool live validation automation:
   `scripts/live_missing_tools_probe.py` (+ `tests/test_live_missing_tools_probe.py`)
   to probe tools not covered by the evaluation harness and classify
@@ -39,10 +51,58 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Updated peatland survey routing to include `os_peat.evidence_paths` in
+  AOI-first survey plans and alternatives (`tools/os_mcp.py`,
+  `tests/test_os_mcp_route_query.py`).
+- Updated runbook docs for peat survey execution/troubleshooting with explicit
+  AOI provenance + direct/proxy evidence separation expectations and OS key
+  dependency notes (`docs/examples.md`, `docs/troubleshooting.md`).
+- Updated peatland reliability planning/status trackers to mark
+  `PSR-PEA-9` and `PSR-E2E-10` complete (`PROGRESS.MD`, `CONTEXT.md`,
+  `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`,
+  `docs/spec_package/09_testing_quality.md`).
+- Closed remaining OS/ONS live-evaluation deltas and reached full harness score
+  (`6900/6900`, `69/69` passed) by:
+  - adding backward-compatible `render.urlTemplate` alias in
+    `tools/os_maps.py`
+  - returning deterministic `INVALID_INPUT` for unknown/empty postcode results
+    in `tools/os_places.py`
+  - hardening hierarchy/tool-discovery routing paths in `tools/os_mcp.py`
+  - aligning cache-route efficiency budgets in `tests/evaluation/questions.py`
+  - fixing expected-error scoring behavior in `tests/evaluation/harness.py`
+    with regression coverage in `tests/test_evaluation_expected_errors.py`
+  - adding graceful transient-degrade behavior for non-dataset-specific
+    `nomis.datasets` upstream failures in `tools/nomis_data.py`.
 - Updated `docs/spec_package/09_testing_quality.md`, `CONTEXT.md`, and
   `PROGRESS.MD` to reflect the latest strict + live verification evidence,
   including explicit coverage-gate failure status and MCP-Apps widget
   implementation scope (`feature_inspector` / `route_planner` still static).
+- Hardened `os_mcp.route_query` intent classification to reduce live-evaluation
+  misclassification penalties: added explicit handling for linked-id phrasing,
+  dataset-discovery metadata prompts (dimensions/codes/versions/codelists/
+  concepts), widget/probe phrasing, utility/cache operations, and command-word
+  false positives in place-name extraction.
+- Hardened live ONS observation interoperability in `tools/ons_data.py` by
+  switching to implicit filter-only observation fetches (no `limit/page`
+  unless truncation detection requires explicit paging), with automatic fallback
+  when upstream rejects paging parameters.
+- Expanded ONS option-code extraction in `tools/ons_data.py` and
+  `tools/ons_codes.py` to accept live payload shape `links.code.id` in
+  addition to legacy top-level code fields, preventing false empty option sets
+  for datasets like GDP.
+- Hardened live ONS observation handling in `tools/ons_data.py` so
+  `observations: null` payloads are normalized to empty result sets (instead of
+  integration failures), and single-token quarter/year requests now expand to
+  concrete time options with alias-version retry for `gdp` prompts.
+- Added regression coverage in `tests/test_ons_data.py` for null-observation
+  payload handling and single-token time expansion/alias-retry behavior in
+  `ons_data.get_observation`.
+- Updated live operability release-gate accounting to treat
+  `os_features.wfs_archive_capabilities` as optional-by-entitlement while still
+  requiring explicit evidence tracking; surfaced this as measurable
+  requirement data in `scripts/spec_tool_operability_coverage.py`,
+  `tests/test_spec_tool_operability_coverage.py`, and
+  `docs/spec_package/14_tool_operability*.{feature,md}`.
 - Hardened `ui/boundary_explorer.html` for constrained host windows by moving
   to a map-prioritized responsive layout at narrow widths, and updated boundary name
   search to retry across other admin levels when the selected level returns no

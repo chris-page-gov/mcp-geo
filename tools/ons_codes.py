@@ -154,6 +154,14 @@ def _extract_codes(opt_doc: dict[str, Any]) -> list[str]:
                 or entry_dict.get("value")
                 or entry_dict.get("code")
             )
+            if not isinstance(val, str):
+                links = entry_dict.get("links")
+                if isinstance(links, dict):
+                    code_ref = links.get("code")
+                    if isinstance(code_ref, dict):
+                        nested_id = code_ref.get("id")
+                        if isinstance(nested_id, str):
+                            val = nested_id
             if isinstance(val, str):
                 codes.append(val)
     return codes

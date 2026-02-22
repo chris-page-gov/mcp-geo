@@ -1,0 +1,27 @@
+{
+  "id": "PSR-E2E-10",
+  "question": "Do a peatland site survey on the forrest of Bowland",
+  "evidenceRequest": {
+    "landscapeId": "aonb-forest-of-bowland",
+    "limit": 25,
+    "resultType": "hits"
+  },
+  "expected": {
+    "intent": "environmental_survey",
+    "recommendedTool": "os_landscape.find",
+    "aoiSource": "os_landscape.get",
+    "requiredEvidenceFields": [
+      "aoi",
+      "evidenceSummary",
+      "confidence",
+      "caveats"
+    ],
+    "requiredDirectLayerIds": [
+      "england-peat-map"
+    ],
+    "requiredProxyLayerIds": [
+      "ngd-hydrology-proxy",
+      "ngd-land-cover-proxy"
+    ]
+  }
+}

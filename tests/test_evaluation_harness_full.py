@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict
+from typing import Any
 
 from server.config import settings
 from tests.evaluation.harness import EvaluationHarness
@@ -7,8 +7,8 @@ from tests.evaluation.questions import ALL_QUESTIONS, Difficulty, Intent
 from tools.registry import list_tools
 
 
-def _install_os_handlers(handlers: Dict[str, Any]) -> None:
-    def places_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+def _install_os_handlers(handlers: dict[str, Any]) -> None:
+    def places_handler(url: str, params: dict[str, Any]):
         return 200, {
             "results": [
                 {
@@ -24,7 +24,7 @@ def _install_os_handlers(handlers: Dict[str, Any]) -> None:
             ]
         }
 
-    def names_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def names_handler(url: str, params: dict[str, Any]):
         return 200, {
             "results": [
                 {
@@ -39,7 +39,7 @@ def _install_os_handlers(handlers: Dict[str, Any]) -> None:
             ]
         }
 
-    def features_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def features_handler(url: str, params: dict[str, Any]):
         return 200, {
             "features": [
                 {
@@ -50,7 +50,7 @@ def _install_os_handlers(handlers: Dict[str, Any]) -> None:
             ]
         }
 
-    def linked_ids_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def linked_ids_handler(url: str, params: dict[str, Any]):
         return 200, {"identifiers": [{"uprn": "1000000001"}]}
 
     handlers["places"] = places_handler
@@ -65,7 +65,7 @@ def _install_ons_stubs(monkeypatch) -> None:
     def fake_ons_get_json(
         url: str,
         params: dict[str, Any] | None = None,
-        use_cache: bool = True,  # noqa: ARG001
+        use_cache: bool = True,
     ):
         if "/observations" in url:
             return 200, {
@@ -93,7 +93,7 @@ def _install_ons_stubs(monkeypatch) -> None:
             return 200, {"items": [{"id": "K02000001"}]}
         return 200, {}
 
-    def fake_search_get_json(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def fake_search_get_json(url: str, params: dict[str, Any]):
         return 200, {
             "items": [
                 {
@@ -119,8 +119,8 @@ def _install_nomis_stubs(monkeypatch) -> None:
 
     def fake_nomis_get_json(
         url: str,
-        params: dict[str, Any] | None = None,  # noqa: ARG001
-        use_cache: bool = True,  # noqa: ARG001
+        params: dict[str, Any] | None = None,
+        use_cache: bool = True,
     ):
         if url.endswith(("def.sdmx.json", "def.json")):
             if "/dataset/" in url:
@@ -139,10 +139,10 @@ def _install_nomis_stubs(monkeypatch) -> None:
 def _install_admin_lookup_stubs(monkeypatch) -> None:
     from tools import admin_lookup
 
-    def fake_arcgis_get_json(url: str, params: Dict[str, Any]):  # noqa: ARG001
+    def fake_arcgis_get_json(url: str, params: dict[str, Any]):
         if params.get("returnExtentOnly") == "true":
             return 200, {"extent": {"xmin": -0.2, "ymin": 51.4, "xmax": -0.1, "ymax": 51.6}}
-        attrs: Dict[str, Any] = {}
+        attrs: dict[str, Any] = {}
         for source in admin_lookup.ADMIN_SOURCES:
             attrs[source.id_field] = f"{source.level}_ID"
             attrs[source.name_field] = f"{source.level} Name"
@@ -190,8 +190,8 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     )
     result = harness.run_evaluation()
 
-    expected_difficulties = {d for d in Difficulty}
-    expected_intents = {i for i in Intent}
+    expected_difficulties = set(Difficulty)
+    expected_intents = set(Intent)
     assert {q.difficulty for q in ALL_QUESTIONS} == expected_difficulties
     assert {q.intent for q in ALL_QUESTIONS} == expected_intents
     assert result.total_questions == len(ALL_QUESTIONS)
@@ -235,6 +235,30 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     assert not missing_tools, f"Missing tool coverage: {missing_tools}"
     assert "tools/search" in called_tools
     assert "resources/read" in called_tools
+
+    peat_result = next(r for r in harness.results if r.question.id == "I018")
+    assert peat_result.error is None
+    route_payload = next(
+        item["response"]
+        for item in peat_result.raw_responses
+        if item.get("tool") == "os_mcp.route_query"
+    )
+    assert route_payload.get("intent") == "environmental_survey"
+    survey_plan = route_payload.get("surveyPlan", [])
+    assert any(step.get("tool") == "os_peat.evidence_paths" for step in survey_plan)
+
+    peat_payload = next(
+        item["response"]
+        for item in peat_result.raw_responses
+        if item.get("tool") == "os_peat.evidence_paths"
+    )
+    aoi = peat_payload.get("aoi", {})
+    assert aoi.get("source") == "os_landscape.get"
+    evidence = peat_payload.get("evidenceSummary", {})
+    assert "england-peat-map" in evidence.get("directLayerIds", [])
+    assert "ngd-hydrology-proxy" in evidence.get("proxyLayerIds", [])
+    assert peat_payload.get("confidence", {}).get("level") in {"medium", "high"}
+    assert peat_payload.get("caveats")
 
     audit_files = list((tmp_path / "audit").glob("*.txt"))
     assert len(audit_files) == len(ALL_QUESTIONS)

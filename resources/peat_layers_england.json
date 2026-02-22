@@ -1,0 +1,100 @@
+{
+  "version": "2026-02-22",
+  "scope": "england",
+  "source": {
+    "name": "Peat Evidence Layer Registry",
+    "provider": "MCP Geo curated multi-source registry",
+    "notes": [
+      "Direct peat datasets are catalogued as resource-backed evidence references.",
+      "Proxy layers provide contextual indicators and are not definitive peat condition measurements."
+    ]
+  },
+  "layers": [
+    {
+      "id": "england-peat-map",
+      "title": "England Peat Map (extent and depth)",
+      "kind": "direct",
+      "dimension": "extent_depth",
+      "availability": "resource_only",
+      "provider": "Defra / data.gov.uk",
+      "datasetUrl": "https://www.data.gov.uk/dataset/5a2047b0-b1a4-4f5e-b0aa-1dae85c4c2eb/england-peat-map",
+      "resourceUri": "resource://mcp-geo/peat-layers-england",
+      "caveats": [
+        "Resource-backed metadata only in this release; AOI clipping is external to MCP Geo.",
+        "Use with local expert interpretation for site-level survey decisions."
+      ],
+      "provenance": {
+        "licence": "Open Government Licence v3.0",
+        "lastReviewed": "2026-02-22"
+      }
+    },
+    {
+      "id": "peat-condition-register",
+      "title": "Peat Condition Register (catalogued source)",
+      "kind": "direct",
+      "dimension": "condition",
+      "availability": "resource_only",
+      "provider": "Natural England",
+      "datasetUrl": "https://www.gov.uk/government/organisations/natural-england",
+      "resourceUri": "resource://mcp-geo/peat-layers-england",
+      "caveats": [
+        "Condition data availability and update cadence vary by programme and geography.",
+        "Treat this as a discovery pointer; validate availability before operational use."
+      ],
+      "provenance": {
+        "licence": "Open Government Licence v3.0",
+        "lastReviewed": "2026-02-22"
+      }
+    },
+    {
+      "id": "ngd-hydrology-proxy",
+      "title": "Hydrology Context Proxy (NGD water features)",
+      "kind": "proxy",
+      "dimension": "hydrology_proxy",
+      "availability": "live_query",
+      "provider": "Ordnance Survey NGD",
+      "queryTemplate": {
+        "tool": "os_features.query",
+        "parameters": {
+          "collection": "wtr-fts-water-3",
+          "resultType": "hits",
+          "includeGeometry": false,
+          "thinMode": true,
+          "delivery": "auto"
+        }
+      },
+      "caveats": [
+        "Hydrology context is a proxy and does not directly indicate peat depth or condition."
+      ],
+      "provenance": {
+        "licence": "OS API terms",
+        "lastReviewed": "2026-02-22"
+      }
+    },
+    {
+      "id": "ngd-land-cover-proxy",
+      "title": "Land Cover Context Proxy (NGD land features)",
+      "kind": "proxy",
+      "dimension": "land_cover_proxy",
+      "availability": "live_query",
+      "provider": "Ordnance Survey NGD",
+      "queryTemplate": {
+        "tool": "os_features.query",
+        "parameters": {
+          "collection": "lnd-fts-land-3",
+          "resultType": "hits",
+          "includeGeometry": false,
+          "thinMode": true,
+          "delivery": "auto"
+        }
+      },
+      "caveats": [
+        "Land cover context is a proxy and must be combined with direct peat evidence sources."
+      ],
+      "provenance": {
+        "licence": "OS API terms",
+        "lastReviewed": "2026-02-22"
+      }
+    }
+  ]
+}

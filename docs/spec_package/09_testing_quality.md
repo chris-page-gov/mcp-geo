@@ -22,8 +22,13 @@
 - Combined live tool operability:
   - Report: `data/spec_tool_operability_coverage_2026-02-21.json`
   - Functional tools: `75/76` (`98.68%`)
+  - Release-gated functional tools (excluding optional entitlement):
+    `75/75` (`100.0%`)
   - Blocked by auth: `1/76` (`1.32%`)
   - Unresolved tools: `0`
+  - Optional-by-entitlement:
+    `os_features.wfs_archive_capabilities` (tracked/evidenced but excluded
+    from release-gated functional denominator)
 
 ## Quality standards
 
@@ -38,6 +43,26 @@
 - `mypy server tools scripts` currently fails (`175` errors).
 - These are release risks because there is no CI gate yet to keep static
   quality debt from regressing.
+
+## Non-runtime strict gate status (2026-02-22)
+
+- Added repeatable non-runtime static gate script:
+  `scripts/check_non_runtime_quality.sh`.
+- Current strict gate result: **pass**.
+  - Ruff scope:
+    `server/mcp/tools.py`,
+    `tools/os_mcp.py`,
+    `tools/os_peat.py`,
+    `tests/test_os_peat.py`,
+    `tests/test_psr_peat_e2e.py`,
+    `tests/test_evaluation_harness_full.py`,
+    `tests/test_os_mcp_route_query.py`
+  - Mypy scope:
+    same reliability surfaces plus
+    `server/mcp/resource_catalog.py`
+    (`--follow-imports=skip` for deterministic non-runtime checking).
+- Broad repo debt remains tracked separately (`ruff check .`,
+  `mypy server tools scripts`) and should still be reduced in staged follow-up.
 
 ## Executable specification linkage
 

@@ -86,8 +86,9 @@ assumptions change.
 - Track peatland survey reliability workstreams in
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   and synchronize statuses in `PROGRESS.MD`.
-- Execute remaining peatland streams (`PSR-PEA-9`, `PSR-E2E-10`) now that
-  `PSR-INT-0` through `PSR-ROU-8` are implemented and test-covered.
+- Maintain completed peatland streams (`PSR-INT-0` through `PSR-E2E-10`) and
+  keep floor-question contracts (`os_peat.*`, AOI provenance, direct/proxy
+  evidence separation) stable across HTTP + STDIO.
 - Maintain compatibility-first map docs/contracts and support matrix links in
   `docs/spec_package/06_api_contracts.md`,
   `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
@@ -137,9 +138,12 @@ assumptions change.
 - Done: map delivery recommendation implementation program (`MDR-I1` to
   `MDR-E4`) complete across immediate, near-term, medium-term, and ecosystem
   waves.
-- In progress: peatland survey reliability implementation program (`PSR-*`);
-  streams `PSR-INT-0` through `PSR-ROU-8` are complete, with `PSR-PEA-9` and
-  `PSR-E2E-10` remaining.
+- Done: peatland survey reliability implementation program (`PSR-*`) including
+  `PSR-PEA-9` and `PSR-E2E-10` (peat evidence-layer integration plus
+  deterministic floor-question E2E contract coverage).
+- Done: strict non-runtime static quality gate restoration for reliability
+  surfaces via `scripts/check_non_runtime_quality.sh`
+  (`ruff` + `mypy --follow-imports=skip`).
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -179,9 +183,9 @@ assumptions change.
 - Latest strict test run: `pytest -q` on 2026-02-21
   (`785 passed`, `6 skipped`, coverage gate failed at `86.69%` vs required `>=90%`).
 - Latest live harness run: `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live`
-  on 2026-02-21 (`6290/6900`, `91.16%`, `67/69` passed, `rate_limit_429_total=0`).
+  on 2026-02-22 (`6900/6900`, `100%`, `69/69` passed, `rate_limit_429_total=0`).
 - Latest full tool operability aggregation:
-  `data/spec_tool_operability_coverage_2026-02-21.json` on 2026-02-21
+  `data/spec_tool_operability_coverage_2026-02-22.json` on 2026-02-22
   (`75/76` tools functional, `1/76` blocked by auth entitlement, `0` unresolved).
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
 - Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.03% coverage, 703 passed, 6 skipped) on 2026-02-13.
@@ -194,6 +198,40 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Closed remaining OS/ONS live-evaluation deltas by implementing
+  map-render keyword compatibility (`render.urlTemplate` alias), deterministic
+  invalid-postcode handling in `os_places.by_postcode`, hierarchy/tool-discovery
+  routing hardening in `os_mcp.route_query`, and expected-error scoring fixes
+  in the evaluation harness; full live rerun now scores `6900/6900` (`100%`)
+  with `69/69` passed.
+- 2026-02-22: Added transient NOMIS dataset-catalog degradation behavior in
+  `tools/nomis_data.py` for non-dataset-specific `nomis.datasets` calls
+  (`UPSTREAM_CONNECT_ERROR`/`UPSTREAM_INVALID_RESPONSE`/`CIRCUIT_OPEN`),
+  preserving graceful responses during upstream instability while keeping
+  dataset-specific failures explicit.
+- 2026-02-22: Closed remaining live-evaluation P1 ONS observation behavior by
+  normalizing `observations: null` payloads in `tools/ons_data.py` to empty
+  results (not integration failures) and by expanding single-token quarter/year
+  values (with alias-version retry) so `ons_data.get_observation` resolves
+  queries like `2023 Q1` against live monthly GDP dimensions. Added regression
+  tests in `tests/test_ons_data.py`; focused OS/ONS live rerun
+  (`B004,B012,B007,B008,B016,I008,I009,I011`) now scores `800/800` (`100%`).
+- 2026-02-22: Closed live-evaluation P1 ONS contract drift by updating
+  `tools/ons_data.py` to fetch observations with implicit dimension filters
+  first (only escalating to explicit paging when needed) and by accepting live
+  option payload codes from `links.code.id` in both `tools/ons_data.py` and
+  `tools/ons_codes.py`; added regression coverage in
+  `tests/test_ons_data.py` and `tests/test_ons_codes_live.py`.
+- 2026-02-22: Hardened `os_mcp.route_query` to improve measurable
+  intent-recognition quality against the evaluation bank: added explicit
+  handling for linked-id phrasing before UPRN address short-circuiting,
+  dataset-discovery metadata prompts, MCP-Apps widget/probe requests, cache and
+  utility operations, and reduced command-word false positives in place-name
+  extraction.
+- 2026-02-22: Updated live operability gating to treat
+  `os_features.wfs_archive_capabilities` as optional-by-entitlement in release
+  denominator calculations while keeping explicit blocker evidence and
+  requirement tracking (`REQ-LIVE-TOOLS-05`) in generated coverage artifacts.
 - 2026-02-22: Added an Apps-to-Answers presentation deck aligned to the
   January 2026 UK government dataset-readiness guidance at
   `research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`

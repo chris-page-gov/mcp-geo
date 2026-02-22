@@ -94,6 +94,12 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
             "local_custodian_code": local_custodian_code,
             "localCustodianName": cust_name,
         })
+    if not uprns:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "Unknown or invalid UK postcode",
+        }
     return 200, {
         "uprns": uprns,
         "provenance": {

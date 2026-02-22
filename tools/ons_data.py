@@ -137,6 +137,43 @@ def _expand_range_end_token(start_text: str, end_text: str) -> str:
     return end_text
 
 
+def _resolve_time_values(
+    dataset: str,
+    edition: str,
+    version: str,
+    *,
+    start_text: str,
+    end_text: str | None = None,
+) -> tuple[list[str] | None, dict[str, Any] | None]:
+    """Resolve one token/range token into concrete ONS time options when possible."""
+    range_start = start_text.strip()
+    range_end = range_start if end_text is None else _expand_range_end_token(range_start, end_text)
+    start_val = _parse_range_bound(range_start, is_end=False)
+    end_val = _parse_range_bound(range_end, is_end=True)
+    if start_val is None or end_val is None:
+        return None, None
+    if start_val > end_val:
+        start_val, end_val = end_val, start_val
+    options, err = _resolve_time_options(dataset, edition, version)
+    if err is not None:
+        return None, err
+    if not options:
+        return [], None
+    option_values: list[tuple[str, int]] = []
+    for opt in options:
+        parsed = _parse_time_token(opt)
+        if parsed is not None:
+            option_values.append((opt, parsed))
+    in_range = [opt for opt, parsed in option_values if start_val <= parsed <= end_val]
+    if len(in_range) > _MAX_TIME_RANGE_OPTIONS:
+        return None, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": f"timeRange expands to {len(in_range)} values; narrow the range.",
+        }
+    return in_range, None
+
+
 def _is_stale_version_error(err: dict[str, Any]) -> bool:
     message = str(err.get("message", "")).lower()
     return (
@@ -201,6 +238,14 @@ def _extract_codes_from_entries(raw_entries: list[dict[str, Any]]) -> list[str]:
     options: list[str] = []
     for entry in raw_entries:
         val: Any = entry.get("option") or entry.get("id") or entry.get("value") or entry.get("code")
+        if not isinstance(val, str):
+            links = entry.get("links")
+            if isinstance(links, dict):
+                code_ref = links.get("code")
+                if isinstance(code_ref, dict):
+                    nested_id = code_ref.get("id")
+                    if isinstance(nested_id, str):
+                        val = nested_id
         if isinstance(val, str):
             options.append(val)
     return options
@@ -369,26 +414,52 @@ def _fetch_observations_paged(
     url: str,
     filters: dict[str, Any],
 ) -> ToolResult:
+    base_filters = dict(filters)
     params = ons_client.build_paged_params(
         _OBSERVATIONS_FETCH_PAGE_LIMIT,
         1,
-        dict(filters),
+        base_filters,
     )
     current_url = url
-    current_params: dict[str, Any] | None = params
+    current_params: dict[str, Any] | None = base_filters
     page = int(params.get("page", 1))
     limit = int(params.get("limit", _OBSERVATIONS_FETCH_PAGE_LIMIT))
+    explicit_paging = False
+    retried_without_paging = False
+    paging_unsupported = False
     observations: list[dict[str, Any]] = []
     dimensions: dict[str, Any] | None = None
 
     while True:
         status, data = ons_client.get_json(current_url, params=current_params)
         if status != 200:
+            uses_paging = isinstance(current_params, dict) and any(
+                key in current_params for key in ("limit", "page")
+            )
+            message = str(data.get("message", "")).lower() if isinstance(data, dict) else ""
+            invalid_paging = (
+                "incorrect selection of query parameters" in message
+                and "limit" in message
+                and "page" in message
+            )
+            if uses_paging and invalid_paging and not retried_without_paging:
+                retried_without_paging = True
+                paging_unsupported = True
+                explicit_paging = False
+                current_url = url
+                current_params = dict(base_filters)
+                page = 1
+                limit = _OBSERVATIONS_FETCH_PAGE_LIMIT
+                observations = []
+                dimensions = None
+                continue
             return status, data
         if dimensions is None and isinstance(data.get("dimensions"), dict):
             dimensions = cast(dict[str, Any], data.get("dimensions"))
 
         batch_raw = data.get("observations", [])
+        if batch_raw is None:
+            batch_raw = []
         if not isinstance(batch_raw, list):
             return 500, {
                 "isError": True,
@@ -415,16 +486,31 @@ def _fetch_observations_paged(
             continue
 
         total = data.get("total") or data.get("count")
-        if isinstance(total, int) and page * limit >= total:
-            break
-        if len(batch_raw) < limit:
-            break
+        if explicit_paging:
+            if isinstance(total, int) and page * limit >= total:
+                break
+            if len(batch_raw) < limit:
+                break
+            page += 1
+            current_url = url
+            current_params = ons_client.build_paged_params(limit, page, base_filters)
+            continue
 
-        page += 1
-        current_url = url
-        current_params = dict(params)
-        current_params["page"] = page
-        current_params["limit"] = limit
+        # Start with implicit ONS filtering (dimension params only). If that looks
+        # truncated without an advertised next link, retry with explicit paging.
+        if (
+            not paging_unsupported
+            and len(batch_raw) >= limit
+            and (not isinstance(total, int) or len(observations) < total)
+        ):
+            explicit_paging = True
+            current_url = url
+            page = 1
+            current_params = ons_client.build_paged_params(limit, page, base_filters)
+            observations = []
+            dimensions = None
+            continue
+        break
 
     return 200, {"observations": observations, "dimensions": dimensions}
 
@@ -612,78 +698,72 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         resolved_time_range = time_range.strip()
         parts = [part.strip() for part in resolved_time_range.split("-", 1)]
         if len(parts) == 2 and parts[0] and parts[1]:
-            end_token = _expand_range_end_token(parts[0], parts[1])
-            start_val = _parse_range_bound(parts[0], is_end=False)
-            end_val = _parse_range_bound(end_token, is_end=True)
-            if start_val is not None and end_val is not None:
-                if start_val > end_val:
-                    start_val, end_val = end_val, start_val
-                options, err = _resolve_time_options(dataset, edition, version)
-                if err is not None:
-                    return 400, err
-                if not options:
-                    if alias_applied and not alias_retry_used:
-                        resolved = _resolve_latest_version(dataset)
-                        if not isinstance(resolved[0], int):
-                            latest_edition, latest_version = resolved
-                            if (
-                                isinstance(latest_edition, str)
-                                and latest_edition
-                                and isinstance(latest_version, str)
-                                and latest_version
-                                and (latest_edition != edition or latest_version != version)
-                            ):
-                                retry_payload = dict(payload)
-                                retry_payload["dataset"] = dataset
-                                retry_payload["edition"] = latest_edition
-                                retry_payload["version"] = latest_version
-                                retry_payload["_aliasRetried"] = True
-                                return _query(retry_payload)
-                    return 404, {
-                        "isError": True,
-                        "code": "NOT_FOUND",
-                        "message": "No time options found.",
-                    }
-                option_values: list[tuple[str, int]] = []
-                for opt in options:
-                    parsed = _parse_time_token(opt)
-                    if parsed is not None:
-                        option_values.append((opt, parsed))
-                in_range = [opt for opt, parsed in option_values if start_val <= parsed <= end_val]
-                if not in_range:
-                    if alias_applied and not alias_retry_used:
-                        resolved = _resolve_latest_version(dataset)
-                        if not isinstance(resolved[0], int):
-                            latest_edition, latest_version = resolved
-                            if (
-                                isinstance(latest_edition, str)
-                                and latest_edition
-                                and isinstance(latest_version, str)
-                                and latest_version
-                                and (latest_edition != edition or latest_version != version)
-                            ):
-                                retry_payload = dict(payload)
-                                retry_payload["dataset"] = dataset
-                                retry_payload["edition"] = latest_edition
-                                retry_payload["version"] = latest_version
-                                retry_payload["_aliasRetried"] = True
-                                return _query(retry_payload)
-                    return 404, {
-                        "isError": True,
-                        "code": "NOT_FOUND",
-                        "message": "No time options in range.",
-                    }
-                if len(in_range) > _MAX_TIME_RANGE_OPTIONS:
-                    return 400, {
-                        "isError": True,
-                        "code": "INVALID_INPUT",
-                        "message": f"timeRange expands to {len(in_range)} values; narrow the range.",
-                    }
-                explicit_time_values = in_range
-            else:
+            in_range, err = _resolve_time_values(
+                dataset,
+                edition,
+                version,
+                start_text=parts[0],
+                end_text=parts[1],
+            )
+            if err is not None:
+                return 400, err
+            if in_range is None:
                 explicit_time_values = [resolved_time_range]
+            elif not in_range:
+                if alias_applied and not alias_retry_used:
+                    resolved = _resolve_latest_version(dataset)
+                    if not isinstance(resolved[0], int):
+                        latest_edition, latest_version = resolved
+                        if (
+                            isinstance(latest_edition, str)
+                            and latest_edition
+                            and isinstance(latest_version, str)
+                            and latest_version
+                            and (latest_edition != edition or latest_version != version)
+                        ):
+                            retry_payload = dict(payload)
+                            retry_payload["dataset"] = dataset
+                            retry_payload["edition"] = latest_edition
+                            retry_payload["version"] = latest_version
+                            retry_payload["_aliasRetried"] = True
+                            return _query(retry_payload)
+                return 404, {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "No time options in range.",
+                }
+            else:
+                explicit_time_values = in_range
         else:
-            explicit_time_values = [resolved_time_range]
+            expanded_values, err = _resolve_time_values(
+                dataset,
+                edition,
+                version,
+                start_text=resolved_time_range,
+            )
+            if err is not None:
+                return 400, err
+            if expanded_values:
+                explicit_time_values = expanded_values
+            else:
+                if alias_applied and not alias_retry_used:
+                    resolved = _resolve_latest_version(dataset)
+                    if not isinstance(resolved[0], int):
+                        latest_edition, latest_version = resolved
+                        if (
+                            isinstance(latest_edition, str)
+                            and latest_edition
+                            and isinstance(latest_version, str)
+                            and latest_version
+                            and (latest_edition != edition or latest_version != version)
+                        ):
+                            retry_payload = dict(payload)
+                            retry_payload["dataset"] = dataset
+                            retry_payload["edition"] = latest_edition
+                            retry_payload["version"] = latest_version
+                            retry_payload["_aliasRetried"] = True
+                            return _query(retry_payload)
+                explicit_time_values = [resolved_time_range]
 
     for entry in dim_entries:
         dim_key = _key(entry)
