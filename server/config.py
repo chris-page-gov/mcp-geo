@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     NOMIS_SIGNATURE: str = ""
     ONS_DATASET_CACHE_ENABLED: bool = True
     ONS_DATASET_CACHE_DIR: str = "data/cache/ons"
+    ONS_GEO_CACHE_DIR: str = "data/cache/ons_geo"
+    ONS_GEO_CACHE_DB: str = "ons_geo_cache.sqlite"
+    ONS_GEO_CACHE_INDEX_PATH: str = "resources/ons_geo_cache_index.json"
+    ONS_GEO_PRIMARY_DERIVATION: str = "exact"
     OS_EXPORT_INLINE_MAX_BYTES: int = 200_000
     OS_DATA_CACHE_DIR: str = "data/cache/os"
     OS_DATA_CACHE_TTL: float = 3600.0

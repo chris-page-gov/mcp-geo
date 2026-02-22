@@ -21,6 +21,8 @@ LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
 PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
 PEAT_LAYERS_PATH = ROOT / "resources" / "peat_layers_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
+ONS_GEO_SOURCES_PATH = ROOT / "resources" / "ons_geo_sources.json"
+ONS_GEO_CACHE_INDEX_PATH = ROOT / "resources" / "ons_geo_cache_index.json"
 BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
 CODE_LIST_PACK_SOURCES_PATH = ROOT / "resources" / "code_list_pack_sources.json"
 BOUNDARY_PACKS_INDEX_PATH = ROOT / "resources" / "boundary_packs_index.json"
@@ -274,6 +276,26 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": NOMIS_WORKFLOWS_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "guide", "domain": "nomis"},
+    },
+    {
+        "slug": "ons-geo-sources",
+        "name": "data_ons_geo_sources",
+        "title": "ONS Geography Source Manifest",
+        "description": (
+            "Manifest of exact and best-fit ONS geography products (ONSPD/ONSUD and NSPL/NSUL)."
+        ),
+        "path": ONS_GEO_SOURCES_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "manifest", "domain": "ons"},
+    },
+    {
+        "slug": "ons-geo-cache-index",
+        "name": "data_ons_geo_cache_index",
+        "title": "ONS Geography Cache Index",
+        "description": "Index/status for local ONS geography cache refresh runs.",
+        "path": ONS_GEO_CACHE_INDEX_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "ons"},
     },
     {
         "slug": "boundary-pack-sources",
@@ -838,6 +860,20 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "nomis-workflows"), None
         return (*_load_json_file(NOMIS_WORKFLOWS_PATH), None)
+    if slug == "ons-geo-sources":
+        if not ONS_GEO_SOURCES_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "ONS geo sources manifest not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "ons-geo-sources"), None
+        return (*_load_json_file(ONS_GEO_SOURCES_PATH), None)
+    if slug == "ons-geo-cache-index":
+        if not ONS_GEO_CACHE_INDEX_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "ONS geo cache index not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "ons-geo-cache-index"), None
+        return (*_load_json_file(ONS_GEO_CACHE_INDEX_PATH), None)
     if slug == "boundary-pack-sources":
         if not BOUNDARY_PACK_SOURCES_PATH.exists():
             content = json.dumps(

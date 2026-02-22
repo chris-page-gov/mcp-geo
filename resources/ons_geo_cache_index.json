@@ -1,0 +1,10 @@
+{
+  "version": "2026-02-22",
+  "generatedAt": null,
+  "cache": {
+    "cacheDir": "data/cache/ons_geo",
+    "dbPath": "data/cache/ons_geo/ons_geo_cache.sqlite"
+  },
+  "products": []
+}
+

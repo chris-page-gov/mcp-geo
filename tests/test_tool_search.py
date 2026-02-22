@@ -34,3 +34,9 @@ def test_search_tools_invalid_regex():
 def test_search_tools_empty_query():
     results = search_tools("  ", mode="token")
     assert results == []
+
+
+def test_search_tools_finds_ons_geo_keywords():
+    results = search_tools("onspd postcode geography", mode="token")
+    names = {item.get("name") for item in results}
+    assert "ons_geo.by_postcode" in names
