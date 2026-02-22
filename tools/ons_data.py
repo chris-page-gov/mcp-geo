@@ -409,6 +409,7 @@ def _fetch_observations_paged(
                         next_url = urljoin(current_url, href)
                     break
         if next_url:
+            page += 1
             current_url = next_url
             current_params = None
             continue

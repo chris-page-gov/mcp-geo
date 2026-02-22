@@ -80,6 +80,45 @@ def test_ons_query_observations_include_paged_params_non_range(monkeypatch):
     assert first.get("time") == "*"
 
 
+def test_ons_query_links_next_exact_total_avoids_duplicate_fetch(monkeypatch):
+    from tools import ons_data
+
+    calls: list[tuple[str, Dict[str, Any] | None]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        captured = dict(params) if isinstance(params, dict) else None
+        calls.append((url, captured))
+        if len(calls) == 1:
+            assert captured == {"limit": 2, "page": 1, "time": "*"}
+            return 200, {
+                "observations": [{"id": "page-1-a"}, {"id": "page-1-b"}],
+                "links": [{"rel": "next", "href": "?page=2&limit=2"}],
+                "total": 4,
+            }
+        if len(calls) == 2:
+            assert captured is None
+            assert "page=2" in url
+            return 200, {"observations": [{"id": "page-2-a"}, {"id": "page-2-b"}], "total": 4}
+        raise AssertionError("Unexpected extra observations fetch")
+
+    monkeypatch.setattr(ons_data, "_OBSERVATIONS_FETCH_PAGE_LIMIT", 2)
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+
+    status, body = ons_data._fetch_observations_paged(
+        url="https://api.beta.ons.gov.uk/v1/datasets/gdp/editions/time-series/versions/1/observations",
+        filters={"time": "*"},
+    )
+
+    assert status == 200
+    assert [row["id"] for row in body["observations"]] == [
+        "page-1-a",
+        "page-1-b",
+        "page-2-a",
+        "page-2-b",
+    ]
+    assert len(calls) == 2
+
+
 def test_ons_query_time_range_expands(monkeypatch):
     from tools import ons_common
 
