@@ -94,6 +94,7 @@ STARTER_TOOLS: tuple[str, ...] = (
     "os_apps.render_geography_selector",
     "os_mcp.descriptor",
     "os_mcp.route_query",
+    "os_mcp.select_toolsets",
     "os_mcp.stats_routing",
     "os_names.find",
     "os_places.by_postcode",

@@ -1,4 +1,4 @@
-from server.mcp.tool_search import get_tool_search_config, search_tools
+from server.mcp.tool_search import STARTER_TOOLS, get_tool_search_config, search_tools
 
 
 def test_get_tool_search_config_invalid_category():
@@ -40,3 +40,7 @@ def test_search_tools_finds_ons_geo_keywords():
     results = search_tools("onspd postcode geography", mode="token")
     names = {item.get("name") for item in results}
     assert "ons_geo.by_postcode" in names
+
+
+def test_starter_toolset_includes_select_toolsets():
+    assert "os_mcp.select_toolsets" in STARTER_TOOLS
