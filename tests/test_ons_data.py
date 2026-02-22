@@ -74,9 +74,7 @@ def test_ons_query_observations_include_paged_params_non_range(monkeypatch):
     assert resp.status_code == 200
     assert observation_params
     first = observation_params[0]
-    assert "limit" in first and "page" in first
-    assert first["limit"] == 500
-    assert first["page"] == 1
+    assert "limit" not in first and "page" not in first
     assert first.get("time") == "*"
 
 
@@ -89,7 +87,7 @@ def test_ons_query_links_next_exact_total_avoids_duplicate_fetch(monkeypatch):
         captured = dict(params) if isinstance(params, dict) else None
         calls.append((url, captured))
         if len(calls) == 1:
-            assert captured == {"limit": 2, "page": 1, "time": "*"}
+            assert captured == {"time": "*"}
             return 200, {
                 "observations": [{"id": "page-1-a"}, {"id": "page-1-b"}],
                 "links": [{"rel": "next", "href": "?page=2&limit=2"}],
@@ -117,6 +115,113 @@ def test_ons_query_links_next_exact_total_avoids_duplicate_fetch(monkeypatch):
         "page-2-b",
     ]
     assert len(calls) == 2
+
+
+def test_ons_query_retries_observations_without_limit_page(monkeypatch):
+    from tools import ons_data
+
+    calls: list[Dict[str, Any] | None] = []
+    implicit_pages: list[int] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True):  # noqa: ARG001
+        if "observations" not in url:
+            return 500, {"isError": True, "code": "UNEXPECTED", "message": "unexpected URL"}
+        captured = dict(params) if isinstance(params, dict) else None
+        calls.append(captured)
+        if isinstance(captured, dict) and "limit" not in captured and "page" not in captured:
+            implicit_pages.append(len(implicit_pages) + 1)
+            if len(implicit_pages) == 1:
+                return 200, {"observations": [{"id": "implicit"}], "total": 2}
+            return 200, {"observations": [{"id": "fallback"}], "total": 1}
+        if isinstance(captured, dict) and ("limit" in captured or "page" in captured):
+            return 400, {
+                "isError": True,
+                "code": "ONS_API_ERROR",
+                "message": "incorrect selection of query parameters: [limit page], these dimensions do not exist for this version of the dataset",  # noqa: E501
+            }
+        return 500, {"isError": True, "code": "UNEXPECTED", "message": "unexpected params"}
+
+    monkeypatch.setattr(ons_data, "_OBSERVATIONS_FETCH_PAGE_LIMIT", 1)
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+
+    status, body = ons_data._fetch_observations_paged(
+        url="https://api.beta.ons.gov.uk/v1/datasets/gdp/editions/time-series/versions/1/observations",
+        filters={"time": "Jan-24"},
+    )
+
+    assert status == 200
+    assert body["observations"] == [{"id": "fallback"}]
+    assert len(calls) == 3
+    assert calls[0] == {"time": "Jan-24"}
+    assert calls[1] == {"limit": 1, "page": 1, "time": "Jan-24"}
+    assert calls[2] == {"time": "Jan-24"}
+
+
+def test_ons_query_time_range_handles_links_code_ids_and_observation_retry(monkeypatch):
+    from tools import ons_common
+
+    observation_params: list[Dict[str, Any]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        if "/versions/1" in url and "dimensions/" not in url and "observations" not in url:
+            return 200, {
+                "dimensions": [
+                    {"name": "time", "id": "mmm-yy"},
+                    {"name": "geography", "id": "uk-only"},
+                    {
+                        "name": "unofficialstandardindustrialclassification",
+                        "id": "sic-unofficial",
+                    },
+                ]
+            }
+        if "dimensions/time/options" in url:
+            return 200, {
+                "items": [
+                    {"label": "Jan-24", "links": {"code": {"id": "Jan-24"}}},
+                    {"label": "Feb-24", "links": {"code": {"id": "Feb-24"}}},
+                    {"label": "Mar-24", "links": {"code": {"id": "Mar-24"}}},
+                    {"label": "Apr-24", "links": {"code": {"id": "Apr-24"}}},
+                ],
+                "links": [],
+            }
+        if "observations" in url:
+            if isinstance(params, dict):
+                if "limit" in params or "page" in params:
+                    return 400, {
+                        "isError": True,
+                        "code": "ONS_API_ERROR",
+                        "message": "incorrect selection of query parameters: [limit page], these dimensions do not exist for this version of the dataset",  # noqa: E501
+                    }
+                observation_params.append(dict(params))
+            return 200, {"observations": [{"time": params.get("time"), "value": 1}], "total": 1}
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "geography": "K02000001",
+            "measure": "GDPV",
+            "timeRange": "2024 Q1-2024 Q2",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 4
+    assert body["timeValues"] == ["Jan-24", "Feb-24", "Mar-24", "Apr-24"]
+    assert {entry.get("time") for entry in observation_params} == {
+        "Jan-24",
+        "Feb-24",
+        "Mar-24",
+        "Apr-24",
+    }
+    for entry in observation_params:
+        assert "limit" not in entry
+        assert "page" not in entry
 
 
 def test_ons_query_time_range_expands(monkeypatch):
@@ -177,8 +282,8 @@ def test_ons_query_time_range_observations_include_paged_params(monkeypatch):
     assert observation_params
     assert {entry.get("time") for entry in observation_params} == {"2024 Q1", "2024 Q2"}
     for entry in observation_params:
-        assert entry.get("limit") == 500
-        assert entry.get("page") == 1
+        assert "limit" not in entry
+        assert "page" not in entry
 
 
 def test_ons_query_time_range_expands_with_shorthand_end(monkeypatch):

@@ -201,6 +201,14 @@ def _extract_codes_from_entries(raw_entries: list[dict[str, Any]]) -> list[str]:
     options: list[str] = []
     for entry in raw_entries:
         val: Any = entry.get("option") or entry.get("id") or entry.get("value") or entry.get("code")
+        if not isinstance(val, str):
+            links = entry.get("links")
+            if isinstance(links, dict):
+                code_ref = links.get("code")
+                if isinstance(code_ref, dict):
+                    nested_id = code_ref.get("id")
+                    if isinstance(nested_id, str):
+                        val = nested_id
         if isinstance(val, str):
             options.append(val)
     return options
@@ -369,21 +377,43 @@ def _fetch_observations_paged(
     url: str,
     filters: dict[str, Any],
 ) -> ToolResult:
+    base_filters = dict(filters)
     params = ons_client.build_paged_params(
         _OBSERVATIONS_FETCH_PAGE_LIMIT,
         1,
-        dict(filters),
+        base_filters,
     )
     current_url = url
-    current_params: dict[str, Any] | None = params
+    current_params: dict[str, Any] | None = base_filters
     page = int(params.get("page", 1))
     limit = int(params.get("limit", _OBSERVATIONS_FETCH_PAGE_LIMIT))
+    explicit_paging = False
+    retried_without_paging = False
     observations: list[dict[str, Any]] = []
     dimensions: dict[str, Any] | None = None
 
     while True:
         status, data = ons_client.get_json(current_url, params=current_params)
         if status != 200:
+            uses_paging = isinstance(current_params, dict) and any(
+                key in current_params for key in ("limit", "page")
+            )
+            message = str(data.get("message", "")).lower() if isinstance(data, dict) else ""
+            invalid_paging = (
+                "incorrect selection of query parameters" in message
+                and "limit" in message
+                and "page" in message
+            )
+            if uses_paging and invalid_paging and not retried_without_paging:
+                retried_without_paging = True
+                explicit_paging = False
+                current_url = url
+                current_params = dict(base_filters)
+                page = 1
+                limit = _OBSERVATIONS_FETCH_PAGE_LIMIT
+                observations = []
+                dimensions = None
+                continue
             return status, data
         if dimensions is None and isinstance(data.get("dimensions"), dict):
             dimensions = cast(dict[str, Any], data.get("dimensions"))
@@ -415,16 +445,27 @@ def _fetch_observations_paged(
             continue
 
         total = data.get("total") or data.get("count")
-        if isinstance(total, int) and page * limit >= total:
-            break
-        if len(batch_raw) < limit:
-            break
+        if explicit_paging:
+            if isinstance(total, int) and page * limit >= total:
+                break
+            if len(batch_raw) < limit:
+                break
+            page += 1
+            current_url = url
+            current_params = ons_client.build_paged_params(limit, page, base_filters)
+            continue
 
-        page += 1
-        current_url = url
-        current_params = dict(params)
-        current_params["page"] = page
-        current_params["limit"] = limit
+        # Start with implicit ONS filtering (dimension params only). If that looks
+        # truncated without an advertised next link, retry with explicit paging.
+        if len(batch_raw) >= limit and (not isinstance(total, int) or len(observations) < total):
+            explicit_paging = True
+            current_url = url
+            page = 1
+            current_params = ons_client.build_paged_params(limit, page, base_filters)
+            observations = []
+            dimensions = None
+            continue
+        break
 
     return 200, {"observations": observations, "dimensions": dimensions}
 
