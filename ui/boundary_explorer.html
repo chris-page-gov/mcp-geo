@@ -99,9 +99,24 @@
 
       .grid {
         display: grid;
+        grid-template-areas: "left map right";
         grid-template-columns: minmax(300px, 1fr) minmax(0, 2.2fr) minmax(320px, 1.1fr);
         gap: 16px;
         align-items: start;
+      }
+
+      .left-column {
+        grid-area: left;
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+
+      .right-column {
+        grid-area: right;
+        display: grid;
+        gap: 14px;
+        align-content: start;
       }
 
       .panel {
@@ -123,6 +138,11 @@
 
       .panel + .panel {
         margin-top: 14px;
+      }
+
+      .left-column .panel + .panel,
+      .right-column .panel + .panel {
+        margin-top: 0;
       }
 
       .field {
@@ -199,6 +219,7 @@
       }
 
       .map {
+        grid-area: map;
         background: var(--panel);
         border-radius: var(--radius);
         border: 1px solid var(--line);
@@ -278,6 +299,20 @@
         max-height: 280px;
         overflow: auto;
         padding-right: 4px;
+      }
+
+      .search-status {
+        font-size: 12px;
+        color: rgba(29, 36, 32, 0.68);
+        line-height: 1.35;
+      }
+
+      .search-status.info {
+        color: var(--accent);
+      }
+
+      .search-status.warn {
+        color: var(--warn);
       }
 
       .result {
@@ -409,11 +444,52 @@
       }
 
       @media (max-width: 1180px) {
+        header {
+          padding: 18px 18px 8px;
+        }
+        .shell {
+          padding: 0 18px 18px;
+        }
         .grid {
-          grid-template-columns: 1fr;
+          grid-template-areas:
+            "left map"
+            "right map";
+          grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.35fr);
         }
         .map {
-          min-height: 520px;
+          grid-area: map;
+          min-height: 560px;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-areas:
+            "map"
+            "left"
+            "right";
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .map {
+          min-height: 400px;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .row,
+        .toggle-grid {
+          grid-template-columns: 1fr;
+        }
+        .status-row {
+          justify-content: flex-start;
+        }
+        .map-overlay {
+          top: 10px;
+          left: 10px;
+          right: 10px;
+        }
+        .map {
+          min-height: 340px;
         }
       }
     </style>
@@ -436,7 +512,7 @@
 
     <div class="shell">
       <div class="grid">
-        <div>
+        <div class="left-column">
           <div class="panel">
             <h3>Find Boundary</h3>
             <div class="field">
@@ -474,6 +550,7 @@
               pause to avoid noise.
             </div>
             <div class="results" id="results" style="margin-top: 12px"></div>
+            <div class="search-status" id="searchStatus" style="margin-top: 8px; display: none"></div>
           </div>
 
           <div class="panel">
@@ -566,7 +643,7 @@
           <div class="tooltip" id="tooltip"></div>
         </div>
 
-        <div>
+        <div class="right-column">
           <div class="panel">
             <h3>Inventory</h3>
             <div class="inventory">
@@ -612,6 +689,7 @@
       const searchButton = document.getElementById("searchButton");
       const clearBoundaries = document.getElementById("clearBoundaries");
       const resultsEl = document.getElementById("results");
+      const searchStatusEl = document.getElementById("searchStatus");
 
       const layerUprns = document.getElementById("layerUprns");
       const layerUprnDots = document.getElementById("layerUprnDots");
@@ -656,8 +734,11 @@
         excludedUprns: new Set(),
         localLayers: [],
         osAvailable: true,
+        lastSearchResults: [],
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
+
+      const SEARCH_FALLBACK_ORDER = ["WARD", "DISTRICT", "COUNTY", "REGION", "NATION", "MSOA", "LSOA", "OA"];
 
       function postToHost(message) {
         if (window.parent) {
@@ -691,15 +772,63 @@
         return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
       }
 
+      function extractToolPayload(result) {
+        if (!result || typeof result !== "object") {
+          return result;
+        }
+        if (result.data && typeof result.data === "object") {
+          return result.data;
+        }
+        if (result.structuredContent && typeof result.structuredContent === "object") {
+          return result.structuredContent;
+        }
+        if (Array.isArray(result.content)) {
+          for (const block of result.content) {
+            if (!block || typeof block !== "object") continue;
+            if (block.type === "json" && block.json && typeof block.json === "object") {
+              return block.json;
+            }
+            if (block.type === "text" && typeof block.text === "string") {
+              const text = block.text.trim();
+              if (text.startsWith("{") || text.startsWith("[")) {
+                try {
+                  const parsed = JSON.parse(text);
+                  if (parsed && typeof parsed === "object") {
+                    return parsed;
+                  }
+                } catch (_err) {
+                  // Ignore unparseable text blocks and continue scanning.
+                }
+              }
+            }
+          }
+        }
+        return result;
+      }
+
+      function asToolError(payload) {
+        if (!payload || typeof payload !== "object") {
+          return null;
+        }
+        if (!payload.isError) {
+          return null;
+        }
+        const code = payload.code ? String(payload.code) : "TOOL_ERROR";
+        const message = payload.message ? String(payload.message) : "Tool returned an error.";
+        return `${code}: ${message}`;
+      }
+
       async function requestTool(tool, args) {
         try {
-          return await rpcCall("tools/call", { name: tool, arguments: args || {} });
+          const result = await rpcCall("tools/call", { name: tool, arguments: args || {} });
+          return extractToolPayload(result);
         } catch (err) {
           const message = String(err?.message || "");
           const sanitized = sanitizeToolName(tool);
           const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
           if (sanitized && sanitized !== tool && looksMissing) {
-            return await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+            const result = await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+            return extractToolPayload(result);
           }
           throw err;
         }
@@ -963,9 +1092,21 @@
         fitBbox(bbox) {
           if (!state.map || !window.maplibregl || !bbox || bbox.length !== 4) return;
           const bounds = new maplibregl.LngLatBounds([bbox[0], bbox[1]], [bbox[2], bbox[3]]);
-          state.map.fitBounds(bounds, { padding: 40, duration: 700 });
+          state.map.fitBounds(bounds, { padding: 80, duration: 700 });
         },
       };
+
+      function syncMapStateToStyle() {
+        setBoundaries();
+        if (state.inventory) {
+          applyInventoryToMap(state.inventory);
+        } else {
+          setUprnSources();
+          setNgdLayer("buildings", []);
+          setNgdLayer("roads", []);
+          setNgdLayer("paths", []);
+        }
+      }
 
       function ensureSourcesAndLayers() {
         const map = state.map;
@@ -975,6 +1116,23 @@
             map.addSource(id, source);
           }
         };
+        addSourceIfMissing("basemap-veil", {
+          type: "geojson",
+          data: featureCollection([{
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "Polygon",
+              coordinates: [[
+                [-180, -85],
+                [180, -85],
+                [180, 85],
+                [-180, 85],
+                [-180, -85],
+              ]],
+            },
+          }]),
+        });
         addSourceIfMissing("boundaries", { type: "geojson", data: featureCollection([]) });
         addSourceIfMissing("boundaries-hover", { type: "geojson", data: featureCollection([]) });
         addSourceIfMissing("uprns", { type: "geojson", data: featureCollection([]) });
@@ -983,37 +1141,72 @@
         addSourceIfMissing("roads", { type: "geojson", data: featureCollection([]) });
         addSourceIfMissing("paths", { type: "geojson", data: featureCollection([]) });
 
-        const addLayerIfMissing = (layer) => {
+        const addLayerIfMissing = (layer, beforeId) => {
           if (!map.getLayer(layer.id)) {
-            map.addLayer(layer);
+            if (beforeId && map.getLayer(beforeId)) {
+              map.addLayer(layer, beforeId);
+            } else {
+              map.addLayer(layer);
+            }
           }
         };
+
+        addLayerIfMissing({
+          id: "basemap-veil-layer",
+          type: "fill",
+          source: "basemap-veil",
+          paint: {
+            "fill-color": "rgba(255,255,255,1.0)",
+            "fill-opacity": 0.48,
+          },
+        });
+
+        if (map.getLayer("osm")) {
+          try {
+            map.setPaintProperty("osm", "raster-opacity", 0.62);
+          } catch (_err) {
+            // Ignore style differences across basemap sources.
+          }
+        }
 
         addLayerIfMissing({
           id: "boundary-fill",
           type: "fill",
           source: "boundaries",
-          paint: { "fill-color": "rgba(22,106,69,0.10)", "fill-outline-color": "rgba(22,106,69,0.35)" },
+          paint: {
+            "fill-color": [
+              "case",
+              ["==", ["get", "selected"], true],
+              "rgba(214,104,0,0.18)",
+              "rgba(22,106,69,0.10)",
+            ],
+            "fill-outline-color": "rgba(214,104,0,0.70)",
+          },
         });
         addLayerIfMissing({
           id: "boundary-line",
           type: "line",
           source: "boundaries",
           paint: {
-            "line-color": "rgba(22,106,69,0.86)",
+            "line-color": [
+              "case",
+              ["==", ["get", "selected"], true],
+              "rgba(214,104,0,0.98)",
+              "rgba(22,106,69,0.72)",
+            ],
             "line-width": borderByCount.checked
               ? [
                   "case",
                   ["==", ["get", "selected"], true],
-                  ["max", 2.0, ["min", 12.0, ["+", 2.0, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.2]]]],
+                  ["max", 2.8, ["min", 12.0, ["+", 2.8, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.2]]]],
                   ["max", 1.5, ["min", 10.0, ["+", 1.5, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.8]]]],
                 ]
-              : ["case", ["==", ["get", "selected"], true], 3.0, 1.8],
+              : ["case", ["==", ["get", "selected"], true], 4.0, 1.8],
             "line-opacity": [
               "case",
               ["==", ["get", "selected"], true],
-              0.95,
-              0.55,
+              0.98,
+              0.58,
             ],
           },
         });
@@ -1103,6 +1296,7 @@
         });
 
         applyBorderByCount();
+        syncMapStateToStyle();
       }
 
       function setLayerVisible(layerId, visible) {
@@ -1167,6 +1361,41 @@
         }
         infoBannerEl.style.display = "block";
         infoBannerEl.textContent = text;
+      }
+
+      function setSearchStatus(text, tone) {
+        if (!searchStatusEl) return;
+        if (!text) {
+          searchStatusEl.style.display = "none";
+          searchStatusEl.className = "search-status";
+          searchStatusEl.textContent = "";
+          return;
+        }
+        searchStatusEl.style.display = "block";
+        searchStatusEl.className = "search-status";
+        if (tone === "info" || tone === "warn") {
+          searchStatusEl.classList.add(tone);
+        }
+        searchStatusEl.textContent = text;
+      }
+
+      function selectedLevelLabel() {
+        const option = levelSelect.options[levelSelect.selectedIndex];
+        if (option && option.text) {
+          return option.text;
+        }
+        return String(levelSelect.value || "selected level");
+      }
+
+      function orderedLevelsForFallback(selectedLevel) {
+        const available = new Set(
+          Array.from(levelSelect.options || [])
+            .map((option) => String(option.value || "").toUpperCase())
+            .filter(Boolean)
+        );
+        const fallback = SEARCH_FALLBACK_ORDER.filter((level) => available.has(level));
+        const selected = String(selectedLevel || "").toUpperCase();
+        return fallback.filter((level) => level !== selected);
       }
 
       function showTooltip(html) {
@@ -1247,43 +1476,102 @@
         const text = (searchInput.value || "").trim();
         if (!text) return;
         resultsEl.textContent = "Searching...";
+        setSearchStatus("");
+        const selectedLevel = String(levelSelect.value || "").toUpperCase();
         try {
-          const resp = await requestTool("admin_lookup.find_by_name", {
+          const primary = await requestTool("admin_lookup.find_by_name", {
             text,
-            levels: [levelSelect.value],
+            levels: selectedLevel ? [selectedLevel] : undefined,
             limit: 10,
+            includeGeometry: true,
           });
-          const results = resp && resp.results ? resp.results : [];
-          renderSearchResults(results);
+          const primaryErr = asToolError(primary);
+          if (primaryErr) {
+            resultsEl.textContent = "Search unavailable.";
+            setSearchStatus(primaryErr, "warn");
+            return;
+          }
+          const primaryResults = primary && primary.results ? primary.results : [];
+          if (Array.isArray(primaryResults) && primaryResults.length) {
+            renderSearchResults(primaryResults);
+            setSearchStatus("");
+            return;
+          }
+
+          const fallbackLevels = orderedLevelsForFallback(selectedLevel);
+          if (!fallbackLevels.length) {
+            renderSearchResults([]);
+            setSearchStatus(`No ${selectedLevelLabel()} results for "${text}".`, "warn");
+            return;
+          }
+
+          const fallback = await requestTool("admin_lookup.find_by_name", {
+            text,
+            levels: fallbackLevels,
+            limit: 10,
+            includeGeometry: true,
+          });
+          const fallbackErr = asToolError(fallback);
+          if (fallbackErr) {
+            resultsEl.textContent = "Search unavailable.";
+            setSearchStatus(fallbackErr, "warn");
+            return;
+          }
+          const fallbackResults = fallback && fallback.results ? fallback.results : [];
+          if (Array.isArray(fallbackResults) && fallbackResults.length) {
+            renderSearchResults(fallbackResults);
+            setSearchStatus(
+              `No ${selectedLevelLabel()} match for "${text}". Showing matches from other levels.`,
+              "info"
+            );
+            return;
+          }
+
+          renderSearchResults([]);
+          setSearchStatus(`No results for "${text}". Try a broader term.`, "warn");
         } catch (err) {
           resultsEl.textContent = "Search failed.";
+          setSearchStatus("Search failed. Check MCP server and retry.", "warn");
         }
       }
 
       function renderSearchResults(results) {
+        state.lastSearchResults = Array.isArray(results) ? results.slice() : [];
         resultsEl.innerHTML = "";
         if (!Array.isArray(results) || !results.length) {
           resultsEl.textContent = "No results.";
           return;
         }
         results.forEach((r) => {
-          const id = r.id || r.gss || r.code || "";
+          const id = String(r.id || r.gss || r.code || "");
           const name = r.name || r.title || r.id || "Unknown";
           const level = r.level || r.kind || "";
+          const selected = state.boundaryById.has(id);
           const row = document.createElement("div");
           row.className = "result";
+          row.dataset.id = id;
           row.innerHTML = `
             <div>
               <div class="result-title">${escapeHtml(String(name))}</div>
               <div class="result-meta"><span class="mono">${escapeHtml(String(id))}</span> ${escapeHtml(String(level))}</div>
             </div>
             <div class="result-actions">
-              <button type="button" class="primary" data-action="toggle">Add</button>
+              <button type="button" class="${selected ? "" : "primary"}" data-action="toggle">${selected ? "Remove" : "Add"}</button>
               <button type="button" data-action="zoom">Zoom</button>
             </div>
           `;
-          row.querySelector("[data-action=toggle]").addEventListener("click", () => toggleBoundary(id, name, level));
-          row.querySelector("[data-action=zoom]").addEventListener("click", () => zoomToBoundary(id));
+          row.querySelector("[data-action=toggle]").addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            showInfo(`Applying boundary: ${name || id}...`);
+            void toggleBoundary(id, name, level, r);
+          });
+          row.querySelector("[data-action=zoom]").addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            showInfo(`Zooming to: ${name || id}...`);
+            void zoomToBoundary(id, r);
+          });
           row.addEventListener("mouseenter", () => previewBoundaryHover(id, name, level));
           row.addEventListener("mouseleave", () => clearPreviewHover(id));
           resultsEl.appendChild(row);
@@ -1299,48 +1587,148 @@
           .replace(/'/g, "&#039;");
       }
 
-      async function zoomToBoundary(id) {
+      async function zoomToBoundary(id, candidate) {
+        const direct = normalizeBbox(candidate && candidate.bbox);
+        if (direct) {
+          mapAdapter.fitBbox(direct);
+          showInfo("Zoom applied.");
+          return;
+        }
         try {
           const geo = await requestTool("admin_lookup.area_geometry", { id, includeGeometry: false });
           if (geo && geo.bbox) {
             mapAdapter.fitBbox(geo.bbox);
+            showInfo("Zoom applied.");
+            return;
           }
+          showInfo(`Zoom unavailable for ${id}: no bbox returned.`);
         } catch (err) {
+          showInfo(`Zoom failed for ${id}.`);
           return;
         }
       }
 
-      async function toggleBoundary(id, name, level) {
+      function bboxFromFeatureGeometry(feature) {
+        const geom = feature && feature.geometry;
+        if (!geom || !geom.type) return null;
+        const points = [];
+        const pushPoint = (coord) => {
+          if (Array.isArray(coord) && coord.length >= 2) {
+            const lon = Number(coord[0]);
+            const lat = Number(coord[1]);
+            if (Number.isFinite(lon) && Number.isFinite(lat)) {
+              points.push([lon, lat]);
+            }
+          }
+        };
+        const walk = (node) => {
+          if (!Array.isArray(node)) return;
+          if (node.length >= 2 && typeof node[0] === "number" && typeof node[1] === "number") {
+            pushPoint(node);
+            return;
+          }
+          for (const child of node) walk(child);
+        };
+        walk(geom.coordinates);
+        if (!points.length) return null;
+        let minLon = points[0][0], minLat = points[0][1], maxLon = points[0][0], maxLat = points[0][1];
+        for (const [lon, lat] of points) {
+          if (lon < minLon) minLon = lon;
+          if (lon > maxLon) maxLon = lon;
+          if (lat < minLat) minLat = lat;
+          if (lat > maxLat) maxLat = lat;
+        }
+        return normalizeBbox([minLon, minLat, maxLon, maxLat]);
+      }
+
+      async function toggleBoundary(id, name, level, candidate) {
         if (!id) return;
-        if (state.boundaryById.has(id)) {
-          state.boundaryById.delete(id);
-          state.boundaries = state.boundaries.filter((f) => f.properties && f.properties.id !== id);
+        const boundaryId = String(id);
+        if (state.boundaryById.has(boundaryId)) {
+          const removed = state.boundaryById.get(boundaryId);
+          state.boundaryById.delete(boundaryId);
+          state.boundaries = state.boundaries.filter((f) => f.properties && f.properties.id !== boundaryId);
           setBoundaries();
+          if (state.lastSearchResults.length) {
+            renderSearchResults(state.lastSearchResults);
+          }
+          const removedName = (removed && removed.properties && removed.properties.name) || name || boundaryId;
+          showInfo(`Removed boundary: ${removedName}`);
           await refreshCounts();
           return;
         }
         try {
-          const geo = await requestTool("admin_lookup.area_geometry", { id, includeGeometry: true });
-          if (!geo || !geo.bbox) return;
-          const feature = geo.geometry ? arcgisGeometryToGeoJson(geo.geometry) : null;
-          const bbox = geo.bbox;
+          const directFeature = candidate && candidate.geometry ? arcgisGeometryToGeoJson(candidate.geometry) : null;
+          let bbox = normalizeBbox(candidate && candidate.bbox);
+          if (!bbox && directFeature) {
+            bbox = bboxFromFeatureGeometry(directFeature);
+          }
+          let geo = candidate || null;
+          if (!bbox) {
+            geo = await requestTool("admin_lookup.area_geometry", { id: boundaryId, includeGeometry: true });
+            let geoErr = asToolError(geo);
+            if (geoErr) {
+              showInfo(`Boundary add failed for ${name || boundaryId}: ${geoErr}`);
+              return;
+            }
+            bbox = normalizeBbox(geo && geo.bbox);
+            if (!bbox) {
+              geo = await requestTool("admin_lookup.area_geometry", { id: boundaryId, includeGeometry: false });
+              geoErr = asToolError(geo);
+              if (geoErr) {
+                showInfo(`Boundary add failed for ${name || boundaryId}: ${geoErr}`);
+                return;
+              }
+              bbox = normalizeBbox(geo && geo.bbox);
+            }
+          }
+          if (!bbox) {
+            showInfo(`Boundary add failed for ${name || boundaryId}: no bbox returned.`);
+            return;
+          }
+          const feature = directFeature || (geo && geo.geometry ? arcgisGeometryToGeoJson(geo.geometry) : null);
           const poly = feature || bboxToPolygon(bbox);
+          if (!poly || !poly.geometry) {
+            showInfo(`Boundary add failed for ${name || boundaryId}: invalid geometry.`);
+            return;
+          }
           poly.properties = {
-            id,
-            name: name || geo.name || id,
+            id: boundaryId,
+            name: name || geo.name || boundaryId,
             level: level || geo.level || "",
             bbox,
             selected: true,
             detailCount: 0,
           };
-          state.boundaryById.set(id, poly);
+          state.boundaryById.set(boundaryId, poly);
           state.boundaries.push(poly);
           setBoundaries();
+          if (state.lastSearchResults.length) {
+            renderSearchResults(state.lastSearchResults);
+          }
           mapAdapter.fitBbox(bbox);
+          const suffix = feature ? "" : " (bbox fallback)";
+          showInfo(`Added boundary: ${poly.properties.name}${suffix}`);
           await refreshInventoryNow();
         } catch (err) {
+          showInfo(`Boundary add failed for ${name || boundaryId}.`);
           return;
         }
+      }
+
+      function normalizeBbox(bbox) {
+        if (!Array.isArray(bbox) || bbox.length !== 4) {
+          return null;
+        }
+        const numeric = bbox.map((value) => Number(value));
+        if (numeric.some((value) => !Number.isFinite(value))) {
+          return null;
+        }
+        const [minLon, minLat, maxLon, maxLat] = numeric;
+        if (minLon >= maxLon || minLat >= maxLat) {
+          return null;
+        }
+        return [minLon, minLat, maxLon, maxLat];
       }
 
       function bboxToPolygon(bbox) {
@@ -1768,6 +2156,7 @@
         setNgdLayer("paths", []);
         boundaryInventoryEl.innerHTML = '<div class="hint">Cleared.</div>';
         showInfo("");
+        setSearchStatus("");
       }
 
       function onDetailLevelChange() {
@@ -2064,6 +2453,11 @@
       }
 
       searchButton.addEventListener("click", () => void searchBoundaries());
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        void searchBoundaries();
+      });
       clearBoundaries.addEventListener("click", () => clearAll());
       refreshInventory.addEventListener("click", () => void refreshInventoryNow());
       exportButton.addEventListener("click", () => void exportJson());

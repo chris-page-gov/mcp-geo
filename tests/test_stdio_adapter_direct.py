@@ -193,6 +193,12 @@ def test_ui_tools_fallback_to_static_map(monkeypatch):
     assert isinstance(fallback, dict)
     assert fallback.get("type") == "static_map"
     assert "render" in fallback
+    assert fallback.get("fallbackOrder") == ["map_card", "overlay_bundle", "export_handoff"]
+    assert fallback.get("map_card", {}).get("type") == "map_card"
+    assert fallback.get("overlay_bundle", {}).get("type") == "overlay_bundle"
+    assert fallback.get("export_handoff", {}).get("type") == "export_handoff"
+    assert fallback.get("export_handoff", {}).get("resourceUri")
+    assert str(fallback.get("export_handoff", {}).get("hash", "")).startswith("sha256:")
     assert fallback.get("widgetUnsupported") is True
     assert fallback.get("widgetUnsupportedReason") == "ui_extension_not_advertised"
     assert fallback.get("guidance", {}).get("degradationMode") == "no_ui"

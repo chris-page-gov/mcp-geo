@@ -1,9 +1,9 @@
 # Map Story Gallery Report
 
-- Generated at (UTC): 2026-02-17T00:28:50.265099Z
+- Generated at (UTC): 2026-02-21T16:20:14.635292Z
 - Scenario catalog version: `2026-02-16`
 - Scenario count: `6`
-- Observation rows loaded: `14`
+- Observation rows loaded: `35`
 
 ## Functionality Coverage Matrix
 
@@ -24,7 +24,7 @@
 | `os_maps.raster_tile` | Raster tile retrieval | `story-4-bristol-flood-layer-stack` |
 | `os_maps.render` | Static map baseline render contract | `story-1-coventry-boundary-change`, `story-2-village-hotel-catchment`, `story-3-coventry-route-layering`, `story-4-bristol-flood-layer-stack`, `story-5-manchester-inventory-export`, `story-6-westminster-policy-layering` |
 | `os_maps.wmts_capabilities` | WMTS capability discovery | `story-4-bristol-flood-layer-stack` |
-| `os_places.by_postcode` | Address/U PRN lookup by postcode | `story-2-village-hotel-catchment` |
+| `os_places.by_postcode` | Address/UPRN lookup by postcode | `story-2-village-hotel-catchment` |
 | `os_places.radius` | Radius-based address search | `story-2-village-hotel-catchment` |
 | `os_vector_tiles.descriptor` | Vector style/tiles descriptor for rich map clients | `story-3-coventry-route-layering`, `story-6-westminster-policy-layering` |
 
@@ -75,7 +75,7 @@
 **Tool choreography**
 
 - `os_maps.render`: Static map baseline render contract
-- `os_places.by_postcode`: Address/U PRN lookup by postcode
+- `os_places.by_postcode`: Address/UPRN lookup by postcode
 - `os_places.radius`: Radius-based address search
 - `os_map.inventory`: Bounded map inventory layers (UPRNs/buildings/road/path)
 - `os_apps.render_geography_selector`: Interactive geography selector widget

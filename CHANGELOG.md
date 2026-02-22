@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added reproducible full-tool live validation automation:
+  `scripts/live_missing_tools_probe.py` (+ `tests/test_live_missing_tools_probe.py`)
+  to probe tools not covered by the evaluation harness and classify
+  pass/auth-blocked outcomes.
+- Added measurable operability-spec coverage generation:
+  `scripts/spec_tool_operability_coverage.py`
+  (+ `tests/test_spec_tool_operability_coverage.py`) and spec package chapters
+  `docs/spec_package/14_tool_operability.feature` +
+  `docs/spec_package/14_tool_operability_coverage.md`.
 - Added a detailed peatland-survey reliability implementation program at
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   to operationalize Section F findings from the forensic/deep-research report.
@@ -21,8 +30,65 @@ All notable changes to this project will be documented in this file.
 - Added `safe-by-design.json`, a dependency-tracked remediation backlog with
   explicit acceptance criteria for transitioning governance controls to
   `fully_met`.
+- Added `scripts/check_lmr_host4.py` to automate `LMR-HOST-4` host-runtime
+  evidence checks from Claude stdio traces and UI event logs, including
+  optional payload-shape and Playwright smoke prechecks, plus
+  `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Updated `docs/spec_package/09_testing_quality.md`, `CONTEXT.md`, and
+  `PROGRESS.MD` to reflect the latest strict + live verification evidence,
+  including explicit coverage-gate failure status and MCP-Apps widget
+  implementation scope (`feature_inspector` / `route_planner` still static).
+- Hardened `ui/boundary_explorer.html` for constrained host windows by moving
+  to a map-prioritized responsive layout at narrow widths, and updated boundary name
+  search to retry across other admin levels when the selected level returns no
+  matches (with explicit UI status messaging rather than silent empty results).
+- Updated boundary add/remove UX to surface actionable feedback (button state,
+  add/remove confirmation, explicit add-failure reasons when geometry/bbox is
+  unavailable), and de-emphasized basemap intensity with a veil layer so
+  selected boundary outlines are significantly clearer.
+- Extended `admin_lookup.find_by_name` with optional `includeGeometry` support
+  (returns per-result bbox metadata), and updated boundary explorer Add/Zoom to
+  use search-result bbox first before falling back to `admin_lookup.area_geometry`;
+  this keeps Add/Zoom functional in stricter hosts where follow-on tool calls
+  may be limited.
+- Hardened remaining MCP-Apps widgets against strict tool-result payload shapes:
+  `ui/geography_selector.html` and `ui/statistics_dashboard.html` now normalize
+  `tools/call` payload extraction across `result.data`, `structuredContent`,
+  and JSON `content` blocks to avoid silent no-result behavior when hosts omit
+  `data`.
+- Advanced layered-map reliability hardening streams (`LMR-BASE-0`,
+  `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`) and moved `LMR-GATE-5` into final
+  closure with deterministic non-UI fallback parity and refreshed cross-engine
+  validation evidence.
+- Updated `server/stdio_adapter.py` static-map fallback contracts to always
+  emit `fallbackOrder`, `map_card`, `overlay_bundle`, and `export_handoff`
+  payloads derived from render data for no-UI clients.
+- Updated trial host simulation and matrix coverage in
+  `playground/trials/tests/support/host_simulation.js` and
+  `playground/trials/tests/map_delivery_matrix.spec.js` to stabilize
+  cross-engine bridge behavior and deterministic point/line/polygon interaction
+  checks.
+- Updated story-gallery rendering profile in
+  `playground/trials/tests/map_story_gallery.spec.js` to reduce map-quality
+  hard failures by de-emphasizing basemap texture and limiting non-essential
+  overlay labels while preserving layered geometry evidence.
+- Updated transport-parity tests (`tests/test_stdio_adapter_direct.py`,
+  `tests/test_mcp_http.py`) and host-simulation validation to lock the fallback
+  and layered-render contracts.
+- Updated quality-check policy handling in
+  `scripts/map_trials/map_quality_checks.py` and
+  `research/map_delivery_research_2026-02/reports/map_quality_waivers.json` to
+  support threshold-policy metadata and browser-scoped waivers, with test
+  coverage in `tests/test_map_trials_quality_checks.py`.
+- Updated map-delivery validation artifacts and operator docs:
+  `research/map_delivery_research_2026-02/reports/trial_summary.md`,
+  `research/map_delivery_research_2026-02/reports/story_gallery_report.md`, and
+  `docs/map_delivery_support_matrix.md` now reflect the 2026-02-21 matrix run
+  (`35 passed`, `20 skipped`, `0 failed`) and updated release-gate checklist
+  status, including quality-check outcomes (`fail=0`, `warning=20`) under the
+  documented waiver policy.
 - Completed safe-by-design remediation implementation streams from
   `safe-by-design.json`:
   - hardened file-backed resource containment and traversal defenses in
@@ -57,6 +123,10 @@ All notable changes to this project will be documented in this file.
   of a dead ONS Five Safes URL.
 - Updated `.gitignore` to exclude `research/Archive/` raw archive drops from
   version control.
+- Updated troubleshooting guidance with one-command `LMR-HOST-4` automation
+  instructions and strict precheck mode (`--run-probe`,
+  `--run-playwright-smoke`), and updated Playwright trials web-server launch
+  fallback to prefer `./.venv/bin/python` before `python3`.
 - Completed peatland reliability streams `PSR-INT-0` through `PSR-ROU-8`:
   `os_features.query` now enforces `limit<=100` clamps, deterministic polygon
   validation, structured `hints` metadata (`warnings`, `filterApplied`, `scan`),

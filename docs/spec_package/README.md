@@ -22,7 +22,11 @@ operational behaviors, and the user experience expected from MCP tools and MCP-A
 12. Backlog & completion plan: `docs/spec_package/12_backlog_and_plan.md`
 13. Screenshots & capture checklist: `docs/spec_package/screenshots.md`
 14. Sequence diagrams: `docs/spec_package/13_sequence_diagrams.md`
-15. Export instructions: `docs/spec_package/export.md`
+15. Tool operability specification (Gherkin):
+    `docs/spec_package/14_tool_operability.feature`
+16. Tool operability coverage metrics:
+    `docs/spec_package/14_tool_operability_coverage.md`
+17. Export instructions: `docs/spec_package/export.md`
 
 ## Current scope snapshot (prototype)
 

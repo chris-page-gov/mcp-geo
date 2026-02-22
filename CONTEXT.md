@@ -47,6 +47,12 @@ assumptions change.
 
 ## Current Focus
 
+- Prioritizing reliable layered map rendering (polygons, lines, points) across
+  all clients, with interaction as progressive enhancement where host runtime
+  supports MCP-Apps UI; repo-side `LMR-BASE-0` through `LMR-FBK-3` are complete
+  (2026-02-21), `LMR-GATE-5` is complete with documented map-quality
+  waiver/threshold policy, and external host/runtime risk remains tracked
+  explicitly under `LMR-HOST-4`.
 - Keeping the completed phased progress program stable with full regression coverage.
 - Driving the OS catalog/tooling gap closure plan via parallel workstreams.
 - Prioritizing next major gap after gap closure: CI pipeline implementation.
@@ -64,6 +70,10 @@ assumptions change.
 
 ## Active Work
 
+- Maintain and monitor the completed layered-map reliability workstreams
+  (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
+  the remaining external host-runtime blocker
+  (`LMR-HOST-4`) visible.
 - Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
 - Coordinate parallel OS gap workstreams and integration gates from
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.
@@ -104,6 +114,13 @@ assumptions change.
 
 ## Status Snapshot (from PROGRESS.MD)
 
+- Done (repo-side): layered map reliability workstreams
+  `LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, and `LMR-GATE-5`,
+  including
+  2026-02-21 matrix evidence (`35 passed`, `20 skipped`, `0 failed`) and
+  fallback-contract parity tests plus documented quality policy outcomes
+  (`map_quality_report.json`: `fail=0`, `warning=20`).
+- Blocked (external): `LMR-HOST-4` Claude host runtime mount/bridge retest.
 - Done: core server, stdio adapter, tool registry, OS Places/Names/Linked IDs/Vector Tiles,
   route_query tool, baseline tests, boundary cache ingestion pipeline.
 - Done: completion program tracker items `C00` through `C16` (dataset-selection gating,
@@ -127,7 +144,10 @@ assumptions change.
 
 ## Backlog Priorities (from spec package)
 
-- High: CI pipeline; MCP-Apps client compatibility validation and docs.
+- High: layered map reliability across all clients (point/line/polygon render
+  parity plus deterministic non-UI fallback contracts).
+- High: interaction parity in UI-capable hosts and tracked retest/escalation of
+  external host runtime gaps.
 - High: CI pipeline; MCP-Apps client compatibility validation and docs.
 - Medium: pagination for large tool results; structured JSON logging; expanded ONS caching;
   admin cache staleness policy; performance regression tests.
@@ -156,7 +176,13 @@ assumptions change.
 
 ## Verification Status
 
-- Latest full test run: `pytest -q` (90.02% coverage, 708 passed, 6 skipped) on 2026-02-13.
+- Latest strict test run: `pytest -q` on 2026-02-21
+  (`785 passed`, `6 skipped`, coverage gate failed at `86.69%` vs required `>=90%`).
+- Latest live harness run: `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live`
+  on 2026-02-21 (`6290/6900`, `91.16%`, `67/69` passed, `rate_limit_429_total=0`).
+- Latest full tool operability aggregation:
+  `data/spec_tool_operability_coverage_2026-02-21.json` on 2026-02-21
+  (`75/76` tools functional, `1/76` blocked by auth entitlement, `0` unresolved).
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
 - Latest container test run: `devcontainer exec --workspace-folder /Users/crpage/repos/mcp-geo bash -lc "pytest -q --cov-report=term-missing:skip-covered"` (90.03% coverage, 703 passed, 6 skipped) on 2026-02-13.
 
@@ -168,6 +194,37 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-21: Added reproducible live operability evidence tooling for
+  full-tool validation: `scripts/live_missing_tools_probe.py` (covers tools
+  missing from harness utilization) and
+  `scripts/spec_tool_operability_coverage.py` (aggregates measurable
+  requirement outcomes from harness + probe reports).
+- 2026-02-21: Added explicit spec coverage artifacts for live operability in
+  `docs/spec_package/14_tool_operability.feature` and
+  `docs/spec_package/14_tool_operability_coverage.md` to prevent
+  documentation drift and make release-readiness claims auditable.
+- 2026-02-21: Hardened `ui/boundary_explorer.html` for constrained client
+  runtimes by switching responsive layout to map-prioritized placement in
+  narrow hosts and adding cross-level fallback search behavior/messages when
+  `admin_lookup.find_by_name` returns no matches at the selected level (for
+  example, `WARD` + "Westminster").
+- 2026-02-21: Documented and mitigated an MCP-host interoperability pattern
+  where `tools/call` payloads may arrive via `structuredContent`/`content`
+  blocks (without `result.data`) and map-style swaps can hide overlays unless
+  source/layer state is replayed on `style.load`. Added payload-shape
+  normalization in `ui/geography_selector.html` and
+  `ui/statistics_dashboard.html`, and recorded the pattern in
+  `AGENTS.md` learnings.
+- 2026-02-21: Added `scripts/check_lmr_host4.py` to automate `LMR-HOST-4`
+  evidence classification from Claude trace + UI logs, with optional
+  prechecks (`scripts/mcp_ui_mode_probe.py`, Playwright `trial-5`) and JSON
+  report output at `logs/lmr-host4-report.json`.
+- 2026-02-21: Completed repo-side layered-map reliability implementation
+  streams `LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, and
+  `LMR-GATE-5` with refreshed cross-engine trial evidence
+  (`35 passed`, `20 skipped`, `0 failed`), story-gallery style tuning for
+  reduced quality-check failures, and documented waiver/threshold policy
+  acceptance (`map_quality_report.json`: `fail=0`, `warning=20`).
 - 2026-02-21: Addressed Codex review follow-up on PR #11 by removing raw
   exception trace/text logging from MCP transport internal-error handlers
   (`server/stdio_adapter.py`, `server/mcp/http_transport.py`) and by replacing

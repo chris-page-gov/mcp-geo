@@ -265,6 +265,44 @@ Remediation:
   `MCP_GEO_DOCKER_BUILD=missing` for normal use.
 - Keep `MCP_STDIO_FRAMING=line` for Claude Desktop.
 
+## Automate `LMR-HOST-4` consistency checks
+Use the built-in automation script to classify the latest Claude host-runtime
+state from trace evidence.
+
+Minimal run:
+
+```bash
+./.venv/bin/python scripts/check_lmr_host4.py \
+  --trace logs/claude-trace.jsonl \
+  --ui-events logs/ui-events.jsonl \
+  --save logs/lmr-host4-report.json
+```
+
+Strict run with payload-shape + Playwright prechecks:
+
+```bash
+./.venv/bin/python scripts/check_lmr_host4.py \
+  --trace logs/claude-trace.jsonl \
+  --ui-events logs/ui-events.jsonl \
+  --run-probe \
+  --probe-command ./scripts/claude-mcp-local \
+  --run-playwright-smoke \
+  --playwright-project chromium-desktop \
+  --strict-prechecks \
+  --save logs/lmr-host4-report.json
+```
+
+Notes:
+- Omit `--playwright-project` to run all trial-matrix projects for a full
+  cross-engine precheck.
+- If your default probe target cannot launch, pass
+  `--probe-command ./scripts/claude-mcp-local` (or another STDIO launcher).
+- Verdicts: `PASS`, `FAIL_HOST_RUNTIME`, `FAIL_RESOURCE_READ`, `FAIL_SERVER`,
+  `INCONCLUSIVE`.
+- Exit codes: `0` pass, `1` fail verdict, `2` inconclusive, `3/4` strict
+  precheck failure.
+- Report output is JSON and defaults to `logs/lmr-host4-report.json`.
+
 ## macOS popup: `"python3.14" would like to access data from other apps`
 When Claude starts the MCP server through a Python wrapper (`python3` command in
 `claude_desktop_config.json`), macOS may show a one-time privacy prompt:

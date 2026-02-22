@@ -45,6 +45,80 @@ def test_ons_query_live_success(monkeypatch):
     assert body["results"][0]["value"] == 123.4
 
 
+def test_ons_query_observations_include_paged_params_non_range(monkeypatch):
+    from tools import ons_common
+
+    observation_params: list[Dict[str, Any]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        if "/versions/1" in url and "observations" not in url and "dimensions/" not in url:
+            return 200, {"dimensions": [{"id": "time"}]}
+        if "observations" in url:
+            if isinstance(params, dict):
+                observation_params.append(dict(params))
+            return 200, {"dimensions": {"time": {"id": "time"}}, "observations": [{"value": 1}], "total": 1}
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "limit": 5,
+            "page": 2,
+        },
+    )
+    assert resp.status_code == 200
+    assert observation_params
+    first = observation_params[0]
+    assert "limit" in first and "page" in first
+    assert first["limit"] == 500
+    assert first["page"] == 1
+    assert first.get("time") == "*"
+
+
+def test_ons_query_links_next_exact_total_avoids_duplicate_fetch(monkeypatch):
+    from tools import ons_data
+
+    calls: list[tuple[str, Dict[str, Any] | None]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        captured = dict(params) if isinstance(params, dict) else None
+        calls.append((url, captured))
+        if len(calls) == 1:
+            assert captured == {"limit": 2, "page": 1, "time": "*"}
+            return 200, {
+                "observations": [{"id": "page-1-a"}, {"id": "page-1-b"}],
+                "links": [{"rel": "next", "href": "?page=2&limit=2"}],
+                "total": 4,
+            }
+        if len(calls) == 2:
+            assert captured is None
+            assert "page=2" in url
+            return 200, {"observations": [{"id": "page-2-a"}, {"id": "page-2-b"}], "total": 4}
+        raise AssertionError("Unexpected extra observations fetch")
+
+    monkeypatch.setattr(ons_data, "_OBSERVATIONS_FETCH_PAGE_LIMIT", 2)
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+
+    status, body = ons_data._fetch_observations_paged(
+        url="https://api.beta.ons.gov.uk/v1/datasets/gdp/editions/time-series/versions/1/observations",
+        filters={"time": "*"},
+    )
+
+    assert status == 200
+    assert [row["id"] for row in body["observations"]] == [
+        "page-1-a",
+        "page-1-b",
+        "page-2-a",
+        "page-2-b",
+    ]
+    assert len(calls) == 2
+
+
 def test_ons_query_time_range_expands(monkeypatch):
     from tools import ons_common
 
@@ -72,6 +146,68 @@ def test_ons_query_time_range_expands(monkeypatch):
     assert body["timeValues"] == ["2023 Q1", "2023 Q2"]
 
 
+def test_ons_query_time_range_observations_include_paged_params(monkeypatch):
+    from tools import ons_common
+
+    observation_params: list[Dict[str, Any]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        if "/versions/1" in url and "dimensions/time/options" not in url and "observations" not in url:
+            return 200, {"dimensions": [{"id": "time"}]}
+        if "dimensions/time/options" in url:
+            return 200, {"items": [{"option": "2024 Q1"}, {"option": "2024 Q2"}], "links": []}
+        if "observations" in url:
+            if isinstance(params, dict):
+                observation_params.append(dict(params))
+            return 200, {"observations": [{"time": params.get("time"), "value": 1}], "total": 1}
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "timeRange": "2024 Q1-2024 Q2",
+        },
+    )
+    assert resp.status_code == 200
+    assert observation_params
+    assert {entry.get("time") for entry in observation_params} == {"2024 Q1", "2024 Q2"}
+    for entry in observation_params:
+        assert entry.get("limit") == 500
+        assert entry.get("page") == 1
+
+
+def test_ons_query_time_range_expands_with_shorthand_end(monkeypatch):
+    from tools import ons_common
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        if "/versions/1" in url and "dimensions/time/options" not in url and "observations" not in url:
+            return 200, {"dimensions": [{"id": "time"}]}
+        if "dimensions/time/options" in url:
+            return 200, {"items": [{"option": "2024 Q1"}, {"option": "2024 Q2"}], "links": []}
+        return 200, {"observations": [{"time": params.get("time"), "value": 1}], "total": 1}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "timeRange": "2024 Q1-Q2",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 2
+    assert body["timeValues"] == ["2024 Q1", "2024 Q2"]
+
+
 def test_ons_query_auto_resolve(monkeypatch):
     from tools import ons_common
 
@@ -96,7 +232,7 @@ def test_ons_query_auto_resolve(monkeypatch):
     resp = client.post("/tools/call", json={"tool": "ons_data.query", "term": "gdp"})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["dataset"] == "gdp"
+    assert body["dataset"] == "gdp-to-four-decimal-places"
     assert body["results"][0]["value"] == 99
 
 

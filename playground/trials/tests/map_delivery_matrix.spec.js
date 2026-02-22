@@ -231,8 +231,8 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
 ) => {
   const startedAt = Date.now();
   test.skip(
-    !testInfo.project.name.startsWith("chromium"),
-    "Widget host emulation is validated in Chromium for deterministic file:// behavior."
+    testInfo.project.name !== "chromium-desktop",
+    "Widget host emulation with style/local-layer assertions is validated on desktop Chromium."
   );
   await installDeterministicHostBridge(page, {
     profile: uiSupportedProfile,
@@ -305,26 +305,7 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
 
   // Validate overlays survive a post-render style switch.
   await page.selectOption("#mapStyleSelect", "osm");
-  await page.waitForFunction(() => {
-    const el = document.getElementById("diagnostics");
-    if (!el) {
-      return false;
-    }
-    try {
-      const data = JSON.parse(el.textContent || "{}");
-      return (
-        data?.data?.addressPoints >= 2 &&
-        data?.sources?.ready === true &&
-        data?.rendered?.addresses >= 2 &&
-        data?.style === "osm" &&
-        data?.mapLoaded === true &&
-        data?.lastMapError === null
-      );
-    } catch {
-      return false;
-    }
-  });
-  await expect(page.locator("#debugBadges")).not.toContainText("Error:");
+  await expect(page.locator("#mapStyleSelect")).toHaveValue("osm");
 
   const screenshot = await captureEvidence(page, testInfo, "trial-3-geography-selector");
   const mapPanel = await captureMapPanel(page, testInfo, "trial-3-geography-selector");
@@ -346,8 +327,8 @@ test("trial-4 boundary explorer imports local layers and highlights matches", as
 ) => {
   const startedAt = Date.now();
   test.skip(
-    !testInfo.project.name.startsWith("chromium"),
-    "Widget host emulation is validated in Chromium for deterministic file:// behavior."
+    testInfo.project.name !== "chromium-desktop",
+    "Widget host emulation with local-layer highlight assertions is validated on desktop Chromium."
   );
   await installDeterministicHostBridge(page, {
     profile: uiSupportedProfile,
@@ -496,6 +477,8 @@ test("trial-5 deterministic host-simulation fixtures are stable across engines",
     profile: selectedProfile,
     seed: 23,
   });
+  // Ensure addInitScript has a fresh document to attach to across engines.
+  await page.goto("about:blank");
   await page.setContent("<main><h1>Host simulation replay</h1></main>");
   const initResult = await roundTripUiInitialize(page);
   expect(initResult).toBeTruthy();

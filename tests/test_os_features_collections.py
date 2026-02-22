@@ -101,8 +101,8 @@ def test_os_features_query_polygon_filter_projection_sort_and_queryables(
     def queryables_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
         return 200, {"type": "object", "properties": {"status": {"type": "string"}}}
 
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/items"] = items_handler
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/queryables"] = queryables_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/queryables"] = queryables_handler
 
     resp = client.post(
         "/tools/call",
@@ -124,6 +124,7 @@ def test_os_features_query_polygon_filter_projection_sort_and_queryables(
     assert body["features"][0]["properties"] == {"name": "Alpha", "height": 25, "status": "active"}
     assert "queryables" in body
     assert body["queryables"]["properties"]["status"]["type"] == "string"
+    assert body["requestedCollection"] == "buildings"
 
 
 def test_os_features_query_result_type_hits(client, monkeypatch, mock_os_client) -> None:  # type: ignore[no-untyped-def]
@@ -143,7 +144,7 @@ def test_os_features_query_result_type_hits(client, monkeypatch, mock_os_client)
             ]
         }
 
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
 
     resp = client.post(
         "/tools/call",
@@ -173,7 +174,7 @@ def test_os_features_query_limit_is_clamped(client, monkeypatch, mock_os_client)
         assert params.get("limit") == 100
         return 200, {"numberMatched": 1000, "features": []}
 
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
 
     resp = client.post(
         "/tools/call",
@@ -211,7 +212,7 @@ def test_os_features_query_number_returned_matches_feature_length(
             ],
         }
 
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
 
     resp = client.post(
         "/tools/call",
@@ -249,7 +250,7 @@ def test_os_features_query_local_filter_reports_partial_scan(
             ],
         }
 
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
 
     resp = client.post(
         "/tools/call",
@@ -299,7 +300,7 @@ def test_os_features_query_resource_delivery(
             "path": "/tmp/resource.json",
         }
 
-    mock_os_client["features/ngd/ofa/v1/collections/buildings/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
     monkeypatch.setattr(os_features, "write_resource_payload", fake_write, raising=True)
 
     resp = client.post(

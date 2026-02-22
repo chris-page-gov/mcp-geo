@@ -37,13 +37,14 @@ function seededRandom(seed, idx) {
 function deterministicAddressResults(seed = 7) {
   const rows = [];
   for (let idx = 0; idx < 2; idx += 1) {
-    const latJitter = seededRandom(seed, idx) * 0.0015;
-    const lonJitter = seededRandom(seed + 3, idx) * 0.0015;
+    // Keep deterministic points inside the local-layer polygon used by trial-4.
+    const latJitter = seededRandom(seed, idx) * 0.00035;
+    const lonJitter = seededRandom(seed + 3, idx) * 0.00035;
     rows.push({
       uprn: `10000000${idx + 1}`,
       address: `${idx + 1} Trial Street`,
-      lat: 51.5 + latJitter,
-      lon: -0.121 + lonJitter,
+      lat: 51.5049 + latJitter,
+      lon: -0.1208 + lonJitter,
       classificationDescription: "Residential",
     });
   }
@@ -81,13 +82,13 @@ export async function installDeterministicHostBridge(page, options = {}) {
 
       const addressResults = [];
       for (let idx = 0; idx < 2; idx += 1) {
-        const latJitter = randomValue(selectedSeed, idx) * 0.0015;
-        const lonJitter = randomValue(selectedSeed + 3, idx) * 0.0015;
+        const latJitter = randomValue(selectedSeed, idx) * 0.00035;
+        const lonJitter = randomValue(selectedSeed + 3, idx) * 0.00035;
         addressResults.push({
           uprn: `10000000${idx + 1}`,
           address: `${idx + 1} Trial Street`,
-          lat: 51.5 + latJitter,
-          lon: -0.121 + lonJitter,
+          lat: 51.5049 + latJitter,
+          lon: -0.1208 + lonJitter,
           classificationDescription: "Residential",
         });
       }
@@ -107,66 +108,75 @@ export async function installDeterministicHostBridge(page, options = {}) {
       window.__MCP_HOST_PROFILE__ = selectedProfile;
       window.__MCP_HOST_SEED__ = selectedSeed;
 
-      window.addEventListener("message", (event) => {
-        const message = event.data;
+      const handleRequest = (message) => {
         if (!message || message.jsonrpc !== "2.0" || message.id === undefined) {
-          return;
+          return null;
+        }
+        // Ignore response envelopes and only process request messages.
+        if (
+          Object.prototype.hasOwnProperty.call(message, "result") ||
+          Object.prototype.hasOwnProperty.call(message, "error")
+        ) {
+          return null;
+        }
+
+        const method = typeof message.method === "string" ? message.method : null;
+        if (!method) {
+          return null;
         }
 
         const respond = (result) => {
-          window.postMessage({ jsonrpc: "2.0", id: message.id, result }, "*");
+          return { jsonrpc: "2.0", id: message.id, result };
         };
 
-        if (message.method === "ui/initialize") {
-          respond({
+        if (method === "ui/initialize") {
+          return respond({
             protocolVersion: "2026-01-26",
             hostContext,
           });
-          return;
         }
 
-        if (message.method !== "tools/call") {
-          respond({});
-          return;
+        if (method !== "tools/call") {
+          return respond({});
         }
 
         const name = message.params?.name || message.params?.tool;
         const normalized = typeof name === "string" ? name.replaceAll(".", "_") : "";
 
         if (name === "os_places.search") {
-          window.postMessage(
-            {
-              jsonrpc: "2.0",
-              id: message.id,
-              error: { code: -32000, message: "Tool not found on server: os_places.search" },
-            },
-            "*"
-          );
-          return;
+          return {
+            jsonrpc: "2.0",
+            id: message.id,
+            error: { code: -32000, message: "Tool not found on server: os_places.search" },
+          };
         }
 
         if (normalized === "os_places_search") {
-          respond({ results: addressResults });
-          return;
+          return respond({ results: addressResults });
         }
         if (normalized === "os_apps_log_event") {
-          respond({ status: "logged" });
-          return;
+          return respond({ status: "logged" });
         }
         if (normalized === "admin_lookup_containing_areas") {
-          respond({ results: [] });
-          return;
+          return respond({ results: [] });
         }
         if (normalized === "admin_lookup_area_geometry") {
-          respond({});
-          return;
+          return respond({});
         }
         if (normalized === "os_map_inventory") {
-          respond(selectedInventory);
-          return;
+          return respond(selectedInventory);
         }
 
-        respond({});
+        return respond({});
+      };
+
+      window.__MCP_HOST_BRIDGE_HANDLE__ = handleRequest;
+
+      window.addEventListener("message", (event) => {
+        const response = handleRequest(event.data);
+        if (response) {
+          window.postMessage(response, "*");
+        }
       });
     },
     {
@@ -180,6 +190,21 @@ export async function installDeterministicHostBridge(page, options = {}) {
 export async function roundTripUiInitialize(page) {
   return page.evaluate(async () => {
     const requestId = `init-${Date.now()}`;
+    if (typeof window.__MCP_HOST_BRIDGE_HANDLE__ === "function") {
+      const response = window.__MCP_HOST_BRIDGE_HANDLE__({
+        jsonrpc: "2.0",
+        id: requestId,
+        method: "ui/initialize",
+        params: {},
+      });
+      if (!response) {
+        throw new Error("Host bridge did not return a response");
+      }
+      if (response.error) {
+        throw new Error(response.error.message || "RPC error");
+      }
+      return response.result || null;
+    }
     return await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error("Timed out waiting for ui/initialize response"));
@@ -187,6 +212,15 @@ export async function roundTripUiInitialize(page) {
       const handler = (event) => {
         const data = event.data;
         if (!data || data.jsonrpc !== "2.0" || data.id !== requestId) {
+          return;
+        }
+        if (typeof data.method === "string") {
+          return;
+        }
+        if (
+          !Object.prototype.hasOwnProperty.call(data, "result") &&
+          !Object.prototype.hasOwnProperty.call(data, "error")
+        ) {
           return;
         }
         window.removeEventListener("message", handler);

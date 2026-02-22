@@ -650,6 +650,42 @@
     }
   };
 
+  const extractToolPayload = (result) => {
+    if (!result || typeof result !== "object") {
+      return result;
+    }
+    if (result.data && typeof result.data === "object") {
+      return result.data;
+    }
+    if (result.structuredContent && typeof result.structuredContent === "object") {
+      return result.structuredContent;
+    }
+    if (Array.isArray(result.content)) {
+      for (const block of result.content) {
+        if (!block || typeof block !== "object") {
+          continue;
+        }
+        if (block.type === "json" && block.json && typeof block.json === "object") {
+          return block.json;
+        }
+        if (block.type === "text" && typeof block.text === "string") {
+          const text = block.text.trim();
+          if (text.startsWith("{") || text.startsWith("[")) {
+            try {
+              const parsed = JSON.parse(text);
+              if (parsed && typeof parsed === "object") {
+                return parsed;
+              }
+            } catch (_err) {
+              // Ignore unparseable text blocks and continue scanning.
+            }
+          }
+        }
+      }
+    }
+    return result;
+  };
+
   const fetchDescriptor = async () => {
     if (!client) {
       return;
@@ -663,10 +699,11 @@
         CompatibilityCallToolResultSchema
       );
       descriptorRaw = response;
-      descriptorMeta = response?.data ?? null;
+      const payload = extractToolPayload(response);
+      descriptorMeta = payload ?? null;
       logDebug("Descriptor fetched", {
-        server: response?.data?.server,
-        version: response?.data?.version
+        server: payload?.server,
+        version: payload?.version
       });
     } catch (err) {
       error = redactErrorMessage(err?.message || String(err));

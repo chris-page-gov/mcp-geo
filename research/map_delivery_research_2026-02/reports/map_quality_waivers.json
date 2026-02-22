@@ -1,3 +1,26 @@
 {
-  "waivers": []
+  "policyVersion": "2026-02-21",
+  "owner": "@chris-page-gov",
+  "thresholds": {
+    "contrastFailMin": 0.2,
+    "contrastWarnMin": 0.28,
+    "labelDensityWarnMin": 0.22,
+    "labelDensityFailMin": 0.36
+  },
+  "waivers": [
+    {
+      "trialId": "story-3-coventry-route-layering",
+      "reason": "Route-planning storyboard intentionally uses low-contrast, de-emphasized basemap to foreground corridor overlays; manually reviewed for legibility."
+    },
+    {
+      "trialId": "story-5-manchester-inventory-export",
+      "browser": "webkit-desktop",
+      "reason": "Known WebKit raster text edge-density inflation for dense urban inventory storyboard; reviewed against Chromium/Firefox and accepted for slide output."
+    },
+    {
+      "trialId": "story-6-westminster-policy-layering",
+      "browser": "webkit-desktop",
+      "reason": "Known WebKit raster text edge-density inflation for policy-layer storyboard; reviewed against Chromium/Firefox and accepted for slide output."
+    }
+  ]
 }

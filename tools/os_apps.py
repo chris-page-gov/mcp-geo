@@ -69,6 +69,9 @@ UI_TOOL_RESOURCES = {
 
 _MAX_TOOL_RESPONSE_BYTES = 950_000
 _MAX_EMBEDDED_RESOURCE_BYTES = 850_000
+_ONS_DATASET_ALIASES = {
+    "gdp": "gdp-to-four-decimal-places",
+}
 
 
 def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
@@ -532,7 +535,11 @@ def _render_statistics_dashboard(payload: dict[str, Any]) -> ToolResult:
     if dataset is not None and not isinstance(dataset, str):
         return _error("dataset must be a string")
     if dataset:
-        config["dataset"] = dataset
+        normalized_dataset = dataset.strip()
+        config["dataset"] = _ONS_DATASET_ALIASES.get(
+            normalized_dataset.lower(),
+            normalized_dataset,
+        )
     area_codes = payload.get("areaCodes")
     if area_codes is not None:
         if not isinstance(area_codes, list) or not all(isinstance(x, str) for x in area_codes):

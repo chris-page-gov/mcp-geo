@@ -60,7 +60,10 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
           return;
         }
         if (name === "os_places_search") {
-          respond({ results: addressResults });
+          respond({
+            structuredContent: { results: addressResults },
+            content: [{ type: "json", json: { results: addressResults } }],
+          });
           return;
         }
         if (name === "os_apps.log_event") {

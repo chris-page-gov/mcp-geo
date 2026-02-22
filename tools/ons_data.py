@@ -7,6 +7,7 @@ import re
 import time
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urljoin
 from tools.registry import Tool, register, ToolResult
 from server.config import settings
 from tools.ons_common import client as ons_client
@@ -38,10 +39,10 @@ _MONTH_INDEX = {
 }
 
 _TIME_TOKEN_PATTERNS = [
-    (re.compile(r"^(?P<year>\d{4})$"), lambda m: int(m.group("year")) * 10000),
+    (re.compile(r"^(?P<year>\d{4})$"), lambda m: int(m.group("year")) * 100 + 12),
     (
         re.compile(r"^(?P<year>\d{4})\s*Q(?P<q>[1-4])$", re.IGNORECASE),
-        lambda m: int(m.group("year")) * 100 + int(m.group("q")),
+        lambda m: int(m.group("year")) * 100 + (int(m.group("q")) * 3),
     ),
     (
         re.compile(r"^(?P<year>\d{4})[-\s]?(?P<month>0[1-9]|1[0-2])$"),
@@ -54,13 +55,47 @@ _TIME_TOKEN_PATTERNS = [
         ),
         lambda m: int(m.group("year")) * 100 + _MONTH_INDEX[m.group("month")[:3].lower()],
     ),
+    (
+        re.compile(
+            r"^(?P<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)-(?P<yy>\d{2})$",
+            re.IGNORECASE,
+        ),
+        lambda m: (2000 + int(m.group("yy"))) * 100 + _MONTH_INDEX[m.group("month")[:3].lower()],
+    ),
 ]
 
 _VERSION_PATTERN = re.compile(
     r"/datasets/(?P<dataset>[^/]+)/editions/(?P<edition>[^/]+)/versions/(?P<version>[^/]+)"
 )
+_YEAR_PATTERN = re.compile(r"^(?P<year>\d{4})$")
+_QUARTER_PATTERN = re.compile(r"^(?P<year>\d{4})\s*Q(?P<q>[1-4])$", re.IGNORECASE)
+_QUARTER_SHORT_PATTERN = re.compile(r"^Q(?P<q>[1-4])$", re.IGNORECASE)
 
 _MAX_TIME_RANGE_OPTIONS = 48
+_DEFAULT_TIME_WILDCARD = "*"
+_OBSERVATIONS_FETCH_PAGE_LIMIT = 500
+
+_DATASET_ALIASES = {
+    # Backward-compatible alias used by legacy prompts and widget defaults.
+    "gdp": "gdp-to-four-decimal-places",
+}
+
+_DIMENSION_VALUE_ALIASES = {
+    "gdp-to-four-decimal-places": {
+        "unofficialstandardindustrialclassification": {
+            "gdpv": "A--T",
+            "gdp": "A--T",
+            "chained_volume_measure": "A--T",
+        }
+    }
+}
+
+
+def _normalize_dataset_id(dataset: str) -> str:
+    normalized = dataset.strip()
+    if not normalized:
+        return normalized
+    return _DATASET_ALIASES.get(normalized.lower(), normalized)
 
 
 def _parse_time_token(value: str) -> int | None:
@@ -71,6 +106,46 @@ def _parse_time_token(value: str) -> int | None:
     return None
 
 
+def _parse_range_bound(value: str, *, is_end: bool) -> int | None:
+    text = value.strip()
+    quarter_match = _QUARTER_PATTERN.match(text)
+    if quarter_match:
+        year = int(quarter_match.group("year"))
+        quarter = int(quarter_match.group("q"))
+        month = quarter * 3 if is_end else (quarter - 1) * 3 + 1
+        return year * 100 + month
+    year_match = _YEAR_PATTERN.match(text)
+    if year_match:
+        year = int(year_match.group("year"))
+        month = 12 if is_end else 1
+        return year * 100 + month
+    return _parse_time_token(text)
+
+
+def _expand_range_end_token(start_text: str, end_text: str) -> str:
+    """Expand shorthand end-bounds such as `2024 Q1-Q2` -> `2024 Q1-2024 Q2`."""
+    end = end_text.strip()
+    short_quarter = _QUARTER_SHORT_PATTERN.match(end)
+    if short_quarter:
+        start = start_text.strip()
+        quarter_start = _QUARTER_PATTERN.match(start)
+        if quarter_start:
+            return f"{quarter_start.group('year')} Q{short_quarter.group('q')}"
+        year_start = _YEAR_PATTERN.match(start)
+        if year_start:
+            return f"{year_start.group('year')} Q{short_quarter.group('q')}"
+    return end_text
+
+
+def _is_stale_version_error(err: dict[str, Any]) -> bool:
+    message = str(err.get("message", "")).lower()
+    return (
+        "not found" in message
+        or "invalid version requested" in message
+        or "invalid edition requested" in message
+    )
+
+
 def _extract_dim_ids(meta_doc: dict[str, Any]) -> list[str]:
     raw_any = meta_doc.get("dimensions")
     if not isinstance(raw_any, list):
@@ -79,10 +154,110 @@ def _extract_dim_ids(meta_doc: dict[str, Any]) -> list[str]:
     for entry in raw_any:  # type: ignore[assignment]
         if isinstance(entry, dict):
             entry_dict = cast(dict[str, Any], entry)
-            ident: Any = entry_dict.get("id") or entry_dict.get("name")
+            ident: Any = entry_dict.get("name") or entry_dict.get("id")
             if isinstance(ident, str):
                 ids.append(ident)
     return ids
+
+
+def _extract_dim_entries(meta_doc: dict[str, Any]) -> list[dict[str, str]]:
+    raw_any = meta_doc.get("dimensions")
+    if not isinstance(raw_any, list):
+        return []
+    entries: list[dict[str, str]] = []
+    for entry in raw_any:
+        if not isinstance(entry, dict):
+            continue
+        entry_dict = cast(dict[str, Any], entry)
+        name_any: Any = entry_dict.get("name")
+        id_any: Any = entry_dict.get("id")
+        name = name_any if isinstance(name_any, str) and name_any.strip() else ""
+        dim_id = id_any if isinstance(id_any, str) and id_any.strip() else ""
+        key = name or dim_id
+        if not key:
+            continue
+        entries.append({"key": key, "name": name, "id": dim_id})
+    return entries
+
+
+def _dimension_matches(entry: dict[str, str], value: str) -> bool:
+    needle = value.strip().lower()
+    if not needle:
+        return False
+    for candidate in (entry.get("key"), entry.get("name"), entry.get("id")):
+        if candidate and candidate.strip().lower() == needle:
+            return True
+    return False
+
+
+def _find_dimension(entries: list[dict[str, str]], value: str) -> dict[str, str] | None:
+    for entry in entries:
+        if _dimension_matches(entry, value):
+            return entry
+    return None
+
+
+def _extract_codes_from_entries(raw_entries: list[dict[str, Any]]) -> list[str]:
+    options: list[str] = []
+    for entry in raw_entries:
+        val: Any = entry.get("option") or entry.get("id") or entry.get("value") or entry.get("code")
+        if isinstance(val, str):
+            options.append(val)
+    return options
+
+
+def _load_dimension_options(
+    dataset: str,
+    edition: str,
+    version: str,
+    entry: dict[str, str],
+) -> tuple[list[str] | None, dict[str, Any] | None]:
+    # ONS versions can expose both "id" and "name" for dimensions; only one is
+    # accepted for options/observations on some datasets. Try both.
+    tried: list[str] = []
+    last_error: dict[str, Any] | None = None
+    for candidate in (entry.get("name"), entry.get("id"), entry.get("key")):
+        if not candidate:
+            continue
+        token = candidate.strip()
+        if not token or token in tried:
+            continue
+        tried.append(token)
+        opt_url = (
+            f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
+            f"/dimensions/{token}/options"
+        )
+        status_opt, opt_data = ons_client.get_all_pages(opt_url, params={"limit": 1000, "page": 1})
+        if status_opt != 200:
+            if isinstance(opt_data, dict):
+                last_error = cast(dict[str, Any], opt_data)
+            continue
+        if not isinstance(opt_data, list):
+            last_error = {
+                "isError": True,
+                "code": "INTEGRATION_ERROR",
+                "message": "Expected option list from ONS API",
+            }
+            continue
+        options = _extract_codes_from_entries(
+            [item for item in opt_data if isinstance(item, dict)]
+        )
+        if options:
+            return options, None
+        # Keep searching if this token resolves but returns no options.
+    return [], last_error
+
+
+def _load_version_metadata(
+    dataset: str,
+    edition: str,
+    version: str,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    version_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
+    status_meta, meta = ons_client.get_json(version_url, params=None)
+    if status_meta != 200:
+        return None, meta
+    return meta, None
 
 
 def _pick_latest(items: list[dict[str, Any]], key: str) -> str | None:
@@ -105,6 +280,7 @@ def _pick_latest(items: list[dict[str, Any]], key: str) -> str | None:
 
 
 def _resolve_latest_version(dataset: str) -> tuple[str | None, str | None] | tuple[int, dict[str, Any]]:
+    dataset = _normalize_dataset_id(dataset)
     editions_url = f"{ons_client.base_api}/datasets/{dataset}/editions"
     status, items = ons_client.get_all_pages(editions_url, params={"limit": 1000, "page": 1})
     if status != 200:
@@ -144,6 +320,7 @@ def _resolve_from_term(term: str) -> tuple[str | None, str | None, str | None, l
     dataset_id = chosen.get("id")
     if not isinstance(dataset_id, str):
         return None, None, None, items
+    dataset_id = _normalize_dataset_id(dataset_id)
     latest = chosen.get("links", {}).get("latest_version", {}).get("href")
     if isinstance(latest, str):
         match = _VERSION_PATTERN.search(latest)
@@ -161,58 +338,118 @@ def _resolve_from_term(term: str) -> tuple[str | None, str | None, str | None, l
 
 
 def _resolve_time_options(dataset: str, edition: str, version: str) -> tuple[list[str] | None, dict[str, Any] | None]:
-    version_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
-    status_meta, meta = ons_client.get_json(version_url, params=None)
-    if status_meta != 200:
-        return None, meta
-    dim_ids = _extract_dim_ids(meta)
-    time_dim = None
-    for dim in dim_ids:
-        if dim.lower() in {"time", "date"}:
-            time_dim = dim
+    meta, err = _load_version_metadata(dataset, edition, version)
+    if err is not None:
+        return None, err
+    if meta is None:
+        return None, {"isError": True, "code": "INTEGRATION_ERROR", "message": "Missing version metadata"}
+    entries = _extract_dim_entries(meta)
+    time_entry: dict[str, str] | None = None
+    for entry in entries:
+        key = (entry.get("name") or entry.get("key") or "").lower()
+        if key in {"time", "date"}:
+            time_entry = entry
             break
-    if not time_dim:
-        for dim in dim_ids:
-            if "time" in dim.lower() or "date" in dim.lower():
-                time_dim = dim
+    if time_entry is None:
+        for entry in entries:
+            key = (entry.get("name") or entry.get("key") or "").lower()
+            if "time" in key or "date" in key:
+                time_entry = entry
                 break
-    if not time_dim:
+    if time_entry is None:
         return None, {"isError": True, "code": "INVALID_INPUT", "message": "No time dimension found"}
-    opt_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/dimensions/{time_dim}/options"
-    status_opt, opt_data = ons_client.get_all_pages(opt_url, params={"limit": 1000, "page": 1})
-    if status_opt != 200:
-        return None, cast(dict[str, Any], opt_data)
-    if not isinstance(opt_data, list):
-        return None, {
-            "isError": True,
-            "code": "INTEGRATION_ERROR",
-            "message": "Expected time option list from ONS API",
-        }
-    options: list[str] = []
-    for entry in opt_data:
-        if isinstance(entry, dict):
-            val: Any = entry.get("option") or entry.get("id") or entry.get("value") or entry.get("code")
-            if isinstance(val, str):
-                options.append(val)
-    return options, None
+    options, opt_err = _load_dimension_options(dataset, edition, version, time_entry)
+    if opt_err is not None:
+        return None, opt_err
+    return options or [], None
+
+
+def _fetch_observations_paged(
+    *,
+    url: str,
+    filters: dict[str, Any],
+) -> ToolResult:
+    params = ons_client.build_paged_params(
+        _OBSERVATIONS_FETCH_PAGE_LIMIT,
+        1,
+        dict(filters),
+    )
+    current_url = url
+    current_params: dict[str, Any] | None = params
+    page = int(params.get("page", 1))
+    limit = int(params.get("limit", _OBSERVATIONS_FETCH_PAGE_LIMIT))
+    observations: list[dict[str, Any]] = []
+    dimensions: dict[str, Any] | None = None
+
+    while True:
+        status, data = ons_client.get_json(current_url, params=current_params)
+        if status != 200:
+            return status, data
+        if dimensions is None and isinstance(data.get("dimensions"), dict):
+            dimensions = cast(dict[str, Any], data.get("dimensions"))
+
+        batch_raw = data.get("observations", [])
+        if not isinstance(batch_raw, list):
+            return 500, {
+                "isError": True,
+                "code": "INTEGRATION_ERROR",
+                "message": "Expected observations list from ONS API.",
+            }
+        for item in batch_raw:
+            if isinstance(item, dict):
+                observations.append(item)
+
+        next_url = None
+        links = data.get("links")
+        if isinstance(links, list):
+            for link in links:
+                if isinstance(link, dict) and link.get("rel") == "next":
+                    href = link.get("href")
+                    if isinstance(href, str) and href:
+                        next_url = urljoin(current_url, href)
+                    break
+        if next_url:
+            page += 1
+            current_url = next_url
+            current_params = None
+            continue
+
+        total = data.get("total") or data.get("count")
+        if isinstance(total, int) and page * limit >= total:
+            break
+        if len(batch_raw) < limit:
+            break
+
+        page += 1
+        current_url = url
+        current_params = dict(params)
+        current_params["page"] = page
+        current_params["limit"] = limit
+
+    return 200, {"observations": observations, "dimensions": dimensions}
 
 
 def _query(payload: dict[str, Any]) -> ToolResult:
-    dataset = payload.get("dataset")
+    dataset_input = payload.get("dataset")
+    dataset = dataset_input
     edition = payload.get("edition")
     version = payload.get("version")
     geography = payload.get("geography")
     measure = payload.get("measure")
     time_range = payload.get("timeRange")  # format: "YYYY Qn-YYYY Qn" or single period
+    filters = payload.get("filters")
     limit = payload.get("limit", 50)
     page = payload.get("page", 1)
     live_check = _require_live()
     if live_check:
         return live_check
+    if filters is not None and not isinstance(filters, dict):
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": "filters must be an object"}
     if not isinstance(limit, int) or not 1 <= limit <= 500:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be 1-500"}
     if not isinstance(page, int) or page < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "page must be >=1"}
+    alias_retry_used = bool(payload.get("_aliasRetried"))
     term = payload.get("term") or payload.get("query") or payload.get("datasetQuery")
     if not (isinstance(dataset, str) and dataset):
         if isinstance(term, str) and term.strip():
@@ -231,8 +468,31 @@ def _query(payload: dict[str, Any]) -> ToolResult:
             return 400, {
                 "isError": True,
                 "code": "INVALID_INPUT",
-                "message": "dataset, edition, and version are required (or provide term for auto-resolution).",
-            }
+                    "message": "dataset, edition, and version are required (or provide term for auto-resolution).",
+                }
+    if not isinstance(dataset, str) or not dataset:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "dataset is required for live ONS queries.",
+        }
+    raw_dataset_text = str(dataset_input).strip() if isinstance(dataset_input, str) else ""
+    edition_supplied = isinstance(payload.get("edition"), str) and bool(str(payload.get("edition")).strip())
+    version_supplied = isinstance(payload.get("version"), str) and bool(str(payload.get("version")).strip())
+    dataset = _normalize_dataset_id(dataset)
+    alias_applied = raw_dataset_text.lower() in _DATASET_ALIASES
+    if alias_applied and not (edition_supplied and version_supplied):
+        resolved_latest = _resolve_latest_version(dataset)
+        if isinstance(resolved_latest[0], int):
+            return resolved_latest  # type: ignore[return-value]
+        latest_edition, latest_version = resolved_latest
+        if (
+            isinstance(latest_edition, str)
+            and latest_edition
+            and isinstance(latest_version, str)
+            and latest_version
+        ):
+            edition, version = latest_edition, latest_version
     if not (isinstance(edition, str) and edition) or not (isinstance(version, str) and version):
         resolved = _resolve_latest_version(dataset)
         if isinstance(resolved[0], int):
@@ -244,88 +504,251 @@ def _query(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "dataset, edition, and version are required for live ONS queries.",
         }
-    if time_range and "-" in str(time_range):
-        range_text = str(time_range)
-        parts = [part.strip() for part in range_text.split("-", 1)]
-        if len(parts) != 2 or not all(parts):
-            return 400, {
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "timeRange must be formatted like 'YYYY Qn-YYYY Qn' or 'YYYY-YYYY'.",
-            }
-        start_val = _parse_time_token(parts[0])
-        end_val = _parse_time_token(parts[1])
-        if start_val is None or end_val is None:
-            return 400, {
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "timeRange format not recognized.",
-            }
-        if start_val > end_val:
-            start_val, end_val = end_val, start_val
-        options, err = _resolve_time_options(dataset, edition, version)
-        if err is not None:
-            return 400, err
-        if not options:
-            return 404, {"isError": True, "code": "NOT_FOUND", "message": "No time options found."}
-        option_values: list[tuple[str, int]] = []
-        for opt in options:
-            parsed = _parse_time_token(opt)
-            if parsed is not None:
-                option_values.append((opt, parsed))
-        in_range = [opt for opt, parsed in option_values if start_val <= parsed <= end_val]
-        if not in_range:
-            return 404, {"isError": True, "code": "NOT_FOUND", "message": "No time options in range."}
-        if len(in_range) > _MAX_TIME_RANGE_OPTIONS:
-            return 400, {
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": f"timeRange expands to {len(in_range)} values; narrow the range.",
-            }
-        results: list[dict[str, Any]] = []
-        for time_value in in_range:
-            params = ons_client.build_paged_params(limit, 1, {})
-            if geography:
-                params["geography"] = geography
-            if measure:
-                params["measure"] = measure
-            params["time"] = time_value
-            url = (
-                f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/observations"
-            )
-            status, data = ons_client.get_json(url, params=params)
-            if status != 200:
-                return status, data
-            results.extend(data.get("observations", []))
+    meta, meta_err = _load_version_metadata(dataset, edition, version)
+    if meta_err is not None:
+        # If caller passed stale version metadata, auto-upgrade to the latest published version.
+        if _is_stale_version_error(meta_err):
+            resolved = _resolve_latest_version(dataset)
+            if not isinstance(resolved[0], int):
+                latest_edition, latest_version = resolved
+                if (
+                    isinstance(latest_edition, str)
+                    and latest_edition
+                    and isinstance(latest_version, str)
+                    and latest_version
+                    and (latest_edition != edition or latest_version != version)
+                ):
+                    edition, version = latest_edition, latest_version
+                    meta, meta_err = _load_version_metadata(dataset, edition, version)
+        if meta_err is not None:
+            return 400, meta_err
+    if meta is None:
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "ONS version metadata missing.",
+        }
+    dim_entries = _extract_dim_entries(meta)
+    if not dim_entries:
+        # Compatibility fallback for legacy/mocked responses that omit dimensions.
+        params = ons_client.build_paged_params(limit, page, {})
+        if geography:
+            params["geography"] = geography
+        if measure:
+            params["measure"] = measure
+        if isinstance(time_range, str) and time_range.strip():
+            params["time"] = time_range.strip()
+        url = (
+            f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
+            "/observations"
+        )
+        status, data = ons_client.get_json(url, params=params)
+        if status != 200:
+            return status, data
+        observations = data.get("observations", [])
+        if not isinstance(observations, list):
+            observations = []
+        start = (page - 1) * limit
+        end = start + limit
+        paged_results = [row for row in observations[start:end] if isinstance(row, dict)]
+        next_token = str(page + 1) if end < len(observations) else None
         return 200, {
-            "results": results,
-            "count": len(results),
+            "results": paged_results,
+            "count": len(observations),
             "limit": limit,
-            "page": 1,
-            "nextPageToken": None,
+            "page": page,
+            "nextPageToken": next_token,
             "live": True,
             "dataset": dataset,
             "edition": edition,
             "version": version,
-            "timeRange": range_text,
-            "timeValues": in_range,
         }
-    params = ons_client.build_paged_params(limit, page, {})
-    if geography:
-        params["geography"] = geography
+
+    def _key(entry: dict[str, str]) -> str:
+        return entry.get("name") or entry.get("key") or entry.get("id") or ""
+
+    time_entry = None
+    geography_entry = _find_dimension(dim_entries, "geography")
+    measure_entry = _find_dimension(dim_entries, "measure")
+    for entry in dim_entries:
+        token = _key(entry).lower()
+        if token in {"time", "date"} or "time" in token or "date" in token:
+            time_entry = entry
+            break
+    extra_measure_entry = None
+    for entry in dim_entries:
+        key_lower = _key(entry).lower()
+        if entry is geography_entry or entry is time_entry or entry is measure_entry:
+            continue
+        if key_lower:
+            extra_measure_entry = entry
+            break
+
+    base_filters: dict[str, Any] = {}
+    if isinstance(filters, dict):
+        for key, value in filters.items():
+            if isinstance(key, str) and key.strip():
+                base_filters[key.strip()] = value
+
+    if geography and geography_entry is not None:
+        base_filters[_key(geography_entry)] = geography
+
     if measure:
-        params["measure"] = measure
-    if time_range:
-        params["time"] = time_range
+        if measure_entry is not None:
+            base_filters[_key(measure_entry)] = measure
+        elif extra_measure_entry is not None:
+            dim_key = _key(extra_measure_entry)
+            mapped = measure
+            alias_map = _DIMENSION_VALUE_ALIASES.get(dataset, {}).get(dim_key, {})
+            if isinstance(alias_map, dict):
+                mapped_alias = alias_map.get(str(measure).strip().lower())
+                if isinstance(mapped_alias, str) and mapped_alias:
+                    mapped = mapped_alias
+            base_filters[dim_key] = mapped
+
+    explicit_time_values: list[str] | None = None
+    resolved_time_range: str | None = None
+    if isinstance(time_range, str) and time_range.strip():
+        resolved_time_range = time_range.strip()
+        parts = [part.strip() for part in resolved_time_range.split("-", 1)]
+        if len(parts) == 2 and parts[0] and parts[1]:
+            end_token = _expand_range_end_token(parts[0], parts[1])
+            start_val = _parse_range_bound(parts[0], is_end=False)
+            end_val = _parse_range_bound(end_token, is_end=True)
+            if start_val is not None and end_val is not None:
+                if start_val > end_val:
+                    start_val, end_val = end_val, start_val
+                options, err = _resolve_time_options(dataset, edition, version)
+                if err is not None:
+                    return 400, err
+                if not options:
+                    if alias_applied and not alias_retry_used:
+                        resolved = _resolve_latest_version(dataset)
+                        if not isinstance(resolved[0], int):
+                            latest_edition, latest_version = resolved
+                            if (
+                                isinstance(latest_edition, str)
+                                and latest_edition
+                                and isinstance(latest_version, str)
+                                and latest_version
+                                and (latest_edition != edition or latest_version != version)
+                            ):
+                                retry_payload = dict(payload)
+                                retry_payload["dataset"] = dataset
+                                retry_payload["edition"] = latest_edition
+                                retry_payload["version"] = latest_version
+                                retry_payload["_aliasRetried"] = True
+                                return _query(retry_payload)
+                    return 404, {
+                        "isError": True,
+                        "code": "NOT_FOUND",
+                        "message": "No time options found.",
+                    }
+                option_values: list[tuple[str, int]] = []
+                for opt in options:
+                    parsed = _parse_time_token(opt)
+                    if parsed is not None:
+                        option_values.append((opt, parsed))
+                in_range = [opt for opt, parsed in option_values if start_val <= parsed <= end_val]
+                if not in_range:
+                    if alias_applied and not alias_retry_used:
+                        resolved = _resolve_latest_version(dataset)
+                        if not isinstance(resolved[0], int):
+                            latest_edition, latest_version = resolved
+                            if (
+                                isinstance(latest_edition, str)
+                                and latest_edition
+                                and isinstance(latest_version, str)
+                                and latest_version
+                                and (latest_edition != edition or latest_version != version)
+                            ):
+                                retry_payload = dict(payload)
+                                retry_payload["dataset"] = dataset
+                                retry_payload["edition"] = latest_edition
+                                retry_payload["version"] = latest_version
+                                retry_payload["_aliasRetried"] = True
+                                return _query(retry_payload)
+                    return 404, {
+                        "isError": True,
+                        "code": "NOT_FOUND",
+                        "message": "No time options in range.",
+                    }
+                if len(in_range) > _MAX_TIME_RANGE_OPTIONS:
+                    return 400, {
+                        "isError": True,
+                        "code": "INVALID_INPUT",
+                        "message": f"timeRange expands to {len(in_range)} values; narrow the range.",
+                    }
+                explicit_time_values = in_range
+            else:
+                explicit_time_values = [resolved_time_range]
+        else:
+            explicit_time_values = [resolved_time_range]
+
+    for entry in dim_entries:
+        dim_key = _key(entry)
+        if not dim_key:
+            continue
+        if entry is time_entry:
+            continue
+        if dim_key in base_filters:
+            continue
+        options, err = _load_dimension_options(dataset, edition, version, entry)
+        if err is not None:
+            return 400, err
+        if options:
+            base_filters[dim_key] = options[0]
+
+    time_values: list[str] | None = explicit_time_values
+    if time_entry is not None:
+        time_key = _key(time_entry)
+        if time_values is None:
+            time_values = [_DEFAULT_TIME_WILDCARD]
+        if time_values and len(time_values) == 1:
+            base_filters[time_key] = time_values[0]
+
     url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/observations"
-    status, data = ons_client.get_json(url, params=params)
-    if status != 200:
-        return status, data
-    observations = data.get("observations", [])
-    next_token = str(page + 1) if len(observations) == limit else None
+    results: list[dict[str, Any]] = []
+    observation_dimensions: dict[str, Any] | None = None
+
+    if time_entry is not None and time_values and len(time_values) > 1:
+        time_key = _key(time_entry)
+        for time_value in time_values:
+            params = dict(base_filters)
+            params[time_key] = time_value
+            status, data = _fetch_observations_paged(url=url, filters=params)
+            if status != 200:
+                return status, data
+            if observation_dimensions is None and isinstance(data.get("dimensions"), dict):
+                observation_dimensions = cast(dict[str, Any], data.get("dimensions"))
+            batch_raw = data.get("observations", [])
+            if isinstance(batch_raw, list):
+                for item in batch_raw:
+                    if isinstance(item, dict):
+                        results.append(item)
+    else:
+        status, data = _fetch_observations_paged(url=url, filters=base_filters)
+        if status != 200:
+            return status, data
+        if isinstance(data.get("dimensions"), dict):
+            observation_dimensions = cast(dict[str, Any], data.get("dimensions"))
+        batch_raw = data.get("observations", [])
+        if isinstance(batch_raw, list):
+            for item in batch_raw:
+                if isinstance(item, dict):
+                    results.append(item)
+
+    total_count = len(results)
+    start = (page - 1) * limit
+    end = start + limit
+    if start >= total_count:
+        paged_results: list[dict[str, Any]] = []
+    else:
+        paged_results = results[start:end]
+    next_token = str(page + 1) if end < total_count else None
     return 200, {
-        "results": observations,
-        "count": data.get("total", len(observations)),
+        "results": paged_results,
+        "count": total_count,
         "limit": limit,
         "page": page,
         "nextPageToken": next_token,
@@ -333,11 +756,16 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         "dataset": dataset,
         "edition": edition,
         "version": version,
+        "timeRange": resolved_time_range,
+        "timeValues": explicit_time_values,
+        "filters": base_filters,
+        "dimensions": observation_dimensions,
     }
 
 
 def _dimensions(payload: dict[str, Any]) -> ToolResult:
-    dataset = payload.get("dataset")
+    dataset_input = payload.get("dataset")
+    dataset = dataset_input
     edition = payload.get("edition")
     version = payload.get("version")
     only = payload.get("dimension")
@@ -350,56 +778,73 @@ def _dimensions(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "dataset, edition, and version are required for live ONS dimensions.",
         }
+    raw_dataset_text = str(dataset_input).strip() if isinstance(dataset_input, str) else ""
+    edition_supplied = isinstance(payload.get("edition"), str) and bool(str(payload.get("edition")).strip())
+    version_supplied = isinstance(payload.get("version"), str) and bool(str(payload.get("version")).strip())
+    dataset = _normalize_dataset_id(dataset)
+    if raw_dataset_text.lower() in _DATASET_ALIASES and not (edition_supplied and version_supplied):
+        resolved_latest = _resolve_latest_version(dataset)
+        if isinstance(resolved_latest[0], int):
+            return resolved_latest  # type: ignore[return-value]
+        latest_edition, latest_version = resolved_latest
+        if (
+            isinstance(latest_edition, str)
+            and latest_edition
+            and isinstance(latest_version, str)
+            and latest_version
+        ):
+            edition, version = latest_edition, latest_version
 
-    def _extract_dim_ids(meta_doc: dict[str, Any]) -> list[str]:
-        raw_any = meta_doc.get("dimensions")
-        if not isinstance(raw_any, list):
-            return []
-        ids: list[str] = []
-        for entry in raw_any:  # type: ignore[assignment]
-            if isinstance(entry, dict):
-                entry_dict = cast(dict[str, Any], entry)
-                ident: Any = entry_dict.get("id") or entry_dict.get("name")
-                if isinstance(ident, str):
-                    ids.append(ident)
-        return ids
+    meta, meta_err = _load_version_metadata(dataset, edition, version)
+    if meta_err is not None:
+        if _is_stale_version_error(meta_err):
+            resolved = _resolve_latest_version(dataset)
+            if not isinstance(resolved[0], int):
+                latest_edition, latest_version = resolved
+                if (
+                    isinstance(latest_edition, str)
+                    and latest_edition
+                    and isinstance(latest_version, str)
+                    and latest_version
+                ):
+                    edition, version = latest_edition, latest_version
+                    meta, meta_err = _load_version_metadata(dataset, edition, version)
+        if meta_err is not None:
+            return 400, meta_err
+    if meta is None:
+        return 500, {
+            "isError": True,
+            "code": "INTEGRATION_ERROR",
+            "message": "ONS version metadata missing.",
+        }
 
-    def _extract_codes(opt_doc: dict[str, Any]) -> list[str]:
-        raw_any = opt_doc.get("items") or opt_doc.get("options") or opt_doc.get("results") or []
-        if not isinstance(raw_any, list):
-            return []
-        codes: list[str] = []
-        for entry in raw_any:  # type: ignore[assignment]
-            if isinstance(entry, dict):
-                entry_dict = cast(dict[str, Any], entry)
-                val: Any = (
-                    entry_dict.get("option")
-                    or entry_dict.get("id")
-                    or entry_dict.get("value")
-                    or entry_dict.get("code")
-                )
-                if isinstance(val, str):
-                    codes.append(val)
-        return codes
-
-    version_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}"
-    status_meta, meta = ons_client.get_json(version_url, params=None)
-    if status_meta != 200:
-        return status_meta, meta
-    dim_ids = _extract_dim_ids(meta)
+    dim_entries = _extract_dim_entries(meta)
     if only:
-        if only not in dim_ids:
-            return 400, {"isError": True, "code": "INVALID_INPUT", "message": f"Unknown dimension '{only}'"}
-        dim_ids = [only]
+        selected = _find_dimension(dim_entries, only)
+        if selected is None:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": f"Unknown dimension '{only}'",
+            }
+        dim_entries = [selected]
     result_map: dict[str, list[str]] = {}
-    for dim_id in dim_ids:
-        opt_url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/dimensions/{dim_id}/options"
-        status_opt, opt_data = ons_client.get_json(opt_url, params={"limit": 1000, "page": 1})
-        if status_opt != 200:
-            return status_opt, opt_data
-        result_map[dim_id] = _extract_codes(opt_data)
+    aliases: dict[str, dict[str, str]] = {}
+    for entry in dim_entries:
+        dim_key = entry.get("name") or entry.get("key") or entry.get("id") or ""
+        if not dim_key:
+            continue
+        options, err = _load_dimension_options(dataset, edition, version, entry)
+        if err is not None:
+            return 400, err
+        result_map[dim_key] = options or []
+        aliases[dim_key] = {
+            "id": entry.get("id", ""),
+            "name": entry.get("name", ""),
+        }
     return 200, {
         "dimensions": result_map,
+        "dimensionAliases": aliases,
         "live": True,
         "dataset": dataset,
         "edition": edition,
@@ -416,6 +861,7 @@ def _editions(payload: dict[str, Any]) -> ToolResult:
         }
     if not isinstance(dataset, str) or not dataset:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset is required"}
+    dataset = _normalize_dataset_id(dataset)
     url = f"{ons_client.base_api}/datasets/{dataset}/editions"
     status, items = ons_client.get_all_pages(url, params={"limit": 1000, "page": 1})
     if status != 200:
@@ -454,6 +900,7 @@ def _versions(payload: dict[str, Any]) -> ToolResult:
         }
     if not isinstance(dataset, str) or not dataset:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset is required"}
+    dataset = _normalize_dataset_id(dataset)
     if not isinstance(edition, str) or not edition:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "edition is required"}
     url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions"
@@ -499,6 +946,10 @@ register(Tool(
             "geography": {"type": "string"},
             "measure": {"type": "string"},
             "timeRange": {"type": "string", "description": "Format 'YYYY Qn-YYYY Qn' or single period 'YYYY Qn'"},
+            "filters": {
+                "type": "object",
+                "description": "Explicit dimension-name filters passed through to ONS observations.",
+            },
             "limit": {"type": "integer", "minimum": 1, "maximum": 500},
             "page": {"type": "integer", "minimum": 1},
             "dataset": {"type": "string", "description": "ONS dataset ID for live mode"},
@@ -520,6 +971,8 @@ register(Tool(
             "nextPageToken": {"type": ["string", "null"]},
             "timeRange": {"type": ["string", "null"]},
             "timeValues": {"type": ["array", "null"]},
+            "filters": {"type": ["object", "null"]},
+            "dimensions": {"type": ["object", "null"]},
         },
         "required": ["results", "count", "limit", "page"],
     },
@@ -678,15 +1131,15 @@ def _write_export_resource(
 
 def _get_observation(payload: dict[str, Any]) -> ToolResult:
     # Live-only: return first matching observation.
-    dataset = payload.get("dataset")
-    edition = payload.get("edition")
-    version = payload.get("version")
     geography = payload.get("geography")
     measure = payload.get("measure")
     time = payload.get("time")
     live_check = _require_live()
     if live_check:
         return live_check
+    dataset = payload.get("dataset")
+    edition = payload.get("edition")
+    version = payload.get("version")
     if not all(isinstance(val, str) and val for val in (dataset, edition, version)):
         return 400, {
             "isError": True,
@@ -695,12 +1148,21 @@ def _get_observation(payload: dict[str, Any]) -> ToolResult:
         }
     if not (geography and measure and time):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "geography, measure, time required"}
-    params = {"geography": geography, "measure": measure, "time": time}
-    url = f"{ons_client.base_api}/datasets/{dataset}/editions/{edition}/versions/{version}/observations"
-    status, data = ons_client.get_json(url, params=params)
+    status, result = _query(
+        {
+            "dataset": dataset,
+            "edition": edition,
+            "version": version,
+            "geography": geography,
+            "measure": measure,
+            "timeRange": time,
+            "limit": 1,
+            "page": 1,
+        }
+    )
     if status != 200:
-        return status, data
-    obs = data.get("observations", [])
+        return status, result
+    obs = result.get("results", []) if isinstance(result, dict) else []
     first = obs[0] if obs else None
     if not first:
         return 404, {"isError": True, "code": "NO_OBSERVATION", "message": "No matching observation"}

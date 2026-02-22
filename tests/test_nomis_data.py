@@ -138,6 +138,67 @@ def test_nomis_concepts_and_codelists_use_sdmx_json_endpoints(monkeypatch):
     assert seen["url"].endswith("/codelist/CL_1_1_SEX.def.sdmx.json")
 
 
+def test_nomis_concepts_and_codelists_fallback_to_dataset_definition(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    dataset_def = {
+        "structure": {
+            "keyfamilies": {
+                "keyfamily": [
+                    {
+                        "id": "NM_1_1",
+                        "components": {
+                            "dimension": [
+                                {"conceptref": "GEOGRAPHY", "codelist": "CL_1_1_GEOGRAPHY"}
+                            ],
+                            "attribute": [
+                                {"conceptref": "SEX", "codelist": "CL_1_1_SEX"}
+                            ],
+                            "primarymeasure": {"conceptref": "OBS_VALUE"},
+                        },
+                    }
+                ]
+            }
+        }
+    }
+
+    def fake_get_json(url: str, params=None, use_cache=True):  # noqa: ARG001
+        if url.endswith("/dataset/def.sdmx.json"):
+            return 200, dataset_def
+        if "/concept/" in url or "/codelist/" in url:
+            return 502, {
+                "isError": True,
+                "code": "UPSTREAM_INVALID_RESPONSE",
+                "message": "NOMIS API returned invalid JSON.",
+            }
+        return 404, {"isError": True, "code": "NOMIS_API_ERROR", "message": "not found"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+
+    concepts_resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.concepts", "concept": "GEOGRAPHY"},
+    )
+    assert concepts_resp.status_code == 200
+    concepts_body = concepts_resp.json()
+    assert concepts_body["derived"] is True
+    assert concepts_body["data"]["count"] == 1
+    assert concepts_body["data"]["concepts"][0]["id"] == "GEOGRAPHY"
+
+    codelists_resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.codelists", "codelist": "CL_1_1_SEX"},
+    )
+    assert codelists_resp.status_code == 200
+    codelists_body = codelists_resp.json()
+    assert codelists_body["derived"] is True
+    assert codelists_body["data"]["count"] == 1
+    assert codelists_body["data"]["codelists"][0]["id"] == "CL_1_1_SEX"
+
+
 def test_nomis_query_error_surface(monkeypatch):
     from tools import nomis_common
 

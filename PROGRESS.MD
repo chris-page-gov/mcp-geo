@@ -5,6 +5,43 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-02-21
 
+## Layered map reliability priority program (2026-02-21)
+
+Primary goal:
+- Reliable layered map display (polygons, lines, and points) in all clients.
+- Interaction where host runtime supports MCP-Apps UI.
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| LMR-BASE-0 Baseline layered-map contract parity | done | none | Hardened baseline contracts in STDIO/HTTP fallback paths so `map_card` + `overlay_bundle` + `export_handoff` are emitted deterministically for non-UI clients (`server/stdio_adapter.py`, transport parity tests). |
+| LMR-ALL-1 All-client layered-render validation matrix | done | LMR-BASE-0 | Re-ran cross-engine matrix on 2026-02-21: `35 passed`, `20 skipped`, `0 failed` across Chromium/Firefox/WebKit desktop+mobile with refreshed evidence in `research/map_delivery_research_2026-02/evidence/` and `reports/trial_summary.md`. |
+| LMR-INT-2 Interaction parity in UI-capable hosts | done | LMR-ALL-1 | Validated geography selector + boundary explorer interaction flows in deterministic host simulation (`trial-3`, `trial-4`) on Chromium desktop; host bridge round-trip stability (`trial-5`) now passes across all matrix engines. |
+| LMR-FBK-3 Deterministic non-UI fallback hardening | done | LMR-BASE-0 | Added explicit fallback-order contracts and deterministic guidance fields for non-UI hosts; regression-covered in `tests/test_stdio_adapter_direct.py` and `tests/test_mcp_http.py`. |
+| LMR-HOST-4 Host runtime gap retest/escalation | blocked | LMR-INT-2 | External Claude host runtime mount/bridge behavior remains outside repo control; latest known evidence still shows `resources/read` success without widget bridge events (`docs/troubleshooting.md`, `logs/claude-trace.jsonl`). Added repeatable classifier automation at `scripts/check_lmr_host4.py` (optional `--run-probe` and `--run-playwright-smoke`) with JSON report output in `logs/lmr-host4-report.json`. Also hardened `ui/boundary_explorer.html` for constrained host windows (map-prioritized responsive layout) and added cross-level fallback search messaging so placeholder terms like “Westminster” no longer fail silently when the selected level is too narrow. Follow-up hardening now normalizes MCP tool payload shapes (`result.data` vs `structuredContent`/`content`) in other widgets to prevent silent empty-result behavior in strict hosts. |
+| LMR-GATE-5 Release validation gate | done | LMR-ALL-1, LMR-INT-2, LMR-FBK-3 | Updated support matrix + fresh trial artifacts and contract tests are complete; quality-gate failures were reduced via story-gallery style tuning and then resolved to warning-only under documented waiver/threshold policy (`research/map_delivery_research_2026-02/reports/map_quality_waivers.json`, `map_quality_report.json`). External host runtime gap remains tracked separately in `LMR-HOST-4`. |
+
+Execution order:
+1. `LMR-BASE-0`
+2. `LMR-ALL-1`
+3. `LMR-FBK-3`
+4. `LMR-INT-2`
+5. `LMR-HOST-4`
+6. `LMR-GATE-5`
+
+## Full review and live operability validation (2026-02-21)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REV-VAL-0 Strict regression gate rerun | done | none | `pytest -q` rerun completed: `785 passed`, `6 skipped`, coverage gate **failed** at `86.69%` (`>=90%` required). |
+| REV-VAL-1 Full live harness rerun | done | REV-VAL-0 | `tests.evaluation.harness` (`--include-os-api --include-ons-live`) rerun after ONS fixes: `6290/6900` (`91.16%`), `67/69` passed, `rate_limit_429_total=0`. |
+| REV-VAL-2 Missing-tool live probe automation | done | REV-VAL-1 | Added `scripts/live_missing_tools_probe.py` (+ tests) and generated report `data/live_missing_tools_probe_report_2026-02-21.json`: `27/28` pass, `1/28` blocked (`os_features.wfs_archive_capabilities` -> `OS_API_KEY_INVALID`). |
+| REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved. |
+| REV-VAL-4 Static analysis gate check | done | REV-VAL-0 | `ruff check .` and `mypy server tools scripts` executed after installing `.[dev]`; both are currently red (`ruff`: `1172` findings, `mypy`: `175` errors). |
+
 ## Safe-by-design governance and citation review (2026-02-21)
 
 Legend: pending, in_progress, done, blocked
@@ -200,7 +237,7 @@ Legend: Done, Partial, Not started
 | Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
 | Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
-| MCP-Apps UI widgets | Done | tools/os_apps.py, docs/mcp_apps_alignment.md | Aligned to MCP Apps extension (no OpenAI Apps SDK fallback). |
+| MCP-Apps UI widgets | Partial | tools/os_apps.py, docs/mcp_apps_alignment.md | Geography selector, boundary explorer, and statistics dashboard are operational; `ui/feature_inspector.html` and `ui/route_planner.html` remain static mock UIs (layout + payload echo, no live map/data actions yet). |
 | Observability (logs/metrics) | Partial | server/main.py, server/logging.py | JSON log sink and upstream error logging added; metrics remain basic. |
 | Rate limiting + error model | Done | server/main.py, server/config.py | 429 handling + uniform error envelope. |
 | CI/CD pipeline | Not started | docs/build_initial_version.md | No GitHub Actions pipeline committed. |
@@ -352,13 +389,16 @@ Legend: pending, in_progress, done
 The Inspector covers tool discovery and execution, but it does not replace a
 purpose-built playground for UI widgets. The table below captures what is still
 missing if we want a dedicated playground experience.
+Current explicit status note (2026-02-21): `feature_inspector` and
+`route_planner` UI resources are present but remain presentation stubs (static
+mock shells) and are not yet wired for end-to-end interactive map workflows.
 
 | UI tool | What exists now | Playground gaps | Notes |
 | --- | --- | --- | --- |
 | os_apps.render_geography_selector | MCP-Apps widget resource and tool | Embed UI resource, capture selection context, and show how to pass selections into follow-on tool calls | Needs a state panel for selected areas. |
 | os_apps.render_statistics_dashboard | MCP-Apps widget resource and tool | Embed UI, allow user to wire dataset/filters, show resulting `ons_data.*` calls | Needs read/write sync between UI and tool calls. |
-| os_apps.render_feature_inspector | MCP-Apps widget resource and tool | Embed UI, show selected feature JSON and source tool calls | Needs GeoJSON preview and result drill-down. |
-| os_apps.render_route_planner | MCP-Apps widget resource and tool | Embed UI, show chosen route geometry and parameters | Needs map viewport + geometry preview. |
+| os_apps.render_feature_inspector | MCP-Apps widget resource and tool | Embed UI, show selected feature JSON and source tool calls | Current UI is a static mock shell; needs GeoJSON preview, live tool wiring, and result drill-down. |
+| os_apps.render_route_planner | MCP-Apps widget resource and tool | Embed UI, show chosen route geometry and parameters | Current UI is a static mock shell; needs map viewport, live routing/tool wiring, and geometry preview. |
 | os_apps.log_event | Logs UI events to file | Surface events in a live panel with correlation to tool calls | Would unify with evaluation audit logs. |
 
 Common playground capabilities still required:
