@@ -429,6 +429,7 @@ def test_load_data_content_missing_catalog_files(monkeypatch: MonkeyPatch, tmp_p
 
 
 def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    monkeypatch.setattr(resource_catalog, "ONS_CACHE_DIR", tmp_path / "ons_cache")
     monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", tmp_path / "ons_exports")
     monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", tmp_path / "os_cache")
     monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", tmp_path / "os_exports")
@@ -437,26 +438,62 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     monkeypatch.setattr(resource_catalog, "EXPORTS_DIR", tmp_path / "exports")
 
     # Ensure base directories exist for deterministic root resolution.
+    Path(resource_catalog.ONS_CACHE_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.ONS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OS_CACHE_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OS_EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.OFFLINE_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.MAP_SCENARIO_PACKS_DIR).mkdir(parents=True, exist_ok=True)
     Path(resource_catalog.EXPORTS_DIR).mkdir(parents=True, exist_ok=True)
+
+    evil_ons_cache = tmp_path / "ons_cache_evil"
+    evil_ons_cache.mkdir(parents=True, exist_ok=True)
+    (evil_ons_cache / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_ons_exports = tmp_path / "ons_exports_evil"
+    evil_ons_exports.mkdir(parents=True, exist_ok=True)
+    (evil_ons_exports / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_os_cache = tmp_path / "os_cache_evil"
+    evil_os_cache.mkdir(parents=True, exist_ok=True)
+    (evil_os_cache / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_os_exports = tmp_path / "os_exports_evil"
+    evil_os_exports.mkdir(parents=True, exist_ok=True)
+    (evil_os_exports / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
     evil_offline = tmp_path / "offline_packs_evil"
     evil_offline.mkdir(parents=True, exist_ok=True)
     (evil_offline / "secret.pmtiles").write_text("SECRET", encoding="utf-8")
     evil_scenario = tmp_path / "map_scenario_packs_evil"
     evil_scenario.mkdir(parents=True, exist_ok=True)
     (evil_scenario / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+    evil_exports = tmp_path / "exports_evil"
+    evil_exports.mkdir(parents=True, exist_ok=True)
+    (evil_exports / "secret.json").write_text("{\"secret\":true}", encoding="utf-8")
+
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache/../ons_cache_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache/%2e%2e%2fetc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/../ons_exports_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-exports/..\\..\\etc\\passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/../../etc/passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/../os_cache_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-cache/%2e%2e%2fetc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/../os_exports_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "os-exports/..\\..\\etc\\passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "offline-packs/../../etc/passwd"})
@@ -474,6 +511,10 @@ def test_load_data_content_path_traversal_guards(monkeypatch: MonkeyPatch, tmp_p
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
     content, _, _ = resource_catalog.load_data_content({"slug": "exports/../../etc/passwd"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "exports/../exports_evil/secret.json"})
+    assert json.loads(content).get("code") == "INVALID_INPUT"
+    content, _, _ = resource_catalog.load_data_content({"slug": "exports/..\\..\\etc\\passwd"})
     assert json.loads(content).get("code") == "INVALID_INPUT"
 
 
@@ -517,3 +558,144 @@ def test_load_data_content_not_found_export_and_cache_files(
 
     content, _, _ = resource_catalog.load_data_content({"slug": "exports/missing.json"})
     assert json.loads(content).get("code") == "NOT_FOUND"
+
+
+def test_resource_catalog_path_and_download_helpers(tmp_path) -> None:
+    assert resource_catalog._is_path_within(tmp_path / "inside", tmp_path) is True
+    assert resource_catalog._is_path_within(tmp_path / "outside", tmp_path / "other") is False
+    assert resource_catalog._has_disallowed_path_tokens("") is True
+    assert resource_catalog._has_disallowed_path_tokens("/tmp/demo.json") is True
+    assert resource_catalog._offline_pack_media_type(tmp_path / "demo.pmtiles") == "application/vnd.pmtiles"
+    assert resource_catalog._offline_pack_download_url(
+        "resource://mcp-geo/offline-packs/demo.pmtiles"
+    ).startswith("/resources/download?uri=")
+    assert resource_catalog._resolve_scoped_path(tmp_path, "../escape.json") is None
+
+
+def test_list_data_resources_dynamic_indexes(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    runs_dir = tmp_path / "runs"
+    report_dir = runs_dir / "20260101T000000Z"
+    report_dir.mkdir(parents=True)
+    (report_dir / "run_report.json").write_text("{\"ok\":true}", encoding="utf-8")
+    ons_cache = tmp_path / "ons_cache"
+    ons_cache.mkdir()
+    (ons_cache / "demo.json").write_text("{\"ok\":true}", encoding="utf-8")
+    ons_exports = tmp_path / "ons_exports"
+    ons_exports.mkdir()
+    (ons_exports / "demo.json").write_text("{\"ok\":true}", encoding="utf-8")
+    os_cache = tmp_path / "os_cache"
+    os_cache.mkdir()
+    (os_cache / "demo.json").write_text("{\"ok\":true}", encoding="utf-8")
+    os_exports = tmp_path / "os_exports"
+    os_exports.mkdir()
+    (os_exports / "demo.json").write_text("{\"ok\":true}", encoding="utf-8")
+
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", runs_dir)
+    monkeypatch.setattr(resource_catalog, "ONS_CACHE_DIR", ons_cache)
+    monkeypatch.setattr(resource_catalog, "ONS_EXPORTS_DIR", ons_exports)
+    monkeypatch.setattr(resource_catalog, "OS_CACHE_DIR", os_cache)
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports)
+
+    resources = resource_catalog.list_data_resources()
+    uris = {entry["uri"] for entry in resources}
+    assert "resource://mcp-geo/boundary-latest-report" in uris
+    assert "resource://mcp-geo/ons-cache-index" in uris
+    assert "resource://mcp-geo/ons-cache/demo.json" in uris
+    assert "resource://mcp-geo/ons-exports-index" in uris
+    assert "resource://mcp-geo/os-cache-index" in uris
+    assert "resource://mcp-geo/os-exports-index" in uris
+
+
+def test_resolve_helpers_and_content_loaders() -> None:
+    ui_entry = resource_catalog.resolve_ui_resource("ui://mcp-geo/geography-selector")
+    assert ui_entry is not None
+    assert resource_catalog.resolve_ui_resource("ui://mcp-geo/unknown") is None
+    skill_entry = resource_catalog.resolve_skill_resource("skills://mcp-geo/getting-started")
+    assert skill_entry is not None
+    assert resource_catalog.resolve_skill_resource("skills://mcp-geo/unknown") is None
+    ui_content, ui_etag = resource_catalog.load_ui_content(ui_entry)
+    assert "html" in ui_content.lower()
+    assert ui_etag.startswith('W/"')
+    skill_content, skill_etag = resource_catalog.load_skill_content()
+    assert "MCP Geo Skills" in skill_content
+    assert skill_etag.startswith('W/"')
+
+    assert resource_catalog.resolve_data_resource("boundary-manifest") == {
+        **resource_catalog.DATA_RESOURCE_DEFS[0],
+        "slug": "boundary-manifest",
+    }
+    assert resource_catalog.resolve_data_resource("boundary-cache-status") == {"slug": "boundary-cache-status"}
+    assert resource_catalog.resolve_data_resource("ons-exports-index") == {"slug": "ons-exports-index"}
+    assert resource_catalog.resolve_data_resource("exports/demo.json") == {"slug": "exports/demo.json"}
+    assert resource_catalog.resolve_data_resource("ons-exports/demo.json") == {
+        "slug": "ons-exports/demo.json"
+    }
+
+
+def test_load_data_content_present_catalog_branches(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    present = tmp_path / "present.json"
+    present.write_text("{\"ok\":true}", encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_MANIFEST_PATH", present)
+    monkeypatch.setattr(resource_catalog, "OS_CATALOG_PATH", present)
+    monkeypatch.setattr(resource_catalog, "LAYERS_CATALOG_PATH", present)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", present)
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_PACK_SOURCES_PATH", present)
+    monkeypatch.setattr(resource_catalog, "CODE_LIST_PACK_SOURCES_PATH", present)
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_PACKS_INDEX_PATH", present)
+    monkeypatch.setattr(resource_catalog, "CODE_LIST_PACKS_INDEX_PATH", present)
+
+    for slug in (
+        "boundary-manifest",
+        "os-catalog",
+        "layers-catalog",
+        "offline-map-catalog",
+        "boundary-pack-sources",
+        "code-list-pack-sources",
+        "boundary-packs-index",
+        "code-list-packs-index",
+    ):
+        content, etag, meta = resource_catalog.load_data_content({"slug": slug})
+        assert json.loads(content)["ok"] is True
+        assert etag
+        assert meta is None
+
+
+def test_load_data_content_boundary_cache_status_enabled_branch(monkeypatch: MonkeyPatch) -> None:
+    import server.boundary_cache as boundary_cache
+
+    class _Cache:
+        def status(self):
+            return {"fresh": True}
+
+    monkeypatch.setattr(boundary_cache, "get_boundary_cache", lambda: _Cache())
+    monkeypatch.setattr(resource_catalog.settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(resource_catalog.settings, "BOUNDARY_CACHE_DSN", "postgresql://test", raising=False)
+    content, etag, meta = resource_catalog.load_data_content({"slug": "boundary-cache-status"})
+    payload = json.loads(content)
+    assert payload["enabled"] is True
+    assert payload["configured"] is True
+    assert payload["dsnSet"] is True
+    assert payload["reloadHint"]
+    assert etag
+    assert meta is not None and meta.get("generatedAt")
+
+
+def test_ons_cache_fallback_slug_rejects_invalid_path(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    cache_dir = tmp_path / "ons"
+    cache_dir.mkdir()
+    monkeypatch.setattr(resource_catalog, "ONS_CACHE_DIR", cache_dir)
+    content, _, _ = resource_catalog.load_data_content({"slug": "ons-cache..%2fetc/passwd"})
+    payload = json.loads(content)
+    assert payload.get("code") == "INVALID_INPUT"
+
+
+def test_resolve_scoped_path_rejects_symlink_escape(tmp_path) -> None:
+    root = tmp_path / "root"
+    root.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    target = outside / "secret.json"
+    target.write_text("{\"secret\":true}", encoding="utf-8")
+    link = root / "link"
+    link.symlink_to(outside, target_is_directory=True)
+    assert resource_catalog._resolve_scoped_path(root, "link/secret.json") is None

@@ -12,6 +12,7 @@ import re
 import sys
 import time
 from datetime import UTC, datetime
+import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO
 
@@ -198,6 +199,18 @@ def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[
     if data is not None:
         err["data"] = data
     return {"jsonrpc": JSONRPC, "id": msg_id, "error": err}
+
+
+def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> Dict[str, Any]:
+    correlation_id = str(uuid.uuid4())
+    logger.error(
+        "MCP stdio internal error correlation_id={} method={} msg_id={} error_type={}",
+        correlation_id,
+        method,
+        msg_id,
+        type(exc).__name__,
+    )
+    return _resp_error(msg_id, -32603, "Internal error", {"correlationId": correlation_id})
 
 def _read_bool_env(name: str) -> Optional[bool]:
     return _shared_read_bool_env(name)
@@ -1157,7 +1170,7 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
                 if framing:
                     if not is_notification:
                         _write_message(
-                            _resp_error(msg_id, -32603, f"Internal error: {e}"),
+                            _internal_error(msg_id, method if isinstance(method, str) else None, e),
                             framing,
                         )
             if startup_log_pending and framing:

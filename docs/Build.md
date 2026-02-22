@@ -60,7 +60,7 @@ pytest -q
 - `ONS_DATASET_CACHE_DIR`: cache directory for full ONS dataset snapshots.
 - `DEBUG_ERRORS`: include tracebacks in error responses (development only).
 - `RATE_LIMIT_PER_MIN`: per-minute in-memory rate limit (default 207).
-- `RATE_LIMIT_BYPASS`: set to `true` to disable rate limiting (default true).
+- `RATE_LIMIT_BYPASS`: set to `true` to disable rate limiting (default false; enable explicitly for tests/dev).
 - `METRICS_ENABLED`: enable `/metrics` (default true).
 - `LOG_JSON`: loguru JSON output (default false).
 - `CORS_ALLOWED_ORIGINS`: comma-separated origins for browser clients (default `http://localhost:5173,http://127.0.0.1:5173`).

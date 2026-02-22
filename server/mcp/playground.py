@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from server.config import settings
@@ -85,7 +86,17 @@ async def get_transcript(sessionId: str | None = None):
 
 @router.post("/playground/tool_call")
 async def record_tool_call(request: Request):
-    data_raw = await request.json()
+    try:
+        data_raw = await request.json()
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Malformed JSON request body",
+            },
+        )
     try:
         model = PlaygroundToolCall(**data_raw)
     except Exception as exc:  # simple validation error path
@@ -117,7 +128,17 @@ async def list_events(sessionId: str | None = None):
 
 @router.post("/playground/events")
 async def record_event(request: Request):
-    data_raw = await request.json()
+    try:
+        data_raw = await request.json()
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Malformed JSON request body",
+            },
+        )
     try:
         model = PlaygroundEvent(**data_raw)
     except Exception as exc:  # simple validation error path

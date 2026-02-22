@@ -56,9 +56,9 @@ assumptions change.
 - Keeping the completed phased progress program stable with full regression coverage.
 - Driving the OS catalog/tooling gap closure plan via parallel workstreams.
 - Prioritizing next major gap after gap closure: CI pipeline implementation.
-- Completing a safe-by-design/governance compliance review against UK standards
-  (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM guidance, W3C
-  provenance/catalog standards, and MCP `2025-11-25`.
+- Maintaining post-remediation safe-by-design/governance compliance against UK
+  standards (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM
+  guidance, W3C provenance/catalog standards, and MCP `2025-11-25`.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery
@@ -106,8 +106,9 @@ assumptions change.
   `playground/trials/tests/`, and
   `research/map_delivery_research_2026-02/reports/story_gallery_report.md` +
   `research/map_delivery_research_2026-02/reports/story_gallery_slides.md`.
-- Produce a dependency-tracked governance remediation backlog in
-  `safe-by-design.json` and score current repo compliance with an explicit rubric.
+- Maintain the dependency-tracked governance remediation log in
+  `safe-by-design.json` and keep the compliance score/current state synchronized
+  with code and tests.
 - Keep the extracted Prism LaTeX brief citation set synchronized with
   authoritative UK/standards anchors and bibliography integrity checks.
 
@@ -224,6 +225,17 @@ assumptions change.
   (`35 passed`, `20 skipped`, `0 failed`), story-gallery style tuning for
   reduced quality-check failures, and documented waiver/threshold policy
   acceptance (`map_quality_report.json`: `fail=0`, `warning=20`).
+- 2026-02-21: Addressed Codex review follow-up on PR #11 by removing raw
+  exception trace/text logging from MCP transport internal-error handlers
+  (`server/stdio_adapter.py`, `server/mcp/http_transport.py`) and by replacing
+  the global rate-limit-bypass test fixture with per-test limiter-state reset
+  while preserving secure default `RATE_LIMIT_BYPASS=false`.
+- 2026-02-21: Completed safe-by-design remediation implementation streams
+  `SBD-REV-001` through `SBD-REV-008` and `SBD-REV-010`, including path
+  containment hardening, redaction expansion, transport error sanitization,
+  malformed JSON normalization, secure rate-limit defaults, and logging cleanup.
+- 2026-02-21: Re-evaluated governance compliance after remediation and updated
+  `safe-by-design.json` status to `fully_met` with weighted score `89.6`.
 - 2026-02-21: Completed safe-by-design governance/citation review deliverables:
   added `docs/reports/safe_by_design_review_2026-02-21.md` and
   `safe-by-design.json`, patched extracted Prism brief citations under

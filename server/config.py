@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     LOG_JSON: bool = True
     RATE_LIMIT_PER_MIN: int = 207  # calibrated default per client IP
     METRICS_ENABLED: bool = True
-    RATE_LIMIT_BYPASS: bool = True  # bypass limiter (tests toggle off when needed)
+    RATE_LIMIT_BYPASS: bool = False  # secure default; tests/dev may opt in explicitly
     ADMIN_LOOKUP_LIVE_ENABLED: bool = True
     ADMIN_LOOKUP_ARCGIS_BASE: str = (
         "https://services1.arcgis.com/ESMARspQHYMw9BZ9/ArcGIS/rest/services"

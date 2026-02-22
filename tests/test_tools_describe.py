@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from server.main import app
+from server.mcp import tools as tools_api
 
 client = TestClient(app)
 
@@ -91,3 +92,51 @@ def test_tools_describe_uses_default_toolset_env(monkeypatch):
     assert resp.status_code == 200
     names = {tool["name"] for tool in resp.json()["tools"]}
     assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
+
+
+def test_tools_list_handles_filter_validation_error(monkeypatch):
+    monkeypatch.setattr(
+        tools_api,
+        "filter_tool_names_by_toolsets",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad filter")),
+    )
+    resp = client.get("/tools/list")
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_tools_search_skips_non_dict_entries_and_normalizes_annotations(monkeypatch):
+    monkeypatch.setattr(
+        tools_api,
+        "search_tools",
+        lambda *_args, **_kwargs: [123, {"name": "os_places.by_postcode", "annotations": "bad"}],
+    )
+    resp = client.post("/tools/search", json={"query": "postcode"})
+    assert resp.status_code == 200
+    tools = resp.json()["tools"]
+    assert len(tools) == 1
+    assert tools[0]["name"] == "os_places_by_postcode"
+    assert tools[0]["annotations"]["originalName"] == "os_places.by_postcode"
+
+
+def test_tools_describe_handles_filter_validation_error(monkeypatch):
+    monkeypatch.setattr(
+        tools_api,
+        "filter_tool_names_by_toolsets",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad filter")),
+    )
+    resp = client.get("/tools/describe")
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
+def test_tools_describe_returns_unknown_when_tool_missing_after_resolution(monkeypatch):
+    original_get = tools_api.get
+    monkeypatch.setattr(
+        tools_api,
+        "get",
+        lambda name: None if name == "os_places.by_postcode" else original_get(name),
+    )
+    resp = client.get("/tools/describe", params={"name": "os_places.by_postcode"})
+    assert resp.status_code == 404
+    assert resp.json()["code"] == "UNKNOWN_TOOL"

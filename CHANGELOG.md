@@ -89,6 +89,28 @@ All notable changes to this project will be documented in this file.
   (`35 passed`, `20 skipped`, `0 failed`) and updated release-gate checklist
   status, including quality-check outcomes (`fail=0`, `warning=20`) under the
   documented waiver policy.
+- Completed safe-by-design remediation implementation streams from
+  `safe-by-design.json`:
+  - hardened file-backed resource containment and traversal defenses in
+    `server/mcp/resource_catalog.py` with expanded regression coverage in
+    `tests/test_resource_catalog.py`
+  - expanded secret redaction coverage (OS + NOMIS + token-like key masking)
+    across logging/exception paths (`server/security.py`, `server/logging.py`,
+    `server/main.py`) with verification tests
+  - sanitized internal transport errors to generic client-safe messages with
+    correlation IDs and exception-type-only server logs (no traceback/raw
+    exception text) (`server/stdio_adapter.py`, `server/mcp/http_transport.py`)
+  - normalized malformed JSON handling for tools/playground ingest endpoints to
+    deterministic HTTP 400 `INVALID_INPUT` envelopes
+  - set secure default `RATE_LIMIT_BYPASS=false` and documented
+    test/dev overrides; tests now reset in-memory limiter state per test
+    instead of globally bypassing rate limiting (`server/config.py`,
+    `README.md`, `docs/Build.md`, `docs/tutorial.md`, `.env.example`,
+    `tests/conftest.py`)
+  - removed raw startup print and `%s`-style loguru calls in `server/main.py`
+    and added startup diagnostics through structured logging
+  - replaced silent startup import swallowing with warning diagnostics in
+    `server/mcp/tools.py`
 - Updated planning trackers to include the new `PSR-*` workstreams in
   `PROGRESS.MD`, synchronized report index links in `docs/reports/README.md`,
   and refreshed execution context in `CONTEXT.md`.

@@ -247,7 +247,7 @@ to receive a compressed response (check `Content-Encoding: gzip`).
 ## Rate Limiting
 Basic per-minute in-memory rate limiting is enabled by default:
 - Environment variable: `RATE_LIMIT_PER_MIN` (default 207 per IP per top-level path segment)
-- Bypass (tests/dev): `RATE_LIMIT_BYPASS=true` (set to `false` to enforce)
+- Bypass (tests/dev): `RATE_LIMIT_BYPASS=false` by default; set `true` only for explicit local/dev bypass.
 Responses over the limit return:
 ```json
 { "isError": true, "code": "RATE_LIMITED", "message": "Rate limit exceeded" }

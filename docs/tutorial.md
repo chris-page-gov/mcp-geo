@@ -440,7 +440,7 @@ If unchanged, the server returns `304 Not Modified` with an empty body.
 
 ## Rate limiting, metrics, correlation IDs
 
-- Rate limiting is enforced by middleware unless `RATE_LIMIT_BYPASS=true` (common in tests/dev).
+- Rate limiting is enforced by middleware by default; set `RATE_LIMIT_BYPASS=true` only for explicit tests/dev bypass.
 - Metrics are available at `GET /metrics` when `METRICS_ENABLED=true`.
 - Correlation IDs are created/propagated via the `x-correlation-id` header.
 

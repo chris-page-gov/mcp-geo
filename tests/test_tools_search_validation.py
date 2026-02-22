@@ -61,6 +61,30 @@ def test_tools_call_rejects_non_object_payload(client):
     assert payload["code"] == "INVALID_INPUT"
 
 
+def test_tools_call_rejects_malformed_json(client):
+    resp = client.post(
+        "/tools/call",
+        data="{bad",
+        headers={"content-type": "application/json"},
+    )
+    assert resp.status_code == 400
+    payload = resp.json()
+    assert payload["code"] == "INVALID_INPUT"
+    assert payload["message"] == "Malformed JSON request body"
+
+
+def test_tools_search_rejects_malformed_json(client):
+    resp = client.post(
+        "/tools/search",
+        data="{bad",
+        headers={"content-type": "application/json"},
+    )
+    assert resp.status_code == 400
+    payload = resp.json()
+    assert payload["code"] == "INVALID_INPUT"
+    assert payload["message"] == "Malformed JSON request body"
+
+
 def test_tools_call_accepts_display_style_tool_name(client):
     resp = client.post("/tools/call", json={"tool": "Os mcp descriptor"})
     assert resp.status_code == 200
