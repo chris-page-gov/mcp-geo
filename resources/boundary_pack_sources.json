@@ -5,18 +5,18 @@
     {
       "id": "ons_wards_dec_2024_uk_bgc",
       "title": "ONS Wards (Dec 2024) UK BGC",
-      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/91a1b096076843838f4341cf7dd6d14d/geoPackage?layers=0",
       "sourceType": "arcgis_hub",
       "format": "GeoPackage",
-      "notes": "Download URL is resolved via boundary manifest/pipeline run metadata."
+      "notes": "Direct ArcGIS Hub download URL for Wards (December 2024) UK BGC."
     },
     {
       "id": "ons_lsoa_dec_2021_ew_bgc",
       "title": "ONS LSOA (Dec 2021) EW BGC",
-      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/68515293204e43ca8ab56fa13ae8a547/geoPackage?layers=0",
       "sourceType": "arcgis_hub",
       "format": "GeoPackage",
-      "notes": "Kept as remote reference; cached locally on refresh."
+      "notes": "Direct ArcGIS Hub download URL for LSOA (December 2021) EW BGC (V5)."
     }
   ]
 }

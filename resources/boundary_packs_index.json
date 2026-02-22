@@ -2,26 +2,26 @@
   "version": "2026-02-11",
   "kind": "boundary",
   "cacheMode": "hybrid_fetch_cache",
-  "generatedAt": "2026-02-22T19:12:26Z",
+  "generatedAt": "2026-02-22T22:15:26Z",
   "packs": [
     {
       "id": "ons_wards_dec_2024_uk_bgc",
       "title": "ONS Wards (Dec 2024) UK BGC",
-      "status": "manifest_only",
-      "cachePath": null,
-      "sha256": null,
-      "bytes": null,
-      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+      "status": "cached",
+      "cachePath": "data/cache/packs/boundary/ons_wards_dec_2024_uk_bgc/ons_wards_dec_2024_uk_bgc.json",
+      "sha256": "f4ef4c370edf82878716b772b6c4a76482356f3ec976e23ea14317645fe35456",
+      "bytes": 25018368,
+      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/91a1b096076843838f4341cf7dd6d14d/geoPackage?layers=0",
       "error": null
     },
     {
       "id": "ons_lsoa_dec_2021_ew_bgc",
       "title": "ONS LSOA (Dec 2021) EW BGC",
-      "status": "manifest_only",
-      "cachePath": null,
-      "sha256": null,
-      "bytes": null,
-      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/",
+      "status": "cached",
+      "cachePath": "data/cache/packs/boundary/ons_lsoa_dec_2021_ew_bgc/ons_lsoa_dec_2021_ew_bgc.json",
+      "sha256": "9f549e33f46bb880b3ada4b54a24874cabceef3d7113ac53b07a07341e51431b",
+      "bytes": 50098176,
+      "sourceUrl": "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/68515293204e43ca8ab56fa13ae8a547/geoPackage?layers=0",
       "error": null
     }
   ]

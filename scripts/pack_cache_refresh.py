@@ -33,7 +33,7 @@ KIND_CONFIG = {
     },
 }
 
-FETCHABLE_SOURCE_TYPES = {"ons_api", "nomis_api", "direct"}
+FETCHABLE_SOURCE_TYPES = {"ons_api", "nomis_api", "direct", "arcgis_hub"}
 
 
 @dataclass
@@ -60,15 +60,48 @@ def _sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
-def _download_file(url: str, dest: Path, timeout: float) -> int:
+def _download_file(
+    url: str,
+    dest: Path,
+    timeout: float,
+    *,
+    max_attempts: int = 8,
+    wait_seconds: float = 5.0,
+) -> int:
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with requests.get(url, timeout=timeout, stream=True) as resp:
-        resp.raise_for_status()
-        with dest.open("wb") as handle:
-            for chunk in resp.iter_content(chunk_size=65536):
-                if chunk:
-                    handle.write(chunk)
-    return dest.stat().st_size
+    current_url = url
+    for attempt in range(1, max_attempts + 1):
+        with requests.get(current_url, timeout=timeout, stream=True) as resp:
+            resp.raise_for_status()
+            content_type = str(resp.headers.get("Content-Type", "")).lower()
+            if "application/json" in content_type:
+                try:
+                    payload = resp.json()
+                except Exception:
+                    payload = None
+                if isinstance(payload, dict):
+                    status = str(payload.get("status") or "").strip().lower()
+                    download_url = payload.get("downloadUrl") or payload.get("url")
+                    if isinstance(download_url, str) and download_url and download_url != current_url:
+                        current_url = download_url
+                        continue
+                    if status in {"pending", "inprogress", "in_progress"}:
+                        if attempt < max_attempts:
+                            time.sleep(wait_seconds * attempt)
+                            continue
+                        raise RuntimeError(
+                            f"Download stayed pending after {max_attempts} attempts: {current_url}"
+                        )
+                    with dest.open("wb") as handle:
+                        handle.write(json.dumps(payload, ensure_ascii=True).encode("utf-8"))
+                    return dest.stat().st_size
+
+            with dest.open("wb") as handle:
+                for chunk in resp.iter_content(chunk_size=65536):
+                    if chunk:
+                        handle.write(chunk)
+            return dest.stat().st_size
+    raise RuntimeError(f"Failed to resolve download URL after {max_attempts} attempts: {url}")
 
 
 def _refresh_kind(kind: str, *, timeout: float, dry_run: bool) -> dict[str, Any]:
