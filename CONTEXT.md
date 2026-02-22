@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 Owner: @chris-page-gov
 
 ## Purpose
@@ -194,6 +194,10 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Added an Apps-to-Answers presentation deck aligned to the
+  January 2026 UK government dataset-readiness guidance at
+  `research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`
+  to support workshop/demo documentation packaging.
 - 2026-02-21: Added reproducible live operability evidence tooling for
   full-tool validation: `scripts/live_missing_tools_probe.py` (covers tools
   missing from harness utilization) and
