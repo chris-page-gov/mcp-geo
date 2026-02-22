@@ -206,6 +206,7 @@ def test_route_query_environmental_survey_bowland():
     assert isinstance(plan, list)
     assert plan
     assert plan[0]["tool"] == "os_landscape.find"
+    assert any(step.get("tool") == "os_peat.evidence_paths" for step in plan)
 
 
 def test_route_query_unknown():
@@ -229,7 +230,10 @@ def test_stats_routing_tool():
 def test_stats_routing_comparison_recommendations():
     resp = client.post(
         "/tools/call",
-        json={"tool": "os_mcp.stats_routing", "query": "Compare unemployment between Leeds and Manchester"},
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare unemployment between Leeds and Manchester",
+        },
     )
     assert resp.status_code == 200
     body = resp.json()
@@ -260,7 +264,9 @@ def test_stats_routing_respects_provider_preference_and_level():
     assert body["userSelections"]["providerPreference"] == "ONS"
     next_steps = body.get("nextSteps", [])
     admin_step = next(
-        step for step in next_steps if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
+        step
+        for step in next_steps
+        if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
     )
     assert "level=LSOA" in admin_step.get("note", "")
 

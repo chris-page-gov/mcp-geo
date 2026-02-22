@@ -1,15 +1,10 @@
 from __future__ import annotations
 
 import re
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from server import __version__ as SERVER_VERSION
-from server.protocol import (
-    MCP_APPS_PROTOCOL_VERSION,
-    PROTOCOL_VERSION,
-    SUPPORTED_PROTOCOL_VERSIONS,
-)
 from server.mcp.resource_catalog import MCP_APPS_MIME, SKILLS_RESOURCE
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
@@ -18,10 +13,15 @@ from server.mcp.tool_search import (
     get_toolset_catalog,
     parse_toolset_list,
 )
+from server.protocol import (
+    MCP_APPS_PROTOCOL_VERSION,
+    PROTOCOL_VERSION,
+    SUPPORTED_PROTOCOL_VERSIONS,
+)
 from tools.registry import Tool, ToolResult, all_tools, register
 
 
-class QueryIntent(str, Enum):
+class QueryIntent(StrEnum):
     ADDRESS_LOOKUP = "address_lookup"
     POI_LOOKUP = "poi_lookup"
     PLACE_LOOKUP = "place_lookup"
@@ -431,7 +431,7 @@ def _extract_place_name(query: str) -> str | None:
                     return candidate
             continue
         if word.lower() not in _PLACE_NAME_STOP_WORDS:
-            return word
+            return str(word)
     return None
 
 
@@ -581,13 +581,12 @@ def _classify_linked_identifier_query(
         return QueryIntent.LINKED_IDS, 0.92, params, context
     if re.search(r"\bfeature type\b|\broadlink\b|\broad link\b", query_lower):
         context["linked_mode"] = "feature_types"
-        feature_type = "RoadLink" if "road" in query_lower else "RoadLink"
-        params: dict[str, Any] = {"featureType": feature_type}
+        linked_params: dict[str, Any] = {"featureType": "RoadLink"}
         if resolved_identifier:
-            params["identifier"] = resolved_identifier
-        return QueryIntent.LINKED_IDS, 0.9, params, context
-    params = {"identifier": resolved_identifier} if resolved_identifier else {}
-    return QueryIntent.LINKED_IDS, 0.9, params, context
+            linked_params["identifier"] = resolved_identifier
+        return QueryIntent.LINKED_IDS, 0.9, linked_params, context
+    linked_params = {"identifier": resolved_identifier} if resolved_identifier else {}
+    return QueryIntent.LINKED_IDS, 0.9, linked_params, context
 
 
 def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dict[str, Any]]:
@@ -747,7 +746,9 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
 
     if wants_boundary_explorer:
         context["interactive_widget"] = "boundary_explorer"
-        scores[QueryIntent.INTERACTIVE_SELECTION] = max(scores[QueryIntent.INTERACTIVE_SELECTION], 0.92)
+        scores[QueryIntent.INTERACTIVE_SELECTION] = max(
+            scores[QueryIntent.INTERACTIVE_SELECTION], 0.92
+        )
         # If the query looks like "features within a boundary", prefer the boundary explorer UI over
         # raw NGD feature queries to avoid forcing callers to pick collections/bboxes prematurely.
         if (
@@ -808,23 +809,23 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if best_score < 0.3:
         return QueryIntent.UNKNOWN, 0.0, {}, context
 
-    params: dict[str, Any] = {}
+    recommended_params: dict[str, Any] = {}
     if best_intent == QueryIntent.PLACE_LOOKUP and place_name:
-        params = {"text": place_name}
+        recommended_params = {"text": place_name}
         admin_level = _pick_admin_level(level_mentions)
         if admin_level:
-            params["level"] = admin_level
+            recommended_params["level"] = admin_level
     elif best_intent == QueryIntent.POI_LOOKUP:
-        params = {"text": query}
+        recommended_params = {"text": query}
     elif best_intent == QueryIntent.INTERACTIVE_SELECTION:
-        params = (
+        recommended_params = (
             _build_boundary_explorer_params(query, place_name)
             if context.get("interactive_widget") == "boundary_explorer"
             else _build_interactive_params(query, place_name)
         )
     elif best_intent == QueryIntent.FEATURE_SEARCH and feature_collection:
-        params = {"collection": feature_collection}
-    return best_intent, best_score, params, context
+        recommended_params = {"collection": feature_collection}
+    return best_intent, best_score, recommended_params, context
 
 
 def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
@@ -844,6 +845,16 @@ def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
         },
         {
             "step": 3,
+            "goal": "Build peat evidence paths with direct/proxy separation and caveats.",
+            "tool": "os_peat.evidence_paths",
+            "parameters": {
+                "landscapeId": "<id-from-step-1>",
+                "limit": 25,
+                "resultType": "hits",
+            },
+        },
+        {
+            "step": 4,
             "goal": "Profile hydrology context counts first (no geometry).",
             "tool": "os_features.query",
             "parameters": {
@@ -856,7 +867,7 @@ def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
             },
         },
         {
-            "step": 4,
+            "step": 5,
             "goal": "Profile habitat proxies counts first (no geometry).",
             "tool": "os_features.query",
             "parameters": {
@@ -869,7 +880,7 @@ def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
             },
         },
         {
-            "step": 5,
+            "step": 6,
             "goal": "Fetch sampled geometry only after counts are stable.",
             "tool": "os_features.query",
             "parameters": {
@@ -884,7 +895,9 @@ def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
     ]
 
 
-def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[str, list[str], str]:
+def _get_tool_for_intent(
+    intent: QueryIntent, context: dict[str, Any]
+) -> tuple[str, list[str], str]:
     if intent == QueryIntent.ADDRESS_LOOKUP:
         mode = context.get("address_mode")
         if mode == "uprn":
@@ -969,10 +982,16 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
         return (
             "os_landscape.find",
-            ["os_landscape.find", "os_landscape.get", "os_features.query"],
+            [
+                "os_landscape.find",
+                "os_landscape.get",
+                "os_peat.evidence_paths",
+                "os_features.query",
+            ],
             (
-                "Run an AOI-first environmental survey flow: resolve protected-landscape boundary, "
-                "profile counts with thin NGD queries, then fetch geometry in bounded pages."
+                "Run an AOI-first environmental survey flow: resolve "
+                "protected-landscape boundary, derive peat evidence paths "
+                "(direct + proxy), profile counts, then fetch bounded geometry."
             ),
         )
     if intent == QueryIntent.STATISTICS:
@@ -1008,7 +1027,10 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             return (
                 "os_apps.render_boundary_explorer",
                 ["os_apps.render_boundary_explorer"],
-                "Open the boundary explorer to select boundaries and build map inventories (UPRNs/buildings/links).",
+                (
+                    "Open the boundary explorer to select boundaries and build "
+                    "map inventories (UPRNs/buildings/links)."
+                ),
             )
         return (
             "os_apps.render_geography_selector",
@@ -1101,6 +1123,8 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
         QueryIntent.ENVIRONMENTAL_SURVEY: [
             "os_landscape.get",
+            "os_peat.layers",
+            "os_peat.evidence_paths",
             "os_features.collections",
             "admin_lookup.find_by_name",
         ],
@@ -1131,9 +1155,11 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use nearest for a point lookup and within for bbox-constrained queries."
         ),
         QueryIntent.LINKED_IDS: (
-            "Use os_linked_ids.get for identifier type lookups, os_linked_ids.identifiers for generic "
-            "identifier crosswalks, os_linked_ids.feature_types for feature-type identifiers, and "
-            "os_linked_ids.product_version_info for correlation method version checks."
+            "Use os_linked_ids.get for identifier type lookups, "
+            "os_linked_ids.identifiers for generic identifier crosswalks, "
+            "os_linked_ids.feature_types for feature-type identifiers, and "
+            "os_linked_ids.product_version_info for correlation method "
+            "version checks."
         ),
         QueryIntent.PLACE_LOOKUP: (
             "Use admin_lookup.find_by_name for administrative areas, "
@@ -1147,8 +1173,9 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         ),
         QueryIntent.ENVIRONMENTAL_SURVEY: (
             "Use AOI-first sequencing: os_landscape.find -> os_landscape.get -> "
-            "os_features.query (hits/thin/geometry-last). This avoids place-search "
-            "fallbacks and reduces large-response risk."
+            "os_peat.evidence_paths -> os_features.query (hits/thin/geometry-last). "
+            "This separates direct peat evidence sources from proxy indicators and "
+            "reduces large-response risk."
         ),
         QueryIntent.STATISTICS: (
             "Use NOMIS for labour/census or deep local geographies; otherwise use ONS datasets. "
@@ -1161,8 +1188,9 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
         ),
         QueryIntent.INTERACTIVE_SELECTION: (
-            "Use MCP-Apps UI to collect the area of interest and progressive detail preferences. "
-            "Prefer the boundary explorer when users ask for UPRNs/buildings/road/path links inside a boundary."
+            "Use MCP-Apps UI to collect the area of interest and progressive "
+            "detail preferences. Prefer the boundary explorer when users ask "
+            "for UPRNs/buildings/road/path links inside a boundary."
         ),
         QueryIntent.ROUTE_PLANNING: (
             "Use the route planner widget to set start/end coordinates."
@@ -1177,7 +1205,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use os_maps.render with a bbox to obtain a static map URL template."
         ),
         QueryIntent.VECTOR_TILES: (
-            "Use os_vector_tiles.descriptor for tile/style templates; inject OS_API_KEY client-side."
+            "Use os_vector_tiles.descriptor for tile/style templates; inject "
+            "OS_API_KEY client-side."
         ),
         QueryIntent.UNKNOWN: (
             "Intent unclear. Use os_mcp.descriptor for tool discovery or be more specific."
