@@ -157,6 +157,21 @@ def test_ons_query_retries_observations_without_limit_page(monkeypatch):
     assert calls[2] == {"time": "Jan-24"}
 
 
+def test_ons_query_handles_null_observations_payload(monkeypatch):
+    from tools import ons_data
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True):  # noqa: ARG001
+        return 200, {"observations": None, "total": 0}
+
+    monkeypatch.setattr(ons_data.ons_client, "get_json", fake_get_json)
+    status, body = ons_data._fetch_observations_paged(
+        url="https://api.beta.ons.gov.uk/v1/datasets/gdp/editions/time-series/versions/1/observations",
+        filters={"time": "2023 Q1"},
+    )
+    assert status == 200
+    assert body["observations"] == []
+
+
 def test_ons_query_time_range_handles_links_code_ids_and_observation_retry(monkeypatch):
     from tools import ons_common
 
@@ -311,6 +326,150 @@ def test_ons_query_time_range_expands_with_shorthand_end(monkeypatch):
     body = resp.json()
     assert body["count"] == 2
     assert body["timeValues"] == ["2024 Q1", "2024 Q2"]
+
+
+def test_get_observation_expands_single_quarter_token(monkeypatch):
+    from tools import ons_common
+
+    observed_times: list[str] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True):  # noqa: ARG001
+        if "/versions/1" in url and "dimensions/" not in url and "observations" not in url:
+            return 200, {
+                "dimensions": [
+                    {"name": "time", "id": "mmm-yy"},
+                    {"name": "geography", "id": "uk-only"},
+                    {
+                        "name": "unofficialstandardindustrialclassification",
+                        "id": "sic-unofficial",
+                    },
+                ]
+            }
+        if "dimensions/time/options" in url:
+            return 200, {
+                "items": [
+                    {"option": "Mar-23"},
+                    {"option": "Feb-23"},
+                    {"option": "Jan-23"},
+                ],
+                "links": [],
+            }
+        if "dimensions/geography/options" in url:
+            return 200, {"items": [{"option": "K02000001"}], "links": []}
+        if "dimensions/unofficialstandardindustrialclassification/options" in url:
+            return 200, {"items": [{"option": "A--T"}], "links": []}
+        if "observations" in url:
+            if isinstance(params, dict):
+                observed_times.append(str(params.get("time")))
+            return 200, {
+                "observations": [
+                    {
+                        "dimensions": {
+                            "Time": {"id": params.get("time")},
+                        },
+                        "observation": "1.0",
+                    }
+                ],
+                "total": 1,
+            }
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.get_observation",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "geography": "K02000001",
+            "measure": "chained_volume_measure",
+            "time": "2023 Q1",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["observation"]["dimensions"]["Time"]["id"] == "Mar-23"
+    assert observed_times == ["Mar-23", "Feb-23", "Jan-23"]
+
+
+def test_get_observation_single_token_retries_latest_alias_version(monkeypatch):
+    from tools import ons_common, ons_data
+
+    observed_times: list[str] = []
+    metadata_versions: list[str] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True):  # noqa: ARG001
+        if "/versions/" in url and "dimensions/" not in url and "observations" not in url:
+            if "/versions/1" in url:
+                metadata_versions.append("1")
+                return 200, {
+                    "dimensions": [
+                        {"name": "time", "id": "mmm-yy"},
+                        {"name": "geography", "id": "uk-only"},
+                        {
+                            "name": "unofficialstandardindustrialclassification",
+                            "id": "sic-unofficial",
+                        },
+                    ]
+                }
+            metadata_versions.append("65")
+            return 200, {
+                "dimensions": [
+                    {"name": "time", "id": "mmm-yy"},
+                    {"name": "geography", "id": "uk-only"},
+                    {
+                        "name": "unofficialstandardindustrialclassification",
+                        "id": "sic-unofficial",
+                    },
+                ]
+            }
+        if "versions/1/dimensions/time/options" in url:
+            return 200, {"items": [], "links": []}
+        if "versions/65/dimensions/time/options" in url:
+            return 200, {"items": [{"option": "Mar-23"}], "links": []}
+        if "dimensions/geography/options" in url:
+            return 200, {"items": [{"option": "K02000001"}], "links": []}
+        if "dimensions/unofficialstandardindustrialclassification/options" in url:
+            return 200, {"items": [{"option": "A--T"}], "links": []}
+        if "observations" in url:
+            if isinstance(params, dict):
+                observed_times.append(str(params.get("time")))
+            return 200, {
+                "observations": [
+                    {
+                        "dimensions": {
+                            "Time": {"id": params.get("time")},
+                        },
+                        "observation": "1.0",
+                    }
+                ],
+                "total": 1,
+            }
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_data, "_resolve_latest_version", lambda dataset: ("time-series", "65"))
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.get_observation",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "geography": "K02000001",
+            "measure": "chained_volume_measure",
+            "time": "2023 Q1",
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["observation"]["dimensions"]["Time"]["id"] == "Mar-23"
+    assert "1" in metadata_versions
+    assert "65" in metadata_versions
+    assert observed_times == ["Mar-23"]
 
 
 def test_ons_query_auto_resolve(monkeypatch):
