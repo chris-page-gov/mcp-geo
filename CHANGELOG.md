@@ -30,6 +30,9 @@ All notable changes to this project will be documented in this file.
 - Added a detailed peatland-survey reliability implementation program at
   `docs/reports/peatland_survey_reliability_implementation_plan_2026-02-19.md`
   to operationalize Section F findings from the forensic/deep-research report.
+- Added an Apps-to-Answers presentation deck aligned to the January 2026 UK
+  government dataset-readiness guidance and MCP framing:
+  `research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`.
 - Added protected-landscape lookup tooling for survey AOI resolution:
   `tools/os_landscape.py` (`os_landscape.find`, `os_landscape.get`) with
   deterministic Bowland fixture coverage in
