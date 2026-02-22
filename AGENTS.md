@@ -156,6 +156,11 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 - MCP-Apps tool payloads may arrive as `structuredContent` (or JSON/text `content` blocks) without `result.data`; widget-side tool clients should normalize payload extraction across all three shapes.
 - MapLibre style swaps clear custom sources/layers; map widgets must rehydrate overlay sources/layers and replay in-memory boundary/point state on every `style.load` to avoid invisible-but-selected geometry.
 
+## GitHub/Codex Workflow Learnings
+
+- When creating PRs/comments with markdown that includes backticks, never inline the body directly in a shell command. Write body text to a temp file and use `gh pr create --body-file` / `gh pr edit --body-file` / `gh pr comment --body-file` to avoid shell interpolation and command substitution.
+- In this repo, Codex review is triggered by PR comment (`@codex review`), not by reviewer assignment. If a Codex review is requested, post the trigger comment on the PR and confirm the comment URL.
+
 ## Gaps & Immediate Action Items
 
 1. CI pipeline not yet committed (lint, type, test, coverage badge, build image).
@@ -180,4 +185,4 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 
 ---
 
-Last updated: 2026-02-14
+Last updated: 2026-02-22
