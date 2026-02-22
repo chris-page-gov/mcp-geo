@@ -107,6 +107,18 @@ Legend: pending, in_progress, done
   code-list pack cache artifacts refreshed, ONS geo cache ingested from
   bootstrap product files, and PostGIS boundary cache seeded from live ArcGIS
   geometry (Coventry county/unitary and Westminster district records).
+- Done (2026-02-22): boundary pack cache now hydrates configured ONS packs from
+  concrete ArcGIS Hub download URLs (`ons_wards_dec_2024_uk_bgc`,
+  `ons_lsoa_dec_2021_ew_bgc`), with `resources/boundary_packs_index.json`
+  reporting `cached` artifacts and checksums.
+- Done (2026-02-22): runtime PostGIS boundary cache is now at ready maturity in
+  this environment (`admin_lookup.get_cache_status`: `total=240783`,
+  `performance.degraded=false`) after pipeline-derived datasets were synced into
+  `public.admin_boundaries`/`public.boundary_datasets`.
+- In progress (2026-02-22): full-manifest boundary ingestion remains
+  incomplete; latest full `boundary_pipeline` tracker run reports
+  `families_ok=0/39` with many unresolved source variants, so complete
+  UK-wide coverage still needs source-resolution expansion.
 
 ## Startup context mitigation check (2026-02-22)
 
@@ -306,8 +318,8 @@ Legend: Done, Partial, Not started
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
 | NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py, resources/nomis_workflows.json | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Added dataset-specific workflow profiles resource and routing guidance link-up; broader profile depth can still be expanded. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search fallback transparency now includes fallback reasons and cache maturity snapshots, and cache status exposes staleness metadata. |
-| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
-| Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/, scripts/pack_cache_refresh.py | Boundary/code-list hybrid fetch-cache manifests + indexes are now exposed (`boundary-pack-sources`, `code-list-pack-sources`, `boundary-packs-index`, `code-list-packs-index`); full pack acquisition depends on refresh runs and source availability. |
+| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Pipeline tooling and validation/reporting are complete; targeted live ingests succeed, but latest full-manifest run remains incomplete (`families_ok=0/39`) pending broader source resolution. |
+| Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/, scripts/pack_cache_refresh.py | Boundary/code-list hybrid fetch-cache manifests + indexes are exposed (`boundary-pack-sources`, `code-list-pack-sources`, `boundary-packs-index`, `code-list-packs-index`); configured boundary packs are now cached, while wider pack coverage still depends on additional source entries/availability. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | `route_query` + descriptor for tool discovery, plus `os_mcp.select_toolsets` for post-init discovery filter selection. |
 | Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
