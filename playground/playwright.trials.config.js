@@ -45,7 +45,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "cd .. && python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --log-level warning",
+    command:
+      "cd .. && (./.venv/bin/python -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --log-level warning || python3 -m uvicorn server.main:app --host 127.0.0.1 --port 8000 --log-level warning)",
     port: 8000,
     timeout: 120_000,
     reuseExistingServer: true,

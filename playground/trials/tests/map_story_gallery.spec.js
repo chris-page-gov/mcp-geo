@@ -141,6 +141,17 @@ function styleFromProperties(kind, properties = {}) {
   return { stroke, fill, strokeWidth, dashArray, radius };
 }
 
+function shouldRenderLabel(kind, properties = {}) {
+  if (typeof properties.showLabel === "boolean") {
+    return properties.showLabel;
+  }
+  if (kind !== "point") {
+    return false;
+  }
+  const radius = Number(properties.radius);
+  return Number.isFinite(radius) ? radius >= 5 : false;
+}
+
 function geometryTypeToKind(geometryType) {
   if (geometryType === "Point" || geometryType === "MultiPoint") {
     return "point";
@@ -162,6 +173,7 @@ function renderFeatureToSvg(feature, bbox, width, height) {
   const kind = geometryTypeToKind(geometryType);
   const style = styleFromProperties(kind, properties);
   const label = typeof properties.label === "string" ? properties.label : "";
+  const renderLabel = shouldRenderLabel(kind, properties);
   const elements = [];
   const labels = [];
 
@@ -170,7 +182,7 @@ function renderFeatureToSvg(feature, bbox, width, height) {
     elements.push(
       `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${style.radius}" fill="${escapeHtml(style.fill)}" stroke="${escapeHtml(style.stroke)}" stroke-width="${style.strokeWidth}" />`
     );
-    if (label) {
+    if (label && renderLabel) {
       labels.push(`<text x="${(x + 8).toFixed(2)}" y="${(y - 8).toFixed(2)}" fill="#0f172a">${escapeHtml(label)}</text>`);
     }
     return { elements, labels };
@@ -186,7 +198,7 @@ function renderFeatureToSvg(feature, bbox, width, height) {
         `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${style.radius}" fill="${escapeHtml(style.fill)}" stroke="${escapeHtml(style.stroke)}" stroke-width="${style.strokeWidth}" />`
       );
     }
-    if (label && Array.isArray(coords[0])) {
+    if (label && renderLabel && Array.isArray(coords[0])) {
       const { x, y } = projectPoint(coords[0][0], coords[0][1], bbox, width, height);
       labels.push(`<text x="${(x + 8).toFixed(2)}" y="${(y - 8).toFixed(2)}" fill="#0f172a">${escapeHtml(label)}</text>`);
     }
@@ -202,7 +214,7 @@ function renderFeatureToSvg(feature, bbox, width, height) {
       elements.push(
         `<polyline points="${points}" fill="none" stroke="${escapeHtml(style.stroke)}" stroke-width="${style.strokeWidth}" stroke-dasharray="${escapeHtml(style.dashArray)}" stroke-linecap="round" stroke-linejoin="round" />`
       );
-      if (label) {
+      if (label && renderLabel) {
         const mid = projected[Math.floor(projected.length / 2)];
         labels.push(`<text x="${(mid.x + 8).toFixed(2)}" y="${(mid.y - 8).toFixed(2)}" fill="#111827">${escapeHtml(label)}</text>`);
       }
@@ -232,7 +244,7 @@ function renderFeatureToSvg(feature, bbox, width, height) {
       elements.push(
         `<path d="${path}" fill="${escapeHtml(style.fill)}" stroke="${escapeHtml(style.stroke)}" stroke-width="${style.strokeWidth}" stroke-dasharray="${escapeHtml(style.dashArray)}" />`
       );
-      if (label) {
+      if (label && renderLabel) {
         const centroid = centroidFromRing(coords[0], bbox, width, height);
         if (centroid) {
           labels.push(`<text x="${centroid.x.toFixed(2)}" y="${centroid.y.toFixed(2)}" fill="#111827">${escapeHtml(label)}</text>`);
@@ -255,7 +267,7 @@ function renderFeatureToSvg(feature, bbox, width, height) {
         `<path d="${path}" fill="${escapeHtml(style.fill)}" stroke="${escapeHtml(style.stroke)}" stroke-width="${style.strokeWidth}" stroke-dasharray="${escapeHtml(style.dashArray)}" />`
       );
     }
-    if (label && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+    if (label && renderLabel && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
       const centroid = centroidFromRing(coords[0][0], bbox, width, height);
       if (centroid) {
         labels.push(`<text x="${centroid.x.toFixed(2)}" y="${centroid.y.toFixed(2)}" fill="#111827">${escapeHtml(label)}</text>`);
@@ -465,6 +477,15 @@ for (const story of scenarios) {
           display: block;
           width: 100%;
           height: auto;
+          filter: grayscale(0.72) saturate(0.5) brightness(1.08) contrast(0.84);
+        }
+        .map-panel::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(255, 255, 255, 0.10);
+          pointer-events: none;
+          z-index: 1;
         }
         #overlaySvg {
           position: absolute;
@@ -472,13 +493,14 @@ for (const story of scenarios) {
           width: 100%;
           height: 100%;
           pointer-events: none;
+          z-index: 2;
         }
         #overlaySvg .labels text {
           font-size: 13px;
           font-weight: 600;
           paint-order: stroke;
           stroke: rgba(255, 255, 255, 0.95);
-          stroke-width: 3;
+          stroke-width: 2;
         }
         .panel {
           border: 1px solid var(--line);
