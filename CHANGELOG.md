@@ -45,6 +45,14 @@ All notable changes to this project will be documented in this file.
   dataset-discovery metadata prompts (dimensions/codes/versions/codelists/
   concepts), widget/probe phrasing, utility/cache operations, and command-word
   false positives in place-name extraction.
+- Hardened live ONS observation interoperability in `tools/ons_data.py` by
+  switching to implicit filter-only observation fetches (no `limit/page`
+  unless truncation detection requires explicit paging), with automatic fallback
+  when upstream rejects paging parameters.
+- Expanded ONS option-code extraction in `tools/ons_data.py` and
+  `tools/ons_codes.py` to accept live payload shape `links.code.id` in
+  addition to legacy top-level code fields, preventing false empty option sets
+  for datasets like GDP.
 - Updated live operability release-gate accounting to treat
   `os_features.wfs_archive_capabilities` as optional-by-entitlement while still
   requiring explicit evidence tracking; surfaced this as measurable

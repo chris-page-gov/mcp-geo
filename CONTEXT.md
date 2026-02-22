@@ -194,6 +194,12 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Closed live-evaluation P1 ONS contract drift by updating
+  `tools/ons_data.py` to fetch observations with implicit dimension filters
+  first (only escalating to explicit paging when needed) and by accepting live
+  option payload codes from `links.code.id` in both `tools/ons_data.py` and
+  `tools/ons_codes.py`; added regression coverage in
+  `tests/test_ons_data.py` and `tests/test_ons_codes_live.py`.
 - 2026-02-22: Hardened `os_mcp.route_query` to improve measurable
   intent-recognition quality against the evaluation bank: added explicit
   handling for linked-id phrasing before UPRN address short-circuiting,

@@ -42,6 +42,23 @@ Legend: pending, in_progress, done, blocked
 | REV-VAL-3 Spec-linked measurable coverage | done | REV-VAL-1, REV-VAL-2 | Added `scripts/spec_tool_operability_coverage.py` (+ tests), `docs/spec_package/14_tool_operability.feature`, and `docs/spec_package/14_tool_operability_coverage.md`; combined operability now measured at `75/76` functional (`98.68%`), `1/76` blocked auth, `0` unresolved, with release-gated functional coverage now computed entitlement-aware (`75/75`, `100.0%`) by excluding optional-by-entitlement `os_features.wfs_archive_capabilities` from the release denominator while keeping explicit evidence tracking. |
 | REV-VAL-4 Static analysis gate check | done | REV-VAL-0 | `ruff check .` and `mypy server tools scripts` executed after installing `.[dev]`; both are currently red (`ruff`: `1172` findings, `mypy`: `175` errors). |
 
+## Live evaluation P1 follow-ups (2026-02-22)
+
+- Done: hardened `tools/ons_data.py` observation retrieval to start with
+  dimension filters only (no `limit/page`) and only escalate to explicit paging
+  when an implicit response appears truncated; this matches current live ONS
+  contracts and avoids repeated `ONS_API_ERROR` failures for GDP observations.
+- Done: expanded ONS option-code parsing in `tools/ons_data.py` and
+  `tools/ons_codes.py` to accept live option payload shape
+  (`links.code.id`) in addition to legacy `id/option/value/code` fields.
+- Done: retained explicit OS Names regression coverage ensuring
+  `os_names.find` / `os_names.nearest` do not send `output_srs`.
+- Verification:
+  `./.venv/bin/pytest -q --no-cov tests/test_ons_data.py tests/test_ons_codes_live.py tests/test_os_names_success.py`
+  (`27 passed`), plus live smoke via `TestClient` against
+  `ons_data.query` (`dataset=gdp`, `timeRange=2024 Q1-2024 Q2`) returned `200`
+  with 6 observations.
+
 ## Safe-by-design governance and citation review (2026-02-21)
 
 Legend: pending, in_progress, done, blocked
