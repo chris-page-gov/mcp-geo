@@ -43,7 +43,7 @@ def test_ons_search_live_skips_non_dict_items(monkeypatch):
 
     def fake_get_json(url, params):  # noqa: ARG001
         return 200, {
-            "items": ["bad", {"id": "x", "title": "Good"}],
+            "items": ["bad", {"id": "x", "title": "GDP Good"}],
             "count": 2,
             "offset": 0,
             "limit": 1,

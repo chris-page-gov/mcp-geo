@@ -172,7 +172,7 @@ def test_features_query(monkeypatch: MonkeyPatch):
         monkeypatch,
         [
             (
-                "features/ngd/ofa/v1/collections/buildings/items",
+                "features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items",
                 (
                     200,
                     {
@@ -205,6 +205,7 @@ def test_features_query(monkeypatch: MonkeyPatch):
     assert data["numberMatched"] == 3
     assert data["numberReturned"] == 1
     assert data["nextPageToken"] == "1"
+    assert data["requestedCollection"] == "buildings"
 
 
 def test_features_query_bad_limit(monkeypatch: MonkeyPatch):
@@ -369,10 +370,10 @@ def test_features_query_next_token_without_number_matched(monkeypatch: MonkeyPat
     patch_requests(
         monkeypatch,
         [
-            (
-                "features/ngd/ofa/v1/collections/buildings/items",
                 (
-                    200,
+                    "features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items",
+                    (
+                        200,
                     {
                         "features": [
                             "bad-entry",

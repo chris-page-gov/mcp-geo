@@ -155,7 +155,6 @@ def _nearest(payload: dict[str, Any]) -> ToolResult:
         "srs": "WGS84",
         "output_srs": "WGS84",
         "dataset": PLACES_DATASET,
-        "maxresults": limit,
     }
     max_distance = payload.get("maxDistanceMeters")
     if max_distance is not None:
@@ -167,7 +166,7 @@ def _nearest(payload: dict[str, Any]) -> ToolResult:
     status, raw = client.get_json(f"{client.base_places}/nearest", params)
     if status != 200:
         return 501, raw
-    results = _normalize_results(raw)
+    results = _normalize_results(raw)[:limit]
     return 200, {
         "results": results,
         "count": len(results),

@@ -338,6 +338,128 @@ def _fetch_dataset_overview(dataset: str) -> dict[str, Any] | None:
     }
 
 
+def _extract_keyfamilies(data: Any) -> list[dict[str, Any]]:
+    if not isinstance(data, dict):
+        return []
+    structure = data.get("structure")
+    if not isinstance(structure, dict):
+        return []
+    keyfamilies_node = structure.get("keyfamilies")
+    if not isinstance(keyfamilies_node, dict):
+        return []
+    keyfamilies = keyfamilies_node.get("keyfamily")
+    if isinstance(keyfamilies, list):
+        return [item for item in keyfamilies if isinstance(item, dict)]
+    if isinstance(keyfamilies, dict):
+        return [keyfamilies]
+    return []
+
+
+def _component_list(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return [item for item in value if isinstance(item, dict)]
+    if isinstance(value, dict):
+        return [value]
+    return []
+
+
+def _build_concept_summary(data: Any) -> list[dict[str, Any]]:
+    concept_map: dict[str, dict[str, Any]] = {}
+    for keyfamily in _extract_keyfamilies(data):
+        dataset_id = _extract_text(keyfamily.get("id"))
+        components = keyfamily.get("components")
+        if not isinstance(components, dict):
+            continue
+        entries = (
+            _component_list(components.get("dimension"))
+            + _component_list(components.get("attribute"))
+            + _component_list(components.get("primarymeasure"))
+            + _component_list(components.get("timedimension"))
+        )
+        for entry in entries:
+            concept_ref = _extract_text(entry.get("conceptref"))
+            if not concept_ref:
+                continue
+            key = concept_ref.upper()
+            bucket = concept_map.setdefault(
+                key,
+                {
+                    "id": concept_ref,
+                    "datasets": set(),
+                    "codelists": set(),
+                },
+            )
+            if dataset_id:
+                bucket["datasets"].add(dataset_id)
+            codelist_ref = _extract_text(entry.get("codelist"))
+            if codelist_ref:
+                bucket["codelists"].add(codelist_ref)
+    summary: list[dict[str, Any]] = []
+    for key in sorted(concept_map.keys()):
+        bucket = concept_map[key]
+        summary.append(
+            {
+                "id": bucket["id"],
+                "datasetCount": len(bucket["datasets"]),
+                "datasets": sorted(bucket["datasets"]),
+                "codelists": sorted(bucket["codelists"]),
+            }
+        )
+    return summary
+
+
+def _build_codelist_summary(data: Any) -> list[dict[str, Any]]:
+    codelist_map: dict[str, dict[str, Any]] = {}
+    for keyfamily in _extract_keyfamilies(data):
+        dataset_id = _extract_text(keyfamily.get("id"))
+        components = keyfamily.get("components")
+        if not isinstance(components, dict):
+            continue
+        entries = _component_list(components.get("dimension")) + _component_list(
+            components.get("attribute")
+        )
+        for entry in entries:
+            codelist_ref = _extract_text(entry.get("codelist"))
+            if not codelist_ref:
+                continue
+            concept_ref = _extract_text(entry.get("conceptref"))
+            key = codelist_ref.upper()
+            bucket = codelist_map.setdefault(
+                key,
+                {
+                    "id": codelist_ref,
+                    "datasets": set(),
+                    "concepts": set(),
+                },
+            )
+            if dataset_id:
+                bucket["datasets"].add(dataset_id)
+            if concept_ref:
+                bucket["concepts"].add(concept_ref)
+    summary: list[dict[str, Any]] = []
+    for key in sorted(codelist_map.keys()):
+        bucket = codelist_map[key]
+        summary.append(
+            {
+                "id": bucket["id"],
+                "datasetCount": len(bucket["datasets"]),
+                "datasets": sorted(bucket["datasets"]),
+                "concepts": sorted(bucket["concepts"]),
+            }
+        )
+    return summary
+
+
+def _load_dataset_definition_payload() -> ToolResult:
+    status, data = nomis_client.get_json(_build_url("dataset/def.sdmx.json"))
+    if status != 200:
+        return status, data
+    err = _extract_nomis_error(data)
+    if err:
+        return 502, {"isError": True, "code": "NOMIS_API_ERROR", "message": err}
+    return 200, data
+
+
 def _infer_query_template(dataset: str, overview: dict[str, Any] | None) -> dict[str, str]:
     template: dict[str, str] = {}
     if not overview:
@@ -635,12 +757,34 @@ def _concepts(payload: dict[str, Any]) -> ToolResult:
     suffix = "def.sdmx.json"
     path = f"concept/{suffix}" if not concept else f"concept/{concept}.{suffix}"
     status, data = nomis_client.get_json(_build_url(path))
-    if status != 200:
-        return status, data
-    err = _extract_nomis_error(data)
-    if err:
+    if status == 200:
+        err = _extract_nomis_error(data)
+        if not err:
+            return 200, {"live": True, "concept": concept, "format": fmt, "data": data}
         return 502, {"isError": True, "code": "NOMIS_API_ERROR", "message": err}
-    return 200, {"live": True, "concept": concept, "format": fmt, "data": data}
+
+    # NOMIS concept endpoints can return HTML shells; derive concepts from dataset definitions.
+    if not (
+        isinstance(data, dict)
+        and data.get("code") == "UPSTREAM_INVALID_RESPONSE"
+    ):
+        return status, data
+
+    fallback_status, fallback_data = _load_dataset_definition_payload()
+    if fallback_status != 200:
+        return fallback_status, fallback_data
+
+    concepts = _build_concept_summary(fallback_data)
+    if concept:
+        wanted = concept.strip().lower()
+        concepts = [entry for entry in concepts if str(entry.get("id", "")).lower() == wanted]
+    return 200, {
+        "live": True,
+        "concept": concept,
+        "format": fmt,
+        "derived": True,
+        "data": {"concepts": concepts, "count": len(concepts)},
+    }
 
 
 def _codelists(payload: dict[str, Any]) -> ToolResult:
@@ -656,12 +800,34 @@ def _codelists(payload: dict[str, Any]) -> ToolResult:
     suffix = "def.sdmx.json"
     path = f"codelist/{suffix}" if not codelist else f"codelist/{codelist}.{suffix}"
     status, data = nomis_client.get_json(_build_url(path))
-    if status != 200:
-        return status, data
-    err = _extract_nomis_error(data)
-    if err:
+    if status == 200:
+        err = _extract_nomis_error(data)
+        if not err:
+            return 200, {"live": True, "codelist": codelist, "format": fmt, "data": data}
         return 502, {"isError": True, "code": "NOMIS_API_ERROR", "message": err}
-    return 200, {"live": True, "codelist": codelist, "format": fmt, "data": data}
+
+    # NOMIS codelist endpoints can return HTML shells; derive codelists from dataset definitions.
+    if not (
+        isinstance(data, dict)
+        and data.get("code") == "UPSTREAM_INVALID_RESPONSE"
+    ):
+        return status, data
+
+    fallback_status, fallback_data = _load_dataset_definition_payload()
+    if fallback_status != 200:
+        return fallback_status, fallback_data
+
+    codelists = _build_codelist_summary(fallback_data)
+    if codelist:
+        wanted = codelist.strip().lower()
+        codelists = [entry for entry in codelists if str(entry.get("id", "")).lower() == wanted]
+    return 200, {
+        "live": True,
+        "codelist": codelist,
+        "format": fmt,
+        "derived": True,
+        "data": {"codelists": codelists, "count": len(codelists)},
+    }
 
 
 def _query(payload: dict[str, Any]) -> ToolResult:

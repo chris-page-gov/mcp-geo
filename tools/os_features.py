@@ -79,6 +79,10 @@ _MAX_BBOX_AREA_DEG2 = _float_setting(
 )
 
 _COLLECTION_VERSION_RE = re.compile(r"^(?P<base>.+)-(?P<ver>[0-9]+)$")
+_COLLECTION_ALIASES = {
+    # Compatibility alias used in prompts/evaluation packs.
+    "buildings": "bld-fts-buildingpart-2",
+}
 
 _HINT_MESSAGES = [
     "This uses OS NGD OGC API Features (collections/{collection}/items).",
@@ -501,8 +505,12 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     collection = str(payload.get("collection", "")).strip()
     if not collection:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing collection"}
+    requested_collection = collection
+    collection = _COLLECTION_ALIASES.get(collection.lower(), collection)
 
     warnings: list[str] = []
+    if collection != requested_collection:
+        add_warning(warnings, "COLLECTION_ALIAS_APPLIED")
     include_geometry_raw = payload.get("includeGeometry")
     if include_geometry_raw is None:
         include_geometry = _DEFAULT_INCLUDE_GEOMETRY
@@ -870,6 +878,8 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         },
         "hintMessages": _HINT_MESSAGES,
     }
+    if collection != requested_collection:
+        response["requestedCollection"] = requested_collection
     if polygon is not None:
         response["polygon"] = [[lon, lat] for lon, lat in polygon]
     if isinstance(filter_spec, dict):
@@ -896,7 +906,7 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     )
     if selected_mode == "resource":
         meta = write_resource_payload(prefix="os-features-query", payload=response)
-        return 200, {
+        resource_response: dict[str, Any] = {
             "collection": collection,
             "bbox": list(bbox),
             "count": response["count"],
@@ -914,6 +924,9 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
             "hints": response["hints"],
             "hintMessages": _HINT_MESSAGES,
         }
+        if collection != requested_collection:
+            resource_response["requestedCollection"] = requested_collection
+        return 200, resource_response
     response["delivery"] = "inline"
     return 200, response
 

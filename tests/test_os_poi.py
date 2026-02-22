@@ -85,6 +85,7 @@ def test_os_poi_nearest_success(monkeypatch):
     assert captured["params"]["dataset"] == "DPA,LPI"
     assert captured["params"]["point"] == "51.5,-0.1"
     assert captured["params"]["radius"] == 500
+    assert "maxresults" not in captured["params"]
 
 
 def test_os_poi_within_success(monkeypatch):

@@ -168,7 +168,10 @@ def test_os_tool_upstream_url_contracts(monkeypatch):
         for url, _params, method in calls
     )
     assert any(url.endswith("/search/names/v1/find") for url in urls)
-    assert any(url.endswith("/features/ngd/ofa/v1/collections/buildings/items") for url in urls)
+    assert any(
+        url.endswith("/features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items")
+        for url in urls
+    )
     assert any(url.endswith("/features/ngd/ofa/v1/collections") for url in urls)
     assert any("/search/links/v1/identifierTypes/uprn/100021892956" in url for url in urls)
     assert any("/search/links/v1/identifiers/100021892956" in url for url in urls)
@@ -233,7 +236,7 @@ def test_ons_tool_upstream_url_contracts(monkeypatch):
         json_calls.append((url, params))
         if url.endswith("/datasets"):
             return 200, {
-                "items": [{"id": "gdp", "state": "published", "links": {}}],
+                "items": [{"id": "gdp-to-four-decimal-places", "state": "published", "links": {}}],
                 "offset": params.get("offset", 0) if isinstance(params, dict) else 0,
                 "limit": params.get("limit", 5) if isinstance(params, dict) else 5,
                 "total_count": 1,
@@ -254,9 +257,9 @@ def test_ons_tool_upstream_url_contracts(monkeypatch):
         item_key: str = "items",  # noqa: ARG001
     ):
         page_calls.append((url, params))
-        if url.endswith("/datasets/gdp/editions"):
+        if url.endswith("/datasets/gdp-to-four-decimal-places/editions"):
             return 200, [{"edition": "time-series", "state": "published"}]
-        if url.endswith("/datasets/gdp/editions/time-series/versions"):
+        if url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions"):
             return 200, [{"version": "1", "state": "published"}]
         if url.endswith("/dimensions/time/options"):
             return 200, [{"id": "2024 Q1"}]
@@ -304,23 +307,33 @@ def test_ons_tool_upstream_url_contracts(monkeypatch):
 
     assert any(url.endswith("/datasets") for url in json_urls)
     assert any(
-        url.endswith("/datasets/gdp/editions/time-series/versions/1/observations")
+        url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1/observations")
         for url in json_urls
     )
-    assert any(url.endswith("/datasets/gdp/editions/time-series/versions/1") for url in json_urls)
     assert any(
-        url.endswith("/datasets/gdp/editions/time-series/versions/1/dimensions/time/options")
+        url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1")
         for url in json_urls
     )
-    assert any(url.endswith("/datasets/gdp/editions") for url in page_urls)
-    assert any(url.endswith("/datasets/gdp/editions/time-series/versions") for url in page_urls)
     assert any(
-        url.endswith("/datasets/gdp/editions/time-series/versions/1/dimensions/time/options")
+        url.endswith(
+            "/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1/dimensions/time/options"
+        )
+        for url in (json_urls + page_urls)
+    )
+    assert any(url.endswith("/datasets/gdp-to-four-decimal-places/editions") for url in page_urls)
+    assert any(
+        url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions")
+        for url in page_urls
+    )
+    assert any(
+        url.endswith(
+            "/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1/dimensions/time/options"
+        )
         for url in page_urls
     )
 
     search_params = next(params for url, params in json_calls if url.endswith("/datasets"))
-    assert search_params == {"search": "gdp", "limit": 5, "offset": 0}
+    assert search_params == {"limit": 500, "offset": 0}
 
 
 def test_nomis_tool_upstream_url_contracts(monkeypatch):
