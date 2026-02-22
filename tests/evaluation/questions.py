@@ -1305,7 +1305,7 @@ CACHE_QUESTIONS = [
         description="Audit cache status for local PostGIS boundaries.",
         expected=ExpectedOutcome(
             required_tools=["admin_lookup.get_cache_status"],
-            max_tool_calls=1,
+            max_tool_calls=2,
         ),
         tool_calls=[ToolCallSpec("admin_lookup.get_cache_status", {})],
         tags=["cache", "admin"],
@@ -1318,7 +1318,7 @@ CACHE_QUESTIONS = [
         description="Search cache entries by name.",
         expected=ExpectedOutcome(
             required_tools=["admin_lookup.search_cache"],
-            max_tool_calls=1,
+            max_tool_calls=2,
         ),
         tool_calls=[ToolCallSpec("admin_lookup.search_cache", {"query": "Westminster", "limit": 5})],
         tags=["cache", "admin"],

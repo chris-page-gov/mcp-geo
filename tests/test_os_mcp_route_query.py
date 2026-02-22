@@ -138,6 +138,14 @@ def test_route_query_statistics_for_ons_filter_creation():
 def test_route_query_hierarchy_phrase():
     body = _route("Show the hierarchy for ward E05000644")
     assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "admin_lookup.reverse_hierarchy"
+    assert body["recommended_parameters"]["id"] == "E05000644"
+
+
+def test_route_query_tool_discovery_phrase():
+    body = _route("Find tools related to postcode search")
+    assert body["intent"] == "unknown"
+    assert body["confidence"] >= 0.8
 
 
 def test_route_query_statistics_dashboard_area_comparison():

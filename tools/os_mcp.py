@@ -220,6 +220,7 @@ LINKED_ID_PATTERNS = [
 
 CORRELATION_METHOD_REGEX = re.compile(r"\b[A-Z0-9_]+_[0-9]+\b")
 LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
+AREA_CODE_REGEX = re.compile(r"\b([EKNSW]\d{8})\b", re.IGNORECASE)
 
 _PLACE_NAME_STOP_WORDS = {
     "a",
@@ -380,6 +381,13 @@ def _extract_correlation_method(query: str) -> str | None:
     if not match:
         return None
     return match.group(0)
+
+
+def _extract_area_code(query: str) -> str | None:
+    match = AREA_CODE_REGEX.search(query)
+    if not match:
+        return None
+    return match.group(1).upper()
 
 
 def _extract_place_name(query: str) -> str | None:
@@ -614,6 +622,9 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if re.search(r"\bsearch\b.*\bboundary cache\b", query_lower):
         context["unknown_mode"] = "boundary_cache_search"
         return QueryIntent.UNKNOWN, 0.9, {"query": place_name or "Westminster", "limit": 5}, context
+    if re.search(r"\b(find|search|list|show)\b.*\btools?\b", query_lower):
+        context["unknown_mode"] = "descriptor"
+        return QueryIntent.UNKNOWN, 0.9, {}, context
 
     if any(re.search(pattern, query_lower) for pattern in SURVEY_PATTERNS):
         focus = _extract_landscape_focus(query) or place_name
@@ -664,6 +675,13 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if "nomis" in query_lower:
             context["nomis_preferred"] = True
         return QueryIntent.DATASET_DISCOVERY, 0.9, {}, context
+
+    area_code = _extract_area_code(query)
+    if re.search(r"\bhierarchy\b|\bancestor(s)?\b", query_lower):
+        context["place_mode"] = "reverse_hierarchy"
+        if area_code:
+            return QueryIntent.PLACE_LOOKUP, 0.9, {"id": area_code}, context
+        return QueryIntent.PLACE_LOOKUP, 0.85, {}, context
 
     uprn = _extract_uprn(query)
     if re.search(r"\blinked ids?\b|\blinked identifiers?\b|\bcrosswalk\b", query_lower):
@@ -913,6 +931,12 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
         )
     if intent == QueryIntent.PLACE_LOOKUP:
         place_mode = str(context.get("place_mode") or "")
+        if place_mode == "reverse_hierarchy":
+            return (
+                "admin_lookup.reverse_hierarchy",
+                ["admin_lookup.reverse_hierarchy"],
+                "Resolve the administrative hierarchy for a known area code.",
+            )
         if place_mode == "poi_nearest":
             return (
                 "os_poi.nearest",

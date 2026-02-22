@@ -302,6 +302,7 @@ def test_os_maps_render_overlay_contract_without_inventory(client) -> None:  # t
     )
     assert resp.status_code == 200
     body = resp.json()
+    assert body["render"]["urlTemplate"] == body["render"]["imageUrl"]
     assert body["render"]["imageWidth"] == 512
     assert body["render"]["imageHeight"] == 512
     layers = {row["id"]: row for row in body["overlayLayers"]}
