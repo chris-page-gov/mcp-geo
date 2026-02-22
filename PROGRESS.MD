@@ -99,6 +99,15 @@ Legend: pending, in_progress, done
 | OGC-INT-4 MCP integration and routing | done | OGC-TOOLS-2 | Registered `ons_geo` in tool imports/discovery categories/toolsets and resource catalog; route-query now recommends `ons_geo.by_postcode`/`ons_geo.by_uprn` for explicit geography-mapping prompts while preserving OS Places for address retrieval. |
 | OGC-VAL-5 Regression coverage | done | OGC-INT-4, OGC-REFRESH-3 | Added tests for cache internals, refresh script ingestion, ons-geo tools, route-query classification, tool-search discoverability, and resource-catalog slugs; focused run: `98 passed` (`./.venv/bin/pytest -q --no-cov ...`). |
 
+## Startup context mitigation check (2026-02-22)
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SCM-CLAUDE-0 Startup footprint measurement | done | none | Measured stdio startup payload pressure for non-deferred clients: full `tools/list` (`81` tools) `87,805` bytes (~`21,951` tokens approx) vs `starter` (`15` tools) `21,151` bytes (~`5,287` tokens approx). |
+| SCM-CLAUDE-1 Mitigation readiness hardening | done | SCM-CLAUDE-0 | Added `os_mcp.select_toolsets` to `starter` so constrained clients can always request scoped expansion without full schema load; verified inferred include path (`core_router`, `places_names`, `ons_geo_lookup`) and documented workflow in `docs/tutorial.md` + `docs/troubleshooting.md`. |
+
 ## Safe-by-design governance and citation review (2026-02-21)
 
 Legend: pending, in_progress, done, blocked

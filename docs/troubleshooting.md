@@ -239,6 +239,8 @@ Remediation:
 - Set `MCP_TOOLS_DEFAULT_TOOLSET=starter` for lean startup discovery.
 - Or set `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>` to scope startup tools to your workflow
   (for example `core_router,places_names,maps_tiles`).
+- The starter set includes `os_mcp.select_toolsets`, so constrained clients can
+  request query-specific `includeToolsets` without loading full tool schemas.
 - Keep explicit request filters available: clients can still pass `toolset`,
   `includeToolsets`, or `excludeToolsets` on `tools/list` / `tools/describe`.
 - Avoid loading full trace logs into model context; inspect with `rg`, `head`, or `tail`

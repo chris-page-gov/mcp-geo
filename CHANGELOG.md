@@ -62,6 +62,17 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Expanded `docs/tutorial.md` to cover the current full tool-family surface
+  (including `ons_geo.*`, peat/landscape, downloads/offline/QGIS/OTA, and
+  MCP-Apps status notes) and added a concrete startup-context evaluation section
+  for Claude/non-deferred clients with measured `tools/list` footprint and
+  mitigation workflow (`starter` + `os_mcp.select_toolsets` + scoped
+  `includeToolsets`).
+- Updated `server/mcp/tool_search.py` starter toolset to include
+  `os_mcp.select_toolsets` so constrained clients can always request scoped
+  toolset expansion without loading full schemas; documented the behavior in
+  `docs/troubleshooting.md` and added regression assertion in
+  `tests/test_tool_search.py`.
 - Updated MCP integration/discovery surfaces for ONS geography cache support:
   - registered `tools.ons_geo` in `server/mcp/tools.py`
   - added `ons_geo` categories/keywords/toolsets in

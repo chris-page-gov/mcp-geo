@@ -207,6 +207,11 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Re-validated startup context pressure for non-deferred clients
+  (Claude-style) and hardened mitigation path by adding
+  `os_mcp.select_toolsets` to the `starter` toolset; updated tutorial and
+  troubleshooting guidance with measured `tools/list` footprint and scoped
+  expansion workflow.
 - 2026-02-22: Implemented ONS geography lookup cache strategy with
   `ONSPD`/`ONSUD` as primary exact-mode products and `NSPL`/`NSUL` in parallel
   as best-fit products, including manifest/index resources, refresh
