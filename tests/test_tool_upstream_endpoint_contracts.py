@@ -310,6 +310,14 @@ def test_ons_tool_upstream_url_contracts(monkeypatch):
         url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1/observations")
         for url in json_urls
     )
+    observation_params = next(
+        params
+        for url, params in json_calls
+        if url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1/observations")
+    )
+    assert isinstance(observation_params, dict)
+    assert observation_params["limit"] == 500
+    assert observation_params["page"] == 1
     assert any(
         url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1")
         for url in json_urls

@@ -7,6 +7,7 @@ import re
 import time
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urljoin
 from tools.registry import Tool, register, ToolResult
 from server.config import settings
 from tools.ons_common import client as ons_client
@@ -72,6 +73,7 @@ _QUARTER_SHORT_PATTERN = re.compile(r"^Q(?P<q>[1-4])$", re.IGNORECASE)
 
 _MAX_TIME_RANGE_OPTIONS = 48
 _DEFAULT_TIME_WILDCARD = "*"
+_OBSERVATIONS_FETCH_PAGE_LIMIT = 500
 
 _DATASET_ALIASES = {
     # Backward-compatible alias used by legacy prompts and widget defaults.
@@ -362,6 +364,70 @@ def _resolve_time_options(dataset: str, edition: str, version: str) -> tuple[lis
     return options or [], None
 
 
+def _fetch_observations_paged(
+    *,
+    url: str,
+    filters: dict[str, Any],
+) -> ToolResult:
+    params = ons_client.build_paged_params(
+        _OBSERVATIONS_FETCH_PAGE_LIMIT,
+        1,
+        dict(filters),
+    )
+    current_url = url
+    current_params: dict[str, Any] | None = params
+    page = int(params.get("page", 1))
+    limit = int(params.get("limit", _OBSERVATIONS_FETCH_PAGE_LIMIT))
+    observations: list[dict[str, Any]] = []
+    dimensions: dict[str, Any] | None = None
+
+    while True:
+        status, data = ons_client.get_json(current_url, params=current_params)
+        if status != 200:
+            return status, data
+        if dimensions is None and isinstance(data.get("dimensions"), dict):
+            dimensions = cast(dict[str, Any], data.get("dimensions"))
+
+        batch_raw = data.get("observations", [])
+        if not isinstance(batch_raw, list):
+            return 500, {
+                "isError": True,
+                "code": "INTEGRATION_ERROR",
+                "message": "Expected observations list from ONS API.",
+            }
+        for item in batch_raw:
+            if isinstance(item, dict):
+                observations.append(item)
+
+        next_url = None
+        links = data.get("links")
+        if isinstance(links, list):
+            for link in links:
+                if isinstance(link, dict) and link.get("rel") == "next":
+                    href = link.get("href")
+                    if isinstance(href, str) and href:
+                        next_url = urljoin(current_url, href)
+                    break
+        if next_url:
+            current_url = next_url
+            current_params = None
+            continue
+
+        total = data.get("total") or data.get("count")
+        if isinstance(total, int) and page * limit >= total:
+            break
+        if len(batch_raw) < limit:
+            break
+
+        page += 1
+        current_url = url
+        current_params = dict(params)
+        current_params["page"] = page
+        current_params["limit"] = limit
+
+    return 200, {"observations": observations, "dimensions": dimensions}
+
+
 def _query(payload: dict[str, Any]) -> ToolResult:
     dataset_input = payload.get("dataset")
     dataset = dataset_input
@@ -649,7 +715,7 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         for time_value in time_values:
             params = dict(base_filters)
             params[time_key] = time_value
-            status, data = ons_client.get_json(url, params=params)
+            status, data = _fetch_observations_paged(url=url, filters=params)
             if status != 200:
                 return status, data
             if observation_dimensions is None and isinstance(data.get("dimensions"), dict):
@@ -660,7 +726,7 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                     if isinstance(item, dict):
                         results.append(item)
     else:
-        status, data = ons_client.get_json(url, params=base_filters)
+        status, data = _fetch_observations_paged(url=url, filters=base_filters)
         if status != 200:
             return status, data
         if isinstance(data.get("dimensions"), dict):

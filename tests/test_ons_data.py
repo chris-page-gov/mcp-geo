@@ -45,6 +45,41 @@ def test_ons_query_live_success(monkeypatch):
     assert body["results"][0]["value"] == 123.4
 
 
+def test_ons_query_observations_include_paged_params_non_range(monkeypatch):
+    from tools import ons_common
+
+    observation_params: list[Dict[str, Any]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        if "/versions/1" in url and "observations" not in url and "dimensions/" not in url:
+            return 200, {"dimensions": [{"id": "time"}]}
+        if "observations" in url:
+            if isinstance(params, dict):
+                observation_params.append(dict(params))
+            return 200, {"dimensions": {"time": {"id": "time"}}, "observations": [{"value": 1}], "total": 1}
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "limit": 5,
+            "page": 2,
+        },
+    )
+    assert resp.status_code == 200
+    assert observation_params
+    first = observation_params[0]
+    assert "limit" in first and "page" in first
+    assert first["limit"] == 500
+    assert first["page"] == 1
+    assert first.get("time") == "*"
+
+
 def test_ons_query_time_range_expands(monkeypatch):
     from tools import ons_common
 
@@ -70,6 +105,41 @@ def test_ons_query_time_range_expands(monkeypatch):
     body = resp.json()
     assert body["count"] == 2
     assert body["timeValues"] == ["2023 Q1", "2023 Q2"]
+
+
+def test_ons_query_time_range_observations_include_paged_params(monkeypatch):
+    from tools import ons_common
+
+    observation_params: list[Dict[str, Any]] = []
+
+    def fake_get_json(url: str, params: Dict[str, Any] | None = None, use_cache: bool = True) -> Tuple[int, Dict[str, Any]]:  # noqa: ARG001
+        if "/versions/1" in url and "dimensions/time/options" not in url and "observations" not in url:
+            return 200, {"dimensions": [{"id": "time"}]}
+        if "dimensions/time/options" in url:
+            return 200, {"items": [{"option": "2024 Q1"}, {"option": "2024 Q2"}], "links": []}
+        if "observations" in url:
+            if isinstance(params, dict):
+                observation_params.append(dict(params))
+            return 200, {"observations": [{"time": params.get("time"), "value": 1}], "total": 1}
+        return 200, {"items": []}
+
+    monkeypatch.setattr(ons_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "timeRange": "2024 Q1-2024 Q2",
+        },
+    )
+    assert resp.status_code == 200
+    assert observation_params
+    assert {entry.get("time") for entry in observation_params} == {"2024 Q1", "2024 Q2"}
+    for entry in observation_params:
+        assert entry.get("limit") == 500
+        assert entry.get("page") == 1
 
 
 def test_ons_query_time_range_expands_with_shorthand_end(monkeypatch):
