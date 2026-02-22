@@ -67,6 +67,9 @@ assumptions change.
   resources, scripts, and trial evidence outputs.
 - Driving the new peatland survey reliability hardening program (`PSR-*`) based
   on the 2026-02-19 forensic/deep-research implementation plan.
+- Implementing dual-derivation ONS geography caching with `ONSPD` + `ONSUD`
+  as primary exact-mode references and `NSPL` + `NSUL` in parallel for
+  best-fit/statistical comparability.
 
 ## Active Work
 
@@ -112,6 +115,9 @@ assumptions change.
   with code and tests.
 - Keep the extracted Prism LaTeX brief citation set synchronized with
   authoritative UK/standards anchors and bibliography integrity checks.
+- Maintain ONS postcode/UPRN geography cache artifacts and refresh workflow
+  (`resources/ons_geo_sources.json`, `scripts/ons_geo_cache_refresh.py`,
+  `ons_geo.*` tools) with explicit exact vs best-fit derivation provenance.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -144,6 +150,9 @@ assumptions change.
 - Done: strict non-runtime static quality gate restoration for reliability
   surfaces via `scripts/check_non_runtime_quality.sh`
   (`ruff` + `mypy --follow-imports=skip`).
+- Done: dual-derivation ONS geography cache baseline (`ONSPD` + `ONSUD` exact,
+  `NSPL` + `NSUL` best_fit) with tooling (`ons_geo.*`), refresh automation,
+  route-query integration, and focused regression coverage.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -198,6 +207,13 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Implemented ONS geography lookup cache strategy with
+  `ONSPD`/`ONSUD` as primary exact-mode products and `NSPL`/`NSUL` in parallel
+  as best-fit products, including manifest/index resources, refresh
+  automation (`scripts/ons_geo_cache_refresh.py`), lookup tools
+  (`ons_geo.by_postcode`, `ons_geo.by_uprn`, `ons_geo.cache_status`), and
+  route-query recommendations for explicit postcode/UPRN geography mapping
+  prompts.
 - 2026-02-22: Closed remaining OS/ONS live-evaluation deltas by implementing
   map-render keyword compatibility (`render.urlTemplate` alias), deterministic
   invalid-postcode handling in `os_places.by_postcode`, hierarchy/tool-discovery

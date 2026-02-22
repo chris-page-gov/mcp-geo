@@ -86,6 +86,19 @@ Legend: pending, in_progress, done, blocked
   now scores `6900/6900` (`100%`) with `69/69` passed.
 - Remaining OS/ONS coverage deltas in current question bank: none.
 
+## ONS geography dual-derivation cache (2026-02-22)
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| OGC-CFG-0 Source-manifest baseline | done | none | Added `resources/ons_geo_sources.json` with primary exact-mode products (`ONSPD`, `ONSUD`) plus parallel best-fit products (`NSPL`, `NSUL`) and explicit source metadata/field candidates. |
+| OGC-CACHE-1 SQLite cache core + normalization | done | OGC-CFG-0 | Added `server/ons_geo_cache.py` with postcode/UPRN normalization, derivation-mode validation (`exact`, `best_fit`), cache schema bootstrap, indexed lookup ordering by product priority, and geography code/name extraction helpers. |
+| OGC-TOOLS-2 Tooling for postcode/UPRN geography lookups | done | OGC-CACHE-1 | Added `tools/ons_geo.py` (`ons_geo.by_postcode`, `ons_geo.by_uprn`, `ons_geo.cache_status`) with deterministic cache-unavailable/not-found/error contracts and optional raw-row inclusion. |
+| OGC-REFRESH-3 Refresh/ingest automation | done | OGC-CFG-0, OGC-CACHE-1 | Added `scripts/ons_geo_cache_refresh.py` supporting manifest-driven ingestion, per-product file/URL overrides, CSV/ZIP/GZ parsing, SHA256 provenance capture, and index emission to `resources/ons_geo_cache_index.json`. |
+| OGC-INT-4 MCP integration and routing | done | OGC-TOOLS-2 | Registered `ons_geo` in tool imports/discovery categories/toolsets and resource catalog; route-query now recommends `ons_geo.by_postcode`/`ons_geo.by_uprn` for explicit geography-mapping prompts while preserving OS Places for address retrieval. |
+| OGC-VAL-5 Regression coverage | done | OGC-INT-4, OGC-REFRESH-3 | Added tests for cache internals, refresh script ingestion, ons-geo tools, route-query classification, tool-search discoverability, and resource-catalog slugs; focused run: `98 passed` (`./.venv/bin/pytest -q --no-cov ...`). |
+
 ## Safe-by-design governance and citation review (2026-02-21)
 
 Legend: pending, in_progress, done, blocked

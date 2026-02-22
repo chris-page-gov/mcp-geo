@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added ONS postcode/UPRN geography cache infrastructure for dual-derivation
+  lookup workflows:
+  - `server/ons_geo_cache.py` (normalization, schema bootstrap, indexed
+    lookup, geography field extraction)
+  - `tools/ons_geo.py` (`ons_geo.by_postcode`, `ons_geo.by_uprn`,
+    `ons_geo.cache_status`)
+  - `scripts/ons_geo_cache_refresh.py` (manifest-driven refresh with
+    file/URL overrides and provenance hashes)
+  - `resources/ons_geo_sources.json` (primary exact-mode `ONSPD`/`ONSUD` plus
+    parallel best-fit `NSPL`/`NSUL`)
+  - `resources/ons_geo_cache_index.json` (refresh status/index scaffold).
 - Added peat evidence-layer integration for survey workflows:
   - `tools/os_peat.py` with `os_peat.layers` and `os_peat.evidence_paths`
   - `resources/peat_layers_england.json`
@@ -51,6 +62,19 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Updated MCP integration/discovery surfaces for ONS geography cache support:
+  - registered `tools.ons_geo` in `server/mcp/tools.py`
+  - added `ons_geo` categories/keywords/toolsets in
+    `server/mcp/tool_search.py`
+  - added data resources `resource://mcp-geo/ons-geo-sources` and
+    `resource://mcp-geo/ons-geo-cache-index` in
+    `server/mcp/resource_catalog.py`.
+- Updated `os_mcp.route_query` to recommend `ons_geo.by_postcode` or
+  `ons_geo.by_uprn` for explicit postcode/UPRN geography-mapping prompts while
+  keeping OS Places recommendations for address retrieval queries.
+- Added focused regression coverage for dual-derivation geography caching and
+  routing in `tests/test_ons_geo_cache.py`, `tests/test_ons_geo.py`,
+  `tests/test_ons_geo_cache_refresh.py`, and route/discovery/resource tests.
 - Updated peatland survey routing to include `os_peat.evidence_paths` in
   AOI-first survey plans and alternatives (`tools/os_mcp.py`,
   `tests/test_os_mcp_route_query.py`).
