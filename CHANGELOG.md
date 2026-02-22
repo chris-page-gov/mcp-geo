@@ -62,6 +62,15 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Added explicit cache-health degradation signaling for lookup status surfaces:
+  `ons_geo.cache_status`, `admin_lookup.get_cache_status`, and
+  `resource://mcp-geo/boundary-cache-status` now expose
+  `performance.degraded` with reason/impact metadata so clients can detect
+  reduced reliability when caches are unavailable or stale.
+- Refreshed cache indexes/artifacts for local operability validation:
+  `resources/code_list_packs_index.json`, `resources/boundary_packs_index.json`,
+  and `resources/ons_geo_cache_index.json` now reflect the latest cache refresh
+  run evidence.
 - Expanded `docs/tutorial.md` to cover the current full tool-family surface
   (including `ons_geo.*`, peat/landscape, downloads/offline/QGIS/OTA, and
   MCP-Apps status notes) and added a concrete startup-context evaluation section

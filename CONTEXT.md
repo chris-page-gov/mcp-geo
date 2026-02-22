@@ -207,6 +207,17 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-22: Added explicit degraded-performance status signaling for cache
+  availability surfaces so clients can detect reduced reliability without
+  inferring from missing data: `ons_geo.cache_status`,
+  `admin_lookup.get_cache_status`, and
+  `resource://mcp-geo/boundary-cache-status` now expose
+  `performance.degraded` with reason/impact fields.
+- 2026-02-22: Populated all caches feasible in the current local environment:
+  refreshed code-list pack cache artifacts, ingested bootstrap ONS geo products
+  (ONSPD/NSPL/ONSUD/NSUL) into `data/cache/ons_geo`, and seeded PostGIS
+  boundary cache with live ArcGIS geometry for Coventry and Westminster.
+  Remaining full-population steps require production source downloads/tooling.
 - 2026-02-22: Re-validated startup context pressure for non-deferred clients
   (Claude-style) and hardened mitigation path by adding
   `os_mcp.select_toolsets` to the `starter` toolset; updated tutorial and

@@ -64,6 +64,14 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _display_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 def _parse_map_args(values: list[str]) -> dict[str, str]:
     mapping: dict[str, str] = {}
     for item in values:
@@ -393,7 +401,7 @@ def main() -> int:
                 "status": status,
                 "records": record_count,
                 "keyField": key_field or None,
-                "sourcePath": str(source_path) if source_path else None,
+                "sourcePath": _display_path(source_path) if source_path else None,
                 "sourceSha256": (
                     _sha256_file(source_path)
                     if source_path and source_path.exists()
@@ -410,8 +418,8 @@ def main() -> int:
         "version": version,
         "generatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "cache": {
-            "cacheDir": str(cache_dir),
-            "dbPath": str(db_path),
+            "cacheDir": _display_path(cache_dir),
+            "dbPath": _display_path(db_path),
         },
         "products": summary_products,
     }

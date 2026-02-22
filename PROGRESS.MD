@@ -99,6 +99,15 @@ Legend: pending, in_progress, done
 | OGC-INT-4 MCP integration and routing | done | OGC-TOOLS-2 | Registered `ons_geo` in tool imports/discovery categories/toolsets and resource catalog; route-query now recommends `ons_geo.by_postcode`/`ons_geo.by_uprn` for explicit geography-mapping prompts while preserving OS Places for address retrieval. |
 | OGC-VAL-5 Regression coverage | done | OGC-INT-4, OGC-REFRESH-3 | Added tests for cache internals, refresh script ingestion, ons-geo tools, route-query classification, tool-search discoverability, and resource-catalog slugs; focused run: `98 passed` (`./.venv/bin/pytest -q --no-cov ...`). |
 
+- Done (2026-02-22): cache health/status payloads now expose explicit
+  degraded-performance indicators (`performance.degraded`, `reason`, `impact`)
+  for `ons_geo.cache_status`, `admin_lookup.get_cache_status`, and
+  `resource://mcp-geo/boundary-cache-status`.
+- Done (2026-02-22): populated all feasible local caches in this environment:
+  code-list pack cache artifacts refreshed, ONS geo cache ingested from
+  bootstrap product files, and PostGIS boundary cache seeded from live ArcGIS
+  geometry (Coventry county/unitary and Westminster district records).
+
 ## Startup context mitigation check (2026-02-22)
 
 Legend: pending, in_progress, done

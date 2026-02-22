@@ -1,10 +1,66 @@
 {
   "version": "2026-02-22",
-  "generatedAt": null,
+  "generatedAt": "2026-02-22T19:23:22Z",
   "cache": {
     "cacheDir": "data/cache/ons_geo",
     "dbPath": "data/cache/ons_geo/ons_geo_cache.sqlite"
   },
-  "products": []
+  "products": [
+    {
+      "id": "ONSPD",
+      "title": "ONS Postcode Directory (exact)",
+      "keyType": "postcode",
+      "derivationMode": "exact",
+      "priority": 10,
+      "release": "unknown",
+      "status": "ingested",
+      "records": 3,
+      "keyField": "pcds",
+      "sourcePath": "data/cache/ons_geo/bootstrap/onspd_bootstrap.csv",
+      "sourceSha256": "030365fb64b1ebabd0b28cddf0773dccf308ffd913684c42ca7ae7d1a57cdcfd",
+      "error": null
+    },
+    {
+      "id": "NSPL",
+      "title": "National Statistics Postcode Lookup (best_fit)",
+      "keyType": "postcode",
+      "derivationMode": "best_fit",
+      "priority": 20,
+      "release": "unknown",
+      "status": "ingested",
+      "records": 3,
+      "keyField": "pcds",
+      "sourcePath": "data/cache/ons_geo/bootstrap/nspl_bootstrap.csv",
+      "sourceSha256": "08b9f5d7e9c0e610efa6c391ce6fff306717f32de8427a25865ca88fc6f8b8ab",
+      "error": null
+    },
+    {
+      "id": "ONSUD",
+      "title": "ONS UPRN Directory (exact)",
+      "keyType": "uprn",
+      "derivationMode": "exact",
+      "priority": 10,
+      "release": "unknown",
+      "status": "ingested",
+      "records": 2,
+      "keyField": "UPRN",
+      "sourcePath": "data/cache/ons_geo/bootstrap/onsud_bootstrap.csv",
+      "sourceSha256": "9faaa7600c6df0f310daabe06c3c0b8fb38b656423a3afe15fef707ec0996c55",
+      "error": null
+    },
+    {
+      "id": "NSUL",
+      "title": "National Statistics UPRN Lookup (best_fit)",
+      "keyType": "uprn",
+      "derivationMode": "best_fit",
+      "priority": 20,
+      "release": "unknown",
+      "status": "ingested",
+      "records": 2,
+      "keyField": "UPRN",
+      "sourcePath": "data/cache/ons_geo/bootstrap/nsul_bootstrap.csv",
+      "sourceSha256": "03567f066dc6526a50cc95982176715a255bc4a6aa194eb0432bf961541f0e93",
+      "error": null
+    }
+  ]
 }
-

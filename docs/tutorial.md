@@ -30,6 +30,59 @@ curl -sS -o /dev/null -w 'health=%{http_code}\n' "$BASE_URL/health"
   If unset/false, mcp-geo uses bundled sample data.
 - `UI_EVENT_LOG_PATH`: path to the MCP-Apps UI interaction log (default: `logs/ui-events.jsonl`).
 
+### Cache population quick runbook
+
+All cache artifacts are written under `data/` (gitignored).
+
+1. Refresh hybrid pack caches:
+
+```bash
+./.venv/bin/python scripts/pack_cache_refresh.py --kind all
+```
+
+2. Populate `ons_geo` cache (exact + best-fit products):
+
+```bash
+./.venv/bin/python scripts/ons_geo_cache_refresh.py \
+  --sources resources/ons_geo_sources.json \
+  --cache-dir data/cache/ons_geo \
+  --index-path resources/ons_geo_cache_index.json \
+  --db-name ons_geo_cache.sqlite \
+  --product-file ONSPD=/path/to/onspd.csv \
+  --product-file NSPL=/path/to/nspl.csv \
+  --product-file ONSUD=/path/to/onsud.csv \
+  --product-file NSUL=/path/to/nsul.csv
+```
+
+3. Populate PostGIS boundary cache (requires PostGIS + geospatial source):
+
+```bash
+./.venv/bin/python scripts/boundary_cache_ingest.py \
+  --dsn "$BOUNDARY_CACHE_DSN" \
+  --dataset-id <dataset_id> \
+  --source ONS \
+  --title "<dataset title>" \
+  --input /path/to/boundaries.gpkg \
+  --layer <layer_name> \
+  --level <LEVEL> \
+  --id-field <CODE_FIELD> \
+  --name-field <NAME_FIELD> \
+  --resolution BGC \
+  --apply-schema
+```
+
+4. Verify status/degradation flags:
+
+```bash
+curl -sS "$BASE_URL/tools/call" -H 'content-type: application/json' \
+  -d '{"tool":"ons_geo.cache_status"}'
+
+curl -sS "$BASE_URL/tools/call" -H 'content-type: application/json' \
+  -d '{"tool":"admin_lookup.get_cache_status"}'
+```
+
+Both status payloads expose `performance.degraded` with `reason`/`impact`.
+
 ## Client setup (MCP-capable clients)
 
 Most MCP clients connect over STDIO. This repo ships a JSON-RPC 2.0 STDIO adapter
@@ -359,6 +412,8 @@ curl -sS "$BASE_URL/tools/call" \
 - `ons_geo.cache_status`
 
 Exact mode uses ONSPD/ONSUD; best-fit mode uses NSPL/NSUL.
+Use `ons_geo.cache_status` to check `performance.degraded` before running
+postcode/UPRN lookups.
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
@@ -415,6 +470,9 @@ curl -sS "$BASE_URL/tools/call" \
 - `admin_lookup.containing_areas`
 - `admin_lookup.search_cache`
 - `admin_lookup.get_cache_status`
+
+Check `admin_lookup.get_cache_status` and inspect `performance.degraded` to
+confirm whether PostGIS cache-backed responses are available.
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \

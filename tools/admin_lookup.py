@@ -965,6 +965,14 @@ def _cache_status(payload: dict[str, Any]) -> ToolResult:
                 "staleDatasetIds": [],
                 "unknownFreshnessDatasetIds": [],
             },
+            "performance": {
+                "degraded": True,
+                "reason": "cache_unavailable",
+                "impact": (
+                    "Boundary cache is unavailable; tools fall back to live lookups when enabled, "
+                    "which increases latency and may reduce determinism."
+                ),
+            },
             "reloadHint": "Run scripts/boundary_cache_ingest.py to populate PostGIS.",
         }
     status = cache.status()
@@ -984,6 +992,14 @@ def _cache_status(payload: dict[str, Any]) -> ToolResult:
             "freshDatasetIds": [],
             "staleDatasetIds": [],
             "unknownFreshnessDatasetIds": [],
+        },
+    )
+    status.setdefault(
+        "performance",
+        {
+            "degraded": status.get("maturity", {}).get("state") != "ready",
+            "reason": "cache_state_unknown",
+            "impact": "Boundary cache health is unknown; fallback behavior may affect performance.",
         },
     )
     status["reloadHint"] = "Run scripts/boundary_cache_ingest.py to populate PostGIS."

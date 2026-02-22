@@ -301,5 +301,27 @@ def test_ons_geo_cache_status_uses_index(tmp_path: Path, monkeypatch) -> None:
     assert resp.status_code == 200
     body = resp.json()
     assert body["available"] is True
+    assert body["status"] == "ready"
     assert body["productCount"] == 4
+    assert body["performance"]["degraded"] is False
+    assert body["performance"]["reason"] is None
     assert body["primaryDerivationMode"] == "exact"
+
+
+def test_ons_geo_cache_status_unavailable_reports_degraded(tmp_path: Path, monkeypatch) -> None:
+    missing_dir = tmp_path / "missing"
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=missing_dir,
+        db_name="ons_geo_cache.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.cache_status"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is False
+    assert body["status"] == "degraded"
+    assert body["performance"]["degraded"] is True
+    assert body["performance"]["reason"] == "cache_unavailable"
+    assert body["reloadHint"]

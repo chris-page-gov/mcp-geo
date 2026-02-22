@@ -934,6 +934,14 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                     "staleDatasetIds": [],
                     "unknownFreshnessDatasetIds": [],
                 },
+                "performance": {
+                    "degraded": True,
+                    "reason": "cache_unavailable",
+                    "impact": (
+                        "Boundary cache is unavailable; tools may rely on slower live lookups "
+                        "or reduced fallback behavior."
+                    ),
+                },
                 "reloadHint": "Run scripts/boundary_cache_ingest.py to populate PostGIS.",
             }
         else:
@@ -948,6 +956,17 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                     "freshDatasetIds": [],
                     "staleDatasetIds": [],
                     "unknownFreshnessDatasetIds": [],
+                },
+            )
+            status.setdefault(
+                "performance",
+                {
+                    "degraded": status.get("maturity", {}).get("state") != "ready",
+                    "reason": "cache_state_unknown",
+                    "impact": (
+                        "Boundary cache health is unknown; fallback behavior may affect response "
+                        "time and geometry reliability."
+                    ),
                 },
             )
             status["configured"] = configured

@@ -63,6 +63,32 @@ def _build_lookup_response(
     return 200, payload
 
 
+def _cache_performance(*, available: bool, product_count: int) -> dict[str, Any]:
+    if not available:
+        return {
+            "degraded": True,
+            "reason": "cache_unavailable",
+            "impact": (
+                "ons_geo.by_postcode and ons_geo.by_uprn return CACHE_UNAVAILABLE until "
+                "scripts/ons_geo_cache_refresh.py populates the cache."
+            ),
+        }
+    if product_count < 1:
+        return {
+            "degraded": True,
+            "reason": "index_empty",
+            "impact": (
+                "Cache file exists but the index has no products; lookups may return NOT_FOUND "
+                "for most keys until products are ingested."
+            ),
+        }
+    return {
+        "degraded": False,
+        "reason": None,
+        "impact": "Cached ONS geography lookup is available.",
+    }
+
+
 def _by_postcode(payload: dict[str, Any]) -> ToolResult:
     postcode_raw = payload.get("postcode")
     if not isinstance(postcode_raw, str) or not postcode_raw.strip():
@@ -161,14 +187,20 @@ def _cache_status(_payload: dict[str, Any]) -> ToolResult:
     index = cache.load_index()
     products = index.get("products", [])
     product_count = len(products) if isinstance(products, list) else 0
+    available = cache.available()
+    performance = _cache_performance(available=available, product_count=product_count)
+    status = "degraded" if performance.get("degraded") else "ready"
     return 200, {
-        "available": cache.available(),
+        "available": available,
+        "status": status,
         "cacheDir": str(cache.cache_dir),
         "dbPath": str(cache.db_path),
         "indexPath": str(cache.index_path),
         "generatedAt": index.get("generatedAt"),
         "productCount": product_count,
         "products": products if isinstance(products, list) else [],
+        "performance": performance,
+        "reloadHint": "Run scripts/ons_geo_cache_refresh.py to populate ONSPD/ONSUD/NSPL/NSUL.",
         "primaryDerivationMode": str(
             getattr(settings, "ONS_GEO_PRIMARY_DERIVATION", "exact") or "exact"
         ),

@@ -227,6 +227,7 @@ def test_boundary_cache_status_handles_exception(monkeypatch: MonkeyPatch) -> No
     assert payload.get("configured") is False
     assert payload.get("dsnSet") is False
     assert payload.get("maturity", {}).get("state") == "disabled"
+    assert payload.get("performance", {}).get("degraded") is True
     assert "staleness" in payload
     assert payload.get("reloadHint")
     assert etag
@@ -721,6 +722,7 @@ def test_load_data_content_boundary_cache_status_enabled_branch(monkeypatch: Mon
     assert payload["enabled"] is True
     assert payload["configured"] is True
     assert payload["dsnSet"] is True
+    assert "performance" in payload
     assert payload["reloadHint"]
     assert etag
     assert meta is not None and meta.get("generatedAt")

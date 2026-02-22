@@ -58,6 +58,7 @@ def test_resources_read_boundary_cache_status() -> None:
     contents = resource_contents(resp)
     payload = json.loads(contents[0]["text"])
     assert "enabled" in payload
+    assert "performance" in payload
     assert "reloadHint" in payload
 
 

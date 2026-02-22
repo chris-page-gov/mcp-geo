@@ -92,6 +92,7 @@ def test_admin_lookup_cache_status(monkeypatch):
     assert body["enabled"] is True
     assert body["total"] == 10
     assert body["maturity"]["state"] == "ready"
+    assert body["performance"]["degraded"] is False
 
 
 def test_admin_lookup_cache_search(monkeypatch):
