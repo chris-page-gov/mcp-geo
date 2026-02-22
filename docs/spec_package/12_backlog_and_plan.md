@@ -10,6 +10,8 @@
 ### High priority
 1. **CI pipeline**: add lint/type/test/coverage CI with badges.
 2. **MCP-Apps client compatibility**: validate UI initialization across Claude and Inspector; document required client steps.
+3. **Restore strict quality gates**: raise pytest coverage back to `>=90%` and
+   clear current static-analysis debt (`ruff`/`mypy`) so release gating is enforceable.
 
 ### Medium priority
 6. **Pagination for large tool results**: token-based paging for OS features and large datasets.
@@ -17,6 +19,8 @@
 8. **ONS dataset caching**: expand on-disk cache to cover query outputs, add TTL and invalidation.
 9. **Admin cache staleness policy**: configurable freshness thresholds with alerting.
 10. **Performance regression tests**: boundary cache and maps proxy latency baselines.
+11. **Operationalize static MCP-Apps widgets**: convert `feature_inspector`
+    and `route_planner` from static mock UIs to live data/map actions.
 
 ### Low priority
 11. **UI polish**: improve MCP-Apps widgets with real data bindings.
