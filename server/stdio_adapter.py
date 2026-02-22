@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO
 
@@ -539,6 +540,55 @@ def _fallback_bbox(lat: float, lng: float, zoom: Optional[int]) -> list[float]:
     return [min_lon, min_lat, max_lon, max_lat]
 
 
+def _now_iso() -> str:
+    return datetime.now(tz=UTC).isoformat().replace("+00:00", "Z")
+
+
+def _build_overlay_bundle_from_render(render_data: Any) -> dict[str, Any]:
+    layers: list[dict[str, Any]] = []
+    layer_meta: dict[str, dict[str, Any]] = {}
+    if isinstance(render_data, dict):
+        summary = render_data.get("overlayLayers")
+        if isinstance(summary, list):
+            for row in summary:
+                if not isinstance(row, dict):
+                    continue
+                layer_id = row.get("id")
+                if isinstance(layer_id, str) and layer_id:
+                    layer_meta[layer_id] = row
+        collections = render_data.get("overlayCollections")
+        if isinstance(collections, list):
+            for row in collections:
+                if not isinstance(row, dict):
+                    continue
+                layer_id = row.get("id")
+                if not isinstance(layer_id, str) or not layer_id:
+                    continue
+                feature_collection = row.get("featureCollection")
+                if not isinstance(feature_collection, dict):
+                    continue
+                features = feature_collection.get("features")
+                if not isinstance(features, list):
+                    continue
+                layer: dict[str, Any] = {
+                    "id": layer_id,
+                    "name": row.get("name") or layer_id,
+                    "kind": row.get("kind") or "unknown",
+                    "featureCollection": feature_collection,
+                }
+                meta = layer_meta.get(layer_id, {})
+                if isinstance(meta.get("source"), str):
+                    layer["source"] = meta["source"]
+                if "interactive" in meta:
+                    layer["interactive"] = bool(meta.get("interactive"))
+                layers.append(layer)
+    return {
+        "type": "overlay_bundle",
+        "layers": layers,
+        "source": {"tool": "os_maps.render", "generatedAt": _now_iso()},
+    }
+
+
 def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[Dict[str, Any]]:
     lat, lng, zoom = _extract_initial_view(payload, data)
     if lat is None or lng is None:
@@ -546,10 +596,12 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
     bbox = _fallback_bbox(lat, lng, zoom)
     maps_tool = get_tool("os_maps.render")
     render: Optional[Dict[str, Any]] = None
+    render_payload: Optional[Dict[str, Any]] = None
     status: Optional[int] = None
     if maps_tool:
         status, render_data = maps_tool.call({"tool": "os_maps.render", "bbox": bbox})
         if status == 200 and isinstance(render_data, dict):
+            render_payload = render_data
             render = render_data.get("render")
     fallback: Dict[str, Any] = {
         "type": "static_map",
@@ -577,6 +629,31 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
         fallback["render"] = render
     if status is not None and status != 200:
         fallback["mapError"] = {"status": status}
+    map_card: Dict[str, Any] = {
+        "type": "map_card",
+        "title": "Static map fallback",
+        "bbox": bbox,
+        "center": {"lat": lat, "lng": lng},
+        "guidance": fallback["guidance"],
+    }
+    if render is not None:
+        map_card["render"] = render
+    else:
+        map_card["render"] = {
+            "imageUrl": f"/maps/static/osm?bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}&size=640"
+        }
+    overlay_bundle = _build_overlay_bundle_from_render(render_payload or {})
+    export_handoff = {
+        "type": "export_handoff",
+        "resourceUri": render.get("imageUrl") if isinstance(render, dict) else None,
+        "format": "url",
+        "generatedAt": _now_iso(),
+        "provenance": {"tool": "os_maps.render", "status": status},
+    }
+    fallback["map_card"] = map_card
+    fallback["overlay_bundle"] = overlay_bundle
+    fallback["export_handoff"] = export_handoff
+    fallback["fallbackOrder"] = ["map_card", "overlay_bundle", "export_handoff"]
     return fallback
 
 

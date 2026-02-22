@@ -17,7 +17,6 @@ from .config import settings
 
 app = FastAPI(title="MCP Geo Server")
 configure_logging()
-print("[DEBUG] server/main.py loaded", flush=True)
 cors_origins = [
     origin.strip()
     for origin in settings.CORS_ALLOWED_ORIGINS.split(",")
