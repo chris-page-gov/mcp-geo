@@ -108,15 +108,15 @@ def test_route_query_poi_search():
     assert body["recommended_tool"] == "os_poi.search"
 
 
-def test_route_query_poi_phrase_routes_to_place_lookup_for_compatibility():
+def test_route_query_poi_phrase_routes_to_poi_lookup():
     body = _route("Search points of interest for cafes in Westminster")
-    assert body["intent"] == "place_lookup"
+    assert body["intent"] == "poi_lookup"
     assert body["recommended_tool"] == "os_poi.search"
 
 
-def test_route_query_poi_acronym_with_coordinates_routes_to_place_lookup():
+def test_route_query_poi_acronym_with_coordinates_routes_to_poi_lookup():
     body = _route("Find nearest POIs to 51.5034,-0.1276")
-    assert body["intent"] == "place_lookup"
+    assert body["intent"] == "poi_lookup"
     assert body["recommended_tool"] == "os_poi.nearest"
 
 
@@ -311,6 +311,26 @@ def test_select_toolsets_infers_from_query():
     assert "core_router" in include
     assert "maps_tiles" in include
     assert body.get("matchedToolCount", 0) >= 1
+
+
+def test_select_toolsets_poi_query_infers_places_names():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Search points of interest for cafes in Westminster",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "poi_lookup"
+    filters = body.get("effectiveFilters", {})
+    include = filters.get("includeToolsets", [])
+    assert "places_names" in include
+    assert "admin_boundaries" not in include
+    matched = body.get("matchedTools", [])
+    assert "os_poi.search" in matched
 
 
 def test_select_toolsets_explicit_filters():

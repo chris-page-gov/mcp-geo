@@ -663,12 +663,12 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         lat_lon = _extract_lat_lon(query)
         if lat_lon is not None:
             lat, lon = lat_lon
-            context["place_mode"] = "poi_nearest"
-            return QueryIntent.PLACE_LOOKUP, 0.88, {"lat": lat, "lon": lon, "limit": 5}, context
-        context["place_mode"] = "poi_search"
+            context["poi_mode"] = "nearest"
+            return QueryIntent.POI_LOOKUP, 0.88, {"lat": lat, "lon": lon, "limit": 5}, context
+        context["poi_mode"] = "search"
         text_match = re.search(r"\bfor\s+(.+)$", query, re.IGNORECASE)
         poi_text = text_match.group(1).strip() if text_match else query
-        return QueryIntent.PLACE_LOOKUP, 0.88, {"text": poi_text}, context
+        return QueryIntent.POI_LOOKUP, 0.88, {"text": poi_text}, context
 
     if any(re.search(pattern, query_lower) for pattern in DATASET_PATTERNS):
         if "nomis" in query_lower:
@@ -774,8 +774,13 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
 
     if any(re.search(pattern, query_lower) for pattern in POI_PATTERNS):
         scores[QueryIntent.POI_LOOKUP] = max(scores[QueryIntent.POI_LOOKUP], 0.85)
+        lat_lon = _extract_lat_lon(query)
         if re.search(r"\bnearest\b|\bnear\b|\bnearby\b", query_lower):
             scores[QueryIntent.POI_LOOKUP] = max(scores[QueryIntent.POI_LOOKUP], 0.92)
+            if lat_lon is not None:
+                context["poi_mode"] = "nearest"
+        elif "poi_mode" not in context:
+            context["poi_mode"] = "search"
         scores[QueryIntent.FEATURE_SEARCH] = min(scores[QueryIntent.FEATURE_SEARCH], 0.75)
 
     if re.search(r"\broute\b|\bdirections\b|\bfrom\b.*\bto\b", query_lower):
@@ -918,6 +923,13 @@ def _get_tool_for_intent(
             "Free-text address search using OS Places.",
         )
     if intent == QueryIntent.POI_LOOKUP:
+        poi_mode = str(context.get("poi_mode") or context.get("place_mode") or "")
+        if poi_mode == "nearest":
+            return (
+                "os_poi.nearest",
+                ["os_poi.nearest"],
+                "Find nearest OS points of interest to a coordinate.",
+            )
         return (
             "os_poi.search",
             ["os_poi.search", "os_poi.nearest", "os_poi.within"],
