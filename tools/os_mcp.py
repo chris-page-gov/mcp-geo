@@ -55,6 +55,7 @@ PLACE_LOOKUP_PATTERNS = [
     r"\bwhat is the code for\b",
     r"\blocal authority\b",
     r"\bparliamentary constituency\b",
+    r"\bhierarchy\b",
 ]
 
 STATISTICS_PATTERNS = [
@@ -184,6 +185,10 @@ DATASET_PATTERNS = [
     r"\blist.*datasets?\b",
     r"\bavailable.*data\b",
     r"\bdatasets?\b",
+    r"\b(list|search|find|show)\b.*\b(dimensions?|codes?|editions?|versions?|codelists?|concepts?)\b",
+    r"\bons\b.*\b(dimensions?|codes?|editions?|versions?)\b",
+    r"\bnomis\b.*\b(datasets?|codelists?|concepts?|workflow)\b",
+    r"\bworkflow profiles?\b",
 ]
 
 VECTOR_TILE_PATTERNS = [
@@ -199,16 +204,78 @@ MAP_RENDER_PATTERNS = [
     r"\bmap render\b",
     r"\bmap descriptor\b",
     r"\bmap image\b",
+    r"\bmap stack\b",
+    r"\btiles?\b.*\bstatic\b",
+    r"\bstatic\b.*\btiles?\b",
 ]
 
 LINKED_ID_PATTERNS = [
-    r"\buprn\b",
-    r"\busrn\b",
-    r"\btoid\b",
+    r"\buprn(s)?\b",
+    r"\busrn(s)?\b",
+    r"\btoid(s)?\b",
     r"\blinked id\b",
+    r"\blinked ids\b",
+    r"\blinked identifiers?\b",
 ]
 
 CORRELATION_METHOD_REGEX = re.compile(r"\b[A-Z0-9_]+_[0-9]+\b")
+LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
+
+_PLACE_NAME_STOP_WORDS = {
+    "a",
+    "an",
+    "and",
+    "build",
+    "cache",
+    "capabilities",
+    "code",
+    "codes",
+    "config",
+    "configuration",
+    "create",
+    "describe",
+    "edition",
+    "editions",
+    "event",
+    "fetch",
+    "filter",
+    "find",
+    "for",
+    "from",
+    "get",
+    "guide",
+    "hierarchy",
+    "in",
+    "list",
+    "log",
+    "map",
+    "mcp",
+    "mode",
+    "nomis",
+    "observation",
+    "observations",
+    "of",
+    "ons",
+    "open",
+    "probe",
+    "render",
+    "search",
+    "server",
+    "show",
+    "skills",
+    "stack",
+    "static",
+    "status",
+    "the",
+    "to",
+    "tool",
+    "tools",
+    "ui",
+    "version",
+    "versions",
+    "widget",
+    "workflow",
+}
 
 LEVEL_KEYWORDS = {
     "oa": [r"\boa\b", r"\boutput areas?\b"],
@@ -347,16 +414,28 @@ def _extract_place_name(query: str) -> str | None:
         if place in query_lower:
             return place.title()
     words = re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b", query)
-    stop_words = {"find", "search", "get", "show", "where", "what", "the"}
     for word in words:
         tokens = word.split()
-        if tokens and tokens[0].lower() in stop_words:
+        if tokens and tokens[0].lower() in _PLACE_NAME_STOP_WORDS:
             if len(tokens) > 1:
-                return " ".join(tokens[1:])
+                candidate = " ".join(tokens[1:])
+                if candidate.lower() not in _PLACE_NAME_STOP_WORDS:
+                    return candidate
             continue
-        if word.lower() not in stop_words:
+        if word.lower() not in _PLACE_NAME_STOP_WORDS:
             return word
     return None
+
+
+def _extract_lat_lon(query: str) -> tuple[float, float] | None:
+    match = LAT_LON_REGEX.search(query)
+    if not match:
+        return None
+    lat = float(match.group(1))
+    lon = float(match.group(2))
+    if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+        return None
+    return lat, lon
 
 
 def _extract_landscape_focus(query: str) -> str | None:
@@ -479,15 +558,65 @@ def _detect_feature_collection(query_lower: str) -> str | None:
     return None
 
 
+def _classify_linked_identifier_query(
+    query: str,
+    query_lower: str,
+    identifier: str | None,
+    context: dict[str, Any],
+) -> tuple[QueryIntent, float, dict[str, Any], dict[str, Any]]:
+    resolved_identifier = identifier or _extract_uprn(query) or ""
+    context["linked_id"] = resolved_identifier
+    if re.search(r"\bproduct version\b|\bcorrelation method\b", query_lower):
+        context["linked_mode"] = "product_version_info"
+        corr = _extract_correlation_method(query)
+        params = {"correlationMethod": corr} if corr else {}
+        return QueryIntent.LINKED_IDS, 0.92, params, context
+    if re.search(r"\bfeature type\b|\broadlink\b|\broad link\b", query_lower):
+        context["linked_mode"] = "feature_types"
+        feature_type = "RoadLink" if "road" in query_lower else "RoadLink"
+        params: dict[str, Any] = {"featureType": feature_type}
+        if resolved_identifier:
+            params["identifier"] = resolved_identifier
+        return QueryIntent.LINKED_IDS, 0.9, params, context
+    params = {"identifier": resolved_identifier} if resolved_identifier else {}
+    return QueryIntent.LINKED_IDS, 0.9, params, context
+
+
 def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dict[str, Any]]:
     query_lower = query.lower()
     context: dict[str, Any] = {}
     level_mentions = _find_level_mentions(query_lower)
     if level_mentions:
         context["levels"] = level_mentions
+    place_name = _extract_place_name(query)
+
+    if re.search(r"\bfetch\b.*\b(mcp geo )?skills guide\b|\bskills guide\b", query_lower):
+        context["unknown_mode"] = "skills_resource"
+        return QueryIntent.UNKNOWN, 0.92, {"uri": SKILLS_RESOURCE["uri"]}, context
+    if re.search(r"\bdescribe\b.*\b(server capabilities|tool search config)\b", query_lower):
+        context["unknown_mode"] = "descriptor"
+        return QueryIntent.UNKNOWN, 0.92, {}, context
+    if re.search(r"\blog\b.*\bui event\b", query_lower):
+        context["unknown_mode"] = "log_event"
+        return (
+            QueryIntent.UNKNOWN,
+            0.9,
+            {
+                "eventType": "ui_event",
+                "source": "route_query",
+                "payload": {"query": query},
+            },
+            context,
+        )
+    if re.search(r"\bboundary cache status\b", query_lower):
+        context["unknown_mode"] = "boundary_cache_status"
+        return QueryIntent.UNKNOWN, 0.9, {}, context
+    if re.search(r"\bsearch\b.*\bboundary cache\b", query_lower):
+        context["unknown_mode"] = "boundary_cache_search"
+        return QueryIntent.UNKNOWN, 0.9, {"query": place_name or "Westminster", "limit": 5}, context
 
     if any(re.search(pattern, query_lower) for pattern in SURVEY_PATTERNS):
-        focus = _extract_landscape_focus(query) or _extract_place_name(query)
+        focus = _extract_landscape_focus(query) or place_name
         if focus:
             context["survey_focus"] = focus
         context["survey_intent"] = True
@@ -498,32 +627,59 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             context,
         )
 
+    if re.search(r"\bstatistics dashboard\b", query_lower):
+        return QueryIntent.AREA_COMPARISON, 0.93, {}, context
+    if re.search(r"\bboundary explorer\b", query_lower):
+        context["interactive_widget"] = "boundary_explorer"
+        return (
+            QueryIntent.INTERACTIVE_SELECTION,
+            0.94,
+            _build_boundary_explorer_params(query, place_name),
+            context,
+        )
+    if re.search(
+        r"\b(mcp-apps?|ui)\b.*\b(rendering mode|probe)\b|\brendering mode support\b|\bui probe\b",
+        query_lower,
+    ):
+        context["interactive_widget"] = "ui_probe"
+        return (
+            QueryIntent.INTERACTIVE_SELECTION,
+            0.94,
+            {"resourceUri": "ui://mcp-geo/statistics-dashboard", "contentMode": "text"},
+            context,
+        )
+
+    if re.search(r"\bpoints? of interest\b|\bpois?\b", query_lower):
+        lat_lon = _extract_lat_lon(query)
+        if lat_lon is not None:
+            lat, lon = lat_lon
+            context["place_mode"] = "poi_nearest"
+            return QueryIntent.PLACE_LOOKUP, 0.88, {"lat": lat, "lon": lon, "limit": 5}, context
+        context["place_mode"] = "poi_search"
+        text_match = re.search(r"\bfor\s+(.+)$", query, re.IGNORECASE)
+        poi_text = text_match.group(1).strip() if text_match else query
+        return QueryIntent.PLACE_LOOKUP, 0.88, {"text": poi_text}, context
+
+    if any(re.search(pattern, query_lower) for pattern in DATASET_PATTERNS):
+        if "nomis" in query_lower:
+            context["nomis_preferred"] = True
+        return QueryIntent.DATASET_DISCOVERY, 0.9, {}, context
+
+    uprn = _extract_uprn(query)
+    if re.search(r"\blinked ids?\b|\blinked identifiers?\b|\bcrosswalk\b", query_lower):
+        return _classify_linked_identifier_query(query, query_lower, uprn, context)
+
     postcode = _extract_postcode(query)
     if postcode:
         context["address_mode"] = "postcode"
         return QueryIntent.ADDRESS_LOOKUP, 0.95, {"postcode": postcode}, context
 
-    uprn = _extract_uprn(query)
     if uprn and "uprn" in query_lower:
         context["address_mode"] = "uprn"
         return QueryIntent.ADDRESS_LOOKUP, 0.95, {"uprn": uprn}, context
 
     if any(re.search(pattern, query_lower) for pattern in LINKED_ID_PATTERNS):
-        identifier = uprn or _extract_uprn(query) or ""
-        context["linked_id"] = identifier
-        if re.search(r"\bproduct version\b|\bcorrelation method\b", query_lower):
-            context["linked_mode"] = "product_version_info"
-            corr = _extract_correlation_method(query)
-            params = {"correlationMethod": corr} if corr else {}
-            return QueryIntent.LINKED_IDS, 0.92, params, context
-        if re.search(r"\bfeature type\b|\broadlink\b|\broad link\b", query_lower):
-            context["linked_mode"] = "feature_types"
-            feature_type = "RoadLink" if "road" in query_lower else "RoadLink"
-            params = {"featureType": feature_type}
-            if identifier:
-                params["identifier"] = identifier
-            return QueryIntent.LINKED_IDS, 0.9, params, context
-        return QueryIntent.LINKED_IDS, 0.9, {"identifier": identifier} if identifier else {}, context
+        return _classify_linked_identifier_query(query, query_lower, uprn, context)
 
     if any(re.search(pattern, query_lower) for pattern in VECTOR_TILE_PATTERNS):
         return QueryIntent.VECTOR_TILES, 0.9, {}, context
@@ -531,7 +687,6 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if any(re.search(pattern, query_lower) for pattern in MAP_RENDER_PATTERNS):
         return QueryIntent.MAP_RENDER, 0.85, {}, context
 
-    place_name = _extract_place_name(query)
     wants_boundary_explorer = _should_offer_boundary_explorer(
         query_lower, level_mentions=level_mentions, place_name=place_name
     )
@@ -587,6 +742,11 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if re.search(r"\bcompare\b|\bvs\.?\b|\bversus\b", query_lower):
         scores[QueryIntent.AREA_COMPARISON] = max(scores[QueryIntent.AREA_COMPARISON], 0.9)
         scores[QueryIntent.STATISTICS] = min(scores[QueryIntent.STATISTICS], 0.4)
+
+    if re.search(r"\bobservations?\b|\bgdpv\b", query_lower):
+        scores[QueryIntent.STATISTICS] = max(scores[QueryIntent.STATISTICS], 0.82)
+    if re.search(r"\bcreate\b.*\bfilter\b|\bons\b.*\bfilter\b", query_lower):
+        scores[QueryIntent.STATISTICS] = max(scores[QueryIntent.STATISTICS], 0.85)
 
     feature_collection = _detect_feature_collection(query_lower)
     if feature_collection:
@@ -752,6 +912,19 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "Resolve linked identifiers (UPRN/USRN/TOID) for an entity.",
         )
     if intent == QueryIntent.PLACE_LOOKUP:
+        place_mode = str(context.get("place_mode") or "")
+        if place_mode == "poi_nearest":
+            return (
+                "os_poi.nearest",
+                ["os_poi.nearest"],
+                "Find nearest OS points of interest to a coordinate.",
+            )
+        if place_mode == "poi_search":
+            return (
+                "os_poi.search",
+                ["os_poi.search", "os_poi.within"],
+                "Search OS points of interest by text.",
+            )
         return (
             "admin_lookup.find_by_name",
             ["admin_lookup.find_by_name"],
@@ -801,6 +974,12 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             "Open the statistics dashboard to compare multiple areas.",
         )
     if intent == QueryIntent.INTERACTIVE_SELECTION:
+        if context.get("interactive_widget") == "ui_probe":
+            return (
+                "os_apps.render_ui_probe",
+                ["os_apps.render_ui_probe"],
+                "Probe MCP-Apps UI rendering mode support in the current host.",
+            )
         if context.get("interactive_widget") == "boundary_explorer":
             return (
                 "os_apps.render_boundary_explorer",
@@ -845,6 +1024,37 @@ def _get_tool_for_intent(intent: QueryIntent, context: dict[str, Any]) -> tuple[
             ["os_vector_tiles.descriptor"],
             "Return OS vector tiles style and template URLs.",
         )
+    unknown_mode = str(context.get("unknown_mode") or "")
+    if unknown_mode == "skills_resource":
+        return (
+            "resources/read",
+            ["resources/read"],
+            "Read the MCP Geo skills guide resource.",
+        )
+    if unknown_mode == "descriptor":
+        return (
+            "os_mcp.descriptor",
+            ["os_mcp.descriptor"],
+            "Describe server capabilities and tool-search configuration.",
+        )
+    if unknown_mode == "log_event":
+        return (
+            "os_apps.log_event",
+            ["os_apps.log_event"],
+            "Record a UI event payload for analytics and host diagnostics.",
+        )
+    if unknown_mode == "boundary_cache_status":
+        return (
+            "admin_lookup.get_cache_status",
+            ["admin_lookup.get_cache_status"],
+            "Return boundary cache maturity and staleness status.",
+        )
+    if unknown_mode == "boundary_cache_search":
+        return (
+            "admin_lookup.search_cache",
+            ["admin_lookup.search_cache"],
+            "Search boundary cache entries by name.",
+        )
     return (
         "os_mcp.descriptor",
         ["os_mcp.descriptor"],
@@ -862,7 +1072,7 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_linked_ids.product_version_info",
             "os_places.by_uprn",
         ],
-        QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find"],
+        QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find", "os_poi.search"],
         QueryIntent.BOUNDARY_FETCH: ["resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
         QueryIntent.ENVIRONMENTAL_SURVEY: [
@@ -872,7 +1082,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
         ],
         QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_select.search", "nomis.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],
-        QueryIntent.INTERACTIVE_SELECTION: ["os_apps.render_boundary_explorer", "admin_lookup.find_by_name"],
+        QueryIntent.INTERACTIVE_SELECTION: [
+            "os_apps.render_boundary_explorer",
+            "os_apps.render_ui_probe",
+            "admin_lookup.find_by_name",
+        ],
         QueryIntent.ROUTE_PLANNING: ["os_maps.render"],
         QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
         QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],

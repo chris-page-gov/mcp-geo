@@ -75,6 +75,13 @@ def test_route_query_linked_ids():
     assert body["recommended_tool"] == "os_linked_ids.get"
 
 
+def test_route_query_linked_ids_overrides_uprn_address_mode():
+    body = _route("Resolve linked IDs for UPRN 100021892956")
+    assert body["intent"] == "linked_ids"
+    assert body["recommended_tool"] == "os_linked_ids.get"
+    assert body["recommended_parameters"]["identifier"] == "100021892956"
+
+
 def test_route_query_map_render():
     body = _route("Render a static map image for Westminster")
     assert body["intent"] == "map_render"
@@ -99,6 +106,87 @@ def test_route_query_poi_search():
     body = _route("Find nearby cafes in Westminster")
     assert body["intent"] == "poi_lookup"
     assert body["recommended_tool"] == "os_poi.search"
+
+
+def test_route_query_poi_phrase_routes_to_place_lookup_for_compatibility():
+    body = _route("Search points of interest for cafes in Westminster")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "os_poi.search"
+
+
+def test_route_query_poi_acronym_with_coordinates_routes_to_place_lookup():
+    body = _route("Find nearest POIs to 51.5034,-0.1276")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "os_poi.nearest"
+
+
+def test_route_query_dataset_discovery_dimensions_phrase():
+    body = _route("List available ONS observation dimensions")
+    assert body["intent"] == "dataset_discovery"
+
+
+def test_route_query_dataset_discovery_nomis_concepts():
+    body = _route("List NOMIS concepts")
+    assert body["intent"] == "dataset_discovery"
+
+
+def test_route_query_statistics_for_ons_filter_creation():
+    body = _route("Create an ONS filter for UK GDPV 2024 Q1-Q2")
+    assert body["intent"] == "statistics"
+
+
+def test_route_query_hierarchy_phrase():
+    body = _route("Show the hierarchy for ward E05000644")
+    assert body["intent"] == "place_lookup"
+
+
+def test_route_query_statistics_dashboard_area_comparison():
+    body = _route("Open the statistics dashboard for Westminster")
+    assert body["intent"] == "area_comparison"
+    assert body["recommended_tool"] == "os_apps.render_statistics_dashboard"
+
+
+def test_route_query_boundary_explorer_widget_phrase():
+    body = _route("Open the boundary explorer widget")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_boundary_explorer"
+
+
+def test_route_query_ui_probe_phrase():
+    body = _route("Probe MCP-Apps UI rendering mode support")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_ui_probe"
+
+
+def test_route_query_unknown_skills_guide_request():
+    body = _route("Fetch the MCP Geo skills guide")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "resources/read"
+
+
+def test_route_query_unknown_descriptor_request():
+    body = _route("Describe server capabilities and tool search config")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+
+
+def test_route_query_unknown_log_event_request():
+    body = _route("Log a UI event for analytics")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_apps.log_event"
+
+
+def test_route_query_unknown_cache_status_request():
+    body = _route("Show boundary cache status")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "admin_lookup.get_cache_status"
+
+
+def test_route_query_unknown_cache_search_request():
+    body = _route("Search the boundary cache for Westminster")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "admin_lookup.search_cache"
+    assert body["recommended_parameters"]["query"] == "Westminster"
 
 
 def test_route_query_environmental_survey_bowland():
