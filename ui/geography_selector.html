@@ -697,6 +697,9 @@
         if (!result || typeof result !== "object") {
           return result;
         }
+        if (result.data && typeof result.data === "object") {
+          return result.data;
+        }
         if (result.structuredContent && typeof result.structuredContent === "object") {
           return result.structuredContent;
         }
@@ -2234,7 +2237,14 @@
         if (!state.hostReady) {
           throw new Error("MCP host not connected. Run via an MCP client.");
         }
-        const payload = await requestTool(tool, args);
+        const response = await requestTool(tool, args);
+        const payload =
+          response &&
+          typeof response === "object" &&
+          response.data &&
+          typeof response.data === "object"
+            ? response.data
+            : response;
         if (payload && payload.isError) {
           const err = new Error(payload.message || "Tool call failed.");
           err.code = payload.code;

@@ -776,6 +776,9 @@
         if (!result || typeof result !== "object") {
           return result;
         }
+        if (result.data && typeof result.data === "object") {
+          return result.data;
+        }
         if (result.structuredContent && typeof result.structuredContent === "object") {
           return result.structuredContent;
         }

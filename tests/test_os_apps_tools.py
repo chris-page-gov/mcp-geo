@@ -51,6 +51,7 @@ def test_os_apps_render_geography_selector_embedded(monkeypatch):
     assert resource.get("text", "").startswith("<!DOCTYPE html>")
     html = resource.get("text", "")
     assert "extractToolPayload" in html
+    assert "result.data" in html
 
 
 def test_os_apps_render_geography_selector_text_only_override(monkeypatch):
@@ -95,6 +96,7 @@ def test_os_apps_render_boundary_explorer(monkeypatch):
     assert "orderedLevelsForFallback" in html
     assert "basemap-veil-layer" in html
     assert "normalizeBbox" in html
+    assert "result.data" in html
 
 
 def test_os_apps_render_ui_probe_embedded(monkeypatch):
@@ -118,6 +120,7 @@ def test_os_apps_render_ui_probe_embedded(monkeypatch):
     assert resource_blocks[0]["resource"]["uri"] == "ui://mcp-geo/statistics-dashboard"
     html = resource_blocks[0]["resource"].get("text", "")
     assert "extractToolPayload" in html
+    assert "result.data" in html
 
 def test_os_apps_embedded_response_size_guard(monkeypatch):
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)

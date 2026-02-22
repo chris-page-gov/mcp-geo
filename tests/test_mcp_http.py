@@ -331,6 +331,8 @@ def test_mcp_http_ui_tool_fallback_and_meta(client, monkeypatch):
     assert fallback["map_card"]["type"] == "map_card"
     assert fallback["overlay_bundle"]["type"] == "overlay_bundle"
     assert fallback["export_handoff"]["type"] == "export_handoff"
+    assert fallback["export_handoff"]["resourceUri"]
+    assert str(fallback["export_handoff"]["hash"]).startswith("sha256:")
     assert fallback["widgetUnsupported"] is True
     assert fallback["widgetUnsupportedReason"] == "ui_extension_not_advertised"
     assert fallback["guidance"]["degradationMode"] == "no_ui"

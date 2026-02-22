@@ -6,6 +6,7 @@ delegating to this module's `main`.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -642,6 +643,15 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
         fallback["render"] = render
     if status is not None and status != 200:
         fallback["mapError"] = {"status": status}
+    fallback_image_url: str | None = None
+    if isinstance(render, dict):
+        image_url = render.get("imageUrl")
+        if isinstance(image_url, str) and image_url:
+            fallback_image_url = image_url
+    if fallback_image_url is None:
+        fallback_image_url = (
+            f"/maps/static/osm?bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}&size=640"
+        )
     map_card: Dict[str, Any] = {
         "type": "map_card",
         "title": "Static map fallback",
@@ -652,14 +662,22 @@ def _build_static_map_fallback(payload: Dict[str, Any], data: Any) -> Optional[D
     if render is not None:
         map_card["render"] = render
     else:
-        map_card["render"] = {
-            "imageUrl": f"/maps/static/osm?bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}&size=640"
-        }
+        map_card["render"] = {"imageUrl": fallback_image_url}
     overlay_bundle = _build_overlay_bundle_from_render(render_payload or {})
+    export_fingerprint = {
+        "resourceUri": fallback_image_url,
+        "bbox": bbox,
+        "center": {"lat": lat, "lng": lng},
+        "status": status,
+    }
+    export_hash = hashlib.sha256(
+        json.dumps(export_fingerprint, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
     export_handoff = {
         "type": "export_handoff",
-        "resourceUri": render.get("imageUrl") if isinstance(render, dict) else None,
+        "resourceUri": fallback_image_url,
         "format": "url",
+        "hash": f"sha256:{export_hash}",
         "generatedAt": _now_iso(),
         "provenance": {"tool": "os_maps.render", "status": status},
     }
