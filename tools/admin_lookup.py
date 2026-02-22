@@ -404,6 +404,7 @@ def _live_find_by_name(
     levels: list[str] | None = None,
     match: str = "contains",
     limit_per_level: int | None = None,
+    include_geometry: bool = False,
 ) -> list[dict[str, Any]] | None:
     results: list[dict[str, Any]] = []
     failures = 0
@@ -422,10 +423,12 @@ def _live_find_by_name(
         params = {
             "where": where,
             "outFields": f"{source.id_field},{source.name_field}",
-            "returnGeometry": "false",
+            "returnGeometry": "true" if include_geometry else "false",
             "resultRecordCount": str(per_level),
             "f": "json",
         }
+        if include_geometry:
+            params["outSR"] = "4326"
         data = _fetch_arcgis(url, params)
         if data is None:
             failures += 1
@@ -440,11 +443,18 @@ def _live_find_by_name(
                 continue
             name = attrs.get(source.name_field) or area_id_str
             seen_ids.add(area_id_str)
-            results.append({
+            item: dict[str, Any] = {
                 "id": area_id_str,
                 "level": source.level,
                 "name": str(name),
-            })
+            }
+            if include_geometry:
+                geometry = feat.get("geometry")
+                if isinstance(geometry, dict):
+                    bbox = _bbox_from_geometry(geometry)
+                    if bbox:
+                        item["bbox"] = bbox
+            results.append(item)
     if not results and failures == len(sources):
         return None
     results.sort(key=lambda item: _score_match(item.get("name", ""), needle, item.get("level", "")))
@@ -855,19 +865,21 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
                 "code": "INVALID_INPUT",
                 "message": "limitPerLevel must be >= 1",
             }
+    include_geometry = bool(payload.get("includeGeometry"))
     if not _live_enabled():
         return 501, {
             "isError": True,
             "code": "LIVE_DISABLED",
             "message": "Admin lookup live mode is disabled. Set ADMIN_LOOKUP_LIVE_ENABLED=true.",
         }
-    live = _live_find_by_name(
-        text,
-        limit,
-        levels=levels,
-        match=match,
-        limit_per_level=limit_per_level,
-    )
+    live_kwargs: dict[str, Any] = {
+        "levels": levels,
+        "match": match,
+        "limit_per_level": limit_per_level,
+    }
+    if include_geometry:
+        live_kwargs["include_geometry"] = True
+    live = _live_find_by_name(text, limit, **live_kwargs)
     if live is None:
         return 502, {
             "isError": True,
@@ -882,6 +894,7 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
             "match": match,
             "levels": levels,
             "limitPerLevel": limit_per_level,
+            "includeGeometry": include_geometry,
         },
     }
 
@@ -899,6 +912,7 @@ register(Tool(
             "levels": {"type": "array", "items": {"type": "string"}},
             "match": {"type": "string", "enum": ["contains", "starts_with", "exact"]},
             "limitPerLevel": {"type": "integer", "minimum": 1, "maximum": 200},
+            "includeGeometry": {"type": "boolean"},
         },
         "required": ["text"],
         "additionalProperties": False,

@@ -693,15 +693,50 @@
         return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
       }
 
+      function extractToolPayload(result) {
+        if (!result || typeof result !== "object") {
+          return result;
+        }
+        if (result.structuredContent && typeof result.structuredContent === "object") {
+          return result.structuredContent;
+        }
+        if (Array.isArray(result.content)) {
+          for (const block of result.content) {
+            if (!block || typeof block !== "object") {
+              continue;
+            }
+            if (block.type === "json" && block.json && typeof block.json === "object") {
+              return block.json;
+            }
+            if (block.type === "text" && typeof block.text === "string") {
+              const text = block.text.trim();
+              if (text.startsWith("{") || text.startsWith("[")) {
+                try {
+                  const parsed = JSON.parse(text);
+                  if (parsed && typeof parsed === "object") {
+                    return parsed;
+                  }
+                } catch (_err) {
+                  // Ignore unparseable text blocks and continue scanning.
+                }
+              }
+            }
+          }
+        }
+        return result;
+      }
+
       async function requestTool(tool, args) {
         try {
-          return await rpcCall("tools/call", { name: tool, arguments: args || {} });
+          const result = await rpcCall("tools/call", { name: tool, arguments: args || {} });
+          return extractToolPayload(result);
         } catch (err) {
           const message = String(err?.message || "");
           const sanitized = sanitizeToolName(tool);
           const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
           if (sanitized && sanitized !== tool && looksMissing) {
-            return await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+            const result = await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+            return extractToolPayload(result);
           }
           throw err;
         }
@@ -2164,8 +2199,13 @@
             }
           } else {
             const data = await adminLookupService.findByName(query);
+            const focusLevel = mapFocusLevel(level);
             results = (data.results || [])
-              .filter((area) => !level || area.level?.toLowerCase().includes(level) || true)
+              .filter(
+                (area) =>
+                  !focusLevel ||
+                  String(area?.level || "").toUpperCase() === String(focusLevel).toUpperCase()
+              )
               .map((area) => ({
                 ...area,
                 title: area.name,
@@ -2194,8 +2234,7 @@
         if (!state.hostReady) {
           throw new Error("MCP host not connected. Run via an MCP client.");
         }
-        const result = await requestTool(tool, args);
-        const payload = result && result.data ? result.data : result;
+        const payload = await requestTool(tool, args);
         if (payload && payload.isError) {
           const err = new Error(payload.message || "Tool call failed.");
           err.code = payload.code;

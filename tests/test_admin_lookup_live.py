@@ -42,6 +42,42 @@ def test_admin_lookup_find_by_name_live(monkeypatch):
     assert captured["limit_per_level"] is None
 
 
+def test_admin_lookup_find_by_name_include_geometry_passthrough(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_LOOKUP_LIVE_ENABLED", True, raising=False)
+    captured = {}
+
+    def fake_live(
+        text: str,
+        limit: int,
+        *,
+        levels: list[str] | None = None,
+        match: str | None = None,
+        limit_per_level: int | None = None,
+        include_geometry: bool = False,
+    ):
+        captured["text"] = text
+        captured["include_geometry"] = include_geometry
+        return [{"id": "E00000001", "level": "WARD", "name": "Example Ward", "bbox": [0, 0, 1, 1]}]
+
+    monkeypatch.setattr(admin_lookup, "_live_find_by_name", fake_live)
+    client = TestClient(app)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "admin_lookup.find_by_name",
+            "text": "Example",
+            "limit": 5,
+            "includeGeometry": True,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 1
+    assert captured["text"] == "Example"
+    assert captured["include_geometry"] is True
+    assert body["meta"]["includeGeometry"] is True
+
+
 def test_admin_lookup_find_by_name_validation(monkeypatch):
     from server.config import settings
     from tools import admin_lookup
