@@ -59,7 +59,9 @@ Legend: pending, in_progress, done, blocked
   (`dataset=gdp`, `timeRange=2024 Q1-2024 Q2`) returned `200` with 6
   observations, and focused live harness rerun
   (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-ons-live --questions I008,I009`)
-  now scores `200/200` (`100%`).
+  now scores `200/200` (`100%`). Additional focused live reruns for
+  `B007,B008,B016` (ONS dimensions/codes/versions) and `B004,B012`
+  (OS Names find/nearest) also now score `100%`.
 
 ## Safe-by-design governance and citation review (2026-02-21)
 
