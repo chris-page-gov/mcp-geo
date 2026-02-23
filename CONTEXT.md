@@ -281,6 +281,32 @@ assumptions change.
   `os_features.wfs_archive_capabilities` as optional-by-entitlement in release
   denominator calculations while keeping explicit blocker evidence and
   requirement tracking (`REQ-LIVE-TOOLS-05`) in generated coverage artifacts.
+- 2026-02-23: Updated MCP-Apps fullscreen controls to keep a usable `Try maximise`
+  path when hosts do not advertise `availableDisplayModes`, instead of
+  disabling the control outright.
+- 2026-02-23: Updated boundary explorer OS/inventory diagnostics to distinguish
+  `NO_API_KEY`, auth failures, missing proxy, and toolset exposure issues
+  (`MISSING_TOOL`) so host/toolset failures are not mislabeled as key issues.
+- 2026-02-23: Updated workspace VSCode MCP defaults to include
+  `features_layers` alongside `starter`, restoring `os_map.inventory` and
+  `os_map.export` availability for boundary explorer workflows.
+- 2026-02-23: Added a deterministic Playwright host harness for boundary
+  explorer (`playground/tests/boundary_explorer_host_harness.spec.js`) and a
+  read-only runtime snapshot probe
+  (`window.__MCP_GEO_BOUNDARY_EXPLORER__.getSnapshot()`) to validate boundary
+  overlay rendering independently of VSCode host-runtime quirks.
+- 2026-02-23: Added host-aware fullscreen controls to the interactive MCP-Apps
+  widgets (`boundary_explorer`, `geography_selector`, `statistics_dashboard`)
+  using `ui/request-display-mode` with graceful fallback behavior when hosts do
+  not expose fullscreen in `availableDisplayModes`.
+- 2026-02-23: Updated workspace VSCode MCP config (`.vscode/mcp.json`) to read
+  `OS_API_KEY` from `${env:OS_API_KEY}` (allowing deterministic startup via
+  environment or `.env`) after observing duplicate prompt/timing failures with
+  prompt-driven key injection.
+- 2026-02-23: Updated `os_map.inventory` and `os_map.export` `layers` input
+  schema definitions from `anyOf` to explicit union `type` + `items` after a
+  VSCode/Copilot MCP tool-registration failure (`array schema missing items`)
+  against `mcp_mcp-geo-http_os_map_inventory`.
 - 2026-02-22: Added an Apps-to-Answers presentation deck aligned to the
   January 2026 UK government dataset-readiness guidance at
   `research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`

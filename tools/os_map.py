@@ -338,15 +338,9 @@ register(
                     "description": "WGS84 bbox [minLon,minLat,maxLon,maxLat]",
                 },
                 "layers": {
-                    "anyOf": [
-                        {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "minItems": 1,
-                        },
-                        {"type": "string"},
-                        {"type": "null"},
-                    ],
+                    "type": ["array", "string", "null"],
+                    "items": {"type": "string"},
+                    "minItems": 1,
                     "description": "Requested layers (uprns, buildings, road_links, path_links).",
                 },
                 "limits": {"type": "object", "description": "Per-layer max features (budgets)."},
@@ -401,15 +395,9 @@ register(
                 "name": {"type": "string"},
                 "recipe": {"type": "object"},
                 "layers": {
-                    "anyOf": [
-                        {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "minItems": 1,
-                        },
-                        {"type": "string"},
-                        {"type": "null"},
-                    ],
+                    "type": ["array", "string", "null"],
+                    "items": {"type": "string"},
+                    "minItems": 1,
                     "description": "Requested layers (uprns, buildings, road_links, path_links).",
                 },
                 "limits": {"type": "object"},

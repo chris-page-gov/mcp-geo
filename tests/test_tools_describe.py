@@ -140,3 +140,12 @@ def test_tools_describe_returns_unknown_when_tool_missing_after_resolution(monke
     resp = client.get("/tools/describe", params={"name": "os_places.by_postcode"})
     assert resp.status_code == 404
     assert resp.json()["code"] == "UNKNOWN_TOOL"
+
+
+def test_os_map_inventory_layers_union_retains_array_items_schema():
+    resp = client.get("/tools/describe", params={"name": "os_map.inventory"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    layers = tool["inputSchema"]["properties"]["layers"]
+    assert layers["type"] == ["array", "string", "null"]
+    assert layers["items"] == {"type": "string"}

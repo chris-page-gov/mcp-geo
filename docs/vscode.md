@@ -12,8 +12,8 @@ This repo includes a VS Code workspace MCP configuration at `.vscode/mcp.json`.
 
 Defined in `.vscode/mcp.json`:
 
-- `mcp-geo` (STDIO): runs `python3 scripts/vscode_mcp_stdio.py` from the workspace root, enables MCP-Apps UI, and defaults discovery to the `starter` toolset for lower-context initialization.
-- `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py` and the same `starter` default.
+- `mcp-geo` (STDIO): runs `python3 scripts/vscode_mcp_stdio.py` from the workspace root, enables MCP-Apps UI, and defaults discovery to `starter` plus `features_layers` so boundary explorer can call `os_map.inventory`/`os_map.export`.
+- `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py` and the same default toolset filters.
 - `mcp-geo-http` (HTTP): points to `http://127.0.0.1:8000/mcp` (you must run `uvicorn` yourself).
 
 Tool set file for VS Code Configure Tools:
@@ -29,12 +29,16 @@ cp .vscode/mcp-geo.toolsets.jsonc \
   "$HOME/Library/Application Support/Code/User/prompts/mcp-geo.toolsets.jsonc"
 ```
 
-The config uses a VS Code `inputs` prompt for `OS_API_KEY` and stores it in VS Code
-secure storage (it is not written to the repo).
+The workspace config reads `OS_API_KEY` from `${env:OS_API_KEY}`.
+Important: for MCP servers, VS Code uses the host app process environment.
+Window reload does not re-read shell exports from a terminal you opened later.
+Use one of:
 
-If you prefer environment variables instead, replace `${input:osApiKey}` with
-`${env:OS_API_KEY}` in `.vscode/mcp.json` and ensure `OS_API_KEY` is set in the
-environment where VS Code runs (or in the devcontainer `containerEnv`).
+- define `OS_API_KEY` before launching VS Code, or
+- keep `OS_API_KEY` in repo `.env` (loaded by `server/config.py`).
+
+If you change `OS_API_KEY`, restart the MCP server from the VS Code MCP Servers
+panel so the new value is picked up.
 
 Note: `scripts/vscode_mcp_stdio.py` exists because VS Code may launch MCP stdio
 servers using the host Python. On macOS, it will automatically prefer the repo
@@ -55,6 +59,23 @@ In Copilot Chat, switch to **Agent mode**, then try:
 - "Call `os_mcp.route_query` with: Open a map so I can select wards in Westminster."
 - "Open the geography selector UI (`os_apps.render_geography_selector`)."
 - "Probe UI rendering support (`os_apps.render_ui_probe`)."
+
+## Boundary Explorer Harness (Recommended)
+
+To validate boundary rendering and fullscreen-handshake behavior without VS Code
+host/runtime variance, run the deterministic Playwright host harness:
+
+```bash
+npm --prefix playground run test:boundary-harness
+```
+
+This simulates MCP host messaging (`ui/initialize`, `ui/request-display-mode`,
+`tools/call`) and asserts:
+
+- selected boundary is present in map source data,
+- selected boundary is rendered in boundary line/outline layers,
+- fullscreen fallback messaging appears when the host does not confirm mode
+  transition.
 
 ## Tracing (Recommended for Client Interop Debugging)
 

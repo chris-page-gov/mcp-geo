@@ -60,6 +60,10 @@ All notable changes to this project will be documented in this file.
   evidence checks from Claude stdio traces and UI event logs, including
   optional payload-shape and Playwright smoke prechecks, plus
   `tests/test_check_lmr_host4.py` coverage.
+- Added a deterministic boundary-explorer host harness test at
+  `playground/tests/boundary_explorer_host_harness.spec.js` that validates
+  selected-boundary rendering and fullscreen-handshake fallback behavior under
+  MCP host simulation.
 
 ### Changed
 - Hardened boundary variant full-coverage policy and strict resolve gating:
@@ -133,6 +137,37 @@ All notable changes to this project will be documented in this file.
     with regression coverage in `tests/test_evaluation_expected_errors.py`
   - adding graceful transient-degrade behavior for non-dataset-specific
     `nomis.datasets` upstream failures in `tools/nomis_data.py`.
+- Updated MCP-Apps interactive widgets (`ui/boundary_explorer.html`,
+  `ui/geography_selector.html`, `ui/statistics_dashboard.html`) to include a
+  host-aware fullscreen toggle that uses `ui/request-display-mode` when the host
+  advertises `availableDisplayModes` support, with graceful fallback messaging
+  when fullscreen is unavailable.
+- Updated fullscreen behavior across MCP-Apps widgets to keep the maximise
+  control usable in hosts that do not advertise display modes (shows
+  `Try maximise` and attempts `ui/request-display-mode` instead of disabling).
+- Updated boundary explorer OS-warning handling to classify inventory failures
+  by error code (for example `NO_API_KEY`, `MISSING_TOOL`) instead of always
+  showing an API-key warning, and to surface toolset-missing guidance when
+  `os_map.inventory`/`os_map.export` are not exposed.
+- Updated boundary explorer boundary styling with a dedicated selected-outline
+  line layer and stronger width/opacity defaults so selected ward boundaries
+  remain visible in constrained host panels.
+- Updated boundary explorer to expose a read-only runtime probe
+  (`window.__MCP_GEO_BOUNDARY_EXPLORER__.getSnapshot()`) for deterministic
+  harness assertions of source/rendered boundary counts and host capability
+  state.
+- Updated `playground/package.json` with a dedicated
+  `test:boundary-harness` command for quick boundary explorer regression runs.
+- Updated `.vscode/mcp.json` to source `OS_API_KEY` from `${env:OS_API_KEY}`
+  (with existing `.env` startup fallback) instead of per-server prompt inputs,
+  reducing duplicate prompts and startup-time key race conditions.
+- Updated `.vscode/mcp.json` default toolset filters to include
+  `features_layers` alongside `starter`, ensuring boundary explorer can invoke
+  `os_map.inventory`/`os_map.export` in VS Code MCP sessions.
+- Updated `os_map.inventory` and `os_map.export` `layers` input schemas to use
+  explicit union `type` + `items`, ensuring strict MCP host tool-schema
+  validation (including Copilot/OpenAI function-schema checks) accepts these
+  map tools.
 - Updated `docs/spec_package/09_testing_quality.md`, `CONTEXT.md`, and
   `PROGRESS.MD` to reflect the latest strict + live verification evidence,
   including explicit coverage-gate failure status and MCP-Apps widget

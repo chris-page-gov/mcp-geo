@@ -62,6 +62,30 @@
         color: var(--muted);
       }
 
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .status-action {
+        border-radius: 999px;
+        border: 1px solid rgba(240, 140, 74, 0.45);
+        background: rgba(240, 140, 74, 0.1);
+        color: #b7622f;
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+      }
+
+      .status-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       .status .dot {
         width: 10px;
         height: 10px;
@@ -309,9 +333,14 @@
           <div class="title">Statistics Dashboard</div>
           <div class="subtitle">Compare observations across selected areas.</div>
         </div>
-        <div class="status" id="status">
-          <span class="dot"></span>
-          <span>Awaiting host</span>
+        <div class="header-actions">
+          <button id="fullscreenToggle" type="button" class="status-action" title="Toggle full screen">
+            Maximise
+          </button>
+          <div class="status" id="status">
+            <span class="dot"></span>
+            <span>Awaiting host</span>
+          </div>
         </div>
       </header>
 
@@ -443,6 +472,7 @@
 
     <script>
       const statusEl = document.getElementById("status");
+      const fullscreenToggle = document.getElementById("fullscreenToggle");
       const payload = document.getElementById("payload");
       const datasetSearch = document.getElementById("datasetSearch");
       const datasetLimit = document.getElementById("datasetLimit");
@@ -483,6 +513,8 @@
       let rpcId = 0;
       const state = {
         hostReady: false,
+        displayMode: "inline",
+        availableDisplayModes: [],
         datasets: [],
         dimensions: [],
         dimensionGroups: { geography: [], measure: [], time: [] },
@@ -516,6 +548,79 @@
 
       function rpcNotify(method, params) {
         postToHost({ jsonrpc: "2.0", method, params });
+      }
+
+      function normalizeDisplayMode(mode) {
+        if (typeof mode !== "string") {
+          return null;
+        }
+        const normalized = mode.trim().toLowerCase();
+        if (!normalized) {
+          return null;
+        }
+        if (normalized === "inline" || normalized === "fullscreen" || normalized === "pip") {
+          return normalized;
+        }
+        return null;
+      }
+
+      function updateFullscreenControl() {
+        if (!fullscreenToggle) {
+          return;
+        }
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        fullscreenToggle.disabled = !state.hostReady;
+        if (!state.hostReady) {
+          fullscreenToggle.textContent = "Maximise";
+          fullscreenToggle.title = "Waiting for host initialization";
+          return;
+        }
+        if (!canFullscreen) {
+          fullscreenToggle.textContent = "Try maximise";
+          fullscreenToggle.title = "Host did not advertise fullscreen support, but request can still be attempted";
+          return;
+        }
+        const isFullscreen = state.displayMode === "fullscreen";
+        fullscreenToggle.textContent = isFullscreen ? "Exit maximise" : "Maximise";
+        fullscreenToggle.title = isFullscreen ? "Return to inline view" : "Request fullscreen view";
+      }
+
+      function applyHostContext(hostContext) {
+        if (!hostContext || typeof hostContext !== "object") {
+          return;
+        }
+        if (Array.isArray(hostContext.availableDisplayModes)) {
+          state.availableDisplayModes = hostContext.availableDisplayModes
+            .map((mode) => normalizeDisplayMode(mode))
+            .filter(Boolean);
+        }
+        const mode = normalizeDisplayMode(hostContext.displayMode);
+        if (mode) {
+          state.displayMode = mode;
+        }
+        updateFullscreenControl();
+      }
+
+      async function toggleFullscreen() {
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        const targetMode = state.displayMode === "fullscreen" ? "inline" : "fullscreen";
+        try {
+          const result = await rpcCall("ui/request-display-mode", { mode: targetMode });
+          const resolvedMode = normalizeDisplayMode(result && result.mode);
+          if (resolvedMode) {
+            state.displayMode = resolvedMode;
+          }
+          updateFullscreenControl();
+        } catch (err) {
+          const msg = canFullscreen
+            ? "Fullscreen request failed (host limitation)"
+            : "Host rejected fullscreen request";
+          updateStatus(msg, state.hostReady);
+        }
       }
 
       function sanitizeToolName(toolName) {
@@ -1010,6 +1115,7 @@
           return;
         }
         if (message.method === "ui/notifications/host-context-changed") {
+          applyHostContext(message.params || {});
           return;
         }
       });
@@ -1039,6 +1145,9 @@
       loadVersions.addEventListener("click", loadVersionsList);
       loadOptions.addEventListener("click", loadDimOptions);
       runQuery.addEventListener("click", runComparison);
+      if (fullscreenToggle) {
+        fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
+      }
       datasetInput.addEventListener("change", () => {
         refreshDatasetSelection();
       });
@@ -1062,17 +1171,20 @@
 
       async function initializeUi() {
         try {
-          await rpcCall("ui/initialize", {
+          const result = await rpcCall("ui/initialize", {
             appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] }
           });
           state.hostReady = true;
+          applyHostContext(result?.hostContext || {});
           updateStatus("Host connected", true);
           rpcNotify("ui/notifications/initialized", {});
         } catch (err) {
           updateStatus("Host connection failed", false);
+          updateFullscreenControl();
         }
       }
 
+      updateFullscreenControl();
       initializeUi();
     </script>
   </body>
