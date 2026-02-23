@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -154,6 +155,35 @@ def _resource_matches(resource: dict[str, Any], preference: list[dict[str, Any]]
 
 def _clean_query(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
+
+
+_QUERY_STOPWORDS = {
+    "and",
+    "for",
+    "the",
+    "of",
+    "to",
+    "in",
+    "on",
+    "at",
+    "by",
+    "with",
+    "boundaries",
+    "boundary",
+}
+
+
+def _query_tokens(text: str) -> list[str]:
+    tokens = re.findall(r"[a-z0-9]+", (text or "").lower())
+    return [token for token in tokens if len(token) >= 3 and token not in _QUERY_STOPWORDS]
+
+
+def _package_title_score(query: str, title: str) -> int:
+    query_tokens = _query_tokens(query)
+    if not query_tokens:
+        return 0
+    title_tokens = set(_query_tokens(title))
+    return sum(1 for token in query_tokens if token in title_tokens)
 
 
 def _strip_after_boundaries(text: str) -> str:
@@ -727,6 +757,7 @@ def resolve_downloads(
             fq_candidates.append(fq_org)
         if not fq_candidates:
             fq_candidates.append("")
+        selected_query = ""
         for candidate in query_candidates:
             for fq in fq_candidates:
                 attempt += 1
@@ -744,11 +775,24 @@ def resolve_downloads(
                 candidate_packages = data.get("result", {}).get("results", []) or []
                 candidate_packages = _filter_packages(candidate_packages, allowed_formats)
                 if candidate_packages:
+                    selected_query = candidate
                     packages = candidate_packages
                     evidence_path = attempt_path
                     break
             if packages:
                 break
+        if packages:
+            packages = sorted(
+                packages,
+                key=lambda pkg: (
+                    _package_title_score(
+                        selected_query,
+                        str(pkg.get("title", "")),
+                    ),
+                    str(pkg.get("metadata_modified", "")),
+                ),
+                reverse=True,
+            )
         if evidence_path is None and attempt:
             evidence_path = paths.evidence_ckan / f"{family['family_id']}_package_search_{attempt:02d}.json"
         variant_regex = template.get("variant_policy", {}).get("variant_detection", {}).get(
@@ -784,9 +828,14 @@ def resolve_downloads(
                     "download_url": resource.get("url"),
                     "source_id": source_id,
                     "package_id": pkg.get("id"),
+                    "package_title": pkg.get("title"),
                     "resource_id": resource.get("id"),
                     "format": resource.get("format"),
                     "score": score,
+                    "package_match_score": _package_title_score(
+                        selected_query,
+                        str(pkg.get("title", "")),
+                    ),
                     "vintage_id": vintage,
                     "evidence_ref": str(evidence_path.relative_to(paths.root)) if evidence_path else None,
                 }
@@ -821,10 +870,91 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", choices=["all", "resolve", "download", "ingest", "validate"], default="all")
     parser.add_argument("--family", action="append", help="Limit to one or more family_id values.")
     parser.add_argument("--variant", action="append", help="Limit to one or more variant values.")
+    parser.add_argument(
+        "--verify-resolved",
+        action="store_true",
+        help="Probe resolved source URLs for live reachability (HEAD/GET) and record verification results.",
+    )
+    parser.add_argument(
+        "--verify-timeout",
+        type=float,
+        default=20.0,
+        help="Timeout seconds for resolved source verification probes.",
+    )
+    parser.add_argument(
+        "--verify-workers",
+        type=int,
+        default=12,
+        help="Number of worker threads for resolved source verification probes.",
+    )
     return parser.parse_args()
 
 
-def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checklist: dict[str, Any]) -> None:
+def _probe_source_url(url: str, timeout: float) -> dict[str, Any]:
+    if requests is None:
+        return {
+            "verified": False,
+            "status": "error",
+            "detail": "requests_not_installed",
+            "statusCode": None,
+            "contentType": None,
+            "finalUrl": None,
+        }
+    try:
+        resp = requests.head(url, timeout=timeout, allow_redirects=True)
+        status_code = resp.status_code
+        content_type = str(resp.headers.get("Content-Type") or "").lower()
+        final_url = str(resp.url)
+        if status_code >= 400 or status_code in {405, 501} or not content_type:
+            resp.close()
+            resp = requests.get(url, timeout=timeout, stream=True, allow_redirects=True)
+            status_code = resp.status_code
+            content_type = str(resp.headers.get("Content-Type") or "").lower()
+            final_url = str(resp.url)
+        status = "ok" if status_code < 400 else "error"
+        detail = f"status_{status_code}"
+        if status == "ok" and "application/json" in content_type:
+            try:
+                payload = resp.json()
+            except Exception:
+                detail = "json_unparsed"
+            else:
+                state = str(payload.get("status") or "").lower()
+                if state in {"pending", "inprogress", "in_progress"}:
+                    status = "pending"
+                    detail = "pending_export"
+                elif payload.get("downloadUrl") or payload.get("url"):
+                    detail = "json_redirect"
+                else:
+                    detail = "json_payload"
+        resp.close()
+        return {
+            "verified": status == "ok",
+            "status": status,
+            "detail": detail,
+            "statusCode": status_code,
+            "contentType": content_type,
+            "finalUrl": final_url,
+        }
+    except Exception as exc:  # pragma: no cover - network/runtime variability
+        return {
+            "verified": False,
+            "status": "error",
+            "detail": str(exc),
+            "statusCode": None,
+            "contentType": None,
+            "finalUrl": None,
+        }
+
+
+def _evaluate_pipeline(
+    report: dict[str, Any],
+    manifest: dict[str, Any],
+    checklist: dict[str, Any],
+    *,
+    mode: str,
+    require_source_verification: bool = False,
+) -> None:
     errors: list[dict[str, Any]] = []
     required_variants = checklist["scope"]["required_variants_path"].split(".")
     required = manifest
@@ -848,16 +978,32 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
                 continue
             if status == "not_published" and not resolved_entry.get("evidence_ref"):
                 family_errors.append(f"missing_not_published_evidence:{variant}")
+            if status == "resolved" and require_source_verification:
+                verification = (
+                    report.get("source_verification", {})
+                    .get(family_id, {})
+                    .get(variant)
+                ) or {}
+                if verification.get("status") != "ok":
+                    family_errors.append(f"source_unverified:{variant}")
+                if mode == "resolve":
+                    continue
+            if mode == "resolve":
+                continue
             if status == "resolved":
                 download_entry = downloads.get(variant, {})
                 if download_entry.get("download_status") != "ok":
                     family_errors.append(f"download_failed:{variant}")
+                    if mode == "download":
+                        continue
                 ingest_entry = ingestions.get(variant, {})
                 if not ingest_entry:
                     family_errors.append(f"ingest_failed:{variant}")
+                    continue
                 elif isinstance(ingest_entry, dict):
                     if ingest_entry.get("ingest_status") == "error":
                         family_errors.append(f"ingest_failed:{variant}")
+                        continue
                     else:
                         statuses = [
                             entry.get("ingest_status")
@@ -869,6 +1015,8 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
                                 family_errors.append(f"ingest_failed:{variant}")
                             elif not any(status in {"ok", "skipped"} for status in statuses):
                                 family_errors.append(f"ingest_failed:{variant}")
+                if mode in {"download", "ingest"}:
+                    continue
                 if validations.get(variant):
                     for table_name, val in validations[variant].items():
                         schema_check = val.get("schema", {})
@@ -891,11 +1039,36 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
         else:
             report["family_status"][family_id] = "ok"
     report["errors"] = errors
-    report["pipeline_status"] = (
-        checklist["final_status_values"]["pass"]
-        if not errors and not report["exceptions"]
-        else checklist["final_status_values"]["fail"]
-    )
+    pass_by_mode = {
+        "all": checklist["final_status_values"]["pass"],
+        "validate": checklist["final_status_values"]["pass"],
+        "ingest": "COMPLETE_BOUNDARIES_INGESTED",
+        "download": "COMPLETE_BOUNDARIES_DOWNLOADED",
+        "resolve": (
+            "COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED"
+            if require_source_verification
+            else "COMPLETE_BOUNDARIES_RESOLVED"
+        ),
+    }
+    fail_by_mode = {
+        "all": checklist["final_status_values"]["fail"],
+        "validate": checklist["final_status_values"]["fail"],
+        "ingest": "INCOMPLETE_BOUNDARIES_INGEST_FAILED",
+        "download": "INCOMPLETE_BOUNDARIES_DOWNLOAD_FAILED",
+        "resolve": (
+            "INCOMPLETE_BOUNDARIES_SOURCE_VERIFICATION_FAILED"
+            if require_source_verification
+            else "INCOMPLETE_BOUNDARIES_SOURCE_RESOLUTION_FAILED"
+        ),
+    }
+    ok = not errors and not report["exceptions"]
+    report["pipeline_status"] = pass_by_mode.get(mode, checklist["final_status_values"]["pass"]) if ok else fail_by_mode.get(mode, checklist["final_status_values"]["fail"])
+    report["evaluation"] = {
+        "mode": mode,
+        "sourceVerificationRequired": bool(require_source_verification),
+        "familyErrorCount": len(errors),
+        "exceptionCount": len(report.get("exceptions", [])),
+    }
 
 
 def main() -> None:
@@ -919,6 +1092,7 @@ def main() -> None:
         "ingestions": {},
         "validations": {},
         "exceptions": [],
+        "source_verification": {},
         "family_status": {},
         "pipeline_status": None,
     }
@@ -935,9 +1109,48 @@ def main() -> None:
         report["downloads"][family_id] = {}
         report["ingestions"][family_id] = {}
         report["validations"][family_id] = {}
+        report["source_verification"][family_id] = {}
         try:
             resolved = resolve_downloads(family, template, manifest, run_paths, session)
             report["resolved_resources"][family_id] = resolved
+            if args.verify_resolved:
+                probe_targets: list[tuple[str, str]] = []
+                for variant, resolved_entry in resolved.items():
+                    if allowed_variants and variant not in allowed_variants:
+                        continue
+                    if resolved_entry.get("status") != "resolved":
+                        report["source_verification"][family_id][variant] = {
+                            "status": resolved_entry.get("status"),
+                            "verified": resolved_entry.get("status") == "not_published",
+                            "detail": "not_published_or_unresolved",
+                        }
+                        continue
+                    url = resolved_entry.get("download_url")
+                    if not url:
+                        report["source_verification"][family_id][variant] = {
+                            "status": "error",
+                            "verified": False,
+                            "detail": "missing_download_url",
+                        }
+                        continue
+                    probe_targets.append((variant, str(url)))
+                if probe_targets:
+                    max_workers = max(1, int(args.verify_workers))
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                        futures = {
+                            executor.submit(_probe_source_url, url, args.verify_timeout): variant
+                            for variant, url in probe_targets
+                        }
+                        for future in concurrent.futures.as_completed(futures):
+                            variant = futures[future]
+                            try:
+                                report["source_verification"][family_id][variant] = future.result()
+                            except Exception as exc:  # pragma: no cover - runtime safety
+                                report["source_verification"][family_id][variant] = {
+                                    "status": "error",
+                                    "verified": False,
+                                    "detail": str(exc),
+                                }
             if args.mode in {"resolve"}:
                 report["family_status"][family_id] = "resolved"
                 continue
@@ -1193,7 +1406,13 @@ def main() -> None:
             report["exceptions"].append({"family_id": family_id, "error": str(exc)})
             report["family_status"][family_id] = "error"
     report["run_finished_at"] = datetime.now(timezone.utc).isoformat()
-    _evaluate_pipeline(report, manifest, checklist)
+    _evaluate_pipeline(
+        report,
+        manifest,
+        checklist,
+        mode=args.mode,
+        require_source_verification=args.verify_resolved,
+    )
     report_path = run_paths.root / "run_report.json"
     _write_json(report_path, report)
     print(report_path)
