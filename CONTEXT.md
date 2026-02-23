@@ -207,6 +207,14 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-23: Completed boundary variant full-coverage hardening for strict
+  resolve gates. `scripts/boundary_pipeline.py` now applies manifest default
+  variant policy (equivalence + derivation + overrides) across families,
+  records explicit accuracy classes for equivalent/derived variants (including
+  coarser-source warnings), and enforces full-availability policy in evaluator
+  checks. Hardened run `data/boundary_runs/20260223T120022Z/run_report.json`
+  reports `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED` with `resolved=112`,
+  `derived=44`, `not_published=0`, `errors=0`.
 - 2026-02-23: Hardened boundary-source verification to remove ambiguity
   between resolve and ingest stages. `scripts/boundary_pipeline.py` now
   supports `--verify-resolved` with live URL probing, mode-aware pass/fail

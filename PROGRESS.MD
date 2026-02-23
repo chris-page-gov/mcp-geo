@@ -133,11 +133,11 @@ Legend: pending, in_progress, done
 
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
-| BVH-DOC-0 Missing-variant and accuracy documentation | done | none | Added `docs/reports/boundary_variant_coverage_gap_2026-02-23.md` documenting all `49` `not_published` variants from run `20260223T082527Z`, variant glossary (`BFC/BFE/BGC/BUC/BSC/BGG`), zoom-accuracy implications, ONSUD/ONSPD relevance for low-cost exact-mode boundary highlighting, and Built-up Area containment requirements. |
-| BVH-REQ-1 Family-specific variant requirements | pending | BVH-DOC-0 | Replace global required-variant enforcement with family/template-specific requirements + equivalence mapping (for example `BSC` satisfying `BUC` where approved). |
-| BVH-OS-4 Boundary-Line non-variant profile | pending | BVH-REQ-1 | Keep `os_boundaryline_gb_bulk` as non-variant published source and feed derived-variant stage for availability parity. |
-| BVH-DER-5 Derived variant generation for full availability | pending | BVH-REQ-1, BVH-OS-4 | Add deterministic variant derivation (with provenance and accuracy flags) so families missing published variants can still expose complete BFC/BFE/BGC/BUC availability. |
-| BVH-BUA-6 Built-up Area containment path | pending | BVH-REQ-1, BVH-DER-5 | Ensure `BUA/BUASD` are cache-ingested and selectable so UPRN/RoadLink/PathLink containment workflows are fully supported via existing inventory flows. |
+| BVH-DOC-0 Missing-variant and accuracy documentation | done | none | Updated `docs/reports/boundary_variant_coverage_gap_2026-02-23.md` with baseline gap (`49` `not_published`) and hardened strict run (`0` `not_published`) plus explicit definition-of-complete criteria and accuracy/zoom warning semantics. |
+| BVH-REQ-1 Family-specific variant requirements | done | BVH-DOC-0 | `scripts/boundary_pipeline.py` now merges manifest `completion_definition.default_variant_policy` with template/family overrides and enforces strict `require_full_variant_availability` at evaluation time. |
+| BVH-OS-4 Boundary-Line non-variant profile | done | BVH-REQ-1 | `docs/Boundaries.json` now explicitly profiles `os_boundaryline_gb_bulk` as non-variant-source + derivation-enabled required variant coverage (`BFC/BFE/BGC/BUC`). |
+| BVH-DER-5 Derived variant generation for full availability | done | BVH-REQ-1, BVH-OS-4 | Derived/equivalent variant generation and accuracy metadata are now emitted deterministically (including coarser-source warnings); strict run `data/boundary_runs/20260223T120022Z/run_report.json` reports `resolved=112`, `derived=44`, `not_published=0`, `errors=0`. |
+| BVH-BUA-6 Built-up Area containment path | in_progress | BVH-REQ-1, BVH-DER-5 | Variant hardening now recognizes BUA `BGG` pathways (`built_up_areas_uk` equivalence/derivation), but end-to-end runtime containment verification for UPRN/RoadLink/PathLink over BUA/BUASD cache levels remains to be completed. |
 
 ## Startup context mitigation check (2026-02-22)
 

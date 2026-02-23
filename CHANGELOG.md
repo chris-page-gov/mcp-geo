@@ -62,6 +62,22 @@ All notable changes to this project will be documented in this file.
   `tests/test_check_lmr_host4.py` coverage.
 
 ### Changed
+- Hardened boundary variant full-coverage policy and strict resolve gating:
+  - `scripts/boundary_pipeline.py` now merges
+    `completion_definition.default_variant_policy` with template/family
+    overrides, supports deterministic equivalent/derived required-variant
+    resolution, and enforces `require_full_variant_availability` at evaluation
+    time.
+  - Added variant accuracy metadata for non-direct mappings
+    (`published_equivalent_variant`, derived classes including
+    `derived_from_coarser_source`) so zoom/precision caveats are explicit in
+    run evidence.
+  - Added focused regression coverage in
+    `tests/test_boundary_pipeline_variant_policy.py`.
+  - Updated boundary manifest/checklist/report docs
+    (`docs/Boundaries.json`, `docs/boundaries_completion_checklist.json`,
+    `docs/reports/boundary_variant_coverage_gap_2026-02-23.md`) with explicit
+    completion criteria and strict-run evidence.
 - Added explicit cache-health degradation signaling for lookup status surfaces:
   `ons_geo.cache_status`, `admin_lookup.get_cache_status`, and
   `resource://mcp-geo/boundary-cache-status` now expose

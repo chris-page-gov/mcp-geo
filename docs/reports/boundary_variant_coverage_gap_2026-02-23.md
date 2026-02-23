@@ -1,142 +1,144 @@
-# Boundary Variant Coverage Gap Report (2026-02-23)
+# Boundary Variant Coverage Hardening Report (2026-02-23)
 
 ## Scope
 
-This report summarizes boundary-variant coverage gaps from:
+This report tracks boundary-variant availability hardening from baseline gap to
+strict full-coverage resolution.
 
-- `data/boundary_runs/20260223T082527Z/run_report.json`
-- Mode: `resolve`
-- Verification: `--verify-resolved`
-- Result: `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED`
+Evidence runs:
 
-Source resolution is verified, but variant availability is not yet complete for
-all families.
+- Baseline gap run: `data/boundary_runs/20260223T082527Z/run_report.json`
+  - Mode: `resolve`
+  - Verification: `--verify-resolved`
+  - Pipeline status: `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED`
+  - Variant gap state: `49` required variants still `not_published`.
+- Hardened strict run: `data/boundary_runs/20260223T120022Z/run_report.json`
+  - Mode: `resolve`
+  - Verification: `--verify-resolved`
+  - Pipeline status: `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED`
+  - Variant gap state: `0` required variants `not_published`.
 
-## Missing Variant Inventory
+## Definition of Complete (Boundary Variant Full Coverage)
 
-`not_published` variants recorded with evidence: **49**
+Boundary variant hardening is complete when all of the following hold:
 
-Breakdown by reason:
+1. For every `boundary_family` and each required variant, status is
+   `resolved` or `derived`.
+2. For every `resolved` or `derived` variant, source verification is `status=ok`
+   in `--mode resolve --verify-resolved`.
+3. With `completion_definition.require_full_variant_availability=true`,
+   `not_published` count for required variants is `0`.
+4. Every non-direct authoritative mapping (`derived` or
+   `availability=equivalent_variant`) carries explicit accuracy metadata so
+   downstream hosts can surface zoom/precision cautions.
+5. A reproducible run artifact exists (`run_report.json` + evidence files).
 
-- `variant_not_listed_in_manifest_downloads`: 32
-- `no_ckan_resource_match`: 14
-- `boundaryline_not_variant_specific`: 3
+## Hardening Outcome
 
-By family:
+Strict hardened run (`20260223T120022Z`) meets the definition above:
 
-- `built_up_area_subdivisions_uk`: `BFE,BGC,BUC`
-- `built_up_areas_uk`: `BFE,BGC,BUC`
-- `data_zones_2021_ni`: `BFE,BGC,BUC`
-- `data_zones_2022_scotland`: `BFE,BGC,BUC`
-- `intermediate_zones_2022_scotland`: `BFE,BGC,BUC`
-- `island_groups_2022_scotland`: `BFE,BGC,BUC`
-- `localities_2022_scotland`: `BFE,BGC,BUC`
-- `lsoa_2021_ew`: `BUC`
-- `msoa_2021_ew`: `BUC`
-- `ni_dea_fallback`: `BFE,BGC,BUC`
-- `ni_lgd_fallback`: `BFE,BGC,BUC`
-- `oa_2021_ew`: `BUC`
-- `oa_2022_scotland`: `BGC,BUC`
-- `os_boundaryline_gb_bulk`: `BFE,BGC,BUC`
-- `parishes_ew`: `BUC`
-- `settlements_2022_scotland`: `BFE,BGC,BUC`
-- `small_areas_2011_ni`: `BFE,BGC,BUC`
-- `super_data_zones_2021_ni`: `BFE,BGC,BUC`
-- `super_output_areas_2011_ni`: `BFE,BGC,BUC`
-- `wards_uk`: `BUC`
+- `pipeline_status`: `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED`
+- `family_errors`: `0`
+- `exceptions`: `0`
+- `status_counts`: `resolved=112`, `derived=44`, `not_published=0`
+- `source_verification`: `ok=156`, `error=0`, `pending=0`
 
-## Variant Definitions
+Availability composition:
+
+- `published`: `106`
+- `equivalent_variant`: `6`
+- `derived_variant`: `44`
+
+Accuracy metadata emitted in run evidence:
+
+- Equivalent mappings: `published_equivalent_variant=6`
+- Derived mappings:
+  - `derived_generalised=14`
+  - `derived_ultra_generalised=15`
+  - `derived_extent_proxy=13`
+  - `derived_from_coarser_source=2`
+
+Current coarser-source warnings are explicit and bounded:
+
+- `built_up_areas_uk`: `BFC <- BGG`
+- `built_up_areas_uk`: `BFE <- BGG`
+
+These now carry `derived_from_coarser_source` and zoom caution metadata.
+
+## Baseline Gap Inventory (for Traceability)
+
+Baseline (`20260223T082527Z`) missing required variants (`not_published`):
+`49`
+
+Reason breakdown:
+
+- `variant_not_listed_in_manifest_downloads`: `32`
+- `no_ckan_resource_match`: `14`
+- `boundaryline_not_variant_specific`: `3`
+
+Key affected families included:
+
+- `os_boundaryline_gb_bulk`
+- `built_up_areas_uk`
+- `built_up_area_subdivisions_uk`
+- NI fallback families
+- Scotland/NI products that published only one high-resolution variant
+
+These are now covered via equivalent or derived variant policy paths.
+
+## Variant Glossary
 
 - `BFC`: Full resolution, coastline-clipped.
-- `BFE`: Full resolution, extent of the realm (includes wider maritime/extent envelope).
-- `BGC`: Generalised (coarser than full) coastline-clipped.
-- `BUC`: Ultra-generalised (much coarser) coastline-clipped.
-- `BSC`: Super-generalised (often published instead of `BUC` for some families).
-- `BGG` (seen in ONS Built-up Areas): Generalised variant naming used by that
-  product line; not currently mapped by this repo's variant policy.
+- `BFE`: Full resolution, extent of the realm.
+- `BGC`: Generalised (coarser than full), coastline-clipped.
+- `BUC`: Ultra-generalised (much coarser), coastline-clipped.
+- `BSC`: Super-generalised (optional publication in some families).
+- `BGG`: Generalised variant label used by some ONS built-up-area families.
 
 ## Accuracy and Zoom Implications
 
-Boundary generalisation has direct impact on high-zoom correctness:
+Generalisation materially affects high-zoom interpretation:
 
-- At close zoom, `BGC/BUC/BSC` can visibly shift edges relative to parcels,
-  roads, and UPRN points.
-- Containment checks near boundary edges can disagree between full-resolution
-  and generalised variants.
-- For governance/reporting boundaries, precision-sensitive checks should prefer
-  full-resolution (`BFC/BFE`) geometry where available.
+- `BGC/BUC/BSC/BGG` can shift apparent edges relative to parcels, UPRNs,
+  road links, and path links.
+- Edge containment can differ between full and generalised variants.
+- Precision-sensitive governance/reporting checks should prefer authoritative
+  full-resolution where published, and visibly flag derived/equivalent use.
 
-Required explicit metadata for downstream safety:
+Hardening now makes this visible in machine output via variant-level accuracy
+classification and zoom caution metadata.
 
-- `meta.resolution` and `meta.resolutionRank` (already present in cache rows).
-- Variant-derived provenance flag (`source=derived` vs published).
-- Accuracy guidance field for UI/API consumers, for example:
-  - `accuracy.class`: `authoritative_full`, `published_generalised`, `derived_generalised`
-  - `accuracy.zoomCautionAbove`: zoom threshold where generalisation warnings
-    should be surfaced.
+## ONSUD/ONSPD for Lower-Cost Exact Checks
 
-## Why ONSUD/ONSPD Matter for Practical Accuracy
+`ONSUD` and `ONSPD` exact-mode lookups remain key for boundary-edge validation
+workflows without rendering heavy geometry first:
 
-`ONSUD`/`ONSPD` provide exact-mode geography lookup anchors for UPRN/postcode.
-These can be used to validate or triage boundary-edge ambiguity without
-rendering heavy geometry first:
+1. Resolve postcode/UPRN geography codes (`ons_geo.by_postcode`,
+   `ons_geo.by_uprn`, `derivationMode=exact`).
+2. Shortlist candidate boundary records by code.
+3. Render only required geometries for final visual confirmation.
 
-1. Resolve UPRN/postcode using `ons_geo.by_uprn` or `ons_geo.by_postcode`
-   (`derivationMode=exact`).
-2. Use returned geography codes to shortlist candidate boundaries.
-3. Render only required boundary geometries for visual confirmation/testing.
+This supports low-cost, auditable checks where properties or assets touch
+administrative edges.
 
-This is especially useful for edge cases like "property spans or touches a
-boundary" where cheap code-based gating avoids over-rendering.
+## Built-up Area (BUA/BUASD) Requirement
 
-## Built-up Areas (BUA/BUASD) Requirement
+Built-up area workflows remain solvable via existing primitives if cache content
+is present and indexed:
 
-Built-up Areas are needed for "which UPRNs/RoadLinks/PathLinks are within this
-area?" workflows. This is solvable in `mcp-geo` if we ensure:
+1. Ensure `BUA` and `BUASD` are ingested into `admin_boundaries`.
+2. Ensure boundary selection/search exposes these levels.
+3. Run `os_map.inventory` against selected BUA/BUASD geometry for containment
+   analysis over UPRNs/buildings/road links/path links.
 
-1. `BUA` and `BUASD` are ingested into `admin_boundaries` with searchable level
-   values (`BUA`, `BUASD`).
-2. Boundary selection tools can find those levels from cache.
-3. Existing inventory flow (`os_map.inventory`) is run over selected BUA/BUASD
-   geometry to return UPRNs/buildings/road/path links.
+## Remaining Follow-On Work
 
-No new inventory primitive is required if BUA boundaries are available in the
-boundary cache and selectable in UI/tools.
+Variant resolution hardening is complete for resolve+verify gates. Remaining
+follow-on work is downstream operational depth:
 
-## Resolution Strategy for Full Availability (Required)
-
-To enforce full availability, apply all of the following together:
-
-1. Family-specific required variants:
-   - Stop treating `completion_definition.required_variants` as global for all
-     families.
-   - Use per-family/per-template requirements and explicit equivalence mapping
-     (for example `BSC` can satisfy `BUC` where appropriate and documented).
-
-4. Boundary-Line as non-variant source profile:
-   - Keep `os_boundaryline_gb_bulk` as one published source stream
-     (non-variant-specific), then derive additional generalised outputs locally
-     where variant-complete availability is required.
-
-5. Derived variant generation:
-   - For families lacking published `BGC/BUC/BFE`, generate derived variants
-     from best available full-resolution source.
-   - Store as separate datasets with explicit derivation metadata:
-     - `source=derived`
-     - `derivedFromDatasetId`
-     - `derivationMethod` (for example topology-preserving simplify)
-     - `derivationTolerance`
-     - `accuracy.class=derived_generalised`
-   - Include derivation QA checks (topology validity, area-change thresholds,
-     edge drift checks for sampled points/links).
-
-## Immediate Next Implementation Targets
-
-1. Add family-level required-variant evaluation and variant-equivalence rules in
-   `scripts/boundary_pipeline.py`.
-2. Extend variant parser/mapping to include `BSC` and `BGG` compatibility rules
-   per family.
-3. Implement derivation stage in boundary pipeline (published -> derived
-   variants) with provenance fields.
-4. Ensure boundary cache ingest includes `BUA` and `BUASD` levels and that
-   selection/search workflows can target those levels.
+1. Complete full-manifest download/ingest/validate execution at scale so all
+   resolved/derived variants are materialized in PostGIS tables.
+2. Confirm BUA/BUASD are fully present in runtime cache and validated through
+   end-to-end containment scenarios (UPRN/RoadLink/PathLink).
+3. Add an explicit release report section that quantifies coarser-source usage
+   by family so precision-sensitive consumers can apply policy controls.
