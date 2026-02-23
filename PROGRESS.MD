@@ -127,6 +127,18 @@ Legend: pending, in_progress, done
   still partial, so complete UK-wide runtime cache coverage remains open even
   though source resolution is now verified.
 
+## Boundary variant full-coverage hardening (2026-02-23)
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| BVH-DOC-0 Missing-variant and accuracy documentation | done | none | Added `docs/reports/boundary_variant_coverage_gap_2026-02-23.md` documenting all `49` `not_published` variants from run `20260223T082527Z`, variant glossary (`BFC/BFE/BGC/BUC/BSC/BGG`), zoom-accuracy implications, ONSUD/ONSPD relevance for low-cost exact-mode boundary highlighting, and Built-up Area containment requirements. |
+| BVH-REQ-1 Family-specific variant requirements | pending | BVH-DOC-0 | Replace global required-variant enforcement with family/template-specific requirements + equivalence mapping (for example `BSC` satisfying `BUC` where approved). |
+| BVH-OS-4 Boundary-Line non-variant profile | pending | BVH-REQ-1 | Keep `os_boundaryline_gb_bulk` as non-variant published source and feed derived-variant stage for availability parity. |
+| BVH-DER-5 Derived variant generation for full availability | pending | BVH-REQ-1, BVH-OS-4 | Add deterministic variant derivation (with provenance and accuracy flags) so families missing published variants can still expose complete BFC/BFE/BGC/BUC availability. |
+| BVH-BUA-6 Built-up Area containment path | pending | BVH-REQ-1, BVH-DER-5 | Ensure `BUA/BUASD` are cache-ingested and selectable so UPRN/RoadLink/PathLink containment workflows are fully supported via existing inventory flows. |
+
 ## Startup context mitigation check (2026-02-22)
 
 Legend: pending, in_progress, done
