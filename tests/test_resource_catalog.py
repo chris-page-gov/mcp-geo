@@ -67,6 +67,52 @@ def test_ons_cache_missing_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
     assert meta is None
 
 
+def test_ons_geo_sources_and_cache_index_resources(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    sources_path = tmp_path / "ons_geo_sources.json"
+    index_path = tmp_path / "ons_geo_cache_index.json"
+    sources_path.write_text(
+        '{"version":"2026-02-22","products":[{"id":"ONSPD"}]}',
+        encoding="utf-8",
+    )
+    index_path.write_text(
+        '{"generatedAt":"2026-02-22T00:00:00Z","products":[]}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(resource_catalog, "ONS_GEO_SOURCES_PATH", sources_path)
+    monkeypatch.setattr(resource_catalog, "ONS_GEO_CACHE_INDEX_PATH", index_path)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "ons-geo-sources"})
+    payload = json.loads(content)
+    assert payload["products"][0]["id"] == "ONSPD"
+    assert etag
+    assert meta is None
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "ons-geo-cache-index"})
+    payload = json.loads(content)
+    assert payload["generatedAt"] == "2026-02-22T00:00:00Z"
+    assert etag
+    assert meta is None
+
+
+def test_ons_geo_resources_missing(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    missing_sources = tmp_path / "missing_sources.json"
+    missing_index = tmp_path / "missing_index.json"
+    monkeypatch.setattr(resource_catalog, "ONS_GEO_SOURCES_PATH", missing_sources)
+    monkeypatch.setattr(resource_catalog, "ONS_GEO_CACHE_INDEX_PATH", missing_index)
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "ons-geo-sources"})
+    payload = json.loads(content)
+    assert payload["code"] == "NOT_FOUND"
+    assert etag
+    assert meta is None
+
+    content, etag, meta = resource_catalog.load_data_content({"slug": "ons-geo-cache-index"})
+    payload = json.loads(content)
+    assert payload["code"] == "NOT_FOUND"
+    assert etag
+    assert meta is None
+
+
 def test_list_data_resources_skips_missing_manifest(monkeypatch: MonkeyPatch, tmp_path) -> None:
     missing_manifest = tmp_path / "missing.json"
     monkeypatch.setattr(
@@ -181,6 +227,7 @@ def test_boundary_cache_status_handles_exception(monkeypatch: MonkeyPatch) -> No
     assert payload.get("configured") is False
     assert payload.get("dsnSet") is False
     assert payload.get("maturity", {}).get("state") == "disabled"
+    assert payload.get("performance", {}).get("degraded") is True
     assert "staleness" in payload
     assert payload.get("reloadHint")
     assert etag
@@ -675,6 +722,7 @@ def test_load_data_content_boundary_cache_status_enabled_branch(monkeypatch: Mon
     assert payload["enabled"] is True
     assert payload["configured"] is True
     assert payload["dsnSet"] is True
+    assert "performance" in payload
     assert payload["reloadHint"]
     assert etag
     assert meta is not None and meta.get("generatedAt")

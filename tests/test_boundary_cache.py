@@ -502,6 +502,8 @@ def test_boundary_cache_status(monkeypatch):
     assert status["datasets"][0]["freshnessState"] in {"fresh", "stale", "unknown"}
     assert status["maturity"]["state"] in {"ready", "degraded", "stale", "unknown", "cold_start", "unusable"}
     assert "staleDatasetIds" in status["staleness"]
+    assert "performance" in status
+    assert status["performance"]["degraded"] == (status["maturity"]["state"] != "ready")
 
 
 def test_boundary_cache_search(monkeypatch):

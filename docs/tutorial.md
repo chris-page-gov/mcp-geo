@@ -30,6 +30,59 @@ curl -sS -o /dev/null -w 'health=%{http_code}\n' "$BASE_URL/health"
   If unset/false, mcp-geo uses bundled sample data.
 - `UI_EVENT_LOG_PATH`: path to the MCP-Apps UI interaction log (default: `logs/ui-events.jsonl`).
 
+### Cache population quick runbook
+
+All cache artifacts are written under `data/` (gitignored).
+
+1. Refresh hybrid pack caches:
+
+```bash
+./.venv/bin/python scripts/pack_cache_refresh.py --kind all
+```
+
+2. Populate `ons_geo` cache (exact + best-fit products):
+
+```bash
+./.venv/bin/python scripts/ons_geo_cache_refresh.py \
+  --sources resources/ons_geo_sources.json \
+  --cache-dir data/cache/ons_geo \
+  --index-path resources/ons_geo_cache_index.json \
+  --db-name ons_geo_cache.sqlite \
+  --product-file ONSPD=/path/to/onspd.csv \
+  --product-file NSPL=/path/to/nspl.csv \
+  --product-file ONSUD=/path/to/onsud.csv \
+  --product-file NSUL=/path/to/nsul.csv
+```
+
+3. Populate PostGIS boundary cache (requires PostGIS + geospatial source):
+
+```bash
+./.venv/bin/python scripts/boundary_cache_ingest.py \
+  --dsn "$BOUNDARY_CACHE_DSN" \
+  --dataset-id <dataset_id> \
+  --source ONS \
+  --title "<dataset title>" \
+  --input /path/to/boundaries.gpkg \
+  --layer <layer_name> \
+  --level <LEVEL> \
+  --id-field <CODE_FIELD> \
+  --name-field <NAME_FIELD> \
+  --resolution BGC \
+  --apply-schema
+```
+
+4. Verify status/degradation flags:
+
+```bash
+curl -sS "$BASE_URL/tools/call" -H 'content-type: application/json' \
+  -d '{"tool":"ons_geo.cache_status"}'
+
+curl -sS "$BASE_URL/tools/call" -H 'content-type: application/json' \
+  -d '{"tool":"admin_lookup.get_cache_status"}'
+```
+
+Both status payloads expose `performance.degraded` with `reason`/`impact`.
+
 ## Client setup (MCP-capable clients)
 
 Most MCP clients connect over STDIO. This repo ships a JSON-RPC 2.0 STDIO adapter
@@ -328,98 +381,281 @@ mcp-geo exposes bundled datasets via the Resources API:
 curl -sS "$BASE_URL/resources/list?limit=50&page=1"
 ```
 
-## Ordnance Survey tools (require OS_API_KEY)
+## Tool coverage map (all current families)
 
-If `OS_API_KEY` is missing or invalid, these tools return `NO_API_KEY`,
+As of 2026-02-22, this server exposes 81 tools. Use these grouped families to
+cover the full surface area.
+
+### Core routing and discovery (`os_mcp.*`)
+
+- `os_mcp.descriptor`
+- `os_mcp.route_query`
+- `os_mcp.select_toolsets`
+- `os_mcp.stats_routing`
+
+Route first, then narrow discovery:
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"os_mcp.route_query","query":"Find geographies for postcode SW1A 1AA"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"os_mcp.select_toolsets","query":"Find geographies for postcode SW1A 1AA"}'
+```
+
+### ONS geography cache (`ons_geo.*`)
+
+- `ons_geo.by_postcode`
+- `ons_geo.by_uprn`
+- `ons_geo.cache_status`
+
+Exact mode uses ONSPD/ONSUD; best-fit mode uses NSPL/NSUL.
+Use `ons_geo.cache_status` to check `performance.degraded` before running
+postcode/UPRN lookups.
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"ons_geo.by_postcode","postcode":"SW1A 1AA","derivationMode":"exact"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"ons_geo.by_postcode","postcode":"SW1A 1AA","derivationMode":"best_fit"}'
+```
+
+### ONS datasets and code lists
+
+- `ons_select.search`
+- `ons_search.query`
+- `ons_data.create_filter`
+- `ons_data.dimensions`
+- `ons_data.editions`
+- `ons_data.get_filter_output`
+- `ons_data.get_observation`
+- `ons_data.query`
+- `ons_data.versions`
+- `ons_codes.list`
+- `ons_codes.options`
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"ons_select.search","question":"population growth in regions"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"ons_data.dimensions","dataset":"cpih01","edition":"time-series","version":"1"}'
+```
+
+### NOMIS tools (`nomis.*`)
+
+- `nomis.datasets`
+- `nomis.query`
+- `nomis.concepts`
+- `nomis.codelists`
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"nomis.datasets","q":"employment","limit":5}'
+```
+
+### Administrative geography (`admin_lookup.*`)
+
+- `admin_lookup.find_by_name`
+- `admin_lookup.area_geometry`
+- `admin_lookup.reverse_hierarchy`
+- `admin_lookup.containing_areas`
+- `admin_lookup.search_cache`
+- `admin_lookup.get_cache_status`
+
+Check `admin_lookup.get_cache_status` and inspect `performance.degraded` to
+confirm whether PostGIS cache-backed responses are available.
+
+```bash
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"admin_lookup.find_by_name","text":"Westminster"}'
+```
+
+## Ordnance Survey tools (require `OS_API_KEY`)
+
+If `OS_API_KEY` is missing/invalid, OS-backed tools return `NO_API_KEY`,
 `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
-### OS Places
+### Places, POI, Names, and Linked IDs
 
-Postcode lookup:
+- `os_places.by_postcode`, `os_places.by_uprn`, `os_places.search`,
+  `os_places.nearest`, `os_places.radius`, `os_places.polygon`,
+  `os_places.within`
+- `os_poi.search`, `os_poi.nearest`, `os_poi.within`
+- `os_names.find`, `os_names.nearest`
+- `os_linked_ids.get`, `os_linked_ids.identifiers`,
+  `os_linked_ids.feature_types`, `os_linked_ids.product_version_info`
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
   -d '{"tool":"os_places.by_postcode","postcode":"SW1A1AA"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"os_linked_ids.get","id":"100023336959"}'
 ```
 
-Free-text search:
+### NGD features, peat evidence, and protected landscapes
+
+- `os_features.collections`
+- `os_features.query`
+- `os_features.wfs_capabilities`
+- `os_features.wfs_archive_capabilities`
+- `os_peat.layers`
+- `os_peat.evidence_paths`
+- `os_landscape.find`
+- `os_landscape.get`
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
-  -d '{"tool":"os_places.search","text":"10 Downing Street"}'
+  -d '{"tool":"os_landscape.find","text":"Forest of Bowland"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"os_peat.evidence_paths","landscapeId":"E12000007","limit":10}'
 ```
 
-### OS Names
+### Map delivery, inventories, and tiles
+
+- `os_maps.render`, `os_maps.raster_tile`, `os_maps.wmts_capabilities`
+- `os_vector_tiles.descriptor`
+- `os_map.inventory`, `os_map.export`
+- `os_offline.descriptor`, `os_offline.get`
+- `os_qgis.vector_tile_profile`, `os_qgis.export_geopackage_descriptor`
+- `os_tiles_ota.collections`, `os_tiles_ota.conformance`,
+  `os_tiles_ota.tilematrixsets`
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
-  -d '{"tool":"os_names.find","text":"Edinburgh"}'
+  -d '{"tool":"os_maps.render","bbox":[-0.18,51.49,-0.05,51.54],"size":640,"zoom":13}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"os_offline.descriptor","packId":"uk-demo"}'
 ```
 
-### NGD features and linked IDs
+### OS Downloads and OS Net
 
-Query a feature collection within a bounding box:
+- `os_downloads.list_products`
+- `os_downloads.get_product`
+- `os_downloads.list_product_downloads`
+- `os_downloads.list_data_packages`
+- `os_downloads.prepare_export`
+- `os_downloads.get_export`
+- `os_net.station_get`
+- `os_net.station_log`
+- `os_net.rinex_years`
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
-  -d '{"tool":"os_features.query","collection":"buildings","bbox":[-0.15,51.49,-0.10,51.52]}'
+  -d '{"tool":"os_downloads.list_products","limit":5}'
 ```
 
-Resolve linked IDs (e.g., UPRN/TOID/USRN relationships):
+### MCP-Apps UI tools (`os_apps.*`)
+
+- `os_apps.render_geography_selector`
+- `os_apps.render_boundary_explorer`
+- `os_apps.render_statistics_dashboard`
+- `os_apps.render_feature_inspector`
+- `os_apps.render_route_planner`
+- `os_apps.render_ui_probe`
+- `os_apps.log_event`
+
+Notes:
+- `render_geography_selector`, `render_boundary_explorer`, and
+  `render_statistics_dashboard` are the main operational widget paths.
+- `render_feature_inspector` and `render_route_planner` are currently static UI
+  shells; treat them as placeholders pending full runtime integration.
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
-  -d '{"tool":"os_linked_ids.get","id":"<uprn-or-toid>"}'
+  -d '{"tool":"os_apps.render_ui_probe"}'
 ```
 
-### Vector tiles descriptor
-
-Returns style/source metadata suitable for a tiles client:
+For full schemas, use:
 
 ```bash
-curl -sS "$BASE_URL/tools/call" \
-  -H 'content-type: application/json' \
-  -d '{"tool":"os_vector_tiles.descriptor"}'
+curl -sS "$BASE_URL/tools/describe"
 ```
 
-## ONS data tools (sample + live modes)
+## Initialization footprint and Claude context impact
 
-List available dimensions (sample mode):
+Claude clients do not currently rely on progressive/deferred MCP tool loading,
+so startup tool payload size directly consumes model context.
+
+Repeatable measurement (stdio adapter in-process):
 
 ```bash
-curl -sS "$BASE_URL/tools/call" \
-  -H 'content-type: application/json' \
-  -d '{"tool":"ons_data.dimensions"}'
+./.venv/bin/python - <<'PY'
+import json
+import os
+from contextlib import contextmanager
+from server import stdio_adapter
+from server.mcp import tools as _  # noqa: F401
+
+def approx_tokens(text: str) -> int:
+    return max(1, len(text) // 4)
+
+@contextmanager
+def env_overrides(**kwargs):
+    old = {}
+    for k, v in kwargs.items():
+        old[k] = os.environ.get(k)
+        if v is None:
+            os.environ.pop(k, None)
+        else:
+            os.environ[k] = v
+    try:
+        yield
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+with env_overrides(MCP_TOOLS_DEFAULT_TOOLSET=None):
+    all_resp = stdio_adapter.handle_list_tools({})
+with env_overrides(MCP_TOOLS_DEFAULT_TOOLSET='starter'):
+    starter_resp = stdio_adapter.handle_list_tools({})
+
+all_json = json.dumps(all_resp, ensure_ascii=True, separators=(',', ':'))
+starter_json = json.dumps(starter_resp, ensure_ascii=True, separators=(',', ':'))
+print('all_tools', len(all_resp['tools']), len(all_json.encode('utf-8')), approx_tokens(all_json))
+print('starter', len(starter_resp['tools']), len(starter_json.encode('utf-8')), approx_tokens(starter_json))
+PY
 ```
 
-Query observations (sample mode):
+Latest measurement on 2026-02-22:
 
-```bash
-curl -sS "$BASE_URL/tools/call" \
-  -H 'content-type: application/json' \
-  -d '{"tool":"ons_data.query","geography":"K02000001"}'
-```
+- Full `tools/list` (81 tools): `87,805` bytes (~`21,951` tokens approximate).
+- Starter `tools/list` (15 tools): `21,151` bytes (~`5,287` tokens approximate).
+- Startup reduction with `MCP_TOOLS_DEFAULT_TOOLSET=starter`: about `76%` fewer
+  bytes/tokens.
 
-In live mode, include `dataset`, `edition`, and `version`:
+Claude-safe mitigation workflow (no deferred loading dependency):
 
-```bash
-curl -sS "$BASE_URL/tools/call" \
-  -H 'content-type: application/json' \
-  -d '{"tool":"ons_data.query","dataset":"<dataset>","edition":"<edition>","version":"<version>","geography":"K02000001"}'
-```
+1. Keep startup lean with `MCP_TOOLS_DEFAULT_TOOLSET=starter`.
+2. Call `os_mcp.select_toolsets` (included in starter) using the user query.
+3. Re-run `tools/list` with returned `includeToolsets`.
+4. Call target tool(s), using sanitized names shown by Claude (for example
+   `ons_geo_by_postcode`).
 
-Search available datasets (live via ONS beta API):
-
-```bash
-curl -sS "$BASE_URL/tools/call" \
-  -H 'content-type: application/json' \
-  -d '{"tool":"ons_search.query","term":"population"}'
-```
+This keeps startup context small while preserving deterministic expansion paths.
 
 ## Resources and conditional caching (ETag)
 

@@ -1,0 +1,80 @@
+{
+  "version": "2026-02-22",
+  "description": "ONS geography lookup product sources. Exact-mode products are primary; best-fit products run in parallel for statistical comparability.",
+  "products": [
+    {
+      "id": "ONSPD",
+      "title": "ONS Postcode Directory (exact)",
+      "keyType": "postcode",
+      "derivationMode": "exact",
+      "priority": 10,
+      "release": "unknown",
+      "fieldCandidates": {
+        "key": ["pcds", "pcd", "postcode"]
+      },
+      "source": {
+        "downloadUrl": "",
+        "catalogUrl": "https://www.data.gov.uk/dataset/55f99db8-88f4-4838-b416-b1f94a32781d/ons-postcode-directory-latest-centroids",
+        "notes": [
+          "Primary exact-mode postcode geography product.",
+          "Populate downloadUrl or pass --product-file ONSPD=/path/to/file for refresh runs."
+        ]
+      }
+    },
+    {
+      "id": "NSPL",
+      "title": "National Statistics Postcode Lookup (best_fit)",
+      "keyType": "postcode",
+      "derivationMode": "best_fit",
+      "priority": 20,
+      "release": "unknown",
+      "fieldCandidates": {
+        "key": ["pcds", "pcd", "postcode"]
+      },
+      "source": {
+        "downloadUrl": "",
+        "catalogUrl": "https://www.data.gov.uk/dataset/c93f1717-fd4c-47e7-a0d0-77dd6ef61a4c/national-statistics-postcode-lookup-latest-centroids",
+        "notes": [
+          "Parallel best-fit postcode product for statistical workflows."
+        ]
+      }
+    },
+    {
+      "id": "ONSUD",
+      "title": "ONS UPRN Directory (exact)",
+      "keyType": "uprn",
+      "derivationMode": "exact",
+      "priority": 10,
+      "release": "unknown",
+      "fieldCandidates": {
+        "key": ["UPRN", "uprn"]
+      },
+      "source": {
+        "downloadUrl": "",
+        "catalogUrl": "https://www.data.gov.uk/dataset/23f4d9f2-e6d7-45c4-8f97-a52c6f7adcf0/ons-uprn-directory-onsud-for-the-uk",
+        "notes": [
+          "Primary exact-mode UPRN geography product."
+        ]
+      }
+    },
+    {
+      "id": "NSUL",
+      "title": "National Statistics UPRN Lookup (best_fit)",
+      "keyType": "uprn",
+      "derivationMode": "best_fit",
+      "priority": 20,
+      "release": "unknown",
+      "fieldCandidates": {
+        "key": ["UPRN", "uprn"]
+      },
+      "source": {
+        "downloadUrl": "",
+        "catalogUrl": "https://www.data.gov.uk/dataset/d420af4f-9a12-4cfb-bd2d-75003b114db2/national-statistics-uprn-lookup-nsul-for-the-uk",
+        "notes": [
+          "Parallel best-fit UPRN product for statistical workflows."
+        ]
+      }
+    }
+  ]
+}
+

@@ -4,6 +4,7 @@
   "purpose": "Automated discovery, download, ingestion to PostGIS, and validation of authoritative UK administrative/statistical boundary datasets (nation-specific where required) for MCP-geo.",
   "completion_definition": {
     "completion_statement_for_codex": "This step is complete when every boundary_family in boundary_families has (a) a resolvable download_url for each required variant in required_variants, (b) has been ingested into PostGIS into the expected schema/table naming convention, and (c) passes all validation rules (schema checks, geometry validity, unique code constraints, and row-count sanity checks) with a reproducible run log.",
+    "require_full_variant_availability": true,
     "required_variants": [
       "BFC",
       "BFE",
@@ -12,10 +13,56 @@
     ],
     "allowed_optional_variants": [
       "BSC",
+      "BGG",
       "BVG",
       "BUE",
       "BFG"
     ],
+    "definition_of_complete": [
+      "For each family and each required variant, status must be resolved or derived; not_published is a failure when require_full_variant_availability=true.",
+      "For resolved or derived variants, source verification must report status=ok in resolve+verify mode.",
+      "Derived variants must record derivation metadata (method, tolerance where used, accuracy class, and source variant).",
+      "Ingested tables must pass schema/geometry/uniqueness/row-count checks with run evidence."
+    ],
+    "default_variant_policy": {
+      "equivalent_variants": {
+        "BUC": [
+          "BSC"
+        ]
+      },
+      "derivation": {
+        "enabled": true,
+        "source_priority": [
+          "BFC",
+          "BFE",
+          "BGC",
+          "BSC",
+          "BGG",
+          "BVG",
+          "BUE",
+          "BFG"
+        ],
+        "target_profiles": {
+          "BFE": {
+            "method": "copy",
+            "accuracy_class": "derived_extent_proxy",
+            "zoom_caution_above": 13
+          },
+          "BGC": {
+            "method": "simplify_preserve_topology",
+            "simplify_tolerance": 20.0,
+            "accuracy_class": "derived_generalised",
+            "zoom_caution_above": 13
+          },
+          "BUC": {
+            "method": "simplify_preserve_topology",
+            "simplify_tolerance": 500.0,
+            "accuracy_class": "derived_ultra_generalised",
+            "zoom_caution_above": 10
+          }
+        }
+      }
+    },
     "notes": [
       "Some families will not exist for all variants and/or all nations; in that case the script must record 'not published' with evidence (CKAN query results or source page).",
       "For Scotland and Northern Ireland sources, variants may be described differently (e.g., 'Extent of the Realm', 'Clipped to coastline'); map these onto BFE/BFC equivalents in 'variant_mapping'."
@@ -32,6 +79,7 @@
       "BGC": "Generalised (20m) - clipped to the coastline (Mean High Water mark).",
       "BUC": "Ultra generalised (500m) - clipped to the coastline (Mean High Water mark).",
       "BSC": "Super generalised (where published) - typically coarser than BUC; treat as optional.",
+      "BGG": "Generalised variant used by some ONS built-up area products; treat as a generalized source for equivalence/derivation.",
       "BVG": "Variant sometimes used for very generalised products; treat as optional.",
       "BUE": "Variant sometimes used for ultra generalised extent; treat as optional.",
       "BFG": "Variant sometimes used for full generalised extent; treat as optional."
@@ -181,10 +229,11 @@
           "BUC"
         ],
         "optional_variants": [
-          "BSC"
+          "BSC",
+          "BGG"
         ],
         "variant_detection": {
-          "from_title_regex": "\\b(BFC|BFE|BGC|BUC|BSC)\\b",
+          "from_title_regex": "\\b(BFC|BFE|BGC|BUC|BSC|BGG)\\b",
           "fallback": "BFC"
         }
       },
@@ -678,6 +727,25 @@
         ]
       },
       "description": "Built-up Areas (BUAs).",
+      "variant_policy": {
+        "equivalent_variants": {
+          "BGC": [
+            "BGG"
+          ]
+        },
+        "derivation": {
+          "enabled": true,
+          "source_priority": [
+            "BFC",
+            "BGG",
+            "BFE",
+            "BSC",
+            "BVG",
+            "BUE",
+            "BFG"
+          ]
+        }
+      },
       "discovery_overrides": {
         "query": "Built-up Areas (December 2022) Boundaries UK",
         "tags_any": [
@@ -1414,6 +1482,20 @@
         "Great Britain"
       ],
       "description": "Boundary-Line bulk product (multiple layers) for GB; updated twice yearly; supplied in National Grid.",
+      "variant_policy": {
+        "required_variants": [
+          "BFC",
+          "BFE",
+          "BGC",
+          "BUC"
+        ],
+        "derivation": {
+          "enabled": true,
+          "source_priority": [
+            "BFC"
+          ]
+        }
+      },
       "discovery": {
         "source_id": "os_downloads_api_boundaryline",
         "method": "fixed_api_endpoint",

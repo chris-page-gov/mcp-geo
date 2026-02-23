@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-22
+Last updated: 2026-02-23
 Owner: @chris-page-gov
 
 ## Purpose
@@ -67,6 +67,9 @@ assumptions change.
   resources, scripts, and trial evidence outputs.
 - Driving the new peatland survey reliability hardening program (`PSR-*`) based
   on the 2026-02-19 forensic/deep-research implementation plan.
+- Implementing dual-derivation ONS geography caching with `ONSPD` + `ONSUD`
+  as primary exact-mode references and `NSPL` + `NSUL` in parallel for
+  best-fit/statistical comparability.
 
 ## Active Work
 
@@ -112,6 +115,9 @@ assumptions change.
   with code and tests.
 - Keep the extracted Prism LaTeX brief citation set synchronized with
   authoritative UK/standards anchors and bibliography integrity checks.
+- Maintain ONS postcode/UPRN geography cache artifacts and refresh workflow
+  (`resources/ons_geo_sources.json`, `scripts/ons_geo_cache_refresh.py`,
+  `ons_geo.*` tools) with explicit exact vs best-fit derivation provenance.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -144,6 +150,9 @@ assumptions change.
 - Done: strict non-runtime static quality gate restoration for reliability
   surfaces via `scripts/check_non_runtime_quality.sh`
   (`ruff` + `mypy --follow-imports=skip`).
+- Done: dual-derivation ONS geography cache baseline (`ONSPD` + `ONSUD` exact,
+  `NSPL` + `NSUL` best_fit) with tooling (`ons_geo.*`), refresh automation,
+  route-query integration, and focused regression coverage.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -198,6 +207,46 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-23: Completed boundary variant full-coverage hardening for strict
+  resolve gates. `scripts/boundary_pipeline.py` now applies manifest default
+  variant policy (equivalence + derivation + overrides) across families,
+  records explicit accuracy classes for equivalent/derived variants (including
+  coarser-source warnings), and enforces full-availability policy in evaluator
+  checks. Hardened run `data/boundary_runs/20260223T120022Z/run_report.json`
+  reports `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED` with `resolved=112`,
+  `derived=44`, `not_published=0`, `errors=0`.
+- 2026-02-23: Hardened boundary-source verification to remove ambiguity
+  between resolve and ingest stages. `scripts/boundary_pipeline.py` now
+  supports `--verify-resolved` with live URL probing, mode-aware pass/fail
+  statuses, and stronger CKAN package ranking by query-title token match. The
+  latest full resolve+verify run
+  (`data/boundary_runs/20260223T082527Z/run_report.json`) now reports
+  `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED` with `107` resolved source URLs
+  verified reachable and `49` variants explicitly `not_published` with
+  evidence.
+- 2026-02-22: Added explicit degraded-performance status signaling for cache
+  availability surfaces so clients can detect reduced reliability without
+  inferring from missing data: `ons_geo.cache_status`,
+  `admin_lookup.get_cache_status`, and
+  `resource://mcp-geo/boundary-cache-status` now expose
+  `performance.degraded` with reason/impact fields.
+- 2026-02-22: Populated all caches feasible in the current local environment:
+  refreshed code-list pack cache artifacts, ingested bootstrap ONS geo products
+  (ONSPD/NSPL/ONSUD/NSUL) into `data/cache/ons_geo`, and seeded PostGIS
+  boundary cache with live ArcGIS geometry for Coventry and Westminster.
+  Remaining full-population steps require production source downloads/tooling.
+- 2026-02-22: Re-validated startup context pressure for non-deferred clients
+  (Claude-style) and hardened mitigation path by adding
+  `os_mcp.select_toolsets` to the `starter` toolset; updated tutorial and
+  troubleshooting guidance with measured `tools/list` footprint and scoped
+  expansion workflow.
+- 2026-02-22: Implemented ONS geography lookup cache strategy with
+  `ONSPD`/`ONSUD` as primary exact-mode products and `NSPL`/`NSUL` in parallel
+  as best-fit products, including manifest/index resources, refresh
+  automation (`scripts/ons_geo_cache_refresh.py`), lookup tools
+  (`ons_geo.by_postcode`, `ons_geo.by_uprn`, `ons_geo.cache_status`), and
+  route-query recommendations for explicit postcode/UPRN geography mapping
+  prompts.
 - 2026-02-22: Closed remaining OS/ONS live-evaluation deltas by implementing
   map-render keyword compatibility (`render.urlTemplate` alias), deterministic
   invalid-postcode handling in `os_places.by_postcode`, hierarchy/tool-discovery
@@ -232,6 +281,39 @@ assumptions change.
   `os_features.wfs_archive_capabilities` as optional-by-entitlement in release
   denominator calculations while keeping explicit blocker evidence and
   requirement tracking (`REQ-LIVE-TOOLS-05`) in generated coverage artifacts.
+- 2026-02-23: Updated MCP-Apps fullscreen controls to keep a usable `Try maximise`
+  path when hosts do not advertise `availableDisplayModes`, instead of
+  disabling the control outright.
+- 2026-02-23: Updated boundary explorer OS/inventory diagnostics to distinguish
+  `NO_API_KEY`, auth failures, missing proxy, and toolset exposure issues
+  (`MISSING_TOOL`) so host/toolset failures are not mislabeled as key issues.
+- 2026-02-23: Updated workspace VSCode MCP defaults to include
+  `features_layers` alongside `starter`, restoring `os_map.inventory` and
+  `os_map.export` availability for boundary explorer workflows.
+- 2026-02-23: Added a deterministic Playwright host harness for boundary
+  explorer (`playground/tests/boundary_explorer_host_harness.spec.js`) and a
+  read-only runtime snapshot probe
+  (`window.__MCP_GEO_BOUNDARY_EXPLORER__.getSnapshot()`) to validate boundary
+  overlay rendering independently of VSCode host-runtime quirks.
+- 2026-02-23: Added host-aware fullscreen controls to the interactive MCP-Apps
+  widgets (`boundary_explorer`, `geography_selector`, `statistics_dashboard`)
+  using `ui/request-display-mode` with graceful fallback behavior when hosts do
+  not expose fullscreen in `availableDisplayModes`.
+- 2026-02-23: Updated workspace VSCode MCP config (`.vscode/mcp.json`) to read
+  `OS_API_KEY` from `${env:OS_API_KEY}` (allowing deterministic startup via
+  environment or `.env`) after observing duplicate prompt/timing failures with
+  prompt-driven key injection.
+- 2026-02-23: Updated `os_map.inventory` and `os_map.export` `layers` input
+  schema definitions from `anyOf` to explicit union `type` + `items` after a
+  VSCode/Copilot MCP tool-registration failure (`array schema missing items`)
+  against `mcp_mcp-geo-http_os_map_inventory`.
+- 2026-02-23: Addressed PR #15 review findings by tightening `os_map` `layers`
+  schemas to explicit `oneOf` branches (array/string/null), replacing
+  `innerHTML` in boundary explorer OS warnings with DOM-node composition,
+  adding guaranteed response close in
+  `scripts/boundary_pipeline.py::_probe_source_url`, and surfacing unreadable
+  ONS geo cache lookup failures as `503 CACHE_READ_ERROR` instead of false
+  `404 NOT_FOUND`.
 - 2026-02-22: Added an Apps-to-Answers presentation deck aligned to the
   January 2026 UK government dataset-readiness guidance at
   `research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`

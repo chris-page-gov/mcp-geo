@@ -2,25 +2,27 @@
   "version": "2026-02-11",
   "kind": "code_lists",
   "cacheMode": "hybrid_fetch_cache",
-  "generatedAt": "2026-02-11T00:00:00Z",
+  "generatedAt": "2026-02-22T19:12:33Z",
   "packs": [
     {
       "id": "ons_geography_codes",
       "title": "ONS Geography Codes",
-      "status": "manifest_only",
-      "cachePath": null,
-      "sha256": null,
-      "bytes": null,
-      "sourceUrl": "https://api.beta.ons.gov.uk/v1/code-lists"
+      "status": "cached",
+      "cachePath": "data/cache/packs/code_lists/ons_geography_codes/ons_geography_codes.json",
+      "sha256": "fe8620f0b905141c2c589d1eccbbfe82990472ff128933b690437d2aee980bd9",
+      "bytes": 4048,
+      "sourceUrl": "https://api.beta.ons.gov.uk/v1/code-lists",
+      "error": null
     },
     {
       "id": "nomis_codelists",
       "title": "NOMIS Codelists",
-      "status": "manifest_only",
-      "cachePath": null,
-      "sha256": null,
-      "bytes": null,
-      "sourceUrl": "https://www.nomisweb.co.uk/api/v01/dataset/def.sdmx.json"
+      "status": "cached",
+      "cachePath": "data/cache/packs/code_lists/nomis_codelists/nomis_codelists.json",
+      "sha256": "55dd16c1d2ae4e5a784a53056c41e79e69428df84168827e073f48038cb4a4b9",
+      "bytes": 5453557,
+      "sourceUrl": "https://www.nomisweb.co.uk/api/v01/dataset/def.sdmx.json",
+      "error": null
     }
   ]
 }

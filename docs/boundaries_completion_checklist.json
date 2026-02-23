@@ -38,7 +38,7 @@
     {
       "check_id": "resolve_required_variant_sources",
       "severity": "error",
-      "description": "For each required variant, resolve a concrete download target OR record not_published with evidence.",
+      "description": "For each required variant, resolve a concrete download target, derive from an allowed source variant, or record not_published with evidence when full availability is not required.",
       "inputs": [
         "family.family_id",
         "family.template",
@@ -46,7 +46,7 @@
         "family.downloads*",
         "required_variants"
       ],
-      "pass_condition": "For every required variant: (resolved.download_url exists) OR (resolved.status == 'not_published' AND resolved.evidence_ref exists).",
+      "pass_condition": "For every required variant: ((resolved.status in ['resolved','derived']) AND resolved.download_url exists) OR ((resolved.status == 'not_published') AND resolved.evidence_ref exists AND require_full_variant_availability == false).",
       "failure_message": "Missing resolvable source for one or more required variants without not_published evidence.",
       "outputs": [
         "resolved_resources[{family_id}][{variant}] = {status, download_url, evidence_ref, source_id}"
@@ -121,9 +121,9 @@
     {
       "check_id": "required_variant_coverage",
       "severity": "error",
-      "description": "All required variants must be present unless explicitly not_published with evidence.",
-      "pass_condition": "For each required variant: (ingest_status == 'ok') OR (resolved.status == 'not_published' AND evidence_ref exists).",
-      "failure_message": "Required variant missing without an authorised not_published record.",
+      "description": "All required variants must be available via published or derived geometry and pass ingest/validation. not_published is only allowed when full availability is disabled.",
+      "pass_condition": "For each required variant: (resolved.status in ['resolved','derived'] AND ingest_status == 'ok') OR (resolved.status == 'not_published' AND evidence_ref exists AND require_full_variant_availability == false).",
+      "failure_message": "Required variant unavailable or not ingested under active full-coverage policy.",
       "outputs": [
         "validations[{family_id}].variant_coverage = {required_variants_met, missing_required_variants}"
       ]

@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test",
+    "test:boundary-harness": "playwright test boundary_explorer_host_harness.spec.js",
     "test:trials": "playwright test --config playwright.trials.config.js"
   },
   "dependencies": {

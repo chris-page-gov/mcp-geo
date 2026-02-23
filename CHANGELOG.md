@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added ONS postcode/UPRN geography cache infrastructure for dual-derivation
+  lookup workflows:
+  - `server/ons_geo_cache.py` (normalization, schema bootstrap, indexed
+    lookup, geography field extraction)
+  - `tools/ons_geo.py` (`ons_geo.by_postcode`, `ons_geo.by_uprn`,
+    `ons_geo.cache_status`)
+  - `scripts/ons_geo_cache_refresh.py` (manifest-driven refresh with
+    file/URL overrides and provenance hashes)
+  - `resources/ons_geo_sources.json` (primary exact-mode `ONSPD`/`ONSUD` plus
+    parallel best-fit `NSPL`/`NSUL`)
+  - `resources/ons_geo_cache_index.json` (refresh status/index scaffold).
 - Added peat evidence-layer integration for survey workflows:
   - `tools/os_peat.py` with `os_peat.layers` and `os_peat.evidence_paths`
   - `resources/peat_layers_england.json`
@@ -49,8 +60,61 @@ All notable changes to this project will be documented in this file.
   evidence checks from Claude stdio traces and UI event logs, including
   optional payload-shape and Playwright smoke prechecks, plus
   `tests/test_check_lmr_host4.py` coverage.
+- Added a deterministic boundary-explorer host harness test at
+  `playground/tests/boundary_explorer_host_harness.spec.js` that validates
+  selected-boundary rendering and fullscreen-handshake fallback behavior under
+  MCP host simulation.
 
 ### Changed
+- Hardened boundary variant full-coverage policy and strict resolve gating:
+  - `scripts/boundary_pipeline.py` now merges
+    `completion_definition.default_variant_policy` with template/family
+    overrides, supports deterministic equivalent/derived required-variant
+    resolution, and enforces `require_full_variant_availability` at evaluation
+    time.
+  - Added variant accuracy metadata for non-direct mappings
+    (`published_equivalent_variant`, derived classes including
+    `derived_from_coarser_source`) so zoom/precision caveats are explicit in
+    run evidence.
+  - Added focused regression coverage in
+    `tests/test_boundary_pipeline_variant_policy.py`.
+  - Updated boundary manifest/checklist/report docs
+    (`docs/Boundaries.json`, `docs/boundaries_completion_checklist.json`,
+    `docs/reports/boundary_variant_coverage_gap_2026-02-23.md`) with explicit
+    completion criteria and strict-run evidence.
+- Added explicit cache-health degradation signaling for lookup status surfaces:
+  `ons_geo.cache_status`, `admin_lookup.get_cache_status`, and
+  `resource://mcp-geo/boundary-cache-status` now expose
+  `performance.degraded` with reason/impact metadata so clients can detect
+  reduced reliability when caches are unavailable or stale.
+- Refreshed cache indexes/artifacts for local operability validation:
+  `resources/code_list_packs_index.json`, `resources/boundary_packs_index.json`,
+  and `resources/ons_geo_cache_index.json` now reflect the latest cache refresh
+  run evidence.
+- Expanded `docs/tutorial.md` to cover the current full tool-family surface
+  (including `ons_geo.*`, peat/landscape, downloads/offline/QGIS/OTA, and
+  MCP-Apps status notes) and added a concrete startup-context evaluation section
+  for Claude/non-deferred clients with measured `tools/list` footprint and
+  mitigation workflow (`starter` + `os_mcp.select_toolsets` + scoped
+  `includeToolsets`).
+- Updated `server/mcp/tool_search.py` starter toolset to include
+  `os_mcp.select_toolsets` so constrained clients can always request scoped
+  toolset expansion without loading full schemas; documented the behavior in
+  `docs/troubleshooting.md` and added regression assertion in
+  `tests/test_tool_search.py`.
+- Updated MCP integration/discovery surfaces for ONS geography cache support:
+  - registered `tools.ons_geo` in `server/mcp/tools.py`
+  - added `ons_geo` categories/keywords/toolsets in
+    `server/mcp/tool_search.py`
+  - added data resources `resource://mcp-geo/ons-geo-sources` and
+    `resource://mcp-geo/ons-geo-cache-index` in
+    `server/mcp/resource_catalog.py`.
+- Updated `os_mcp.route_query` to recommend `ons_geo.by_postcode` or
+  `ons_geo.by_uprn` for explicit postcode/UPRN geography-mapping prompts while
+  keeping OS Places recommendations for address retrieval queries.
+- Added focused regression coverage for dual-derivation geography caching and
+  routing in `tests/test_ons_geo_cache.py`, `tests/test_ons_geo.py`,
+  `tests/test_ons_geo_cache_refresh.py`, and route/discovery/resource tests.
 - Updated peatland survey routing to include `os_peat.evidence_paths` in
   AOI-first survey plans and alternatives (`tools/os_mcp.py`,
   `tests/test_os_mcp_route_query.py`).
@@ -73,6 +137,46 @@ All notable changes to this project will be documented in this file.
     with regression coverage in `tests/test_evaluation_expected_errors.py`
   - adding graceful transient-degrade behavior for non-dataset-specific
     `nomis.datasets` upstream failures in `tools/nomis_data.py`.
+- Updated MCP-Apps interactive widgets (`ui/boundary_explorer.html`,
+  `ui/geography_selector.html`, `ui/statistics_dashboard.html`) to include a
+  host-aware fullscreen toggle that uses `ui/request-display-mode` when the host
+  advertises `availableDisplayModes` support, with graceful fallback messaging
+  when fullscreen is unavailable.
+- Updated fullscreen behavior across MCP-Apps widgets to keep the maximise
+  control usable in hosts that do not advertise display modes (shows
+  `Try maximise` and attempts `ui/request-display-mode` instead of disabling).
+- Updated boundary explorer OS-warning handling to classify inventory failures
+  by error code (for example `NO_API_KEY`, `MISSING_TOOL`) instead of always
+  showing an API-key warning, and to surface toolset-missing guidance when
+  `os_map.inventory`/`os_map.export` are not exposed.
+- Updated boundary explorer boundary styling with a dedicated selected-outline
+  line layer and stronger width/opacity defaults so selected ward boundaries
+  remain visible in constrained host panels.
+- Updated boundary explorer to expose a read-only runtime probe
+  (`window.__MCP_GEO_BOUNDARY_EXPLORER__.getSnapshot()`) for deterministic
+  harness assertions of source/rendered boundary counts and host capability
+  state.
+- Updated `playground/package.json` with a dedicated
+  `test:boundary-harness` command for quick boundary explorer regression runs.
+- Updated `.vscode/mcp.json` to source `OS_API_KEY` from `${env:OS_API_KEY}`
+  (with existing `.env` startup fallback) instead of per-server prompt inputs,
+  reducing duplicate prompts and startup-time key race conditions.
+- Updated `.vscode/mcp.json` default toolset filters to include
+  `features_layers` alongside `starter`, ensuring boundary explorer can invoke
+  `os_map.inventory`/`os_map.export` in VS Code MCP sessions.
+- Updated `os_map.inventory` and `os_map.export` `layers` input schemas to use
+  explicit `oneOf` union branches (array+items/minItems, string+minLength, null),
+  keeping strict MCP host schema validation compatibility while avoiding mixed
+  keyword ambiguity across non-array branches.
+- Updated `tools/ons_geo.py` + `server/ons_geo_cache.py` to surface unreadable
+  cache failures as `503 CACHE_READ_ERROR` (instead of `404 NOT_FOUND`) when the
+  cache file exists but SQLite query/read fails.
+- Hardened `scripts/boundary_pipeline.py::_probe_source_url` response lifecycle
+  to close `requests` responses via `finally`, preventing leaked open responses
+  on JSON parse/runtime exceptions.
+- Updated `ui/boundary_explorer.html` OS key warning rendering to construct the
+  `OS_API_KEY` token via DOM nodes (no `innerHTML`) for safer future content
+  handling.
 - Updated `docs/spec_package/09_testing_quality.md`, `CONTEXT.md`, and
   `PROGRESS.MD` to reflect the latest strict + live verification evidence,
   including explicit coverage-gate failure status and MCP-Apps widget

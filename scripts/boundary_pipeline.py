@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -154,6 +155,35 @@ def _resource_matches(resource: dict[str, Any], preference: list[dict[str, Any]]
 
 def _clean_query(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
+
+
+_QUERY_STOPWORDS = {
+    "and",
+    "for",
+    "the",
+    "of",
+    "to",
+    "in",
+    "on",
+    "at",
+    "by",
+    "with",
+    "boundaries",
+    "boundary",
+}
+
+
+def _query_tokens(text: str) -> list[str]:
+    tokens = re.findall(r"[a-z0-9]+", (text or "").lower())
+    return [token for token in tokens if len(token) >= 3 and token not in _QUERY_STOPWORDS]
+
+
+def _package_title_score(query: str, title: str) -> int:
+    query_tokens = _query_tokens(query)
+    if not query_tokens:
+        return 0
+    title_tokens = set(_query_tokens(title))
+    return sum(1 for token in query_tokens if token in title_tokens)
 
 
 def _strip_after_boundaries(text: str) -> str:
@@ -420,6 +450,23 @@ def _reproject_geometry(geom, transformer):
     return shapely_transform(transformer.transform, geom)
 
 
+def _apply_geometry_derivation(geom, derivation_profile: dict[str, Any] | None):
+    if geom is None or not isinstance(derivation_profile, dict):
+        return geom
+    method = str(derivation_profile.get("method") or "copy").strip().lower()
+    if method in {"copy", "none"}:
+        return geom
+    if method in {"simplify", "simplify_preserve_topology"} and hasattr(geom, "simplify"):
+        tolerance_raw = derivation_profile.get("simplify_tolerance")
+        try:
+            tolerance = float(tolerance_raw)
+        except (TypeError, ValueError):
+            tolerance = 0.0
+        if tolerance > 0:
+            return geom.simplify(tolerance, preserve_topology=True)
+    return geom
+
+
 def _read_dataframe(dataset_path: Path, layer: str | None = None):
     if pyogrio is None:
         return None
@@ -451,6 +498,7 @@ def _ingest_dataframe(
     schema: str,
     table: str,
     target_srid: int,
+    derivation_profile: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if pd is None:
         return {"ingest_status": "error", "error": "pandas not installed"}
@@ -489,9 +537,10 @@ def _ingest_dataframe(
                 value = None
             values.append(value)
         geom = row.get(geom_col)
-        geom = _coerce_multipolygon(geom)
         if transformer:
             geom = _reproject_geometry(geom, transformer)
+        geom = _apply_geometry_derivation(geom, derivation_profile)
+        geom = _coerce_multipolygon(geom)
         values.append(geom.wkb if geom is not None else None)
         rows.append(tuple(values))
         if len(rows) >= 1000:
@@ -501,7 +550,11 @@ def _ingest_dataframe(
     if rows:
         with conn.cursor() as cur:
             cur.executemany(sql, rows)
-    return {"ingest_status": "ok"}
+    return {
+        "ingest_status": "ok",
+        "derivationApplied": bool(derivation_profile),
+        "derivationProfile": derivation_profile if derivation_profile else None,
+    }
 
 
 def _validation_queries(
@@ -594,6 +647,290 @@ def _ckan_search(
     return data, evidence_path
 
 
+def _unique_variants(values: list[Any] | None) -> list[str]:
+    unique: list[str] = []
+    seen: set[str] = set()
+    for value in values or []:
+        token = str(value or "").strip().upper()
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        unique.append(token)
+    return unique
+
+
+def _family_variant_policy(
+    family: dict[str, Any], template: dict[str, Any], manifest: dict[str, Any]
+) -> dict[str, Any]:
+    completion = manifest.get("completion_definition", {}) or {}
+    completion_defaults = completion.get("default_variant_policy") or {}
+    if not isinstance(completion_defaults, dict):
+        completion_defaults = {}
+    global_required = _unique_variants(completion.get("required_variants"))
+    global_optional = _unique_variants(completion.get("allowed_optional_variants"))
+    template_policy = template.get("variant_policy") or {}
+    family_policy = family.get("variant_policy") or {}
+    if not isinstance(template_policy, dict):
+        template_policy = {}
+    if not isinstance(family_policy, dict):
+        family_policy = {}
+
+    required = _unique_variants(
+        family_policy.get("required_variants")
+        or template_policy.get("required_variants")
+        or completion_defaults.get("required_variants")
+        or global_required
+    )
+    optional = _unique_variants(
+        family_policy.get("optional_variants")
+        or template_policy.get("optional_variants")
+        or completion_defaults.get("optional_variants")
+        or global_optional
+    )
+
+    equivalent_variants: dict[str, list[str]] = {}
+    for raw_map in [
+        completion_defaults.get("equivalent_variants"),
+        template_policy.get("equivalent_variants"),
+        family_policy.get("equivalent_variants"),
+    ]:
+        if not isinstance(raw_map, dict):
+            continue
+        for key, values in raw_map.items():
+            normalized_key = str(key).upper()
+            existing = equivalent_variants.get(normalized_key, [])
+            merged = list(values or []) + existing
+            equivalent_variants[normalized_key] = _unique_variants(merged)
+
+    def _merge_derivation_settings(target: dict[str, Any], incoming: Any) -> None:
+        if not isinstance(incoming, dict):
+            return
+        for key, value in incoming.items():
+            if key == "target_profiles" and isinstance(value, dict):
+                merged_profiles = dict(target.get("target_profiles") or {})
+                merged_profiles.update(value)
+                target["target_profiles"] = merged_profiles
+            else:
+                target[key] = value
+
+    derivation: dict[str, Any] = {}
+    _merge_derivation_settings(derivation, completion_defaults.get("derivation"))
+    _merge_derivation_settings(derivation, template_policy.get("derivation"))
+    _merge_derivation_settings(derivation, family_policy.get("derivation"))
+
+    raw_profiles = derivation.get("target_profiles")
+    normalized_profiles: dict[str, dict[str, Any]] = {}
+    if isinstance(raw_profiles, dict):
+        for key, value in raw_profiles.items():
+            if isinstance(value, dict):
+                normalized_profiles[str(key).upper()] = dict(value)
+    derivation["target_profiles"] = normalized_profiles
+    derivation.setdefault("enabled", False)
+    derivation.setdefault(
+        "source_priority",
+        ["BFC", "BFE", "BGC", "BSC", "BGG", "BVG", "BUE", "BFG"],
+    )
+    derivation["source_priority"] = _unique_variants(list(derivation.get("source_priority") or []))
+
+    default_detection = completion_defaults.get("variant_detection") or {}
+    template_detection = template_policy.get("variant_detection") or {}
+    family_detection = family_policy.get("variant_detection") or {}
+    if not isinstance(default_detection, dict):
+        default_detection = {}
+    if not isinstance(template_detection, dict):
+        template_detection = {}
+    if not isinstance(family_detection, dict):
+        family_detection = {}
+    variant_detection_regex = str(
+        family_detection.get("from_title_regex")
+        or template_detection.get("from_title_regex")
+        or default_detection.get("from_title_regex")
+        or r"\b(BFC|BFE|BGC|BUC|BSC|BGG|BVG|BUE|BFG)\b"
+    )
+    variant_detection_fallback = str(
+        family_detection.get("fallback")
+        or template_detection.get("fallback")
+        or default_detection.get("fallback")
+        or "BFC"
+    ).upper()
+
+    detectable_variants: set[str] = set(required) | set(optional) | set(global_required) | set(
+        global_optional
+    )
+    detectable_variants.update({"BFC", "BFE", "BGC", "BUC", "BSC", "BGG", "BVG", "BUE", "BFG"})
+    for target_variant, candidate_variants in equivalent_variants.items():
+        detectable_variants.add(target_variant)
+        detectable_variants.update(candidate_variants)
+
+    require_full_variant_availability = bool(
+        completion.get("require_full_variant_availability", False)
+    )
+    require_full_override_candidates = [
+        completion_defaults.get("require_full_variant_availability"),
+        template_policy.get("require_full_variant_availability"),
+        family_policy.get("require_full_variant_availability"),
+    ]
+    for override in require_full_override_candidates:
+        if isinstance(override, bool):
+            require_full_variant_availability = override
+
+    return {
+        "required_variants": required,
+        "optional_variants": optional,
+        "equivalent_variants": equivalent_variants,
+        "derivation": derivation,
+        "detectable_variants": sorted(detectable_variants),
+        "variant_detection_regex": variant_detection_regex,
+        "variant_detection_fallback": variant_detection_fallback,
+        "require_full_variant_availability": require_full_variant_availability,
+    }
+
+
+def _not_published_evidence(
+    paths: RunPaths, family_id: str, variant: str, reason: str
+) -> str:
+    evidence_path = paths.evidence_meta / f"{family_id}_{variant}_not_published.json"
+    _write_json(
+        evidence_path,
+        {
+            "family_id": family_id,
+            "variant": variant,
+            "status": "not_published",
+            "reason": reason,
+        },
+    )
+    return str(evidence_path.relative_to(paths.root))
+
+
+def _default_derivation_profile(target_variant: str) -> dict[str, Any]:
+    variant = str(target_variant or "").upper()
+    if variant == "BGC":
+        return {
+            "method": "simplify_preserve_topology",
+            "simplify_tolerance": 20.0,
+            "accuracy_class": "derived_generalised",
+            "zoom_caution_above": 13,
+        }
+    if variant == "BUC":
+        return {
+            "method": "simplify_preserve_topology",
+            "simplify_tolerance": 500.0,
+            "accuracy_class": "derived_ultra_generalised",
+            "zoom_caution_above": 10,
+        }
+    if variant == "BFE":
+        return {
+            "method": "copy",
+            "accuracy_class": "derived_extent_proxy",
+            "zoom_caution_above": 13,
+        }
+    return {"method": "copy", "accuracy_class": "derived_proxy", "zoom_caution_above": 14}
+
+
+_VARIANT_RESOLUTION_RANK = {
+    "BFC": 0,
+    "BFE": 0,
+    "BFG": 1,
+    "BGC": 2,
+    "BGG": 2,
+    "BSC": 3,
+    "BUC": 4,
+    "BVG": 4,
+    "BUE": 4,
+}
+
+
+def _variant_resolution_rank(variant: str | None) -> int:
+    token = str(variant or "").strip().upper()
+    return _VARIANT_RESOLUTION_RANK.get(token, 99)
+
+
+def _resolve_required_variants(
+    *,
+    family: dict[str, Any],
+    policy: dict[str, Any],
+    paths: RunPaths,
+    published_candidates: dict[str, dict[str, Any]],
+    missing_reason: str,
+) -> dict[str, Any]:
+    family_id = str(family.get("family_id") or "unknown_family")
+    required_variants = list(policy.get("required_variants") or [])
+    equivalent_variants = policy.get("equivalent_variants") or {}
+    derivation = policy.get("derivation") or {}
+    derivation_enabled = bool(derivation.get("enabled"))
+    source_priority = _unique_variants(list(derivation.get("source_priority") or []))
+    target_profiles = derivation.get("target_profiles") or {}
+    resolved: dict[str, Any] = {}
+
+    for variant in required_variants:
+        if variant in published_candidates:
+            entry = dict(published_candidates[variant])
+            entry["status"] = "resolved"
+            entry["availability"] = "published"
+            entry["source_variant"] = variant
+            resolved[variant] = entry
+            continue
+
+        published_evidence_ref = _not_published_evidence(paths, family_id, variant, missing_reason)
+
+        equivalent_sources = _unique_variants(list(equivalent_variants.get(variant) or []))
+        equivalent_variant = next(
+            (candidate for candidate in equivalent_sources if candidate in published_candidates),
+            None,
+        )
+        if equivalent_variant:
+            entry = dict(published_candidates[equivalent_variant])
+            entry["status"] = "resolved"
+            entry["availability"] = "equivalent_variant"
+            entry["source_variant"] = equivalent_variant
+            entry["requested_variant"] = variant
+            entry["published_variant_status"] = "not_published"
+            entry["published_variant_evidence_ref"] = published_evidence_ref
+            entry["accuracy_class"] = "published_equivalent_variant"
+            source_rank = _variant_resolution_rank(equivalent_variant)
+            target_rank = _variant_resolution_rank(variant)
+            entry["source_resolution_rank"] = source_rank
+            entry["target_resolution_rank"] = target_rank
+            if source_rank > target_rank:
+                entry["accuracy_class"] = "published_coarser_equivalent_variant"
+                entry["zoom_caution_above"] = 11
+            resolved[variant] = entry
+            continue
+
+        if derivation_enabled:
+            source_variant = next(
+                (candidate for candidate in source_priority if candidate in published_candidates),
+                None,
+            )
+            if source_variant:
+                profile = _default_derivation_profile(variant)
+                profile.update(target_profiles.get(variant, {}) or {})
+                source_rank = _variant_resolution_rank(source_variant)
+                target_rank = _variant_resolution_rank(variant)
+                profile["source_resolution_rank"] = source_rank
+                profile["target_resolution_rank"] = target_rank
+                if source_rank > target_rank:
+                    profile["accuracy_class"] = "derived_from_coarser_source"
+                    profile.setdefault("zoom_caution_above", 11)
+                entry = dict(published_candidates[source_variant])
+                entry["status"] = "derived"
+                entry["availability"] = "derived_variant"
+                entry["source_variant"] = source_variant
+                entry["requested_variant"] = variant
+                entry["published_variant_status"] = "not_published"
+                entry["published_variant_evidence_ref"] = published_evidence_ref
+                entry["derivation"] = profile
+                resolved[variant] = entry
+                continue
+
+        resolved[variant] = {
+            "status": "not_published",
+            "evidence_ref": published_evidence_ref,
+        }
+
+    return resolved
+
+
 def resolve_downloads(
     family: dict[str, Any],
     template: dict[str, Any],
@@ -601,98 +938,86 @@ def resolve_downloads(
     paths: RunPaths,
     session,
 ) -> dict[str, Any]:
-    required_variants = manifest["completion_definition"]["required_variants"]
-    resolved: dict[str, Any] = {}
+    policy = _family_variant_policy(family, template, manifest)
+    required_variants = list(policy.get("required_variants") or [])
+    detectable_variants = set(policy.get("detectable_variants") or [])
     downloads = family.get("downloads")
     if downloads:
+        published_candidates: dict[str, dict[str, Any]] = {}
         source_id = family.get("source_id") or family.get("category")
         http_hints = _source_hints(manifest, source_id)
-        for variant in required_variants:
-            matches = [d for d in downloads if d.get("variant") == variant]
-            if matches:
-                resolved[variant] = {
-                    "status": "resolved",
-                    "download_url": matches[0].get("url"),
-                    "download_candidates": [
-                        {
-                            "url": m.get("url"),
-                            "format": m.get("format"),
-                            "http_hints": http_hints,
-                        }
-                        for m in matches
-                        if m.get("url")
-                    ],
-                    "source_id": source_id or "direct_download",
-                    "format": matches[0].get("format"),
-                    "http_hints": http_hints,
-                }
-            else:
-                evidence_path = paths.evidence_meta / f"{family['family_id']}_{variant}_not_published.json"
-                _write_json(
-                    evidence_path,
-                    {
-                        "family_id": family["family_id"],
-                        "variant": variant,
-                        "status": "not_published",
-                        "reason": "variant_not_listed_in_manifest_downloads",
-                    },
-                )
-                resolved[variant] = {
-                    "status": "not_published",
-                    "evidence_ref": str(evidence_path.relative_to(paths.root)),
-                }
-        return resolved
-    discovery = family.get("discovery") or template.get("discovery")
-    if not discovery:
-        for variant in required_variants:
-            evidence_path = paths.evidence_meta / f"{family['family_id']}_{variant}_not_published.json"
-            _write_json(
-                evidence_path,
+        for download in downloads:
+            raw_variant = str(download.get("variant") or "").strip().upper()
+            if not raw_variant or raw_variant not in detectable_variants:
+                continue
+            url = download.get("url")
+            if not url:
+                continue
+            entry = published_candidates.setdefault(
+                raw_variant,
                 {
-                    "family_id": family["family_id"],
-                    "variant": variant,
-                    "status": "not_published",
-                    "reason": "no_discovery_config",
+                    "status": "resolved",
+                    "download_url": url,
+                    "download_candidates": [],
+                    "source_id": source_id or "direct_download",
+                    "format": download.get("format"),
+                    "http_hints": http_hints,
                 },
             )
-            resolved[variant] = {
-                "status": "not_published",
-                "evidence_ref": str(evidence_path.relative_to(paths.root)),
-            }
-        return resolved
+            entry["download_candidates"].append(
+                {
+                    "url": url,
+                    "format": download.get("format"),
+                    "http_hints": http_hints,
+                }
+            )
+        return _resolve_required_variants(
+            family=family,
+            policy=policy,
+            paths=paths,
+            published_candidates=published_candidates,
+            missing_reason="variant_not_listed_in_manifest_downloads",
+        )
+    discovery = family.get("discovery") or template.get("discovery")
+    if not discovery:
+        return _resolve_required_variants(
+            family=family,
+            policy=policy,
+            paths=paths,
+            published_candidates={},
+            missing_reason="no_discovery_config",
+        )
     source_id = discovery.get("source_id")
     source = next((s for s in manifest["catalogue_sources"] if s["source_id"] == source_id), None)
     if not source:
-        for variant in required_variants:
-            resolved[variant] = {"status": "not_published", "reason": "missing_source"}
-        return resolved
+        return _resolve_required_variants(
+            family=family,
+            policy=policy,
+            paths=paths,
+            published_candidates={},
+            missing_reason="missing_source",
+        )
     if discovery.get("method") == "fixed_api_endpoint":
         _require_requests()
         download_request = discovery.get("download_request")
         resp = session.get(download_request, allow_redirects=False, timeout=60)
         url = resp.headers.get("Location") or download_request
-        resolved["BFC"] = {
-            "status": "resolved",
-            "download_url": url,
-            "source_id": source_id,
+        published_variant = str(discovery.get("published_variant") or "BFC").upper()
+        published_candidates = {
+            published_variant: {
+                "status": "resolved",
+                "download_url": url,
+                "source_id": source_id,
+                "format": "GPKG",
+            }
         }
-        for variant in required_variants:
-            if variant != "BFC":
-                evidence_path = paths.evidence_meta / f"{family['family_id']}_{variant}_not_published.json"
-                _write_json(
-                    evidence_path,
-                    {
-                        "family_id": family["family_id"],
-                        "variant": variant,
-                        "status": "not_published",
-                        "reason": "boundaryline_not_variant_specific",
-                    },
-                )
-                resolved[variant] = {
-                    "status": "not_published",
-                    "evidence_ref": str(evidence_path.relative_to(paths.root)),
-                }
-        return resolved
+        return _resolve_required_variants(
+            family=family,
+            policy=policy,
+            paths=paths,
+            published_candidates=published_candidates,
+            missing_reason="boundaryline_not_variant_specific",
+        )
     if discovery.get("method") == "ckan_package_search":
         _require_requests()
         query = discovery.get("query") or family.get("discovery_overrides", {}).get("query") or ""
@@ -727,6 +1052,7 @@ def resolve_downloads(
             fq_candidates.append(fq_org)
         if not fq_candidates:
             fq_candidates.append("")
+        selected_query = ""
         for candidate in query_candidates:
             for fq in fq_candidates:
                 attempt += 1
@@ -744,17 +1070,31 @@ def resolve_downloads(
                 candidate_packages = data.get("result", {}).get("results", []) or []
                 candidate_packages = _filter_packages(candidate_packages, allowed_formats)
                 if candidate_packages:
+                    selected_query = candidate
                     packages = candidate_packages
                     evidence_path = attempt_path
                     break
             if packages:
                 break
+        if packages:
+            packages = sorted(
+                packages,
+                key=lambda pkg: (
+                    _package_title_score(
+                        selected_query,
+                        str(pkg.get("title", "")),
+                    ),
+                    str(pkg.get("metadata_modified", "")),
+                ),
+                reverse=True,
+            )
         if evidence_path is None and attempt:
             evidence_path = paths.evidence_ckan / f"{family['family_id']}_package_search_{attempt:02d}.json"
-        variant_regex = template.get("variant_policy", {}).get("variant_detection", {}).get(
-            "from_title_regex",
-            r"\\b(BFC|BFE|BGC|BUC|BSC)\\b",
+        variant_regex = str(
+            policy.get("variant_detection_regex")
+            or r"\b(BFC|BFE|BGC|BUC|BSC|BGG|BVG|BUE|BFG)\b"
         )
+        published_candidates: dict[str, dict[str, Any]] = {}
         for pkg in packages:
             pkg_title = pkg.get("title", "")
             vintage = _extract_vintage(pkg_title)
@@ -769,47 +1109,44 @@ def resolve_downloads(
                 if not variant:
                     variant = _extract_variant(pkg_title, variant_regex)
                 if not variant:
-                    variant = template.get("variant_policy", {}).get("variant_detection", {}).get(
-                        "fallback", "BFC"
-                    )
+                    variant = str(policy.get("variant_detection_fallback") or "BFC")
                 variant = variant.upper()
-                if variant not in required_variants:
+                if variant not in detectable_variants:
                     continue
                 score = _resource_matches(resource, preference)
-                current = resolved.get(variant)
+                current = published_candidates.get(variant)
                 if current and current.get("score", 0) >= score:
                     continue
-                resolved[variant] = {
+                published_candidates[variant] = {
                     "status": "resolved",
                     "download_url": resource.get("url"),
                     "source_id": source_id,
                     "package_id": pkg.get("id"),
+                    "package_title": pkg.get("title"),
                     "resource_id": resource.get("id"),
                     "format": resource.get("format"),
                     "score": score,
+                    "package_match_score": _package_title_score(
+                        selected_query,
+                        str(pkg.get("title", "")),
+                    ),
                     "vintage_id": vintage,
                     "evidence_ref": str(evidence_path.relative_to(paths.root)) if evidence_path else None,
                 }
-        for variant in required_variants:
-            if variant not in resolved:
-                evidence_path = paths.evidence_meta / f"{family['family_id']}_{variant}_not_published.json"
-                _write_json(
-                    evidence_path,
-                    {
-                        "family_id": family["family_id"],
-                        "variant": variant,
-                        "status": "not_published",
-                        "reason": "no_ckan_resource_match",
-                    },
-                )
-                resolved[variant] = {
-                    "status": "not_published",
-                    "evidence_ref": str(evidence_path.relative_to(paths.root)),
-                }
-        return resolved
-    for variant in required_variants:
-        resolved[variant] = {"status": "not_published", "reason": "unsupported_discovery"}
-    return resolved
+        return _resolve_required_variants(
+            family=family,
+            policy=policy,
+            paths=paths,
+            published_candidates=published_candidates,
+            missing_reason="no_ckan_resource_match",
+        )
+    return _resolve_required_variants(
+        family=family,
+        policy=policy,
+        paths=paths,
+        published_candidates={},
+        missing_reason="unsupported_discovery",
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -821,17 +1158,107 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", choices=["all", "resolve", "download", "ingest", "validate"], default="all")
     parser.add_argument("--family", action="append", help="Limit to one or more family_id values.")
     parser.add_argument("--variant", action="append", help="Limit to one or more variant values.")
+    parser.add_argument(
+        "--verify-resolved",
+        action="store_true",
+        help="Probe resolved source URLs for live reachability (HEAD/GET) and record verification results.",
+    )
+    parser.add_argument(
+        "--verify-timeout",
+        type=float,
+        default=20.0,
+        help="Timeout seconds for resolved source verification probes.",
+    )
+    parser.add_argument(
+        "--verify-workers",
+        type=int,
+        default=12,
+        help="Number of worker threads for resolved source verification probes.",
+    )
     return parser.parse_args()
 
 
-def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checklist: dict[str, Any]) -> None:
+def _probe_source_url(url: str, timeout: float) -> dict[str, Any]:
+    if requests is None:
+        return {
+            "verified": False,
+            "status": "error",
+            "detail": "requests_not_installed",
+            "statusCode": None,
+            "contentType": None,
+            "finalUrl": None,
+        }
+    resp = None
+    try:
+        resp = requests.head(url, timeout=timeout, allow_redirects=True)
+        status_code = resp.status_code
+        content_type = str(resp.headers.get("Content-Type") or "").lower()
+        final_url = str(resp.url)
+        if status_code >= 400 or status_code in {405, 501} or not content_type:
+            resp.close()
+            resp = requests.get(url, timeout=timeout, stream=True, allow_redirects=True)
+            status_code = resp.status_code
+            content_type = str(resp.headers.get("Content-Type") or "").lower()
+            final_url = str(resp.url)
+        status = "ok" if status_code < 400 else "error"
+        detail = f"status_{status_code}"
+        if status == "ok" and "application/json" in content_type:
+            try:
+                payload = resp.json()
+            except Exception:
+                detail = "json_unparsed"
+            else:
+                state = str(payload.get("status") or "").lower()
+                if state in {"pending", "inprogress", "in_progress"}:
+                    status = "pending"
+                    detail = "pending_export"
+                elif payload.get("downloadUrl") or payload.get("url"):
+                    detail = "json_redirect"
+                else:
+                    detail = "json_payload"
+        return {
+            "verified": status == "ok",
+            "status": status,
+            "detail": detail,
+            "statusCode": status_code,
+            "contentType": content_type,
+            "finalUrl": final_url,
+        }
+    except Exception as exc:  # pragma: no cover - network/runtime variability
+        return {
+            "verified": False,
+            "status": "error",
+            "detail": str(exc),
+            "statusCode": None,
+            "contentType": None,
+            "finalUrl": None,
+        }
+    finally:
+        if resp is not None:
+            try:
+                resp.close()
+            except Exception:
+                pass
+
+
+def _evaluate_pipeline(
+    report: dict[str, Any],
+    manifest: dict[str, Any],
+    checklist: dict[str, Any],
+    *,
+    mode: str,
+    require_source_verification: bool = False,
+) -> None:
     errors: list[dict[str, Any]] = []
-    required_variants = checklist["scope"]["required_variants_path"].split(".")
-    required = manifest
-    for part in required_variants:
-        required = required.get(part, [])
     for family in manifest.get("boundary_families", []):
         family_id = family.get("family_id")
+        template_id = family.get("template")
+        template = manifest.get("templates", {}).get(template_id, {})
+        policy = _family_variant_policy(family, template, manifest)
+        required = list(policy.get("required_variants") or [])
+        require_full_variant_availability = bool(
+            policy.get("require_full_variant_availability", False)
+        )
         resolved = report["resolved_resources"].get(family_id, {})
         downloads = report["downloads"].get(family_id, {})
         ingestions = report["ingestions"].get(family_id, {})
@@ -843,21 +1270,39 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
                 family_errors.append(f"missing_resolved:{variant}")
                 continue
             status = resolved_entry.get("status")
-            if status not in {"resolved", "not_published"}:
+            if status not in {"resolved", "derived", "not_published"}:
                 family_errors.append(f"invalid_resolved_status:{variant}")
                 continue
             if status == "not_published" and not resolved_entry.get("evidence_ref"):
                 family_errors.append(f"missing_not_published_evidence:{variant}")
-            if status == "resolved":
+            if status == "not_published" and require_full_variant_availability:
+                family_errors.append(f"required_variant_unavailable:{variant}")
+            if status in {"resolved", "derived"} and require_source_verification:
+                verification = (
+                    report.get("source_verification", {})
+                    .get(family_id, {})
+                    .get(variant)
+                ) or {}
+                if verification.get("status") != "ok":
+                    family_errors.append(f"source_unverified:{variant}")
+                if mode == "resolve":
+                    continue
+            if mode == "resolve":
+                continue
+            if status in {"resolved", "derived"}:
                 download_entry = downloads.get(variant, {})
                 if download_entry.get("download_status") != "ok":
                     family_errors.append(f"download_failed:{variant}")
+                    if mode == "download":
+                        continue
                 ingest_entry = ingestions.get(variant, {})
                 if not ingest_entry:
                     family_errors.append(f"ingest_failed:{variant}")
+                    continue
                 elif isinstance(ingest_entry, dict):
                     if ingest_entry.get("ingest_status") == "error":
                         family_errors.append(f"ingest_failed:{variant}")
+                        continue
                     else:
                         statuses = [
                             entry.get("ingest_status")
@@ -869,6 +1314,8 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
                                 family_errors.append(f"ingest_failed:{variant}")
                             elif not any(status in {"ok", "skipped"} for status in statuses):
                                 family_errors.append(f"ingest_failed:{variant}")
+                if mode in {"download", "ingest"}:
+                    continue
                 if validations.get(variant):
                     for table_name, val in validations[variant].items():
                         schema_check = val.get("schema", {})
@@ -891,11 +1338,36 @@ def _evaluate_pipeline(report: dict[str, Any], manifest: dict[str, Any], checkli
         else:
             report["family_status"][family_id] = "ok"
     report["errors"] = errors
-    report["pipeline_status"] = (
-        checklist["final_status_values"]["pass"]
-        if not errors and not report["exceptions"]
-        else checklist["final_status_values"]["fail"]
-    )
+    pass_by_mode = {
+        "all": checklist["final_status_values"]["pass"],
+        "validate": checklist["final_status_values"]["pass"],
+        "ingest": "COMPLETE_BOUNDARIES_INGESTED",
+        "download": "COMPLETE_BOUNDARIES_DOWNLOADED",
+        "resolve": (
+            "COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED"
+            if require_source_verification
+            else "COMPLETE_BOUNDARIES_RESOLVED"
+        ),
+    }
+    fail_by_mode = {
+        "all": checklist["final_status_values"]["fail"],
+        "validate": checklist["final_status_values"]["fail"],
+        "ingest": "INCOMPLETE_BOUNDARIES_INGEST_FAILED",
+        "download": "INCOMPLETE_BOUNDARIES_DOWNLOAD_FAILED",
+        "resolve": (
+            "INCOMPLETE_BOUNDARIES_SOURCE_VERIFICATION_FAILED"
+            if require_source_verification
+            else "INCOMPLETE_BOUNDARIES_SOURCE_RESOLUTION_FAILED"
+        ),
+    }
+    ok = not errors and not report["exceptions"]
+    report["pipeline_status"] = pass_by_mode.get(mode, checklist["final_status_values"]["pass"]) if ok else fail_by_mode.get(mode, checklist["final_status_values"]["fail"])
+    report["evaluation"] = {
+        "mode": mode,
+        "sourceVerificationRequired": bool(require_source_verification),
+        "familyErrorCount": len(errors),
+        "exceptionCount": len(report.get("exceptions", [])),
+    }
 
 
 def main() -> None:
@@ -919,6 +1391,7 @@ def main() -> None:
         "ingestions": {},
         "validations": {},
         "exceptions": [],
+        "source_verification": {},
         "family_status": {},
         "pipeline_status": None,
     }
@@ -935,16 +1408,55 @@ def main() -> None:
         report["downloads"][family_id] = {}
         report["ingestions"][family_id] = {}
         report["validations"][family_id] = {}
+        report["source_verification"][family_id] = {}
         try:
             resolved = resolve_downloads(family, template, manifest, run_paths, session)
             report["resolved_resources"][family_id] = resolved
+            if args.verify_resolved:
+                probe_targets: list[tuple[str, str]] = []
+                for variant, resolved_entry in resolved.items():
+                    if allowed_variants and variant not in allowed_variants:
+                        continue
+                    if resolved_entry.get("status") not in {"resolved", "derived"}:
+                        report["source_verification"][family_id][variant] = {
+                            "status": resolved_entry.get("status"),
+                            "verified": resolved_entry.get("status") == "not_published",
+                            "detail": "not_published_or_unresolved",
+                        }
+                        continue
+                    url = resolved_entry.get("download_url")
+                    if not url:
+                        report["source_verification"][family_id][variant] = {
+                            "status": "error",
+                            "verified": False,
+                            "detail": "missing_download_url",
+                        }
+                        continue
+                    probe_targets.append((variant, str(url)))
+                if probe_targets:
+                    max_workers = max(1, int(args.verify_workers))
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                        futures = {
+                            executor.submit(_probe_source_url, url, args.verify_timeout): variant
+                            for variant, url in probe_targets
+                        }
+                        for future in concurrent.futures.as_completed(futures):
+                            variant = futures[future]
+                            try:
+                                report["source_verification"][family_id][variant] = future.result()
+                            except Exception as exc:  # pragma: no cover - runtime safety
+                                report["source_verification"][family_id][variant] = {
+                                    "status": "error",
+                                    "verified": False,
+                                    "detail": str(exc),
+                                }
             if args.mode in {"resolve"}:
                 report["family_status"][family_id] = "resolved"
                 continue
             for variant, resolved_entry in resolved.items():
                 if allowed_variants and variant not in allowed_variants:
                     continue
-                if resolved_entry.get("status") != "resolved":
+                if resolved_entry.get("status") not in {"resolved", "derived"}:
                     report["downloads"][family_id][variant] = {
                         "download_status": resolved_entry.get("status"),
                         "evidence_ref": resolved_entry.get("evidence_ref"),
@@ -1144,6 +1656,7 @@ def main() -> None:
                                 schema=schema,
                                 table=table_name,
                                 target_srid=manifest["postgis_defaults"]["target_srid"],
+                                derivation_profile=resolved_entry.get("derivation"),
                             )
                             table_bytes = None
                             if ingest_result.get("ingest_status") == "ok":
@@ -1152,6 +1665,23 @@ def main() -> None:
                                 "schema": schema,
                                 "table": table_name,
                                 "tableBytes": table_bytes,
+                                "variantRequested": variant,
+                                "variantSource": resolved_entry.get("source_variant") or variant,
+                                "availability": resolved_entry.get("availability") or "published",
+                                "accuracyClass": (
+                                    (resolved_entry.get("derivation") or {}).get("accuracy_class")
+                                    or resolved_entry.get("accuracy_class")
+                                    or (
+                                        "published_equivalent_variant"
+                                        if resolved_entry.get("availability")
+                                        == "equivalent_variant"
+                                        else (
+                                            "authoritative_published"
+                                            if resolved_entry.get("status") == "resolved"
+                                            else "derived_proxy"
+                                        )
+                                    )
+                                ),
                                 **ingest_result,
                             }
                             overrides = family.get("validation_overrides", {})
@@ -1193,7 +1723,13 @@ def main() -> None:
             report["exceptions"].append({"family_id": family_id, "error": str(exc)})
             report["family_status"][family_id] = "error"
     report["run_finished_at"] = datetime.now(timezone.utc).isoformat()
-    _evaluate_pipeline(report, manifest, checklist)
+    _evaluate_pipeline(
+        report,
+        manifest,
+        checklist,
+        mode=args.mode,
+        require_source_verification=args.verify_resolved,
+    )
     report_path = run_paths.root / "run_report.json"
     _write_json(report_path, report)
     print(report_path)

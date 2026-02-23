@@ -338,13 +338,9 @@ register(
                     "description": "WGS84 bbox [minLon,minLat,maxLon,maxLat]",
                 },
                 "layers": {
-                    "anyOf": [
-                        {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "minItems": 1,
-                        },
-                        {"type": "string"},
+                    "oneOf": [
+                        {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                        {"type": "string", "minLength": 1},
                         {"type": "null"},
                     ],
                     "description": "Requested layers (uprns, buildings, road_links, path_links).",
@@ -401,13 +397,9 @@ register(
                 "name": {"type": "string"},
                 "recipe": {"type": "object"},
                 "layers": {
-                    "anyOf": [
-                        {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "minItems": 1,
-                        },
-                        {"type": "string"},
+                    "oneOf": [
+                        {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                        {"type": "string", "minLength": 1},
                         {"type": "null"},
                     ],
                     "description": "Requested layers (uprns, buildings, road_links, path_links).",

@@ -76,6 +76,22 @@
         justify-content: flex-end;
       }
 
+      .status-action {
+        border-radius: 999px;
+        border: 1px solid rgba(22, 106, 69, 0.35);
+        background: rgba(22, 106, 69, 0.09);
+        color: var(--accent);
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+      }
+
+      .status-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       .pill {
         border-radius: 999px;
         padding: 9px 12px;
@@ -505,6 +521,9 @@
         </div>
       </div>
       <div class="status-row">
+        <button id="fullscreenToggle" type="button" class="status-action" title="Toggle full screen">
+          Maximise
+        </button>
         <div class="pill" id="hostStatus">Awaiting host</div>
         <div class="pill warn" id="osStatus" style="display: none">OS offline</div>
       </div>
@@ -634,9 +653,11 @@
           <div id="map"></div>
           <div class="map-overlay">
             <div class="banner warn" id="osBanner">
-              <strong>OS connection unavailable.</strong>
-              Basemap and OS-backed layers require <span class="mono">OS_API_KEY</span> in the MCP server
-              environment. Impact: Step 3 (inventory + export) will be unavailable until configured.
+              <strong id="osBannerTitle">OS connection unavailable.</strong>
+              <span id="osBannerDetail">
+                Basemap and OS-backed layers require <span class="mono">OS_API_KEY</span> in the MCP server
+                environment. Impact: Step 3 (inventory + export) will be unavailable until configured.
+              </span>
             </div>
             <div class="banner" id="infoBanner"></div>
           </div>
@@ -679,9 +700,12 @@
       const hostStatusEl = document.getElementById("hostStatus");
       const osStatusEl = document.getElementById("osStatus");
       const osBannerEl = document.getElementById("osBanner");
+      const osBannerTitleEl = document.getElementById("osBannerTitle");
+      const osBannerDetailEl = document.getElementById("osBannerDetail");
       const infoBannerEl = document.getElementById("infoBanner");
       const tooltipEl = document.getElementById("tooltip");
       const debugEl = document.getElementById("debug");
+      const fullscreenToggle = document.getElementById("fullscreenToggle");
 
       const searchInput = document.getElementById("searchInput");
       const levelSelect = document.getElementById("levelSelect");
@@ -735,10 +759,95 @@
         localLayers: [],
         osAvailable: true,
         lastSearchResults: [],
+        displayMode: "inline",
+        availableDisplayModes: [],
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
 
       const SEARCH_FALLBACK_ORDER = ["WARD", "DISTRICT", "COUNTY", "REGION", "NATION", "MSOA", "LSOA", "OA"];
+
+      function sourceFeatureCount(sourceId) {
+        const map = state.map;
+        if (!map) {
+          return null;
+        }
+        const source = map.getSource(sourceId);
+        if (!source || !source._data || !Array.isArray(source._data.features)) {
+          return null;
+        }
+        return source._data.features.length;
+      }
+
+      function renderedFeatureCount(layerId) {
+        const map = state.map;
+        if (!map || !map.getLayer(layerId)) {
+          return null;
+        }
+        const canvas = map.getCanvas();
+        const width = canvas?.width || 0;
+        const height = canvas?.height || 0;
+        if (!width || !height) {
+          return null;
+        }
+        try {
+          return map.queryRenderedFeatures(
+            [
+              [0, 0],
+              [width, height],
+            ],
+            { layers: [layerId] }
+          ).length;
+        } catch (_err) {
+          return null;
+        }
+      }
+
+      function currentBoundaryExplorerSnapshot() {
+        const map = state.map;
+        const center = map ? map.getCenter() : null;
+        return {
+          host: {
+            ready: state.hostReady,
+            displayMode: state.displayMode,
+            availableDisplayModes: Array.isArray(state.availableDisplayModes)
+              ? state.availableDisplayModes.slice()
+              : [],
+            proxyBase: state.proxyBase || null,
+          },
+          selection: {
+            selectedCount: state.boundaries.length,
+            ids: state.boundaries
+              .map((feature) => feature?.properties?.id)
+              .filter((id) => typeof id === "string"),
+          },
+          map: {
+            ready: !!map,
+            zoom: map ? map.getZoom() : null,
+            center: center
+              ? { lng: Number(center.lng.toFixed(6)), lat: Number(center.lat.toFixed(6)) }
+              : null,
+          },
+          boundaries: {
+            sourceFeatureCount: sourceFeatureCount("boundaries"),
+            hoverSourceFeatureCount: sourceFeatureCount("boundaries-hover"),
+            renderedBoundaryFillCount: renderedFeatureCount("boundary-fill"),
+            renderedBoundaryLineCount: renderedFeatureCount("boundary-line"),
+            renderedSelectedOutlineCount: renderedFeatureCount("boundary-selected-outline"),
+          },
+          banners: {
+            info: (infoBannerEl?.textContent || "").trim(),
+            os: (osBannerEl?.textContent || "").trim(),
+            osVisible: osBannerEl?.style?.display === "block",
+          },
+        };
+      }
+
+      function installDebugProbe() {
+        const probe = {
+          getSnapshot: () => currentBoundaryExplorerSnapshot(),
+        };
+        window.__MCP_GEO_BOUNDARY_EXPLORER__ = probe;
+      }
 
       function postToHost(message) {
         if (window.parent) {
@@ -807,6 +916,14 @@
       }
 
       function asToolError(payload) {
+        const details = toolErrorDetails(payload);
+        if (!details) {
+          return null;
+        }
+        return details.text;
+      }
+
+      function toolErrorDetails(payload) {
         if (!payload || typeof payload !== "object") {
           return null;
         }
@@ -815,7 +932,33 @@
         }
         const code = payload.code ? String(payload.code) : "TOOL_ERROR";
         const message = payload.message ? String(payload.message) : "Tool returned an error.";
-        return `${code}: ${message}`;
+        return {
+          code,
+          message,
+          text: `${code}: ${message}`,
+        };
+      }
+
+      function inventoryLayerErrors(payload) {
+        if (!payload || typeof payload !== "object") {
+          return [];
+        }
+        const out = [];
+        const topLevelError = toolErrorDetails(payload);
+        if (topLevelError) {
+          out.push({ ...topLevelError, layer: null });
+        }
+        const layers = payload.layers;
+        if (!layers || typeof layers !== "object") {
+          return out;
+        }
+        for (const [layerName, layerData] of Object.entries(layers)) {
+          const details = toolErrorDetails(layerData);
+          if (details) {
+            out.push({ ...details, layer: layerName });
+          }
+        }
+        return out;
       }
 
       async function requestTool(tool, args) {
@@ -1044,7 +1187,7 @@
           const proxyBase = state.proxyBase;
           if (styleId && styleId.startsWith("os_")) {
             if (!proxyBase) {
-              showOsWarning();
+              showOsWarning("proxy_missing");
               showInfo("OS basemap unavailable: host did not provide proxyBase.");
               return;
             }
@@ -1058,13 +1201,17 @@
                 hideOsWarning();
               });
               state.map.once("error", (e) => {
-                // Basemap failures often mean OS_API_KEY missing/invalid.
-                showOsWarning();
+                const message = String(e?.error?.message || "");
+                if (/NO_API_KEY|OS_API_KEY|401|403|unauthori[sz]ed/i.test(message)) {
+                  showOsWarning("auth", message);
+                } else {
+                  showOsWarning("generic", message || "OS basemap style request failed.");
+                }
                 basemapStyle.value = "osm";
                 this.setBasemap("osm");
               });
             } catch (err) {
-              showOsWarning();
+              showOsWarning("generic", String(err?.message || err));
             }
             return;
           }
@@ -1177,7 +1324,7 @@
             "fill-color": [
               "case",
               ["==", ["get", "selected"], true],
-              "rgba(214,104,0,0.18)",
+              "rgba(214,104,0,0.24)",
               "rgba(22,106,69,0.10)",
             ],
             "fill-outline-color": "rgba(214,104,0,0.70)",
@@ -1198,10 +1345,10 @@
               ? [
                   "case",
                   ["==", ["get", "selected"], true],
-                  ["max", 2.8, ["min", 12.0, ["+", 2.8, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.2]]]],
-                  ["max", 1.5, ["min", 10.0, ["+", 1.5, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.8]]]],
+                  ["max", 3.1, ["min", 12.0, ["+", 3.1, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.2]]]],
+                  ["max", 1.9, ["min", 10.0, ["+", 1.9, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.8]]]],
                 ]
-              : ["case", ["==", ["get", "selected"], true], 4.0, 1.8],
+              : ["case", ["==", ["get", "selected"], true], 4.4, 2.2],
             "line-opacity": [
               "case",
               ["==", ["get", "selected"], true],
@@ -1294,6 +1441,17 @@
             "line-opacity": 0.75,
           },
         });
+        addLayerIfMissing({
+          id: "boundary-selected-outline",
+          type: "line",
+          source: "boundaries",
+          filter: ["==", ["get", "selected"], true],
+          paint: {
+            "line-color": "rgba(214,104,0,1.0)",
+            "line-width": 4.8,
+            "line-opacity": 0.98,
+          },
+        });
 
         applyBorderByCount();
         syncMapStateToStyle();
@@ -1333,18 +1491,71 @@
           ? [
               "case",
               ["==", ["get", "selected"], true],
-              ["max", 2.0, ["min", 12.0, ["+", 2.0, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.2]]]],
-              ["max", 1.5, ["min", 10.0, ["+", 1.5, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.8]]]],
+              ["max", 2.4, ["min", 12.0, ["+", 2.4, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.2]]]],
+              ["max", 1.7, ["min", 10.0, ["+", 1.7, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 2.8]]]],
             ]
-          : ["case", ["==", ["get", "selected"], true], 3.0, 1.8];
+          : ["case", ["==", ["get", "selected"], true], 3.6, 2.0];
+        const selectedOutlineExpr = enabled
+          ? ["max", 4.2, ["min", 14.0, ["+", 4.2, ["/", ["sqrt", ["coalesce", ["get", "detailCount"], 0]], 1.8]]]]
+          : 5.2;
         map.setPaintProperty("boundary-line", "line-width", widthExpr);
+        if (map.getLayer("boundary-selected-outline")) {
+          map.setPaintProperty("boundary-selected-outline", "line-width", selectedOutlineExpr);
+        }
       }
 
-      function showOsWarning() {
+      function showOsWarning(reason, detail) {
         state.osAvailable = false;
         osStatusEl.style.display = "inline-flex";
         osBannerEl.style.display = "block";
+        const normalizedReason = String(reason || "generic");
+        const detailText =
+          typeof detail === "string" && detail.trim()
+            ? detail.trim()
+            : null;
+        if (normalizedReason === "no_api_key") {
+          osStatusEl.textContent = "OS key missing";
+          osBannerTitleEl.textContent = "OS_API_KEY missing.";
+          osBannerDetailEl.textContent = "";
+          const keyToken = document.createElement("span");
+          keyToken.className = "mono";
+          keyToken.textContent = "OS_API_KEY";
+          osBannerDetailEl.append(
+            "Basemap and OS-backed layers require ",
+            keyToken,
+            " in the MCP server environment. Step 3 (inventory + export) is unavailable until configured.",
+          );
+          return;
+        }
+        if (normalizedReason === "auth") {
+          osStatusEl.textContent = "OS auth issue";
+          osBannerTitleEl.textContent = "OS authentication failed.";
+          osBannerDetailEl.textContent =
+            detailText ||
+            "The configured OS_API_KEY was rejected by OS upstream APIs. Check entitlement and key validity.";
+          return;
+        }
+        if (normalizedReason === "proxy_missing") {
+          osStatusEl.textContent = "Host proxy missing";
+          osBannerTitleEl.textContent = "Host did not provide OS proxy.";
+          osBannerDetailEl.textContent =
+            detailText ||
+            "This host did not provide mcpGeo.proxyBase. OS basemap and proxied OS layers are unavailable in this rendering mode.";
+          return;
+        }
+        if (normalizedReason === "inventory_unavailable") {
+          osStatusEl.textContent = "Inventory unavailable";
+          osBannerTitleEl.textContent = "Inventory layer unavailable.";
+          osBannerDetailEl.textContent =
+            detailText ||
+            "The host did not expose os_map.inventory for this session. Add the features_layers toolset to make Step 3 available.";
+          return;
+        }
         osStatusEl.textContent = "OS offline";
+        osBannerTitleEl.textContent = "OS connection unavailable.";
+        osBannerDetailEl.textContent =
+          detailText ||
+          "OS-backed layers are unavailable in this session due to an upstream or host runtime error.";
       }
 
       function hideOsWarning() {
@@ -1361,6 +1572,101 @@
         }
         infoBannerEl.style.display = "block";
         infoBannerEl.textContent = text;
+      }
+
+      function normalizeDisplayMode(mode) {
+        if (typeof mode !== "string") {
+          return null;
+        }
+        const normalized = mode.trim().toLowerCase();
+        if (!normalized) {
+          return null;
+        }
+        if (normalized === "inline" || normalized === "fullscreen" || normalized === "pip") {
+          return normalized;
+        }
+        return null;
+      }
+
+      function updateFullscreenControl() {
+        if (!fullscreenToggle) {
+          return;
+        }
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        fullscreenToggle.disabled = !state.hostReady;
+        if (!state.hostReady) {
+          fullscreenToggle.textContent = "Maximise";
+          fullscreenToggle.title = "Waiting for host initialization";
+          return;
+        }
+        if (!canFullscreen) {
+          fullscreenToggle.textContent = "Try maximise";
+          fullscreenToggle.title = "Host did not advertise fullscreen support, but request can still be attempted";
+          return;
+        }
+        const isFullscreen = state.displayMode === "fullscreen";
+        fullscreenToggle.textContent = isFullscreen ? "Exit maximise" : "Maximise";
+        fullscreenToggle.title = isFullscreen ? "Return to inline view" : "Request fullscreen view";
+      }
+
+      function applyHostContext(hostContext) {
+        if (!hostContext || typeof hostContext !== "object") {
+          return;
+        }
+        const mcpGeo = hostContext.mcpGeo || {};
+        if (mcpGeo.proxyBase) {
+          state.proxyBase = mcpGeo.proxyBase;
+        }
+        if (Array.isArray(hostContext.availableDisplayModes)) {
+          state.availableDisplayModes = hostContext.availableDisplayModes
+            .map((mode) => normalizeDisplayMode(mode))
+            .filter(Boolean);
+        }
+        const mode = normalizeDisplayMode(hostContext.displayMode);
+        if (mode) {
+          state.displayMode = mode;
+          if (state.map) {
+            setTimeout(() => state.map.resize(), 0);
+          }
+        }
+        if (state.map && window.maplibregl) {
+          const workerUrl = resolveWorkerUrl();
+          if (workerUrl) {
+            maplibregl.workerUrl = workerUrl;
+          }
+        }
+        updateFullscreenControl();
+      }
+
+      async function toggleFullscreen() {
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        const targetMode = state.displayMode === "fullscreen" ? "inline" : "fullscreen";
+        try {
+          const result = await rpcCall("ui/request-display-mode", { mode: targetMode });
+          const resolvedMode = normalizeDisplayMode(result && result.mode);
+          if (resolvedMode) {
+            state.displayMode = resolvedMode;
+          }
+          updateFullscreenControl();
+          if (state.map) {
+            setTimeout(() => state.map.resize(), 0);
+          }
+          if (!canFullscreen && state.displayMode !== targetMode) {
+            showInfo("Host accepted a display-mode request but did not confirm fullscreen mode.");
+          } else {
+            showInfo("");
+          }
+        } catch (err) {
+          const fallbackMessage = canFullscreen
+            ? "Unable to toggle fullscreen from this host. Try opening the widget in a browser tab."
+            : "Host rejected fullscreen request. This MCP host likely does not support fullscreen mode yet.";
+          showInfo(fallbackMessage);
+          void logUiEvent("fullscreen_toggle_failed", { error: describeError(err) });
+        }
       }
 
       function setSearchStatus(text, tone) {
@@ -1658,35 +1964,58 @@
           return;
         }
         try {
-          const directFeature = candidate && candidate.geometry ? arcgisGeometryToGeoJson(candidate.geometry) : null;
+          const directFeature = candidate && candidate.geometry
+            ? arcgisGeometryToGeoJson(candidate.geometry)
+            : null;
           let bbox = normalizeBbox(candidate && candidate.bbox);
           if (!bbox && directFeature) {
             bbox = bboxFromFeatureGeometry(directFeature);
           }
           let geo = candidate || null;
+          let feature = directFeature;
+
+          // Prefer true geometry when available, even if we already have a bbox.
+          if (!feature) {
+            try {
+              const geoWithGeometry = await requestTool("admin_lookup.area_geometry", {
+                id: boundaryId,
+                includeGeometry: true,
+              });
+              const geoGeometryErr = asToolError(geoWithGeometry);
+              if (!geoGeometryErr) {
+                geo = geoWithGeometry;
+                const candidateFeature =
+                  geoWithGeometry && geoWithGeometry.geometry
+                    ? arcgisGeometryToGeoJson(geoWithGeometry.geometry)
+                    : null;
+                if (candidateFeature && candidateFeature.geometry) {
+                  feature = candidateFeature;
+                }
+                if (!bbox) {
+                  bbox = normalizeBbox(geoWithGeometry && geoWithGeometry.bbox);
+                  if (!bbox && feature) {
+                    bbox = bboxFromFeatureGeometry(feature);
+                  }
+                }
+              }
+            } catch (_err) {
+              // Keep existing bbox fallback path.
+            }
+          }
+
           if (!bbox) {
-            geo = await requestTool("admin_lookup.area_geometry", { id: boundaryId, includeGeometry: true });
-            let geoErr = asToolError(geo);
+            geo = await requestTool("admin_lookup.area_geometry", { id: boundaryId, includeGeometry: false });
+            const geoErr = asToolError(geo);
             if (geoErr) {
               showInfo(`Boundary add failed for ${name || boundaryId}: ${geoErr}`);
               return;
             }
             bbox = normalizeBbox(geo && geo.bbox);
-            if (!bbox) {
-              geo = await requestTool("admin_lookup.area_geometry", { id: boundaryId, includeGeometry: false });
-              geoErr = asToolError(geo);
-              if (geoErr) {
-                showInfo(`Boundary add failed for ${name || boundaryId}: ${geoErr}`);
-                return;
-              }
-              bbox = normalizeBbox(geo && geo.bbox);
-            }
           }
           if (!bbox) {
             showInfo(`Boundary add failed for ${name || boundaryId}: no bbox returned.`);
             return;
           }
-          const feature = directFeature || (geo && geo.geometry ? arcgisGeometryToGeoJson(geo.geometry) : null);
           const poly = feature || bboxToPolygon(bbox);
           if (!poly || !poly.geometry) {
             showInfo(`Boundary add failed for ${name || boundaryId}: invalid geometry.`);
@@ -1817,14 +2146,53 @@
             limits: { uprns: 2000, buildings: 1200, road_links: 2500, path_links: 2500 },
             includeGeometry,
           });
+          const layerErrors = inventoryLayerErrors(inv);
+          if (layerErrors.length) {
+            const codes = new Set(layerErrors.map((err) => err.code));
+            const summary = layerErrors
+              .map((err) => (err.layer ? `${err.layer}: ${err.text}` : err.text))
+              .join("; ");
+            if (codes.has("NO_API_KEY")) {
+              showOsWarning("no_api_key");
+            } else if (codes.has("OS_API_KEY_INVALID") || codes.has("OS_API_KEY_EXPIRED")) {
+              showOsWarning("auth");
+            } else if (codes.has("MISSING_TOOL")) {
+              showOsWarning(
+                "inventory_unavailable",
+                "Tool unavailable under current toolset. Include `features_layers` to expose os_map.inventory and os_map.export."
+              );
+            } else {
+              showOsWarning("generic", summary);
+            }
+            showInfo(`Inventory unavailable: ${summary}`);
+            debugEl.textContent = summary;
+            return;
+          }
           state.inventory = inv;
           hideOsWarning();
           applyInventoryToMap(inv);
           await refreshCounts();
         } catch (err) {
-          // If OS_API_KEY missing, the tool typically returns NO_API_KEY error via tools/call.
-          showOsWarning();
-          debugEl.textContent = String(err?.message || err);
+          const message = String(err?.message || err);
+          if (/NO_API_KEY/i.test(message)) {
+            showOsWarning("no_api_key");
+          } else if (/OS_API_KEY_(INVALID|EXPIRED)/i.test(message)) {
+            showOsWarning("auth");
+          } else if (/unknown tool|tool not found|not found on server/i.test(message)) {
+            showOsWarning(
+              "inventory_unavailable",
+              "Host rejected os_map.inventory. Add `features_layers` to MCP default include toolsets."
+            );
+          } else if (/timeout/i.test(message)) {
+            showOsWarning(
+              "generic",
+              "Inventory request timed out in the current host runtime. Retry or widen the host panel."
+            );
+          } else {
+            showOsWarning("generic", message);
+          }
+          showInfo(`Inventory request failed: ${message}`);
+          debugEl.textContent = message;
         }
       }
 
@@ -2181,8 +2549,18 @@
           });
           showInfo(`Exported: ${resp.uri}`);
         } catch (err) {
-          showInfo("Export failed (OS_API_KEY missing?)");
-          showOsWarning();
+          const message = String(err?.message || err);
+          if (/unknown tool|tool not found|not found on server/i.test(message)) {
+            showOsWarning(
+              "inventory_unavailable",
+              "Host rejected os_map.export. Add `features_layers` to MCP default include toolsets."
+            );
+          } else if (/NO_API_KEY/i.test(message)) {
+            showOsWarning("no_api_key");
+          } else {
+            showOsWarning("generic", message);
+          }
+          showInfo(`Export failed: ${message}`);
         }
       }
 
@@ -2386,15 +2764,7 @@
           return;
         }
         if (message.method === "ui/notifications/host-context-changed") {
-          const ctx = message.params || {};
-          const mcpGeo = ctx.mcpGeo || {};
-          if (mcpGeo.proxyBase) state.proxyBase = mcpGeo.proxyBase;
-          if (state.map && window.maplibregl) {
-            const workerUrl = resolveWorkerUrl();
-            if (workerUrl) {
-              maplibregl.workerUrl = workerUrl;
-            }
-          }
+          applyHostContext(message.params || {});
           return;
         }
       });
@@ -2425,8 +2795,8 @@
           hostStatusEl.textContent = "Host connected";
           hostStatusEl.classList.remove("warn");
           const hostContext = result && result.hostContext ? result.hostContext : {};
-          const mcpGeo = hostContext.mcpGeo || {};
-          if (mcpGeo.proxyBase) state.proxyBase = mcpGeo.proxyBase;
+          applyHostContext(hostContext);
+          updateFullscreenControl();
           const mapReady = mapAdapter.init();
           if (!mapReady) {
             hostStatusEl.textContent = "Host connected (map degraded)";
@@ -2461,6 +2831,9 @@
       clearBoundaries.addEventListener("click", () => clearAll());
       refreshInventory.addEventListener("click", () => void refreshInventoryNow());
       exportButton.addEventListener("click", () => void exportJson());
+      if (fullscreenToggle) {
+        fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
+      }
       basemapStyle.addEventListener("change", () => mapAdapter.setBasemap(basemapStyle.value));
       layerUprns.addEventListener("change", () => applyLayerVisibility());
       layerUprnDots.addEventListener("change", () => applyLayerVisibility());
@@ -2487,6 +2860,8 @@
         void handleFile(file);
       });
 
+      installDebugProbe();
+      updateFullscreenControl();
       initializeUi();
     </script>
   </body>

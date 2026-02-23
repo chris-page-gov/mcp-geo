@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-22
+Last updated: 2026-02-23
 
 ## Layered map reliability priority program (2026-02-21)
 
@@ -85,6 +85,68 @@ Legend: pending, in_progress, done, blocked
   (`RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live --output /tmp/evaluation_results_live_2026-02-22_sync_and_remaining.json`)
   now scores `6900/6900` (`100%`) with `69/69` passed.
 - Remaining OS/ONS coverage deltas in current question bank: none.
+
+## ONS geography dual-derivation cache (2026-02-22)
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| OGC-CFG-0 Source-manifest baseline | done | none | Added `resources/ons_geo_sources.json` with primary exact-mode products (`ONSPD`, `ONSUD`) plus parallel best-fit products (`NSPL`, `NSUL`) and explicit source metadata/field candidates. |
+| OGC-CACHE-1 SQLite cache core + normalization | done | OGC-CFG-0 | Added `server/ons_geo_cache.py` with postcode/UPRN normalization, derivation-mode validation (`exact`, `best_fit`), cache schema bootstrap, indexed lookup ordering by product priority, and geography code/name extraction helpers. |
+| OGC-TOOLS-2 Tooling for postcode/UPRN geography lookups | done | OGC-CACHE-1 | Added `tools/ons_geo.py` (`ons_geo.by_postcode`, `ons_geo.by_uprn`, `ons_geo.cache_status`) with deterministic cache-unavailable/not-found/error contracts and optional raw-row inclusion. |
+| OGC-REFRESH-3 Refresh/ingest automation | done | OGC-CFG-0, OGC-CACHE-1 | Added `scripts/ons_geo_cache_refresh.py` supporting manifest-driven ingestion, per-product file/URL overrides, CSV/ZIP/GZ parsing, SHA256 provenance capture, and index emission to `resources/ons_geo_cache_index.json`. |
+| OGC-INT-4 MCP integration and routing | done | OGC-TOOLS-2 | Registered `ons_geo` in tool imports/discovery categories/toolsets and resource catalog; route-query now recommends `ons_geo.by_postcode`/`ons_geo.by_uprn` for explicit geography-mapping prompts while preserving OS Places for address retrieval. |
+| OGC-VAL-5 Regression coverage | done | OGC-INT-4, OGC-REFRESH-3 | Added tests for cache internals, refresh script ingestion, ons-geo tools, route-query classification, tool-search discoverability, and resource-catalog slugs; focused run: `98 passed` (`./.venv/bin/pytest -q --no-cov ...`). |
+
+- Done (2026-02-22): cache health/status payloads now expose explicit
+  degraded-performance indicators (`performance.degraded`, `reason`, `impact`)
+  for `ons_geo.cache_status`, `admin_lookup.get_cache_status`, and
+  `resource://mcp-geo/boundary-cache-status`.
+- Done (2026-02-22): populated all feasible local caches in this environment:
+  code-list pack cache artifacts refreshed, ONS geo cache ingested from
+  bootstrap product files, and PostGIS boundary cache seeded from live ArcGIS
+  geometry (Coventry county/unitary and Westminster district records).
+- Done (2026-02-22): boundary pack cache now hydrates configured ONS packs from
+  concrete ArcGIS Hub download URLs (`ons_wards_dec_2024_uk_bgc`,
+  `ons_lsoa_dec_2021_ew_bgc`), with `resources/boundary_packs_index.json`
+  reporting `cached` artifacts and checksums.
+- Done (2026-02-22): runtime PostGIS boundary cache is now at ready maturity in
+  this environment (`admin_lookup.get_cache_status`: `total=240783`,
+  `performance.degraded=false`) after pipeline-derived datasets were synced into
+  `public.admin_boundaries`/`public.boundary_datasets`.
+- Done (2026-02-23): boundary source resolution + live verification now has a
+  dedicated gate in `scripts/boundary_pipeline.py`
+  (`--mode resolve --verify-resolved`) with mode-specific status reporting.
+  Latest run `data/boundary_runs/20260223T082527Z/run_report.json` reports
+  `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED` (`107` resolved sources verified
+  reachable; `49` variants recorded as `not_published` with evidence).
+- In progress (2026-02-22): full-manifest boundary ingestion remains
+  incomplete; latest full `boundary_pipeline` tracker run reports
+  `families_ok=0/39` because downstream download/ingest/validation coverage is
+  still partial, so complete UK-wide runtime cache coverage remains open even
+  though source resolution is now verified.
+
+## Boundary variant full-coverage hardening (2026-02-23)
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| BVH-DOC-0 Missing-variant and accuracy documentation | done | none | Updated `docs/reports/boundary_variant_coverage_gap_2026-02-23.md` with baseline gap (`49` `not_published`) and hardened strict run (`0` `not_published`) plus explicit definition-of-complete criteria and accuracy/zoom warning semantics. |
+| BVH-REQ-1 Family-specific variant requirements | done | BVH-DOC-0 | `scripts/boundary_pipeline.py` now merges manifest `completion_definition.default_variant_policy` with template/family overrides and enforces strict `require_full_variant_availability` at evaluation time. |
+| BVH-OS-4 Boundary-Line non-variant profile | done | BVH-REQ-1 | `docs/Boundaries.json` now explicitly profiles `os_boundaryline_gb_bulk` as non-variant-source + derivation-enabled required variant coverage (`BFC/BFE/BGC/BUC`). |
+| BVH-DER-5 Derived variant generation for full availability | done | BVH-REQ-1, BVH-OS-4 | Derived/equivalent variant generation and accuracy metadata are now emitted deterministically (including coarser-source warnings); strict run `data/boundary_runs/20260223T120022Z/run_report.json` reports `resolved=112`, `derived=44`, `not_published=0`, `errors=0`. |
+| BVH-BUA-6 Built-up Area containment path | in_progress | BVH-REQ-1, BVH-DER-5 | Variant hardening now recognizes BUA `BGG` pathways (`built_up_areas_uk` equivalence/derivation), but end-to-end runtime containment verification for UPRN/RoadLink/PathLink over BUA/BUASD cache levels remains to be completed. |
+
+## Startup context mitigation check (2026-02-22)
+
+Legend: pending, in_progress, done
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SCM-CLAUDE-0 Startup footprint measurement | done | none | Measured stdio startup payload pressure for non-deferred clients: full `tools/list` (`81` tools) `87,805` bytes (~`21,951` tokens approx) vs `starter` (`15` tools) `21,151` bytes (~`5,287` tokens approx). |
+| SCM-CLAUDE-1 Mitigation readiness hardening | done | SCM-CLAUDE-0 | Added `os_mcp.select_toolsets` to `starter` so constrained clients can always request scoped expansion without full schema load; verified inferred include path (`core_router`, `places_names`, `ons_geo_lookup`) and documented workflow in `docs/tutorial.md` + `docs/troubleshooting.md`. |
 
 ## Safe-by-design governance and citation review (2026-02-21)
 
@@ -275,8 +337,8 @@ Legend: Done, Partial, Not started
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
 | NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py, resources/nomis_workflows.json | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Added dataset-specific workflow profiles resource and routing guidance link-up; broader profile depth can still be expanded. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search fallback transparency now includes fallback reasons and cache maturity snapshots, and cache status exposes staleness metadata. |
-| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Full ingest + validation completes with ArcGIS Hub polling; run report recorded. |
-| Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/, scripts/pack_cache_refresh.py | Boundary/code-list hybrid fetch-cache manifests + indexes are now exposed (`boundary-pack-sources`, `code-list-pack-sources`, `boundary-packs-index`, `code-list-packs-index`); full pack acquisition depends on refresh runs and source availability. |
+| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Pipeline tooling and validation/reporting are complete; source-resolution verification now passes manifest-wide (`COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED`), while full download/ingest/validate completion remains in progress for broader UK-wide coverage. |
+| Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/, scripts/pack_cache_refresh.py | Boundary/code-list hybrid fetch-cache manifests + indexes are exposed (`boundary-pack-sources`, `code-list-pack-sources`, `boundary-packs-index`, `code-list-packs-index`); configured boundary packs are now cached, while wider pack coverage still depends on additional source entries/availability. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | `route_query` + descriptor for tool discovery, plus `os_mcp.select_toolsets` for post-init discovery filter selection. |
 | Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |

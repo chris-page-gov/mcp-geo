@@ -81,6 +81,30 @@
         letter-spacing: 0.12em;
       }
 
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .status-action {
+        border-radius: 999px;
+        border: 1px solid rgba(26, 155, 139, 0.35);
+        background: rgba(26, 155, 139, 0.08);
+        color: var(--accent);
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+      }
+
+      .status-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       .grid {
         display: grid;
         grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
@@ -439,7 +463,12 @@
             name and surface the right boundaries as you zoom.
           </div>
         </div>
-        <div class="status-pill" id="status">Awaiting host</div>
+        <div class="header-actions">
+          <button id="fullscreenToggle" type="button" class="status-action" title="Toggle full screen">
+            Maximise
+          </button>
+          <div class="status-pill" id="status">Awaiting host</div>
+        </div>
       </header>
 
       <section class="grid">
@@ -628,11 +657,14 @@
           boundaries: true,
           addresses: true,
         },
+        displayMode: "inline",
+        availableDisplayModes: [],
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       };
 
       const statusEl = document.getElementById("status");
+      const fullscreenToggle = document.getElementById("fullscreenToggle");
       const modeButtons = document.getElementById("modeButtons");
       const selectionModeButtons = document.getElementById("selectionModeButtons");
       const queryInput = document.getElementById("queryInput");
@@ -684,6 +716,66 @@
 
       function rpcNotify(method, params) {
         postToHost({ jsonrpc: "2.0", method, params });
+      }
+
+      function normalizeDisplayMode(mode) {
+        if (typeof mode !== "string") {
+          return null;
+        }
+        const normalized = mode.trim().toLowerCase();
+        if (!normalized) {
+          return null;
+        }
+        if (normalized === "inline" || normalized === "fullscreen" || normalized === "pip") {
+          return normalized;
+        }
+        return null;
+      }
+
+      function updateFullscreenControl() {
+        if (!fullscreenToggle) {
+          return;
+        }
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        fullscreenToggle.disabled = !state.hostReady;
+        if (!state.hostReady) {
+          fullscreenToggle.textContent = "Maximise";
+          fullscreenToggle.title = "Waiting for host initialization";
+          return;
+        }
+        if (!canFullscreen) {
+          fullscreenToggle.textContent = "Try maximise";
+          fullscreenToggle.title = "Host did not advertise fullscreen support, but request can still be attempted";
+          return;
+        }
+        const isFullscreen = state.displayMode === "fullscreen";
+        fullscreenToggle.textContent = isFullscreen ? "Exit maximise" : "Maximise";
+        fullscreenToggle.title = isFullscreen ? "Return to inline view" : "Request fullscreen view";
+      }
+
+      async function toggleFullscreen() {
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        const targetMode = state.displayMode === "fullscreen" ? "inline" : "fullscreen";
+        try {
+          const result = await rpcCall("ui/request-display-mode", { mode: targetMode });
+          const resolvedMode = normalizeDisplayMode(result && result.mode);
+          if (resolvedMode) {
+            state.displayMode = resolvedMode;
+          }
+          updateFullscreenControl();
+          if (state.map) {
+            setTimeout(() => state.map.resize(), 0);
+          }
+        } catch (err) {
+          const msg = canFullscreen
+            ? "Fullscreen request failed (host limitation)"
+            : "Host rejected fullscreen request";
+          statusEl.textContent = msg;
+        }
       }
 
       function sanitizeToolName(toolName) {
@@ -2342,6 +2434,15 @@
         if (!hostContext || typeof hostContext !== "object") {
           return;
         }
+        if (Array.isArray(hostContext.availableDisplayModes)) {
+          state.availableDisplayModes = hostContext.availableDisplayModes
+            .map((mode) => normalizeDisplayMode(mode))
+            .filter(Boolean);
+        }
+        const mode = normalizeDisplayMode(hostContext.displayMode);
+        if (mode) {
+          state.displayMode = mode;
+        }
         const mcpGeo = hostContext.mcpGeo || {};
         if (mcpGeo.proxyBase) {
           state.proxyBase = mcpGeo.proxyBase;
@@ -2356,6 +2457,10 @@
           if (workerUrl) {
             maplibregl.workerUrl = workerUrl;
           }
+        }
+        updateFullscreenControl();
+        if (state.map) {
+          setTimeout(() => state.map.resize(), 0);
         }
       }
 
@@ -2547,6 +2652,9 @@
         }
         scheduleDiagnosticsUpdate();
       });
+      if (fullscreenToggle) {
+        fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
+      }
       mapStyleSelect.addEventListener("change", () => mapAdapter.setStyle(mapStyleSelect.value));
       mapOpacity.addEventListener("input", () => mapAdapter.setOpacity());
       levelSelect.addEventListener("change", () => {
@@ -2635,9 +2743,11 @@
           rpcNotify("ui/notifications/initialized", {});
         } catch (err) {
           statusEl.textContent = "Host connection failed";
+          updateFullscreenControl();
         }
       }
 
+      updateFullscreenControl();
       initializeUi();
     </script>
   </body>

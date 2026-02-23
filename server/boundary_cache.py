@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
 from server.config import settings
 from server.error_taxonomy import classify_error
@@ -26,6 +26,40 @@ class BoundaryGeometryResult:
     meta: dict[str, Any]
     name: str | None
     level: str | None
+
+
+def _performance_for_maturity(maturity_state: str) -> dict[str, Any]:
+    reason_by_state = {
+        "ready": None,
+        "degraded": "freshness_mixed",
+        "stale": "stale_datasets",
+        "cold_start": "cache_empty",
+        "unusable": "geometry_missing",
+        "unknown": "freshness_unknown",
+    }
+    impact_by_state = {
+        "ready": "Boundary cache is serving local geometry with normal performance.",
+        "degraded": (
+            "Boundary cache is available, but stale coverage may increase fallback/live usage."
+        ),
+        "stale": (
+            "Boundary cache is stale; expect slower fallback behavior and potential data drift."
+        ),
+        "cold_start": "Boundary cache has no rows; tools will rely on fallback/live paths.",
+        "unusable": "Boundary cache rows lack usable geometry; fallback/live paths are required.",
+        "unknown": (
+            "Boundary cache freshness is unknown; fallback/live behavior may increase latency."
+        ),
+    }
+    degraded = maturity_state != "ready"
+    return {
+        "degraded": degraded,
+        "reason": reason_by_state.get(maturity_state, "cache_state_unknown"),
+        "impact": impact_by_state.get(
+            maturity_state,
+            "Boundary cache state is unknown; fallback behavior may reduce performance.",
+        ),
+    }
 
 
 class BoundaryCache:
@@ -453,6 +487,7 @@ class BoundaryCache:
                 "staleDatasetIds": stale_ids,
                 "unknownFreshnessDatasetIds": unknown_ids,
             },
+            "performance": _performance_for_maturity(maturity_state),
         }
 
     def search(
