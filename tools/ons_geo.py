@@ -5,6 +5,7 @@ from typing import Any
 from server.config import settings
 from server.ons_geo_cache import (
     ONSGeoCache,
+    ONSGeoCacheReadError,
     extract_geography_fields,
     normalize_derivation_mode,
     normalize_postcode,
@@ -114,11 +115,21 @@ def _by_postcode(payload: dict[str, Any]) -> ToolResult:
             status=503,
         )
 
-    result = cache.lookup(
-        key_type="postcode",
-        key_value=normalized_postcode,
-        derivation_mode=derivation_mode,
-    )
+    try:
+        result = cache.lookup(
+            key_type="postcode",
+            key_value=normalized_postcode,
+            derivation_mode=derivation_mode,
+        )
+    except ONSGeoCacheReadError as exc:
+        return _error(
+            (
+                "ONS geo cache is unreadable. "
+                f"{exc} Run scripts/ons_geo_cache_refresh.py to rebuild the cache."
+            ),
+            code="CACHE_READ_ERROR",
+            status=503,
+        )
     if result is None:
         return _error(
             (
@@ -162,11 +173,21 @@ def _by_uprn(payload: dict[str, Any]) -> ToolResult:
             status=503,
         )
 
-    result = cache.lookup(
-        key_type="uprn",
-        key_value=normalized_uprn,
-        derivation_mode=derivation_mode,
-    )
+    try:
+        result = cache.lookup(
+            key_type="uprn",
+            key_value=normalized_uprn,
+            derivation_mode=derivation_mode,
+        )
+    except ONSGeoCacheReadError as exc:
+        return _error(
+            (
+                "ONS geo cache is unreadable. "
+                f"{exc} Run scripts/ons_geo_cache_refresh.py to rebuild the cache."
+            ),
+            code="CACHE_READ_ERROR",
+            status=503,
+        )
     if result is None:
         return _error(
             f"No geography mapping found for uprn {normalized_uprn} in {derivation_mode} mode.",

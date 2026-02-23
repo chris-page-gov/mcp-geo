@@ -5,6 +5,7 @@ import sqlite3
 
 from server.ons_geo_cache import (
     ONSGeoCache,
+    ONSGeoCacheReadError,
     ensure_schema,
     extract_geography_fields,
     normalize_derivation_mode,
@@ -157,3 +158,22 @@ def test_lookup_prefers_higher_priority_product(tmp_path) -> None:
     result = cache.lookup(key_type="postcode", key_value="SW1A 1AA", derivation_mode="exact")
     assert result is not None
     assert result.row["LAD24CD"] == "E09000044"
+
+
+def test_lookup_raises_cache_read_error_when_schema_is_missing(tmp_path) -> None:
+    cache = ONSGeoCache(
+        cache_dir=tmp_path,
+        db_name="ons_geo_cache.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+    conn = sqlite3.connect(str(cache.db_path))
+    conn.execute("CREATE TABLE not_the_expected_schema (id INTEGER PRIMARY KEY)")
+    conn.commit()
+    conn.close()
+
+    try:
+        cache.lookup(key_type="postcode", key_value="SW1A 1AA", derivation_mode="exact")
+    except ONSGeoCacheReadError as exc:
+        assert "Failed to query cache database" in str(exc)
+    else:
+        raise AssertionError("Expected ONSGeoCacheReadError for unreadable cache schema")

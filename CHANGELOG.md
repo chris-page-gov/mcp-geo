@@ -165,9 +165,18 @@ All notable changes to this project will be documented in this file.
   `features_layers` alongside `starter`, ensuring boundary explorer can invoke
   `os_map.inventory`/`os_map.export` in VS Code MCP sessions.
 - Updated `os_map.inventory` and `os_map.export` `layers` input schemas to use
-  explicit union `type` + `items`, ensuring strict MCP host tool-schema
-  validation (including Copilot/OpenAI function-schema checks) accepts these
-  map tools.
+  explicit `oneOf` union branches (array+items/minItems, string+minLength, null),
+  keeping strict MCP host schema validation compatibility while avoiding mixed
+  keyword ambiguity across non-array branches.
+- Updated `tools/ons_geo.py` + `server/ons_geo_cache.py` to surface unreadable
+  cache failures as `503 CACHE_READ_ERROR` (instead of `404 NOT_FOUND`) when the
+  cache file exists but SQLite query/read fails.
+- Hardened `scripts/boundary_pipeline.py::_probe_source_url` response lifecycle
+  to close `requests` responses via `finally`, preventing leaked open responses
+  on JSON parse/runtime exceptions.
+- Updated `ui/boundary_explorer.html` OS key warning rendering to construct the
+  `OS_API_KEY` token via DOM nodes (no `innerHTML`) for safer future content
+  handling.
 - Updated `docs/spec_package/09_testing_quality.md`, `CONTEXT.md`, and
   `PROGRESS.MD` to reflect the latest strict + live verification evidence,
   including explicit coverage-gate failure status and MCP-Apps widget

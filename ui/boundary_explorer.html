@@ -1516,8 +1516,15 @@
         if (normalizedReason === "no_api_key") {
           osStatusEl.textContent = "OS key missing";
           osBannerTitleEl.textContent = "OS_API_KEY missing.";
-          osBannerDetailEl.innerHTML =
-            "Basemap and OS-backed layers require <span class=\"mono\">OS_API_KEY</span> in the MCP server environment. Step 3 (inventory + export) is unavailable until configured.";
+          osBannerDetailEl.textContent = "";
+          const keyToken = document.createElement("span");
+          keyToken.className = "mono";
+          keyToken.textContent = "OS_API_KEY";
+          osBannerDetailEl.append(
+            "Basemap and OS-backed layers require ",
+            keyToken,
+            " in the MCP server environment. Step 3 (inventory + export) is unavailable until configured.",
+          );
           return;
         }
         if (normalizedReason === "auth") {

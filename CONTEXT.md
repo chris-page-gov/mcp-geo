@@ -307,6 +307,13 @@ assumptions change.
   schema definitions from `anyOf` to explicit union `type` + `items` after a
   VSCode/Copilot MCP tool-registration failure (`array schema missing items`)
   against `mcp_mcp-geo-http_os_map_inventory`.
+- 2026-02-23: Addressed PR #15 review findings by tightening `os_map` `layers`
+  schemas to explicit `oneOf` branches (array/string/null), replacing
+  `innerHTML` in boundary explorer OS warnings with DOM-node composition,
+  adding guaranteed response close in
+  `scripts/boundary_pipeline.py::_probe_source_url`, and surfacing unreadable
+  ONS geo cache lookup failures as `503 CACHE_READ_ERROR` instead of false
+  `404 NOT_FOUND`.
 - 2026-02-22: Added an Apps-to-Answers presentation deck aligned to the
   January 2026 UK government dataset-readiness guidance at
   `research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`

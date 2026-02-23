@@ -142,10 +142,29 @@ def test_tools_describe_returns_unknown_when_tool_missing_after_resolution(monke
     assert resp.json()["code"] == "UNKNOWN_TOOL"
 
 
-def test_os_map_inventory_layers_union_retains_array_items_schema():
+def _assert_os_map_layers_schema(layers: dict) -> None:
+    assert "oneOf" in layers
+    assert layers["description"].startswith("Requested layers")
+    array_option = next(option for option in layers["oneOf"] if option.get("type") == "array")
+    string_option = next(option for option in layers["oneOf"] if option.get("type") == "string")
+    null_option = next(option for option in layers["oneOf"] if option.get("type") == "null")
+    assert array_option["items"] == {"type": "string"}
+    assert array_option["minItems"] == 1
+    assert string_option["minLength"] == 1
+    assert null_option == {"type": "null"}
+
+
+def test_os_map_inventory_layers_schema_uses_explicit_union() -> None:
     resp = client.get("/tools/describe", params={"name": "os_map.inventory"})
     assert resp.status_code == 200
     tool = resp.json()["tools"][0]
     layers = tool["inputSchema"]["properties"]["layers"]
-    assert layers["type"] == ["array", "string", "null"]
-    assert layers["items"] == {"type": "string"}
+    _assert_os_map_layers_schema(layers)
+
+
+def test_os_map_export_layers_schema_uses_explicit_union() -> None:
+    resp = client.get("/tools/describe", params={"name": "os_map.export"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    layers = tool["inputSchema"]["properties"]["layers"]
+    _assert_os_map_layers_schema(layers)

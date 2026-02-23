@@ -1188,6 +1188,7 @@ def _probe_source_url(url: str, timeout: float) -> dict[str, Any]:
             "contentType": None,
             "finalUrl": None,
         }
+    resp = None
     try:
         resp = requests.head(url, timeout=timeout, allow_redirects=True)
         status_code = resp.status_code
@@ -1215,7 +1216,6 @@ def _probe_source_url(url: str, timeout: float) -> dict[str, Any]:
                     detail = "json_redirect"
                 else:
                     detail = "json_payload"
-        resp.close()
         return {
             "verified": status == "ok",
             "status": status,
@@ -1233,6 +1233,12 @@ def _probe_source_url(url: str, timeout: float) -> dict[str, Any]:
             "contentType": None,
             "finalUrl": None,
         }
+    finally:
+        if resp is not None:
+            try:
+                resp.close()
+            except Exception:
+                pass
 
 
 def _evaluate_pipeline(

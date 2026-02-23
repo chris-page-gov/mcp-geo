@@ -97,6 +97,10 @@ class ONSGeoLookup:
     row: dict[str, Any]
 
 
+class ONSGeoCacheReadError(RuntimeError):
+    """Raised when the on-disk ONS geo cache exists but cannot be queried."""
+
+
 class ONSGeoCache:
     def __init__(
         self,
@@ -152,9 +156,10 @@ class ONSGeoCache:
         if not self.available():
             return None
 
-        conn = sqlite3.connect(str(self.db_path))
-        conn.row_factory = sqlite3.Row
+        conn: sqlite3.Connection | None = None
         try:
+            conn = sqlite3.connect(str(self.db_path))
+            conn.row_factory = sqlite3.Row
             row = conn.execute(
                 """
                 SELECT
@@ -174,10 +179,13 @@ class ONSGeoCache:
                 """,
                 (normalized_key_type, normalized_mode, key_norm),
             ).fetchone()
-        except sqlite3.Error:
-            return None
+        except sqlite3.Error as exc:
+            raise ONSGeoCacheReadError(
+                f"Failed to query cache database at {self.db_path}: {exc}"
+            ) from exc
         finally:
-            conn.close()
+            if conn is not None:
+                conn.close()
 
         if row is None:
             return None

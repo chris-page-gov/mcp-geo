@@ -8,7 +8,8 @@ from fastapi.testclient import TestClient
 
 from server.config import settings
 from server.main import app
-from server.ons_geo_cache import ensure_schema
+from server.ons_geo_cache import ONSGeoCacheReadError, ensure_schema
+import tools.ons_geo as ons_geo_tools
 
 client = TestClient(app)
 
@@ -325,3 +326,37 @@ def test_ons_geo_cache_status_unavailable_reports_degraded(tmp_path: Path, monke
     assert body["performance"]["degraded"] is True
     assert body["performance"]["reason"] == "cache_unavailable"
     assert body["reloadHint"]
+
+
+class _BrokenONSGeoCache:
+    def available(self) -> bool:
+        return True
+
+    def lookup(self, *, key_type: str, key_value: str, derivation_mode: str):  # noqa: ANN001
+        raise ONSGeoCacheReadError("missing ons_geo_rows table")
+
+
+def _patch_broken_cache(monkeypatch) -> None:
+    monkeypatch.setattr(
+        ons_geo_tools.ONSGeoCache,
+        "from_settings",
+        classmethod(lambda cls: _BrokenONSGeoCache()),
+    )
+
+
+def test_ons_geo_by_postcode_cache_read_error_returns_503(monkeypatch) -> None:
+    _patch_broken_cache(monkeypatch)
+    resp = client.post("/tools/call", json={"tool": "ons_geo.by_postcode", "postcode": "SW1A 1AA"})
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["code"] == "CACHE_READ_ERROR"
+    assert "unreadable" in body["message"]
+
+
+def test_ons_geo_by_uprn_cache_read_error_returns_503(monkeypatch) -> None:
+    _patch_broken_cache(monkeypatch)
+    resp = client.post("/tools/call", json={"tool": "ons_geo.by_uprn", "uprn": "100023336959"})
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["code"] == "CACHE_READ_ERROR"
+    assert "unreadable" in body["message"]
