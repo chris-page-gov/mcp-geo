@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-22
+Last updated: 2026-02-23
 
 ## Layered map reliability priority program (2026-02-21)
 
@@ -115,10 +115,17 @@ Legend: pending, in_progress, done
   this environment (`admin_lookup.get_cache_status`: `total=240783`,
   `performance.degraded=false`) after pipeline-derived datasets were synced into
   `public.admin_boundaries`/`public.boundary_datasets`.
+- Done (2026-02-23): boundary source resolution + live verification now has a
+  dedicated gate in `scripts/boundary_pipeline.py`
+  (`--mode resolve --verify-resolved`) with mode-specific status reporting.
+  Latest run `data/boundary_runs/20260223T082527Z/run_report.json` reports
+  `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED` (`107` resolved sources verified
+  reachable; `49` variants recorded as `not_published` with evidence).
 - In progress (2026-02-22): full-manifest boundary ingestion remains
   incomplete; latest full `boundary_pipeline` tracker run reports
-  `families_ok=0/39` with many unresolved source variants, so complete
-  UK-wide coverage still needs source-resolution expansion.
+  `families_ok=0/39` because downstream download/ingest/validation coverage is
+  still partial, so complete UK-wide runtime cache coverage remains open even
+  though source resolution is now verified.
 
 ## Startup context mitigation check (2026-02-22)
 
@@ -318,7 +325,7 @@ Legend: Done, Partial, Not started
 | ONS dataset search | Done | tools/ons_search.py | Live search only; no sample fallback. |
 | NOMIS statistics | Partial | tools/nomis_data.py, tests/test_nomis_data.py, resources/nomis_workflows.json | Discovery/query tools working; fixed concept/codelist endpoints and improved GSS→NOMIS geography resolution (OA/LSOA/MSOA/ward). Added dataset-specific workflow profiles resource and routing guidance link-up; broader profile depth can still be expanded. |
 | Admin geography lookup | Partial | tools/admin_lookup.py, server/boundary_cache.py | Live ArcGIS path plus optional PostGIS cache; level filtering + match modes added; cache search fallback transparency now includes fallback reasons and cache maturity snapshots, and cache status exposes staleness metadata. |
-| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Pipeline tooling and validation/reporting are complete; targeted live ingests succeed, but latest full-manifest run remains incomplete (`families_ok=0/39`) pending broader source resolution. |
+| Boundary ingest pipeline | Done | scripts/boundary_pipeline.py, docs/Boundaries.json | Pipeline tooling and validation/reporting are complete; source-resolution verification now passes manifest-wide (`COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED`), while full download/ingest/validate completion remains in progress for broader UK-wide coverage. |
 | Static resources (code lists, boundaries) | Partial | server/mcp/resource_catalog.py, resources/, scripts/pack_cache_refresh.py | Boundary/code-list hybrid fetch-cache manifests + indexes are exposed (`boundary-pack-sources`, `code-list-pack-sources`, `boundary-packs-index`, `code-list-packs-index`); configured boundary packs are now cached, while wider pack coverage still depends on additional source entries/availability. |
 | Conversational normalization | Done | tools/os_mcp.py, tests/evaluation/* | `route_query` + descriptor for tool discovery, plus `os_mcp.select_toolsets` for post-init discovery filter selection. |
 | Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |

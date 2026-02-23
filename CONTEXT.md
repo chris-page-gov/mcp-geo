@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-22
+Last updated: 2026-02-23
 Owner: @chris-page-gov
 
 ## Purpose
@@ -207,6 +207,15 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-23: Hardened boundary-source verification to remove ambiguity
+  between resolve and ingest stages. `scripts/boundary_pipeline.py` now
+  supports `--verify-resolved` with live URL probing, mode-aware pass/fail
+  statuses, and stronger CKAN package ranking by query-title token match. The
+  latest full resolve+verify run
+  (`data/boundary_runs/20260223T082527Z/run_report.json`) now reports
+  `COMPLETE_BOUNDARIES_RESOLVED_AND_VERIFIED` with `107` resolved source URLs
+  verified reachable and `49` variants explicitly `not_published` with
+  evidence.
 - 2026-02-22: Added explicit degraded-performance status signaling for cache
   availability surfaces so clients can detect reduced reliability without
   inferring from missing data: `ons_geo.cache_status`,
