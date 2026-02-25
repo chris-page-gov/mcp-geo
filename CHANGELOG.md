@@ -5,7 +5,35 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-02-25
+
 ### Added
+- Added repo extent/complexity analysis capability for `mcp-geo`:
+  - analyzer `scripts/repo_extent_complexity_report.py` with dual-scope
+    inventory (`git_tracked`, `workspace`), generated/output exclusion policy,
+    Python cyclomatic complexity, churn-weighted hotspots, and optional
+    GitHub Stats API enrichment
+  - skill package `skills/mcp-geo-repo-extent-complexity/` with runbook,
+    wrapper script, and source-backed SOTA metric rationale references
+  - regression coverage in `tests/test_repo_extent_complexity_report.py`
+  - baseline report artifacts in
+    `docs/reports/repo_extent_complexity_2026-02-25.{md,json}`.
+  - manager-facing report card output
+    `docs/reports/repo_extent_complexity_report_card_2026-02-25.md` with
+    plain-English terminology, metric basis/source explanations, and practical
+    implications for non-technical stakeholders.
+- Added Long Horizon-style Codex session summary capability for `mcp-geo`:
+  - `scripts/codex_long_horizon_summary.py` to aggregate repo-scoped metrics
+    from local Codex `sessions` + `archived_sessions` logs
+  - deterministic summary-card template
+    `skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl`
+    for slot-based metric rendering
+  - skill runbook `skills/mcp-geo-long-horizon-summary/SKILL.md` with wrapper
+    runner `skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh`
+    now producing image-first markdown plus summary-card SVG output
+  - regression coverage in `tests/test_codex_long_horizon_summary.py`
+  - baseline report artifacts in
+    `docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.{md,json,svg}`.
 - Added ONS postcode/UPRN geography cache infrastructure for dual-derivation
   lookup workflows:
   - `server/ons_geo_cache.py` (normalization, schema bootstrap, indexed

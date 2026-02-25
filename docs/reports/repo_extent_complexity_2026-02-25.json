@@ -1,0 +1,640 @@
+{
+  "generated_at": "2026-02-25T06:34:25.969900Z",
+  "root": "/Users/crpage/repos/mcp-geo",
+  "scope": "both",
+  "lookback_days": 180,
+  "top_hotspots": 20,
+  "exclude_globs": [
+    "docs/reports/**",
+    "logs/**",
+    "tmp/**",
+    "build/**",
+    "dist/**",
+    "node_modules/**",
+    ".venv/**",
+    ".pytest_cache/**",
+    ".ruff_cache/**",
+    ".mypy_cache/**",
+    "**/__pycache__/**",
+    "mcp_geo.egg-info/**",
+    "data/cache/**",
+    "docs/vendor/**",
+    "ui/vendor/**"
+  ],
+  "git_available": true,
+  "git_activity": {
+    "lookback_days": 180,
+    "commit_count": 263,
+    "active_authors": 4,
+    "additions": 214030,
+    "deletions": 15513
+  },
+  "github_stats": null,
+  "scopes": {
+    "git_tracked": {
+      "files_total": 661,
+      "files_text": 564,
+      "files_binary": 97,
+      "files_functional": 265,
+      "non_blank_loc_functional": 60168,
+      "excluded_generated_or_policy": 34,
+      "language_breakdown": [
+        {
+          "language": "Python",
+          "files": 230,
+          "non_blank_loc": 48344
+        },
+        {
+          "language": "HTML",
+          "files": 9,
+          "non_blank_loc": 9145
+        },
+        {
+          "language": "JavaScript",
+          "files": 12,
+          "non_blank_loc": 1946
+        },
+        {
+          "language": "SQL",
+          "files": 1,
+          "non_blank_loc": 40
+        },
+        {
+          "language": "Shell",
+          "files": 13,
+          "non_blank_loc": 693
+        }
+      ],
+      "directory_breakdown": [
+        {
+          "directory": "tests",
+          "non_blank_loc": 20124
+        },
+        {
+          "directory": "tools",
+          "non_blank_loc": 14503
+        },
+        {
+          "directory": "scripts",
+          "non_blank_loc": 9669
+        },
+        {
+          "directory": "server",
+          "non_blank_loc": 6931
+        },
+        {
+          "directory": "ui",
+          "non_blank_loc": 6799
+        },
+        {
+          "directory": "playground",
+          "non_blank_loc": 2000
+        },
+        {
+          "directory": "troubleshooting",
+          "non_blank_loc": 125
+        },
+        {
+          "directory": ".",
+          "non_blank_loc": 17
+        }
+      ],
+      "python_complexity": {
+        "functions_count": 2227,
+        "mean_cc": 4.059,
+        "p90_cc": 9.0,
+        "max_cc": 138,
+        "high_risk_functions_cc_ge_15": 120
+      },
+      "hotspot_total_score": 84142.577,
+      "top_5_hotspot_share": 0.2341,
+      "hotspots": [
+        {
+          "path": "scripts/boundary_pipeline.py",
+          "language": "Python",
+          "complexity_points": 460.0,
+          "churn_lines_lookback": 2265,
+          "hotspot_score": 5127.129
+        },
+        {
+          "path": "tools/ons_data.py",
+          "language": "Python",
+          "complexity_points": 416.0,
+          "churn_lines_lookback": 2411,
+          "hotspot_score": 4674.182
+        },
+        {
+          "path": "server/stdio_adapter.py",
+          "language": "Python",
+          "complexity_points": 312.0,
+          "churn_lines_lookback": 2382,
+          "hotspot_score": 3500.192
+        },
+        {
+          "path": "tools/os_features.py",
+          "language": "Python",
+          "complexity_points": 301.0,
+          "churn_lines_lookback": 1584,
+          "hotspot_score": 3199.71
+        },
+        {
+          "path": "tools/nomis_data.py",
+          "language": "Python",
+          "complexity_points": 312.0,
+          "churn_lines_lookback": 1214,
+          "hotspot_score": 3196.983
+        },
+        {
+          "path": "tools/os_mcp.py",
+          "language": "Python",
+          "complexity_points": 275.0,
+          "churn_lines_lookback": 2102,
+          "hotspot_score": 3035.514
+        },
+        {
+          "path": "tools/ons_select.py",
+          "language": "Python",
+          "complexity_points": 273.0,
+          "churn_lines_lookback": 941,
+          "hotspot_score": 2697.126
+        },
+        {
+          "path": "tools/admin_lookup.py",
+          "language": "Python",
+          "complexity_points": 236.0,
+          "churn_lines_lookback": 1597,
+          "hotspot_score": 2511.524
+        },
+        {
+          "path": "server/mcp/resource_catalog.py",
+          "language": "Python",
+          "complexity_points": 207.0,
+          "churn_lines_lookback": 1508,
+          "hotspot_score": 2185.791
+        },
+        {
+          "path": "server/maps_proxy.py",
+          "language": "Python",
+          "complexity_points": 180.0,
+          "churn_lines_lookback": 774,
+          "hotspot_score": 1727.649
+        },
+        {
+          "path": "tools/os_apps.py",
+          "language": "Python",
+          "complexity_points": 164.0,
+          "churn_lines_lookback": 1226,
+          "hotspot_score": 1682.791
+        },
+        {
+          "path": "server/mcp/http_transport.py",
+          "language": "Python",
+          "complexity_points": 158.0,
+          "churn_lines_lookback": 905,
+          "hotspot_score": 1552.092
+        },
+        {
+          "path": "scripts/check_lmr_host4.py",
+          "language": "Python",
+          "complexity_points": 151.0,
+          "churn_lines_lookback": 780,
+          "hotspot_score": 1450.986
+        },
+        {
+          "path": "tools/ons_codes.py",
+          "language": "Python",
+          "complexity_points": 155.0,
+          "churn_lines_lookback": 501,
+          "hotspot_score": 1390.589
+        },
+        {
+          "path": "tests/test_os_catalog_snapshot.py",
+          "language": "Python",
+          "complexity_points": 143.0,
+          "churn_lines_lookback": 439,
+          "hotspot_score": 1255.734
+        },
+        {
+          "path": "tools/os_maps.py",
+          "language": "Python",
+          "complexity_points": 128.0,
+          "churn_lines_lookback": 697,
+          "hotspot_score": 1209.227
+        },
+        {
+          "path": "tests/evaluation/harness.py",
+          "language": "Python",
+          "complexity_points": 117.0,
+          "churn_lines_lookback": 651,
+          "hotspot_score": 1093.801
+        },
+        {
+          "path": "tests/test_ons_data.py",
+          "language": "Python",
+          "complexity_points": 107.0,
+          "churn_lines_lookback": 835,
+          "hotspot_score": 1038.687
+        },
+        {
+          "path": "tests/test_tool_upstream_endpoint_contracts.py",
+          "language": "Python",
+          "complexity_points": 116.0,
+          "churn_lines_lookback": 486,
+          "hotspot_score": 1035.622
+        },
+        {
+          "path": "scripts/trace_report.py",
+          "language": "Python",
+          "complexity_points": 113.0,
+          "churn_lines_lookback": 383,
+          "hotspot_score": 970.101
+        }
+      ]
+    },
+    "workspace": {
+      "files_total": 677,
+      "files_text": 580,
+      "files_binary": 97,
+      "files_functional": 271,
+      "non_blank_loc_functional": 62221,
+      "excluded_generated_or_policy": 39,
+      "language_breakdown": [
+        {
+          "language": "Python",
+          "files": 234,
+          "non_blank_loc": 50364
+        },
+        {
+          "language": "HTML",
+          "files": 9,
+          "non_blank_loc": 9145
+        },
+        {
+          "language": "JavaScript",
+          "files": 12,
+          "non_blank_loc": 1946
+        },
+        {
+          "language": "SQL",
+          "files": 1,
+          "non_blank_loc": 40
+        },
+        {
+          "language": "Shell",
+          "files": 15,
+          "non_blank_loc": 726
+        }
+      ],
+      "directory_breakdown": [
+        {
+          "directory": "tests",
+          "non_blank_loc": 20363
+        },
+        {
+          "directory": "tools",
+          "non_blank_loc": 14503
+        },
+        {
+          "directory": "scripts",
+          "non_blank_loc": 11450
+        },
+        {
+          "directory": "server",
+          "non_blank_loc": 6931
+        },
+        {
+          "directory": "ui",
+          "non_blank_loc": 6799
+        },
+        {
+          "directory": "playground",
+          "non_blank_loc": 2000
+        },
+        {
+          "directory": "troubleshooting",
+          "non_blank_loc": 125
+        },
+        {
+          "directory": "skills",
+          "non_blank_loc": 33
+        },
+        {
+          "directory": ".",
+          "non_blank_loc": 17
+        }
+      ],
+      "python_complexity": {
+        "functions_count": 2294,
+        "mean_cc": 4.1,
+        "p90_cc": 9.0,
+        "max_cc": 138,
+        "high_risk_functions_cc_ge_15": 126
+      },
+      "hotspot_total_score": 84142.577,
+      "top_5_hotspot_share": 0.2341,
+      "hotspots": [
+        {
+          "path": "scripts/boundary_pipeline.py",
+          "language": "Python",
+          "complexity_points": 460.0,
+          "churn_lines_lookback": 2265,
+          "hotspot_score": 5127.129
+        },
+        {
+          "path": "tools/ons_data.py",
+          "language": "Python",
+          "complexity_points": 416.0,
+          "churn_lines_lookback": 2411,
+          "hotspot_score": 4674.182
+        },
+        {
+          "path": "server/stdio_adapter.py",
+          "language": "Python",
+          "complexity_points": 312.0,
+          "churn_lines_lookback": 2382,
+          "hotspot_score": 3500.192
+        },
+        {
+          "path": "tools/os_features.py",
+          "language": "Python",
+          "complexity_points": 301.0,
+          "churn_lines_lookback": 1584,
+          "hotspot_score": 3199.71
+        },
+        {
+          "path": "tools/nomis_data.py",
+          "language": "Python",
+          "complexity_points": 312.0,
+          "churn_lines_lookback": 1214,
+          "hotspot_score": 3196.983
+        },
+        {
+          "path": "tools/os_mcp.py",
+          "language": "Python",
+          "complexity_points": 275.0,
+          "churn_lines_lookback": 2102,
+          "hotspot_score": 3035.514
+        },
+        {
+          "path": "tools/ons_select.py",
+          "language": "Python",
+          "complexity_points": 273.0,
+          "churn_lines_lookback": 941,
+          "hotspot_score": 2697.126
+        },
+        {
+          "path": "tools/admin_lookup.py",
+          "language": "Python",
+          "complexity_points": 236.0,
+          "churn_lines_lookback": 1597,
+          "hotspot_score": 2511.524
+        },
+        {
+          "path": "server/mcp/resource_catalog.py",
+          "language": "Python",
+          "complexity_points": 207.0,
+          "churn_lines_lookback": 1508,
+          "hotspot_score": 2185.791
+        },
+        {
+          "path": "server/maps_proxy.py",
+          "language": "Python",
+          "complexity_points": 180.0,
+          "churn_lines_lookback": 774,
+          "hotspot_score": 1727.649
+        },
+        {
+          "path": "tools/os_apps.py",
+          "language": "Python",
+          "complexity_points": 164.0,
+          "churn_lines_lookback": 1226,
+          "hotspot_score": 1682.791
+        },
+        {
+          "path": "server/mcp/http_transport.py",
+          "language": "Python",
+          "complexity_points": 158.0,
+          "churn_lines_lookback": 905,
+          "hotspot_score": 1552.092
+        },
+        {
+          "path": "scripts/check_lmr_host4.py",
+          "language": "Python",
+          "complexity_points": 151.0,
+          "churn_lines_lookback": 780,
+          "hotspot_score": 1450.986
+        },
+        {
+          "path": "tools/ons_codes.py",
+          "language": "Python",
+          "complexity_points": 155.0,
+          "churn_lines_lookback": 501,
+          "hotspot_score": 1390.589
+        },
+        {
+          "path": "tests/test_os_catalog_snapshot.py",
+          "language": "Python",
+          "complexity_points": 143.0,
+          "churn_lines_lookback": 439,
+          "hotspot_score": 1255.734
+        },
+        {
+          "path": "tools/os_maps.py",
+          "language": "Python",
+          "complexity_points": 128.0,
+          "churn_lines_lookback": 697,
+          "hotspot_score": 1209.227
+        },
+        {
+          "path": "tests/evaluation/harness.py",
+          "language": "Python",
+          "complexity_points": 117.0,
+          "churn_lines_lookback": 651,
+          "hotspot_score": 1093.801
+        },
+        {
+          "path": "tests/test_ons_data.py",
+          "language": "Python",
+          "complexity_points": 107.0,
+          "churn_lines_lookback": 835,
+          "hotspot_score": 1038.687
+        },
+        {
+          "path": "tests/test_tool_upstream_endpoint_contracts.py",
+          "language": "Python",
+          "complexity_points": 116.0,
+          "churn_lines_lookback": 486,
+          "hotspot_score": 1035.622
+        },
+        {
+          "path": "scripts/trace_report.py",
+          "language": "Python",
+          "complexity_points": 113.0,
+          "churn_lines_lookback": 383,
+          "hotspot_score": 970.101
+        }
+      ]
+    }
+  },
+  "manager_report_card": {
+    "primary_scope": "workspace",
+    "overall_risk": "Very High",
+    "priority_risks": [
+      "Change load",
+      "Footprint scale"
+    ],
+    "metric_rows": [
+      {
+        "metric": "Functional implementation footprint",
+        "value": "62.2k LOC across 271 files",
+        "assessment": "High",
+        "terminology": "Functional LOC counts non-blank lines in code files, excluding generated/output files.",
+        "basis": "Local file inventory (`git ls-files` / workspace walk) + policy/Linguist exclusions.",
+        "practical_meaning": "Higher size increases onboarding, review, and regression-testing effort."
+      },
+      {
+        "metric": "Recent change load",
+        "value": "229,543 lines changed in 263 commits (4 active authors, intensity 3.69x)",
+        "assessment": "Very High",
+        "terminology": "Change intensity is recent changed lines divided by current functional LOC.",
+        "basis": "`git log --numstat --since=180d`.",
+        "practical_meaning": "Higher change load means more coordination pressure and release-risk exposure."
+      },
+      {
+        "metric": "Structural complexity (Python)",
+        "value": "P90 CC 9.0, mean 4.1, max 138 across 2,294 functions",
+        "assessment": "Moderate",
+        "terminology": "Cyclomatic complexity approximates the number of decision paths in a function.",
+        "basis": "AST parsing of Python functions, aligned to Radon-style CC interpretation bands.",
+        "practical_meaning": "Higher complexity raises defect probability and test-case volume."
+      },
+      {
+        "metric": "High-complexity function share",
+        "value": "126 of 2,294 functions (CC >= 15, 5.5%)",
+        "assessment": "Moderate",
+        "terminology": "CC >= 15 is treated as elevated complexity requiring tighter tests/review.",
+        "basis": "Count of Python functions where cyclomatic complexity threshold is exceeded.",
+        "practical_meaning": "A higher share indicates concentrated maintainability and reliability risk."
+      },
+      {
+        "metric": "Hotspot concentration",
+        "value": "Top-5 hotspots hold 23.4% of hotspot score (total score 84142.6)",
+        "assessment": "Moderate",
+        "terminology": "Hotspot score = complexity points x log2(1 + churn lines).",
+        "basis": "Complexity model + churn from local git history over the lookback window.",
+        "practical_meaning": "Higher concentration means a few files dominate change failure risk."
+      },
+      {
+        "metric": "In-flight scope delta",
+        "value": "2,053 LOC difference (workspace 62.2k vs tracked 60.2k)",
+        "assessment": "Moderate",
+        "terminology": "Compares current workspace complexity with committed complexity.",
+        "basis": "Dual-scope measurement (`workspace` minus `git_tracked`).",
+        "practical_meaning": "Larger deltas indicate release plans may differ from current working state."
+      },
+      {
+        "metric": "Generated/output exclusion control",
+        "value": "39 files excluded in primary scope `workspace`",
+        "assessment": "Control",
+        "terminology": "Generated outputs are files produced by scripts/builds, not hand-maintained logic.",
+        "basis": "GitHub Linguist attrs + deterministic exclusion policy globs.",
+        "practical_meaning": "Prevents report inflation so management decisions reflect real implementation load."
+      }
+    ],
+    "top_hotspots": [
+      {
+        "path": "scripts/boundary_pipeline.py",
+        "language": "Python",
+        "complexity_points": 460.0,
+        "churn_lines_lookback": 2265,
+        "hotspot_score": 5127.129
+      },
+      {
+        "path": "tools/ons_data.py",
+        "language": "Python",
+        "complexity_points": 416.0,
+        "churn_lines_lookback": 2411,
+        "hotspot_score": 4674.182
+      },
+      {
+        "path": "server/stdio_adapter.py",
+        "language": "Python",
+        "complexity_points": 312.0,
+        "churn_lines_lookback": 2382,
+        "hotspot_score": 3500.192
+      },
+      {
+        "path": "tools/os_features.py",
+        "language": "Python",
+        "complexity_points": 301.0,
+        "churn_lines_lookback": 1584,
+        "hotspot_score": 3199.71
+      },
+      {
+        "path": "tools/nomis_data.py",
+        "language": "Python",
+        "complexity_points": 312.0,
+        "churn_lines_lookback": 1214,
+        "hotspot_score": 3196.983
+      }
+    ],
+    "practical_implications": [
+      "Hotspot concentration is manageable; continue routine hotspot monitoring.",
+      "Structural complexity is within routine operating range for current scope.",
+      "Plan for tighter release coordination because recent change volume is high relative to system size.",
+      "Workspace-to-branch delta is limited; release-state reporting is representative."
+    ],
+    "glossary": [
+      {
+        "term": "Functional LOC",
+        "plain_english": "Non-blank lines in implementation code, after excluding generated/output files."
+      },
+      {
+        "term": "Cyclomatic Complexity (CC)",
+        "plain_english": "A proxy for how many decision paths code contains."
+      },
+      {
+        "term": "P90 complexity",
+        "plain_english": "The value that 90% of functions are at or below; highlights the heavier tail."
+      },
+      {
+        "term": "Churn",
+        "plain_english": "How many lines changed recently (adds + deletes) in git history."
+      },
+      {
+        "term": "Hotspot",
+        "plain_english": "Code that is both complex and changed frequently, so it carries higher risk."
+      },
+      {
+        "term": "Dual scope",
+        "plain_english": "Comparing committed files (`git_tracked`) versus current local files (`workspace`)."
+      }
+    ],
+    "sources": [
+      {
+        "name": "Local git inventory and churn",
+        "details": "Uses `git ls-files` and `git log --numstat` in the configured lookback window."
+      },
+      {
+        "name": "Generated-output filtering",
+        "details": "Uses GitHub Linguist attrs (`linguist-generated`, `linguist-vendored`) plus policy globs.",
+        "url": "https://github.com/github-linguist/linguist"
+      },
+      {
+        "name": "Cyclomatic complexity interpretation",
+        "details": "Python AST-derived CC values interpreted using common Radon guidance bands.",
+        "url": "https://radon.readthedocs.io/en/master/intro.html#cyclomatic-complexity"
+      },
+      {
+        "name": "Hotspot practice",
+        "details": "Hotspot framing follows complexity x churn approaches used in code-health tooling.",
+        "url": "https://docs.enterprise.codescene.io/versions/6.7.8/guides/technical/hotspots.html"
+      },
+      {
+        "name": "Optional GitHub repository statistics",
+        "details": "When enabled, aggregates GitHub Stats API via `gh` CLI.",
+        "url": "https://docs.github.com/rest/metrics/statistics"
+      }
+    ]
+  }
+}

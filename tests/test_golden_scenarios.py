@@ -31,6 +31,8 @@ def test_golden_scenarios(idx, tool, payload, client: TestClient, mock_os_client
     def places_handler(url, params):  # noqa: ARG001
         if "find" in url:
             return 200, {"results": [{"DPA": {"UPRN": f"UPRN{idx}", "ADDRESS": f"Addr {idx}", "LAT": 51.0, "LNG": -0.1, "CLASS": "R"}}]}
+        if "postcode" in url:
+            return 200, {"results": [{"DPA": {"UPRN": f"PC{idx}", "ADDRESS": "Postcode", "LAT": 51.0, "LNG": -0.1, "CLASS": "R"}}]}
         if "uprn" in url:
             return 200, {"results": [{"DPA": {"UPRN": payload.get("uprn", "X"), "ADDRESS": "Single", "LAT": 51.1, "LNG": -0.11, "CLASS": "R"}}]}
         if "nearest" in url or "bbox" in url:

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-23
+Last updated: 2026-02-25
 Owner: @chris-page-gov
 
 ## Purpose
@@ -70,6 +70,10 @@ assumptions change.
 - Implementing dual-derivation ONS geography caching with `ONSPD` + `ONSUD`
   as primary exact-mode references and `NSPL` + `NSUL` in parallel for
   best-fit/statistical comparability.
+- Standardizing repo-level Codex execution telemetry using a Long Horizon-style
+  session summary workflow for repeatable reporting.
+- Standardizing repo extent/complexity telemetry with generated-output
+  exclusion and hotspot scoring for risk-focused maintenance planning.
 
 ## Active Work
 
@@ -118,6 +122,12 @@ assumptions change.
 - Maintain ONS postcode/UPRN geography cache artifacts and refresh workflow
   (`resources/ons_geo_sources.json`, `scripts/ons_geo_cache_refresh.py`,
   `ons_geo.*` tools) with explicit exact vs best-fit derivation provenance.
+- Maintain the Codex long-horizon reporting skill/tooling and refresh summary
+  artifacts under `scripts/codex_long_horizon_summary.py`,
+  `skills/mcp-geo-long-horizon-summary/`, and `docs/reports/`.
+- Maintain the repo extent/complexity analysis skill and report pipeline under
+  `scripts/repo_extent_complexity_report.py`,
+  `skills/mcp-geo-repo-extent-complexity/`, and `docs/reports/`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -153,6 +163,21 @@ assumptions change.
 - Done: dual-derivation ONS geography cache baseline (`ONSPD` + `ONSUD` exact,
   `NSPL` + `NSUL` best_fit) with tooling (`ons_geo.*`), refresh automation,
   route-query integration, and focused regression coverage.
+- Done: added Long Horizon-style Codex session reporting for `mcp-geo` via
+  `scripts/codex_long_horizon_summary.py`, a dedicated skill runbook
+  (`skills/mcp-geo-long-horizon-summary/SKILL.md`), and baseline report
+  artifacts for 2026-02-25 (`docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.{md,json}`),
+  now extended with deterministic summary-card SVG generation
+  (`skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl`)
+  and image-first markdown output.
+- Done: added repo extent/complexity analysis skill for `mcp-geo` via
+  `scripts/repo_extent_complexity_report.py` and
+  `skills/mcp-geo-repo-extent-complexity/`, with dual-scope reporting
+  (`git_tracked`, `workspace`), generated-output exclusion policy, Python
+  cyclomatic complexity, churn-weighted hotspots, baseline artifacts in
+  `docs/reports/repo_extent_complexity_2026-02-25.{md,json}`, and a
+  manager-facing report card snapshot in
+  `docs/reports/repo_extent_complexity_report_card_2026-02-25.md`.
 - Not started: CI pipeline.
 
 ## Backlog Priorities (from spec package)
@@ -207,6 +232,30 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-25: Extended the repo extent/complexity workflow with a
+  non-technical manager report card output. The analyzer now emits a
+  plain-English `manager_report_card` model (terminology explanations, metric
+  basis/source notes, practical implications, and hotspot attention list), and
+  `--manager-output` writes a dedicated markdown snapshot consumed by the skill
+  runner.
+- 2026-02-25: Added a source-backed repo extent/complexity analysis workflow
+  (`skills/mcp-geo-repo-extent-complexity`) with deterministic analyzer script
+  `scripts/repo_extent_complexity_report.py`. The model reports dual scopes
+  (`git_tracked`, `workspace`), excludes known generated/output surfaces by
+  default (including vendor/report/cache paths), computes Python cyclomatic
+  complexity, and ranks hotspots using `complexity x churn`.
+- 2026-02-25: Extended the Codex long-horizon reporting workflow with a
+  deterministic text-template visual card generator. The new template
+  (`skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl`)
+  produces a report header image titled `Codex MCP-Geo Summary`, and
+  generated markdown now opens with that summary image when
+  `--summary-svg-output` is provided.
+- 2026-02-25: Added a standardized Long Horizon-style Codex session summary
+  workflow for `mcp-geo`, implemented as `scripts/codex_long_horizon_summary.py`
+  plus the reusable skill `skills/mcp-geo-long-horizon-summary/`. The report
+  contract now tracks active runtime, wall-clock span, token usage, cached
+  input reuse, tool calls, patch volume, peak step tokens, and context
+  compactions, with baseline outputs captured under `docs/reports/`.
 - 2026-02-23: Completed boundary variant full-coverage hardening for strict
   resolve gates. `scripts/boundary_pipeline.py` now applies manifest default
   variant policy (equivalence + derivation + overrides) across families,
