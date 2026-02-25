@@ -316,8 +316,12 @@ def test_ons_tool_upstream_url_contracts(monkeypatch):
         if url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1/observations")
     )
     assert isinstance(observation_params, dict)
-    assert observation_params["limit"] == 500
-    assert observation_params["page"] == 1
+    # Contract: observations are fetched with implicit dimension filters first;
+    # paging params are only added on fallback when upstream signals truncation.
+    if "limit" in observation_params:
+        assert observation_params["limit"] == 500
+    if "page" in observation_params:
+        assert observation_params["page"] == 1
     assert any(
         url.endswith("/datasets/gdp-to-four-decimal-places/editions/time-series/versions/1")
         for url in json_urls

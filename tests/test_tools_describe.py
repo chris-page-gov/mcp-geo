@@ -168,3 +168,26 @@ def test_os_map_export_layers_schema_uses_explicit_union() -> None:
     tool = resp.json()["tools"][0]
     layers = tool["inputSchema"]["properties"]["layers"]
     _assert_os_map_layers_schema(layers)
+
+
+def test_select_toolsets_schema_uses_explicit_union_with_array_items() -> None:
+    resp = client.get("/tools/describe", params={"name": "os_mcp.select_toolsets"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    props = tool["inputSchema"]["properties"]
+
+    include = props["includeToolsets"]
+    exclude = props["excludeToolsets"]
+
+    assert "oneOf" in include
+    assert "oneOf" in exclude
+
+    include_array = next(option for option in include["oneOf"] if option.get("type") == "array")
+    include_string = next(option for option in include["oneOf"] if option.get("type") == "string")
+    exclude_array = next(option for option in exclude["oneOf"] if option.get("type") == "array")
+    exclude_string = next(option for option in exclude["oneOf"] if option.get("type") == "string")
+
+    assert include_array["items"] == {"type": "string"}
+    assert exclude_array["items"] == {"type": "string"}
+    assert include_string["type"] == "string"
+    assert exclude_string["type"] == "string"

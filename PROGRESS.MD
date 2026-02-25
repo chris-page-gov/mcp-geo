@@ -3,7 +3,31 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-23
+Last updated: 2026-02-25
+
+## Codex long-horizon session summary skill (2026-02-25)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CHS-DEF-0 Metric definition alignment | done | none | Standardized the report contract to mirror OpenAI Long Horizon-style session metrics (runtime, token usage, cached reuse, tool calls, patch volume, compactions, peak step). |
+| CHS-IMP-1 Session aggregation implementation | done | CHS-DEF-0 | Added `scripts/codex_long_horizon_summary.py` to parse local Codex `sessions` + `archived_sessions` JSONL data filtered by repo cwd and compute aggregate/session metrics. |
+| CHS-SKL-2 Skill + runner workflow | done | CHS-IMP-1 | Added repo skill `skills/mcp-geo-long-horizon-summary/SKILL.md` and wrapper `skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh` to produce dated report artifacts in `docs/reports/`. |
+| CHS-VAL-3 Regression + baseline evidence | done | CHS-IMP-1 | Added regression test `tests/test_codex_long_horizon_summary.py`; generated baseline artifacts `docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.{md,json}` for current repository history. |
+| CHS-GFX-4 Templated summary-card generation | done | CHS-IMP-1, CHS-SKL-2 | Added deterministic SVG template `skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl` and generator wiring so markdown reports open with a rendered `Codex MCP-Geo Summary` image (`docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.svg`). |
+
+## Repo extent/complexity analysis skill (2026-02-25)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REC-DEF-0 Metric model definition | done | none | Defined dual-scope (`git_tracked`, `workspace`) extent/complexity model with generated-output exclusion, Python cyclomatic analysis, and hotspot scoring (`complexity x churn`) aligned to SOTA practice references. |
+| REC-IMP-1 Analyzer implementation | done | REC-DEF-0 | Added `scripts/repo_extent_complexity_report.py` with deterministic markdown/JSON outputs, churn/activity rollups, default output-policy exclusions, and optional GitHub Stats API enrichment via `gh`. |
+| REC-SKL-2 Skill packaging | done | REC-IMP-1 | Added `skills/mcp-geo-repo-extent-complexity/` skill runbook, wrapper script (`scripts/run_report.sh`), and references file documenting source-backed metric rationale. |
+| REC-VAL-3 Regression + baseline evidence | done | REC-IMP-1 | Added test coverage in `tests/test_repo_extent_complexity_report.py`; generated baseline artifacts `docs/reports/repo_extent_complexity_2026-02-25.{md,json}`. |
+| REC-MGR-4 Manager report-card snapshot | done | REC-IMP-1, REC-SKL-2 | Added non-technical manager report card output (`docs/reports/repo_extent_complexity_report_card_2026-02-25.md`) with plain-English terminology, metric basis/source notes, and practical implications; wired via `--manager-output` and skill runner defaults. |
 
 ## Layered map reliability priority program (2026-02-21)
 
