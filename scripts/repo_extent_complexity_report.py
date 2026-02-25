@@ -542,25 +542,43 @@ def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
     workspace_loc = int(((scopes.get("workspace") or {}).get("non_blank_loc_functional", 0)) or 0)
     tracked_loc = int(((scopes.get("git_tracked") or {}).get("non_blank_loc_functional", 0)) or 0)
     in_flight_delta = workspace_loc - tracked_loc if has_dual_scope else None
-    in_flight_ratio = (
-        (abs(in_flight_delta) / max(tracked_loc, 1))
-        if has_dual_scope and in_flight_delta is not None and tracked_loc
-        else (0.0 if has_dual_scope else None)
-    )
+    in_flight_ratio: float | None = None
+    in_flight_risk_basis = "N/A"
+    if has_dual_scope and in_flight_delta is not None:
+        if tracked_loc > 0:
+            in_flight_ratio = abs(in_flight_delta) / tracked_loc
+            in_flight_risk_basis = (
+                "Relative delta `abs(workspace - git_tracked) / git_tracked`."
+            )
+        else:
+            in_flight_risk_basis = (
+                "Absolute delta fallback because tracked functional LOC is zero."
+            )
 
     footprint_risk = _risk_from_thresholds(functional_loc, low=15_000, moderate=45_000, high=90_000)
     change_risk = _risk_from_thresholds(change_intensity, low=0.5, moderate=1.5, high=3.0)
     structural_risk = _risk_from_thresholds(p90_cc, low=5.0, moderate=10.0, high=15.0)
     concentration_risk = _risk_from_thresholds(top5_share, low=0.20, moderate=0.35, high=0.50)
     high_cc_risk = _risk_from_thresholds(high_cc_ratio, low=0.03, moderate=0.07, high=0.12)
-    in_flight_risk = (
-        _risk_from_thresholds(in_flight_ratio or 0.0, low=0.02, moderate=0.08, high=0.15)
-        if has_dual_scope
-        else "N/A"
-    )
+    if not has_dual_scope:
+        in_flight_risk = "N/A"
+    elif in_flight_ratio is not None:
+        in_flight_risk = _risk_from_thresholds(in_flight_ratio, low=0.02, moderate=0.08, high=0.15)
+    else:
+        in_flight_risk = _risk_from_thresholds(
+            abs(in_flight_delta or 0),
+            low=200,
+            moderate=1_000,
+            high=5_000,
+        )
     in_flight_value = (
         f"{_human_int(in_flight_delta or 0)} LOC difference "
-        f"(workspace {_human_m(workspace_loc)} vs tracked {_human_m(tracked_loc)})"
+        f"(workspace {_human_m(workspace_loc)} vs tracked {_human_m(tracked_loc)}"
+        + (
+            f", delta {_human_percent(in_flight_ratio, 1)} of tracked)"
+            if in_flight_ratio is not None
+            else ", tracked baseline is zero)"
+        )
         if has_dual_scope
         else "N/A (requires both `workspace` and `git_tracked` scopes)"
     )
@@ -683,7 +701,7 @@ def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
             "assessment": in_flight_assessment,
             "terminology": "Compares current workspace complexity with committed complexity.",
             "basis": (
-                "Dual-scope measurement (`workspace` minus `git_tracked`)."
+                in_flight_risk_basis
                 if has_dual_scope
                 else "Only one scope was collected in this run."
             ),

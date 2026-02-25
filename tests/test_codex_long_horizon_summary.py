@@ -194,3 +194,49 @@ def test_build_summary_filters_repo_and_computes_metrics(tmp_path: Path) -> None
     assert "<text>0.1h</text>" in svg
     assert "<text>1.2k</text>" in svg
     assert "<text>3</text>" in svg
+
+
+def test_build_summary_counts_apply_patch_lines_from_function_call_json_arguments(
+    tmp_path: Path,
+) -> None:
+    codex_home = tmp_path / ".codex"
+    records = [
+        {
+            "timestamp": "2026-02-12T09:00:00.000Z",
+            "type": "session_meta",
+            "payload": {
+                "id": "session-apply-patch-json",
+                "timestamp": "2026-02-12T09:00:00.000Z",
+                "cwd": "/Users/example/repos/mcp-geo",
+            },
+        },
+        {
+            "timestamp": "2026-02-12T09:00:01.000Z",
+            "type": "response_item",
+            "payload": {
+                "type": "function_call",
+                "name": "apply_patch",
+                "arguments": json.dumps(
+                    {
+                        "patch": (
+                            "*** Begin Patch\n"
+                            "*** Add File: counted.txt\n"
+                            "+line one\n"
+                            "+line two\n"
+                            "*** End Patch\n"
+                        )
+                    }
+                ),
+            },
+        },
+    ]
+    _write_jsonl(codex_home / "sessions" / "2026" / "02" / "patch.jsonl", records)
+
+    summary = build_summary(codex_home=codex_home, repo_filter="mcp-geo")
+    stats = summary["summary"]
+
+    assert stats["session_count"] == 1
+    assert stats["tool_calls"] == 1
+    assert stats["function_calls"] == 1
+    assert stats["patch_calls"] == 1
+    assert stats["apply_patch_lines_added"] == 2

@@ -120,3 +120,59 @@ def test_manager_report_card_marks_in_flight_delta_not_applicable_for_single_sco
         "not assessed in single-scope mode" in line
         for line in card["practical_implications"]
     )
+
+
+def test_manager_report_card_uses_absolute_delta_when_tracked_scope_is_zero() -> None:
+    report = {
+        "lookback_days": 30,
+        "git_activity": {
+            "commit_count": 0,
+            "active_authors": 0,
+            "additions": 0,
+            "deletions": 0,
+        },
+        "scopes": {
+            "workspace": {
+                "non_blank_loc_functional": 8000,
+                "files_functional": 20,
+                "excluded_generated_or_policy": 3,
+                "python_complexity": {
+                    "functions_count": 100,
+                    "mean_cc": 2.5,
+                    "p90_cc": 4.0,
+                    "max_cc": 8,
+                    "high_risk_functions_cc_ge_15": 0,
+                },
+                "hotspot_total_score": 20.0,
+                "top_5_hotspot_share": 0.1,
+                "hotspots": [],
+            },
+            "git_tracked": {
+                "non_blank_loc_functional": 0,
+                "files_functional": 0,
+                "excluded_generated_or_policy": 0,
+                "python_complexity": {
+                    "functions_count": 0,
+                    "mean_cc": 0.0,
+                    "p90_cc": 0.0,
+                    "max_cc": 0,
+                    "high_risk_functions_cc_ge_15": 0,
+                },
+                "hotspot_total_score": 0.0,
+                "top_5_hotspot_share": 0.0,
+                "hotspots": [],
+            },
+        },
+    }
+
+    card = build_manager_report_card(report)
+    in_flight_row = next(
+        row
+        for row in card["metric_rows"]
+        if row.get("metric") == "In-flight scope delta"
+    )
+
+    assert in_flight_row["assessment"] == "Very High"
+    assert "tracked baseline is zero" in str(in_flight_row["value"])
+    assert "absolute delta fallback" in str(in_flight_row["basis"]).lower()
+    assert "In-flight delta" in card["priority_risks"]

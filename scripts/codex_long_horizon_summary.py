@@ -112,6 +112,35 @@ def _count_added_lines_in_patch(patch_text: str) -> int:
     return added
 
 
+def _extract_apply_patch_text(value: Any) -> str | None:
+    if isinstance(value, dict):
+        patch_text = value.get("patch")
+        if isinstance(patch_text, str):
+            return patch_text
+        patch_input = value.get("input")
+        if isinstance(patch_input, str):
+            return patch_input
+        return None
+
+    if not isinstance(value, str):
+        return None
+
+    try:
+        decoded = json.loads(value)
+    except json.JSONDecodeError:
+        decoded = None
+
+    if decoded is not None:
+        if isinstance(decoded, str):
+            return decoded if "*** Begin Patch" in decoded else None
+        if isinstance(decoded, dict):
+            return _extract_apply_patch_text(decoded)
+
+    if "*** Begin Patch" in value:
+        return value
+    return None
+
+
 def _discover_session_files(codex_home: Path) -> list[Path]:
     files: list[Path] = []
     for rel in ("sessions", "archived_sessions"):
@@ -257,9 +286,9 @@ def _parse_session_file(path: Path, repo_filter: str) -> SessionMetrics | None:
                 shell_calls += 1
             if name == "apply_patch":
                 patch_calls += 1
-                args = payload.get("arguments")
-                if isinstance(args, str):
-                    apply_patch_lines_added += _count_added_lines_in_patch(args)
+                patch_text = _extract_apply_patch_text(payload.get("arguments"))
+                if patch_text:
+                    apply_patch_lines_added += _count_added_lines_in_patch(patch_text)
             continue
 
         if response_type == "custom_tool_call":
@@ -269,9 +298,9 @@ def _parse_session_file(path: Path, repo_filter: str) -> SessionMetrics | None:
             tool_name_counts[name] = tool_name_counts.get(name, 0) + 1
             if name == "apply_patch":
                 patch_calls += 1
-                patch_input = payload.get("input")
-                if isinstance(patch_input, str):
-                    apply_patch_lines_added += _count_added_lines_in_patch(patch_input)
+                patch_text = _extract_apply_patch_text(payload.get("input"))
+                if patch_text:
+                    apply_patch_lines_added += _count_added_lines_in_patch(patch_text)
             continue
 
         if response_type == "web_search_call":
