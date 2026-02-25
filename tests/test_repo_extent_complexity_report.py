@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scripts.repo_extent_complexity_report import (
     _normalize_git_rename_path,
     build_manager_report_card,
@@ -176,3 +178,59 @@ def test_manager_report_card_uses_absolute_delta_when_tracked_scope_is_zero() ->
     assert "tracked baseline is zero" in str(in_flight_row["value"])
     assert "absolute delta fallback" in str(in_flight_row["basis"]).lower()
     assert "In-flight delta" in card["priority_risks"]
+
+
+def test_build_report_include_github_handles_missing_cli(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "scripts").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "scripts" / "core.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+
+    def _raise_missing(*_: object, **__: object) -> object:
+        raise FileNotFoundError("command not found")
+
+    monkeypatch.setattr("scripts.repo_extent_complexity_report.subprocess.run", _raise_missing)
+
+    report = build_report(
+        root=tmp_path,
+        scope="workspace",
+        lookback_days=30,
+        top_hotspots=5,
+        include_github=True,
+        github_repo="example-org/example-repo",
+        exclude_globs=[],
+    )
+
+    assert report["git_available"] is False
+    assert report["github_stats"] is None
+    assert "workspace" in report["scopes"]
+
+
+def test_build_report_non_git_both_scope_does_not_create_git_tracked(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "src" / "app.py").write_text(
+        "def alpha(flag):\n    if flag:\n        return 1\n    return 0\n",
+        encoding="utf-8",
+    )
+
+    report = build_report(
+        root=tmp_path,
+        scope="both",
+        lookback_days=30,
+        top_hotspots=5,
+        include_github=False,
+        github_repo=None,
+        exclude_globs=[],
+    )
+
+    assert report["git_available"] is False
+    assert "workspace" in report["scopes"]
+    assert "git_tracked" not in report["scopes"]
+
+    in_flight_row = next(
+        row
+        for row in report["manager_report_card"]["metric_rows"]
+        if row.get("metric") == "In-flight scope delta"
+    )
+    assert in_flight_row["assessment"] == "N/A"

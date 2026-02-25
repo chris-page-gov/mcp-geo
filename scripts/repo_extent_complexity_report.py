@@ -144,14 +144,17 @@ class FileStats:
 
 
 def _run(cmd: list[str], cwd: Path, input_text: str | None = None) -> tuple[int, str, str]:
-    proc = subprocess.run(
-        cmd,
-        cwd=str(cwd),
-        input=input_text,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(cwd),
+            input=input_text,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        return 127, "", str(exc)
     return proc.returncode, proc.stdout, proc.stderr
 
 
@@ -976,10 +979,8 @@ def build_report(
     is_git = _is_git_repo(root)
 
     files_by_scope: dict[str, list[str]] = {}
-    if scope in {"tracked", "both"}:
-        files_by_scope["git_tracked"] = (
-            _git_file_list(root, include_untracked=False) if is_git else []
-        )
+    if scope in {"tracked", "both"} and is_git:
+        files_by_scope["git_tracked"] = _git_file_list(root, include_untracked=False)
     if scope in {"workspace", "both"}:
         if is_git:
             files_by_scope["workspace"] = _git_file_list(root, include_untracked=True)
