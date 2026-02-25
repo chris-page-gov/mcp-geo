@@ -2,28 +2,28 @@
 
 # MCP Geo Codex Session Summary
 
-Generated: `2026-02-25T06:01:27.993021Z`
+Generated: `2026-02-25T15:17:47.436539Z`
 Codex home: `/Users/crpage/.codex`
 Repo filter: `mcp-geo`
 
 ## Long Horizon-style Metrics
 
-- Active runtime: `503.5h`
-- Wall-clock span: `869.9h`
-- Token usage: `1086.9M` (`1082.1M` input + `4.2M` output)
-- Cached input reused: `1039.0M`
-- Tool calls: `12,665` (`4,036` shell + `1,922` patches)
-- Patch volume: `57.0k` lines (from `apply_patch` calls)
+- Active runtime: `513.1h`
+- Wall-clock span: `879.2h`
+- Token usage: `1109.6M` (`1104.7M` input + `4.3M` output)
+- Cached input reused: `1060.2M`
+- Tool calls: `12,914` (`4,235` shell + `1,956` patches)
+- Patch volume: `58.7k` lines (from `apply_patch` calls)
 - Peak single step: `3,648,204` tokens
-- Auto context compactions: `148`
+- Auto context compactions: `150`
 
 ## Session Coverage
 
-- Sessions included: `46`
-- Interactive sessions: `37`
+- Sessions included: `47`
+- Interactive sessions: `38`
 - Automation sessions: `9`
-- Sessions with token telemetry: `43`
-- Date range: `2026-01-20T00:07:27.904000Z` to `2026-02-25T06:01:25.369000Z`
+- Sessions with token telemetry: `44`
+- Date range: `2026-01-20T00:07:27.904000Z` to `2026-02-25T15:17:44.744000Z`
 
 ## Top Sessions by Total Tokens
 

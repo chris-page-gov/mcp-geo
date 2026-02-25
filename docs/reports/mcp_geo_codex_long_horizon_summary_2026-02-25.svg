@@ -19,27 +19,27 @@
 
   <rect x="390" y="280" width="1140" height="270" rx="26" fill="#0A1224" stroke="#253452" stroke-width="2" />
   <text x="960" y="346" text-anchor="middle" fill="#C6D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Active Runtime</text>
-  <text x="960" y="500" text-anchor="middle" fill="#6EF6DB" font-family="Segoe UI, Arial, sans-serif" font-size="140" font-weight="800">503.5h</text>
-  <text x="960" y="542" text-anchor="middle" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="600">869.9h wall-clock session span</text>
+  <text x="960" y="500" text-anchor="middle" fill="#6EF6DB" font-family="Segoe UI, Arial, sans-serif" font-size="140" font-weight="800">513.1h</text>
+  <text x="960" y="542" text-anchor="middle" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="600">879.2h wall-clock session span</text>
 
   <rect x="120" y="590" width="520" height="170" rx="22" fill="#0A1224" stroke="#253452" stroke-width="2" />
   <text x="170" y="637" fill="#C6D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Token Usage</text>
-  <text x="170" y="716" fill="#7EC8FF" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">1086.9M</text>
-  <text x="170" y="753" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">1082.1M input + 4.2M output</text>
+  <text x="170" y="716" fill="#7EC8FF" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">1109.6M</text>
+  <text x="170" y="753" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">1104.7M input + 4.3M output</text>
 
   <rect x="700" y="590" width="520" height="170" rx="22" fill="#0A1224" stroke="#253452" stroke-width="2" />
   <text x="750" y="637" fill="#C6D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Cached Input Reused</text>
-  <text x="750" y="716" fill="#F6D76F" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">1039.0M</text>
+  <text x="750" y="716" fill="#F6D76F" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">1060.2M</text>
   <text x="750" y="753" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">High context reuse across the run</text>
 
   <rect x="1280" y="590" width="520" height="170" rx="22" fill="#0A1224" stroke="#253452" stroke-width="2" />
   <text x="1330" y="637" fill="#C6D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Tool Calls</text>
-  <text x="1330" y="716" fill="#FF8AA6" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">12,665</text>
-  <text x="1330" y="753" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">4,036 shell calls + 1,922 patches</text>
+  <text x="1330" y="716" fill="#FF8AA6" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">12,914</text>
+  <text x="1330" y="753" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">4,235 shell calls + 1,956 patches</text>
 
   <rect x="120" y="790" width="520" height="170" rx="22" fill="#0A1224" stroke="#253452" stroke-width="2" />
   <text x="170" y="837" fill="#C6D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Patch Volume</text>
-  <text x="170" y="916" fill="#9D8BFF" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">57.0k</text>
+  <text x="170" y="916" fill="#9D8BFF" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">58.7k</text>
   <text x="170" y="953" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">Approximate lines added</text>
 
   <rect x="700" y="790" width="520" height="170" rx="22" fill="#0A1224" stroke="#253452" stroke-width="2" />
@@ -49,6 +49,6 @@
 
   <rect x="1280" y="790" width="520" height="170" rx="22" fill="#0A1224" stroke="#253452" stroke-width="2" />
   <text x="1330" y="837" fill="#C6D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Auto Context Compactions</text>
-  <text x="1330" y="916" fill="#FFAE63" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">148</text>
+  <text x="1330" y="916" fill="#FFAE63" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800">150</text>
   <text x="1330" y="953" fill="#9FB0D2" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600">Automatic context management events</text>
 </svg>

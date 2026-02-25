@@ -121,6 +121,37 @@ def _discover_session_files(codex_home: Path) -> list[Path]:
     return sorted(files)
 
 
+def _sanitize_session_file_path(file_path: str, codex_home: Path) -> str:
+    raw = Path(file_path).expanduser()
+    try:
+        rel = raw.resolve().relative_to(codex_home.expanduser().resolve())
+        return f"<codex_home>/{rel.as_posix()}"
+    except Exception:
+        tail = Path(file_path).as_posix().split("/")[-3:]
+        return f"<session_file>/{'/'.join(tail)}"
+
+
+def _sanitize_session_cwd(cwd: str, repo_filter: str) -> str:
+    normalized = cwd.replace("\\", "/")
+    if repo_filter and repo_filter in normalized:
+        return f"<repo>/{repo_filter}"
+    tail = [segment for segment in normalized.split("/") if segment]
+    if tail:
+        return f"<cwd>/{tail[-1]}"
+    return "<cwd>/unknown"
+
+
+def _serialize_session_metrics(
+    metrics: SessionMetrics,
+    codex_home: Path,
+    repo_filter: str,
+) -> dict[str, Any]:
+    payload = asdict(metrics)
+    payload["file_path"] = _sanitize_session_file_path(metrics.file_path, codex_home)
+    payload["cwd"] = _sanitize_session_cwd(metrics.cwd, repo_filter)
+    return payload
+
+
 def _parse_session_file(path: Path, repo_filter: str) -> SessionMetrics | None:
     records: list[dict[str, Any]] = []
     meta: dict[str, Any] | None = None
@@ -348,8 +379,14 @@ def build_summary(codex_home: Path, repo_filter: str) -> dict[str, Any]:
                 "end": _iso(max(non_null_ends)) if non_null_ends else "",
             },
         },
-        "top_sessions_by_total_tokens": [asdict(item) for item in top_by_tokens],
-        "sessions": [asdict(item) for item in sessions],
+        "top_sessions_by_total_tokens": [
+            _serialize_session_metrics(item, codex_home=codex_home, repo_filter=repo_filter)
+            for item in top_by_tokens
+        ],
+        "sessions": [
+            _serialize_session_metrics(item, codex_home=codex_home, repo_filter=repo_filter)
+            for item in sessions
+        ],
     }
 
 

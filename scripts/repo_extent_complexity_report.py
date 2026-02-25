@@ -511,6 +511,9 @@ def _markdown_table_row(columns: list[str]) -> str:
 def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
     scopes = report.get("scopes") or {}
     scope_name, scope_data = _pick_primary_scope(scopes)
+    has_workspace_scope = "workspace" in scopes
+    has_tracked_scope = "git_tracked" in scopes
+    has_dual_scope = has_workspace_scope and has_tracked_scope
     git_activity = report.get("git_activity") or {}
     python = scope_data.get("python_complexity") or {}
 
@@ -538,15 +541,30 @@ def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
 
     workspace_loc = int(((scopes.get("workspace") or {}).get("non_blank_loc_functional", 0)) or 0)
     tracked_loc = int(((scopes.get("git_tracked") or {}).get("non_blank_loc_functional", 0)) or 0)
-    in_flight_delta = workspace_loc - tracked_loc if workspace_loc or tracked_loc else 0
-    in_flight_ratio = abs(in_flight_delta) / max(tracked_loc, 1) if tracked_loc else 0.0
+    in_flight_delta = workspace_loc - tracked_loc if has_dual_scope else None
+    in_flight_ratio = (
+        (abs(in_flight_delta) / max(tracked_loc, 1))
+        if has_dual_scope and in_flight_delta is not None and tracked_loc
+        else (0.0 if has_dual_scope else None)
+    )
 
     footprint_risk = _risk_from_thresholds(functional_loc, low=15_000, moderate=45_000, high=90_000)
     change_risk = _risk_from_thresholds(change_intensity, low=0.5, moderate=1.5, high=3.0)
     structural_risk = _risk_from_thresholds(p90_cc, low=5.0, moderate=10.0, high=15.0)
     concentration_risk = _risk_from_thresholds(top5_share, low=0.20, moderate=0.35, high=0.50)
     high_cc_risk = _risk_from_thresholds(high_cc_ratio, low=0.03, moderate=0.07, high=0.12)
-    in_flight_risk = _risk_from_thresholds(in_flight_ratio, low=0.02, moderate=0.08, high=0.15)
+    in_flight_risk = (
+        _risk_from_thresholds(in_flight_ratio or 0.0, low=0.02, moderate=0.08, high=0.15)
+        if has_dual_scope
+        else "N/A"
+    )
+    in_flight_value = (
+        f"{_human_int(in_flight_delta or 0)} LOC difference "
+        f"(workspace {_human_m(workspace_loc)} vs tracked {_human_m(tracked_loc)})"
+        if has_dual_scope
+        else "N/A (requires both `workspace` and `git_tracked` scopes)"
+    )
+    in_flight_assessment = in_flight_risk if has_dual_scope else "N/A"
 
     risk_signals = [
         {"name": "Footprint scale", "risk": footprint_risk},
@@ -554,8 +572,9 @@ def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
         {"name": "Structural complexity", "risk": structural_risk},
         {"name": "Hotspot concentration", "risk": concentration_risk},
         {"name": "High-complexity function share", "risk": high_cc_risk},
-        {"name": "In-flight delta", "risk": in_flight_risk},
     ]
+    if has_dual_scope:
+        risk_signals.append({"name": "In-flight delta", "risk": in_flight_risk})
     overall_risk = (
         max(risk_signals, key=lambda item: _risk_rank(item["risk"]))["risk"]
         if risk_signals
@@ -660,16 +679,18 @@ def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
         },
         {
             "metric": "In-flight scope delta",
-            "value": (
-                f"{_human_int(in_flight_delta)} LOC difference "
-                f"(workspace {_human_m(workspace_loc)} vs tracked {_human_m(tracked_loc)})"
-            ),
-            "assessment": in_flight_risk,
+            "value": in_flight_value,
+            "assessment": in_flight_assessment,
             "terminology": "Compares current workspace complexity with committed complexity.",
-            "basis": "Dual-scope measurement (`workspace` minus `git_tracked`).",
+            "basis": (
+                "Dual-scope measurement (`workspace` minus `git_tracked`)."
+                if has_dual_scope
+                else "Only one scope was collected in this run."
+            ),
             "practical_meaning": (
-                "Larger deltas indicate release plans may differ from current "
-                "working state."
+                "Larger deltas indicate release plans may differ from current working state."
+                if has_dual_scope
+                else "Run in `--scope both` mode to assess release drift risk."
             ),
         },
         {
@@ -708,10 +729,20 @@ def build_manager_report_card(report: dict[str, Any]) -> dict[str, Any]:
             else "Recent change load is proportionate to repo size."
         ),
         (
-            "Expect potential release drift between local work and committed branch; "
-            "consider a sync checkpoint."
-            if _risk_rank(in_flight_risk) >= _risk_rank("High")
-            else "Workspace-to-branch delta is limited; release-state reporting is representative."
+            (
+                "Expect potential release drift between local work and committed branch; "
+                "consider a sync checkpoint."
+                if _risk_rank(in_flight_risk) >= _risk_rank("High")
+                else (
+                    "Workspace-to-branch delta is limited; release-state "
+                    "reporting is representative."
+                )
+            )
+            if has_dual_scope
+            else (
+                "In-flight delta is not assessed in single-scope mode; use "
+                "`--scope both` for this signal."
+            )
         ),
     ]
 

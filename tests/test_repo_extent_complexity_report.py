@@ -4,6 +4,7 @@ from pathlib import Path
 
 from scripts.repo_extent_complexity_report import (
     _normalize_git_rename_path,
+    build_manager_report_card,
     build_report,
     python_cc_scores,
     render_manager_report_card,
@@ -76,3 +77,46 @@ def test_build_report_workspace_scope_excludes_generated_output_paths(tmp_path: 
     assert "Terminology Glossary" in manager
     assert "Metric Basis and Sources" in manager
     assert "Functional implementation footprint" in manager
+
+
+def test_manager_report_card_marks_in_flight_delta_not_applicable_for_single_scope() -> None:
+    report = {
+        "lookback_days": 30,
+        "git_activity": {
+            "commit_count": 0,
+            "active_authors": 0,
+            "additions": 0,
+            "deletions": 0,
+        },
+        "scopes": {
+            "git_tracked": {
+                "non_blank_loc_functional": 1200,
+                "files_functional": 6,
+                "excluded_generated_or_policy": 1,
+                "python_complexity": {
+                    "functions_count": 20,
+                    "mean_cc": 3.1,
+                    "p90_cc": 6.0,
+                    "max_cc": 11,
+                    "high_risk_functions_cc_ge_15": 0,
+                },
+                "hotspot_total_score": 10.0,
+                "top_5_hotspot_share": 0.2,
+                "hotspots": [],
+            }
+        },
+    }
+
+    card = build_manager_report_card(report)
+    in_flight_row = next(
+        row
+        for row in card["metric_rows"]
+        if row.get("metric") == "In-flight scope delta"
+    )
+    assert in_flight_row["assessment"] == "N/A"
+    assert str(in_flight_row["value"]).startswith("N/A")
+    assert "In-flight delta" not in card["priority_risks"]
+    assert any(
+        "not assessed in single-scope mode" in line
+        for line in card["practical_implications"]
+    )

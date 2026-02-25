@@ -158,6 +158,10 @@ def test_build_summary_filters_repo_and_computes_metrics(tmp_path: Path) -> None
 
     session = summary["sessions"][0]
     assert session["first_prompt"] == "Build a long horizon summary"
+    assert session["cwd"] == "<repo>/mcp-geo"
+    assert session["file_path"].startswith("<codex_home>/")
+    assert str(codex_home) not in session["file_path"]
+    assert "/Users/example/repos/mcp-geo" not in json.dumps(summary)
 
     markdown = render_markdown(summary)
     assert "# MCP Geo Codex Session Summary" in markdown
