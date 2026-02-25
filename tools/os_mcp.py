@@ -1338,8 +1338,18 @@ def _select_toolsets(payload: dict[str, Any]) -> ToolResult:
       "properties": {
         "query": {"type": "string"},
         "toolset": {"type": "string"},
-        "includeToolsets": {"type": ["array", "string"]},
-        "excludeToolsets": {"type": ["array", "string"]},
+        "includeToolsets": {
+          "oneOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "excludeToolsets": {
+          "oneOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
         "maxTools": {"type": "integer"}
       },
       "required": []
@@ -1807,11 +1817,17 @@ register(
                     "description": "Single named toolset shortcut (for tools/list toolset param).",
                 },
                 "includeToolsets": {
-                    "type": ["array", "string"],
+                    "oneOf": [
+                        {"type": "array", "items": {"type": "string"}},
+                        {"type": "string"},
+                    ],
                     "description": "Toolsets to include (array or comma-separated string).",
                 },
                 "excludeToolsets": {
-                    "type": ["array", "string"],
+                    "oneOf": [
+                        {"type": "array", "items": {"type": "string"}},
+                        {"type": "string"},
+                    ],
                     "description": "Toolsets to exclude (array or comma-separated string).",
                 },
                 "maxTools": {
