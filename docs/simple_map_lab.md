@@ -17,7 +17,7 @@ Deliver maps to clients with the smallest possible runtime surface:
   - If no bearer token is present, proxy uses `key` query/header, then server
     `OS_API_KEY`.
 - Added a minimal UI lab at `ui://mcp-geo/simple-map-lab` backed by
-  [`ui/simple_map.html`](/Users/crpage/repos/mcp-geo/ui/simple_map.html).
+  [`ui/simple_map.html`](../ui/simple_map.html).
   - OS Vector proxy mode (style + tile path through `/maps/vector/*`).
   - OS Style dropdown with pre-populated OS and OS Open style presets.
   - PMTiles mode (browser-side `pmtiles://` source with generic vector layer rendering).
