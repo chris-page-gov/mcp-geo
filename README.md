@@ -59,6 +59,7 @@ References:
 - `docs/spec_package/06a_map_delivery_fallback_contracts.md`
 - `docs/map_delivery_support_matrix.md`
 - `docs/map_embedding_best_practices.md`
+- `docs/simple_map_lab.md` (minimal auth + PMTiles exploration runbook)
 
 ## Getting Started (User Guide)
 

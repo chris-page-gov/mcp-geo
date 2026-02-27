@@ -9,7 +9,7 @@ import time
 import re
 from collections import OrderedDict
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -203,17 +203,34 @@ def _get_osm_tile_bytes(z: int, x: int, y: int) -> tuple[bytes, str, str]:
     return resp.content, content_type, "MISS"
 
 
-def _get_api_key(request: Request) -> str:
+def _resolve_upstream_auth(request: Request) -> tuple[dict[str, str], dict[str, str], list[str]]:
+    auth_header = (request.headers.get("authorization") or "").strip()
+    if auth_header.lower().startswith("bearer "):
+        token = auth_header[7:].strip()
+        if token:
+            bearer_value = f"Bearer {token}"
+            return (
+                {"Authorization": bearer_value},
+                {},
+                [token, bearer_value],
+            )
+
     key = request.query_params.get("key")
-    if key in ("OS_API_KEY", "{API_KEY}"):
+    if key in ("OS_API_KEY", "{API_KEY}", _OS_KEY_PLACEHOLDER):
         key = None
-    key = key or settings.OS_API_KEY
+    key_header = request.headers.get("key")
+    if key_header in ("OS_API_KEY", "{API_KEY}", _OS_KEY_PLACEHOLDER):
+        key_header = None
+    key = key or key_header or settings.OS_API_KEY
     if not key:
         raise HTTPException(
             status_code=401,
-            detail="OS API key required. Provide OS_API_KEY or ?key=",
+            detail=(
+                "OS authentication required. Provide Authorization: Bearer <token>, "
+                "a key query/header, or OS_API_KEY in the server environment."
+            ),
         )
-    return key
+    return {}, {"key": key}, [key]
 
 
 def _rewrite_style_urls(
@@ -367,24 +384,53 @@ def _normalize_style_url(url: str, key: str) -> tuple[str, bool]:
         url = urljoin(f"{_OS_BASE}/", url)
         parsed = urlparse(url)
     if "{API_KEY}" in url:
-        url = url.replace("{API_KEY}", key)
+        url = url.replace("{API_KEY}", key or "")
         parsed = urlparse(url)
-    has_key = "key=" in (parsed.query or "")
+    if "OS_API_KEY" in url:
+        url = url.replace("OS_API_KEY", key or "")
+        parsed = urlparse(url)
+
+    query_pairs = parse_qsl(parsed.query, keep_blank_values=True)
+    normalized_pairs: list[tuple[str, str]] = []
+    has_key = False
+    for name, value in query_pairs:
+        if name.lower() != "key":
+            normalized_pairs.append((name, value))
+            continue
+        has_key = True
+        if value in {"", "{API_KEY}", "OS_API_KEY", _OS_KEY_PLACEHOLDER}:
+            if key:
+                normalized_pairs.append((name, key))
+            continue
+        normalized_pairs.append((name, value))
+    parsed = parsed._replace(query=urlencode(normalized_pairs, doseq=True))
+    url = urlunparse(parsed)
     return url, has_key
 
 
-def _get_upstream(url: str, params: dict[str, Any], key: str) -> requests.Response:
+def _get_upstream(
+    url: str,
+    params: dict[str, Any],
+    headers: dict[str, str] | None,
+    secrets: list[str],
+) -> requests.Response:
     if not _OS_BREAKER.allow():
         raise HTTPException(status_code=503, detail="OS upstream circuit breaker is open.")
     try:
-        return requests.get(url, params=params, timeout=DEFAULT_TIMEOUT)
+        return requests.get(url, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
     except (req_exc.ConnectionError, req_exc.Timeout) as exc:
-        safe = mask_in_text(str(exc), [key])
+        safe = mask_in_text(str(exc), secrets)
         _OS_BREAKER.record_failure()
         raise HTTPException(status_code=502, detail=f"OS proxy error: {safe}") from exc
 
 
-def _get_upstream_style(style_name: str | None, params: dict[str, Any], key: str) -> requests.Response:
+def _get_upstream_style(
+    style_name: str | None,
+    params: dict[str, Any],
+    headers: dict[str, str] | None,
+    key: str,
+    secrets: list[str],
+) -> requests.Response:
     candidates: list[tuple[str, dict[str, Any]]] = []
     variants: list[str] = []
     if style_name:
@@ -406,7 +452,7 @@ def _get_upstream_style(style_name: str | None, params: dict[str, Any], key: str
     last_resp: requests.Response | None = None
     for url, extra in candidates:
         merged = {**params, **extra}
-        resp = _get_upstream(url, merged, key)
+        resp = _get_upstream(url, merged, headers, secrets)
         if resp.status_code == 200:
             try:
                 payload = resp.json()
@@ -418,8 +464,8 @@ def _get_upstream_style(style_name: str | None, params: dict[str, Any], key: str
             if style_url:
                 resolved, has_key = _normalize_style_url(style_url, key)
                 if has_key:
-                    return _get_upstream(resolved, {}, key)
-                return _get_upstream(resolved, params, key)
+                    return _get_upstream(resolved, {}, headers, secrets)
+                return _get_upstream(resolved, params, headers, secrets)
             return resp
         if resp.status_code != 404:
             return resp
@@ -459,14 +505,18 @@ def serve_maplibre_worker(request: Request) -> Response:
 def proxy_vector_tiles(path: str, request: Request) -> Response:
     if requests is None:
         raise HTTPException(status_code=501, detail="requests is not installed")
-    key = _get_api_key(request)
+    upstream_headers, auth_query, secrets = _resolve_upstream_auth(request)
+    key = auth_query.get("key", "")
     params = dict(request.query_params)
     params.pop("key", None)
-    params["key"] = key
+    params.update(auth_query)
     srs = request.query_params.get("srs")
     try:
-        if path.startswith("styles/"):
-            style_name = path.split("/", 1)[1]
+        if path.startswith("styles/") or path.startswith(f"{_STYLE_INDEX_PATH}/"):
+            if path.startswith("styles/"):
+                style_name = path.split("/", 1)[1]
+            else:
+                style_name = path.split(f"{_STYLE_INDEX_PATH}/", 1)[1]
             local_style = _load_local_style(style_name)
             if local_style:
                 return JSONResponse(
@@ -477,8 +527,8 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                         str(request.base_url).rstrip("/"),
                     )
                 )
-            resp = _get_upstream_style(style_name, params, key)
-        elif path == "styles" or path == "styles.json":
+            resp = _get_upstream_style(style_name, params, upstream_headers, key, secrets)
+        elif path in {"styles", "styles.json", _STYLE_INDEX_PATH, f"{_STYLE_INDEX_PATH}.json"}:
             style_name = request.query_params.get("style")
             local_style = _load_local_style(style_name)
             if local_style:
@@ -490,12 +540,12 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                         str(request.base_url).rstrip("/"),
                     )
                 )
-            resp = _get_upstream_style(style_name, params, key)
+            resp = _get_upstream_style(style_name, params, upstream_headers, key, secrets)
         else:
             upstream_url = f"{_OS_BASE}/{path}"
-            resp = _get_upstream(upstream_url, params, key)
+            resp = _get_upstream(upstream_url, params, upstream_headers, secrets)
     except (req_exc.ConnectionError, req_exc.Timeout) as exc:
-        safe = mask_in_text(str(exc), [key])
+        safe = mask_in_text(str(exc), secrets)
         raise HTTPException(status_code=502, detail=f"OS proxy error: {safe}") from exc
     content_type = resp.headers.get("content-type", "application/octet-stream")
     if resp.status_code != 200:
@@ -509,7 +559,7 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                 content={"isError": True, "code": code, "message": message},
             )
             return _apply_cors(response, request)
-        safe = mask_in_text(resp.text[:200], [key])
+        safe = mask_in_text(resp.text[:200], secrets)
         response = JSONResponse(
             status_code=resp.status_code,
             content={

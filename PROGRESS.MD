@@ -3,7 +3,18 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-25
+Last updated: 2026-02-27
+
+## Simple map auth + PMTiles exploration (2026-02-27)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SMAP-BR-0 Branch and scope setup | done | none | Created exploration branch `codex/simple-map` for minimal map-delivery and auth experimentation. |
+| SMAP-AUTH-1 Browser-auth-first vector proxy | done | SMAP-BR-0 | Updated `server/maps_proxy.py` so `/maps/vector/*` prefers `Authorization: Bearer` from browser/client requests, then falls back to key header/query, then server `OS_API_KEY`; added focused auth-path tests. |
+| SMAP-LAB-2 Minimal map lab UI/resource | done | SMAP-AUTH-1 | Added `ui/simple_map.html` and `ui://mcp-geo/simple-map-lab` resource for OS Vector and PMTiles loading with baseline timing and pan-benchmark controls; fixed no-idle diagnosis path by aligning MapLibre runtime/worker versions and disabling cache for `/ui/simple-map-lab` during rapid debug iterations; replaced free-text style entry with curated OS style dropdown plus novice guidance; fixed `/maps/vector/vts/resources/styles` style-selection routing and tile-template `{y}/{x}` ordering so style changes are visibly applied. |
+| SMAP-PMT-3 PMTiles high-volume rendering evidence capture | in_progress | SMAP-LAB-2 | Lab scaffolding is in place; dataset-specific benchmark runs and performance evidence artifacts are the next step. |
 
 ## Codex long-horizon session summary skill (2026-02-25)
 
