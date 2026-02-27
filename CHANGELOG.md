@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added a simple map exploration UI resource (`ui://mcp-geo/simple-map-lab`)
+  and implementation (`ui/simple_map.html`) for minimal OS Vector vs PMTiles
+  trials with basic timing telemetry and deterministic pan-benchmark controls.
+- Added `docs/simple_map_lab.md` with a focused runbook for browser bearer auth
+  vs API-key fallback tests and PMTiles trial execution.
+
+### Changed
+- Updated `/maps/vector/{path}` auth resolution in `server/maps_proxy.py` to
+  prefer `Authorization: Bearer ...` from clients, then fall back to key
+  query/header and finally server `OS_API_KEY`.
+- Extended map proxy test coverage in `tests/test_maps_proxy.py` for bearer,
+  key-header, environment-key fallback, and unauthenticated error behavior.
+- Updated `docs/getting_started.md` and `docs/troubleshooting.md` with direct
+  OS authentication + OAuth2 guidance links and OS Data Hub signup/API-project
+  onboarding links.
+- Updated `ui/simple_map.html` auth UX for beginners: masked bearer/API key
+  fields, explicit account/key acquisition steps, token whitespace cleanup, and
+  preflight permission checks before style load to avoid false-positive
+  "loaded" status messages.
+- Updated simple-map lab runtime compatibility and cache behavior by aligning
+  MapLibre runtime/worker versions and serving `/ui/simple-map-lab` with
+  `Cache-Control: no-store, max-age=0` to prevent stale browser-cached lab
+  builds during debug sessions.
+- Updated `ui/simple_map.html` to use an `OS Style` dropdown (OS + OS Open
+  presets) and added a novice-focused style chooser writeup in both the UI and
+  `docs/simple_map_lab.md`.
+- Fixed vector-style proxy routing so `/maps/vector/vts/resources/styles` now
+  respects the selected `style` query parameter (instead of always returning
+  the default look), and corrected rewritten vector tile templates to
+  `{z}/{y}/{x}` ordering.
+
 ## [0.4.0] - 2026-02-25
 
 ### Added

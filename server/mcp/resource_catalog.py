@@ -179,6 +179,22 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
         },
         "csp": None,
     },
+    {
+        "slug": "simple-map-lab",
+        "name": "ui_simple_map_lab",
+        "title": "Simple Map Lab",
+        "description": (
+            "Minimal lab for simple map delivery tests: OS vector proxy auth fallback and PMTiles "
+            "browser-render trials."
+        ),
+        "file": "simple_map.html",
+        "annotations": {
+            "audience": ["user"],
+            "priority": 0.6,
+            "capabilities": ["map", "benchmark", "auth", "pmtiles"],
+        },
+        "csp": None,
+    },
 ]
 
 SKILLS_RESOURCE: dict[str, Any] = {

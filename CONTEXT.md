@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-25
+Last updated: 2026-02-27
 Owner: @chris-page-gov
 
 ## Purpose
@@ -74,6 +74,9 @@ assumptions change.
   session summary workflow for repeatable reporting.
 - Standardizing repo extent/complexity telemetry with generated-output
   exclusion and hotspot scoring for risk-focused maintenance planning.
+- Exploring a simple-map delivery path that prioritizes browser bearer auth for
+  OS vector tiles with deterministic fallback to server `OS_API_KEY`, plus
+  PMTiles trial instrumentation.
 
 ## Active Work
 
@@ -128,6 +131,9 @@ assumptions change.
 - Maintain the repo extent/complexity analysis skill and report pipeline under
   `scripts/repo_extent_complexity_report.py`,
   `skills/mcp-geo-repo-extent-complexity/`, and `docs/reports/`.
+- Drive the `codex/simple-map` exploration stream (`SMAP-*`) for minimal auth
+  handling and PMTiles performance-trial setup artifacts (`ui/simple_map.html`,
+  `docs/simple_map_lab.md`, `tests/test_maps_proxy.py`).
 
 ## Status Snapshot (from PROGRESS.MD)
 
@@ -232,6 +238,22 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-02-27: Started `codex/simple-map` exploration to validate a minimal map
+  delivery path with browser bearer auth preferred for OS vector proxy calls
+  and deterministic fallback to key header/query or server `OS_API_KEY`; added
+  `ui://mcp-geo/simple-map-lab` + `docs/simple_map_lab.md` to support OS
+  vector vs PMTiles comparative trials.
+- 2026-02-27: Resolved a simple-map "tile checks pass but map never idles"
+  failure mode by aligning MapLibre runtime/worker versions and disabling cache
+  for `/ui/simple-map-lab` (`Cache-Control: no-store, max-age=0`) so browser
+  sessions do not retain stale lab HTML during auth/debug iterations.
+- 2026-02-27: Updated simple-map style selection UX from free-text to curated
+  OS style dropdown (OS + OS Open presets) and added novice-focused style
+  guidance in UI/docs to reduce setup ambiguity for first-time users.
+- 2026-02-27: Fixed simple-map style switching behavior by handling
+  `/maps/vector/vts/resources/styles` as a style endpoint (honoring the
+  `style=` query selection) and correcting rewritten vector tile templates to
+  `{z}/{y}/{x}` ordering.
 - 2026-02-25: Extended the repo extent/complexity workflow with a
   non-technical manager report card output. The analyzer now emits a
   plain-English `manager_report_card` model (terminology explanations, metric

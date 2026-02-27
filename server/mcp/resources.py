@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, Header, Query, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 from server.mcp.resource_catalog import (
     DATA_RESOURCE_PREFIX,
@@ -173,6 +173,40 @@ def read_resource(
                 return _read_result(uri_value, "application/json", content, meta)
 
     raise HTTPException(status_code=404, detail="Resource not found")
+
+
+@router.get("/ui/{slug}")
+def render_ui_resource(
+    slug: str,
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    uri = f"ui://mcp-geo/{slug}"
+    ui_entry = resolve_ui_resource(uri)
+    if not ui_entry:
+        raise HTTPException(status_code=404, detail="UI resource not found")
+    content, etag = load_ui_content(ui_entry)
+    if if_none_match:
+        candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
+        if etag in candidates or "*" in candidates:
+            response.status_code = 304
+            response.headers["ETag"] = etag
+            return response
+    cache_control = (
+        "no-store, max-age=0" if slug == "simple-map-lab" else "public, max-age=300"
+    )
+    return Response(
+        content=content,
+        media_type="text/html",
+        headers={"ETag": etag, "Cache-Control": cache_control},
+    )
+
+
+@router.get("/simple-map-lab", include_in_schema=False)
+def simple_map_lab_redirect() -> RedirectResponse:
+    return RedirectResponse(url="/ui/simple-map-lab", status_code=307)
 
 
 @router.get("/resources/download")

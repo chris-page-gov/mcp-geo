@@ -52,6 +52,31 @@ def test_resources_read_map_embedding_style_profiles() -> None:
     assert any(row.get("id") == "compact_static" for row in profiles if isinstance(row, dict))
 
 
+def test_resources_read_simple_map_lab_ui() -> None:
+    resp = client.get("/resources/read", params={"uri": "ui://mcp-geo/simple-map-lab"})
+    assert resp.status_code == 200
+    contents = resource_contents(resp)
+    assert contents[0]["mimeType"].startswith("text/html")
+    assert "Simple Map Lab" in contents[0]["text"]
+
+
+def test_ui_route_renders_simple_map_lab_html() -> None:
+    resp = client.get("/ui/simple-map-lab")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("text/html")
+    assert resp.headers.get("cache-control") == "no-store, max-age=0"
+    assert "Simple Map Lab" in resp.text
+    assert 'select id="osStyle"' in resp.text
+    assert 'value="OS_VTS_3857_Light.json"' in resp.text
+    assert 'value="OS_VTS_3857_Open_Road.json"' in resp.text
+
+
+def test_simple_map_lab_short_route_redirects() -> None:
+    resp = client.get("/simple-map-lab", follow_redirects=False)
+    assert resp.status_code == 307
+    assert resp.headers["location"] == "/ui/simple-map-lab"
+
+
 def test_resources_read_boundary_cache_status() -> None:
     resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/boundary-cache-status"})
     assert resp.status_code == 200

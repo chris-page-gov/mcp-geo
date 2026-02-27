@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simple Map Lab</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: #f4f7f8;
+        color: #0b1a21;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        min-height: 100vh;
+      }
+
+      .panel {
+        padding: 16px;
+        border-right: 1px solid #d3dde0;
+        background: #ffffff;
+      }
+
+      .panel h1 {
+        font-size: 20px;
+        margin: 0 0 10px 0;
+      }
+
+      .panel p {
+        margin: 0 0 14px 0;
+        font-size: 13px;
+        color: #30454f;
+      }
+
+      .field {
+        margin-bottom: 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      input,
+      select,
+      button,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #b4c6cc;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 13px;
+        font-family: inherit;
+      }
+
+      textarea {
+        min-height: 64px;
+        resize: vertical;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      button {
+        cursor: pointer;
+        background: #0f6d8f;
+        color: #ffffff;
+        border: 1px solid #0f6d8f;
+      }
+
+      button.secondary {
+        background: #ffffff;
+        color: #0f6d8f;
+      }
+
+      #status {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #30454f;
+      }
+
+      #timings {
+        margin-top: 8px;
+        white-space: pre-wrap;
+        background: #eef3f5;
+        border: 1px solid #cdd9de;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      .map-stage {
+        position: relative;
+        min-height: 100vh;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
+      }
+
+      .map-hint {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        max-width: 560px;
+        z-index: 5;
+        white-space: pre-wrap;
+        border-radius: 10px;
+        border: 1px solid #b9ccd3;
+        background: rgba(245, 249, 250, 0.96);
+        color: #13313e;
+        padding: 12px;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .map-hint.hidden {
+        display: none;
+      }
+
+      .map-hint.warn {
+        border-color: #d8c27a;
+        background: rgba(255, 248, 228, 0.97);
+      }
+
+      .map-hint.error {
+        border-color: #d39ea6;
+        background: rgba(255, 238, 241, 0.97);
+      }
+
+      .hint {
+        font-size: 11px;
+        color: #516b75;
+        margin-top: 2px;
+      }
+
+      .starter-card {
+        margin-top: 8px;
+        margin-bottom: 12px;
+        border: 1px solid #c9d7dc;
+        border-radius: 8px;
+        padding: 10px;
+        background: #f5fafb;
+        font-size: 12px;
+        color: #29424d;
+        line-height: 1.45;
+      }
+
+      .starter-card strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #153440;
+      }
+
+      .starter-card a {
+        color: #0f6d8f;
+      }
+
+      @media (max-width: 960px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .panel {
+          border-right: 0;
+          border-bottom: 1px solid #d3dde0;
+        }
+
+        #map {
+          height: 60vh;
+          min-height: 60vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <section class="panel">
+        <h1>Simple Map Lab</h1>
+        <p>
+          Minimal map delivery lab for comparing OS Vector proxy auth and PMTiles behavior.
+        </p>
+
+        <div class="field">
+          <label for="mode">Map Mode</label>
+          <select id="mode">
+            <option value="os_vector">OS Vector Tiles (proxy)</option>
+            <option value="pmtiles">PMTiles (browser direct)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="proxyBase">Proxy Base</label>
+          <input id="proxyBase" />
+          <div class="hint">Used for OS vector tile proxy and worker URL.</div>
+        </div>
+
+        <div class="field">
+          <label for="osStyle">OS Style</label>
+          <select id="osStyle">
+            <optgroup label="OS Styles">
+              <option value="OS_VTS_3857_Light.json" selected>Light (best default)</option>
+              <option value="OS_VTS_3857_Dark.json">Dark</option>
+              <option value="OS_VTS_3857_Road.json">Road</option>
+              <option value="OS_VTS_3857_Outdoor.json">Outdoor</option>
+              <option value="OS_VTS_3857_Greyscale.json">Greyscale</option>
+              <option value="OS_VTS_3857_No_Labels.json">No Labels</option>
+              <option value="OS_VTS_3857_Black_and_White.json">Black and White</option>
+              <option value="OS_VTS_3857_ESRI.json">ESRI</option>
+              <option value="OS_VTS_3857_3D.json">3D</option>
+            </optgroup>
+            <optgroup label="OS Open Styles">
+              <option value="OS_VTS_3857_Open_Light.json">Open Light</option>
+              <option value="OS_VTS_3857_Open_Dark.json">Open Dark</option>
+              <option value="OS_VTS_3857_Open_Road.json">Open Road</option>
+              <option value="OS_VTS_3857_Open_Outdoor.json">Open Outdoor</option>
+              <option value="OS_VTS_3857_Open_Greyscale.json">Open Greyscale</option>
+              <option value="OS_VTS_3857_Open_Black_and_White.json">Open Black and White</option>
+            </optgroup>
+          </select>
+          <div class="hint">Choose how the base map looks. Start with Light if unsure.</div>
+        </div>
+
+        <div class="starter-card">
+          <strong>How to pick an OS Style</strong>
+          Light / Open Light: best all-round choice for most maps.<br />
+          Road / Open Road: best when roads are your main focus.<br />
+          Outdoor / Open Outdoor: better for terrain, paths, and countryside.<br />
+          Dark / Open Dark: easier on eyes in low-light rooms.<br />
+          Greyscale / Black and White: quiet background for your own data.<br />
+          No Labels: removes place labels so your own labels stand out.<br />
+          ESRI / 3D: specialist looks for visual comparison tests.
+        </div>
+
+        <div class="field">
+          <label for="pmtilesUrl">PMTiles URL</label>
+          <input
+            id="pmtilesUrl"
+            placeholder="https://example.com/my-data.pmtiles"
+          />
+          <div class="hint">Vector layers are auto-inspected and rendered with generic style rules.</div>
+        </div>
+
+        <div class="field">
+          <label for="token">Browser Bearer Token (advanced, optional)</label>
+          <input id="token" type="password" placeholder="Paste token (hidden)" autocomplete="off" spellcheck="false" />
+          <div class="hint">Most people can leave this empty and use an API key below. If you paste OAuth JSON, this box will extract <code>access_token</code> automatically.</div>
+        </div>
+
+        <div class="field">
+          <label for="apiKey">API key override (optional)</label>
+          <input
+            id="apiKey"
+            type="password"
+            placeholder="Paste API key (hidden)"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <div class="hint">Beginner option: paste your OS API key here from your Data Hub project.</div>
+        </div>
+
+        <div class="starter-card">
+          <strong>New here? Follow these steps</strong>
+          1) Create a free OS Data Hub account:
+          <a href="https://osdatahub.os.uk/b2c/unified.html" target="_blank" rel="noopener noreferrer">
+            Sign up / Log in
+          </a><br />
+          2) Create an API project and copy your API key:
+          <a
+            href="https://docs.os.uk/os-apis/core-concepts/getting-started-with-an-api-project"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Project setup guide
+          </a><br />
+          3) Paste that key into <em>API key override</em> and click <em>Load Map</em>.<br />
+          4) If your app gives you a Browser Bearer Token, you can paste that instead.<br />
+          Advanced token guide:
+          <a
+            href="https://docs.os.uk/os-apis/accessing-os-apis/oauth-2-api/getting-started"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OAuth2 getting started
+          </a>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="lng">Center lng</label>
+            <input id="lng" value="-0.12" />
+          </div>
+          <div class="field">
+            <label for="lat">Center lat</label>
+            <input id="lat" value="51.505" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="zoom">Zoom</label>
+          <input id="zoom" value="10" />
+        </div>
+
+        <div class="buttons">
+          <button id="loadBtn">Load Map</button>
+          <button id="benchBtn" class="secondary">Run Pan Benchmark</button>
+        </div>
+
+        <div id="status">Idle.</div>
+        <pre id="timings">{}</pre>
+      </section>
+
+      <main class="map-stage">
+        <div id="map"></div>
+        <div id="mapHint" class="map-hint"></div>
+      </main>
+    </div>
+
+    <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+    <script>
+      const elements = {
+        mode: document.getElementById("mode"),
+        proxyBase: document.getElementById("proxyBase"),
+        osStyle: document.getElementById("osStyle"),
+        pmtilesUrl: document.getElementById("pmtilesUrl"),
+        token: document.getElementById("token"),
+        apiKey: document.getElementById("apiKey"),
+        lng: document.getElementById("lng"),
+        lat: document.getElementById("lat"),
+        zoom: document.getElementById("zoom"),
+        loadBtn: document.getElementById("loadBtn"),
+        benchBtn: document.getElementById("benchBtn"),
+        status: document.getElementById("status"),
+        timings: document.getElementById("timings"),
+        mapHint: document.getElementById("mapHint"),
+      };
+
+      elements.proxyBase.value = window.location.origin;
+      const fallbackStyle = {
+        version: 8,
+        sources: {},
+        layers: [{ id: "background", type: "background", paint: { "background-color": "#f4f7f8" } }],
+      };
+
+      const state = {
+        map: null,
+        timings: {},
+        idleTimeoutId: null,
+        targetStyleApplied: false,
+        firstIdleRecorded: false,
+        readyMessage: "",
+        sourceLoadState: {},
+        sourceEventCount: 0,
+      };
+      window.__simpleMapLabState = state;
+
+      const protocol = new pmtiles.Protocol();
+      maplibregl.addProtocol("pmtiles", protocol.tile);
+
+      function setStatus(text) {
+        elements.status.textContent = text;
+      }
+
+      function cleanToken(value) {
+        let raw = String(value || "").trim();
+        if (!raw) {
+          return "";
+        }
+
+        // zsh can append "%" after command output when copied from terminal.
+        if (raw.endsWith("%")) {
+          raw = raw.slice(0, -1).trim();
+        }
+
+        if (/^bearer\s+/i.test(raw)) {
+          raw = raw.replace(/^bearer\s+/i, "").trim();
+        }
+
+        // Accept full OAuth JSON payloads and extract access_token automatically.
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.access_token === "string") {
+            raw = parsed.access_token.trim();
+          }
+        } catch (err) {
+          const match = raw.match(/"access_token"\s*:\s*"([^"]+)"/);
+          if (match && match[1]) {
+            raw = match[1].trim();
+          }
+        }
+
+        if (
+          (raw.startsWith('"') && raw.endsWith('"')) ||
+          (raw.startsWith("'") && raw.endsWith("'"))
+        ) {
+          raw = raw.slice(1, -1).trim();
+        }
+
+        return raw.replace(/\s+/g, "");
+      }
+
+      function modeInstructions(mode) {
+        if (mode === "pmtiles") {
+          return [
+            "PMTiles quick start:",
+            "1) Paste a real .pmtiles file link into PMTiles URL.",
+            "2) Click Load Map.",
+            "3) If the map is blank, the link may be wrong or the file host may block range requests.",
+            "4) Run Pan Benchmark when the map is visible.",
+          ].join("\n");
+        }
+        return [
+          "OS Vector quick start (easy path):",
+          "1) No OS account yet? Sign up: https://osdatahub.os.uk/b2c/unified.html",
+          "2) Create an API project and copy your API key:",
+          "   https://docs.os.uk/os-apis/core-concepts/getting-started-with-an-api-project",
+          "3) Paste the key into API key override.",
+          "4) Click Load Map.",
+          "Advanced: for a Browser Bearer Token, use OAuth2 setup:",
+          "   https://docs.os.uk/os-apis/accessing-os-apis/oauth-2-api/getting-started",
+          "Why this is needed: OS protects map tiles, so the map needs permission.",
+          "If the map is blank: 401 = missing/invalid permission, 403 = no access on that account.",
+        ].join("\n");
+      }
+
+      function setMapHint(text, tone = "info", visible = true) {
+        elements.mapHint.textContent = text;
+        const classes = ["map-hint"];
+        if (!visible) {
+          classes.push("hidden");
+        }
+        if (tone === "warn") {
+          classes.push("warn");
+        } else if (tone === "error") {
+          classes.push("error");
+        }
+        elements.mapHint.className = classes.join(" ");
+      }
+
+      function resetTimings() {
+        state.timings = {};
+        elements.timings.textContent = JSON.stringify(state.timings, null, 2);
+      }
+
+      function updateTimings(patch) {
+        state.timings = { ...state.timings, ...patch };
+        elements.timings.textContent = JSON.stringify(state.timings, null, 2);
+      }
+
+      function mapRuntimeState() {
+        if (!state.map) {
+          return { mapReady: false };
+        }
+        const runtime = {
+          mapReady: true,
+          loaded: false,
+          styleLoaded: false,
+          tilesLoaded: false,
+          moving: false,
+          zooming: false,
+          rotating: false,
+          sourceEventCount: state.sourceEventCount,
+          unresolvedSources: [],
+          sourceStates: { ...state.sourceLoadState },
+        };
+        try {
+          runtime.loaded = !!state.map.loaded();
+        } catch (err) {}
+        try {
+          runtime.styleLoaded = !!state.map.isStyleLoaded();
+        } catch (err) {}
+        try {
+          runtime.tilesLoaded = !!state.map.areTilesLoaded();
+        } catch (err) {}
+        try {
+          runtime.moving = !!state.map.isMoving();
+          runtime.zooming = !!state.map.isZooming();
+          runtime.rotating = !!state.map.isRotating();
+        } catch (err) {}
+        runtime.unresolvedSources = Object.entries(state.sourceLoadState)
+          .filter(([, value]) => value === false)
+          .map(([key]) => key);
+        return runtime;
+      }
+
+      function clearIdleTimeout() {
+        if (!state.idleTimeoutId) {
+          return;
+        }
+        window.clearTimeout(state.idleTimeoutId);
+        state.idleTimeoutId = null;
+      }
+
+      function scheduleIdleHint(config) {
+        clearIdleTimeout();
+        state.idleTimeoutId = window.setTimeout(() => {
+          if (state.firstIdleRecorded) {
+            return;
+          }
+          const extra =
+            config.mode === "os_vector"
+              ? "Still waiting for tiles. Add a token or API key, then click Load Map again."
+              : "Still waiting for tiles. Check the PMTiles link and host settings.";
+          setMapHint(`${modeInstructions(config.mode)}\n\n${extra}`, "warn", true);
+          updateTimings({ noIdleAfterMs: 5000, mapRuntime: mapRuntimeState() });
+          if (config.mode === "os_vector") {
+            void diagnoseNoIdleOsVector(config);
+          }
+        }, 5000);
+      }
+
+      function authErrorExplanation(message) {
+        const lower = String(message || "").toLowerCase();
+        if (lower.includes("401") || lower.includes("unauthorized")) {
+          return "The map did not receive a working token or API key. Add one and try Load Map again.";
+        }
+        if (lower.includes("403") || lower.includes("forbidden")) {
+          return "The token/key is real, but this account is not allowed to use this OS map service.";
+        }
+        return "";
+      }
+
+      function toTileXY(lon, lat, zoom) {
+        const z = Math.max(0, Math.floor(Number.isFinite(zoom) ? zoom : 0));
+        const n = 2 ** z;
+        const x = Math.floor(((lon + 180) / 360) * n);
+        const latRad = (lat * Math.PI) / 180;
+        const y = Math.floor(
+          ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
+        );
+        return { z, x, y };
+      }
+
+      function fillTileTemplate(template, z, x, y) {
+        const tmsY = (2 ** z - 1) - y;
+        return String(template)
+          .replace("{z}", String(z))
+          .replace("{x}", String(x))
+          .replace("{y}", String(y))
+          .replace("{-y}", String(tmsY));
+      }
+
+      function redactUrl(rawUrl) {
+        try {
+          const parsed = new URL(rawUrl);
+          if (parsed.searchParams.has("key")) {
+            parsed.searchParams.set("key", "***");
+          }
+          return `${parsed.pathname}${parsed.search}`;
+        } catch (err) {
+          return rawUrl;
+        }
+      }
+
+      function endpointSummary(name, response, path) {
+        return {
+          name,
+          path,
+          ok: response.ok,
+          status: response.status,
+          statusText: response.statusText,
+        };
+      }
+
+      function appendPathSuffix(rawUrl, suffix) {
+        const parsed = new URL(rawUrl);
+        if (!parsed.pathname.endsWith(suffix)) {
+          parsed.pathname = `${parsed.pathname}${suffix}`;
+        }
+        return parsed;
+      }
+
+      function firstTileTemplateFromSource(source) {
+        if (!source || !Array.isArray(source.tiles)) {
+          return "";
+        }
+        return typeof source.tiles[0] === "string" ? source.tiles[0] : "";
+      }
+
+      function chooseVectorSource(styleJson) {
+        const sources =
+          styleJson && styleJson.sources && typeof styleJson.sources === "object"
+            ? styleJson.sources
+            : {};
+        const entries = Object.entries(sources);
+        const vector = entries.find(([, source]) => {
+          if (!source || typeof source !== "object") {
+            return false;
+          }
+          if (source.type !== "vector") {
+            return false;
+          }
+          return typeof source.url === "string" || !!firstTileTemplateFromSource(source);
+        });
+        if (vector) {
+          return { name: vector[0], source: vector[1] };
+        }
+        const fallback = entries.find(([, source]) => {
+          if (!source || typeof source !== "object") {
+            return false;
+          }
+          return typeof source.url === "string" || !!firstTileTemplateFromSource(source);
+        });
+        if (fallback) {
+          return { name: fallback[0], source: fallback[1] };
+        }
+        return null;
+      }
+
+      function firstSymbolFontStack(styleJson) {
+        const layers = Array.isArray(styleJson && styleJson.layers) ? styleJson.layers : [];
+        for (const layer of layers) {
+          if (!layer || layer.type !== "symbol") {
+            continue;
+          }
+          const layout = layer.layout && typeof layer.layout === "object" ? layer.layout : null;
+          if (!layout) {
+            continue;
+          }
+          const textFont = layout["text-font"];
+          if (Array.isArray(textFont) && typeof textFont[0] === "string" && textFont[0].trim()) {
+            return textFont[0].trim();
+          }
+          if (typeof textFont === "string" && textFont.trim()) {
+            return textFont.trim();
+          }
+        }
+        return "Arial Unicode MS Regular";
+      }
+
+      function diagnosticMessageFromChecks(checks) {
+        const summary = checks.map((check) => `${check.name}: ${check.status}`).join(", ");
+        const authFailure = checks.find((check) => check.status === 401 || check.status === 403);
+        if (authFailure) {
+          if (authFailure.status === 401) {
+            return `Tile loading stopped at ${authFailure.name} (401). Token/key is missing, expired, or not accepted.\nChecks: ${summary}`;
+          }
+          return `Tile loading stopped at ${authFailure.name} (403). Token/key is valid but this account/project lacks access.\nChecks: ${summary}`;
+        }
+        const otherFailure = checks.find((check) => !check.ok);
+        if (otherFailure) {
+          return `Tile loading stopped at ${otherFailure.name} (${otherFailure.status}).\nChecks: ${summary}`;
+        }
+        return `Style and source checks all returned 200, but map did not reach idle yet.\nChecks: ${summary}`;
+      }
+
+      async function diagnoseNoIdleOsVector(config) {
+        setStatus("Map is still loading. Running diagnostics...");
+        const checks = [];
+        const headers = osAuthHeaders(config);
+        try {
+          const workerUrl = `${config.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+          const workerResp = await fetch(workerUrl);
+          checks.push(endpointSummary("worker script", workerResp, redactUrl(workerUrl)));
+          const styleUrl = osStyleUrl(config);
+          const styleResp = await fetch(styleUrl.toString(), { headers });
+          checks.push(endpointSummary("style", styleResp, redactUrl(styleUrl.toString())));
+          if (!styleResp.ok) {
+            const message = diagnosticMessageFromChecks(checks);
+            updateTimings({ noIdleChecks: checks, mapRuntime: mapRuntimeState() });
+            setMapHint(`${modeInstructions(config.mode)}\n\n${message}`, "error", true);
+            setStatus("Map diagnostics found an auth/load problem.");
+            return;
+          }
+          const styleJson = await styleResp.json();
+          const spriteRaw = styleJson && typeof styleJson.sprite === "string" ? styleJson.sprite : "";
+          if (spriteRaw) {
+            const spriteBase = new URL(spriteRaw, styleUrl.toString());
+            if (config.apiKey && !spriteBase.searchParams.has("key")) {
+              spriteBase.searchParams.set("key", config.apiKey);
+            }
+            const spriteJsonUrl = appendPathSuffix(spriteBase.toString(), ".json");
+            const spritePngUrl = appendPathSuffix(spriteBase.toString(), ".png");
+            const spriteJsonResp = await fetch(spriteJsonUrl.toString(), { headers });
+            checks.push(
+              endpointSummary("sprite json", spriteJsonResp, redactUrl(spriteJsonUrl.toString()))
+            );
+            const spritePngResp = await fetch(spritePngUrl.toString(), { headers });
+            checks.push(
+              endpointSummary("sprite png", spritePngResp, redactUrl(spritePngUrl.toString()))
+            );
+          }
+          const glyphTemplate =
+            styleJson && typeof styleJson.glyphs === "string" ? styleJson.glyphs : "";
+          if (glyphTemplate.includes("{fontstack}") && glyphTemplate.includes("{range}")) {
+            const fontstack = encodeURIComponent(firstSymbolFontStack(styleJson));
+            const glyphRaw = glyphTemplate
+              .replace("{fontstack}", fontstack)
+              .replace("{range}", "0-255");
+            const glyphUrl = new URL(glyphRaw, styleUrl.toString());
+            if (config.apiKey && !glyphUrl.searchParams.has("key")) {
+              glyphUrl.searchParams.set("key", config.apiKey);
+            }
+            const glyphResp = await fetch(glyphUrl.toString(), { headers });
+            checks.push(endpointSummary("glyphs sample", glyphResp, redactUrl(glyphUrl.toString())));
+          }
+          const chosen = chooseVectorSource(styleJson);
+          if (!chosen || !chosen.source || typeof chosen.source !== "object") {
+            updateTimings({ noIdleChecks: checks });
+            setMapHint(
+              `${modeInstructions(config.mode)}\n\nNo usable vector source found in style JSON.`,
+              "error",
+              true
+            );
+            setStatus("Map diagnostics could not find a vector source.");
+            return;
+          }
+          const source = chosen.source;
+          let tileTemplate = firstTileTemplateFromSource(source);
+          if (!tileTemplate && typeof source.url === "string") {
+            const sourceUrl = new URL(source.url, styleUrl.toString());
+            if (config.apiKey && !sourceUrl.searchParams.has("key")) {
+              sourceUrl.searchParams.set("key", config.apiKey);
+            }
+            const sourceResp = await fetch(sourceUrl.toString(), { headers });
+            checks.push(
+              endpointSummary("source metadata", sourceResp, redactUrl(sourceUrl.toString()))
+            );
+            if (!sourceResp.ok) {
+              const message = diagnosticMessageFromChecks(checks);
+              updateTimings({ noIdleChecks: checks, mapRuntime: mapRuntimeState() });
+              setMapHint(`${modeInstructions(config.mode)}\n\n${message}`, "error", true);
+              setStatus("Map diagnostics found an auth/load problem.");
+              return;
+            }
+            const sourceJson = await sourceResp.json();
+            tileTemplate =
+              sourceJson &&
+              Array.isArray(sourceJson.tiles) &&
+              typeof sourceJson.tiles[0] === "string"
+                ? sourceJson.tiles[0]
+                : "";
+          }
+          if (!tileTemplate) {
+            updateTimings({ noIdleChecks: checks, mapRuntime: mapRuntimeState() });
+            setMapHint(
+              `${modeInstructions(config.mode)}\n\nVector source returned no tile template.`,
+              "error",
+              true
+            );
+            setStatus("Map diagnostics found incomplete vector source data.");
+            return;
+          }
+          const tileRef = toTileXY(config.center[0], config.center[1], config.zoom);
+          const rawTileUrl = fillTileTemplate(tileTemplate, tileRef.z, tileRef.x, tileRef.y);
+          const tileBase =
+            typeof source.url === "string"
+              ? new URL(source.url, styleUrl.toString()).toString()
+              : styleUrl.toString();
+          const tileUrl = new URL(rawTileUrl, tileBase);
+          if (config.apiKey && !tileUrl.searchParams.has("key")) {
+            tileUrl.searchParams.set("key", config.apiKey);
+          }
+          const tileResp = await fetch(tileUrl.toString(), { headers });
+          checks.push(endpointSummary("sample tile", tileResp, redactUrl(tileUrl.toString())));
+          const message = diagnosticMessageFromChecks(checks);
+          updateTimings({ noIdleChecks: checks, mapRuntime: mapRuntimeState() });
+          setMapHint(`${modeInstructions(config.mode)}\n\n${message}`, tileResp.ok ? "warn" : "error", true);
+          setStatus(
+            tileResp.ok
+              ? "Map diagnostics completed. Tile check succeeded but map still waiting for idle."
+              : "Map diagnostics found an auth/load problem."
+          );
+        } catch (err) {
+          const message = String(err && err.message ? err.message : err);
+          updateTimings({
+            noIdleChecksError: message,
+            noIdleChecks: checks,
+            mapRuntime: mapRuntimeState(),
+          });
+          setMapHint(
+            `${modeInstructions(config.mode)}\n\nDiagnostics failed: ${message}`,
+            "error",
+            true
+          );
+          setStatus("Map diagnostics failed.");
+        }
+      }
+
+      function getFormState() {
+        return {
+          mode: elements.mode.value,
+          proxyBase: (elements.proxyBase.value || window.location.origin).replace(/\/+$/, ""),
+          osStyle: (elements.osStyle.value || "OS_VTS_3857_Light.json").trim(),
+          pmtilesUrl: (elements.pmtilesUrl.value || "").trim(),
+          token: cleanToken(elements.token.value || ""),
+          apiKey: (elements.apiKey.value || "").trim(),
+          center: [
+            Number.parseFloat(elements.lng.value || "-0.12"),
+            Number.parseFloat(elements.lat.value || "51.505"),
+          ],
+          zoom: Number.parseFloat(elements.zoom.value || "10"),
+        };
+      }
+
+      function osStyleUrl(config) {
+        const styleUrl = new URL(
+          `${config.proxyBase}/maps/vector/vts/resources/styles`
+        );
+        styleUrl.searchParams.set("style", config.osStyle);
+        styleUrl.searchParams.set("srs", "3857");
+        if (config.apiKey && !styleUrl.searchParams.has("key")) {
+          styleUrl.searchParams.set("key", config.apiKey);
+        }
+        return styleUrl;
+      }
+
+      function osAuthHeaders(config) {
+        if (!config.token) {
+          return {};
+        }
+        return { Authorization: `Bearer ${config.token}` };
+      }
+
+      async function preflightOsVectorStyle(config, styleUrl) {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+        try {
+          const headers = osAuthHeaders(config);
+          const response = await fetch(styleUrl.toString(), {
+            headers,
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            throw new Error(`Permission check failed (${response.status} ${response.statusText}).`);
+          }
+          const styleJson = await response.json();
+          const chosen = chooseVectorSource(styleJson);
+          if (chosen && chosen.source && typeof chosen.source === "object") {
+            const source = chosen.source;
+            let tileTemplate = firstTileTemplateFromSource(source);
+            if (!tileTemplate && typeof source.url === "string") {
+              const absoluteUrl = new URL(source.url, styleUrl.toString());
+              if (config.apiKey && !absoluteUrl.searchParams.has("key")) {
+                absoluteUrl.searchParams.set("key", config.apiKey);
+              }
+              const sourceResponse = await fetch(absoluteUrl.toString(), {
+                headers,
+                signal: controller.signal,
+              });
+              if (!sourceResponse.ok) {
+                throw new Error(
+                  `Permission check failed (${sourceResponse.status} ${sourceResponse.statusText}) while loading source metadata.`
+                );
+              }
+              const sourceJson = await sourceResponse.json();
+              tileTemplate =
+                sourceJson &&
+                Array.isArray(sourceJson.tiles) &&
+                typeof sourceJson.tiles[0] === "string"
+                  ? sourceJson.tiles[0]
+                  : "";
+            }
+            if (tileTemplate) {
+              const tileRef = toTileXY(config.center[0], config.center[1], config.zoom);
+              const rawTileUrl = fillTileTemplate(
+                tileTemplate,
+                tileRef.z,
+                tileRef.x,
+                tileRef.y
+              );
+              const tileBase =
+                typeof source.url === "string"
+                  ? new URL(source.url, styleUrl.toString()).toString()
+                  : styleUrl.toString();
+              const tileUrl = new URL(rawTileUrl, tileBase);
+              if (config.apiKey && !tileUrl.searchParams.has("key")) {
+                tileUrl.searchParams.set("key", config.apiKey);
+              }
+              const tileResponse = await fetch(tileUrl.toString(), {
+                headers,
+                signal: controller.signal,
+              });
+              if (!tileResponse.ok) {
+                throw new Error(
+                  `Permission check failed (${tileResponse.status} ${tileResponse.statusText}) while loading sample tile.`
+                );
+              }
+            }
+          }
+        } catch (err) {
+          if (err && err.name === "AbortError") {
+            throw new Error("Permission check timed out. Check proxy URL and try again.");
+          }
+          throw err;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      function transformRequestFactory(config) {
+        return (url) => {
+          let parsed;
+          try {
+            parsed = new URL(url, config.proxyBase || window.location.origin);
+          } catch (err) {
+            return { url };
+          }
+          const isVectorProxy = parsed.pathname.startsWith("/maps/vector/");
+          if (!isVectorProxy) {
+            return { url: parsed.toString() };
+          }
+          if (config.apiKey && !parsed.searchParams.has("key")) {
+            parsed.searchParams.set("key", config.apiKey);
+          }
+          if (config.token) {
+            return {
+              url: parsed.toString(),
+              headers: { Authorization: `Bearer ${config.token}` },
+            };
+          }
+          return { url: parsed.toString() };
+        };
+      }
+
+      function firstVectorLayerIds(metadata) {
+        const rows = Array.isArray(metadata && metadata.vector_layers)
+          ? metadata.vector_layers
+          : [];
+        return rows
+          .map((row) => (row && typeof row.id === "string" ? row.id : null))
+          .filter((value) => !!value)
+          .slice(0, 20);
+      }
+
+      async function buildPmtilesStyle(pmtilesUrl) {
+        if (!pmtilesUrl) {
+          throw new Error("PMTiles URL is required for PMTiles mode.");
+        }
+        const archive = new pmtiles.PMTiles(pmtilesUrl);
+        protocol.add(archive);
+        const metadata = await archive.getMetadata();
+        const layerIds = firstVectorLayerIds(metadata);
+        if (!layerIds.length) {
+          throw new Error("PMTiles metadata does not expose vector_layers.");
+        }
+        const palette = ["#2f6f87", "#8a4fff", "#c6562f", "#1f8f59", "#785f3c", "#6d4d8e"];
+        const layers = [];
+        layerIds.forEach((layerId, index) => {
+          const color = palette[index % palette.length];
+          layers.push(
+            {
+              id: `${layerId}-fill`,
+              type: "fill",
+              source: "pmtiles-source",
+              "source-layer": layerId,
+              paint: { "fill-color": color, "fill-opacity": 0.18 },
+            },
+            {
+              id: `${layerId}-line`,
+              type: "line",
+              source: "pmtiles-source",
+              "source-layer": layerId,
+              paint: { "line-color": color, "line-width": 1.1, "line-opacity": 0.9 },
+            },
+            {
+              id: `${layerId}-point`,
+              type: "circle",
+              source: "pmtiles-source",
+              "source-layer": layerId,
+              paint: { "circle-color": color, "circle-radius": 1.8, "circle-opacity": 0.85 },
+            }
+          );
+        });
+        return {
+          version: 8,
+          sources: {
+            "pmtiles-source": {
+              type: "vector",
+              url: `pmtiles://${pmtilesUrl}`,
+            },
+          },
+          layers,
+        };
+      }
+
+      function once(target, eventName) {
+        return new Promise((resolve) => {
+          target.once(eventName, resolve);
+        });
+      }
+
+      async function loadMap() {
+        const config = getFormState();
+        if (state.map) {
+          state.map.remove();
+          state.map = null;
+        }
+        clearIdleTimeout();
+        state.targetStyleApplied = false;
+        state.firstIdleRecorded = false;
+        state.readyMessage = "";
+        state.sourceLoadState = {};
+        state.sourceEventCount = 0;
+        resetTimings();
+        const started = performance.now();
+        updateTimings({ startedAt: new Date().toISOString() });
+        setMapHint(`Loading map...\n\n${modeInstructions(config.mode)}`, "info", true);
+
+        const workerUrl = `${config.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+        maplibregl.workerUrl = workerUrl;
+        state.map = new maplibregl.Map({
+          container: "map",
+          style: fallbackStyle,
+          center: config.center,
+          zoom: Number.isFinite(config.zoom) ? config.zoom : 10,
+          transformRequest: transformRequestFactory(config),
+        });
+        state.map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
+
+        const mark = (name) => {
+          const elapsedMs = Number((performance.now() - started).toFixed(1));
+          updateTimings({ [name]: elapsedMs });
+        };
+
+        state.map.once("styledata", () => mark("styleDataMs"));
+        state.map.once("sourcedata", () => mark("sourceDataMs"));
+        state.map.on("sourcedata", (event) => {
+          state.sourceEventCount += 1;
+          if (!event || typeof event.sourceId !== "string") {
+            return;
+          }
+          if (typeof event.isSourceLoaded === "boolean") {
+            state.sourceLoadState[event.sourceId] = event.isSourceLoaded;
+          }
+        });
+        state.map.on("idle", () => {
+          if (!state.targetStyleApplied || state.firstIdleRecorded) {
+            return;
+          }
+          state.firstIdleRecorded = true;
+          mark("firstIdleMs");
+          clearIdleTimeout();
+          if (state.readyMessage) {
+            setStatus(state.readyMessage);
+          } else {
+            setStatus("Map is ready.");
+          }
+          setMapHint("", "info", false);
+        });
+        state.map.on("error", (event) => {
+          const message = String((event && event.error && event.error.message) || "Unknown map error");
+          updateTimings({ lastError: message });
+          setStatus(`Map error: ${message}`);
+          const authHelp = config.mode === "os_vector" ? authErrorExplanation(message) : "";
+          const guidance = authHelp
+            ? `${modeInstructions(config.mode)}\n\n${authHelp}\n\nError details: ${message}`
+            : `${modeInstructions(config.mode)}\n\nError: ${message}`;
+          setMapHint(
+            guidance,
+            "error",
+            true
+          );
+        });
+
+        state.map.once("load", async () => {
+          try {
+            if (config.mode === "os_vector") {
+              const styleUrl = osStyleUrl(config);
+              setStatus("Checking OS map permission...");
+              await preflightOsVectorStyle(config, styleUrl);
+              state.targetStyleApplied = true;
+              state.map.setStyle(styleUrl.toString(), { diff: false });
+              state.readyMessage =
+                config.token
+                  ? "Map loaded using your browser token."
+                  : config.apiKey
+                    ? "Map loaded using your API key."
+                    : "Map loaded using the server's saved OS key.";
+              setStatus("Permission check passed. Loading map tiles...");
+            } else {
+              const style = await buildPmtilesStyle(config.pmtilesUrl);
+              state.targetStyleApplied = true;
+              state.map.setStyle(style, { diff: false });
+              state.readyMessage = "Loaded PMTiles style. Use benchmark for basic pan timing.";
+              setStatus("Loading PMTiles map...");
+            }
+            scheduleIdleHint(config);
+          } catch (err) {
+            const message = String(err && err.message ? err.message : err);
+            updateTimings({ setupError: message });
+            setStatus(`Setup failed: ${message}`);
+            setMapHint(
+              `${modeInstructions(config.mode)}\n\nSetup failed: ${message}`,
+              "error",
+              true
+            );
+          }
+        });
+      }
+
+      async function runPanBenchmark() {
+        if (!state.map) {
+          setStatus("Load a map before running benchmark.");
+          return;
+        }
+        setStatus("Running pan benchmark...");
+        const started = performance.now();
+        const steps = 8;
+        for (let i = 0; i < steps; i += 1) {
+          const center = state.map.getCenter();
+          const deltaLng = i % 2 === 0 ? 0.18 : -0.18;
+          const deltaLat = i % 2 === 0 ? 0.03 : -0.03;
+          state.map.easeTo({
+            center: [center.lng + deltaLng, center.lat + deltaLat],
+            duration: 320,
+          });
+          await once(state.map, "moveend");
+          await once(state.map, "idle");
+        }
+        const totalMs = Number((performance.now() - started).toFixed(1));
+        updateTimings({
+          benchmarkSteps: steps,
+          benchmarkTotalMs: totalMs,
+          benchmarkAvgMsPerStep: Number((totalMs / steps).toFixed(1)),
+        });
+        setStatus("Pan benchmark complete.");
+      }
+
+      elements.loadBtn.addEventListener("click", () => {
+        void loadMap();
+      });
+      elements.benchBtn.addEventListener("click", () => {
+        void runPanBenchmark();
+      });
+      elements.mode.addEventListener("change", () => {
+        if (!state.map) {
+          setMapHint(modeInstructions(elements.mode.value), "info", true);
+        }
+      });
+      setMapHint(modeInstructions(elements.mode.value), "info", true);
+    </script>
+  </body>
+</html>

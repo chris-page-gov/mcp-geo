@@ -2,6 +2,16 @@
 
 This guide lists common error codes emitted by the MCP Geo server and suggested remediation steps.
 
+Need OS credentials or trial access before troubleshooting auth errors?
+- OS API authentication overview:
+  <https://docs.os.uk/os-apis/core-concepts/authentication>
+- OAuth2 token flow quick start:
+  <https://docs.os.uk/os-apis/accessing-os-apis/oauth-2-api/getting-started>
+- Create an OS Data Hub account and API project (API key/secret):
+  <https://docs.os.uk/os-apis/core-concepts/getting-started-with-an-api-project>
+- OS Data Hub login/signup entry:
+  <https://osdatahub.os.uk/b2c/unified.html>
+
 | Code | Meaning | Typical Cause | Remediation |
 |------|---------|---------------|-------------|
 | INVALID_INPUT | Input validation failed | Missing or malformed parameters (e.g. postcode format) | Re-check required fields, normalize postcode (strip spaces, uppercase) |
