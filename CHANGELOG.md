@@ -240,6 +240,12 @@ All notable changes to this project will be documented in this file.
   `docs/reports/map_lab_help_resources_2026-02-28.md`, including curated
   references for web mapping fundamentals, UK OS/ONS geographies, and
   stateful Help-tab UX patterns for tutorial-style learning flows.
+- Added `docs/codex_usage_examples.md` as a reusable portfolio of Codex
+  delivery examples for `mcp-geo`, grounded in git commits/PRs and session
+  telemetry artifacts.
+- Added refreshed Codex long-horizon session telemetry artifacts for
+  `2026-03-01` in
+  `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-01.{md,json,svg}`.
 
 ### Changed
 - Updated top-level documentation navigation in `README.md` to include the new

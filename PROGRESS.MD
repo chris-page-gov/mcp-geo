@@ -240,6 +240,15 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | MTR-429-0 Tile-path limiter exemption | done | none | Added configurable `RATE_LIMIT_EXEMPT_PATH_PREFIXES` handling in `server/main.py` with defaults for `/maps/vector/vts/tile`, `/maps/raster/osm`, and `/maps/static/osm`; added regression coverage in `tests/test_main_observability_branches.py` and `tests/test_maps_proxy.py` to verify tile requests are no longer rate-limited under low global caps. |
 
+## Codex usage example reporting (2026-03-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CUX-REP-0 Usage portfolio report from logs + git history | done | none | Added `docs/codex_usage_examples.md` with a practical timeline, example deliveries mapped to commit evidence, and repeatable regeneration commands. |
+| CUX-REP-1 Long-horizon telemetry refresh | done | CUX-REP-0 | Generated updated session-summary artifacts for `2026-03-01`: `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-01.{md,json,svg}`. |
+
 ## Simple map auth + PMTiles exploration (2026-02-27)
 
 Legend: pending, in_progress, done, blocked

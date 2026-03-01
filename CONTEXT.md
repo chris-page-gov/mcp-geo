@@ -152,6 +152,8 @@ assumptions change.
   (`scripts/pytest-local`, `scripts/ruff-local`, `scripts/mypy-local`) so
   Codex/CLI sessions reuse the running devcontainer toolchain before falling
   back to `.venv` or `uv run`.
+- Converting Codex execution evidence into stakeholder-facing usage examples
+  from session telemetry and git/PR history.
 
 ## Active Work
 
@@ -324,6 +326,9 @@ assumptions change.
   compact-preserving maximize behavior, adjustable split-pane sizing, a
   compact tab workflow (`Map/Search/Results/Info/Debug/Help`), and
   non-obstructive zoom-ladder controls.
+- Maintain the Codex usage-example portfolio and refresh evidence artifacts in
+  `docs/codex_usage_examples.md` plus
+  `docs/reports/mcp_geo_codex_long_horizon_summary_*.{md,json,svg}`.
 
 ## Status Snapshot (from PROGRESS.MD)
 
