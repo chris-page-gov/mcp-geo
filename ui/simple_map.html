@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css"
     />
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         color-scheme: light;
@@ -201,8 +202,8 @@
     </style>
   </head>
   <body>
-    <div class="layout">
-      <section class="panel">
+    <div class="layout" data-compact-grid>
+      <section class="panel" data-compact-panel data-compact-shell>
         <h1>Simple Map Lab</h1>
         <p>
           Minimal map delivery lab for comparing OS Vector proxy auth and PMTiles behavior.
@@ -312,7 +313,7 @@
           </a>
         </div>
 
-        <div class="row">
+        <div class="row" data-compact-row>
           <div class="field">
             <label for="lng">Center lng</label>
             <input id="lng" value="-0.12" />
@@ -329,20 +330,21 @@
         </div>
 
         <div class="buttons">
-          <button id="loadBtn">Load Map</button>
+          <button id="loadBtn" data-testid="primary-cta" data-compact-cta>Load Map</button>
           <button id="benchBtn" class="secondary">Run Pan Benchmark</button>
         </div>
 
-        <div id="status">Idle.</div>
+        <div id="status" data-testid="status-strip">Idle.</div>
         <pre id="timings">{}</pre>
       </section>
 
-      <main class="map-stage">
+      <main class="map-stage" data-compact-map data-testid="map-stage">
         <div id="map"></div>
         <div id="mapHint" class="map-hint"></div>
       </main>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
     <script>
@@ -362,6 +364,14 @@
         timings: document.getElementById("timings"),
         mapHint: document.getElementById("mapHint"),
       };
+
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "simple_map",
+            statusSelector: "#status",
+            ctaSelector: "#loadBtn",
+          })
+        : null;
 
       elements.proxyBase.value = window.location.origin;
       const fallbackStyle = {

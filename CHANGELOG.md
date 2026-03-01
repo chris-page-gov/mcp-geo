@@ -68,6 +68,11 @@ All notable changes to this project will be documented in this file.
   - new suite scaffolding under `playground/tests/compact_windows/` with
     deterministic MCP bridge/profile support and passing baseline runs
     (`8 passed` compact smoke, `6 passed` compact matrix).
+- Added the shared compact-window contract implementation for all six UIs:
+  - new shared assets: `ui/shared/compact_contract.css` and
+    `ui/shared/compact_contract.js`
+  - all UI pages now wire compact host-context handling and stable
+    `data-testid` status/CTA anchors used by unattended compact validation.
 
 ## [0.4.0] - 2026-02-25
 

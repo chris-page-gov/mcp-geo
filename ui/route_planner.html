@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Route Planner</title>
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         --bg-1: #eef5ff;
@@ -184,21 +185,21 @@
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
+    <div class="shell" data-compact-shell>
+      <header data-compact-header>
         <div>
           <div class="title">Route Planner</div>
           <div class="subtitle">Plot a route and review turn by turn steps.</div>
         </div>
-        <div class="badge">Routing</div>
+        <div class="badge" id="statusBadge" data-testid="status-strip">Routing</div>
       </header>
 
-      <section class="grid">
-        <div class="map">
+      <section class="grid" data-compact-grid>
+        <div class="map" data-compact-panel data-compact-map data-testid="map-stage">
           <div class="badge" style="position: absolute; top: 32px; left: 32px">Route map</div>
         </div>
 
-        <aside class="panel">
+        <aside class="panel" data-compact-panel>
           <h3>Route inputs</h3>
           <div class="field">
             <label>Start</label>
@@ -208,7 +209,9 @@
             <label>End</label>
             <input placeholder="End coordinates or name" />
           </div>
-          <button class="cta" type="button">Calculate route</button>
+          <button class="cta" id="calculateRoute" type="button" data-testid="primary-cta" data-compact-cta>
+            Calculate route
+          </button>
           <div class="steps">
             <div>1. Head north on Example Road</div>
             <div>2. Turn right onto Sample Street</div>
@@ -219,13 +222,33 @@
       </section>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script>
+      const statusBadge = document.getElementById("statusBadge");
       const payload = document.getElementById("payload");
+      const calculateRoute = document.getElementById("calculateRoute");
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "route_planner",
+            statusSelector: "#statusBadge",
+            ctaSelector: "#calculateRoute",
+          })
+        : null;
+      let lastMessage = { info: "Waiting for MCP host payload..." };
+
+      calculateRoute.addEventListener("click", () => {
+        const now = new Date().toISOString();
+        statusBadge.textContent = "Route requested";
+        payload.textContent = JSON.stringify({ requestedAt: now, lastMessage }, null, 2);
+      });
+
       window.addEventListener("message", (event) => {
         if (!event || !event.data) {
           return;
         }
+        lastMessage = event.data;
         payload.textContent = JSON.stringify(event.data, null, 2);
+        statusBadge.textContent = "Payload received";
       });
     </script>
   </body>

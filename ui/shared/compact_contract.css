@@ -1,0 +1,85 @@
+:root {
+  --mcp-compact-primary-width: 320px;
+  --mcp-compact-comfort-width: 360px;
+  --mcp-compact-primary-height: 500px;
+}
+
+html,
+body {
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+[data-compact-shell],
+[data-compact-grid],
+[data-compact-panel],
+[data-compact-map] {
+  min-width: 0;
+}
+
+body[data-compact="true"] {
+  --mcp-compact-gap: 10px;
+}
+
+body[data-compact="true"] [data-compact-shell] {
+  max-width: 100%;
+  padding: 10px;
+}
+
+body[data-compact="true"] [data-compact-header] {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  backdrop-filter: blur(2px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+body[data-compact="true"] [data-compact-grid] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-areas: none !important;
+  gap: var(--mcp-compact-gap) !important;
+}
+
+body[data-compact="true"] [data-compact-panel] {
+  padding: 12px !important;
+}
+
+body[data-compact="true"] [data-compact-map] {
+  min-height: 230px !important;
+}
+
+body[data-compact="true"] [data-compact-row] {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body[data-compact="true"] input,
+body[data-compact="true"] select,
+body[data-compact="true"] button,
+body[data-compact="true"] textarea {
+  font-size: 16px;
+}
+
+.mcp-compact-cta-dock {
+  display: none;
+}
+
+body[data-compact="true"] .mcp-compact-cta-dock {
+  display: flex;
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 95;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(20, 24, 31, 0.15);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 10px 24px rgba(15, 18, 24, 0.16);
+}
+
+body[data-compact="true"] .mcp-compact-cta-dock button {
+  width: 100%;
+}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Feature Inspector</title>
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         --bg-1: #f3f8f5;
@@ -170,17 +171,17 @@
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
+    <div class="shell" data-compact-shell>
+      <header data-compact-header>
         <div>
           <div class="title">Feature Inspector</div>
           <div class="subtitle">Review properties, geometry, and linked identifiers.</div>
         </div>
-        <div class="badge">Inspector</div>
+        <div class="badge" id="statusBadge" data-testid="status-strip">Inspector</div>
       </header>
 
-      <section class="grid">
-        <div class="panel">
+      <section class="grid" data-compact-grid>
+        <div class="panel" data-compact-panel>
           <h3>Key properties</h3>
           <div class="prop"><span>Feature ID</span><span>osgb1000000</span></div>
           <div class="prop"><span>Collection</span><span>bld-fts-buildingpart</span></div>
@@ -191,22 +192,49 @@
             <div class="chip">UPRN: 5678</div>
             <div class="chip">USRN: 9012</div>
           </div>
+          <button
+            id="refreshPayload"
+            type="button"
+            style="margin-top: 12px"
+            data-testid="primary-cta"
+            data-compact-cta
+          >
+            Refresh payload
+          </button>
           <div id="payload" class="payload">Waiting for MCP host payload...</div>
         </div>
 
-        <div class="map">
+        <div class="map" data-compact-panel data-compact-map data-testid="map-stage">
           <div class="badge" style="position: absolute; top: 32px; left: 32px">Map view</div>
         </div>
       </section>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script>
+      const statusBadge = document.getElementById("statusBadge");
       const payload = document.getElementById("payload");
+      const refreshPayload = document.getElementById("refreshPayload");
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "feature_inspector",
+            statusSelector: "#statusBadge",
+            ctaSelector: "#refreshPayload",
+          })
+        : null;
+      let lastMessage = { info: "Waiting for MCP host payload..." };
+
+      refreshPayload.addEventListener("click", () => {
+        payload.textContent = JSON.stringify(lastMessage, null, 2);
+      });
+
       window.addEventListener("message", (event) => {
         if (!event || !event.data) {
           return;
         }
+        lastMessage = event.data;
         payload.textContent = JSON.stringify(event.data, null, 2);
+        statusBadge.textContent = "Payload received";
       });
     </script>
   </body>

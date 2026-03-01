@@ -9,6 +9,7 @@
       href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
       onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
     />
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
@@ -454,8 +455,8 @@
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
+    <div class="shell" data-compact-shell>
+      <header data-compact-header>
         <div>
           <div class="title">Geography Selector</div>
           <div class="subtitle">
@@ -467,12 +468,12 @@
           <button id="fullscreenToggle" type="button" class="status-action" title="Toggle full screen">
             Maximise
           </button>
-          <div class="status-pill" id="status">Awaiting host</div>
+          <div class="status-pill" id="status" data-testid="status-strip">Awaiting host</div>
         </div>
       </header>
 
-      <section class="grid">
-        <aside class="panel control-panel">
+      <section class="grid" data-compact-grid>
+        <aside class="panel control-panel" data-compact-panel>
           <div class="section">
             <h3>Search mode</h3>
             <div class="segment" id="modeButtons"></div>
@@ -526,7 +527,9 @@
               <input id="mapOpacity" type="range" min="0.15" max="1" step="0.05" value="0.8" />
             </div>
             <div class="result-meta">Tip: Ctrl/Cmd-click results to multi-select UPRNs.</div>
-            <button class="cta" id="searchButton" type="button">Run search</button>
+            <button class="cta" id="searchButton" type="button" data-testid="primary-cta" data-compact-cta>
+              Run search
+            </button>
           </div>
 
           <div class="section">
@@ -555,13 +558,13 @@
           </div>
         </aside>
 
-        <div class="panel map-panel">
+        <div class="panel map-panel" data-compact-panel>
           <div class="pill-row">
             <span class="pill">OS Vector Tiles ready</span>
             <span class="pill">MasterMap depth at zoom 15+</span>
             <span class="pill">Boundaries + AddressBase layers</span>
           </div>
-          <div class="map-shell">
+          <div class="map-shell" data-compact-map data-testid="map-stage">
             <div id="map"></div>
             <div id="dragBox" class="drag-box"></div>
             <div class="map-overlay">
@@ -600,6 +603,7 @@
       src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
       onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
     ></script>
+    <script src="shared/compact_contract.js"></script>
     <script>
       const modes = [
         { id: "free", label: "Free text", tool: "os_places.search" },
@@ -687,6 +691,14 @@
       const mapOpacity = document.getElementById("mapOpacity");
       const clearSelectionButton = document.getElementById("clearSelection");
       const dragBox = document.getElementById("dragBox");
+
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "geography_selector",
+            statusSelector: "#status",
+            ctaSelector: "#searchButton",
+          })
+        : null;
 
       const pendingCalls = new Map();
       let rpcId = 0;
@@ -2433,6 +2445,9 @@
       function applyHostContext(hostContext) {
         if (!hostContext || typeof hostContext !== "object") {
           return;
+        }
+        if (compactContract) {
+          compactContract.mergeHostContext(hostContext);
         }
         if (Array.isArray(hostContext.availableDisplayModes)) {
           state.availableDisplayModes = hostContext.availableDisplayModes

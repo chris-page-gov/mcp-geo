@@ -15,6 +15,7 @@
       href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
       onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
     />
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         --bg-1: #f6f7fb;
@@ -511,7 +512,7 @@
     </style>
   </head>
   <body>
-    <header>
+    <header data-compact-header>
       <div>
         <div class="title">Boundary Explorer</div>
         <div class="subtitle">
@@ -524,15 +525,15 @@
         <button id="fullscreenToggle" type="button" class="status-action" title="Toggle full screen">
           Maximise
         </button>
-        <div class="pill" id="hostStatus">Awaiting host</div>
+        <div class="pill" id="hostStatus" data-testid="status-strip">Awaiting host</div>
         <div class="pill warn" id="osStatus" style="display: none">OS offline</div>
       </div>
     </header>
 
-    <div class="shell">
-      <div class="grid">
+    <div class="shell" data-compact-shell>
+      <div class="grid" data-compact-grid>
         <div class="left-column">
-          <div class="panel">
+          <div class="panel" data-compact-panel>
             <h3>Find Boundary</h3>
             <div class="field">
               <label for="searchInput">Search</label>
@@ -560,8 +561,16 @@
                 </select>
               </div>
             </div>
-            <div class="row">
-              <button id="searchButton" class="primary" type="button">Search</button>
+            <div class="row" data-compact-row>
+              <button
+                id="searchButton"
+                class="primary"
+                type="button"
+                data-testid="primary-cta"
+                data-compact-cta
+              >
+                Search
+              </button>
               <button id="clearBoundaries" type="button">Clear</button>
             </div>
             <div class="hint" style="margin-top: 10px">
@@ -572,7 +581,7 @@
             <div class="search-status" id="searchStatus" style="margin-top: 8px; display: none"></div>
           </div>
 
-          <div class="panel">
+          <div class="panel" data-compact-panel>
             <h3>Layers</h3>
             <div class="toggle-grid">
               <div class="toggle">
@@ -600,7 +609,7 @@
                 <input id="borderByCount" type="checkbox" checked />
               </div>
             </div>
-            <div class="row" style="margin-top: 10px">
+            <div class="row" style="margin-top: 10px" data-compact-row>
               <div class="field" style="margin: 0">
                 <label for="detailLevel">Detail Level</label>
                 <select id="detailLevel">
@@ -622,7 +631,7 @@
                 </select>
               </div>
             </div>
-            <div class="row" style="margin-top: 10px">
+            <div class="row" style="margin-top: 10px" data-compact-row>
               <button id="refreshInventory" class="primary" type="button">Refresh inventory</button>
               <button id="exportButton" type="button">Export JSON</button>
             </div>
@@ -632,7 +641,7 @@
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel" data-compact-panel>
             <h3>Local Layers</h3>
             <div class="dropzone" id="dropzone">
               <div style="font-weight: 650; font-size: 13px">Drop a file here</div>
@@ -649,7 +658,7 @@
           </div>
         </div>
 
-        <div class="map">
+        <div class="map" data-compact-map data-testid="map-stage">
           <div id="map"></div>
           <div class="map-overlay">
             <div class="banner warn" id="osBanner">
@@ -665,7 +674,7 @@
         </div>
 
         <div class="right-column">
-          <div class="panel">
+          <div class="panel" data-compact-panel>
             <h3>Inventory</h3>
             <div class="inventory">
               <div class="inv-row">
@@ -678,7 +687,7 @@
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel" data-compact-panel>
             <h3>Debug</h3>
             <div class="hint">
               This widget uses <span class="mono">os_map.inventory</span> for data fetch and performs
@@ -696,6 +705,7 @@
       onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
     ></script>
     <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.min.js"></script>
+    <script src="shared/compact_contract.js"></script>
     <script>
       const hostStatusEl = document.getElementById("hostStatus");
       const osStatusEl = document.getElementById("osStatus");
@@ -733,6 +743,14 @@
       const dropzone = document.getElementById("dropzone");
       const fileInput = document.getElementById("fileInput");
       const localLayersEl = document.getElementById("localLayers");
+
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "boundary_explorer",
+            statusSelector: "#hostStatus",
+            ctaSelector: "#searchButton",
+          })
+        : null;
 
       const pendingCalls = new Map();
       let rpcId = 0;
@@ -1614,6 +1632,9 @@
       function applyHostContext(hostContext) {
         if (!hostContext || typeof hostContext !== "object") {
           return;
+        }
+        if (compactContract) {
+          compactContract.mergeHostContext(hostContext);
         }
         const mcpGeo = hostContext.mcpGeo || {};
         if (mcpGeo.proxyBase) {

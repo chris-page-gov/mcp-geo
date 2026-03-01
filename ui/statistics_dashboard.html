@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Statistics Dashboard</title>
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         --bg-1: #fff5e9;
@@ -327,8 +328,8 @@
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
+    <div class="shell" data-compact-shell>
+      <header data-compact-header>
         <div>
           <div class="title">Statistics Dashboard</div>
           <div class="subtitle">Compare observations across selected areas.</div>
@@ -337,15 +338,15 @@
           <button id="fullscreenToggle" type="button" class="status-action" title="Toggle full screen">
             Maximise
           </button>
-          <div class="status" id="status">
+          <div class="status" id="status" data-testid="status-strip">
             <span class="dot"></span>
             <span>Awaiting host</span>
           </div>
         </div>
       </header>
 
-      <section class="controls">
-        <div class="control-card">
+      <section class="controls" data-compact-grid>
+        <div class="control-card" data-compact-panel>
           <h4>Dataset discovery</h4>
           <div class="field">
             <label for="datasetSearch">Search datasets</label>
@@ -360,7 +361,15 @@
             </select>
           </div>
           <div class="actions">
-            <button class="primary" id="datasetSearchButton" type="button">Search</button>
+            <button
+              class="primary"
+              id="datasetSearchButton"
+              type="button"
+              data-testid="primary-cta"
+              data-compact-cta
+            >
+              Search
+            </button>
             <button class="ghost" id="datasetPrev" type="button">Prev</button>
             <button class="ghost" id="datasetNext" type="button">Next</button>
           </div>
@@ -368,7 +377,7 @@
           <div class="list" id="datasetResults"></div>
         </div>
 
-        <div class="control-card">
+        <div class="control-card" data-compact-panel>
           <h4>Dataset selection</h4>
           <div class="field">
             <label for="datasetInput">Dataset ID</label>
@@ -394,7 +403,7 @@
           <div class="meta-row" id="dimensionMeta">No dimensions loaded.</div>
         </div>
 
-        <div class="control-card">
+        <div class="control-card" data-compact-panel>
           <h4>Dimensions</h4>
           <div class="field">
             <label for="geoDimSelect">Geography dimension</label>
@@ -414,7 +423,7 @@
           <div class="meta-row" id="optionMeta">No options loaded.</div>
         </div>
 
-        <div class="control-card">
+        <div class="control-card" data-compact-panel>
           <h4>Selections</h4>
           <div class="field">
             <label>Areas (first 50 shown)</label>
@@ -436,7 +445,7 @@
         </div>
       </section>
 
-      <section class="cards">
+      <section class="cards" data-compact-grid>
         <div class="card">
           <h4>Latest value</h4>
           <div class="value" id="latestValue">—</div>
@@ -451,11 +460,11 @@
         </div>
       </section>
 
-      <section class="grid">
-        <div class="chart">
+      <section class="grid" data-compact-grid>
+        <div class="chart" data-compact-panel data-compact-map data-testid="map-stage">
           <div class="bars" id="barChart"></div>
         </div>
-        <div class="table">
+        <div class="table" data-compact-panel>
           <table>
             <thead>
               <tr>
@@ -470,6 +479,7 @@
       </section>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script>
       const statusEl = document.getElementById("status");
       const fullscreenToggle = document.getElementById("fullscreenToggle");
@@ -508,6 +518,14 @@
       const rangeValue = document.getElementById("rangeValue");
       const barChart = document.getElementById("barChart");
       const resultTable = document.getElementById("resultTable");
+
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "statistics_dashboard",
+            statusSelector: "#status",
+            ctaSelector: "#datasetSearchButton",
+          })
+        : null;
 
       const pendingCalls = new Map();
       let rpcId = 0;
@@ -590,6 +608,9 @@
       function applyHostContext(hostContext) {
         if (!hostContext || typeof hostContext !== "object") {
           return;
+        }
+        if (compactContract) {
+          compactContract.mergeHostContext(hostContext);
         }
         if (Array.isArray(hostContext.availableDisplayModes)) {
           state.availableDisplayModes = hostContext.availableDisplayModes
