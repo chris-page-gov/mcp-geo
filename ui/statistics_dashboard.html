@@ -350,7 +350,7 @@
           <h4>Dataset discovery</h4>
           <div class="field">
             <label for="datasetSearch">Search datasets</label>
-            <input id="datasetSearch" placeholder="e.g. housing, unemployment" />
+            <input id="datasetSearch" placeholder="e.g. housing, unemployment" data-testid="dataset-search" />
           </div>
           <div class="field">
             <label for="datasetLimit">Results limit</label>
@@ -373,8 +373,9 @@
             <button class="ghost" id="datasetPrev" type="button">Prev</button>
             <button class="ghost" id="datasetNext" type="button">Next</button>
           </div>
+          <div class="meta-row" id="flowStatus" data-testid="flow-status">Idle.</div>
           <div class="meta-row" id="datasetMeta">No search yet.</div>
-          <div class="list" id="datasetResults"></div>
+          <div class="list" id="datasetResults" data-testid="dataset-results"></div>
         </div>
 
         <div class="control-card" data-compact-panel>
@@ -438,10 +439,12 @@
             <select id="timeSelect"></select>
           </div>
           <div class="actions">
-            <button class="primary" id="runQuery" type="button">Run comparison</button>
+            <button class="primary" id="runQuery" type="button" data-testid="run-comparison">
+              Run comparison
+            </button>
           </div>
           <div class="meta-row" id="selectionMeta">No selections yet.</div>
-          <div class="error" id="queryError" style="display:none;"></div>
+          <div class="error" id="queryError" data-testid="query-error" style="display:none;"></div>
         </div>
       </section>
 
@@ -490,6 +493,7 @@
       const datasetPrev = document.getElementById("datasetPrev");
       const datasetNext = document.getElementById("datasetNext");
       const datasetResults = document.getElementById("datasetResults");
+      const flowStatusEl = document.getElementById("flowStatus");
       const datasetMeta = document.getElementById("datasetMeta");
       const datasetInput = document.getElementById("datasetInput");
       const editionInput = document.getElementById("editionInput");
@@ -723,6 +727,14 @@
         statusEl.querySelector("span:last-child").textContent = text;
       }
 
+      function setFlowStatus(stateName, text) {
+        if (!flowStatusEl) {
+          return;
+        }
+        flowStatusEl.dataset.state = stateName || "idle";
+        flowStatusEl.textContent = text || "Idle.";
+      }
+
       async function refreshDatasetSelection() {
         editionInput.value = "";
         versionInput.value = "";
@@ -910,8 +922,10 @@
         queryError.style.display = "none";
         const term = datasetSearch.value.trim();
         if (!term) {
+          setFlowStatus("empty", "Enter a dataset search term.");
           return;
         }
+        setFlowStatus("loading", "Searching datasets...");
         try {
           const limit = Number(datasetLimit.value || 20);
           const response = await requestToolStrict("ons_search.query", {
@@ -924,8 +938,14 @@
           const totalLabel = state.datasetTotal ? ` of ${state.datasetTotal}` : "";
           datasetMeta.textContent = `Showing ${state.datasetOffset + 1}-${state.datasetOffset + state.datasets.length}${totalLabel}.`;
           renderDatasetResults(state.datasets);
+          if (state.datasets.length) {
+            setFlowStatus("success", `Found ${state.datasets.length} dataset result(s).`);
+          } else {
+            setFlowStatus("empty", "No datasets found.");
+          }
         } catch (err) {
           datasetMeta.textContent = "Dataset search failed.";
+          setFlowStatus("error", err?.message || "Dataset search failed.");
         }
       }
 
@@ -936,8 +956,10 @@
         const version = versionInput.value.trim();
         if (!dataset || !edition || !version) {
           dimensionMeta.textContent = "Dataset, edition, and version are required.";
+          setFlowStatus("empty", "Provide dataset, edition, and version.");
           return;
         }
+        setFlowStatus("loading", "Loading dimensions...");
         try {
           const response = await requestToolStrict("ons_codes.list", { dataset, edition, version });
           state.dimensions = response?.data?.dimensions || response?.dimensions || [];
@@ -968,8 +990,10 @@
           if (groups.time.length === 1) {
             timeDimSelect.value = groups.time[0];
           }
+          setFlowStatus("success", `Loaded ${state.dimensions.length} dimension(s).`);
         } catch (err) {
           dimensionMeta.textContent = err?.message || "Failed to load dimensions.";
+          setFlowStatus("error", err?.message || "Failed to load dimensions.");
         }
       }
 
@@ -978,8 +1002,10 @@
         const dataset = datasetInput.value.trim();
         if (!dataset) {
           editionMeta.textContent = "Dataset is required.";
+          setFlowStatus("empty", "Dataset is required.");
           return;
         }
+        setFlowStatus("loading", "Loading editions...");
         try {
           const response = await requestToolStrict("ons_data.editions", { dataset });
           const editions = response?.data?.editions || response?.editions || [];
@@ -990,8 +1016,10 @@
           if (editionIds.length === 1) {
             editionInput.value = editionIds[0];
           }
+          setFlowStatus("success", `Loaded ${editionIds.length} edition option(s).`);
         } catch (err) {
           editionMeta.textContent = err?.message || "Failed to load editions.";
+          setFlowStatus("error", err?.message || "Failed to load editions.");
         }
       }
 
@@ -1001,8 +1029,10 @@
         const edition = editionInput.value.trim();
         if (!dataset || !edition) {
           versionMeta.textContent = "Dataset and edition are required.";
+          setFlowStatus("empty", "Dataset and edition are required.");
           return;
         }
+        setFlowStatus("loading", "Loading versions...");
         try {
           const response = await requestToolStrict("ons_data.versions", { dataset, edition });
           const versions = response?.data?.versions || response?.versions || [];
@@ -1013,8 +1043,10 @@
           if (versionIds.length === 1) {
             versionInput.value = versionIds[0];
           }
+          setFlowStatus("success", `Loaded ${versionIds.length} version option(s).`);
         } catch (err) {
           versionMeta.textContent = err?.message || "Failed to load versions.";
+          setFlowStatus("error", err?.message || "Failed to load versions.");
         }
       }
 
@@ -1028,12 +1060,15 @@
         const timeDim = timeDimSelect.value;
         if (!dataset || !edition || !version) {
           optionMeta.textContent = "Dataset, edition, and version are required.";
+          setFlowStatus("empty", "Dataset, edition, and version are required.");
           return;
         }
         if (!geoDim || !measureDim || !timeDim) {
           optionMeta.textContent = "Select geography, measure, and time dimensions.";
+          setFlowStatus("empty", "Select geography, measure, and time dimensions.");
           return;
         }
+        setFlowStatus("loading", "Loading dimension options...");
         try {
           const [geoRes, measureRes, timeRes] = await Promise.all([
             requestToolStrict("ons_codes.options", { dataset, edition, version, dimension: geoDim }),
@@ -1047,8 +1082,13 @@
           renderGeoOptions(geoOptionsList.slice(0, 50));
           populateSelect(measureSelect, measureOptions.slice(0, 100), "Select a measure");
           populateSelect(timeSelect, timeOptions.slice(0, 100), "Select a time");
+          setFlowStatus(
+            "success",
+            `Loaded options for ${geoOptionsList.length} area(s), ${measureOptions.length} measure(s), ${timeOptions.length} time value(s).`
+          );
         } catch (err) {
           optionMeta.textContent = err?.message || "Failed to load options.";
+          setFlowStatus("error", err?.message || "Failed to load options.");
         }
       }
 
@@ -1063,9 +1103,12 @@
         if (!dataset || !edition || !version || !measure || !time || geos.length === 0) {
           queryError.textContent = "Pick dataset/edition/version, measure, time, and at least one area.";
           queryError.style.display = "block";
+          setFlowStatus("empty", "Complete all required fields before running comparison.");
           return;
         }
+        setFlowStatus("loading", "Running comparison query...");
         const series = [];
+        let hadErrors = false;
         for (const geo of geos) {
           try {
             const response = await requestToolStrict("ons_data.query", {
@@ -1084,11 +1127,19 @@
               series.push({ area: geo, value });
             }
           } catch (err) {
+            hadErrors = true;
             queryError.textContent = "Query failed for some areas.";
             queryError.style.display = "block";
           }
         }
         renderSeries(series);
+        if (!series.length) {
+          setFlowStatus("empty", "No observations returned for the selected filters.");
+        } else if (hadErrors) {
+          setFlowStatus("error", `Loaded ${series.length} result(s) with partial errors.`);
+        } else {
+          setFlowStatus("success", `Loaded ${series.length} comparison result(s).`);
+        }
       }
 
       function applyConfig(config) {
@@ -1179,6 +1230,7 @@
       });
 
       updateStatus("Awaiting host", false);
+      setFlowStatus("idle", "Idle.");
 
       if (window.ResizeObserver) {
         const resizeObserver = new ResizeObserver(() => {
@@ -1201,6 +1253,7 @@
           rpcNotify("ui/notifications/initialized", {});
         } catch (err) {
           updateStatus("Host connection failed", false);
+          setFlowStatus("error", "Host initialization failed.");
           updateFullscreenControl();
         }
       }

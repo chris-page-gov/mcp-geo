@@ -87,6 +87,12 @@ All notable changes to this project will be documented in this file.
     selection actions
   - extended `playground/tests/geography_selector.spec.js` to assert flow
     status plus style/opacity/layer behavior under host simulation.
+- Hardened `ui/statistics_dashboard.html` for compact unattended coverage:
+  - added deterministic dashboard flow-state reporting across dataset search,
+    edition/version loading, dimension option loading, and comparison query runs
+  - added compact test hooks for dataset search/results and query error output
+  - added `playground/tests/statistics_dashboard.spec.js` to verify success,
+    empty-field validation, and query-state transitions end to end.
 
 ## [0.4.0] - 2026-02-25
 
