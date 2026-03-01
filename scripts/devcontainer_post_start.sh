@@ -110,8 +110,25 @@ if not db_path.exists():
 try:
     with sqlite3.connect(str(db_path)) as conn:
         cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM geo_lookup")
-        row_count = int(cur.fetchone()[0])
+        tables = {
+            str(row[0])
+            for row in cur.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+            if row and row[0]
+        }
+        count_targets = []
+        if "ons_geo_rows" in tables:
+            count_targets.append("ons_geo_rows")
+        if "ons_geo_uprn_index" in tables:
+            count_targets.append("ons_geo_uprn_index")
+        # Backward compatibility for older cache schema names.
+        if "geo_lookup" in tables:
+            count_targets.append("geo_lookup")
+        if not count_targets:
+            raise SystemExit(1)
+        row_count = 0
+        for table_name in count_targets:
+            cur.execute(f"SELECT COUNT(*) FROM {table_name}")
+            row_count += int(cur.fetchone()[0])
 except Exception:
     raise SystemExit(1)
 if row_count > 0:

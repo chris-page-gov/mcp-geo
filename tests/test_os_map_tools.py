@@ -296,10 +296,7 @@ def test_os_map_selection_export_async_csv_and_status_polling(client, monkeypatc
     terminal = None
     for _ in range(80):
         status_resp = client.post("/tools/call", json={"tool": "os_map.get_export", "exportId": export_id})
-        assert status_resp.status_code in {200, 404}
-        if status_resp.status_code != 200:
-            time.sleep(0.05)
-            continue
+        assert status_resp.status_code == 200
         status_body = status_resp.json()
         if status_body["status"] in {"completed", "failed"}:
             terminal = status_body
@@ -356,9 +353,7 @@ def test_os_map_selection_export_without_membership_columns(client, monkeypatch,
     terminal = None
     for _ in range(80):
         status_resp = client.post("/tools/call", json={"tool": "os_map.get_export", "exportId": export_id})
-        if status_resp.status_code != 200:
-            time.sleep(0.05)
-            continue
+        assert status_resp.status_code == 200
         status_body = status_resp.json()
         if status_body["status"] in {"completed", "failed"}:
             terminal = status_body
