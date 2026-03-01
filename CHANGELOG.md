@@ -100,6 +100,15 @@ All notable changes to this project will be documented in this file.
     and diagnostics panels
   - added `playground/tests/simple_map.spec.js` to validate browser-token,
     API-key, and server-env fallback auth paths deterministically.
+- Promoted `ui/feature_inspector.html` and `ui/route_planner.html` from static
+  placeholders to MCP host-aware compact flows:
+  - implemented `ui/initialize`, host-context merge, display-mode request
+    handling, and fullscreen fallback behavior
+  - added deterministic interactive contracts for feature lookup and route
+    planning (with structured payload output)
+  - added focused regression tests:
+    `playground/tests/feature_inspector.spec.js` and
+    `playground/tests/route_planner.spec.js`.
 
 ## [0.4.0] - 2026-02-25
 
