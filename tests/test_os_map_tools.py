@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -374,10 +375,23 @@ def test_os_map_selection_export_without_membership_columns(client, monkeypatch,
 
 
 def test_os_map_get_export_not_found(client) -> None:  # type: ignore[no-untyped-def]
-    resp = client.post("/tools/call", json={"tool": "os_map.get_export", "exportId": "missing-id"})
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_map.get_export", "exportId": str(uuid.uuid4())},
+    )
     assert resp.status_code == 404
     body = resp.json()
     assert body["code"] == "NOT_FOUND"
+
+
+def test_os_map_get_export_rejects_non_uuid_ids(client) -> None:  # type: ignore[no-untyped-def]
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_map.get_export", "exportId": "../../../etc/passwd"},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "INVALID_INPUT"
 
 
 def test_os_map_parsers_cover_edge_cases() -> None:
