@@ -160,6 +160,85 @@ def test_lookup_prefers_higher_priority_product(tmp_path) -> None:
     assert result.row["LAD24CD"] == "E09000044"
 
 
+def test_ensure_schema_creates_uprn_index_table(tmp_path) -> None:
+    cache = ONSGeoCache(
+        cache_dir=tmp_path,
+        db_name="ons_geo_cache.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+    conn = sqlite3.connect(str(cache.db_path))
+    ensure_schema(conn)
+    conn.execute(
+        """
+        INSERT INTO ons_geo_products (
+            product_id,
+            key_type,
+            derivation_mode,
+            release,
+            source_name,
+            source_path,
+            source_sha256,
+            record_count,
+            ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSUD",
+            "uprn",
+            "exact",
+            "2026-02",
+            "ONSUD",
+            "onsud.csv",
+            "x",
+            1,
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.execute(
+        """
+        INSERT INTO ons_geo_uprn_index (
+            product_id,
+            derivation_mode,
+            uprn,
+            postcode,
+            oa_code,
+            lsoa_code,
+            msoa_code,
+            lad_code,
+            lad_name,
+            postal_delivery,
+            geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSUD",
+            "exact",
+            "100023336959",
+            "CV12GT",
+            "E001",
+            "E0101",
+            "E0201",
+            "E08000026",
+            "Coventry",
+            1,
+            "{}",
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.commit()
+    row = conn.execute(
+        """
+        SELECT uprn, lad_code, lad_name, postal_delivery
+        FROM ons_geo_uprn_index
+        WHERE uprn = ?
+        """,
+        ("100023336959",),
+    ).fetchone()
+    conn.close()
+    assert row == ("100023336959", "E08000026", "Coventry", 1)
+
+
 def test_lookup_raises_cache_read_error_when_schema_is_missing(tmp_path) -> None:
     cache = ONSGeoCache(
         cache_dir=tmp_path,

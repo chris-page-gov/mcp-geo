@@ -27,8 +27,8 @@ _UI_RESOURCE_LINKS = {
     },
     _UI_URIS["boundary"]: {
         "name": "ui_boundary_explorer",
-        "title": "Boundary Explorer",
-        "description": "Interactive explorer for boundaries, UPRNs, buildings, and links (with local layer import).",
+        "title": "Map Lab",
+        "description": "Map Lab workspace for UK boundaries, UPRNs, buildings, links, and selector-based collections.",
     },
     _UI_URIS["statistics"]: {
         "name": "ui_statistics_dashboard",
@@ -497,7 +497,7 @@ def _render_boundary_explorer(payload: dict[str, Any]) -> ToolResult:
         return _error("contentMode must be a string")
     return _build_widget_response(
         config,
-        "Open the boundary explorer to select boundaries, add layers, and inspect inventories.",
+        "Open Map Lab to learn mapping fundamentals, build collections, and render map layers.",
         resource_uri=_UI_URIS["boundary"],
         content_mode=content_mode,
     )

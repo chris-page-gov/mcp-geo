@@ -13,12 +13,14 @@ class _DummyClient:
 
 
 class _DummyURL:
-    path = "/health"
+    def __init__(self, path: str = "/health") -> None:
+        self.path = path
 
 
 class _DummyRequest:
-    client = _DummyClient()
-    url = _DummyURL()
+    def __init__(self, path: str = "/health") -> None:
+        self.client = _DummyClient()
+        self.url = _DummyURL(path)
 
 
 def test_check_rate_limit_limit_disabled_and_window_reset():
@@ -58,6 +60,27 @@ def test_check_rate_limit_bypass_enabled():
     finally:
         settings.RATE_LIMIT_PER_MIN = original_limit
         settings.RATE_LIMIT_BYPASS = original_bypass
+
+
+def test_check_rate_limit_exempt_prefix_path():
+    import server.main as main
+
+    original_limit = settings.RATE_LIMIT_PER_MIN
+    original_bypass = settings.RATE_LIMIT_BYPASS
+    original_exempt = settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES
+    try:
+        settings.RATE_LIMIT_BYPASS = False
+        settings.RATE_LIMIT_PER_MIN = 1
+        settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES = "/maps/vector/vts/tile"
+        main._rate_counters.clear()
+
+        request = _DummyRequest("/maps/vector/vts/tile/13/2726/4097.pbf")
+        assert main._check_rate_limit(request) is True
+        assert main._rate_counters == {}
+    finally:
+        settings.RATE_LIMIT_PER_MIN = original_limit
+        settings.RATE_LIMIT_BYPASS = original_bypass
+        settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES = original_exempt
 
 
 def test_metrics_disabled_branch(monkeypatch):

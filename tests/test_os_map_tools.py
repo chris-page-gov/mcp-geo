@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sqlite3
+import time
 from pathlib import Path
 from typing import Any
 
@@ -179,6 +181,210 @@ def test_os_map_export_writes_file_and_is_readable_via_resource_uri(
     assert traversal_payload.get("code") == "INVALID_INPUT"
 
 
+def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
+    from server.ons_geo_cache import ensure_schema
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    db_path = cache_dir / db_name
+    conn = sqlite3.connect(str(db_path))
+    ensure_schema(conn)
+    conn.execute(
+        """
+        INSERT INTO ons_geo_products (
+            product_id, key_type, derivation_mode, release, source_name,
+            source_path, source_sha256, record_count, ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSUD",
+            "uprn",
+            "exact",
+            "2026-02",
+            "ONSUD",
+            "onsud.csv",
+            "hash",
+            2,
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.execute(
+        """
+        INSERT INTO ons_geo_uprn_index (
+            product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
+            lad_code, lad_name, postal_delivery, geographies_json, cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSUD",
+            "exact",
+            "100023336959",
+            "CV12GT",
+            "E0001",
+            "E0101",
+            "E0201",
+            "E08000026",
+            "Coventry",
+            1,
+            "{}",
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.execute(
+        """
+        INSERT INTO ons_geo_uprn_index (
+            product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
+            lad_code, lad_name, postal_delivery, geographies_json, cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSUD",
+            "exact",
+            "100120786206",
+            "M601NW",
+            "E0002",
+            "E0102",
+            "E0202",
+            "E08000026",
+            "Coventry",
+            0,
+            "{}",
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return db_path
+
+
+def test_os_map_selection_export_async_csv_and_status_polling(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    queued = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export",
+            "exportType": "selection_uprn",
+            "selectionSpec": {
+                "selectors": [
+                    {"type": "gss_code", "level": "LAD", "code": "E08000026"},
+                ],
+                "uprnOverrides": {"include": [], "exclude": []},
+            },
+            "format": "csv",
+            "filters": {"postalDeliveryOnly": True},
+            "delivery": "resource",
+        },
+    )
+    assert queued.status_code == 200
+    queued_body = queued.json()
+    assert queued_body["status"] == "queued"
+    export_id = queued_body["exportId"]
+
+    terminal = None
+    for _ in range(80):
+        status_resp = client.post("/tools/call", json={"tool": "os_map.get_export", "exportId": export_id})
+        assert status_resp.status_code in {200, 404}
+        if status_resp.status_code != 200:
+            time.sleep(0.05)
+            continue
+        status_body = status_resp.json()
+        if status_body["status"] in {"completed", "failed"}:
+            terminal = status_body
+            break
+        time.sleep(0.05)
+    assert terminal is not None
+    assert terminal["status"] == "completed", terminal
+    assert terminal.get("resultUri", "").startswith("resource://mcp-geo/os-exports/")
+    assert terminal.get("rowCount") == 1
+    assert any("postalDeliveryOnly applied" in w for w in terminal.get("warnings", []))
+
+    read = client.get("/resources/read", params={"uri": terminal["resultUri"]})
+    assert read.status_code == 200
+    contents = read.json()["contents"][0]
+    assert contents["mimeType"] == "text/csv"
+    csv_text = contents["text"]
+    assert "uprn,postcode,oa_code,local_authority_name" in csv_text
+    assert "100023336959,CV12GT,E0001,Coventry" in csv_text
+
+
+def test_os_map_selection_export_without_membership_columns(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    queued = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export",
+            "exportType": "selection_uprn",
+            "selectionSpec": {
+                "selectors": [{"type": "gss_code", "level": "LAD", "code": "E08000026"}],
+                "uprnOverrides": {"include": [], "exclude": []},
+            },
+            "format": "csv",
+            "columns": {"defaultSet": "maplab_default_v1", "selectorMembership": False},
+            "delivery": "resource",
+        },
+    )
+    assert queued.status_code == 200
+    export_id = queued.json()["exportId"]
+
+    terminal = None
+    for _ in range(80):
+        status_resp = client.post("/tools/call", json={"tool": "os_map.get_export", "exportId": export_id})
+        if status_resp.status_code != 200:
+            time.sleep(0.05)
+            continue
+        status_body = status_resp.json()
+        if status_body["status"] in {"completed", "failed"}:
+            terminal = status_body
+            break
+        time.sleep(0.05)
+    assert terminal is not None
+    assert terminal["status"] == "completed", terminal
+    assert terminal.get("columns", {}).get("selectorMembership") is False
+
+    read = client.get("/resources/read", params={"uri": terminal["resultUri"]})
+    assert read.status_code == 200
+    csv_text = read.json()["contents"][0]["text"]
+    assert (
+        "uprn,postcode,oa_code,local_authority_name,lsoa_code,msoa_code,lad_code"
+        in csv_text
+    )
+    assert "selected_by_oa" not in csv_text
+
+
+def test_os_map_get_export_not_found(client) -> None:  # type: ignore[no-untyped-def]
+    resp = client.post("/tools/call", json={"tool": "os_map.get_export", "exportId": "missing-id"})
+    assert resp.status_code == 404
+    body = resp.json()
+    assert body["code"] == "NOT_FOUND"
+
+
 def test_os_map_parsers_cover_edge_cases() -> None:
     from tools import os_map
 
@@ -210,6 +416,20 @@ def test_os_map_parsers_cover_edge_cases() -> None:
 
     cols = os_map._parse_collections_override({"buildings": " bld-123 ", "nope": "x"})
     assert cols == {"buildings": "bld-123"}
+
+    column_config = os_map._normalize_columns_config(
+        {"defaultSet": "unknown", "selectorMembership": False}
+    )
+    assert column_config == {"defaultSet": "maplab_default_v1", "selectorMembership": False}
+    assert os_map._csv_columns_from_config({"selectorMembership": False}) == [
+        "uprn",
+        "postcode",
+        "oa_code",
+        "local_authority_name",
+        "lsoa_code",
+        "msoa_code",
+        "lad_code",
+    ]
 
 
 def test_os_map_latest_ngd_collection_ids_error_branches(monkeypatch) -> None:  # type: ignore[no-untyped-def]

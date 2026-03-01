@@ -58,9 +58,12 @@ pytest -q
   (default: `logs/playground-events.jsonl`).
 - `ONS_DATASET_CACHE_ENABLED`: cache full ONS dataset responses (default true).
 - `ONS_DATASET_CACHE_DIR`: cache directory for full ONS dataset snapshots.
+- `ONS_GEO_CACHE_DIR`: cache directory for ONS postcode/UPRN geography index.
+- `OS_DATA_CACHE_DIR`: cache directory for OS response snapshots.
 - `DEBUG_ERRORS`: include tracebacks in error responses (development only).
 - `RATE_LIMIT_PER_MIN`: per-minute in-memory rate limit (default 207).
 - `RATE_LIMIT_BYPASS`: set to `true` to disable rate limiting (default false; enable explicitly for tests/dev).
+- `RATE_LIMIT_EXEMPT_PATH_PREFIXES`: comma-separated path prefixes excluded from rate limiting (default `/maps/vector/vts/tile,/maps/raster/osm,/maps/static/osm`).
 - `METRICS_ENABLED`: enable `/metrics` (default true).
 - `LOG_JSON`: loguru JSON output (default false).
 - `CORS_ALLOWED_ORIGINS`: comma-separated origins for browser clients (default `http://localhost:5173,http://127.0.0.1:5173`).
@@ -69,6 +72,16 @@ pytest -q
 - `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`: default CSV exclude filters when no per-request filters are provided.
 
 You can copy `.env.example` to `.env` for local use.
+
+Storage recommendation:
+- Keep PostGIS data and cache directories outside git worktrees.
+- For containerized PostGIS, prefer Docker named volumes over bind mounts.
+- For host-run caches/logs, use a host data root (for example
+  `$HOME/Library/Application Support/mcp-geo/...`).
+- For devcontainer overrides, copy `.devcontainer/.env.example` to
+  `.devcontainer/.env` and set per-worktree volume names/port pins
+  (`docker compose --env-file .devcontainer/.env ...`), or export the same env
+  vars in your host shell before starting VS Code Dev Containers.
 
 ## STDIO adapter (MCP clients)
 

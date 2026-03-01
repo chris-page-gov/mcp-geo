@@ -53,6 +53,51 @@ Recommended setup:
   `OS_API_KEY_FILE` to a local secret file.
 - Fully restart Claude Desktop after changing key material.
 
+## `ModuleNotFoundError: No module named 'loguru'` on MCP startup
+If VS Code/devcontainer MCP startup fails in `scripts/os-mcp` with
+`ModuleNotFoundError: No module named 'loguru'`, the selected Python
+interpreter does not have repo runtime dependencies installed yet.
+
+Remediation:
+- Run in the repo root:
+  `python3 -m pip install -e .`
+- Optional extras:
+  `python3 -m pip install -e '.[dev,test]'`
+- Restart the MCP server from VS Code MCP Servers.
+
+Notes:
+- `scripts/vscode_mcp_stdio.py` and `scripts/os_mcp.py` now attempt a best-effort
+  bootstrap install (`pip install -e .`) when `loguru` is missing.
+- Devcontainer post-create now installs core runtime first, then optional extras.
+
+## `spawn /workspaces/mcp-geo/.venv/bin/python ENOENT` in devcontainer
+If VS Code reports `ENOENT` for `/workspaces/mcp-geo/.venv/bin/python`, the
+workspace `.venv` usually came from host macOS and is not runnable inside
+Linux devcontainer.
+
+Remediation:
+- In container, use `/usr/bin/python3` as interpreter:
+  `Python: Select Interpreter` -> `/usr/bin/python3`
+- Rebuild/reopen container after pulling latest config
+  (`python.defaultInterpreterPath` now defaults to `/usr/bin/python3` in
+  `.devcontainer/devcontainer.json`).
+- Do not rely on a shared workspace `.venv` across host+container; keep host
+  and container Python environments separate.
+
+## Boundary cache unavailable / PostGIS restart loops
+If `admin_lookup.get_cache_status` shows `enabled=false`/`cache_unavailable`
+or Docker logs include checkpoint/panic startup errors, the PostGIS data
+directory is likely corrupted.
+
+Remediation:
+- Prefer Docker named volumes for PostGIS `PGDATA` (default in current
+  devcontainer and `scripts/claude-mcp-local`).
+- Avoid storing raw Postgres files inside git worktrees.
+- If you were using a bind mount, migrate to volume mode and recreate the DB.
+- Reapply schema + ingest:
+  `psql "$BOUNDARY_CACHE_DSN" -f scripts/boundary_cache_schema.sql` then rerun
+  your boundary ingest pipeline.
+
 ## `os_features.query` returns an XML `ExceptionReport`
 If `os_features.query` returns an `OS_API_ERROR` whose message starts with XML (for example `<?xml ... <ExceptionReport ...>`),
 it usually means the upstream OS endpoint rejected the request (wrong endpoint, unknown collection id, or missing entitlement).

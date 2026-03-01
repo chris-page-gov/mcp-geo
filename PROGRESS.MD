@@ -134,6 +134,60 @@ Legend: pending, in_progress, done, blocked
 | SUBMOD-DOC-1 Vendor submodule refresh | done | none | Bumped vendored reference/spec submodules under `docs/vendor/` (`agentskills`, `modelcontextprotocol`, `ext-apps`, `inspector`) to latest upstream commits and refreshed `docs/spec_tracking.md` review dates. |
 | SUBMOD-RUN-2 Runtime-coupled style-path validation | done | SUBMOD-DOC-1 | Confirmed `submodules/os-vector-tile-api-stylesheets` remained at current upstream pin (no pointer delta) and ran focused regression checks: `./.venv/bin/pytest -q --no-cov tests/test_os_qgis_tools.py tests/test_maps_proxy.py` (`15 passed`). |
 
+## Devcontainer stdio bootstrap hardening (2026-02-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| DSB-0 Core-runtime-first install ordering | done | none | Updated `.devcontainer/devcontainer.json` to install editable core runtime (`-e .`) before optional extras, reducing startup breakage when optional stacks fail. |
+| DSB-1 MCP launcher self-healing | done | DSB-0 | Added best-effort runtime bootstrap (`pip install -e .`) when `loguru` is missing in `scripts/vscode_mcp_stdio.py` and `scripts/os_mcp.py`, with actionable stderr guidance on failure. |
+| DSB-2 Post-start fallback simplification | done | DSB-0 | Updated `scripts/devcontainer_post_start.sh` to auto-install core runtime first, then optional dev/test extras, so MCP startup remains available after rebuild even if optional extras fail. |
+| DSB-3 Container interpreter default + ENOENT guard | done | DSB-1 | Set devcontainer VS Code default interpreter to `/usr/bin/python3` and hardened `scripts/vscode_mcp_stdio.py` to handle unspawnable workspace `.venv` interpreters (host/container mismatch) without crashing. |
+| DSB-4 Cold-start cache bootstrap guardrails | done | DSB-2 | Extended `scripts/devcontainer_post_start.sh` to auto-apply boundary cache schema when PostGIS tables are missing and auto-seed `ons_geo` cache from bundled bootstrap CSVs when the SQLite cache is absent/empty. |
+
+## Storage isolation hardening (2026-02-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| STO-ISO-0 Devcontainer PostGIS/worktree decoupling | done | none | Switched `.devcontainer/docker-compose.yml` from repo bind-mounted PostGIS data (`../data/postgres`) to named volume storage (`MCP_GEO_POSTGIS_VOLUME`), and added dedicated runtime-data volume (`MCP_GEO_RUNTIME_DATA_VOLUME`) for cache/log paths under `/var/lib/mcp-geo`. |
+| STO-ISO-1 Local wrapper storage mode defaults | done | STO-ISO-0 | Updated `scripts/claude-mcp-local` to default to named-volume PostGIS storage (`MCP_GEO_POSTGIS_STORAGE_MODE=volume`, `MCP_GEO_POSTGIS_VOLUME`) with explicit legacy bind-mount opt-in for debugging/migration. |
+| STO-ISO-2 Runtime path and docs alignment | done | STO-ISO-0 | Updated `scripts/devcontainer_post_start.sh` to ensure runtime data-root ownership, aligned `resource_catalog` ONS cache resolution to `ONS_DATASET_CACHE_DIR`, and documented storage/secrets best practices in `docs/getting_started.md`, `docs/Build.md`, `docs/troubleshooting.md`, `README.md`, and `.env.example`. |
+
+## Map Lab complete implementation (2026-02-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MLAB-UX-0 Tabbed shell + novice tutorial help | done | MLH-RES-0 | Upgraded `ui://mcp-geo/boundary-explorer` to Map Lab with Help/Map/Collections tabs, detailed "Welcome to Map Lab" tutorial sections, curated external links, and persisted tutorial state (`maplab.help.*` keys for active tab, scroll, fold states, TOC collapse, and last step) plus reset control. |
+| MLAB-COL-1 Selector-based local collections model | done | MLAB-UX-0 | Added local-first collection CRUD in `ui/boundary_explorer.html` using selector specs (`gss_code`, `postcode`, `uprn`, `polygon`) with explicit UPRN include/exclude overrides, GSS level selection, and import/export of collection JSON specs. |
+| MLAB-EXP-2 Async selector export contract | done | MLAB-COL-1 | Extended `tools/os_map.py` with `exportType=selection_uprn` async job flow and added `os_map.get_export`; status lifecycle now returns `queued/running/completed/failed` with `statusUri` and `resultUri` artifacts under `resource://mcp-geo/os-exports/...`. |
+| MLAB-CACHE-3 UPRN reverse-lookup index | done | OGC-CACHE-1 | Extended ONS cache schema with `ons_geo_uprn_index` and geography/postcode/delivery indexes (`server/ons_geo_cache.py`), and updated ingest refresh (`scripts/ons_geo_cache_refresh.py`) to populate OA/LSOA/MSOA/LAD/postcode plus delivery flags where present. |
+| MLAB-OUT-4 Export output defaults and membership columns | done | MLAB-EXP-2, MLAB-CACHE-3 | Selector export defaults now emit canonical columns (`uprn`, `postcode`, `oa_code`, `local_authority_name`, plus `lsoa_code`, `msoa_code`, `lad_code`) and membership columns (`selected_by_oa`, `selected_by_lsoa`, `selected_by_msoa`, `selected_by_postcode`, `selected_by_uprn`, `selected_by_polygon`). |
+| MLAB-MAP-5 Hierarchy presets + map-tab auto-switch | done | MLAB-UX-0 | Added hierarchy preset control (`auto`, `detail`, `balanced`, `links`) with zoom-band application and auto-switch to Map tab during map-rendering actions while preserving Help state. |
+| MLAB-UX-8 Readability controls + runtime diagnostics hardening | done | MLAB-MAP-5 | Updated `ui/boundary_explorer.html` with no-fill boundary default (`Area fill` toggle), opacity sliders (basemap/fill/UPRN density/buildings/links), dynamic Guidance & Status panel, cache-status refresh wiring (`admin_lookup.get_cache_status`, `ons_geo.cache_status`), safer sandboxed-storage fallback, and layer-hit behavior that still supports boundary interaction when fill is disabled. Added Playwright coverage in `playground/tests/boundary_explorer_controls.spec.js` and exhaustive option-matrix coverage with screenshot + JSON artifacts in `playground/tests/boundary_explorer_option_matrix.spec.js` (`npm --prefix playground run test:boundary-ui`). |
+| MLAB-RES-6 Resource delivery compatibility | done | MLAB-EXP-2 | Updated resource catalog + transports to serve nested export job/result artifacts (JSON + CSV) with correct MIME metadata across HTTP and STDIO (`server/mcp/resource_catalog.py`, `server/mcp/resources.py`, `server/stdio_adapter.py`). |
+| MLAB-VAL-7 Focused regression coverage | done | MLAB-EXP-2, MLAB-CACHE-3 | Added/updated tests for UPRN index ingest/schema, selector async exports, export polling, and resource read MIME paths (`tests/test_ons_geo_cache*.py`, `tests/test_os_map_tools.py`, resource/stdio suites). Focused run with `--no-cov`: `118 passed`. |
+
+## Map Lab novice-help research (2026-02-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MLH-RES-0 Beginner mapping resource survey | done | none | Added curated report `docs/reports/map_lab_help_resources_2026-02-28.md` covering novice-first web mapping fundamentals, UK OS/ONS geography references, UI state-persistence patterns, and a proposed in-app "Welcome to Map Lab" tutorial information architecture. |
+
+## Map tile rate-limit compatibility (2026-02-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MTR-429-0 Tile-path limiter exemption | done | none | Added configurable `RATE_LIMIT_EXEMPT_PATH_PREFIXES` handling in `server/main.py` with defaults for `/maps/vector/vts/tile`, `/maps/raster/osm`, and `/maps/static/osm`; added regression coverage in `tests/test_main_observability_branches.py` and `tests/test_maps_proxy.py` to verify tile requests are no longer rate-limited under low global caps. |
+
 ## Simple map auth + PMTiles exploration (2026-02-27)
 
 Legend: pending, in_progress, done, blocked

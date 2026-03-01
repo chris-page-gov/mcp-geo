@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import site
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,7 +30,36 @@ def _ensure_user_site_when_missing(module_name: str) -> None:
     sys.path.append(user_site)
 
 
-_ensure_user_site_when_missing("loguru")
+def _bootstrap_runtime_deps_when_missing(module_name: str) -> None:
+    if importlib.util.find_spec(module_name) is not None:
+        return
+    cmd = [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "-e",
+        str(_repo_root),
+    ]
+    result = subprocess.run(
+        cmd,
+        cwd=str(_repo_root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        tail = (result.stderr or result.stdout or "").splitlines()[-3:]
+        detail = " | ".join(tail) if tail else "unknown install error"
+        print(
+            (
+                "mcp-geo: failed to bootstrap runtime dependencies with "
+                f"`{' '.join(cmd)}`: {detail}"
+            ),
+            file=sys.stderr,
+        )
 
 # Ensure repo root stays ahead of user site-packages.
 if str(_repo_root) in sys.path:
@@ -38,6 +68,8 @@ if str(_repo_root) in sys.path:
 
 
 def main() -> None:
+    _ensure_user_site_when_missing("loguru")
+    _bootstrap_runtime_deps_when_missing("loguru")
     from server.stdio_adapter import main as _main
 
     _main()
