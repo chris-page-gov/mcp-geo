@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file.
   vs API-key fallback tests and PMTiles trial execution.
 
 ### Changed
+- Updated vendored specification/reference submodules to current upstream
+  commits for `modelcontextprotocol`, `ext-apps`, `inspector`, and
+  `agentskills` under `docs/vendor/`.
 - Updated `/maps/vector/{path}` auth resolution in `server/maps_proxy.py` to
   prefer `Authorization: Bearer ...` from clients, then fall back to key
   query/header and finally server `OS_API_KEY`.
