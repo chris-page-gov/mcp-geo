@@ -211,7 +211,7 @@
 
         <div class="field">
           <label for="mode">Map Mode</label>
-          <select id="mode">
+          <select id="mode" data-testid="map-mode">
             <option value="os_vector">OS Vector Tiles (proxy)</option>
             <option value="pmtiles">PMTiles (browser direct)</option>
           </select>
@@ -219,13 +219,13 @@
 
         <div class="field">
           <label for="proxyBase">Proxy Base</label>
-          <input id="proxyBase" />
+          <input id="proxyBase" data-testid="proxy-base" />
           <div class="hint">Used for OS vector tile proxy and worker URL.</div>
         </div>
 
         <div class="field">
           <label for="osStyle">OS Style</label>
-          <select id="osStyle">
+          <select id="osStyle" data-testid="os-style-select">
             <optgroup label="OS Styles">
               <option value="OS_VTS_3857_Light.json" selected>Light (best default)</option>
               <option value="OS_VTS_3857_Dark.json">Dark</option>
@@ -265,13 +265,21 @@
           <input
             id="pmtilesUrl"
             placeholder="https://example.com/my-data.pmtiles"
+            data-testid="pmtiles-url"
           />
           <div class="hint">Vector layers are auto-inspected and rendered with generic style rules.</div>
         </div>
 
         <div class="field">
           <label for="token">Browser Bearer Token (advanced, optional)</label>
-          <input id="token" type="password" placeholder="Paste token (hidden)" autocomplete="off" spellcheck="false" />
+          <input
+            id="token"
+            type="password"
+            placeholder="Paste token (hidden)"
+            autocomplete="off"
+            spellcheck="false"
+            data-testid="token-input"
+          />
           <div class="hint">Most people can leave this empty and use an API key below. If you paste OAuth JSON, this box will extract <code>access_token</code> automatically.</div>
         </div>
 
@@ -283,6 +291,7 @@
             placeholder="Paste API key (hidden)"
             autocomplete="off"
             spellcheck="false"
+            data-testid="api-key-input"
           />
           <div class="hint">Beginner option: paste your OS API key here from your Data Hub project.</div>
         </div>
@@ -331,16 +340,17 @@
 
         <div class="buttons">
           <button id="loadBtn" data-testid="primary-cta" data-compact-cta>Load Map</button>
-          <button id="benchBtn" class="secondary">Run Pan Benchmark</button>
+          <button id="benchBtn" class="secondary" data-testid="benchmark-button">Run Pan Benchmark</button>
         </div>
 
         <div id="status" data-testid="status-strip">Idle.</div>
-        <pre id="timings">{}</pre>
+        <div class="hint" id="authMode" data-testid="auth-mode">Auth mode: not set</div>
+        <pre id="timings" data-testid="timings-output">{}</pre>
       </section>
 
       <main class="map-stage" data-compact-map data-testid="map-stage">
         <div id="map"></div>
-        <div id="mapHint" class="map-hint"></div>
+        <div id="mapHint" class="map-hint" data-testid="map-hint"></div>
       </main>
     </div>
 
@@ -361,6 +371,7 @@
         loadBtn: document.getElementById("loadBtn"),
         benchBtn: document.getElementById("benchBtn"),
         status: document.getElementById("status"),
+        authMode: document.getElementById("authMode"),
         timings: document.getElementById("timings"),
         mapHint: document.getElementById("mapHint"),
       };
@@ -397,6 +408,27 @@
 
       function setStatus(text) {
         elements.status.textContent = text;
+      }
+
+      function resolveAuthMode(config) {
+        if (config.token) {
+          return "bearer";
+        }
+        if (config.apiKey) {
+          return "api_key";
+        }
+        return "server_env";
+      }
+
+      function setAuthMode(mode) {
+        const labelByMode = {
+          bearer: "Browser bearer token",
+          api_key: "API key override",
+          server_env: "Server environment key",
+        };
+        const label = labelByMode[mode] || "Not set";
+        elements.authMode.textContent = `Auth mode: ${label}`;
+        elements.authMode.dataset.mode = mode || "unknown";
       }
 
       function cleanToken(value) {
@@ -1020,6 +1052,7 @@
 
       async function loadMap() {
         const config = getFormState();
+        const authMode = resolveAuthMode(config);
         if (state.map) {
           state.map.remove();
           state.map = null;
@@ -1032,7 +1065,13 @@
         state.sourceEventCount = 0;
         resetTimings();
         const started = performance.now();
-        updateTimings({ startedAt: new Date().toISOString() });
+        setAuthMode(authMode);
+        updateTimings({
+          startedAt: new Date().toISOString(),
+          mode: config.mode,
+          authMode,
+          selectedStyle: config.osStyle || null,
+        });
         setMapHint(`Loading map...\n\n${modeInstructions(config.mode)}`, "info", true);
 
         const workerUrl = `${config.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
@@ -1166,6 +1205,7 @@
           setMapHint(modeInstructions(elements.mode.value), "info", true);
         }
       });
+      setAuthMode(resolveAuthMode(getFormState()));
       setMapHint(modeInstructions(elements.mode.value), "info", true);
     </script>
   </body>

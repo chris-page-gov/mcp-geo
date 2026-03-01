@@ -93,6 +93,13 @@ All notable changes to this project will be documented in this file.
   - added compact test hooks for dataset search/results and query error output
   - added `playground/tests/statistics_dashboard.spec.js` to verify success,
     empty-field validation, and query-state transitions end to end.
+- Hardened `ui/simple_map.html` for compact unattended coverage:
+  - added explicit auth-mode reporting (`bearer`, `api_key`, `server_env`) and
+    surfaced auth/style state in diagnostics output
+  - added stable compact test hooks for style selection, auth inputs, status,
+    and diagnostics panels
+  - added `playground/tests/simple_map.spec.js` to validate browser-token,
+    API-key, and server-env fallback auth paths deterministically.
 
 ## [0.4.0] - 2026-02-25
 
