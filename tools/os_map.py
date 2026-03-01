@@ -88,6 +88,18 @@ def _atomic_write_text(path: Path, text: str) -> None:
     tmp_path.replace(path)
 
 
+def _normalize_export_id(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    candidate = value.strip()
+    if not candidate:
+        return None
+    try:
+        return str(uuid.UUID(candidate))
+    except ValueError:
+        return None
+
+
 def _parse_bbox(value: Any) -> list[float] | None:
     if not (isinstance(value, list) and len(value) == 4):
         return None
@@ -488,11 +500,23 @@ def _job_status_uri(export_id: str) -> str:
 
 
 def _job_path(export_id: str) -> Path:
-    return _OS_EXPORT_JOBS_DIR / f"{export_id}.json"
+    normalized = _normalize_export_id(export_id)
+    if not normalized:
+        raise ValueError("invalid export id")
+    root = _OS_EXPORT_JOBS_DIR.resolve()
+    path = (root / f"{normalized}.json").resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("invalid export id") from exc
+    return path
 
 
 def _read_job(export_id: str) -> dict[str, Any] | None:
-    path = _job_path(export_id)
+    try:
+        path = _job_path(export_id)
+    except ValueError:
+        return None
     if not path.exists() or not path.is_file():
         return None
     for _attempt in range(3):
@@ -508,11 +532,11 @@ def _read_job(export_id: str) -> dict[str, Any] | None:
 
 
 def _write_job(job: dict[str, Any]) -> None:
-    export_id = str(job.get("exportId") or "")
-    if not export_id:
+    normalized = _normalize_export_id(job.get("exportId"))
+    if not normalized:
         return
     _OS_EXPORT_JOBS_DIR.mkdir(parents=True, exist_ok=True)
-    path = _job_path(export_id)
+    path = _job_path(normalized)
     _atomic_write_text(path, json.dumps(job, ensure_ascii=True, indent=2) + "\n")
 
 
@@ -973,13 +997,13 @@ def _export(payload: dict[str, Any]) -> ToolResult:
 
 def _get_export(payload: dict[str, Any]) -> ToolResult:
     export_id = payload.get("exportId")
-    if not isinstance(export_id, str) or not export_id.strip():
+    normalized = _normalize_export_id(export_id)
+    if not normalized:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",
-            "message": "exportId must be a non-empty string",
+            "message": "exportId must be a UUID string",
         }
-    normalized = export_id.strip()
     job = _read_job(normalized)
     if not job:
         return 404, {
