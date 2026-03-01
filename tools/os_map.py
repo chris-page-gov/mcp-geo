@@ -81,6 +81,13 @@ def _now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    tmp_path.write_text(text, encoding="utf-8")
+    tmp_path.replace(path)
+
+
 def _parse_bbox(value: Any) -> list[float] | None:
     if not (isinstance(value, list) and len(value) == 4):
         return None
@@ -460,7 +467,7 @@ def _export_inventory_snapshot(payload: dict[str, Any]) -> ToolResult:
         "recipe": recipe or {},
         "inventory": inv,
     }
-    path.write_text(json.dumps(payload_out, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+    _atomic_write_text(path, json.dumps(payload_out, ensure_ascii=True, indent=2) + "\n")
     uri = f"resource://mcp-geo/exports/{filename}"
     return 200, {
         "exportId": export_id,
@@ -488,11 +495,16 @@ def _read_job(export_id: str) -> dict[str, Any] | None:
     path = _job_path(export_id)
     if not path.exists() or not path.is_file():
         return None
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return None
-    return raw if isinstance(raw, dict) else None
+    for _attempt in range(3):
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            time.sleep(0.01)
+            continue
+        except Exception:
+            return None
+        return raw if isinstance(raw, dict) else None
+    return None
 
 
 def _write_job(job: dict[str, Any]) -> None:
@@ -501,7 +513,7 @@ def _write_job(job: dict[str, Any]) -> None:
         return
     _OS_EXPORT_JOBS_DIR.mkdir(parents=True, exist_ok=True)
     path = _job_path(export_id)
-    path.write_text(json.dumps(job, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+    _atomic_write_text(path, json.dumps(job, ensure_ascii=True, indent=2) + "\n")
 
 
 def _membership_value(values: set[str]) -> str:
@@ -811,11 +823,13 @@ def _resolve_selection_rows(
 
 def _write_csv(path: Path, rows: list[dict[str, Any]], columns: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as stream:
+    tmp_path = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    with tmp_path.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=columns)
         writer.writeheader()
         for row in rows:
             writer.writerow({key: row.get(key, "") for key in columns})
+    tmp_path.replace(path)
 
 
 def _update_job(export_id: str, **updates: Any) -> dict[str, Any]:
@@ -855,8 +869,8 @@ def _run_selection_export_job(export_id: str, payload: dict[str, Any]) -> None:
         if export_format == "json":
             filename = f"{file_stem}.json"
             out_path = _OS_EXPORTS_DIR / filename
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(
+            _atomic_write_text(
+                out_path,
                 json.dumps(
                     {
                         "exportId": export_id,
@@ -871,7 +885,6 @@ def _run_selection_export_job(export_id: str, payload: dict[str, Any]) -> None:
                     indent=2,
                 )
                 + "\n",
-                encoding="utf-8",
             )
         else:
             filename = f"{file_stem}.csv"
