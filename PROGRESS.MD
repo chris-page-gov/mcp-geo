@@ -13,7 +13,7 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | CWIN-PLAN-1 Full implementation + test strategy definition | done | none | Added branch-scoped plan `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md` with workstreams for all six UIs, compact contract, Playwright rewrite strategy, and strict merge-gate acceptance criteria. |
 | CWIN-BASE-2 Strict checklist baseline run | done | CWIN-PLAN-1 | Added machine-readable acceptance checklist `docs/reports/compact_windows_acceptance_checklist_2026-03-01.json` and baseline strict-run report `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`; executed focused evidence run (`3 passed`) and cataloged current strict-gate outcome (`0/6` UIs pass pre-implementation). |
-| CWIN-EXEC-3 Unattended compact-window implementation | pending | CWIN-BASE-2 | Pending code/test execution on `codex/compact-windows`: compact layout contract, UI behavior upgrades, exhaustive interaction automation, and CI gate wiring. |
+| CWIN-EXEC-3 Unattended compact-window implementation | in_progress | CWIN-BASE-2 | Started execution on `codex/compact-windows`: scaffolded compact Playwright infrastructure (`playwright.compact*.config.js`, `test:compact`, `test:compact-matrix`, deterministic bridge/profile support, smoke+matrix suites) with passing baseline runs (`8 passed`, `6 passed`). |
 
 ## MCP-Apps window constraints and redesign review (2026-03-01)
 

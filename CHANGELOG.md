@@ -60,6 +60,14 @@ All notable changes to this project will be documented in this file.
     `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`
   - baseline evidence command run (`3` focused UI tests passed; strict compact
     gate remains `0/6` pre-implementation by policy).
+- Added compact Playwright scaffold infrastructure for unattended execution:
+  - new configs: `playground/playwright.compact.config.js`,
+    `playground/playwright.compact-matrix.config.js`
+  - new scripts: `npm --prefix playground run test:compact` and
+    `npm --prefix playground run test:compact-matrix`
+  - new suite scaffolding under `playground/tests/compact_windows/` with
+    deterministic MCP bridge/profile support and passing baseline runs
+    (`8 passed` compact smoke, `6 passed` compact matrix).
 
 ## [0.4.0] - 2026-02-25
 

@@ -21,13 +21,18 @@ npm --prefix playground run test -- --reporter=line \
   playground/tests/boundary_explorer_host_harness.spec.js
 
 npm --prefix playground run test -- --list
+
+npm --prefix playground run test:compact
+npm --prefix playground run test:compact-matrix
 ```
 
 Observed:
 
 - focused UI run: `3 passed`
 - default suite inventory: `7 tests in 5 files`
-- compact-window strict suite does not yet exist as dedicated unattended gate
+- compact scaffold suite: `8 passed`
+- compact matrix scaffold suite: `6 passed`
+- dedicated compact commands now exist, but assertions are still scaffold-level and not yet strict against full acceptance coverage
 
 ## Strict gate outcome (pre-implementation baseline)
 
