@@ -1,0 +1,55 @@
+{
+  "version": "2026-03-01",
+  "name": "compact_windows_strict_acceptance",
+  "branch": "codex/compact-windows",
+  "uiTargets": [
+    "boundary_explorer",
+    "geography_selector",
+    "statistics_dashboard",
+    "simple_map",
+    "feature_inspector",
+    "route_planner"
+  ],
+  "checks": [
+    { "id": "AC-G-01", "group": "global", "description": "320x500 no horizontal overflow" },
+    { "id": "AC-G-02", "group": "global", "description": "360x500 no horizontal overflow" },
+    { "id": "AC-G-03", "group": "global", "description": "Primary CTA visible on first screen" },
+    { "id": "AC-G-04", "group": "global", "description": "Status/error strip visible on first screen" },
+    { "id": "AC-G-05", "group": "global", "description": "Keyboard-only navigation across primary controls" },
+    { "id": "AC-G-06", "group": "global", "description": "Deterministic loading/empty/error states" },
+    { "id": "AC-G-07", "group": "global", "description": "No uncaught runtime exceptions" },
+    { "id": "AC-M-01", "group": "mcp_apps", "description": "ui/initialize handled" },
+    { "id": "AC-M-02", "group": "mcp_apps", "description": "host-context-changed merge handled" },
+    { "id": "AC-M-03", "group": "mcp_apps", "description": "Inline-only host behavior correct" },
+    { "id": "AC-M-04", "group": "mcp_apps", "description": "Fullscreen fallback behavior correct" },
+    { "id": "AC-M-05", "group": "mcp_apps", "description": "containerDimensions variants handled" },
+    { "id": "AC-L-01", "group": "map_layers", "description": "Style dropdown exhaustively exercised" },
+    { "id": "AC-L-02", "group": "map_layers", "description": "Opacity control min/mid/max exercised" },
+    { "id": "AC-L-03", "group": "map_layers", "description": "Layer toggles exhaustively exercised" },
+    { "id": "AC-L-04", "group": "map_layers", "description": "Style swap preserves overlay state" },
+    { "id": "AC-L-05", "group": "map_layers", "description": "Diagnostics updated per change" },
+    { "id": "AC-D-01", "group": "domain_selection", "description": "Boundary select/deselect" },
+    { "id": "AC-D-02", "group": "domain_selection", "description": "Hierarchy highlight integrity" },
+    { "id": "AC-D-03", "group": "domain_selection", "description": "Linked UPRN propagation" },
+    { "id": "AC-D-04", "group": "domain_selection", "description": "UPRN attribute filters: address/classification/flags" },
+    { "id": "AC-D-05", "group": "domain_selection", "description": "Postcode/UPRN detail-mode behavior" },
+    { "id": "AC-I-01", "group": "local_import", "description": "GeoJSON import flow" },
+    { "id": "AC-I-02", "group": "local_import", "description": "CSV import flow" },
+    { "id": "AC-I-03", "group": "local_import", "description": "Shapefile zip import flow" },
+    { "id": "AC-I-04", "group": "local_import", "description": "Import error handling" },
+    { "id": "AC-I-05", "group": "local_import", "description": "Import-driven selection correctness" }
+  ],
+  "requiredByUi": {
+    "boundary_explorer": ["AC-G-01", "AC-G-02", "AC-G-03", "AC-G-04", "AC-G-05", "AC-G-06", "AC-G-07", "AC-M-01", "AC-M-02", "AC-M-03", "AC-M-04", "AC-M-05", "AC-L-01", "AC-L-03", "AC-L-04", "AC-L-05", "AC-D-01", "AC-D-02", "AC-D-03", "AC-D-04", "AC-D-05", "AC-I-01", "AC-I-02", "AC-I-03", "AC-I-04", "AC-I-05"],
+    "geography_selector": ["AC-G-01", "AC-G-02", "AC-G-03", "AC-G-04", "AC-G-05", "AC-G-06", "AC-G-07", "AC-M-01", "AC-M-02", "AC-M-03", "AC-M-04", "AC-M-05", "AC-L-01", "AC-L-02", "AC-L-03", "AC-L-04", "AC-L-05", "AC-D-01", "AC-D-03", "AC-D-05"],
+    "statistics_dashboard": ["AC-G-01", "AC-G-02", "AC-G-03", "AC-G-04", "AC-G-05", "AC-G-06", "AC-G-07", "AC-M-01", "AC-M-02", "AC-M-03", "AC-M-04", "AC-M-05"],
+    "simple_map": ["AC-G-01", "AC-G-02", "AC-G-03", "AC-G-04", "AC-G-05", "AC-G-06", "AC-G-07", "AC-L-01", "AC-L-05"],
+    "feature_inspector": ["AC-G-01", "AC-G-02", "AC-G-03", "AC-G-04", "AC-G-05", "AC-G-06", "AC-G-07", "AC-M-01", "AC-M-02", "AC-M-03", "AC-M-04", "AC-M-05"],
+    "route_planner": ["AC-G-01", "AC-G-02", "AC-G-03", "AC-G-04", "AC-G-05", "AC-G-06", "AC-G-07", "AC-M-01", "AC-M-02", "AC-M-03", "AC-M-04", "AC-M-05"]
+  },
+  "gatePolicy": {
+    "mode": "strict",
+    "requiresAllChecksPass": true,
+    "allowManualWaivers": false
+  }
+}

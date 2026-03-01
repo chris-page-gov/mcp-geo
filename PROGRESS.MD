@@ -5,6 +5,28 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-01
 
+## Compact-windows unattended implementation planning (2026-03-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CWIN-PLAN-1 Full implementation + test strategy definition | done | none | Added branch-scoped plan `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md` with workstreams for all six UIs, compact contract, Playwright rewrite strategy, and strict merge-gate acceptance criteria. |
+| CWIN-BASE-2 Strict checklist baseline run | done | CWIN-PLAN-1 | Added machine-readable acceptance checklist `docs/reports/compact_windows_acceptance_checklist_2026-03-01.json` and baseline strict-run report `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`; executed focused evidence run (`3 passed`) and cataloged current strict-gate outcome (`0/6` UIs pass pre-implementation). |
+| CWIN-EXEC-3 Unattended compact-window implementation | pending | CWIN-BASE-2 | Pending code/test execution on `codex/compact-windows`: compact layout contract, UI behavior upgrades, exhaustive interaction automation, and CI gate wiring. |
+
+## MCP-Apps window constraints and redesign review (2026-03-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MAWS-SPEC-1 MCP spec inventory completeness | done | none | Verified spec-bearing `modelcontextprotocol` org repos and added missing `docs/vendor/mcp/repos/ext-auth` submodule so published/draft spec trees are fully local (`modelcontextprotocol`, `ext-apps`, `ext-auth`). |
+| MAWS-ANALYSIS-2 Spec-vs-host window behavior review | done | MAWS-SPEC-1 | Confirmed windowing/maximize behavior is host-capability dependent in `ext-apps`; captured current host evidence (VS Code inline-only today; Claude inline guidance with `500px` max card height). |
+| MAWS-DESIGN-3 Cross-host small-window redesign pack | done | MAWS-ANALYSIS-2 | Added review report + explicit `320x500` design budget and per-UI redesign assessment at `docs/reports/mcp_apps_window_constraints_review_2026-03-01.md`; added Figma-importable wireframe pack under `docs/design/figma/`. |
+| MAWS-FIGMA-4 Direct Figma publication automation | done | MAWS-DESIGN-3 | Figma MCP server configured and authenticated; captured compact proposals into Figma file and validated iterative recapture via `existingFile` mode. |
+| MAWS-FIGMA-5 Figma setup runbook + fidelity constraints | done | MAWS-FIGMA-4 | Added `docs/design/figma/mcp_figma_setup_and_capture_runbook.md` documenting setup, OAuth, capture flow, and known SVG-text fidelity caveat; review report now uses Figma as annotation support, not decision source. |
+
 ## Submodule refresh and runtime-coupling validation (2026-03-01)
 
 Legend: pending, in_progress, done, blocked

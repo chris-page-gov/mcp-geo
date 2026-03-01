@@ -39,6 +39,27 @@ All notable changes to this project will be documented in this file.
   respects the selected `style` query parameter (instead of always returning
   the default look), and corrected rewritten vector tile templates to
   `{z}/{y}/{x}` ordering.
+- Added vendored MCP auth-extension spec submodule
+  `docs/vendor/mcp/repos/ext-auth` and recorded the draft auth-spec tracking
+  entry in `docs/spec_tracking.md`.
+- Added MCP-Apps small-window review and redesign artifacts:
+  `docs/reports/mcp_apps_window_constraints_review_2026-03-01.md` plus
+  Figma-importable wireframes and handoff notes in `docs/design/figma/`.
+- Added Figma MCP setup/capture runbook
+  `docs/design/figma/mcp_figma_setup_and_capture_runbook.md`, including
+  restart/auth verification, local capture sequence, and SVG-text fidelity
+  troubleshooting guidance.
+- Expanded compact-window review with an implementation-focused design action
+  plan per UI and updated Figma status based on live capture results.
+- Added compact-window unattended delivery planning artifacts:
+  - implementation + test strategy:
+    `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`
+  - strict acceptance checklist (machine-readable):
+    `docs/reports/compact_windows_acceptance_checklist_2026-03-01.json`
+  - strict baseline run report:
+    `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`
+  - baseline evidence command run (`3` focused UI tests passed; strict compact
+    gate remains `0/6` pre-implementation by policy).
 
 ## [0.4.0] - 2026-02-25
 

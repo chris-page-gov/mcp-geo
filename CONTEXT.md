@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-02-27
+Last updated: 2026-03-01
 Owner: @chris-page-gov
 
 ## Purpose
@@ -77,6 +77,14 @@ assumptions change.
 - Exploring a simple-map delivery path that prioritizes browser bearer auth for
   OS vector tiles with deterministic fallback to server `OS_API_KEY`, plus
   PMTiles trial instrumentation.
+- Reviewing MCP-Apps small-window host constraints (Claude/VS Code) and
+  standardizing compact UI design budgets + redesign artifacts for all MCP-Apps
+  views.
+- Operating Figma MCP as a secondary collaboration surface (capture + annotate),
+  with design decisions anchored in repo review artifacts due capture-fidelity
+  caveats on SVG-embedded text.
+- Preparing unattended implementation on `codex/compact-windows` with a strict
+  six-UI compact-window acceptance gate and Playwright rewrite plan.
 
 ## Active Work
 
@@ -134,6 +142,19 @@ assumptions change.
 - Drive the `codex/simple-map` exploration stream (`SMAP-*`) for minimal auth
   handling and PMTiles performance-trial setup artifacts (`ui/simple_map.html`,
   `docs/simple_map_lab.md`, `tests/test_maps_proxy.py`).
+- Keep MCP specification coverage complete in local vendor submodules,
+  including the draft auth extension repository
+  (`docs/vendor/mcp/repos/ext-auth`).
+- Maintain the MCP-Apps compact-window review and redesign handoff artifacts in
+  `docs/reports/mcp_apps_window_constraints_review_2026-03-01.md` and
+  `docs/design/figma/`.
+- Maintain the Figma MCP setup/capture runbook for repeatable onboarding and
+  troubleshooting at
+  `docs/design/figma/mcp_figma_setup_and_capture_runbook.md`.
+- Execute compact-window implementation and test hardening from
+  `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`
+  and keep strict baseline evidence updated in
+  `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`.
 
 ## Status Snapshot (from PROGRESS.MD)
 

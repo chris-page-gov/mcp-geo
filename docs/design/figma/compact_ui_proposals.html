@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MCP Geo Compact UI Proposals</title>
+    <style>
+      :root {
+        --bg: #f2f4f6;
+        --ink: #14202b;
+        --muted: #425462;
+        --accent: #0e6a88;
+        --card: #ffffff;
+        --line: #d1dbe0;
+        --radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #ffffff 0%, var(--bg) 55%);
+        color: var(--ink);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .meta {
+        margin-top: 16px;
+        display: grid;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .meta strong {
+        color: var(--ink);
+      }
+
+      .panel {
+        margin-top: 20px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+
+      .panel h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .wireframe-wrap {
+        margin-top: 18px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .wireframe-wrap img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .tokens {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .token {
+        background: #f8fafb;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .token strong {
+        display: block;
+        color: var(--ink);
+        margin-bottom: 6px;
+      }
+
+      .footer {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #bad0d8;
+        background: #eef7fa;
+        color: #13313e;
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .tokens {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <h1>MCP Geo Compact UI Proposals</h1>
+      <p class="subtitle">
+        Proposed redesign baseline for MCP-Apps UIs constrained by host inline windows.
+      </p>
+
+      <div class="meta">
+        <div><strong>Cross-host design budget:</strong> 320 x 500 (primary), 360 x 500 (comfort).</div>
+        <div><strong>Policy:</strong> fullscreen is optional enhancement, never required for core flow.</div>
+        <div><strong>Included UIs:</strong> Boundary Explorer, Geography Selector, Statistics Dashboard, Simple Map Lab, Feature Inspector, Route Planner.</div>
+      </div>
+
+      <section class="panel">
+        <h2>Wireframe Frames (Import-ready)</h2>
+        <p>
+          Each frame keeps title, status, map/visual viewport, and primary action visible in constrained inline layouts.
+        </p>
+        <div class="wireframe-wrap">
+          <img src="./mcp_apps_small_window_wireframes.svg" alt="MCP-Apps compact wireframes" />
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Compact Tokens</h2>
+        <div class="tokens">
+          <div class="token">
+            <strong>Spacing</strong>
+            4 / 8 / 12 / 16 / 20
+          </div>
+          <div class="token">
+            <strong>Type scale</strong>
+            12 (meta), 14 (body), 16 (section), 18 (title)
+          </div>
+          <div class="token">
+            <strong>Targets</strong>
+            40px min tap height; 12px min internal padding
+          </div>
+          <div class="token">
+            <strong>Map viewport</strong>
+            150px to 190px in 320x500 frame
+          </div>
+          <div class="token">
+            <strong>Primary action</strong>
+            Dock near bottom; one clear CTA only
+          </div>
+          <div class="token">
+            <strong>Diagnostics</strong>
+            Plain-language status strip directly under header
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">
+        Capture target page for Figma import: <code>/compact_ui_proposals.html</code>
+      </div>
+    </main>
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  </body>
+</html>
