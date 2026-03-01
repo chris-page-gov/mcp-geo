@@ -105,6 +105,12 @@ Claude Desktop config example (STDIO transport):
 The wrapper script starts PostGIS locally (Docker), builds the image if needed,
 and runs STDIO with the boundary cache enabled.
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
+By default it now stores PostGIS data in a Docker named volume
+(`mcp-geo-postgis-claude`) so raw database files are not written into the repo.
+Set `MCP_GEO_POSTGIS_STORAGE_MODE=bind` only if you explicitly want a host path
+mount (`MCP_GEO_POSTGIS_DATA_DIR`).
+Set `MCP_GEO_POSTGIS_VOLUME` differently per worktree if you want isolated
+local PostGIS state for each branch workspace.
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
@@ -249,6 +255,9 @@ to receive a compressed response (check `Content-Encoding: gzip`).
 Basic per-minute in-memory rate limiting is enabled by default:
 - Environment variable: `RATE_LIMIT_PER_MIN` (default 207 per IP per top-level path segment)
 - Bypass (tests/dev): `RATE_LIMIT_BYPASS=false` by default; set `true` only for explicit local/dev bypass.
+- Path exemptions: `RATE_LIMIT_EXEMPT_PATH_PREFIXES` (defaults to
+  `/maps/vector/vts/tile,/maps/raster/osm,/maps/static/osm`) to prevent
+  normal map tile fan-out from triggering 429 responses.
 Responses over the limit return:
 ```json
 { "isError": true, "code": "RATE_LIMITED", "message": "Rate limit exceeded" }
@@ -272,6 +281,7 @@ python3 scripts/rate_limit_assessor.py \
 Notes:
 - Set `RATE_LIMIT_BYPASS=false` before probing, otherwise no limiter behavior will be observed.
 - The recommendation is per client IP and top-level path segment, matching middleware behavior.
+- Requests under `RATE_LIMIT_EXEMPT_PATH_PREFIXES` are excluded from this probe scope.
 
 ## Metrics
 Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`):

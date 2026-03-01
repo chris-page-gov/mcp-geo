@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "test": "playwright test",
     "test:boundary-harness": "playwright test boundary_explorer_host_harness.spec.js",
+    "test:boundary-matrix": "playwright test boundary_explorer_option_matrix.spec.js",
+    "test:boundary-ui": "playwright test boundary_explorer_host_harness.spec.js boundary_explorer_controls.spec.js boundary_explorer_local_layers.spec.js boundary_explorer_option_matrix.spec.js",
     "test:trials": "playwright test --config playwright.trials.config.js"
   },
   "dependencies": {

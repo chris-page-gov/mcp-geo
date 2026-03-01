@@ -14,7 +14,6 @@ UI_DIR = ROOT / "ui"
 SKILL_PATH = ROOT / "SKILL.md"
 BOUNDARY_MANIFEST_PATH = ROOT / "docs" / "Boundaries.json"
 BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
-ONS_CACHE_DIR = ROOT / "data" / "cache" / "ons"
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
@@ -44,6 +43,7 @@ def _resolve_data_path(raw: str | None, default: str) -> Path:
 
 
 OS_CACHE_DIR = _resolve_data_path(getattr(settings, "OS_DATA_CACHE_DIR", None), "data/cache/os")
+ONS_CACHE_DIR = _resolve_data_path(getattr(settings, "ONS_DATASET_CACHE_DIR", None), "data/cache/ons")
 OS_EXPORTS_DIR = _resolve_data_path(None, "data/os_exports")
 
 DATA_RESOURCE_PREFIX = "resource://mcp-geo/"
@@ -98,10 +98,10 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
     {
         "slug": "boundary-explorer",
         "name": "ui_boundary_explorer",
-        "title": "Boundary Explorer",
+        "title": "Map Lab",
         "description": (
-            "Interactive explorer for UK boundaries with progressive disclosure for UPRNs, buildings, "
-            "and transport links, plus local layer import and export."
+            "Map Lab workspace for learning and building UK maps with boundaries, UPRNs, "
+            "buildings, links, selector-based collections, and export."
         ),
         "file": "boundary_explorer.html",
         "annotations": {
@@ -479,7 +479,7 @@ def _os_cache_files() -> list[Path]:
 def _os_export_files() -> list[Path]:
     if not OS_EXPORTS_DIR.exists():
         return []
-    return sorted(path for path in OS_EXPORTS_DIR.glob("*.json") if path.is_file())
+    return sorted(path for path in OS_EXPORTS_DIR.rglob("*") if path.is_file())
 
 
 def _is_path_within(path: Path, root: Path) -> bool:
@@ -1046,10 +1046,14 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
     if slug == "os-exports-index":
         items = []
         for export_path in _os_export_files():
+            try:
+                rel = export_path.relative_to(OS_EXPORTS_DIR).as_posix()
+            except ValueError:
+                rel = export_path.name
             items.append(
                 {
-                    "name": export_path.name,
-                    "uri": f"{OS_EXPORTS_PREFIX}{export_path.name}",
+                    "name": rel,
+                    "uri": f"{OS_EXPORTS_PREFIX}{rel}",
                     "bytes": export_path.stat().st_size,
                 }
             )
@@ -1145,8 +1149,22 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                 {"isError": True, "code": "NOT_FOUND", "message": "OS export not found."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        content, etag = _load_json_file(path)
-        return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}
+        suffix = path.suffix.lower()
+        if suffix == ".json":
+            content, etag = _load_json_file(path)
+            return content, etag, {
+                "generatedAt": datetime.now(timezone.utc).isoformat(),
+                "path": str(path),
+                "mimeType": "application/json",
+            }
+        content = path.read_text(encoding="utf-8")
+        etag = _etag_from_bytes(content.encode("utf-8"), slug)
+        mime_type = "text/csv" if suffix == ".csv" else "text/plain"
+        return content, etag, {
+            "generatedAt": datetime.now(timezone.utc).isoformat(),
+            "path": str(path),
+            "mimeType": mime_type,
+        }
     if isinstance(slug, str) and slug.startswith("offline-packs/"):
         filename = slug.split("/", 1)[1]
         path = _resolve_scoped_path(OFFLINE_PACKS_DIR, filename)

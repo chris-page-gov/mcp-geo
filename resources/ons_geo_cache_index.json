@@ -1,9 +1,9 @@
 {
   "version": "2026-02-22",
-  "generatedAt": "2026-02-22T19:23:22Z",
+  "generatedAt": "2026-02-28T13:10:53Z",
   "cache": {
-    "cacheDir": "data/cache/ons_geo",
-    "dbPath": "data/cache/ons_geo/ons_geo_cache.sqlite"
+    "cacheDir": "/var/lib/mcp-geo/cache/ons_geo",
+    "dbPath": "/var/lib/mcp-geo/cache/ons_geo/ons_geo_cache.sqlite"
   },
   "products": [
     {

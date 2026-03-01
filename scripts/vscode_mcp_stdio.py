@@ -31,10 +31,12 @@ def _pick_python() -> str:
     if os.environ.get("VIRTUAL_ENV"):
         return sys.executable
 
-    # On macOS, prefer the repo venv if present to avoid missing deps.
-    if sys.platform == "darwin":
-        venv_py = _repo_root() / ".venv" / "bin" / "python"
-        if venv_py.exists():
+    # Prefer repo venv when present and likely healthier than global python.
+    venv_py = _repo_root() / ".venv" / "bin" / "python"
+    if venv_py.exists():
+        if _python_has_module(str(venv_py), "loguru"):
+            return str(venv_py)
+        if not _python_has_module(sys.executable, "loguru"):
             return str(venv_py)
 
     # On Linux (devcontainer) and other platforms, `sys.executable` should be
@@ -43,22 +45,28 @@ def _pick_python() -> str:
 
 
 def _python_has_module(python: str, module: str) -> bool:
-    probe = subprocess.run(
-        [python, "-c", f"import {module}"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
+    try:
+        probe = subprocess.run(
+            [python, "-c", f"import {module}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        return False
     return probe.returncode == 0
 
 
 def _user_site_for_python(python: str) -> str:
-    probe = subprocess.run(
-        [python, "-c", "import site; print(site.getusersitepackages() or '')"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        probe = subprocess.run(
+            [python, "-c", "import site; print(site.getusersitepackages() or '')"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return ""
     if probe.returncode != 0:
         return ""
     return probe.stdout.strip()
@@ -81,9 +89,65 @@ def _ensure_user_site(python: str) -> None:
         os.environ["PYTHONPATH"] = os.pathsep.join(paths)
 
 
+def _bootstrap_runtime_deps(python: str) -> bool:
+    if _python_has_module(python, "loguru"):
+        return True
+    repo = _repo_root()
+    cmd = [
+        python,
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "-e",
+        str(repo),
+    ]
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=str(repo),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        print(
+            (
+                "mcp-geo: failed to execute bootstrap command "
+                f"`{' '.join(cmd)}`: {exc}"
+            ),
+            file=sys.stderr,
+        )
+        return False
+    if result.returncode != 0:
+        tail = (result.stderr or result.stdout or "").splitlines()[-3:]
+        detail = " | ".join(tail) if tail else "unknown install error"
+        print(
+            (
+                "mcp-geo: failed to bootstrap runtime dependencies with "
+                f"`{' '.join(cmd)}`: {detail}"
+            ),
+            file=sys.stderr,
+        )
+        return False
+    return _python_has_module(python, "loguru")
+
+
 def main() -> int:
     python = _pick_python()
     _ensure_user_site(python)
+    if not _python_has_module(python, "loguru"):
+        _bootstrap_runtime_deps(python)
+    if not _python_has_module(python, "loguru"):
+        print(
+            (
+                "mcp-geo: runtime dependency `loguru` is still missing for "
+                f"{python}. Run: {python} -m pip install -e ."
+            ),
+            file=sys.stderr,
+        )
+        return 2
     server = _repo_root() / "scripts" / "os-mcp"
     if not server.exists():
         print(f"mcp-geo: missing stdio entrypoint at {server}", file=sys.stderr)

@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
+from server.config import settings
 from server.main import app
 
 
@@ -27,7 +28,11 @@ class _FakeResponse:
 def test_static_osm_map_returns_tile(monkeypatch: pytest.MonkeyPatch) -> None:
     client = TestClient(app)
 
-    def fake_get(url: str, timeout: float | None = None, headers: dict[str, str] | None = None) -> _FakeResponse:
+    def fake_get(
+        url: str,
+        timeout: float | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> _FakeResponse:
         return _FakeResponse(200, b"png-data", {"content-type": "image/png"})
 
     monkeypatch.setattr("server.maps_proxy.requests.get", fake_get)
@@ -218,6 +223,44 @@ def test_vector_proxy_vts_style_query_honors_selected_style(
         payload_dark["sources"]["esri"]["tiles"][0]
         == "http://testserver/maps/vector/vts/tile/{z}/{y}/{x}.pbf?srs=3857"
     )
+
+
+def test_vector_tile_route_is_exempt_from_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    from server import main
+
+    client = TestClient(app)
+    calls: list[str] = []
+
+    def fake_get(
+        url: str,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> _FakeResponse:
+        calls.append(url)
+        return _FakeResponse(200, b"pbf-bytes", {"content-type": "application/x-protobuf"})
+
+    monkeypatch.setattr("server.maps_proxy.requests.get", fake_get)
+    monkeypatch.setattr(settings, "OS_API_KEY", "test-key", raising=False)
+    monkeypatch.setattr(settings, "RATE_LIMIT_PER_MIN", 1, raising=False)
+    monkeypatch.setattr(settings, "RATE_LIMIT_BYPASS", False, raising=False)
+    monkeypatch.setattr(
+        settings,
+        "RATE_LIMIT_EXEMPT_PATH_PREFIXES",
+        "/maps/vector/vts/tile",
+        raising=False,
+    )
+    with main._rate_lock:
+        main._rate_counters.clear()
+
+    first = client.get("/maps/vector/vts/tile/13/2726/4097.pbf", params={"srs": "3857"})
+    second = client.get("/maps/vector/vts/tile/13/2726/4098.pbf", params={"srs": "3857"})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.content == b"pbf-bytes"
+    assert second.content == b"pbf-bytes"
+    assert len(calls) == 2
 
 
 def _make_png() -> bytes:

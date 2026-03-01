@@ -81,6 +81,41 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_ons_geo_lookup
         ON ons_geo_rows (key_type, derivation_mode, key_norm, product_priority);
+
+        CREATE TABLE IF NOT EXISTS ons_geo_uprn_index (
+            product_id TEXT NOT NULL,
+            derivation_mode TEXT NOT NULL,
+            uprn TEXT NOT NULL,
+            postcode TEXT,
+            oa_code TEXT,
+            lsoa_code TEXT,
+            msoa_code TEXT,
+            lad_code TEXT,
+            lad_name TEXT,
+            postal_delivery INTEGER,
+            geographies_json TEXT,
+            cached_at TEXT NOT NULL,
+            PRIMARY KEY (product_id, uprn),
+            FOREIGN KEY (product_id) REFERENCES ons_geo_products(product_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_uprn
+        ON ons_geo_uprn_index (derivation_mode, uprn);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_postcode
+        ON ons_geo_uprn_index (derivation_mode, postcode);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_oa
+        ON ons_geo_uprn_index (derivation_mode, oa_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_lsoa
+        ON ons_geo_uprn_index (derivation_mode, lsoa_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_msoa
+        ON ons_geo_uprn_index (derivation_mode, msoa_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_lad
+        ON ons_geo_uprn_index (derivation_mode, lad_code);
         """
     )
     conn.commit()

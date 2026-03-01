@@ -11,6 +11,34 @@ All notable changes to this project will be documented in this file.
   trials with basic timing telemetry and deterministic pan-benchmark controls.
 - Added `docs/simple_map_lab.md` with a focused runbook for browser bearer auth
   vs API-key fallback tests and PMTiles trial execution.
+- Added complete Map Lab novice-learning and selector workflow on the
+  compatibility-locked boundary explorer integration surface:
+  - Help/Map/Collections tab shell in `ui/boundary_explorer.html`
+  - detailed "Welcome to Map Lab" tutorial sections with curated external
+    references and persisted help state (`maplab.help.*` keys for tab, scroll,
+    section fold state, TOC collapse, and last step)
+  - local selector-based collection CRUD/import/export with GSS level picker
+    and explicit UPRN include/exclude overrides
+  - async collection export flow from UI using
+    `os_map.export` (`exportType=selection_uprn`) and `os_map.get_export`.
+- Added selector-driven async export backend for Map Lab in `tools/os_map.py`:
+  - extended `os_map.export` with backward-compatible `selection_uprn` mode
+  - new `os_map.get_export` polling/status tool
+  - async export job status/result artifacts under
+    `resource://mcp-geo/os-exports/jobs/*.json` and
+    `resource://mcp-geo/os-exports/*.csv|json`
+  - selector resolver pipeline covering `gss_code`, `postcode`, `uprn`, and
+    `polygon` selectors, include/exclude overrides, and delivery-filter
+    warnings for missing delivery flags.
+- Added ONS UPRN reverse-lookup index support for scalable selector resolution:
+  - new `ons_geo_uprn_index` schema/indexes in `server/ons_geo_cache.py`
+  - refresh ingest population in `scripts/ons_geo_cache_refresh.py` for
+    postcode, OA/LSOA/MSOA/LAD codes, local-authority name, delivery flag,
+    and serialized geography fields.
+- Added a novice-first Map Lab help research blueprint at
+  `docs/reports/map_lab_help_resources_2026-02-28.md`, including curated
+  references for web mapping fundamentals, UK OS/ONS geographies, and
+  stateful Help-tab UX patterns for tutorial-style learning flows.
 
 ### Changed
 - Updated `/maps/vector/{path}` auth resolution in `server/maps_proxy.py` to
@@ -36,6 +64,80 @@ All notable changes to this project will be documented in this file.
   respects the selected `style` query parameter (instead of always returning
   the default look), and corrected rewritten vector tile templates to
   `{z}/{y}/{x}` ordering.
+- Updated visible UI/resource text from Boundary Explorer/simple phrasing to
+  "Map Lab" while preserving compatibility entrypoints
+  (`ui://mcp-geo/boundary-explorer`, `os_apps.render_boundary_explorer`).
+- Updated resource delivery for OS export artifacts to support nested job and
+  result files plus MIME-aware reads across HTTP and STDIO (`text/csv` for CSV
+  artifacts, `application/json` for JSON artifacts) in
+  `server/mcp/resource_catalog.py`, `server/mcp/resources.py`, and
+  `server/stdio_adapter.py`.
+- Updated map rendering UX with hierarchy preset control (`auto`, `detail`,
+  `balanced`, `links`) and automatic tab switch to Map for map-render actions
+  while preserving Help tutorial state.
+- Updated Map Lab boundary rendering/readability controls in
+  `ui/boundary_explorer.html`:
+  - boundary areas now default to outline-only (`Area fill` off) while keeping
+    interaction via a dedicated invisible hit layer
+  - added live opacity controls for basemap dimming, boundary fill, UPRN
+    density, buildings, and road/path links
+  - added dynamic Guidance & Status panel plus cache-status visibility backed
+    by `admin_lookup.get_cache_status` and `ons_geo.cache_status`
+  - hardened sandboxed-host storage fallback to avoid `localStorage`
+    `SecurityError` breaks.
+- Added boundary explorer UI regression coverage for option effects and runtime
+  diagnostics in `playground/tests/boundary_explorer_controls.spec.js`, plus a
+  bundled runner command `npm --prefix playground run test:boundary-ui`.
+- Added exhaustive boundary option matrix Playwright coverage in
+  `playground/tests/boundary_explorer_option_matrix.spec.js`, exercising
+  hierarchy presets, detail levels, layer toggles, border mode, and opacity
+  controls with per-scenario screenshot captures and a JSON matrix summary
+  artifact attached to test output.
+- Updated rate-limit middleware to support configurable exempt path prefixes
+  via `RATE_LIMIT_EXEMPT_PATH_PREFIXES` and set default exemptions for
+  high-volume map tile paths (`/maps/vector/vts/tile`,
+  `/maps/raster/osm`, `/maps/static/osm`) so local map rendering avoids
+  false-positive `429 RATE_LIMITED` responses.
+- Updated devcontainer storage defaults to keep mutable runtime data outside
+  the git worktree:
+  - `.devcontainer/docker-compose.yml` now uses Docker named volumes for
+    PostGIS (`MCP_GEO_POSTGIS_VOLUME`) and runtime cache/log data
+    (`MCP_GEO_RUNTIME_DATA_VOLUME`) instead of `../data/postgres` bind mounts.
+  - Devcontainer app env now points cache/log paths at `/var/lib/mcp-geo/...`
+    (`ONS_DATASET_CACHE_DIR`, `ONS_GEO_CACHE_DIR`, `OS_DATA_CACHE_DIR`,
+    `UI_EVENT_LOG_PATH`, `PLAYGROUND_EVENT_LOG_PATH`).
+  - `scripts/devcontainer_post_start.sh` now ensures the runtime data root is
+    writable by `vscode`.
+- Updated `scripts/claude-mcp-local` PostGIS storage defaults to named-volume
+  mode (`MCP_GEO_POSTGIS_STORAGE_MODE=volume`) with explicit legacy bind-mount
+  opt-in (`MCP_GEO_POSTGIS_STORAGE_MODE=bind` + `MCP_GEO_POSTGIS_DATA_DIR`).
+- Updated resource cache-path resolution so `resource://mcp-geo/ons-cache/*`
+  follows `ONS_DATASET_CACHE_DIR` rather than always reading
+  `data/cache/ons`.
+- Hardened devcontainer/VS Code STDIO dependency bootstrap to avoid
+  `ModuleNotFoundError: loguru` on rebuild/startup:
+  - `.devcontainer/devcontainer.json` now installs core runtime (`-e .`) first
+    before optional extras.
+  - `scripts/devcontainer_post_start.sh` now auto-installs core runtime first,
+    then optional dev/test extras.
+  - `scripts/vscode_mcp_stdio.py` and `scripts/os_mcp.py` now attempt
+    best-effort runtime bootstrap install when `loguru` is missing and emit
+    actionable error guidance when bootstrapping fails.
+- Hardened VS Code devcontainer interpreter selection and launcher resilience
+  for mixed host/container workflows:
+  - `.devcontainer/devcontainer.json` now defaults VS Code Python interpreter
+    to `/usr/bin/python3` in container.
+  - `scripts/vscode_mcp_stdio.py` now treats broken/unspawnable interpreter
+    paths (for example host-created `.venv` inside Linux container) as
+    unavailable and falls back cleanly instead of crashing.
+- Hardened devcontainer cold-start cache behavior so new named volumes no
+  longer surface immediate `BOUNDARY_CACHE_ERROR` / `cache_unavailable`
+  confusion in Map Lab:
+  - `scripts/devcontainer_post_start.sh` now auto-creates PostGIS boundary
+    cache tables from `scripts/boundary_cache_schema.sql` when
+    `BOUNDARY_CACHE_ENABLED=true` and required tables are missing.
+  - `scripts/devcontainer_post_start.sh` now auto-seeds `ons_geo` SQLite cache
+    from bundled bootstrap CSVs when the cache DB is absent/empty.
 
 ## [0.4.0] - 2026-02-25
 
