@@ -3,7 +3,16 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-02-28
+Last updated: 2026-03-01
+
+## Submodule refresh and runtime-coupling validation (2026-03-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SUBMOD-DOC-1 Vendor submodule refresh | done | none | Bumped vendored reference/spec submodules under `docs/vendor/` (`agentskills`, `modelcontextprotocol`, `ext-apps`, `inspector`) to latest upstream commits and refreshed `docs/spec_tracking.md` review dates. |
+| SUBMOD-RUN-2 Runtime-coupled style-path validation | done | SUBMOD-DOC-1 | Confirmed `submodules/os-vector-tile-api-stylesheets` remained at current upstream pin (no pointer delta) and ran focused regression checks: `./.venv/bin/pytest -q --no-cov tests/test_os_qgis_tools.py tests/test_maps_proxy.py` (`15 passed`). |
 
 ## Devcontainer stdio bootstrap hardening (2026-02-28)
 
