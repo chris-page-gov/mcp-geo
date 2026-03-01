@@ -136,6 +136,7 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
 
   await page.fill("#queryInput", "Test");
   await page.click("#searchButton");
+  await expect(page.locator("#flowStatus")).toContainText("Found");
 
   await page.waitForFunction(() => {
     const el = document.getElementById("diagnostics");
@@ -149,6 +150,38 @@ test("geography selector keeps dots after style switch", async ({ page }) => {
       return false;
     }
   });
+
+  await page.$eval("#mapOpacity", (el) => {
+    el.value = "0.15";
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await page.waitForFunction(() => {
+    const el = document.getElementById("diagnostics");
+    if (!el) {
+      return false;
+    }
+    try {
+      const data = JSON.parse(el.textContent || "{}");
+      return Number(data?.opacity) === 0.15;
+    } catch {
+      return false;
+    }
+  });
+
+  await page.click("[data-testid='layer-toggle-input-addresses']");
+  await page.waitForFunction(() => {
+    const el = document.getElementById("diagnostics");
+    if (!el) {
+      return false;
+    }
+    try {
+      const data = JSON.parse(el.textContent || "{}");
+      return data?.layerVisibility?.addresses === false;
+    } catch {
+      return false;
+    }
+  });
+  await page.click("[data-testid='layer-toggle-input-addresses']");
 
   await page.selectOption("#mapStyleSelect", "os_OS_VTS_3857_Light.json");
 

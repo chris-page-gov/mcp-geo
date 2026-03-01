@@ -499,7 +499,7 @@
             </div>
             <div class="field">
               <label for="mapStyleSelect">Map style</label>
-              <select id="mapStyleSelect">
+              <select id="mapStyleSelect" data-testid="map-style-select">
                 <option value="osm">OpenStreetMap (fallback)</option>
                 <optgroup label="OS VTS (EPSG:3857)">
                   <option value="os_OS_VTS_3857_Light.json">OS Light</option>
@@ -524,17 +524,26 @@
             </div>
             <div class="field">
               <label for="mapOpacity">Map opacity</label>
-              <input id="mapOpacity" type="range" min="0.15" max="1" step="0.05" value="0.8" />
+              <input
+                id="mapOpacity"
+                type="range"
+                min="0.15"
+                max="1"
+                step="0.05"
+                value="0.8"
+                data-testid="map-opacity-control"
+              />
             </div>
             <div class="result-meta">Tip: Ctrl/Cmd-click results to multi-select UPRNs.</div>
             <button class="cta" id="searchButton" type="button" data-testid="primary-cta" data-compact-cta>
               Run search
             </button>
+            <div class="result-meta" id="flowStatus" data-testid="flow-status">Idle.</div>
           </div>
 
           <div class="section">
             <h3>Results</h3>
-            <div class="results" id="results"></div>
+            <div class="results" id="results" data-testid="search-results"></div>
           </div>
 
           <div class="section">
@@ -548,8 +557,12 @@
             <div class="selection-summary" id="selectionSummary">
               <div class="result-meta">No selection yet.</div>
             </div>
-            <button class="cta" id="sendSelection" type="button">Send selection</button>
-            <button class="ghost" id="clearSelection" type="button">Clear selection</button>
+            <button class="cta" id="sendSelection" type="button" data-testid="send-selection">
+              Send selection
+            </button>
+            <button class="ghost" id="clearSelection" type="button" data-testid="clear-selection">
+              Clear selection
+            </button>
           </div>
 
           <div class="section">
@@ -574,11 +587,11 @@
           </div>
           <div class="section">
             <h3>Layers</h3>
-            <div class="layer-list" id="layerList"></div>
+            <div class="layer-list" id="layerList" data-testid="layer-list"></div>
             <div class="debug-badges" id="debugBadges"></div>
             <div class="diagnostics">
               <div class="result-meta">Diagnostics</div>
-              <pre id="diagnostics" class="payload diagnostics-output">Waiting for map diagnostics...</pre>
+              <pre id="diagnostics" class="payload diagnostics-output" data-testid="diagnostics-output">Waiting for map diagnostics...</pre>
             </div>
             <div class="diagnostics cache-panel">
               <div class="result-meta">Cache status</div>
@@ -691,6 +704,7 @@
       const mapOpacity = document.getElementById("mapOpacity");
       const clearSelectionButton = document.getElementById("clearSelection");
       const dragBox = document.getElementById("dragBox");
+      const flowStatusEl = document.getElementById("flowStatus");
 
       const compactContract = window.MCP_GEO_COMPACT
         ? window.MCP_GEO_COMPACT.init({
@@ -788,6 +802,14 @@
             : "Host rejected fullscreen request";
           statusEl.textContent = msg;
         }
+      }
+
+      function setFlowStatus(stateName, text) {
+        if (!flowStatusEl) {
+          return;
+        }
+        flowStatusEl.dataset.state = stateName || "idle";
+        flowStatusEl.textContent = text || "Idle.";
       }
 
       function sanitizeToolName(toolName) {
@@ -914,9 +936,11 @@
         layerDefinitions.forEach((layer) => {
           const wrapper = document.createElement("label");
           wrapper.className = "layer-toggle";
+          wrapper.setAttribute("data-testid", `layer-toggle-${layer.id}`);
           const input = document.createElement("input");
           input.type = "checkbox";
           input.checked = true;
+          input.setAttribute("data-testid", `layer-toggle-input-${layer.id}`);
           state.layerVisibility[layer.id] = true;
           input.addEventListener("change", () => toggleLayer(layer.id, input.checked));
           const span = document.createElement("span");
@@ -1244,6 +1268,8 @@
           timestamp: new Date().toISOString(),
           mode: state.mode?.id || "unknown",
           style: mapStyleSelect?.value || "n/a",
+          opacity: Number(mapOpacity?.value || 0),
+          layerVisibility: { ...state.layerVisibility },
           maplibre: window.maplibregl ? (map ? "ready" : "loaded") : "missing",
           workerUrl: window.maplibregl?.workerUrl || null,
           styleLoaded,
@@ -2086,6 +2112,7 @@
       function renderError(message) {
         resultsEl.innerHTML = `<div class="result-error">${message}</div>`;
         state.resultCount = 0;
+        setFlowStatus("error", message || "Search failed.");
         scheduleDiagnosticsUpdate();
       }
 
@@ -2196,12 +2223,14 @@
       async function runSearch() {
         const query = queryInput.value.trim();
         if (!query) {
+          setFlowStatus("empty", "Enter a search term.");
           return;
         }
         statusEl.textContent = "Searching...";
         const level = levelSelect.value;
         const mode = state.mode.id;
         let results = [];
+        setFlowStatus("loading", `Searching (${mode})...`);
         logUiEvent("search", { query, mode, level });
 
         try {
@@ -2320,17 +2349,26 @@
               }));
           }
         } catch (err) {
-          renderError(err?.message || "Search failed. Check server connection and API keys.");
+          const message = err?.message || "Search failed. Check server connection and API keys.";
+          renderError(message);
+          setFlowStatus("error", message);
           statusEl.textContent = "Search failed";
           return;
         }
 
+        if (!results.length) {
+          renderError("No results found for that query.");
+          setFlowStatus("empty", "No results found.");
+          statusEl.textContent = "Ready";
+          return;
+        }
         renderResults(results);
         previewResults(results);
         if (results.length) {
           drawFocusBoundariesForAddresses(results.flatMap((item) => item.addresses || []));
         }
         scheduleDiagnosticsUpdate();
+        setFlowStatus("success", `Found ${results.length} result(s).`);
         statusEl.textContent = "Ready";
         if (results.length === 1) {
           selectResult(results[0]);
@@ -2733,6 +2771,7 @@
       }
       renderResults([]);
       renderSelectionSummary();
+      setFlowStatus("idle", "Idle.");
       scheduleDiagnosticsUpdate();
 
       if (window.ResizeObserver) {

@@ -80,6 +80,13 @@ All notable changes to this project will be documented in this file.
     GeoJSON/CSV/ZIP flows with test IDs for automation
   - extended `playground/tests/boundary_explorer_local_layers.spec.js` to
     assert filter behavior and import success/failure messaging.
+- Hardened `ui/geography_selector.html` for compact unattended coverage:
+  - added deterministic search flow-state status (`loading`, `empty`,
+    `error`, `success`) and explicit UI hooks for style/opacity/layer controls
+  - added stable test IDs for results, diagnostics, layer toggles, and
+    selection actions
+  - extended `playground/tests/geography_selector.spec.js` to assert flow
+    status plus style/opacity/layer behavior under host simulation.
 
 ## [0.4.0] - 2026-02-25
 
