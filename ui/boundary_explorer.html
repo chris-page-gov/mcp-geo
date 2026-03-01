@@ -2198,6 +2198,10 @@
       function currentBoundaryExplorerSnapshot() {
         const map = state.map;
         const center = map ? map.getCenter() : null;
+        const style = map ? map.getStyle() : null;
+        const styleMeta = style && style.metadata && typeof style.metadata === "object"
+          ? style.metadata
+          : null;
         return {
           host: {
             ready: state.hostReady,
@@ -2219,6 +2223,10 @@
             center: center
               ? { lng: Number(center.lng.toFixed(6)), lat: Number(center.lat.toFixed(6)) }
               : null,
+            basemapSelection: basemapStyle && typeof basemapStyle.value === "string"
+              ? basemapStyle.value
+              : null,
+            styleMetadata: styleMeta,
           },
           boundaries: {
             sourceFeatureCount: sourceFeatureCount("boundaries"),
@@ -2234,6 +2242,17 @@
             buildings: sourceFeatureCount("buildings"),
             roads: sourceFeatureCount("roads"),
             paths: sourceFeatureCount("paths"),
+          },
+          inventory: {
+            uprnSourceFeatureCount: sourceFeatureCount("uprns"),
+            buildingSourceFeatureCount: sourceFeatureCount("buildings"),
+            roadSourceFeatureCount: sourceFeatureCount("roads"),
+            pathSourceFeatureCount: sourceFeatureCount("paths"),
+            renderedUprnHeatCount: renderedFeatureCount("uprn-heat"),
+            renderedUprnDotCount: renderedFeatureCount("uprn-dots"),
+            renderedBuildingCount: renderedFeatureCount("buildings-fill"),
+            renderedRoadCount: renderedFeatureCount("roads-line"),
+            renderedPathCount: renderedFeatureCount("paths-line"),
           },
           layers: {
             uprnDensity: !!layerUprns.checked,
