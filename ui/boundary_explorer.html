@@ -586,23 +586,23 @@
             <div class="toggle-grid">
               <div class="toggle">
                 <span>UPRN density</span>
-                <input id="layerUprns" type="checkbox" checked />
+                <input id="layerUprns" type="checkbox" checked data-testid="layer-uprn-density" />
               </div>
               <div class="toggle">
                 <span>UPRN dots</span>
-                <input id="layerUprnDots" type="checkbox" />
+                <input id="layerUprnDots" type="checkbox" data-testid="layer-uprn-dots" />
               </div>
               <div class="toggle">
                 <span>Buildings</span>
-                <input id="layerBuildings" type="checkbox" />
+                <input id="layerBuildings" type="checkbox" data-testid="layer-buildings" />
               </div>
               <div class="toggle">
                 <span>Road links</span>
-                <input id="layerRoads" type="checkbox" />
+                <input id="layerRoads" type="checkbox" data-testid="layer-roads" />
               </div>
               <div class="toggle">
                 <span>Path links</span>
-                <input id="layerPaths" type="checkbox" />
+                <input id="layerPaths" type="checkbox" data-testid="layer-paths" />
               </div>
               <div class="toggle">
                 <span>Border by count</span>
@@ -635,6 +635,43 @@
               <button id="refreshInventory" class="primary" type="button">Refresh inventory</button>
               <button id="exportButton" type="button">Export JSON</button>
             </div>
+            <div class="field" style="margin-top: 10px">
+              <label for="uprnAddressFilter">UPRN address contains</label>
+              <input
+                id="uprnAddressFilter"
+                placeholder="e.g. HIGH STREET"
+                data-testid="uprn-filter-address"
+              />
+            </div>
+            <div class="row" style="margin-top: 10px" data-compact-row>
+              <div class="field" style="margin: 0">
+                <label for="uprnClassificationFilter">Classification</label>
+                <select id="uprnClassificationFilter" data-testid="uprn-filter-classification">
+                  <option value="all">All classifications</option>
+                </select>
+              </div>
+              <div class="field" style="margin: 0">
+                <label for="uprnFilterScope">Filter scope</label>
+                <select id="uprnFilterScope" data-testid="uprn-filter-scope">
+                  <option value="highlight">Highlighted UPRNs</option>
+                  <option value="all">All UPRN layers</option>
+                </select>
+              </div>
+            </div>
+            <div class="toggle-grid" style="margin-top: 10px">
+              <div class="toggle">
+                <span>Require address</span>
+                <input id="uprnFlagRequireAddress" type="checkbox" data-testid="uprn-flag-address" />
+              </div>
+              <div class="toggle">
+                <span>Only active</span>
+                <input id="uprnFlagActive" type="checkbox" data-testid="uprn-flag-active" />
+              </div>
+              <div class="toggle">
+                <span>Residential-like</span>
+                <input id="uprnFlagResidential" type="checkbox" data-testid="uprn-flag-residential" />
+              </div>
+            </div>
             <div class="hint" style="margin-top: 10px">
               Aggregation defaults: UPRNs render as density; road/path widths can be widened by nearby
               UPRN/building density when zoomed in. Exports use server-side OS_API_KEY only.
@@ -643,7 +680,7 @@
 
           <div class="panel" data-compact-panel>
             <h3>Local Layers</h3>
-            <div class="dropzone" id="dropzone">
+            <div class="dropzone" id="dropzone" data-testid="import-dropzone">
               <div style="font-weight: 650; font-size: 13px">Drop a file here</div>
               <div class="hint">
                 Supported: <span class="mono">.geojson</span>, <span class="mono">.json</span>,
@@ -651,9 +688,15 @@
                 Polygons can drive selection: click a polygon to select postcodes/UPRNs inside.
               </div>
               <div style="margin-top: 10px">
-                <input id="fileInput" type="file" />
+                <input id="fileInput" type="file" data-testid="import-input" />
               </div>
             </div>
+            <div
+              class="search-status"
+              id="importStatus"
+              style="margin-top: 10px; display: none"
+              data-testid="import-status"
+            ></div>
             <div class="inventory-list" id="localLayers" style="margin-top: 12px"></div>
           </div>
         </div>
@@ -735,6 +778,12 @@
       const basemapStyle = document.getElementById("basemapStyle");
       const refreshInventory = document.getElementById("refreshInventory");
       const exportButton = document.getElementById("exportButton");
+      const uprnAddressFilter = document.getElementById("uprnAddressFilter");
+      const uprnClassificationFilter = document.getElementById("uprnClassificationFilter");
+      const uprnFilterScope = document.getElementById("uprnFilterScope");
+      const uprnFlagRequireAddress = document.getElementById("uprnFlagRequireAddress");
+      const uprnFlagActive = document.getElementById("uprnFlagActive");
+      const uprnFlagResidential = document.getElementById("uprnFlagResidential");
 
       const selectedCountEl = document.getElementById("selectedCount");
       const highlightCountEl = document.getElementById("highlightCount");
@@ -742,6 +791,7 @@
 
       const dropzone = document.getElementById("dropzone");
       const fileInput = document.getElementById("fileInput");
+      const importStatusEl = document.getElementById("importStatus");
       const localLayersEl = document.getElementById("localLayers");
 
       const compactContract = window.MCP_GEO_COMPACT
@@ -769,6 +819,7 @@
         resultHoverTimer: null,
         inventory: null,
         uprnPoints: [],
+        activeUprnPoints: [],
         uprnByUprn: new Map(),
         postcodeByUprn: new Map(),
         highlightedPostcodes: new Set(),
@@ -780,6 +831,14 @@
         displayMode: "inline",
         availableDisplayModes: [],
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        uprnFilter: {
+          addressContains: "",
+          classification: "all",
+          scope: "highlight",
+          requireAddress: false,
+          activeOnly: false,
+          residentialOnly: false,
+        },
       };
 
       const SEARCH_FALLBACK_ORDER = ["WARD", "DISTRICT", "COUNTY", "REGION", "NATION", "MSOA", "LSOA", "OA"];
@@ -1706,6 +1765,198 @@
         searchStatusEl.textContent = text;
       }
 
+      function setImportStatus(text, tone) {
+        if (!importStatusEl) return;
+        if (!text) {
+          importStatusEl.style.display = "none";
+          importStatusEl.className = "search-status";
+          importStatusEl.textContent = "";
+          return;
+        }
+        importStatusEl.style.display = "block";
+        importStatusEl.className = "search-status";
+        if (tone === "info" || tone === "warn") {
+          importStatusEl.classList.add(tone);
+        }
+        importStatusEl.textContent = text;
+      }
+
+      function normalizeText(value) {
+        return String(value || "").trim().toLowerCase();
+      }
+
+      function uprnClassificationValue(properties) {
+        if (!properties || typeof properties !== "object") {
+          return "";
+        }
+        const keys = [
+          "classification_code",
+          "classification",
+          "class_code",
+          "class",
+          "blpu_classification",
+          "uprn_classification",
+        ];
+        for (const key of keys) {
+          const value = properties[key];
+          if (value === null || value === undefined) {
+            continue;
+          }
+          const text = String(value).trim();
+          if (text) {
+            return text.toUpperCase();
+          }
+        }
+        return "";
+      }
+
+      function uprnAddressValue(properties) {
+        if (!properties || typeof properties !== "object") {
+          return "";
+        }
+        const keys = ["address", "full_address", "dpa_address", "formatted_address"];
+        for (const key of keys) {
+          const value = properties[key];
+          if (value === null || value === undefined) {
+            continue;
+          }
+          const text = String(value).trim();
+          if (text) {
+            return text;
+          }
+        }
+        return "";
+      }
+
+      function uprnIsActive(properties) {
+        if (!properties || typeof properties !== "object") {
+          return true;
+        }
+        const raw =
+          properties.logical_status ??
+          properties.logicalStatus ??
+          properties.status ??
+          properties.blpu_state ??
+          null;
+        if (raw === null || raw === undefined || String(raw).trim() === "") {
+          return true;
+        }
+        const normalized = normalizeText(raw);
+        if (
+          ["1", "6", "8", "active", "approved", "live", "current"].includes(normalized)
+        ) {
+          return true;
+        }
+        if (
+          ["2", "3", "4", "5", "inactive", "retired", "historic", "deleted"].includes(
+            normalized
+          )
+        ) {
+          return false;
+        }
+        return true;
+      }
+
+      function uprnIsResidentialLike(properties) {
+        const classification = uprnClassificationValue(properties);
+        if (classification && classification.startsWith("R")) {
+          return true;
+        }
+        const desc = normalizeText(
+          properties?.classification_description ||
+            properties?.classification_desc ||
+            properties?.class_description ||
+            properties?.class_desc
+        );
+        if (desc.includes("residen")) {
+          return true;
+        }
+        return false;
+      }
+
+      function pointsForScope() {
+        const scope = state.uprnFilter.scope;
+        if (scope === "all") {
+          return state.activeUprnPoints;
+        }
+        return state.uprnPoints;
+      }
+
+      function passesUprnFilters(properties) {
+        const filter = state.uprnFilter;
+        if (!filter) {
+          return true;
+        }
+        const address = uprnAddressValue(properties);
+        const addressNeedle = normalizeText(filter.addressContains);
+        if (filter.requireAddress && !address) {
+          return false;
+        }
+        if (addressNeedle && !normalizeText(address).includes(addressNeedle)) {
+          return false;
+        }
+        if (filter.classification && filter.classification !== "all") {
+          const value = uprnClassificationValue(properties);
+          if (value !== filter.classification) {
+            return false;
+          }
+        }
+        if (filter.activeOnly && !uprnIsActive(properties)) {
+          return false;
+        }
+        if (filter.residentialOnly && !uprnIsResidentialLike(properties)) {
+          return false;
+        }
+        return true;
+      }
+
+      function refreshUprnClassificationOptions(points) {
+        if (!uprnClassificationFilter) {
+          return;
+        }
+        const previous = uprnClassificationFilter.value || "all";
+        const values = new Set();
+        for (const feature of points || []) {
+          const cls = uprnClassificationValue(feature?.properties || {});
+          if (cls) {
+            values.add(cls);
+          }
+        }
+        uprnClassificationFilter.innerHTML = '<option value="all">All classifications</option>';
+        Array.from(values)
+          .sort()
+          .forEach((value) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = value;
+            uprnClassificationFilter.appendChild(option);
+          });
+        uprnClassificationFilter.value = values.has(previous) ? previous : "all";
+      }
+
+      function syncUprnFilterStateFromControls() {
+        state.uprnFilter.addressContains = uprnAddressFilter?.value || "";
+        state.uprnFilter.classification = uprnClassificationFilter?.value || "all";
+        state.uprnFilter.scope = uprnFilterScope?.value || "highlight";
+        state.uprnFilter.requireAddress = !!uprnFlagRequireAddress?.checked;
+        state.uprnFilter.activeOnly = !!uprnFlagActive?.checked;
+        state.uprnFilter.residentialOnly = !!uprnFlagResidential?.checked;
+      }
+
+      function applyUprnFilters(reason) {
+        syncUprnFilterStateFromControls();
+        state.activeUprnPoints = state.uprnPoints.filter((feature) =>
+          passesUprnFilters(feature?.properties || {})
+        );
+        setUprnSources();
+        void refreshCounts();
+        if (reason) {
+          const total = state.uprnPoints.length;
+          const active = state.activeUprnPoints.length;
+          showInfo(`UPRN filters (${reason}): ${active}/${total} points match.`);
+        }
+      }
+
       function selectedLevelLabel() {
         const option = levelSelect.options[levelSelect.selectedIndex];
         if (option && option.text) {
@@ -1757,7 +2008,7 @@
         if (!map) return;
         const src = map.getSource("uprns");
         if (!src) return;
-        src.setData(featureCollection(state.uprnPoints));
+        src.setData(featureCollection(pointsForScope()));
         refreshUprnHighlights();
       }
 
@@ -1767,11 +2018,11 @@
         const src = map.getSource("uprns-highlight");
         if (!src) return;
         const highlighted = [];
-        const wantPostcode = detailLevel.value === "postcode";
+        const scopePoints = pointsForScope();
         const base = new Set(state.highlightedUprns);
         // Add all UPRNs from highlighted postcodes.
         if (state.highlightedPostcodes.size) {
-          for (const pt of state.uprnPoints) {
+          for (const pt of scopePoints) {
             const props = pt.properties || {};
             const pc = props.postcode || null;
             const uprn = props.uprn || null;
@@ -1781,8 +2032,17 @@
             }
           }
         }
-        for (const pt of state.uprnPoints) {
+        for (const pt of scopePoints) {
           const uprn = pt.properties && pt.properties.uprn;
+          if (!uprn || !base.has(uprn)) {
+            continue;
+          }
+          if (
+            state.uprnFilter.scope !== "all" &&
+            !passesUprnFilters(pt.properties || {})
+          ) {
+            continue;
+          }
           if (uprn && base.has(uprn)) {
             highlighted.push(pt);
           }
@@ -2113,10 +2373,11 @@
 
       function computeDetailCountForGeometry(geom) {
         const detail = detailLevel.value;
+        const points = pointsForScope();
         if (!geom) return 0;
         if (detail === "uprn") {
           let count = 0;
-          for (const pt of state.uprnPoints) {
+          for (const pt of points) {
             const c = pt.geometry && pt.geometry.coordinates;
             if (c && geometryContainsPoint(geom, c)) {
               count += 1;
@@ -2125,7 +2386,7 @@
           return count;
         }
         const pcs = new Set();
-        for (const pt of state.uprnPoints) {
+        for (const pt of points) {
           const c = pt.geometry && pt.geometry.coordinates;
           if (c && geometryContainsPoint(geom, c)) {
             const pc = pt.properties && pt.properties.postcode;
@@ -2240,7 +2501,8 @@
             if (pc) state.postcodeByUprn.set(String(uprn), pc);
           }
           state.uprnPoints = points;
-          setUprnSources();
+          refreshUprnClassificationOptions(points);
+          applyUprnFilters("inventory");
         }
         if (layers.buildings && Array.isArray(layers.buildings.features)) {
           const feats = layers.buildings.features
@@ -2267,6 +2529,8 @@
             bbox: inv.bbox,
             layers: Object.keys(inv.layers || {}),
             uprns: inv.layers?.uprns?.count,
+            uprnFilter: state.uprnFilter,
+            uprnActive: state.activeUprnPoints.length,
           },
           null,
           2
@@ -2505,7 +2769,7 @@
           return;
         }
         const insideUprns = [];
-        for (const pt of state.uprnPoints) {
+        for (const pt of pointsForScope()) {
           const c = pt.geometry && pt.geometry.coordinates;
           if (c && geometryContainsPoint(geom, c)) {
             insideUprns.push(pt.properties.uprn);
@@ -2533,9 +2797,11 @@
         state.boundaries = [];
         state.boundaryById = new Map();
         state.uprnPoints = [];
+        state.activeUprnPoints = [];
         state.highlightedPostcodes = new Set();
         state.highlightedUprns = new Set();
         state.excludedUprns = new Set();
+        refreshUprnClassificationOptions([]);
         selectedCountEl.textContent = "0";
         highlightCountEl.textContent = "0";
         setBoundaries();
@@ -2546,6 +2812,7 @@
         boundaryInventoryEl.innerHTML = '<div class="hint">Cleared.</div>';
         showInfo("");
         setSearchStatus("");
+        setImportStatus("");
       }
 
       function onDetailLevelChange() {
@@ -2606,9 +2873,20 @@
           }
         } catch (err) {
           showInfo(`Failed to load ${name}: ${err?.message || err}`);
+          setImportStatus(`Import failed for ${name}: ${err?.message || err}`, "warn");
+          return;
+        }
+        if (!geojson || (geojson.type === "FeatureCollection" && !Array.isArray(geojson.features))) {
+          showInfo(`Failed to load ${name}: parsed data is not valid GeoJSON.`);
+          setImportStatus(`Import failed for ${name}: invalid GeoJSON shape.`, "warn");
           return;
         }
         addLocalLayer(name, geojson);
+        const featureCount =
+          geojson && geojson.type === "FeatureCollection" && Array.isArray(geojson.features)
+            ? geojson.features.length
+            : 1;
+        setImportStatus(`Imported ${name} (${featureCount} features).`, "info");
       }
 
       function csvToGeoJson(text, name) {
@@ -2863,6 +3141,24 @@
       layerPaths.addEventListener("change", () => applyLayerVisibility());
       borderByCount.addEventListener("change", () => applyBorderByCount());
       detailLevel.addEventListener("change", () => onDetailLevelChange());
+      if (uprnAddressFilter) {
+        uprnAddressFilter.addEventListener("input", () => applyUprnFilters("address"));
+      }
+      if (uprnClassificationFilter) {
+        uprnClassificationFilter.addEventListener("change", () => applyUprnFilters("classification"));
+      }
+      if (uprnFilterScope) {
+        uprnFilterScope.addEventListener("change", () => applyUprnFilters("scope"));
+      }
+      if (uprnFlagRequireAddress) {
+        uprnFlagRequireAddress.addEventListener("change", () => applyUprnFilters("flags"));
+      }
+      if (uprnFlagActive) {
+        uprnFlagActive.addEventListener("change", () => applyUprnFilters("flags"));
+      }
+      if (uprnFlagResidential) {
+        uprnFlagResidential.addEventListener("change", () => applyUprnFilters("flags"));
+      }
 
       // Local layer drop zone
       dropzone.addEventListener("dragover", (e) => {
@@ -2881,6 +3177,9 @@
         void handleFile(file);
       });
 
+      syncUprnFilterStateFromControls();
+      refreshUprnClassificationOptions([]);
+      setImportStatus("");
       installDebugProbe();
       updateFullscreenControl();
       initializeUi();

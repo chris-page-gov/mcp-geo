@@ -73,6 +73,13 @@ All notable changes to this project will be documented in this file.
     `ui/shared/compact_contract.js`
   - all UI pages now wire compact host-context handling and stable
     `data-testid` status/CTA anchors used by unattended compact validation.
+- Hardened `ui/boundary_explorer.html` for compact unattended coverage:
+  - added explicit UPRN attribute filters (address contains, classification,
+    scope, and flag toggles for address/active/residential-like)
+  - added deterministic local import status/error reporting for
+    GeoJSON/CSV/ZIP flows with test IDs for automation
+  - extended `playground/tests/boundary_explorer_local_layers.spec.js` to
+    assert filter behavior and import success/failure messaging.
 
 ## [0.4.0] - 2026-02-25
 
