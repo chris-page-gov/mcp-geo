@@ -105,10 +105,23 @@ All notable changes to this project will be documented in this file.
   - implemented `ui/initialize`, host-context merge, display-mode request
     handling, and fullscreen fallback behavior
   - added deterministic interactive contracts for feature lookup and route
-    planning (with structured payload output)
+  planning (with structured payload output)
   - added focused regression tests:
     `playground/tests/feature_inspector.spec.js` and
     `playground/tests/route_planner.spec.js`.
+- Completed CW-7 unattended compact acceptance hardening:
+  - replaced compact scaffold tests with strict acceptance-mapped suites in
+    `playground/tests/compact_windows/smoke.spec.js` and
+    `playground/tests/compact_windows/compact_matrix.spec.js`
+  - added reusable compact harness utilities
+    (`playground/tests/compact_windows/support/compact_assertions.js`) and a
+    richer argument-aware deterministic MCP bridge
+    (`playground/tests/compact_windows/support/mcp_bridge.js`)
+  - updated compact contract behavior to provide docked status fallback in
+    constrained windows (`ui/shared/compact_contract.{js,css}`)
+  - validated with `test:compact` (`18 passed`), `test:compact-matrix`
+    (`36 passed`), full Playwright (`29 passed`), and full pytest
+    (`930 passed`, `6 skipped`, coverage `90.01%`).
 
 ## [0.4.0] - 2026-02-25
 

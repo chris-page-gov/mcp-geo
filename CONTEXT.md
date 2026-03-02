@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-01
+Last updated: 2026-03-02
 Owner: @chris-page-gov
 
 ## Purpose
@@ -83,8 +83,9 @@ assumptions change.
 - Operating Figma MCP as a secondary collaboration surface (capture + annotate),
   with design decisions anchored in repo review artifacts due capture-fidelity
   caveats on SVG-embedded text.
-- Preparing unattended implementation on `codex/compact-windows` with a strict
-  six-UI compact-window acceptance gate and Playwright rewrite plan.
+- Maintaining completed unattended compact-window implementation on
+  `codex/compact-windows` with strict six-UI acceptance gating, including
+  smoke + matrix Playwright evidence.
 
 ## Active Work
 
@@ -151,10 +152,9 @@ assumptions change.
 - Maintain the Figma MCP setup/capture runbook for repeatable onboarding and
   troubleshooting at
   `docs/design/figma/mcp_figma_setup_and_capture_runbook.md`.
-- Execute compact-window implementation and test hardening from
+- Maintain compact-window implementation and test hardening artifacts from
   `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`
-  and keep strict baseline evidence updated in
-  `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`.
+  with strict acceptance evidence from the unattended Playwright suites.
 
 ## Status Snapshot (from PROGRESS.MD)
 

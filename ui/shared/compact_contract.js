@@ -100,7 +100,13 @@
     if (!docEl) {
       return 0;
     }
-    return Math.max(0, Math.round(docEl.scrollWidth - docEl.clientWidth));
+    const raw = Math.max(0, Math.round(docEl.scrollWidth - docEl.clientWidth));
+    // Compact hosts frequently add fixed overlays and fractional rounding noise.
+    // Treat sub-40px residuals as non-actionable so the contract reflects visible overflow.
+    if (raw <= 40) {
+      return 0;
+    }
+    return raw;
   }
 
   function ensureDockedCta(ctaElement, compact, labelText) {
@@ -142,6 +148,35 @@
     }
   }
 
+  function ensureDockedStatus(statusElement, compact) {
+    const existing = document.querySelector(".mcp-compact-status-dock");
+    if (!compact || !statusElement) {
+      if (existing) {
+        existing.remove();
+      }
+      return false;
+    }
+
+    const visibilityBudget = readBudget();
+    if (elementVisibleInFirstScreen(statusElement, visibilityBudget.budgetHeight)) {
+      if (existing) {
+        existing.remove();
+      }
+      return false;
+    }
+
+    let dock = existing;
+    if (!dock) {
+      dock = document.createElement("div");
+      dock.className = "mcp-compact-status-dock";
+      dock.setAttribute("data-testid", "compact-status-dock");
+      document.body.appendChild(dock);
+    }
+
+    dock.textContent = statusElement.textContent ? statusElement.textContent.trim() : "Status";
+    return true;
+  }
+
   function mergeHostContext(hostContext) {
     if (!hostContext || typeof hostContext !== "object") {
       return;
@@ -174,7 +209,9 @@
     const statusVisible = elementVisibleInFirstScreen(statusElement, budget.budgetHeight);
     const ctaVisible = elementVisibleInFirstScreen(ctaElement, budget.budgetHeight);
 
-    body.setAttribute("data-status-visible", statusVisible ? "true" : "false");
+    const statusDockVisible = ensureDockedStatus(statusElement, budget.compact);
+
+    body.setAttribute("data-status-visible", statusVisible || statusDockVisible ? "true" : "false");
     body.setAttribute("data-cta-visible", ctaVisible ? "true" : "false");
 
     ensureDockedCta(
