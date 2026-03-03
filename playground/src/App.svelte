@@ -47,6 +47,12 @@
   let uiResourceMeta = null;
   let uiResourceError = "";
   let uiPreviewExpanded = false;
+  let uiHostViewportMode = "auto";
+  let uiCompactWidth = 320;
+  let uiCompactHeight = 500;
+  let uiCompactWidthPx = 320;
+  let uiCompactHeightPx = 500;
+  let uiPreviewInlineStyle = "";
   let uiIframe = null;
   let uiPreviewReady = false;
   let uiInstructionsVisible = false;
@@ -92,6 +98,10 @@
   const SECRET_SCAN_LIMIT = 20;
   const DEBUG_ARRAY_LIMIT = 20;
   const DEBUG_STRING_LIMIT = 2000;
+  const COMPACT_WIDTH_MIN = 280;
+  const COMPACT_WIDTH_MAX = 520;
+  const COMPACT_HEIGHT_MIN = 360;
+  const COMPACT_HEIGHT_MAX = 900;
 
   const uiToolMap = [
     {
@@ -501,6 +511,14 @@
       allowList.push("clipboard-write");
     }
     return allowList.join("; ");
+  };
+
+  const normalizeDimension = (value, fallback, min, max) => {
+    const asNumber = Number(value);
+    if (!Number.isFinite(asNumber)) {
+      return fallback;
+    }
+    return Math.min(max, Math.max(min, Math.round(asNumber)));
   };
 
   const sendRequest = async (request, schema) => {
@@ -975,14 +993,39 @@
       // keep default
     }
     const displayMode = uiPreviewExpanded ? "fullscreen" : "inline";
+    let containerDimensions;
+    if (uiHostViewportMode === "compact") {
+      containerDimensions = {
+        maxWidth: uiCompactWidthPx,
+        maxHeight: uiCompactHeightPx,
+        width: uiCompactWidthPx,
+        height: uiCompactHeightPx
+      };
+    } else if (uiHostViewportMode === "regular") {
+      const regularWidth = Math.max(window.innerWidth || 1200, 1024);
+      const regularHeight = Math.max(window.innerHeight || 900, 700);
+      containerDimensions = {
+        maxWidth: regularWidth,
+        maxHeight: regularHeight,
+        width: regularWidth,
+        height: regularHeight
+      };
+    } else if (uiPreviewExpanded) {
+      containerDimensions = {
+        maxWidth: window.innerWidth || 1200,
+        maxHeight: window.innerHeight || 900,
+        width: window.innerWidth || 1200,
+        height: window.innerHeight || 900
+      };
+    } else {
+      containerDimensions = { maxWidth: 1200, maxHeight: 700, width: 1200, height: 700 };
+    }
     return {
       displayMode,
       availableDisplayModes: ["inline", "fullscreen"],
       platform: "web",
       userAgent: PLAYGROUND_CLIENT_INFO.name,
-      containerDimensions: uiPreviewExpanded
-        ? { maxHeight: window.innerHeight }
-        : { maxHeight: 700 },
+      containerDimensions,
       mcpGeo: { proxyBase }
     };
   };
@@ -1145,6 +1188,23 @@
   $: if (typeof document !== "undefined") {
     document.body.style.overflow = uiPreviewExpanded ? "hidden" : "";
   }
+
+  $: uiCompactWidthPx = normalizeDimension(
+    uiCompactWidth,
+    320,
+    COMPACT_WIDTH_MIN,
+    COMPACT_WIDTH_MAX
+  );
+  $: uiCompactHeightPx = normalizeDimension(
+    uiCompactHeight,
+    500,
+    COMPACT_HEIGHT_MIN,
+    COMPACT_HEIGHT_MAX
+  );
+  $: uiPreviewInlineStyle =
+    uiHostViewportMode === "compact" && !uiPreviewExpanded
+      ? `--preview-inline-width:${uiCompactWidthPx}px; --preview-inline-height:${uiCompactHeightPx}px;`
+      : "";
 
   $: uiResourceHtml = uiResourceText ? injectCsp(uiResourceText, uiResourceMeta) : "";
   $: uiIframeSandbox = buildSandbox(uiResourceMeta, uiAllowSameOrigin);
@@ -1398,6 +1458,7 @@
             <p>Browse Tools/Resources/Prompts, then select an item to see schemas and metadata.</p>
             <p>For tools, edit the example payload and run it to capture output.</p>
             <p>For ui:// resources, load the HTML to preview the UI surface.</p>
+            <p>Use Host viewport mode in UI preview to force compact-window rendering tests.</p>
           </div>
           {#if testSection === "tools"}
             {#each filteredTools as tool}
@@ -1572,12 +1633,60 @@
                   <div class="actions">
                     <button class="ghost" on:click={loadUiResource}>Load UI HTML</button>
                   </div>
+                  <div class="preview-controls">
+                    <div class="preview-control-grid">
+                      <label>
+                        Host viewport mode
+                        <select
+                          bind:value={uiHostViewportMode}
+                          on:change={notifyHostContextChange}
+                          data-testid="host-viewport-mode"
+                        >
+                          <option value="auto">Auto (host default)</option>
+                          <option value="compact">Force compact window</option>
+                          <option value="regular">Force regular window</option>
+                        </select>
+                      </label>
+                      {#if uiHostViewportMode === "compact"}
+                        <label>
+                          Compact width (px)
+                          <input
+                            type="number"
+                            min={COMPACT_WIDTH_MIN}
+                            max={COMPACT_WIDTH_MAX}
+                            step="10"
+                            bind:value={uiCompactWidth}
+                            on:input={notifyHostContextChange}
+                            data-testid="host-compact-width"
+                          />
+                        </label>
+                        <label>
+                          Compact height (px)
+                          <input
+                            type="number"
+                            min={COMPACT_HEIGHT_MIN}
+                            max={COMPACT_HEIGHT_MAX}
+                            step="10"
+                            bind:value={uiCompactHeight}
+                            on:input={notifyHostContextChange}
+                            data-testid="host-compact-height"
+                          />
+                        </label>
+                      {/if}
+                    </div>
+                    <p class="muted">
+                      Updates <code>hostContext.containerDimensions</code> used by the widget.
+                    </p>
+                  </div>
                   {#if uiResourceError}
                     <div class="error">{uiResourceError}</div>
                   {/if}
                   {#if uiResourceText}
                     {#if uiResourceMime.includes("text/html")}
-                      <div class={`preview-frame ${uiPreviewExpanded ? "expanded" : ""}`}>
+                      <div
+                        class={`preview-frame ${uiPreviewExpanded ? "expanded" : ""} ${uiHostViewportMode === "compact" && !uiPreviewExpanded ? "compact-inline" : ""}`}
+                        style={uiPreviewInlineStyle}
+                      >
                         <div class="preview-toolbar">
                           <span>UI preview</span>
                           <button
@@ -2024,7 +2133,8 @@
   }
 
   input,
-  textarea {
+  textarea,
+  select {
     border: 1px solid #d7d0c5;
     border-radius: 10px;
     padding: 10px 12px;
@@ -2290,6 +2400,12 @@
     border-radius: 12px;
     overflow: hidden;
     background: #fff;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .preview-frame.compact-inline {
+    max-width: var(--preview-inline-width, 320px);
   }
 
   .preview-overlay {
@@ -2344,12 +2460,26 @@
 
   .preview-frame iframe {
     width: 100%;
-    height: 360px;
+    height: var(--preview-inline-height, 360px);
     border: none;
   }
 
   .preview-frame.expanded iframe {
     height: calc(100vh - 96px);
+  }
+
+  .preview-controls {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px dashed #d2c4b4;
+    border-radius: 10px;
+    background: #fffaf2;
+  }
+
+  .preview-control-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 
   @media (max-width: 900px) {

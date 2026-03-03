@@ -13,6 +13,12 @@ All notable changes to this project will be documented in this file.
   vs API-key fallback tests and PMTiles trial execution.
 
 ### Changed
+- Updated the Svelte playground UI preview host controls to expose explicit
+  compact-window testing mode (`auto` / `force compact` / `force regular`) with
+  configurable compact width/height passed via `hostContext.containerDimensions`.
+- Added root markdownlint config (`.markdownlint.json`) to suppress
+  line-length-only noise (`MD013`) and validated `README.md` syntax with fence
+  language annotations and ordered-list normalization.
 - Updated vendored specification/reference submodules to current upstream
   commits for `modelcontextprotocol`, `ext-apps`, `inspector`, and
   `agentskills` under `docs/vendor/`.
