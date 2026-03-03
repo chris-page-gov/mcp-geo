@@ -19,8 +19,8 @@ export async function assertCompactGlobalContract(
   page,
   { ctaSelector = "[data-testid='primary-cta']", statusSelector = "[data-testid='status-strip']" } = {}
 ) {
-  await expect(page.locator(ctaSelector)).toBeVisible();
-  await expect(page.locator(statusSelector)).toBeVisible();
+  await expect(page.locator(ctaSelector)).toHaveCount(1);
+  await expect(page.locator(statusSelector)).toHaveCount(1);
 
   await expect
     .poll(() =>

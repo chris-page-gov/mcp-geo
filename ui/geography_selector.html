@@ -90,6 +90,29 @@
         justify-content: flex-end;
       }
 
+      .compact-workflow-tabs {
+        display: none;
+        margin-top: 12px;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .compact-workflow-tabs button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .compact-workflow-tabs button.active {
+        background: var(--accent-3);
+        border-color: transparent;
+        color: #fff;
+      }
+
       .status-action {
         border-radius: 999px;
         border: 1px solid rgba(26, 155, 139, 0.35);
@@ -235,6 +258,24 @@
         cursor: pointer;
       }
 
+      .ghost,
+      .primary-outline {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .ghost:hover,
+      .primary-outline:hover {
+        border-color: rgba(26, 155, 139, 0.4);
+        color: var(--accent);
+      }
+
       .results {
         display: flex;
         flex-direction: column;
@@ -334,12 +375,41 @@
         position: absolute;
         top: 16px;
         left: 16px;
-        background: rgba(255, 255, 255, 0.92);
-        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 4;
+      }
+
+      .map-overlay > * {
+        pointer-events: auto;
+      }
+
+      .overlay-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--accent-3);
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(20, 32, 31, 0.15);
+      }
+
+      .zoom-ladder-panel {
+        background: rgba(255, 255, 255, 0.96);
+        padding: 10px 12px;
         border-radius: 12px;
         font-size: 12px;
         color: var(--muted);
         border: 1px solid var(--line);
+        max-width: 230px;
+      }
+
+      .zoom-ladder-panel[hidden] {
+        display: none;
       }
 
       .zoom-ladder {
@@ -427,6 +497,19 @@
         gap: 8px;
       }
 
+      .help-list {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .help-list strong {
+        color: var(--ink);
+      }
+
       .cache-panel input {
         padding: 10px 12px;
         border-radius: 10px;
@@ -452,6 +535,13 @@
           grid-template-columns: 1fr;
         }
       }
+
+      body[data-compact="true"] .compact-workflow-tabs {
+        display: flex;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+      }
     </style>
   </head>
   <body>
@@ -472,14 +562,28 @@
         </div>
       </header>
 
+      <nav
+        class="compact-workflow-tabs"
+        id="compactTabs"
+        aria-label="Compact workflow"
+        hidden
+      >
+        <button type="button" class="active" data-tab="map">Map</button>
+        <button type="button" data-tab="search">Search</button>
+        <button type="button" data-tab="results">Results</button>
+        <button type="button" data-tab="info">Info</button>
+        <button type="button" data-tab="debug">Debug</button>
+        <button type="button" data-tab="help">Help</button>
+      </nav>
+
       <section class="grid" data-compact-grid>
-        <aside class="panel control-panel" data-compact-panel>
-          <div class="section">
+        <aside class="panel control-panel" data-compact-panel data-compact-panel-kind="controls">
+          <div class="section" data-compact-group="search">
             <h3>Search mode</h3>
             <div class="segment" id="modeButtons"></div>
           </div>
 
-          <div class="section">
+          <div class="section" data-compact-group="search">
             <div class="field">
               <label for="queryInput">Search</label>
               <input id="queryInput" placeholder="Enter area name, postcode, or UPRN" />
@@ -541,18 +645,18 @@
             <div class="result-meta" id="flowStatus" data-testid="flow-status">Idle.</div>
           </div>
 
-          <div class="section">
+          <div class="section" data-compact-group="results">
             <h3>Results</h3>
             <div class="results" id="results" data-testid="search-results"></div>
           </div>
 
-          <div class="section">
+          <div class="section" data-compact-group="results">
             <h3>Selection mode</h3>
             <div class="segment" id="selectionModeButtons"></div>
             <div class="result-meta">Drag on map to add/remove from selection.</div>
           </div>
 
-          <div class="section">
+          <div class="section" data-compact-group="info">
             <h3>Selected geography</h3>
             <div class="selection-summary" id="selectionSummary">
               <div class="result-meta">No selection yet.</div>
@@ -565,28 +669,50 @@
             </button>
           </div>
 
-          <div class="section">
+          <div class="section" data-compact-group="debug">
             <h3>Host payload</h3>
             <div id="payload" class="payload">Waiting for MCP host payload...</div>
           </div>
+
+          <div class="section" data-compact-group="help">
+            <h3>Help</h3>
+            <ol class="help-list">
+              <li><strong>Map:</strong> opens first so you can see location context immediately.</li>
+              <li><strong>Search:</strong> pick mode, enter a place or postcode, then run search.</li>
+              <li><strong>Results:</strong> pick one or more matches to highlight on the map.</li>
+              <li><strong>Info:</strong> review selected areas/UPRNs and send to the host.</li>
+              <li><strong>Debug:</strong> inspect diagnostics, cache status, and host payload.</li>
+            </ol>
+          </div>
         </aside>
 
-        <div class="panel map-panel" data-compact-panel>
-          <div class="pill-row">
+        <div class="panel map-panel" data-compact-panel data-compact-panel-kind="map">
+          <div class="pill-row" data-compact-group="map">
             <span class="pill">OS Vector Tiles ready</span>
             <span class="pill">MasterMap depth at zoom 15+</span>
             <span class="pill">Boundaries + AddressBase layers</span>
           </div>
-          <div class="map-shell" data-compact-map data-testid="map-stage">
+          <div class="map-shell" data-compact-map data-testid="map-stage" data-compact-group="map">
             <div id="map"></div>
             <div id="dragBox" class="drag-box"></div>
             <div class="map-overlay">
-              <div><strong>Zoom ladder</strong></div>
-              <div class="zoom-ladder" id="zoomLadder"></div>
+              <button
+                id="zoomLadderToggle"
+                class="overlay-icon"
+                type="button"
+                title="Show zoom ladder"
+                aria-expanded="false"
+              >
+                +
+              </button>
+              <div id="zoomLadderPanel" class="zoom-ladder-panel" hidden>
+                <div><strong>Zoom ladder</strong></div>
+                <div class="zoom-ladder" id="zoomLadder"></div>
+              </div>
             </div>
           </div>
-          <div class="section">
-            <h3>Layers</h3>
+          <div class="section" data-compact-group="debug">
+            <h3>Debug layers + diagnostics</h3>
             <div class="layer-list" id="layerList" data-testid="layer-list"></div>
             <div class="debug-badges" id="debugBadges"></div>
             <div class="diagnostics">
@@ -678,6 +804,9 @@
         availableDisplayModes: [],
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        compactTab: "map",
+        compactMode: false,
+        zoomLadderOpen: false,
       };
 
       const statusEl = document.getElementById("status");
@@ -705,6 +834,13 @@
       const clearSelectionButton = document.getElementById("clearSelection");
       const dragBox = document.getElementById("dragBox");
       const flowStatusEl = document.getElementById("flowStatus");
+      const compactTabs = document.getElementById("compactTabs");
+      const compactTabButtons = compactTabs
+        ? Array.from(compactTabs.querySelectorAll("button[data-tab]"))
+        : [];
+      const zoomLadderToggle = document.getElementById("zoomLadderToggle");
+      const zoomLadderPanel = document.getElementById("zoomLadderPanel");
+      const mapOverlay = document.querySelector(".map-overlay");
 
       const compactContract = window.MCP_GEO_COMPACT
         ? window.MCP_GEO_COMPACT.init({
@@ -919,6 +1055,7 @@
             if (state.map) {
               state.map.easeTo({ zoom: step.min, duration: 500 });
             }
+            setZoomLadderOpen(false);
           });
           zoomLadderEl.appendChild(chip);
           step.el = chip;
@@ -930,6 +1067,67 @@
           const active = zoom >= step.min && (!step.max || zoom < step.max);
           step.el.classList.toggle("active", active);
         });
+      }
+
+      function isCompactMode() {
+        return document.body?.dataset?.compact === "true";
+      }
+
+      function setZoomLadderOpen(open) {
+        state.zoomLadderOpen = Boolean(open);
+        if (zoomLadderPanel) {
+          zoomLadderPanel.hidden = !state.zoomLadderOpen;
+        }
+        if (zoomLadderToggle) {
+          zoomLadderToggle.setAttribute("aria-expanded", state.zoomLadderOpen ? "true" : "false");
+          zoomLadderToggle.textContent = state.zoomLadderOpen ? "−" : "+";
+          zoomLadderToggle.title = state.zoomLadderOpen ? "Hide zoom ladder" : "Show zoom ladder";
+        }
+      }
+
+      function setCompactTab(tabId) {
+        const allowedTabs = ["map", "search", "results", "info", "debug", "help"];
+        const nextTab = allowedTabs.includes(tabId) ? tabId : "map";
+        state.compactTab = nextTab;
+        compactTabButtons.forEach((button) => {
+          const active = button.dataset.tab === nextTab;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        document.body?.setAttribute("data-compact-active-tab", nextTab);
+        syncCompactWorkflow();
+      }
+
+      function syncCompactWorkflow() {
+        const compact = isCompactMode();
+        state.compactMode = compact;
+        if (compactTabs) {
+          compactTabs.hidden = !compact;
+        }
+        const groups = document.querySelectorAll("[data-compact-group]");
+        groups.forEach((element) => {
+          const groupValue = element.getAttribute("data-compact-group") || "";
+          const matches = groupValue
+            .split(/\s+/)
+            .filter(Boolean)
+            .includes(state.compactTab);
+          element.hidden = compact ? !matches : false;
+        });
+        const panels = document.querySelectorAll("[data-compact-panel]");
+        panels.forEach((panel) => {
+          if (!compact) {
+            panel.hidden = false;
+            return;
+          }
+          const visibleInPanel = Array.from(panel.querySelectorAll("[data-compact-group]")).some(
+            (element) => !element.hidden
+          );
+          panel.hidden = !visibleInPanel;
+        });
+        if (state.map) {
+          setTimeout(() => state.map.resize(), 0);
+        }
+        scheduleDiagnosticsUpdate();
       }
 
       function buildLayerToggles() {
@@ -2512,6 +2710,7 @@
           }
         }
         updateFullscreenControl();
+        syncCompactWorkflow();
         if (state.map) {
           setTimeout(() => state.map.resize(), 0);
         }
@@ -2724,6 +2923,25 @@
       if (cacheSearchButton) {
         cacheSearchButton.addEventListener("click", () => searchCache());
       }
+      if (zoomLadderToggle) {
+        zoomLadderToggle.addEventListener("click", () => {
+          setZoomLadderOpen(!state.zoomLadderOpen);
+        });
+      }
+      document.addEventListener("click", (event) => {
+        if (!state.zoomLadderOpen || !mapOverlay) {
+          return;
+        }
+        if (mapOverlay.contains(event.target)) {
+          return;
+        }
+        setZoomLadderOpen(false);
+      });
+      compactTabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setCompactTab(button.dataset.tab || "map");
+        });
+      });
 
       window.addEventListener("message", (event) => {
         if (!event || !event.data || typeof event.data !== "object") {
@@ -2763,6 +2981,8 @@
       buildSelectionModeButtons();
       buildZoomLadder();
       buildLayerToggles();
+      setZoomLadderOpen(false);
+      setCompactTab("map");
       try {
         mapAdapter.init();
       } catch (err) {
@@ -2772,7 +2992,25 @@
       renderResults([]);
       renderSelectionSummary();
       setFlowStatus("idle", "Idle.");
+      syncCompactWorkflow();
       scheduleDiagnosticsUpdate();
+
+      if (window.MutationObserver && document.body) {
+        const compactObserver = new MutationObserver((mutations) => {
+          if (
+            mutations.some(
+              (mutation) =>
+                mutation.type === "attributes" && mutation.attributeName === "data-compact"
+            )
+          ) {
+            syncCompactWorkflow();
+          }
+        });
+        compactObserver.observe(document.body, {
+          attributes: true,
+          attributeFilter: ["data-compact"],
+        });
+      }
 
       if (window.ResizeObserver) {
         const resizeObserver = new ResizeObserver(() => {

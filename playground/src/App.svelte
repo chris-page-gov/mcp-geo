@@ -75,6 +75,10 @@
   let hmrUpdateCount = 0;
   let hmrLastUpdate = "";
   let hmrStatus = "disabled";
+  let splitLeftWidth = 260;
+  let splitLeftWidthPx = 320;
+  let tabHelpTitle = "Setup";
+  let tabHelpText = "Connect to the server and confirm descriptor + protocol versions.";
 
   const UI_PROTOCOL_VERSION = "2026-01-26";
   const UI_RESOURCE_MIME = "text/html;profile=mcp-app";
@@ -102,6 +106,8 @@
   const COMPACT_WIDTH_MAX = 520;
   const COMPACT_HEIGHT_MIN = 360;
   const COMPACT_HEIGHT_MAX = 900;
+  const SPLIT_LEFT_MIN = 220;
+  const SPLIT_LEFT_MAX = 520;
 
   const uiToolMap = [
     {
@@ -129,6 +135,25 @@
       args: { tool: "os_apps.render_route_planner" }
     }
   ];
+
+  const TAB_HELP = {
+    setup: {
+      title: "Setup",
+      text: "Connect to the server and confirm descriptor + protocol versions."
+    },
+    test: {
+      title: "Test",
+      text: "Use Host viewport mode in UI preview to force compact-window rendering tests."
+    },
+    trace: {
+      title: "Trace",
+      text: "Capture prompts and request/response history to diagnose flow behavior."
+    },
+    debug: {
+      title: "Debug",
+      text: "Inspect runtime state, diagnostics, and redacted debug snapshots."
+    }
+  };
 
   const recordHistory = (entry) => {
     history = [scrubSecretsValue(entry), ...history].slice(0, 50);
@@ -1205,6 +1230,12 @@
     uiHostViewportMode === "compact" && !uiPreviewExpanded
       ? `--preview-inline-width:${uiCompactWidthPx}px; --preview-inline-height:${uiCompactHeightPx}px;`
       : "";
+  $: splitLeftWidthPx = normalizeDimension(
+    splitLeftWidth,
+    320,
+    SPLIT_LEFT_MIN,
+    SPLIT_LEFT_MAX
+  );
 
   $: uiResourceHtml = uiResourceText ? injectCsp(uiResourceText, uiResourceMeta) : "";
   $: uiIframeSandbox = buildSandbox(uiResourceMeta, uiAllowSameOrigin);
@@ -1284,6 +1315,11 @@
   });
   $: debugSnapshotText = debugSnapshot ? JSON.stringify(debugSnapshot, null, 2) : "";
   $: secretAudit = buildSecretAudit();
+  $: {
+    const help = TAB_HELP[activeTab] || TAB_HELP.setup;
+    tabHelpTitle = help.title;
+    tabHelpText = help.text;
+  }
 </script>
 
 <svelte:head>
@@ -1296,8 +1332,7 @@
   <header class="hero">
     <div>
       <p class="eyebrow">MCP Geo Playground</p>
-      <h1>Testing + tracing cockpit for MCP Geo.</h1>
-      <p class="sub">Expose what the model sees, then drill into tools, resources, and outputs.</p>
+      <h1>MCP Geo Playground: tools + compact UI harness</h1>
     </div>
     <div class="status">
       <span class={`dot ${status}`}></span>
@@ -1308,12 +1343,18 @@
     </div>
   </header>
 
-  <nav class="tabs">
-    <button class:active={activeTab === "setup"} on:click={() => (activeTab = "setup")}>Setup</button>
-    <button class:active={activeTab === "test"} on:click={() => (activeTab = "test")}>Test</button>
-    <button class:active={activeTab === "trace"} on:click={() => (activeTab = "trace")}>Trace</button>
-    <button class:active={activeTab === "debug"} on:click={() => (activeTab = "debug")}>Debug</button>
-  </nav>
+  <div class="tabs-toolbar">
+    <nav class="tabs">
+      <button class:active={activeTab === "setup"} on:click={() => (activeTab = "setup")}>Setup</button>
+      <button class:active={activeTab === "test"} on:click={() => (activeTab = "test")}>Test</button>
+      <button class:active={activeTab === "trace"} on:click={() => (activeTab = "trace")}>Trace</button>
+      <button class:active={activeTab === "debug"} on:click={() => (activeTab = "debug")}>Debug</button>
+    </nav>
+    <div class="tab-help" data-testid="tab-help">
+      <strong>{tabHelpTitle}</strong>
+      <span>{tabHelpText}</span>
+    </div>
+  </div>
 
   {#if activeTab === "setup"}
     <section class="grid">
@@ -1424,7 +1465,7 @@
   {/if}
 
   {#if activeTab === "test"}
-    <section class="split">
+    <section class="split" style={`--split-left-width:${splitLeftWidthPx}px`}>
       <div class="pane">
         <div class="pane-header">
           <div class="pane-tabs">
@@ -1450,16 +1491,19 @@
               <input type="text" placeholder="Filter prompts" bind:value={promptFilter} />
             {/if}
           </div>
+          <label class="split-size">
+            <span>List width</span>
+            <input
+              type="range"
+              min={SPLIT_LEFT_MIN}
+              max={SPLIT_LEFT_MAX}
+              step="10"
+              bind:value={splitLeftWidth}
+            />
+          </label>
         </div>
 
         <div class="pane-body">
-          <div class="help-card">
-            <strong>How to use Test</strong>
-            <p>Browse Tools/Resources/Prompts, then select an item to see schemas and metadata.</p>
-            <p>For tools, edit the example payload and run it to capture output.</p>
-            <p>For ui:// resources, load the HTML to preview the UI surface.</p>
-            <p>Use Host viewport mode in UI preview to force compact-window rendering tests.</p>
-          </div>
           {#if testSection === "tools"}
             {#each filteredTools as tool}
               <button
@@ -1684,7 +1728,7 @@
                   {#if uiResourceText}
                     {#if uiResourceMime.includes("text/html")}
                       <div
-                        class={`preview-frame ${uiPreviewExpanded ? "expanded" : ""} ${uiHostViewportMode === "compact" && !uiPreviewExpanded ? "compact-inline" : ""}`}
+                        class={`preview-frame ${uiPreviewExpanded ? "expanded" : ""} ${uiHostViewportMode === "compact" ? "compact-inline" : ""}`}
                         style={uiPreviewInlineStyle}
                       >
                         <div class="preview-toolbar">
@@ -1710,27 +1754,46 @@
                             </div>
                           </div>
                         {/if}
-                        <iframe
-                          bind:this={uiIframe}
-                          title="UI preview"
-                          sandbox={uiIframeSandbox}
-                          allow={uiIframeAllow}
-                          srcdoc={uiResourceHtml}
-                        ></iframe>
+                        <div class="preview-content">
+                          <iframe
+                            bind:this={uiIframe}
+                            title="UI preview"
+                            sandbox={uiIframeSandbox}
+                            allow={uiIframeAllow}
+                            srcdoc={uiResourceHtml}
+                          ></iframe>
+                          {#if uiPreviewExpanded && uiHostViewportMode === "compact"}
+                            <aside class="compact-preview-info">
+                              <h4>Compact focus</h4>
+                              <p>
+                                Compact viewport is preserved while maximised so you can compare
+                                host-side context and workflow notes side-by-side.
+                              </p>
+                              <div class="meta-grid">
+                                <div>
+                                  <div class="label">Mode</div>
+                                  <div class="value">{uiHostViewportMode}</div>
+                                </div>
+                                <div>
+                                  <div class="label">Size</div>
+                                  <div class="value">{uiCompactWidthPx}x{uiCompactHeightPx}</div>
+                                </div>
+                                <div>
+                                  <div class="label">Resource</div>
+                                  <div class="value">{selectedResource?.uri || "n/a"}</div>
+                                </div>
+                              </div>
+                              <p class="muted">
+                                Use the widget's own tabs/controls for map workflow, then return to
+                                Debug tab for host diagnostics.
+                              </p>
+                            </aside>
+                          {/if}
+                        </div>
                       </div>
                     {/if}
-                    <details class="details-block" open>
-                      <summary>Raw HTML</summary>
-                      <pre>{uiResourceText}</pre>
-                    </details>
                   {/if}
                 </div>
-                {#if uiToolResult}
-                  <details class="details-block" open>
-                    <summary>UI tool output</summary>
-                    <pre>{uiToolResult}</pre>
-                  </details>
-                {/if}
               {/if}
               <div class="meta-grid">
                 <div>
@@ -1774,12 +1837,6 @@
           <div class="pane-title">Prompt capture</div>
         </div>
         <div class="pane-body">
-          <div class="help-card">
-            <strong>How to use Trace</strong>
-            <p>Log prompts before tool runs to capture intent and context.</p>
-            <p>The history pane shows every MCP request/response while connected.</p>
-            <p class="muted">Avoid pasting secrets here; history stores raw payloads locally.</p>
-          </div>
           <label class="toggle">
             <input type="checkbox" bind:checked={traceRedact} />
             <span>Redact trace payloads</span>
@@ -1911,6 +1968,40 @@
           {/each}
         {/if}
       </div>
+
+      <div class="card">
+        <h2>UI preview diagnostics</h2>
+        <p class="muted">Consolidated host/widget debug details for UI preview sessions.</p>
+        <div class="meta-grid debug-meta">
+          <div>
+            <div class="label">Selected UI</div>
+            <div class="value">{selectedResource?.uri || "n/a"}</div>
+          </div>
+          <div>
+            <div class="label">Preview mode</div>
+            <div class="value">{uiHostViewportMode}</div>
+          </div>
+          <div>
+            <div class="label">Preview ready</div>
+            <div class="value">{uiPreviewReady ? "yes" : "no"}</div>
+          </div>
+          <div>
+            <div class="label">Sandbox</div>
+            <div class="value">{uiIframeSandbox}</div>
+          </div>
+        </div>
+        {#if uiResourceError}
+          <div class="error">{uiResourceError}</div>
+        {/if}
+        <details class="details-block">
+          <summary>UI tool output</summary>
+          <pre>{uiToolResult || "No UI tool call output captured yet."}</pre>
+        </details>
+        <details class="details-block">
+          <summary>Raw UI HTML</summary>
+          <pre>{uiResourceText || "No UI HTML loaded yet."}</pre>
+        </details>
+      </div>
     </section>
   {/if}
 </div>
@@ -1937,15 +2028,15 @@
     gap: 24px;
     background: #0b1f21;
     color: #f7f4ef;
-    padding: 26px;
+    padding: 14px 18px;
     border-radius: 20px;
     box-shadow: 0 12px 30px rgba(11, 31, 33, 0.2);
   }
 
   .hero h1 {
-    margin: 8px 0 12px;
-    font-size: 2rem;
-    line-height: 1.2;
+    margin: 4px 0 2px;
+    font-size: 1.3rem;
+    line-height: 1.25;
   }
 
   .eyebrow {
@@ -1957,7 +2048,9 @@
 
   .sub {
     font-family: "Spectral", serif;
-    max-width: 460px;
+    max-width: 560px;
+    margin: 0;
+    font-size: 0.92rem;
   }
 
   .status {
@@ -2009,6 +2102,36 @@
     gap: 12px;
   }
 
+  .tabs-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .tab-help {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    background: #fffaf2;
+    border: 1px solid #d7d0c5;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    color: #4b3b2d;
+    max-width: min(860px, 70vw);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tab-help strong {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    color: #2e7d6b;
+  }
+
   .tabs button {
     border: 1px solid #0b1f21;
     background: transparent;
@@ -2031,7 +2154,7 @@
 
   .split {
     display: grid;
-    grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.3fr);
+    grid-template-columns: minmax(220px, var(--split-left-width, 320px)) minmax(0, 1fr);
     gap: 20px;
   }
 
@@ -2096,6 +2219,22 @@
     padding: 6px 12px;
     border: 1px solid #d7d0c5;
     background: #fffaf2;
+  }
+
+  .split-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4b3b2d;
+  }
+
+  .split-size input[type="range"] {
+    width: 130px;
+    padding: 0;
   }
 
   .pane-body {
@@ -2379,18 +2518,6 @@
     gap: 8px;
   }
 
-  .help-card {
-    background: #fffaf2;
-    border: 1px dashed #d2c4b4;
-    border-radius: 12px;
-    padding: 12px;
-    color: #4b3b2d;
-  }
-
-  .help-card p {
-    margin: 6px 0 0;
-  }
-
   .pane .label {
     color: #5a4a3a;
   }
@@ -2402,6 +2529,7 @@
     background: #fff;
     width: 100%;
     max-width: 100%;
+    position: relative;
   }
 
   .preview-frame.compact-inline {
@@ -2464,8 +2592,37 @@
     border: none;
   }
 
+  .preview-content {
+    display: block;
+  }
+
   .preview-frame.expanded iframe {
     height: calc(100vh - 96px);
+  }
+
+  .preview-frame.expanded.compact-inline .preview-content {
+    display: grid;
+    grid-template-columns: minmax(280px, var(--preview-inline-width, 320px)) minmax(0, 1fr);
+    height: calc(100vh - 96px);
+  }
+
+  .preview-frame.expanded.compact-inline iframe {
+    height: calc(100vh - 96px);
+  }
+
+  .compact-preview-info {
+    border-left: 1px solid #e2d8cc;
+    padding: 14px;
+    background: #fffaf2;
+    overflow: auto;
+  }
+
+  .compact-preview-info h4 {
+    margin: 0 0 10px;
+  }
+
+  .compact-preview-info p {
+    margin: 0 0 10px;
   }
 
   .preview-controls {
@@ -2483,6 +2640,15 @@
   }
 
   @media (max-width: 900px) {
+    .tabs-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .tab-help {
+      max-width: 100%;
+      border-radius: 12px;
+      white-space: normal;
+    }
     .split {
       grid-template-columns: 1fr;
     }

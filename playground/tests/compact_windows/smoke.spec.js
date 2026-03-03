@@ -622,6 +622,15 @@ test.describe("compact acceptance smoke (CW-7)", () => {
       ctaSelector: "#searchButton",
       statusSelector: "#status",
     });
+    await expect(page.locator("#compactTabs")).toBeVisible();
+    await expect(page.locator("#compactTabs button.active")).toHaveText("Map");
+    await expect(page.locator("#zoomLadderPanel")).toBeHidden();
+    await page.click("#zoomLadderToggle");
+    await expect(page.locator("#zoomLadderPanel")).toBeVisible();
+    await page.locator("#zoomLadder .zoom-step").first().click();
+    await expect(page.locator("#zoomLadderPanel")).toBeHidden();
+
+    await page.click("#compactTabs button[data-tab='search']");
     await assertKeyboardReachesTarget(page, "#searchButton");
 
     await sendHostContextChanged(page, {
@@ -635,9 +644,12 @@ test.describe("compact acceptance smoke (CW-7)", () => {
     await page.fill("#queryInput", "Test Street");
     await page.click("#searchButton");
     await expect(page.locator("#flowStatus")).toContainText("Found");
+    await page.click("#compactTabs button[data-tab='results']");
     await page.locator("#results .result-card").first().click();
+    await page.click("#compactTabs button[data-tab='info']");
     await expect(page.locator("#selectionSummary")).toContainText("Selected UPRNs");
 
+    await page.click("#compactTabs button[data-tab='search']");
     await page.getByRole("button", { name: "Postcode" }).click();
     await page.fill("#queryInput", "SW1A1AA");
     await page.click("#searchButton");
@@ -653,16 +665,20 @@ test.describe("compact acceptance smoke (CW-7)", () => {
     await page.fill("#queryInput", "Test Ward");
     await page.click("#searchButton");
     await expect(page.locator("#flowStatus")).toContainText("Found");
+    await page.click("#compactTabs button[data-tab='results']");
     await page.locator("#results .result-card").first().click();
+    await page.click("#compactTabs button[data-tab='info']");
     await expect(page.locator("#selectionSummary")).toContainText("Selected areas (1)");
     await page.click("#clearSelection");
     await expect(page.locator("#selectionSummary")).toContainText("No selection yet");
 
+    await page.click("#compactTabs button[data-tab='search']");
     await page.getByRole("button", { name: "Free text" }).click();
     await page.fill("#queryInput", "Test Street");
     await page.click("#searchButton");
     await expect(page.locator("#flowStatus")).toContainText("Found");
 
+    await page.click("#compactTabs button[data-tab='debug']");
     await setRangeValue(page, "#mapOpacity", 0.15);
     await expect.poll(async () => (await readJsonText(page, "#diagnostics")).opacity).toBe(0.15);
     await setRangeValue(page, "#mapOpacity", 0.55);

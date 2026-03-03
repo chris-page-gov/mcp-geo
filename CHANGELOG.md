@@ -16,6 +16,15 @@ All notable changes to this project will be documented in this file.
 - Updated the Svelte playground UI preview host controls to expose explicit
   compact-window testing mode (`auto` / `force compact` / `force regular`) with
   configurable compact width/height passed via `hostContext.containerDimensions`.
+- Refined compact-window UX across playground + geography selector:
+  - fixed maximize behavior to preserve compact preview dimensions while
+    showing side-by-side host context
+  - added adjustable list-pane width control in playground test view
+  - reduced playground hero/header vertical footprint
+  - consolidated UI preview diagnostics into the Debug tab
+  - added map-first compact workflow tabs (`Map/Search/Results/Info/Debug/Help`)
+    in `ui/geography_selector.html`
+  - moved zoom ladder behind an icon toggle to prevent map obstruction.
 - Added root markdownlint config (`.markdownlint.json`) to suppress
   line-length-only noise (`MD013`) and validated `README.md` syntax with fence
   language annotations and ordered-list normalization.

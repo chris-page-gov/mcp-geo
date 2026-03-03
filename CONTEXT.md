@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-02
+Last updated: 2026-03-03
 Owner: @chris-page-gov
 
 ## Purpose
@@ -155,6 +155,10 @@ assumptions change.
 - Maintain compact-window implementation and test hardening artifacts from
   `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`
   with strict acceptance evidence from the unattended Playwright suites.
+- Refine playground + geography-selector compact UX for map-first workflows:
+  compact-preserving maximize behavior, adjustable split-pane sizing, a
+  compact tab workflow (`Map/Search/Results/Info/Debug/Help`), and
+  non-obstructive zoom-ladder controls.
 
 ## Status Snapshot (from PROGRESS.MD)
 

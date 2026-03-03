@@ -3,7 +3,15 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-02
+Last updated: 2026-03-03
+
+## Playground compact UX refinements (2026-03-03)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| PGC-UX-1 Compact-host playground and geography-selector usability fixes | done | CWIN-EXEC-3 | Updated `playground/src/App.svelte` to enforce compact-preserving maximise behavior, add adjustable split-pane width controls, reduce header footprint, and consolidate UI preview debug output under Debug tab. Updated `ui/geography_selector.html` with map-first compact workflow tabs (`Map`, `Search`, `Results`, `Info`, `Debug`, `Help`) and a zoom-ladder icon toggle so zoom chips no longer obscure map content. Validation evidence: `npm --prefix playground run test -- playground.spec.js` (`1 passed`), `npm --prefix playground run test:compact` (`30 passed`), `npm --prefix playground run test:compact-matrix` (`72 passed`), `npm --prefix playground run build` (pass). |
 
 ## Compact-windows unattended implementation planning (2026-03-01)
 
