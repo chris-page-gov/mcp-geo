@@ -9,7 +9,7 @@
       href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
       onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
     />
-    <link rel="stylesheet" href="shared/compact_contract.css" />
+    <link rel="stylesheet" href="shared/compact_contract.css" onerror="this.onerror=null;this.href='/ui/shared/compact_contract.css'" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
@@ -742,7 +742,7 @@
       src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
       onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
     ></script>
-    <script src="shared/compact_contract.js"></script>
+    <script src="shared/compact_contract.js" onerror="this.onerror=null;this.src='/ui/shared/compact_contract.js'"></script>
     <script>
       const modes = [
         { id: "free", label: "Free text", tool: "os_places.search" },

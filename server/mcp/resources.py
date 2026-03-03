@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, Header, Query, Response
@@ -16,9 +17,27 @@ from server.mcp.resource_catalog import (
     resolve_offline_pack_download,
     resolve_skill_resource,
     resolve_ui_resource,
+    UI_DIR,
 )
 
 router = APIRouter()
+
+_UI_SHARED_DIR = (UI_DIR / "shared").resolve()
+
+
+def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
+    if not if_none_match:
+        return False
+    candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
+    return etag in candidates or "*" in candidates
+
+
+def _shared_asset_media_type(path: Path) -> str:
+    if path.suffix == ".js":
+        return "application/javascript"
+    if path.suffix == ".css":
+        return "text/css"
+    return "application/octet-stream"
 
 def _build_resource_list() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
@@ -201,6 +220,33 @@ def render_ui_resource(
         content=content,
         media_type="text/html",
         headers={"ETag": etag, "Cache-Control": cache_control},
+    )
+
+
+@router.get("/ui/shared/{asset_name}")
+def render_ui_shared_asset(
+    asset_name: str,
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    # Serve compact contract assets for hosted UI widgets and iframe/srcdoc fallbacks.
+    asset_path = (_UI_SHARED_DIR / asset_name).resolve()
+    if asset_path.parent != _UI_SHARED_DIR or not asset_path.exists() or not asset_path.is_file():
+        raise HTTPException(status_code=404, detail="UI shared asset not found")
+
+    stat = asset_path.stat()
+    etag = f'W/"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+    if _etag_match(if_none_match, etag):
+        response.status_code = 304
+        response.headers["ETag"] = etag
+        return response
+
+    return FileResponse(
+        path=str(asset_path),
+        media_type=_shared_asset_media_type(asset_path),
+        headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
     )
 
 

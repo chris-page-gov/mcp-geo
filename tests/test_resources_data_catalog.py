@@ -71,6 +71,27 @@ def test_ui_route_renders_simple_map_lab_html() -> None:
     assert 'value="OS_VTS_3857_Open_Road.json"' in resp.text
 
 
+def test_ui_shared_route_serves_compact_contract_assets() -> None:
+    css_resp = client.get("/ui/shared/compact_contract.css")
+    assert css_resp.status_code == 200
+    assert css_resp.headers["content-type"].startswith("text/css")
+    assert "data-compact" in css_resp.text
+    assert "cache-control" in css_resp.headers
+    assert "etag" in css_resp.headers
+
+    js_resp = client.get("/ui/shared/compact_contract.js")
+    assert js_resp.status_code == 200
+    assert js_resp.headers["content-type"].startswith("application/javascript")
+    assert "window.MCP_GEO_COMPACT" in js_resp.text
+    assert "cache-control" in js_resp.headers
+    assert "etag" in js_resp.headers
+
+
+def test_ui_shared_route_missing_asset_returns_404() -> None:
+    resp = client.get("/ui/shared/does-not-exist.js")
+    assert resp.status_code == 404
+
+
 def test_simple_map_lab_short_route_redirects() -> None:
     resp = client.get("/simple-map-lab", follow_redirects=False)
     assert resp.status_code == 307
