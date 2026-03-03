@@ -13,6 +13,7 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | CTS-INT-1 `tools/list` query-compat for search-gated clients | done | none | Updated `server/stdio_adapter.py` so `tools/list` now honors search-style params (`query`/`q`, `mode`, `limit`, `category`) and returns ranked filtered tool definitions instead of full-catalog responses when query is present; preserves existing list behavior when query is absent. Added regression coverage in `tests/test_stdio_adapter_direct.py` and `tests/test_mcp_http.py`. Added standards-validation + troubleshooting evidence in `troubleshooting/claude-system-instructions-hide-mcp.md` against vendored MCP `2025-11-25` docs/schema. |
 | CTS-OPS-2 Docker Claude wrapper env passthrough for default toolsets | done | CTS-INT-1 | Updated `scripts/claude-mcp-local` to forward `MCP_TOOLS_DEFAULT_TOOLSET`, `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`, `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`, and `MCP_STDIO_TOOL_CONTENT_MAX_BYTES` into the runtime container. This restores scoped startup discovery for Docker-backed Claude sessions (observed `tools/list` baseline `81` tools vs scoped `25` tools with `starter + features_layers`). |
+| CTS-OPS-3 Startup scope probe script | done | CTS-OPS-2 | Added `scripts/check_claude_startup_scope.sh` to deterministically validate startup scope via wrapper path (`baseline_tools` vs `scoped_tools`) and fail fast if scoped discovery is not lower than baseline. |
 
 ## Playground compact UX refinements (2026-03-03)
 

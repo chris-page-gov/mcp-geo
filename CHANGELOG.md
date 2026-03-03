@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
   trials with basic timing telemetry and deterministic pan-benchmark controls.
 - Added `docs/simple_map_lab.md` with a focused runbook for browser bearer auth
   vs API-key fallback tests and PMTiles trial execution.
+- Added `scripts/check_claude_startup_scope.sh` to validate Docker-backed
+  Claude startup discovery scope (baseline vs scoped `tools/list` counts) so
+  toolset config regressions can be detected quickly.
 
 ### Changed
 - Hardened MCP interop for search-gated clients by teaching STDIO `tools/list`
