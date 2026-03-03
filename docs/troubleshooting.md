@@ -70,11 +70,28 @@ Common pitfalls:
 - Including `cell` with `format=jsonstat`
 - Omitting required dimensions such as `variable`
 - Passing an invalid measure code for the dataset (for example `20100` for `NM_17_5`)
+- Passing unsupported dimension keys for the selected dataset
+  (for example `c2021_age_92` against `NM_2028_1`)
 
 Recommended flow:
 1. Call `nomis.datasets` with `dataset=<id>` and inspect `queryTemplate` + dimensions.
 2. Retry `nomis.query` with the required dimensions explicitly set.
-3. Use `nomis.codelists` if you need valid dimension codes.
+3. Inspect `queryAdjusted` in error/success payloads:
+   - `paramNormalization`: alias/drop fixes (`date -> time`, dropped `cell`)
+   - `dimensionAutoAdjust`: required-dimension auto-fill and unknown-key removal
+4. Use `nomis.codelists` if you need valid dimension codes.
+5. If geography is supplied as GSS codes and still fails, test a known-working
+   geography code for the dataset first (for example LA code) to separate
+   geography issues from dimension issues.
+
+## `os_mcp.descriptor` with `category=\"stats\"` previously returned tool-search category errors
+`os_mcp.descriptor` now accepts `stats` as an alias for `statistics`.
+
+If you still see `Invalid category 'stats'`:
+
+1. Rebuild/restart the running MCP server image/session.
+2. Re-run `os_mcp.descriptor` with `{\"category\":\"stats\"}`.
+3. Confirm `toolSearch.filtered_category` is `statistics` and no `toolSearch.error` is returned.
 
 ## `os_features.query` warnings and partial scans
 `os_features.query` now emits structured hint metadata:

@@ -25,6 +25,11 @@ class ToolCategory(str, Enum):
     UTILITY = "utility"
 
 
+_CATEGORY_ALIASES: dict[str, str] = {
+    "stats": ToolCategory.STATISTICS.value,
+}
+
+
 _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "os_places": ToolCategory.PLACES,
     "os_poi": ToolCategory.PLACES,
@@ -156,6 +161,15 @@ NON_IDEMPOTENT_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter",
 
 def _tokenize(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def normalize_category_alias(category: str | None) -> str | None:
+    if not isinstance(category, str):
+        return None
+    normalized = category.strip().lower()
+    if not normalized:
+        return None
+    return _CATEGORY_ALIASES.get(normalized, normalized)
 
 
 def infer_category(tool_name: str) -> ToolCategory:
@@ -388,8 +402,11 @@ def get_tool_search_config(category: str | None = None) -> Dict[str, Any]:
         "system_prompt": get_tool_search_system_prompt(),
     }
     if category:
+        normalized_category = normalize_category_alias(category)
+        if not normalized_category:
+            return result
         try:
-            cat = ToolCategory(category.lower())
+            cat = ToolCategory(normalized_category)
         except ValueError:
             result["error"] = (
                 f"Invalid category '{category}'. Valid: {[c.value for c in ToolCategory]}"
@@ -401,7 +418,9 @@ def get_tool_search_config(category: str | None = None) -> Dict[str, Any]:
                 continue
             meta = get_tool_metadata(tool)
             filtered[tool.name] = meta
-        result["filtered_category"] = category
+        if normalized_category != category.strip().lower():
+            result["categoryAlias"] = {"input": category, "normalized": normalized_category}
+        result["filtered_category"] = cat.value
         result["tools"] = filtered
     return result
 
@@ -453,7 +472,7 @@ def search_tools(
             pattern = re.compile(query, re.IGNORECASE)
         except re.error as exc:
             raise ValueError(f"Invalid regex: {exc}") from exc
-    normalized_category = category.lower() if isinstance(category, str) else None
+    normalized_category = normalize_category_alias(category)
     for tool in tools:
         meta = get_tool_metadata(tool)
         if normalized_category and meta["category"] != normalized_category:
@@ -515,5 +534,6 @@ __all__ = [
     "filter_tools_by_toolsets",
     "filter_tool_names_by_toolsets",
     "get_toolset_catalog",
+    "normalize_category_alias",
     "search_tools",
 ]

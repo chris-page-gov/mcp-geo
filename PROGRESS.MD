@@ -16,6 +16,7 @@ Legend: pending, in_progress, done, blocked
 | CTS-OPS-3 Startup scope probe script | done | CTS-OPS-2 | Added `scripts/check_claude_startup_scope.sh` to deterministically validate startup scope via wrapper path (`baseline_tools` vs `scoped_tools`) and fail fast if scoped discovery is not lower than baseline. |
 | CTS-OPS-4 Compact startup catalogs for Claude clients | done | CTS-OPS-2 | Added stdio compact-catalog mode (`MCP_STDIO_LIST_COMPACT`, default auto for Claude) to trim heavy optional fields from `tools/list` and `resources/list`. Verified with Docker rebuild path: `tools/list` (`25` tools) dropped from ~`34KB` to ~`18KB`; full `initialize + list` startup (`tools/prompts/resources`) dropped to ~`28.6KB`. Added regression tests in `tests/test_stdio_adapter_direct.py`. |
 | CTS-OPS-5 Secret hydration for Docker Claude wrapper | done | CTS-OPS-2 | Updated `scripts/claude-mcp-local` to hydrate `OS_API_KEY`/`ONS_API_KEY` from runtime env, `*_FILE` secrets, macOS `launchctl`, or `.env` fallback (`MCP_GEO_ENV_FILE`). Followed up by wiring `OS_API_KEY_FILE` templates into `mcp.json`/`.vscode/mcp.json` and adding server-side `OS_API_KEY_FILE` fallback in `server/config.py` so direct stdio/server launches can use file-based secrets too. Validated behavior: with no key => `NO_API_KEY`; with dotenv-provided test key => upstream `OS_API_KEY_INVALID` (proves key reached container). |
+| CTS-INT-6 Tool-search category alias compatibility (`stats`) | done | CTS-INT-1 | Updated `server/mcp/tool_search.py` so category alias `stats` normalizes to `statistics` for descriptor/search filtering. This removes `toolSearch.error` for `os_mcp.descriptor` calls that pass `{\"category\":\"stats\"}` in constrained clients. Added regression tests in `tests/test_tool_search.py` and `tests/test_os_mcp_descriptor.py`. |
 
 ## Playground compact UX refinements (2026-03-03)
 
@@ -32,6 +33,7 @@ Legend: pending, in_progress, done, blocked
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
 | NQR-INT-1 NOMIS query parameter normalization + guidance payloads | done | none | Updated `tools/nomis_data.py` so `nomis.query` normalizes common compatibility mistakes (`date` alias to `time`, drops `cell` for JSON-stat), and returns richer `NOMIS_QUERY_ERROR` payloads (`missingDimensions`, `suggestedParams`, `hint`, `queryAdjusted`) for `Cannot create query`/`Query is incomplete` failures. Added regression coverage in `tests/test_nomis_data.py` and troubleshooting guidance in `docs/troubleshooting.md`. |
+| NQR-INT-2 NOMIS dimension auto-adjust retry | done | NQR-INT-1 | Added overview-driven retry in `tools/nomis_data.py` for incomplete/invalid queries: auto-fill missing required dimensions from `queryTemplate`, drop unknown dimension keys, retry once, and surface `queryAdjusted.dimensionAutoAdjust`. This resolves model payload drift such as `NM_2028_1` with missing `time`/`c_sex` and unsupported `c2021_age_92`. Added regression test `test_nomis_query_autoretries_with_dimension_autoadjustments` and updated troubleshooting docs. |
 
 ## Compact-windows unattended implementation planning (2026-03-01)
 

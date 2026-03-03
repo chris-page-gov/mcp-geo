@@ -105,8 +105,12 @@ assumptions change.
   context pressure while retaining callable tool metadata.
 - Maintain `nomis.query` compatibility normalization and actionable query-error
   guidance in `tools/nomis_data.py` so model-generated payload drift (`date`,
-  `cell`, missing dimensions) yields deterministic correction hints instead of
-  opaque upstream failures.
+  `cell`, missing dimensions, unknown dimension keys) yields deterministic
+  correction hints and auto-retry adjustments instead of opaque upstream
+  failures.
+- Maintain tool-search category alias resilience (`stats` -> `statistics`) in
+  `server/mcp/tool_search.py` / `os_mcp.descriptor` for constrained client
+  discovery flows.
 - Maintain Docker wrapper secret-hydration order in
   `scripts/claude-mcp-local` (env -> `*_FILE` -> macOS `launchctl` -> `.env`)
   and direct server fallback in `server/config.py` (`OS_API_KEY_FILE`) so

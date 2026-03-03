@@ -14,6 +14,17 @@ def test_get_tool_search_config_filtered_category():
     assert all(meta.get("category") == "places" for meta in tools.values())
 
 
+def test_get_tool_search_config_stats_alias():
+    result = get_tool_search_config("stats")
+    assert "error" not in result
+    assert result.get("filtered_category") == "statistics"
+    alias = result.get("categoryAlias")
+    assert alias == {"input": "stats", "normalized": "statistics"}
+    tools = result.get("tools", {})
+    assert tools
+    assert all(meta.get("category") == "statistics" for meta in tools.values())
+
+
 def test_search_tools_regex_mode_and_schemas():
     results = search_tools("postcode", mode="regex", include_schemas=True)
     assert results
@@ -40,6 +51,12 @@ def test_search_tools_finds_ons_geo_keywords():
     results = search_tools("onspd postcode geography", mode="token")
     names = {item.get("name") for item in results}
     assert "ons_geo.by_postcode" in names
+
+
+def test_search_tools_accepts_stats_alias_category():
+    results = search_tools("nomis", mode="token", category="stats")
+    assert results
+    assert all(item.get("category") == "statistics" for item in results)
 
 
 def test_starter_toolset_includes_select_toolsets():

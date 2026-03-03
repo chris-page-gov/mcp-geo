@@ -629,16 +629,63 @@ def _missing_dimensions_message(
     params: dict[str, Any],
     overview: dict[str, Any] | None,
 ) -> tuple[list[str], dict[str, str]]:
-    dimensions = overview.get("dimensions") if isinstance(overview, dict) else []
-    required_keys = [
-        str(dim.get("concept", "")).lower()
-        for dim in dimensions
-        if isinstance(dim, dict) and str(dim.get("concept", "")).strip()
-    ]
+    required_keys = _required_dimension_concepts(overview)
     provided = {str(key).strip().lower() for key in params.keys()}
     missing = [key for key in required_keys if key not in provided]
     template = _infer_query_template("unknown", overview)
     return missing, template
+
+
+def _required_dimension_concepts(overview: dict[str, Any] | None) -> list[str]:
+    dimensions = overview.get("dimensions") if isinstance(overview, dict) else []
+    return [
+        str(dim.get("concept", "")).lower()
+        for dim in dimensions
+        if isinstance(dim, dict) and str(dim.get("concept", "")).strip()
+    ]
+
+
+def _build_retry_params_from_overview(
+    params: dict[str, Any],
+    overview: dict[str, Any] | None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    required = _required_dimension_concepts(overview)
+    if not required:
+        return params, None
+
+    template = _infer_query_template("unknown", overview)
+    adjusted = dict(params)
+    present_map = {str(key).strip().lower(): key for key in adjusted}
+    added: dict[str, Any] = {}
+    removed: dict[str, Any] = {}
+
+    for concept in required:
+        if concept in present_map:
+            continue
+        if concept not in template:
+            continue
+        adjusted[concept] = template[concept]
+        added[concept] = template[concept]
+
+    allowed_passthrough = {"select"}
+    required_set = set(required)
+    for key in list(adjusted.keys()):
+        key_norm = str(key).strip().lower()
+        if key_norm in required_set or key_norm in allowed_passthrough:
+            continue
+        removed[key] = adjusted.pop(key)
+
+    if adjusted == params:
+        return params, None
+
+    return adjusted, {
+        "dimensionAutoAdjust": {
+            "requiredDimensions": sorted(required_set),
+            "added": added,
+            "removed": removed,
+            "adjustedParams": adjusted,
+        }
+    }
 
 
 def _normalize_query_params(
@@ -696,8 +743,10 @@ def _query_error_payload(
     err: str,
     params: dict[str, Any],
     query_adjusted: dict[str, Any] | None,
+    overview: dict[str, Any] | None = None,
 ) -> tuple[int, dict[str, Any]]:
-    overview = _fetch_dataset_overview(dataset)
+    if overview is None:
+        overview = _fetch_dataset_overview(dataset)
     missing, template = _missing_dimensions_message(params, overview)
     base_hint = "Use nomis.datasets with dataset=<id> to inspect queryTemplate and dimensions."
     if missing:
@@ -1005,17 +1054,26 @@ def _query(payload: dict[str, Any]) -> ToolResult:
     if err:
         err_lower = err.lower()
         if "incomplete" in err_lower or "cannot create query" in err_lower:
-            adjusted = None
-            adjusted_meta = None
-            if query_adjusted is None:
-                resolved_retry = _maybe_resolve_gss_geographies(dataset, params_dict)
-                if resolved_retry:
-                    adjusted, adjusted_meta = resolved_retry
-            if adjusted:
+            overview = _fetch_dataset_overview(dataset)
+            adjusted = dict(params_dict)
+            adjusted_meta: dict[str, Any] = {}
+            overview_adjusted, overview_meta = _build_retry_params_from_overview(adjusted, overview)
+            if overview_meta:
+                adjusted = overview_adjusted
+                adjusted_meta.update(overview_meta)
+            resolved_retry = _maybe_resolve_gss_geographies(dataset, adjusted)
+            if resolved_retry:
+                adjusted, geography_meta = resolved_retry
+                adjusted_meta.update(geography_meta)
+            if adjusted != params_dict:
                 retry_status, retry_data = nomis_client.get_json(_build_url(path), params=adjusted)
                 if retry_status == 200:
                     retry_err = _extract_nomis_error(retry_data)
                     if not retry_err:
+                        merged_adjusted: dict[str, Any] = {}
+                        if query_adjusted is not None:
+                            merged_adjusted.update(query_adjusted)
+                        merged_adjusted.update(adjusted_meta)
                         result: dict[str, Any] = {
                             "live": True,
                             "dataset": dataset,
@@ -1023,21 +1081,22 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                             "data": retry_data,
                             "hints": [
                                 (
-                                    "NOMIS expects numeric geography IDs; the query was retried after "
-                                    "resolving GSS codes to NOMIS ids."
+                                    "NOMIS query parameters were auto-adjusted and retried after an "
+                                    "incomplete/invalid query response."
                                 )
                             ],
                         }
-                        if adjusted_meta is not None:
-                            result["queryAdjusted"] = adjusted_meta
-                        elif query_adjusted is not None:
-                            result["queryAdjusted"] = query_adjusted
+                        if merged_adjusted:
+                            result["queryAdjusted"] = merged_adjusted
                         return 200, result
+            merged_adjusted = dict(query_adjusted or {})
+            merged_adjusted.update(adjusted_meta)
             return _query_error_payload(
                 dataset=dataset,
                 err=err,
                 params=params_dict,
-                query_adjusted=query_adjusted,
+                query_adjusted=merged_adjusted or None,
+                overview=overview,
             )
         return 400, {"isError": True, "code": "NOMIS_QUERY_ERROR", "message": err}
     result: dict[str, Any] = {"live": True, "dataset": dataset, "format": fmt, "data": data}

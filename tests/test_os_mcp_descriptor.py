@@ -35,3 +35,12 @@ def test_os_mcp_descriptor_invalid_include_tools():
     assert resp.status_code == 400
     body = resp.json()
     assert body.get("code") == "INVALID_INPUT"
+
+
+def test_os_mcp_descriptor_accepts_stats_category_alias():
+    resp = client.post("/tools/call", json={"tool": "os_mcp.descriptor", "category": "stats"})
+    assert resp.status_code == 200
+    body = resp.json()
+    tool_search = body.get("toolSearch", {})
+    assert "error" not in tool_search
+    assert tool_search.get("filtered_category") == "statistics"

@@ -190,6 +190,71 @@ def test_nomis_query_error_surface_includes_guidance(monkeypatch):
     assert "queryAdjusted" in body
 
 
+def test_nomis_query_autoretries_with_dimension_autoadjustments(monkeypatch):
+    from tools import nomis_common
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        if url.endswith(
+            "/dataset/NM_2028_1.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, {
+                "overview": {
+                    "dimensions": {
+                        "dimension": [
+                            {"concept": "time", "codes": {"code": [{"value": "2021"}]}},
+                            {"concept": "geography", "codes": {"code": []}},
+                            {
+                                "concept": "c_sex",
+                                "codes": {"code": [{"value": "0"}, {"value": "1"}, {"value": "2"}]},
+                            },
+                            {
+                                "concept": "measures",
+                                "codes": {"code": [{"value": "20100"}, {"value": "20301"}]},
+                            },
+                        ]
+                    }
+                }
+            }
+
+        if url.endswith("/dataset/NM_2028_1.jsonstat.json"):
+            params = params or {}
+            if (
+                params.get("geography") == "E08000026"
+                and params.get("time") == "2021"
+                and params.get("c_sex") == "0"
+                and params.get("measures") == "20100"
+                and "c2021_age_92" not in params
+            ):
+                return 200, {"value": {"0": 123}}
+            return 200, {"error": "Cannot create query"}
+
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_2028_1",
+            "params": {
+                "geography": "E08000026",
+                "c2021_age_92": "0",
+                "measures": "20100",
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["value"]["0"] == 123
+    adjusted = body.get("queryAdjusted", {}).get("dimensionAutoAdjust", {})
+    assert adjusted.get("added") == {"time": "2021", "c_sex": "0"}
+    assert adjusted.get("removed", {}).get("c2021_age_92") == "0"
+
+
 def test_nomis_concepts_and_codelists_use_sdmx_json_endpoints(monkeypatch):
     from tools import nomis_common
     from server.config import settings

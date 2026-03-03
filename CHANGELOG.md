@@ -43,6 +43,13 @@ All notable changes to this project will be documented in this file.
   model-generated params (`date` -> `time`, dropping `cell` for JSON-stat),
   and returning actionable `NOMIS_QUERY_ERROR` guidance with
   `missingDimensions`, `suggestedParams`, and dataset-specific measure hints.
+- Extended `nomis.query` recovery for incomplete/invalid queries by adding an
+  overview-driven auto-retry path that fills missing required dimensions,
+  removes unknown dimension keys, and reports adjustments in
+  `queryAdjusted.dimensionAutoAdjust`.
+- Added tool-search category alias normalization (`stats` -> `statistics`) so
+  `os_mcp.descriptor`/tool search filters remain stable for constrained client
+  payloads that use shorthand category names.
 - Updated troubleshooting docs with the new wrapper key-resolution order and
   restart guidance for Claude Desktop after key rotation.
 - Updated the Svelte playground UI preview host controls to expose explicit
