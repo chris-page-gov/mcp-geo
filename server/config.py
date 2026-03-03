@@ -1,3 +1,7 @@
+import os
+from collections.abc import MutableMapping
+from pathlib import Path
+
 try:
     from dotenv import load_dotenv
 except ImportError:  # pragma: no cover - optional dependency fallback
@@ -97,7 +101,28 @@ class Settings(BaseSettings):
         "extra": "ignore",
     }
 
+
+def hydrate_env_secret_from_file(
+    key: str,
+    environ: MutableMapping[str, str] | None = None,
+) -> None:
+    env = environ if environ is not None else os.environ
+    value = (env.get(key) or "").strip()
+    if value:
+        return
+    file_path = (env.get(f"{key}_FILE") or "").strip()
+    if not file_path:
+        return
+    try:
+        file_value = Path(file_path).expanduser().read_text(encoding="utf-8").strip()
+    except OSError:
+        return
+    if file_value:
+        env[key] = file_value
+
+
 load_dotenv()
+hydrate_env_secret_from_file("OS_API_KEY")
 
 
 settings = Settings()

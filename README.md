@@ -204,7 +204,8 @@ Claude Desktop config example (STDIO transport):
     "mcp-geo": {
       "command": "/absolute/path/to/mcp-geo/scripts/claude-mcp-local",
       "env": {
-        "OS_API_KEY": "your-api-key-here",
+        "OS_API_KEY": "${env:OS_API_KEY}",
+        "OS_API_KEY_FILE": "${env:OS_API_KEY_FILE}",
         "MCP_STDIO_UI_SUPPORTED": "1",
         "MCP_STDIO_FRAMING": "line",
         "MCP_STDIO_ELICITATION_ENABLED": "1"
@@ -216,6 +217,8 @@ Claude Desktop config example (STDIO transport):
 
 The wrapper script starts PostGIS locally (Docker), builds the image if needed,
 and runs STDIO with the boundary cache enabled.
+Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
+are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in

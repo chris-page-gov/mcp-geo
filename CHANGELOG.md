@@ -35,6 +35,10 @@ All notable changes to this project will be documented in this file.
   without hardcoding secrets in MCP config, using fallback resolution from
   process env, `*_FILE` env, macOS `launchctl getenv`, and repo `.env`
   (`MCP_GEO_ENV_FILE` override supported).
+- Added direct server support for `OS_API_KEY_FILE` in `server/config.py` and
+  updated MCP templates/docs (`mcp.json`, `.vscode/mcp.json`, `.env.example`,
+  `README.md`, `docs/getting_started.md`, `docs/vscode.md`) so file-based key
+  injection can be used consistently across wrapper and non-wrapper launches.
 - Updated troubleshooting docs with the new wrapper key-resolution order and
   restart guidance for Claude Desktop after key rotation.
 - Updated the Svelte playground UI preview host controls to expose explicit

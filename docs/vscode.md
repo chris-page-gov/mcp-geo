@@ -29,16 +29,19 @@ cp .vscode/mcp-geo.toolsets.jsonc \
   "$HOME/Library/Application Support/Code/User/prompts/mcp-geo.toolsets.jsonc"
 ```
 
-The workspace config reads `OS_API_KEY` from `${env:OS_API_KEY}`.
+The workspace config reads both `OS_API_KEY` and `OS_API_KEY_FILE` from the
+host environment (`${env:OS_API_KEY}` / `${env:OS_API_KEY_FILE}`).
 Important: for MCP servers, VS Code uses the host app process environment.
 Window reload does not re-read shell exports from a terminal you opened later.
 Use one of:
 
 - define `OS_API_KEY` before launching VS Code, or
+- define `OS_API_KEY_FILE` to a readable local secret file path before
+  launching VS Code, or
 - keep `OS_API_KEY` in repo `.env` (loaded by `server/config.py`).
 
-If you change `OS_API_KEY`, restart the MCP server from the VS Code MCP Servers
-panel so the new value is picked up.
+If you change `OS_API_KEY` or `OS_API_KEY_FILE`, restart the MCP server from
+the VS Code MCP Servers panel so the new value is picked up.
 
 Note: `scripts/vscode_mcp_stdio.py` exists because VS Code may launch MCP stdio
 servers using the host Python. On macOS, it will automatically prefer the repo

@@ -21,6 +21,7 @@ git submodule update --init --recursive
 
 Set env vars for live data when you have keys:
 - `OS_API_KEY` (required) for Ordnance Survey tools
+- `OS_API_KEY_FILE` (optional) path to a local secret file (used when `OS_API_KEY` is unset)
 - `ONS_LIVE_ENABLED=true` for live ONS datasets
 - `LOG_JSON=true` to force JSON logs (now default)
 - `MCP_TOOLS_DEFAULT_TOOLSET=starter` to reduce startup `tools/list` payloads for STDIO clients
@@ -144,7 +145,8 @@ If you prefer STDIO instead, use the repo wrapper:
 1) Set `Transport Type` to `STDIO`.
 2) Set `Command` to `./scripts/os-mcp`.
 3) In `Environment Variables`, add:
-   - `OS_API_KEY` (required for OS tools)
+   - `OS_API_KEY` (required for OS tools), or
+   - `OS_API_KEY_FILE` (path to a file containing the OS key)
    - `ONS_LIVE_ENABLED=true` (optional, enables live ONS tools)
 4) Click `Connect`.
 
@@ -421,7 +423,8 @@ Claude Desktop config example:
     "mcp-geo": {
       "command": "/absolute/path/to/mcp-geo/scripts/claude-mcp-local",
       "env": {
-        "OS_API_KEY": "your-api-key-here",
+        "OS_API_KEY": "${env:OS_API_KEY}",
+        "OS_API_KEY_FILE": "${env:OS_API_KEY_FILE}",
         "MCP_STDIO_UI_SUPPORTED": "1",
         "MCP_STDIO_FRAMING": "line",
         "MCP_STDIO_ELICITATION_ENABLED": "1"
@@ -433,6 +436,8 @@ Claude Desktop config example:
 
 The wrapper starts PostGIS in Docker, builds the image if needed, and uses
 `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` for the cache.
+Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
+are set, `OS_API_KEY` wins).
 
 Control rebuilds with `MCP_GEO_DOCKER_BUILD`:
 - `missing` (default): build only when the image is absent.
