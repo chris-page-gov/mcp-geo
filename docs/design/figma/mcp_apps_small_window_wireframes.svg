@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="1060" viewBox="0 0 1040 1060" role="img" aria-label="MCP-Apps compact wireframes 320 by 500">
+  <defs>
+    <style><![CDATA[
+      .canvas { fill: #f3f5f7; }
+      .frame { fill: #ffffff; stroke: #1b2a35; stroke-width: 2; }
+      .header { fill: #1b2a35; }
+      .status { fill: #dce6ef; }
+      .primary { fill: #0f6d8f; }
+      .panel { fill: #eef3f6; stroke: #c4d0da; stroke-width: 1; }
+      .map { fill: #e8f0e8; stroke: #b3c3b3; stroke-width: 1; }
+      .text { font: 12px 'IBM Plex Sans', Arial, sans-serif; fill: #0f1c24; }
+      .label { font: 11px 'IBM Plex Sans', Arial, sans-serif; fill: #ffffff; }
+      .title { font: 13px 'IBM Plex Sans', Arial, sans-serif; font-weight: 700; fill: #ffffff; }
+      .frame-title { font: 12px 'IBM Plex Sans', Arial, sans-serif; font-weight: 700; fill: #1b2a35; }
+    ]]></style>
+  </defs>
+
+  <rect class="canvas" x="0" y="0" width="1040" height="1060" />
+
+  <g transform="translate(20,20)">
+    <text class="frame-title" x="0" y="-6">Boundary Explorer compact (320x500)</text>
+    <rect class="frame" x="0" y="0" width="320" height="500" rx="12" />
+    <rect class="header" x="0" y="0" width="320" height="44" rx="12" />
+    <text class="title" x="12" y="27">Boundary Explorer</text>
+    <rect class="status" x="12" y="56" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="74">Status and host mode</text>
+    <rect class="panel" x="12" y="96" width="296" height="120" rx="8" />
+    <text class="text" x="18" y="116">Search + level controls</text>
+    <rect class="map" x="12" y="228" width="296" height="184" rx="8" />
+    <text class="text" x="18" y="248">Map viewport</text>
+    <rect class="primary" x="12" y="424" width="296" height="36" rx="8" />
+    <text class="label" x="18" y="447">Primary action</text>
+    <rect class="panel" x="12" y="466" width="296" height="22" rx="6" />
+  </g>
+
+  <g transform="translate(360,20)">
+    <text class="frame-title" x="0" y="-6">Geography Selector compact (320x500)</text>
+    <rect class="frame" x="0" y="0" width="320" height="500" rx="12" />
+    <rect class="header" x="0" y="0" width="320" height="44" rx="12" />
+    <text class="title" x="12" y="27">Geography Selector</text>
+    <rect class="status" x="12" y="56" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="74">Mode, location, warnings</text>
+    <rect class="panel" x="12" y="96" width="296" height="140" rx="8" />
+    <text class="text" x="18" y="116">Selected area + filters</text>
+    <rect class="map" x="12" y="248" width="296" height="164" rx="8" />
+    <text class="text" x="18" y="268">Map viewport</text>
+    <rect class="primary" x="12" y="424" width="296" height="36" rx="8" />
+    <text class="label" x="18" y="447">Confirm selection</text>
+    <rect class="panel" x="12" y="466" width="296" height="22" rx="6" />
+  </g>
+
+  <g transform="translate(700,20)">
+    <text class="frame-title" x="0" y="-6">Statistics Dashboard compact (320x500)</text>
+    <rect class="frame" x="0" y="0" width="320" height="500" rx="12" />
+    <rect class="header" x="0" y="0" width="320" height="44" rx="12" />
+    <text class="title" x="12" y="27">Statistics Dashboard</text>
+    <rect class="status" x="12" y="56" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="74">Dataset + period</text>
+    <rect class="panel" x="12" y="96" width="296" height="90" rx="8" />
+    <text class="text" x="18" y="116">KPI cards (2x2)</text>
+    <rect class="panel" x="12" y="196" width="296" height="96" rx="8" />
+    <text class="text" x="18" y="216">Chart 1</text>
+    <rect class="panel" x="12" y="302" width="296" height="96" rx="8" />
+    <text class="text" x="18" y="322">Chart 2</text>
+    <rect class="primary" x="12" y="424" width="296" height="36" rx="8" />
+    <text class="label" x="18" y="447">Refresh data</text>
+    <rect class="panel" x="12" y="466" width="296" height="22" rx="6" />
+  </g>
+
+  <g transform="translate(20,540)">
+    <text class="frame-title" x="0" y="-6">Simple Map Lab compact (320x500)</text>
+    <rect class="frame" x="0" y="0" width="320" height="500" rx="12" />
+    <rect class="header" x="0" y="0" width="320" height="44" rx="12" />
+    <text class="title" x="12" y="27">Simple Map Lab</text>
+    <rect class="status" x="12" y="56" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="74">Auth mode + diagnostics</text>
+    <rect class="panel" x="12" y="96" width="296" height="124" rx="8" />
+    <text class="text" x="18" y="116">Mode + style + credentials</text>
+    <rect class="map" x="12" y="232" width="296" height="180" rx="8" />
+    <text class="text" x="18" y="252">Map viewport</text>
+    <rect class="primary" x="12" y="424" width="296" height="36" rx="8" />
+    <text class="label" x="18" y="447">Load map</text>
+    <rect class="panel" x="12" y="466" width="296" height="22" rx="6" />
+  </g>
+
+  <g transform="translate(360,540)">
+    <text class="frame-title" x="0" y="-6">Feature Inspector compact (320x500)</text>
+    <rect class="frame" x="0" y="0" width="320" height="500" rx="12" />
+    <rect class="header" x="0" y="0" width="320" height="44" rx="12" />
+    <text class="title" x="12" y="27">Feature Inspector</text>
+    <rect class="status" x="12" y="56" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="74">Feature id + collection</text>
+    <rect class="map" x="12" y="96" width="296" height="184" rx="8" />
+    <text class="text" x="18" y="116">Feature geometry</text>
+    <rect class="panel" x="12" y="292" width="296" height="120" rx="8" />
+    <text class="text" x="18" y="312">Key properties + linked ids</text>
+    <rect class="primary" x="12" y="424" width="296" height="36" rx="8" />
+    <text class="label" x="18" y="447">Open raw payload</text>
+    <rect class="panel" x="12" y="466" width="296" height="22" rx="6" />
+  </g>
+
+  <g transform="translate(700,540)">
+    <text class="frame-title" x="0" y="-6">Route Planner compact (320x500)</text>
+    <rect class="frame" x="0" y="0" width="320" height="500" rx="12" />
+    <rect class="header" x="0" y="0" width="320" height="44" rx="12" />
+    <text class="title" x="12" y="27">Route Planner</text>
+    <rect class="status" x="12" y="56" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="74">Transport mode + status</text>
+    <rect class="panel" x="12" y="96" width="296" height="112" rx="8" />
+    <text class="text" x="18" y="116">Start / end inputs</text>
+    <rect class="map" x="12" y="220" width="296" height="156" rx="8" />
+    <text class="text" x="18" y="240">Route map</text>
+    <rect class="panel" x="12" y="384" width="296" height="28" rx="6" />
+    <text class="text" x="18" y="402">Turn list preview</text>
+    <rect class="primary" x="12" y="424" width="296" height="36" rx="8" />
+    <text class="label" x="18" y="447">Calculate route</text>
+    <rect class="panel" x="12" y="466" width="296" height="22" rx="6" />
+  </g>
+</svg>

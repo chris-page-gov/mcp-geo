@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MCP Geo Compact UI Proposals (Native)</title>
+    <style>
+      :root {
+        --bg: #f2f4f6;
+        --card: #ffffff;
+        --ink: #13202b;
+        --muted: #40525f;
+        --line: #ccd6dd;
+        --header: #172f41;
+        --status: #dce5ed;
+        --panel: #e9eff3;
+        --map: #dfe8df;
+        --cta: #0f6f8f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #ffffff 0%, var(--bg) 70%);
+        color: var(--ink);
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 42px;
+        line-height: 1.1;
+      }
+
+      .subtitle {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 24px;
+      }
+
+      .meta {
+        margin-top: 18px;
+        display: grid;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 20px;
+      }
+
+      .meta strong {
+        color: var(--ink);
+      }
+
+      .block {
+        margin-top: 20px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .block h2 {
+        margin: 0;
+        font-size: 32px;
+      }
+
+      .block p {
+        margin: 10px 0 0;
+        font-size: 24px;
+        color: var(--muted);
+      }
+
+      .grid {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(320px, 1fr));
+        gap: 16px;
+      }
+
+      .wf {
+        border: 2px solid #263543;
+        border-radius: 16px;
+        background: #f8fafb;
+        width: 320px;
+        height: 500px;
+        padding: 10px;
+        position: relative;
+      }
+
+      .wf-title {
+        position: absolute;
+        top: -28px;
+        left: 2px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .wf-header {
+        height: 48px;
+        background: var(--header);
+        border-radius: 10px;
+      }
+
+      .wf-status {
+        margin-top: 10px;
+        height: 30px;
+        background: var(--status);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 12px;
+        color: #243746;
+      }
+
+      .wf-panel {
+        margin-top: 10px;
+        background: var(--panel);
+        border-radius: 10px;
+        border: 1px solid #c2ced7;
+        padding: 8px;
+        font-size: 12px;
+        color: #263a48;
+      }
+
+      .h-90 { height: 90px; }
+      .h-110 { height: 110px; }
+      .h-120 { height: 120px; }
+      .h-130 { height: 130px; }
+      .h-140 { height: 140px; }
+      .h-160 { height: 160px; }
+      .h-170 { height: 170px; }
+      .h-180 { height: 180px; }
+      .h-70 { height: 70px; }
+
+      .wf-map {
+        margin-top: 10px;
+        background: var(--map);
+        border-radius: 10px;
+        border: 1px solid #bccbbc;
+        padding: 8px;
+        font-size: 12px;
+        color: #2e473b;
+      }
+
+      .wf-cta {
+        margin-top: 10px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--cta);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .wf-foot {
+        margin-top: 8px;
+        height: 22px;
+        border-radius: 8px;
+        background: #dde5ea;
+        border: 1px solid #cad5dc;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <h1>MCP Geo Compact UI Proposals</h1>
+      <p class="subtitle">Native HTML wireframe capture (no embedded SVG text).</p>
+
+      <div class="meta">
+        <div><strong>Design budget:</strong> 320 x 500 primary, 360 x 500 comfort.</div>
+        <div><strong>Policy:</strong> Fullscreen optional; inline flow must work first.</div>
+        <div><strong>Included:</strong> Boundary Explorer, Geography Selector, Statistics Dashboard, Simple Map Lab, Feature Inspector, Route Planner.</div>
+      </div>
+
+      <section class="block">
+        <h2>Compact Frame Set</h2>
+        <p>Each frame keeps title, status, visual viewport, and primary action visible in small windows.</p>
+
+        <div class="grid">
+          <div class="wf">
+            <div class="wf-title">Boundary Explorer (320 x 500)</div>
+            <div class="wf-header"></div>
+            <div class="wf-status">Host mode + warnings</div>
+            <div class="wf-panel h-120">Search + level controls</div>
+            <div class="wf-map h-170">Map viewport</div>
+            <div class="wf-cta">Primary action</div>
+            <div class="wf-foot"></div>
+          </div>
+
+          <div class="wf">
+            <div class="wf-title">Geography Selector (320 x 500)</div>
+            <div class="wf-header"></div>
+            <div class="wf-status">Selected area + state</div>
+            <div class="wf-panel h-130">Selection and filter controls</div>
+            <div class="wf-map h-160">Map viewport</div>
+            <div class="wf-cta">Confirm selection</div>
+            <div class="wf-foot"></div>
+          </div>
+
+          <div class="wf">
+            <div class="wf-title">Statistics Dashboard (320 x 500)</div>
+            <div class="wf-header"></div>
+            <div class="wf-status">Dataset + period</div>
+            <div class="wf-panel h-90">KPI card strip</div>
+            <div class="wf-panel h-90">Chart area A</div>
+            <div class="wf-panel h-90">Chart area B</div>
+            <div class="wf-cta">Refresh data</div>
+            <div class="wf-foot"></div>
+          </div>
+
+          <div class="wf">
+            <div class="wf-title">Simple Map Lab (320 x 500)</div>
+            <div class="wf-header"></div>
+            <div class="wf-status">Auth mode + diagnostics</div>
+            <div class="wf-panel h-120">Map mode + style + credentials</div>
+            <div class="wf-map h-170">Map viewport</div>
+            <div class="wf-cta">Load map</div>
+            <div class="wf-foot"></div>
+          </div>
+
+          <div class="wf">
+            <div class="wf-title">Feature Inspector (320 x 500)</div>
+            <div class="wf-header"></div>
+            <div class="wf-status">Feature ID + collection</div>
+            <div class="wf-map h-180">Geometry viewport</div>
+            <div class="wf-panel h-110">Properties + linked IDs</div>
+            <div class="wf-cta">Open raw payload</div>
+            <div class="wf-foot"></div>
+          </div>
+
+          <div class="wf">
+            <div class="wf-title">Route Planner (320 x 500)</div>
+            <div class="wf-header"></div>
+            <div class="wf-status">Transport mode + status</div>
+            <div class="wf-panel h-110">Start/end input block</div>
+            <div class="wf-map h-140">Route map</div>
+            <div class="wf-panel h-70">Turn-list preview</div>
+            <div class="wf-cta">Calculate route</div>
+            <div class="wf-foot"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  </body>
+</html>

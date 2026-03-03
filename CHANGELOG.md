@@ -13,6 +13,21 @@ All notable changes to this project will be documented in this file.
   vs API-key fallback tests and PMTiles trial execution.
 
 ### Changed
+- Updated the Svelte playground UI preview host controls to expose explicit
+  compact-window testing mode (`auto` / `force compact` / `force regular`) with
+  configurable compact width/height passed via `hostContext.containerDimensions`.
+- Refined compact-window UX across playground + geography selector:
+  - fixed maximize behavior to preserve compact preview dimensions while
+    showing side-by-side host context
+  - added adjustable list-pane width control in playground test view
+  - reduced playground hero/header vertical footprint
+  - consolidated UI preview diagnostics into the Debug tab
+  - added map-first compact workflow tabs (`Map/Search/Results/Info/Debug/Help`)
+    in `ui/geography_selector.html`
+  - moved zoom ladder behind an icon toggle to prevent map obstruction.
+- Added root markdownlint config (`.markdownlint.json`) to suppress
+  line-length-only noise (`MD013`) and validated `README.md` syntax with fence
+  language annotations and ordered-list normalization.
 - Updated vendored specification/reference submodules to current upstream
   commits for `modelcontextprotocol`, `ext-apps`, `inspector`, and
   `agentskills` under `docs/vendor/`.
@@ -39,6 +54,89 @@ All notable changes to this project will be documented in this file.
   respects the selected `style` query parameter (instead of always returning
   the default look), and corrected rewritten vector tile templates to
   `{z}/{y}/{x}` ordering.
+- Added vendored MCP auth-extension spec submodule
+  `docs/vendor/mcp/repos/ext-auth` and recorded the draft auth-spec tracking
+  entry in `docs/spec_tracking.md`.
+- Added MCP-Apps small-window review and redesign artifacts:
+  `docs/reports/mcp_apps_window_constraints_review_2026-03-01.md` plus
+  Figma-importable wireframes and handoff notes in `docs/design/figma/`.
+- Added Figma MCP setup/capture runbook
+  `docs/design/figma/mcp_figma_setup_and_capture_runbook.md`, including
+  restart/auth verification, local capture sequence, and SVG-text fidelity
+  troubleshooting guidance.
+- Expanded compact-window review with an implementation-focused design action
+  plan per UI and updated Figma status based on live capture results.
+- Added compact-window unattended delivery planning artifacts:
+  - implementation + test strategy:
+    `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`
+  - strict acceptance checklist (machine-readable):
+    `docs/reports/compact_windows_acceptance_checklist_2026-03-01.json`
+  - strict baseline run report:
+    `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`
+  - baseline evidence command run (`3` focused UI tests passed; strict compact
+    gate remains `0/6` pre-implementation by policy).
+- Added compact Playwright scaffold infrastructure for unattended execution:
+  - new configs: `playground/playwright.compact.config.js`,
+    `playground/playwright.compact-matrix.config.js`
+  - new scripts: `npm --prefix playground run test:compact` and
+    `npm --prefix playground run test:compact-matrix`
+  - new suite scaffolding under `playground/tests/compact_windows/` with
+    deterministic MCP bridge/profile support and passing baseline runs
+    (`8 passed` compact smoke, `6 passed` compact matrix).
+- Added the shared compact-window contract implementation for all six UIs:
+  - new shared assets: `ui/shared/compact_contract.css` and
+    `ui/shared/compact_contract.js`
+  - all UI pages now wire compact host-context handling and stable
+    `data-testid` status/CTA anchors used by unattended compact validation.
+- Hardened `ui/boundary_explorer.html` for compact unattended coverage:
+  - added explicit UPRN attribute filters (address contains, classification,
+    scope, and flag toggles for address/active/residential-like)
+  - added deterministic local import status/error reporting for
+    GeoJSON/CSV/ZIP flows with test IDs for automation
+  - extended `playground/tests/boundary_explorer_local_layers.spec.js` to
+    assert filter behavior and import success/failure messaging.
+- Hardened `ui/geography_selector.html` for compact unattended coverage:
+  - added deterministic search flow-state status (`loading`, `empty`,
+    `error`, `success`) and explicit UI hooks for style/opacity/layer controls
+  - added stable test IDs for results, diagnostics, layer toggles, and
+    selection actions
+  - extended `playground/tests/geography_selector.spec.js` to assert flow
+    status plus style/opacity/layer behavior under host simulation.
+- Hardened `ui/statistics_dashboard.html` for compact unattended coverage:
+  - added deterministic dashboard flow-state reporting across dataset search,
+    edition/version loading, dimension option loading, and comparison query runs
+  - added compact test hooks for dataset search/results and query error output
+  - added `playground/tests/statistics_dashboard.spec.js` to verify success,
+    empty-field validation, and query-state transitions end to end.
+- Hardened `ui/simple_map.html` for compact unattended coverage:
+  - added explicit auth-mode reporting (`bearer`, `api_key`, `server_env`) and
+    surfaced auth/style state in diagnostics output
+  - added stable compact test hooks for style selection, auth inputs, status,
+    and diagnostics panels
+  - added `playground/tests/simple_map.spec.js` to validate browser-token,
+    API-key, and server-env fallback auth paths deterministically.
+- Promoted `ui/feature_inspector.html` and `ui/route_planner.html` from static
+  placeholders to MCP host-aware compact flows:
+  - implemented `ui/initialize`, host-context merge, display-mode request
+    handling, and fullscreen fallback behavior
+  - added deterministic interactive contracts for feature lookup and route
+  planning (with structured payload output)
+  - added focused regression tests:
+    `playground/tests/feature_inspector.spec.js` and
+    `playground/tests/route_planner.spec.js`.
+- Completed CW-7 unattended compact acceptance hardening:
+  - replaced compact scaffold tests with strict acceptance-mapped suites in
+    `playground/tests/compact_windows/smoke.spec.js` and
+    `playground/tests/compact_windows/compact_matrix.spec.js`
+  - added reusable compact harness utilities
+    (`playground/tests/compact_windows/support/compact_assertions.js`) and a
+    richer argument-aware deterministic MCP bridge
+    (`playground/tests/compact_windows/support/mcp_bridge.js`)
+  - updated compact contract behavior to provide docked status fallback in
+    constrained windows (`ui/shared/compact_contract.{js,css}`)
+  - validated with `test:compact` (`18 passed`), `test:compact-matrix`
+    (`36 passed`), full Playwright (`29 passed`), and full pytest
+    (`930 passed`, `6 skipped`, coverage `90.01%`).
 
 ## [0.4.0] - 2026-02-25
 

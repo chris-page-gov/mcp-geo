@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Feature Inspector</title>
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         --bg-1: #f3f8f5;
@@ -63,6 +64,28 @@
         text-transform: uppercase;
       }
 
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-action {
+        border-radius: 999px;
+        border: 1px solid rgba(47, 125, 79, 0.35);
+        background: rgba(47, 125, 79, 0.08);
+        color: var(--accent);
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+      }
+
+      .status-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       .grid {
         display: grid;
         grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
@@ -82,6 +105,39 @@
       .panel h3 {
         margin: 0 0 12px;
         font-size: 15px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .field label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .field input,
+      .field select,
+      .action-row button {
+        font-family: var(--font);
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .action-row button.primary {
+        border-color: rgba(47, 125, 79, 0.45);
+        background: rgba(47, 125, 79, 0.12);
+        color: var(--accent);
       }
 
       .prop {
@@ -170,44 +226,365 @@
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
+    <div class="shell" data-compact-shell>
+      <header data-compact-header>
         <div>
           <div class="title">Feature Inspector</div>
           <div class="subtitle">Review properties, geometry, and linked identifiers.</div>
         </div>
-        <div class="badge">Inspector</div>
+        <div class="header-actions">
+          <button id="fullscreenToggle" class="status-action" type="button">Maximise</button>
+          <div class="badge" id="statusBadge" data-testid="status-strip">Awaiting host</div>
+        </div>
       </header>
 
-      <section class="grid">
-        <div class="panel">
+      <section class="grid" data-compact-grid>
+        <div class="panel" data-compact-panel>
+          <div class="field">
+            <label for="identifierInput">Identifier</label>
+            <input id="identifierInput" value="1000000001" />
+          </div>
+          <div class="field">
+            <label for="identifierType">Identifier type</label>
+            <select id="identifierType">
+              <option value="uprn">UPRN</option>
+              <option value="toid">TOID</option>
+              <option value="usrn">USRN</option>
+            </select>
+          </div>
+          <div class="action-row">
+            <button id="loadFeature" class="primary" type="button" data-testid="primary-cta" data-compact-cta>
+              Load feature
+            </button>
+            <button id="refreshPayload" type="button">Refresh payload</button>
+          </div>
           <h3>Key properties</h3>
-          <div class="prop"><span>Feature ID</span><span>osgb1000000</span></div>
-          <div class="prop"><span>Collection</span><span>bld-fts-buildingpart</span></div>
-          <div class="prop"><span>Status</span><span>active</span></div>
-          <div class="prop"><span>Last updated</span><span>2025-01-10</span></div>
+          <div class="prop"><span>Feature ID</span><span id="featureIdValue">osgb1000000</span></div>
+          <div class="prop"><span>Collection</span><span id="collectionValue">bld-fts-buildingpart</span></div>
+          <div class="prop"><span>Status</span><span id="featureStatusValue">active</span></div>
+          <div class="prop"><span>Last updated</span><span id="updatedValue">2025-01-10</span></div>
           <div class="linked">
-            <div class="chip">TOID: 1234</div>
-            <div class="chip">UPRN: 5678</div>
-            <div class="chip">USRN: 9012</div>
+            <div class="chip" id="toidChip">TOID: 1234</div>
+            <div class="chip" id="uprnChip">UPRN: 5678</div>
+            <div class="chip" id="usrnChip">USRN: 9012</div>
           </div>
           <div id="payload" class="payload">Waiting for MCP host payload...</div>
         </div>
 
-        <div class="map">
+        <div class="map" data-compact-panel data-compact-map data-testid="map-stage">
           <div class="badge" style="position: absolute; top: 32px; left: 32px">Map view</div>
         </div>
       </section>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script>
+      const pendingCalls = new Map();
+      let rpcId = 0;
+
+      const statusBadge = document.getElementById("statusBadge");
+      const fullscreenToggle = document.getElementById("fullscreenToggle");
+      const identifierInput = document.getElementById("identifierInput");
+      const identifierType = document.getElementById("identifierType");
+      const loadFeature = document.getElementById("loadFeature");
       const payload = document.getElementById("payload");
-      window.addEventListener("message", (event) => {
-        if (!event || !event.data) {
+      const refreshPayload = document.getElementById("refreshPayload");
+      const featureIdValue = document.getElementById("featureIdValue");
+      const collectionValue = document.getElementById("collectionValue");
+      const featureStatusValue = document.getElementById("featureStatusValue");
+      const updatedValue = document.getElementById("updatedValue");
+      const toidChip = document.getElementById("toidChip");
+      const uprnChip = document.getElementById("uprnChip");
+      const usrnChip = document.getElementById("usrnChip");
+
+      const state = {
+        hostReady: false,
+        displayMode: "inline",
+        availableDisplayModes: [],
+      };
+
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "feature_inspector",
+            statusSelector: "#statusBadge",
+            ctaSelector: "#loadFeature",
+          })
+        : null;
+      let lastMessage = { info: "Waiting for MCP host payload..." };
+
+      function setStatus(text) {
+        statusBadge.textContent = text;
+      }
+
+      function postToHost(message) {
+        if (window.parent) {
+          window.parent.postMessage(message, "*");
+        }
+      }
+
+      function rpcCall(method, params) {
+        rpcId += 1;
+        const id = rpcId;
+        postToHost({ jsonrpc: "2.0", id, method, params });
+        return new Promise((resolve, reject) => {
+          pendingCalls.set(id, { resolve, reject });
+          setTimeout(() => {
+            if (!pendingCalls.has(id)) {
+              return;
+            }
+            pendingCalls.delete(id);
+            reject(new Error("RPC timeout"));
+          }, 15000);
+        });
+      }
+
+      function rpcNotify(method, params) {
+        postToHost({ jsonrpc: "2.0", method, params });
+      }
+
+      function normalizeDisplayMode(mode) {
+        if (typeof mode !== "string") {
+          return null;
+        }
+        const normalized = mode.trim().toLowerCase();
+        if (!normalized) {
+          return null;
+        }
+        if (normalized === "inline" || normalized === "fullscreen" || normalized === "pip") {
+          return normalized;
+        }
+        return null;
+      }
+
+      function updateFullscreenControl() {
+        if (!fullscreenToggle) {
           return;
         }
-        payload.textContent = JSON.stringify(event.data, null, 2);
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        fullscreenToggle.disabled = !state.hostReady;
+        if (!state.hostReady) {
+          fullscreenToggle.textContent = "Maximise";
+          fullscreenToggle.title = "Waiting for host initialization";
+          return;
+        }
+        if (!canFullscreen) {
+          fullscreenToggle.textContent = "Try maximise";
+          fullscreenToggle.title = "Host did not advertise fullscreen support";
+          return;
+        }
+        fullscreenToggle.textContent =
+          state.displayMode === "fullscreen" ? "Exit maximise" : "Maximise";
+      }
+
+      function applyHostContext(hostContext) {
+        if (!hostContext || typeof hostContext !== "object") {
+          return;
+        }
+        if (compactContract) {
+          compactContract.mergeHostContext(hostContext);
+        }
+        if (Array.isArray(hostContext.availableDisplayModes)) {
+          state.availableDisplayModes = hostContext.availableDisplayModes
+            .map((mode) => normalizeDisplayMode(mode))
+            .filter(Boolean);
+        }
+        const mode = normalizeDisplayMode(hostContext.displayMode);
+        if (mode) {
+          state.displayMode = mode;
+        }
+        updateFullscreenControl();
+      }
+
+      async function toggleFullscreen() {
+        const targetMode = state.displayMode === "fullscreen" ? "inline" : "fullscreen";
+        try {
+          const result = await rpcCall("ui/request-display-mode", { mode: targetMode });
+          const resolvedMode = normalizeDisplayMode(result && result.mode);
+          if (resolvedMode) {
+            state.displayMode = resolvedMode;
+          }
+          updateFullscreenControl();
+        } catch (err) {
+          setStatus("Fullscreen unavailable");
+        }
+      }
+
+      function sanitizeToolName(toolName) {
+        if (typeof toolName !== "string") {
+          return toolName;
+        }
+        return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
+      }
+
+      function extractToolPayload(result) {
+        if (!result || typeof result !== "object") {
+          return result;
+        }
+        if (result.data && typeof result.data === "object") {
+          return result.data;
+        }
+        if (result.structuredContent && typeof result.structuredContent === "object") {
+          return result.structuredContent;
+        }
+        if (Array.isArray(result.content)) {
+          for (const block of result.content) {
+            if (!block || typeof block !== "object") {
+              continue;
+            }
+            if (block.type === "json" && block.json && typeof block.json === "object") {
+              return block.json;
+            }
+          }
+        }
+        return result;
+      }
+
+      async function requestTool(tool, args) {
+        try {
+          const result = await rpcCall("tools/call", { name: tool, arguments: args || {} });
+          return extractToolPayload(result);
+        } catch (err) {
+          const message = String(err?.message || "");
+          const sanitized = sanitizeToolName(tool);
+          const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
+          if (sanitized && sanitized !== tool && looksMissing) {
+            const result = await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+            return extractToolPayload(result);
+          }
+          throw err;
+        }
+      }
+
+      function summarizeLinkedIds(identifier, type, toolPayload) {
+        const payloadValue = toolPayload && typeof toolPayload === "object" ? toolPayload : {};
+        const linked = payloadValue.linked || payloadValue.identifiers || payloadValue;
+        const toid =
+          linked.toid ||
+          linked.TOID ||
+          (type === "toid" ? identifier : null) ||
+          "n/a";
+        const uprn =
+          linked.uprn ||
+          linked.UPRN ||
+          (type === "uprn" ? identifier : null) ||
+          "n/a";
+        const usrn =
+          linked.usrn ||
+          linked.USRN ||
+          (type === "usrn" ? identifier : null) ||
+          "n/a";
+        return { toid, uprn, usrn };
+      }
+
+      function setFeatureView(identifier, type, toolPayload) {
+        const now = new Date().toISOString().slice(0, 10);
+        featureIdValue.textContent = identifier || "unknown";
+        collectionValue.textContent = String(type || "linked-ids").toUpperCase();
+        featureStatusValue.textContent = "active";
+        updatedValue.textContent = now;
+        const linked = summarizeLinkedIds(identifier, type, toolPayload);
+        toidChip.textContent = `TOID: ${linked.toid}`;
+        uprnChip.textContent = `UPRN: ${linked.uprn}`;
+        usrnChip.textContent = `USRN: ${linked.usrn}`;
+      }
+
+      async function loadSelectedFeature() {
+        const identifier = String(identifierInput.value || "").trim();
+        const type = String(identifierType.value || "").trim();
+        if (!identifier) {
+          setStatus("Enter an identifier");
+          return;
+        }
+        setStatus("Loading feature...");
+        const fallback = {
+          requested: { identifier, type },
+          note: "Loaded local fallback view.",
+        };
+        try {
+          const response = await requestTool("os_linked_ids.get", {
+            identifier,
+            identifierType: type || undefined,
+          });
+          lastMessage = response || fallback;
+          payload.textContent = JSON.stringify(lastMessage, null, 2);
+          setFeatureView(identifier, type, lastMessage);
+          setStatus("Feature loaded");
+          rpcNotify("ui/notifications/initialized", { featureLoaded: true });
+        } catch (err) {
+          lastMessage = { ...fallback, error: String(err?.message || err) };
+          payload.textContent = JSON.stringify(lastMessage, null, 2);
+          setFeatureView(identifier, type, lastMessage);
+          setStatus("Feature loaded (fallback)");
+        }
+      }
+
+      refreshPayload.addEventListener("click", () => {
+        payload.textContent = JSON.stringify(lastMessage, null, 2);
       });
+
+      if (fullscreenToggle) {
+        fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
+      }
+      loadFeature.addEventListener("click", () => void loadSelectedFeature());
+
+      window.addEventListener("message", (event) => {
+        if (!event || !event.data || typeof event.data !== "object") {
+          return;
+        }
+        const message = event.data;
+        if (message.jsonrpc !== "2.0") {
+          return;
+        }
+        if (message.id !== undefined && (message.result !== undefined || message.error)) {
+          const pending = pendingCalls.get(message.id);
+          if (pending) {
+            pendingCalls.delete(message.id);
+            if (message.error) {
+              pending.reject(new Error(message.error.message || "RPC error"));
+            } else {
+              pending.resolve(message.result);
+            }
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/tool-input") {
+          const args = message.params?.arguments || message.params?.args || {};
+          if (args.identifier) {
+            identifierInput.value = String(args.identifier);
+          }
+          if (args.identifierType) {
+            identifierType.value = String(args.identifierType);
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/host-context-changed") {
+          applyHostContext(message.params || {});
+          return;
+        }
+      });
+
+      async function initializeUi() {
+        try {
+          const result = await rpcCall("ui/initialize", {
+            appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] },
+          });
+          state.hostReady = true;
+          applyHostContext(result?.hostContext || {});
+          setStatus("Host connected");
+          rpcNotify("ui/notifications/initialized", {});
+        } catch (err) {
+          setStatus("Host connection failed");
+          updateFullscreenControl();
+        }
+      }
+
+      updateFullscreenControl();
+      initializeUi();
+      window.__MCP_GEO_FEATURE_INSPECTOR__ = {
+        loadSelectedFeature,
+      };
     </script>
   </body>
 </html>

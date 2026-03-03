@@ -21,3 +21,6 @@
 [submodule "docs/vendor/agentskills"]
 	path = docs/vendor/agentskills
 	url = https://github.com/agentskills/agentskills.git
+[submodule "docs/vendor/mcp/repos/ext-auth"]
+	path = docs/vendor/mcp/repos/ext-auth
+	url = https://github.com/modelcontextprotocol/ext-auth.git

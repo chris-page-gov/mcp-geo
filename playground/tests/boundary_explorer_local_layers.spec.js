@@ -19,12 +19,16 @@ test("boundary explorer imports GeoJSON and Shapefile.zip local layers and appli
               lat: 51.505,
               lon: -0.12,
               address: "1 Test Street, London SW1A 1AA",
+              classification_code: "RD01",
+              logical_status: "1",
             },
             {
               uprn: "1000000002",
               lat: 51.5052,
               lon: -0.1198,
               address: "2 Test Street, London SW1A 1AA",
+              classification_code: "CM02",
+              logical_status: "2",
             },
           ],
         },
@@ -129,6 +133,8 @@ window.shp = async function () {
     const el = document.getElementById("highlightCount");
     return el && Number(el.textContent || "0") === 0;
   });
+  await page.selectOption("#uprnClassificationFilter", "RD01");
+  await expect(page.locator("#infoBanner")).toContainText("UPRN filters");
 
   const polygonGeoJson = JSON.stringify({
     type: "FeatureCollection",
@@ -149,6 +155,7 @@ window.shp = async function () {
     mimeType: "application/geo+json",
     buffer: Buffer.from(polygonGeoJson, "utf-8"),
   });
+  await expect(page.locator("#importStatus")).toContainText("Imported selection.geojson");
   await expect(page.locator("#localLayers")).toContainText("selection.geojson");
 
   await page.setInputFiles("#fileInput", {
@@ -156,7 +163,15 @@ window.shp = async function () {
     mimeType: "application/zip",
     buffer: Buffer.from("PK-test", "utf-8"),
   });
+  await expect(page.locator("#importStatus")).toContainText("Imported selection.zip");
   await expect(page.locator("#localLayers")).toContainText("selection.zip");
+
+  await page.setInputFiles("#fileInput", {
+    name: "selection.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("unsupported", "utf-8"),
+  });
+  await expect(page.locator("#importStatus")).toContainText("Import failed for selection.txt");
 
   await page.evaluate(() => {
     window.applyLocalLayerSelection({
@@ -169,5 +184,5 @@ window.shp = async function () {
     });
   });
   await expect(page.locator("#infoBanner")).toContainText("Selected by local layer");
-  await expect(page.locator("#highlightCount")).toHaveText("2");
+  await expect(page.locator("#highlightCount")).toHaveText("1");
 });

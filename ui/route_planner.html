@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Route Planner</title>
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         --bg-1: #eef5ff;
@@ -61,6 +62,28 @@
         font-size: 12px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-action {
+        border-radius: 999px;
+        border: 1px solid rgba(46, 109, 230, 0.35);
+        background: rgba(46, 109, 230, 0.08);
+        color: var(--accent);
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+      }
+
+      .status-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .grid {
@@ -134,6 +157,13 @@
         font-size: 14px;
       }
 
+      .field select {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        font-size: 14px;
+      }
+
       .cta {
         width: 100%;
         padding: 12px 16px;
@@ -184,32 +214,48 @@
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
+    <div class="shell" data-compact-shell>
+      <header data-compact-header>
         <div>
           <div class="title">Route Planner</div>
           <div class="subtitle">Plot a route and review turn by turn steps.</div>
         </div>
-        <div class="badge">Routing</div>
+        <div class="header-actions">
+          <button id="fullscreenToggle" class="status-action" type="button">Maximise</button>
+          <div class="badge" id="statusBadge" data-testid="status-strip">Awaiting host</div>
+        </div>
       </header>
 
-      <section class="grid">
-        <div class="map">
+      <section class="grid" data-compact-grid>
+        <div class="map" data-compact-panel data-compact-map data-testid="map-stage">
           <div class="badge" style="position: absolute; top: 32px; left: 32px">Route map</div>
         </div>
 
-        <aside class="panel">
+        <aside class="panel" data-compact-panel>
           <h3>Route inputs</h3>
           <div class="field">
-            <label>Start</label>
-            <input placeholder="Start coordinates or name" />
+            <label for="startInput">Start</label>
+            <input id="startInput" value="51.505,-0.120" placeholder="lat,lon" data-testid="route-start" />
           </div>
           <div class="field">
-            <label>End</label>
-            <input placeholder="End coordinates or name" />
+            <label for="endInput">End</label>
+            <input id="endInput" value="51.515,-0.100" placeholder="lat,lon" data-testid="route-end" />
           </div>
-          <button class="cta" type="button">Calculate route</button>
-          <div class="steps">
+          <div class="field">
+            <label for="routeMode">Mode</label>
+            <select id="routeMode" data-testid="route-mode">
+              <option value="car">Car</option>
+              <option value="walk">Walk</option>
+              <option value="cycle">Cycle</option>
+            </select>
+          </div>
+          <button class="cta" id="calculateRoute" type="button" data-testid="primary-cta" data-compact-cta>
+            Calculate route
+          </button>
+          <div id="flowStatus" class="steps" data-testid="flow-status">
+            <div>Idle. Enter coordinates and click Calculate route.</div>
+          </div>
+          <div id="routeSteps" class="steps">
             <div>1. Head north on Example Road</div>
             <div>2. Turn right onto Sample Street</div>
             <div>3. Arrive at destination</div>
@@ -219,14 +265,293 @@
       </section>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script>
+      const pendingCalls = new Map();
+      let rpcId = 0;
+
+      const statusBadge = document.getElementById("statusBadge");
+      const fullscreenToggle = document.getElementById("fullscreenToggle");
+      const startInput = document.getElementById("startInput");
+      const endInput = document.getElementById("endInput");
+      const routeMode = document.getElementById("routeMode");
       const payload = document.getElementById("payload");
-      window.addEventListener("message", (event) => {
-        if (!event || !event.data) {
+      const flowStatus = document.getElementById("flowStatus");
+      const routeSteps = document.getElementById("routeSteps");
+      const calculateRoute = document.getElementById("calculateRoute");
+      const state = {
+        hostReady: false,
+        displayMode: "inline",
+        availableDisplayModes: [],
+      };
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "route_planner",
+            statusSelector: "#statusBadge",
+            ctaSelector: "#calculateRoute",
+          })
+        : null;
+      let lastMessage = { info: "Waiting for MCP host payload..." };
+
+      function setStatus(text) {
+        statusBadge.textContent = text;
+      }
+
+      function setFlowStatus(stateName, text) {
+        flowStatus.dataset.state = stateName || "idle";
+        flowStatus.innerHTML = `<div>${text}</div>`;
+      }
+
+      function renderRouteSteps(items) {
+        routeSteps.innerHTML = "";
+        items.forEach((item, index) => {
+          const row = document.createElement("div");
+          row.textContent = `${index + 1}. ${item}`;
+          routeSteps.appendChild(row);
+        });
+      }
+
+      function postToHost(message) {
+        if (window.parent) {
+          window.parent.postMessage(message, "*");
+        }
+      }
+
+      function rpcCall(method, params) {
+        rpcId += 1;
+        const id = rpcId;
+        postToHost({ jsonrpc: "2.0", id, method, params });
+        return new Promise((resolve, reject) => {
+          pendingCalls.set(id, { resolve, reject });
+          setTimeout(() => {
+            if (!pendingCalls.has(id)) {
+              return;
+            }
+            pendingCalls.delete(id);
+            reject(new Error("RPC timeout"));
+          }, 15000);
+        });
+      }
+
+      function rpcNotify(method, params) {
+        postToHost({ jsonrpc: "2.0", method, params });
+      }
+
+      function normalizeDisplayMode(mode) {
+        if (typeof mode !== "string") {
+          return null;
+        }
+        const normalized = mode.trim().toLowerCase();
+        if (!normalized) {
+          return null;
+        }
+        if (normalized === "inline" || normalized === "fullscreen" || normalized === "pip") {
+          return normalized;
+        }
+        return null;
+      }
+
+      function applyHostContext(hostContext) {
+        if (!hostContext || typeof hostContext !== "object") {
           return;
         }
-        payload.textContent = JSON.stringify(event.data, null, 2);
+        if (compactContract) {
+          compactContract.mergeHostContext(hostContext);
+        }
+        if (Array.isArray(hostContext.availableDisplayModes)) {
+          state.availableDisplayModes = hostContext.availableDisplayModes
+            .map((mode) => normalizeDisplayMode(mode))
+            .filter(Boolean);
+        }
+        const mode = normalizeDisplayMode(hostContext.displayMode);
+        if (mode) {
+          state.displayMode = mode;
+        }
+        updateFullscreenControl();
+      }
+
+      function updateFullscreenControl() {
+        if (!fullscreenToggle) {
+          return;
+        }
+        const canFullscreen =
+          Array.isArray(state.availableDisplayModes) &&
+          state.availableDisplayModes.includes("fullscreen");
+        fullscreenToggle.disabled = !state.hostReady;
+        if (!state.hostReady) {
+          fullscreenToggle.textContent = "Maximise";
+          return;
+        }
+        if (!canFullscreen) {
+          fullscreenToggle.textContent = "Try maximise";
+          return;
+        }
+        fullscreenToggle.textContent =
+          state.displayMode === "fullscreen" ? "Exit maximise" : "Maximise";
+      }
+
+      async function toggleFullscreen() {
+        const targetMode = state.displayMode === "fullscreen" ? "inline" : "fullscreen";
+        try {
+          const result = await rpcCall("ui/request-display-mode", { mode: targetMode });
+          const resolvedMode = normalizeDisplayMode(result && result.mode);
+          if (resolvedMode) {
+            state.displayMode = resolvedMode;
+          }
+          updateFullscreenControl();
+        } catch (err) {
+          setStatus("Fullscreen unavailable");
+        }
+      }
+
+      function parseLatLon(text) {
+        const value = String(text || "")
+          .split(",")
+          .map((part) => Number(part.trim()));
+        if (value.length !== 2 || value.some((item) => !Number.isFinite(item))) {
+          return null;
+        }
+        const lat = value[0];
+        const lon = value[1];
+        return { lat, lon };
+      }
+
+      function haversineKm(start, end) {
+        const toRad = (deg) => (deg * Math.PI) / 180;
+        const earthKm = 6371;
+        const dLat = toRad(end.lat - start.lat);
+        const dLon = toRad(end.lon - start.lon);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(start.lat)) *
+            Math.cos(toRad(end.lat)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthKm * c;
+      }
+
+      function estimateMinutes(distanceKm, mode) {
+        const speedKmh = mode === "walk" ? 5 : mode === "cycle" ? 16 : 35;
+        return Math.max(1, Math.round((distanceKm / speedKmh) * 60));
+      }
+
+      async function calculateRoutePlan() {
+        const start = parseLatLon(startInput.value);
+        const end = parseLatLon(endInput.value);
+        const mode = routeMode.value || "car";
+        if (!start || !end) {
+          setFlowStatus("error", "Use `lat,lon` format for start and end.");
+          setStatus("Invalid coordinates");
+          return;
+        }
+
+        setFlowStatus("loading", "Calculating route...");
+        setStatus("Calculating...");
+        const distanceKm = haversineKm(start, end);
+        const minutes = estimateMinutes(distanceKm, mode);
+        const steps = [
+          `Start at ${start.lat.toFixed(4)}, ${start.lon.toFixed(4)}`,
+          `Travel ${distanceKm.toFixed(2)} km by ${mode}`,
+          `Estimated duration: ${minutes} min`,
+          `Arrive at ${end.lat.toFixed(4)}, ${end.lon.toFixed(4)}`,
+        ];
+
+        const responsePayload = {
+          start,
+          end,
+          mode,
+          distanceKm: Number(distanceKm.toFixed(3)),
+          etaMinutes: minutes,
+          steps,
+          hostReady: state.hostReady,
+        };
+
+        try {
+          await rpcCall("tools/call", {
+            name: "os_apps.log_event",
+            arguments: {
+              eventType: "route_plan",
+              payload: responsePayload,
+            },
+          });
+        } catch (_err) {
+          // host logging is best-effort in this compact flow
+        }
+
+        lastMessage = responsePayload;
+        payload.textContent = JSON.stringify(responsePayload, null, 2);
+        renderRouteSteps(steps);
+        setFlowStatus("success", `Route ready: ${distanceKm.toFixed(2)} km, ${minutes} min.`);
+        setStatus("Route ready");
+        rpcNotify("ui/notifications/initialized", { routeReady: true });
+      }
+
+      calculateRoute.addEventListener("click", () => void calculateRoutePlan());
+      if (fullscreenToggle) {
+        fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
+      }
+
+      window.addEventListener("message", (event) => {
+        if (!event || !event.data || typeof event.data !== "object") {
+          return;
+        }
+        const message = event.data;
+        if (message.jsonrpc !== "2.0") {
+          return;
+        }
+        if (message.id !== undefined && (message.result !== undefined || message.error)) {
+          const pending = pendingCalls.get(message.id);
+          if (pending) {
+            pendingCalls.delete(message.id);
+            if (message.error) {
+              pending.reject(new Error(message.error.message || "RPC error"));
+            } else {
+              pending.resolve(message.result);
+            }
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/tool-input") {
+          const args = message.params?.arguments || message.params?.args || {};
+          if (args.start) {
+            startInput.value = String(args.start);
+          }
+          if (args.end) {
+            endInput.value = String(args.end);
+          }
+          if (args.mode) {
+            routeMode.value = String(args.mode);
+          }
+          return;
+        }
+        if (message.method === "ui/notifications/host-context-changed") {
+          applyHostContext(message.params || {});
+          return;
+        }
       });
+
+      async function initializeUi() {
+        try {
+          const result = await rpcCall("ui/initialize", {
+            appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] },
+          });
+          state.hostReady = true;
+          applyHostContext(result?.hostContext || {});
+          setStatus("Host connected");
+          rpcNotify("ui/notifications/initialized", {});
+        } catch (_err) {
+          setStatus("Host connection failed");
+          updateFullscreenControl();
+        }
+      }
+
+      updateFullscreenControl();
+      setFlowStatus("idle", "Idle. Enter coordinates and click Calculate route.");
+      initializeUi();
+      window.__MCP_GEO_ROUTE_PLANNER__ = {
+        calculateRoutePlan,
+      };
     </script>
   </body>
 </html>

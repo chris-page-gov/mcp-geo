@@ -3,7 +3,37 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-01
+Last updated: 2026-03-03
+
+## Playground compact UX refinements (2026-03-03)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| PGC-UX-1 Compact-host playground and geography-selector usability fixes | done | CWIN-EXEC-3 | Updated `playground/src/App.svelte` to enforce compact-preserving maximise behavior, add adjustable split-pane width controls, reduce header footprint, and consolidate UI preview debug output under Debug tab. Updated `ui/geography_selector.html` with map-first compact workflow tabs (`Map`, `Search`, `Results`, `Info`, `Debug`, `Help`) and a zoom-ladder icon toggle so zoom chips no longer obscure map content. Validation evidence: `npm --prefix playground run test -- playground.spec.js` (`1 passed`), `npm --prefix playground run test:compact` (`30 passed`), `npm --prefix playground run test:compact-matrix` (`72 passed`), `npm --prefix playground run build` (pass). |
+
+## Compact-windows unattended implementation planning (2026-03-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CWIN-PLAN-1 Full implementation + test strategy definition | done | none | Added branch-scoped plan `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md` with workstreams for all six UIs, compact contract, Playwright rewrite strategy, and strict merge-gate acceptance criteria. |
+| CWIN-BASE-2 Strict checklist baseline run | done | CWIN-PLAN-1 | Added machine-readable acceptance checklist `docs/reports/compact_windows_acceptance_checklist_2026-03-01.json` and baseline strict-run report `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`; executed focused evidence run (`3 passed`) and cataloged current strict-gate outcome (`0/6` UIs pass pre-implementation). |
+| CWIN-EXEC-3 Unattended compact-window implementation | done | CWIN-BASE-2 | Started execution on `codex/compact-windows`: scaffolded compact Playwright infrastructure (`playwright.compact*.config.js`, `test:compact`, `test:compact-matrix`, deterministic bridge/profile support, smoke+matrix suites) with passing baseline runs (`8 passed`, `6 passed`). Completed `CW-1` shared compact contract rollout across all six UIs (`ui/shared/compact_contract.{css,js}` + per-page integration and `data-testid` anchors), with checkpoint validation reruns still green (`8 passed`, `6 passed`). Completed `CW-2` boundary hardening with UPRN attribute filters (address/classification/flags + scope), deterministic import status/error messaging, and expanded local-layer regression assertions in `playground/tests/boundary_explorer_local_layers.spec.js` (`2 passed` focused run). Completed `CW-3` geography hardening by adding deterministic flow-state reporting (`loading/empty/error/success`), richer compact test hooks for style/opacity/layers, and extended regression assertions in `playground/tests/geography_selector.spec.js` (`1 passed` focused run). Completed `CW-4` statistics dashboard compact migration with deterministic action-state reporting across dataset/dimension/query workflows and new end-to-end assertions in `playground/tests/statistics_dashboard.spec.js` (`1 passed` focused run). Completed `CW-5` simple-map compact/auth hardening with explicit auth-mode reporting (`bearer`/`api_key`/`server_env`), richer style/diagnostics test hooks, and deterministic auth-path assertions in `playground/tests/simple_map.spec.js` (`1 passed` focused run). Completed `CW-6` promotion of `ui/feature_inspector.html` and `ui/route_planner.html` to MCP-Apps host-aware views with `ui/initialize` + host-context merge + fullscreen fallback handling and focused interaction tests (`playground/tests/feature_inspector.spec.js`, `playground/tests/route_planner.spec.js`; `2 passed` focused run). Completed `CW-7` by replacing scaffold checks with strict acceptance-mapped smoke + host/profile matrix suites (`playground/tests/compact_windows/*`), adding argument-aware deterministic MCP bridge tooling, and adding compact status-dock resilience in `ui/shared/compact_contract.*`; validation evidence: `npm --prefix playground run test:compact` (`18 passed`), `npm --prefix playground run test:compact-matrix` (`36 passed`), `npm --prefix playground run test` (`29 passed`), and `./.venv/bin/pytest -q` (`930 passed`, `6 skipped`, coverage `90.01%`). |
+
+## MCP-Apps window constraints and redesign review (2026-03-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MAWS-SPEC-1 MCP spec inventory completeness | done | none | Verified spec-bearing `modelcontextprotocol` org repos and added missing `docs/vendor/mcp/repos/ext-auth` submodule so published/draft spec trees are fully local (`modelcontextprotocol`, `ext-apps`, `ext-auth`). |
+| MAWS-ANALYSIS-2 Spec-vs-host window behavior review | done | MAWS-SPEC-1 | Confirmed windowing/maximize behavior is host-capability dependent in `ext-apps`; captured current host evidence (VS Code inline-only today; Claude inline guidance with `500px` max card height). |
+| MAWS-DESIGN-3 Cross-host small-window redesign pack | done | MAWS-ANALYSIS-2 | Added review report + explicit `320x500` design budget and per-UI redesign assessment at `docs/reports/mcp_apps_window_constraints_review_2026-03-01.md`; added Figma-importable wireframe pack under `docs/design/figma/`. |
+| MAWS-FIGMA-4 Direct Figma publication automation | done | MAWS-DESIGN-3 | Figma MCP server configured and authenticated; captured compact proposals into Figma file and validated iterative recapture via `existingFile` mode. |
+| MAWS-FIGMA-5 Figma setup runbook + fidelity constraints | done | MAWS-FIGMA-4 | Added `docs/design/figma/mcp_figma_setup_and_capture_runbook.md` documenting setup, OAuth, capture flow, and known SVG-text fidelity caveat; review report now uses Figma as annotation support, not decision source. |
 
 ## Submodule refresh and runtime-coupling validation (2026-03-01)
 

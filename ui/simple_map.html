@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css"
     />
+    <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
         color-scheme: light;
@@ -201,8 +202,8 @@
     </style>
   </head>
   <body>
-    <div class="layout">
-      <section class="panel">
+    <div class="layout" data-compact-grid>
+      <section class="panel" data-compact-panel data-compact-shell>
         <h1>Simple Map Lab</h1>
         <p>
           Minimal map delivery lab for comparing OS Vector proxy auth and PMTiles behavior.
@@ -210,7 +211,7 @@
 
         <div class="field">
           <label for="mode">Map Mode</label>
-          <select id="mode">
+          <select id="mode" data-testid="map-mode">
             <option value="os_vector">OS Vector Tiles (proxy)</option>
             <option value="pmtiles">PMTiles (browser direct)</option>
           </select>
@@ -218,13 +219,13 @@
 
         <div class="field">
           <label for="proxyBase">Proxy Base</label>
-          <input id="proxyBase" />
+          <input id="proxyBase" data-testid="proxy-base" />
           <div class="hint">Used for OS vector tile proxy and worker URL.</div>
         </div>
 
         <div class="field">
           <label for="osStyle">OS Style</label>
-          <select id="osStyle">
+          <select id="osStyle" data-testid="os-style-select">
             <optgroup label="OS Styles">
               <option value="OS_VTS_3857_Light.json" selected>Light (best default)</option>
               <option value="OS_VTS_3857_Dark.json">Dark</option>
@@ -264,13 +265,21 @@
           <input
             id="pmtilesUrl"
             placeholder="https://example.com/my-data.pmtiles"
+            data-testid="pmtiles-url"
           />
           <div class="hint">Vector layers are auto-inspected and rendered with generic style rules.</div>
         </div>
 
         <div class="field">
           <label for="token">Browser Bearer Token (advanced, optional)</label>
-          <input id="token" type="password" placeholder="Paste token (hidden)" autocomplete="off" spellcheck="false" />
+          <input
+            id="token"
+            type="password"
+            placeholder="Paste token (hidden)"
+            autocomplete="off"
+            spellcheck="false"
+            data-testid="token-input"
+          />
           <div class="hint">Most people can leave this empty and use an API key below. If you paste OAuth JSON, this box will extract <code>access_token</code> automatically.</div>
         </div>
 
@@ -282,6 +291,7 @@
             placeholder="Paste API key (hidden)"
             autocomplete="off"
             spellcheck="false"
+            data-testid="api-key-input"
           />
           <div class="hint">Beginner option: paste your OS API key here from your Data Hub project.</div>
         </div>
@@ -312,7 +322,7 @@
           </a>
         </div>
 
-        <div class="row">
+        <div class="row" data-compact-row>
           <div class="field">
             <label for="lng">Center lng</label>
             <input id="lng" value="-0.12" />
@@ -329,20 +339,22 @@
         </div>
 
         <div class="buttons">
-          <button id="loadBtn">Load Map</button>
-          <button id="benchBtn" class="secondary">Run Pan Benchmark</button>
+          <button id="loadBtn" data-testid="primary-cta" data-compact-cta>Load Map</button>
+          <button id="benchBtn" class="secondary" data-testid="benchmark-button">Run Pan Benchmark</button>
         </div>
 
-        <div id="status">Idle.</div>
-        <pre id="timings">{}</pre>
+        <div id="status" data-testid="status-strip">Idle.</div>
+        <div class="hint" id="authMode" data-testid="auth-mode">Auth mode: not set</div>
+        <pre id="timings" data-testid="timings-output">{}</pre>
       </section>
 
-      <main class="map-stage">
+      <main class="map-stage" data-compact-map data-testid="map-stage">
         <div id="map"></div>
-        <div id="mapHint" class="map-hint"></div>
+        <div id="mapHint" class="map-hint" data-testid="map-hint"></div>
       </main>
     </div>
 
+    <script src="shared/compact_contract.js"></script>
     <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
     <script>
@@ -359,9 +371,18 @@
         loadBtn: document.getElementById("loadBtn"),
         benchBtn: document.getElementById("benchBtn"),
         status: document.getElementById("status"),
+        authMode: document.getElementById("authMode"),
         timings: document.getElementById("timings"),
         mapHint: document.getElementById("mapHint"),
       };
+
+      const compactContract = window.MCP_GEO_COMPACT
+        ? window.MCP_GEO_COMPACT.init({
+            uiId: "simple_map",
+            statusSelector: "#status",
+            ctaSelector: "#loadBtn",
+          })
+        : null;
 
       elements.proxyBase.value = window.location.origin;
       const fallbackStyle = {
@@ -387,6 +408,27 @@
 
       function setStatus(text) {
         elements.status.textContent = text;
+      }
+
+      function resolveAuthMode(config) {
+        if (config.token) {
+          return "bearer";
+        }
+        if (config.apiKey) {
+          return "api_key";
+        }
+        return "server_env";
+      }
+
+      function setAuthMode(mode) {
+        const labelByMode = {
+          bearer: "Browser bearer token",
+          api_key: "API key override",
+          server_env: "Server environment key",
+        };
+        const label = labelByMode[mode] || "Not set";
+        elements.authMode.textContent = `Auth mode: ${label}`;
+        elements.authMode.dataset.mode = mode || "unknown";
       }
 
       function cleanToken(value) {
@@ -1010,6 +1052,7 @@
 
       async function loadMap() {
         const config = getFormState();
+        const authMode = resolveAuthMode(config);
         if (state.map) {
           state.map.remove();
           state.map = null;
@@ -1022,7 +1065,13 @@
         state.sourceEventCount = 0;
         resetTimings();
         const started = performance.now();
-        updateTimings({ startedAt: new Date().toISOString() });
+        setAuthMode(authMode);
+        updateTimings({
+          startedAt: new Date().toISOString(),
+          mode: config.mode,
+          authMode,
+          selectedStyle: config.osStyle || null,
+        });
         setMapHint(`Loading map...\n\n${modeInstructions(config.mode)}`, "info", true);
 
         const workerUrl = `${config.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
@@ -1156,6 +1205,7 @@
           setMapHint(modeInstructions(elements.mode.value), "info", true);
         }
       });
+      setAuthMode(resolveAuthMode(getFormState()));
       setMapHint(modeInstructions(elements.mode.value), "info", true);
     </script>
   </body>
