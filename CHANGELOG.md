@@ -50,6 +50,20 @@ All notable changes to this project will be documented in this file.
 - Added tool-search category alias normalization (`stats` -> `statistics`) so
   `os_mcp.descriptor`/tool search filters remain stable for constrained client
   payloads that use shorthand category names.
+- Hardened `os_features.query` `resultType=hits` semantics so `count` now
+  reflects matched-signal estimates (`numberMatched` when available, otherwise
+  bounded fallback counts) instead of `numberReturned` alone, and now emits
+  explicit warning metadata (`HITS_NUMBER_MATCHED_UNAVAILABLE`,
+  `HITS_COUNT_LOWER_BOUND`, optional `matchedCountLowerBound`) when totals are
+  uncertain.
+- Added legacy transport collection compatibility mapping in
+  `tools/os_features.py` so `trn-fts-roadlink-*` requests normalize to
+  `trn-ntwk-roadlink-*` while preserving `requestedCollection` and exposing
+  `COLLECTION_ALIAS_APPLIED` warning metadata.
+- Enriched unsupported-collection `OS_API_ERROR` payloads in
+  `os_features.query` with actionable repair guidance (`requestedCollection`,
+  `resolvedCollection`, `suggestedCollections`, `hint`) and added focused
+  regression coverage in `tests/test_os_features_collections.py`.
 - Updated troubleshooting docs with the new wrapper key-resolution order and
   restart guidance for Claude Desktop after key rotation.
 - Updated the Svelte playground UI preview host controls to expose explicit

@@ -115,6 +115,48 @@ Recommended handling:
 - Prefer `delivery=auto` for large feature queries in stdio-heavy hosts to avoid
   response truncation and context pressure.
 
+## `os_features.query` with `resultType="hits"` shows `count=0` but `results` mode returns features
+This can happen when upstream omits `numberMatched` for a count-only query.
+
+What changed:
+- `count` for `resultType="hits"` now uses the best available matched signal,
+  not `numberReturned` alone.
+- If `numberMatched` is unavailable, MCP emits warnings and treats `count` as an
+  estimate/lower bound when appropriate.
+
+Signals to check:
+- `hints.warnings` may include:
+  - `HITS_NUMBER_MATCHED_UNAVAILABLE`
+  - `HITS_COUNT_LOWER_BOUND`
+- `matchedCountLowerBound` is set when only a lower-bound estimate is possible.
+
+Recommended handling:
+1. If `HITS_NUMBER_MATCHED_UNAVAILABLE` is present, treat `count` as estimated.
+2. If `HITS_COUNT_LOWER_BOUND` is present, narrow AOI or rerun with tighter query
+   bounds before drawing analytical conclusions.
+3. Use `resultType="results"` only when you need sampled features, not for
+   authoritative totals.
+
+## `os_features.query` unsupported collection IDs in peat/highways traces
+Older prompts/traces may use deprecated or mistyped transport collection names.
+
+What changed:
+- Legacy compatibility aliasing now normalizes `trn-fts-roadlink-*` to
+  `trn-ntwk-roadlink-*`.
+- Unsupported-collection `OS_API_ERROR` payloads now include structured
+  guidance fields:
+  - `requestedCollection`
+  - `resolvedCollection` (if alias applied)
+  - `upstreamUnsupportedCollection` (if upstream reports a different id string)
+  - `suggestedCollections`
+  - `hint`
+
+Recommended handling:
+1. Retry with a suggested collection from `suggestedCollections`.
+2. If suggestions are absent, call `os_features.collections` with `q` (for
+   example `roadlink` or `path`) and use `latestByBaseId`.
+3. Keep `requestedCollection` in logs to preserve traceability back to model output.
+
 ## Peat survey flow returns metadata but proxy queries fail
 `os_peat.evidence_paths` can succeed while follow-on proxy calls fail with
 `NO_API_KEY` or `OS_API_KEY_INVALID`.

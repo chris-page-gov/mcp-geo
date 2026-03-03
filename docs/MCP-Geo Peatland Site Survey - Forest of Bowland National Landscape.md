@@ -1,9 +1,10 @@
-**Question to Claude**\
+# Question to Claude
+
 *Use MCP-Geo to conduct a peatland site survey on the forest of Bowland*
 
 **Claude:**
 
-<span class="mark">Output: See full report: Forest_of_Bowland_Peatland_Survey.docx</span>
+<span class="mark">Output: [See full report:](<MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md>)Forest_of_Bowland_Peatland_Survey.docx</span>
 
 <img src="media/image1.png" style="width:7.03597in;height:7.96034in" alt="A screenshot of a computer AI-generated content may be incorrect." />
 

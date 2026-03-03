@@ -131,6 +131,10 @@ assumptions change.
 - Maintain completed peatland streams (`PSR-INT-0` through `PSR-E2E-10`) and
   keep floor-question contracts (`os_peat.*`, AOI provenance, direct/proxy
   evidence separation) stable across HTTP + STDIO.
+- Maintain peat-survey failure-chain hardening in `tools/os_features.py`
+  (`resultType=hits` count correctness, legacy transport collection aliasing,
+  and unsupported-collection suggestion payloads) with synchronized evidence in
+  `troubleshooting/peat-survey-failure-deep-analysis-2026-03-03.md`.
 - Maintain compatibility-first map docs/contracts and support matrix links in
   `docs/spec_package/06_api_contracts.md`,
   `docs/spec_package/06a_map_delivery_fallback_contracts.md`, and
@@ -211,6 +215,12 @@ assumptions change.
 - Done: peatland survey reliability implementation program (`PSR-*`) including
   `PSR-PEA-9` and `PSR-E2E-10` (peat evidence-layer integration plus
   deterministic floor-question E2E contract coverage).
+- Done: peat-survey failure-chain remediation (`PSF-*`) for `os_features.query`
+  count semantics in `hits` mode, legacy `trn-fts-roadlink-*` compatibility
+  aliasing to `trn-ntwk-roadlink-*`, and actionable unsupported-collection
+  suggestions; coverage and evidence tracked in
+  `tests/test_os_features_collections.py` and
+  `troubleshooting/peat-survey-trace-evidence-2026-03-03.md`.
 - Done: strict non-runtime static quality gate restoration for reliability
   surfaces via `scripts/check_non_runtime_quality.sh`
   (`ruff` + `mypy --follow-imports=skip`).

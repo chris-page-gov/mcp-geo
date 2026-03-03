@@ -160,8 +160,138 @@ def test_os_features_query_result_type_hits(client, monkeypatch, mock_os_client)
     body = resp.json()
     assert body["resultType"] == "hits"
     assert body["features"] == []
-    assert body["count"] == 0
+    assert body["count"] == 1
+    assert body["numberMatched"] == 1
     assert body["numberReturned"] == 0
+
+
+def test_os_features_query_hits_without_numbermatched_uses_feature_count(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_common, os_features
+
+    fake_client = os_common.client
+    monkeypatch.setattr(os_features, "client", fake_client)
+
+    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        return 200, {
+            "features": [
+                {
+                    "id": "f1",
+                    "geometry": {"type": "Point", "coordinates": [0.1, 0.1]},
+                    "properties": {"status": "active"},
+                }
+            ]
+        }
+
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "resultType": "hits",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["resultType"] == "hits"
+    assert body["count"] == 1
+    assert body["numberMatched"] is None
+    assert "HITS_NUMBER_MATCHED_UNAVAILABLE" in body["hints"]["warnings"]
+
+
+def test_os_features_query_aliases_legacy_transport_collection(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_common, os_features
+
+    fake_client = os_common.client
+    monkeypatch.setattr(os_features, "client", fake_client)
+
+    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        return 200, {
+            "numberMatched": 1,
+            "features": [
+                {
+                    "id": "r1",
+                    "geometry": {"type": "LineString", "coordinates": [[0.0, 0.0], [0.1, 0.1]]},
+                    "properties": {"description": "Single Carriageway"},
+                }
+            ],
+        }
+
+    mock_os_client["features/ngd/ofa/v1/collections/trn-ntwk-roadlink-1/items"] = items_handler
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "trn-fts-roadlink-1",
+            "bbox": [0, 0, 1, 1],
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["collection"] == "trn-ntwk-roadlink-1"
+    assert body["requestedCollection"] == "trn-fts-roadlink-1"
+    assert "COLLECTION_ALIAS_APPLIED" in body["hints"]["warnings"]
+
+
+def test_os_features_query_unsupported_collection_returns_suggestions(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_common, os_features
+
+    fake_client = os_common.client
+    monkeypatch.setattr(os_features, "client", fake_client)
+
+    def bad_items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        return 404, {
+            "isError": True,
+            "code": "OS_API_ERROR",
+            "message": (
+                "OS API error: {\"code\":404,\"description\":\"Collection "
+                "'trn-ntwk-roadlink-99' is not a supported Collection. Please refer to "
+                "the documentation for a list of supported Collections.\"}"
+            ),
+        }
+
+    def collections_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        return 200, {
+            "collections": [
+                {"id": "trn-ntwk-roadlink-5", "title": "RoadLink", "description": "latest"},
+                {"id": "trn-ntwk-pathlink-3", "title": "PathLink", "description": "latest"},
+                {
+                    "id": "trn-fts-roadtrackorpath-3",
+                    "title": "Road Track Or Path",
+                    "description": "latest",
+                },
+            ]
+        }
+
+    mock_os_client[
+        "features/ngd/ofa/v1/collections/trn-ntwk-roadlink-99/items"
+    ] = bad_items_handler
+    mock_os_client["features/ngd/ofa/v1/collections"] = collections_handler
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "trn-fts-roadlink-99",
+            "bbox": [0, 0, 1, 1],
+        },
+    )
+    assert resp.status_code == 501
+    body = resp.json()
+    assert body["code"] == "OS_API_ERROR"
+    assert body["requestedCollection"] == "trn-fts-roadlink-99"
+    assert body["resolvedCollection"] == "trn-ntwk-roadlink-99"
+    assert "trn-ntwk-roadlink-5" in body["suggestedCollections"]
+    assert "latestByBaseId" in body["hint"]
 
 
 def test_os_features_query_limit_is_clamped(client, monkeypatch, mock_os_client) -> None:  # type: ignore[no-untyped-def]

@@ -5,6 +5,17 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-03
 
+## Peat survey failure-chain hardening (2026-03-03)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| PSF-INT-1 `os_features.query` hits-count correctness | done | none | Fixed `resultType=hits` counting in `tools/os_features.py` to derive `count` from matched signals (`numberMatched`, local-filter totals, or observed feature volume) instead of `numberReturned` alone. Added warnings for uncertain totals: `HITS_NUMBER_MATCHED_UNAVAILABLE` and `HITS_COUNT_LOWER_BOUND`, plus `matchedCountLowerBound` when applicable. |
+| PSF-INT-2 Legacy transport collection compatibility | done | PSF-INT-1 | Added base alias normalization in `tools/os_features.py` so legacy `trn-fts-roadlink-*` requests resolve to supported `trn-ntwk-roadlink-*` collections while preserving `requestedCollection` and warning with `COLLECTION_ALIAS_APPLIED`. |
+| PSF-INT-3 Unsupported collection actionable guidance | done | PSF-INT-2 | Enriched unsupported-collection `OS_API_ERROR` responses in `tools/os_features.py` by parsing upstream unsupported IDs and attaching `requestedCollection`, `resolvedCollection` (when aliased), `suggestedCollections`, and a deterministic recovery hint. |
+| PSF-VAL-4 Regression coverage and trace-backed troubleshooting | done | PSF-INT-1, PSF-INT-2, PSF-INT-3 | Updated and added regression tests in `tests/test_os_features_collections.py` and validated unaffected peat/tool-normalization suites via combined focused run (`38 passed`). Added evidence artifacts `troubleshooting/peat-survey-trace-evidence-2026-03-03.md` and `troubleshooting/peat-survey-failure-deep-analysis-2026-03-03.md`, and synchronized troubleshooting guidance in `docs/troubleshooting.md`. |
+
 ## Claude tool-search interop hardening (2026-03-03)
 
 Legend: pending, in_progress, done, blocked

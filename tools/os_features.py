@@ -83,6 +83,16 @@ _COLLECTION_ALIASES = {
     # Compatibility alias used in prompts/evaluation packs.
     "buildings": "bld-fts-buildingpart-2",
 }
+_COLLECTION_BASE_ALIASES = {
+    # Compatibility alias for legacy/deprecated transport naming in older traces/prompts.
+    "trn-fts-roadlink": "trn-ntwk-roadlink",
+}
+_UNSUPPORTED_COLLECTION_RE = re.compile(
+    r"Collection ['\"](?P<collection>[^'\"]+)['\"] is not a supported Collection\.",
+    re.IGNORECASE,
+)
+_COLLECTION_TOKEN_SPLIT_RE = re.compile(r"[^a-z0-9]+")
+_COLLECTION_TOKEN_STOPWORDS = {"os", "fts", "ntwk", "rami", "v", "items"}
 
 _HINT_MESSAGES = [
     "This uses OS NGD OGC API Features (collections/{collection}/items).",
@@ -90,7 +100,165 @@ _HINT_MESSAGES = [
     "Pass includeGeometry=true only when geometry is explicitly required.",
     "Pass polygon/filter/sortBy/includeFields/excludeFields for local post-filtering.",
     "Set resultType='hits' for count-only responses.",
+    "If resultType='hits' returns numberMatched=null, count may be a lower-bound estimate.",
 ]
+
+
+def _apply_collection_alias(value: str) -> str:
+    text = value.strip()
+    if not text:
+        return text
+    lowered = text.lower()
+    direct = _COLLECTION_ALIASES.get(lowered)
+    if direct:
+        return direct
+    matched = _COLLECTION_VERSION_RE.match(lowered)
+    if matched is not None:
+        base = matched.group("base")
+        version = matched.group("ver")
+        mapped_base = _COLLECTION_BASE_ALIASES.get(base)
+        if mapped_base:
+            return f"{mapped_base}-{version}"
+    mapped_base = _COLLECTION_BASE_ALIASES.get(lowered)
+    if mapped_base:
+        return f"{mapped_base}-1"
+    return text
+
+
+def _extract_unsupported_collection(message: Any) -> str | None:
+    if not isinstance(message, str):
+        return None
+    matched = _UNSUPPORTED_COLLECTION_RE.search(message)
+    if matched is None:
+        return None
+    return matched.group("collection")
+
+
+def _normalize_collection_tokens(value: str) -> list[str]:
+    return [
+        token
+        for token in _COLLECTION_TOKEN_SPLIT_RE.split(value.lower())
+        if token and token not in _COLLECTION_TOKEN_STOPWORDS
+    ]
+
+
+def _build_latest_by_base(collection_ids: list[str]) -> dict[str, str]:
+    latest: dict[str, tuple[int, str]] = {}
+    for collection_id in collection_ids:
+        match = _COLLECTION_VERSION_RE.match(collection_id)
+        if match is None:
+            continue
+        base = match.group("base")
+        version = int(match.group("ver"))
+        current = latest.get(base)
+        if current is None or version > current[0]:
+            latest[base] = (version, collection_id)
+    return {base: value for base, (_, value) in latest.items()}
+
+
+def _suggest_collections_for_request(requested: str, *, max_items: int = 6) -> list[str]:
+    status, body = _client_get_json(f"{client.base_ngd_features}/collections", None)
+    if status != 200 or not isinstance(body, dict):
+        return []
+
+    raw_collections = body.get("collections")
+    if not isinstance(raw_collections, list):
+        return []
+
+    collection_ids: list[str] = []
+    for entry in raw_collections:
+        if not isinstance(entry, dict):
+            continue
+        collection_id = str(entry.get("id") or "").strip().lower()
+        if collection_id:
+            collection_ids.append(collection_id)
+    if not collection_ids:
+        return []
+
+    latest_by_base = _build_latest_by_base(collection_ids)
+    id_set = set(collection_ids)
+    suggestions: list[str] = []
+
+    def _append(candidate: str | None) -> None:
+        if not candidate:
+            return
+        normalized = candidate.strip().lower()
+        if not normalized or normalized in suggestions:
+            return
+        if normalized in id_set:
+            suggestions.append(normalized)
+
+    requested_normalized = requested.strip().lower()
+    _append(requested_normalized)
+
+    requested_alias = _apply_collection_alias(requested_normalized).lower()
+    _append(requested_alias)
+
+    requested_match = _COLLECTION_VERSION_RE.match(requested_normalized)
+    if requested_match is not None:
+        requested_base = requested_match.group("base")
+        _append(latest_by_base.get(requested_base))
+        mapped_base = _COLLECTION_BASE_ALIASES.get(requested_base)
+        if mapped_base:
+            _append(latest_by_base.get(mapped_base))
+
+    alias_match = _COLLECTION_VERSION_RE.match(requested_alias)
+    if alias_match is not None:
+        _append(latest_by_base.get(alias_match.group("base")))
+
+    requested_tokens = _normalize_collection_tokens(requested_normalized)
+    scored: list[tuple[int, str]] = []
+    for collection_id in collection_ids:
+        candidate_tokens = _normalize_collection_tokens(collection_id)
+        if not candidate_tokens:
+            continue
+        overlap = len(set(requested_tokens).intersection(candidate_tokens))
+        if overlap <= 0:
+            continue
+        score = overlap * 10
+        if collection_id.startswith("trn-") and requested_normalized.startswith("trn-"):
+            score += 3
+        if "path" in candidate_tokens and "path" in requested_tokens:
+            score += 2
+        if "roadlink" in candidate_tokens and "roadlink" in requested_tokens:
+            score += 2
+        scored.append((score, collection_id))
+    scored.sort(key=lambda item: (-item[0], item[1]))
+    for _, candidate in scored:
+        _append(candidate)
+        if len(suggestions) >= max_items:
+            break
+    return suggestions[:max_items]
+
+
+def _augment_unsupported_collection_error(
+    body: dict[str, Any],
+    *,
+    requested_collection: str,
+    resolved_collection: str,
+) -> dict[str, Any]:
+    if str(body.get("code", "")) != "OS_API_ERROR":
+        return body
+    unsupported_collection = _extract_unsupported_collection(body.get("message"))
+    if unsupported_collection is None:
+        return body
+    upstream_collection = unsupported_collection.strip()
+    suggestions = _suggest_collections_for_request(upstream_collection)
+    if not suggestions and upstream_collection.lower() != requested_collection.strip().lower():
+        suggestions = _suggest_collections_for_request(requested_collection)
+    enriched = dict(body)
+    enriched["requestedCollection"] = requested_collection
+    if resolved_collection != requested_collection:
+        enriched["resolvedCollection"] = resolved_collection
+    if upstream_collection.lower() != resolved_collection.strip().lower():
+        enriched["upstreamUnsupportedCollection"] = upstream_collection
+    if suggestions:
+        enriched["suggestedCollections"] = suggestions
+    enriched["hint"] = (
+        "Collection id is unsupported. Call os_features.collections with q (for example "
+        "'roadlink' or 'path') and use latestByBaseId to select a valid version."
+    )
+    return enriched
 
 
 def _parse_bbox(value: Any) -> tuple[float, float, float, float] | None:
@@ -506,7 +674,7 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     if not collection:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing collection"}
     requested_collection = collection
-    collection = _COLLECTION_ALIASES.get(collection.lower(), collection)
+    collection = _apply_collection_alias(collection)
 
     warnings: list[str] = []
     if collection != requested_collection:
@@ -705,6 +873,12 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     )
     warnings.extend(fetch_warnings)
     if status != 200:
+        if isinstance(body, dict):
+            body = _augment_unsupported_collection_error(
+                body,
+                requested_collection=requested_collection,
+                resolved_collection=collection,
+            )
         return 501, body
     if degraded and include_geometry:
         include_geometry = False
@@ -855,6 +1029,25 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
             add_warning(warnings, "QUERYABLES_UNAVAILABLE")
 
     number_returned = len(features_out)
+    count = number_returned
+    matched_count_lower_bound: int | None = None
+    if result_type == "hits":
+        if isinstance(number_matched, int):
+            count = number_matched
+        elif local_filtering:
+            count = local_hit_total
+            if scan["partial"]:
+                matched_count_lower_bound = local_hit_total
+                add_warning(warnings, "HITS_COUNT_LOWER_BOUND")
+        else:
+            upstream_hits = len(raw_features)
+            count = upstream_hits
+            if has_more_upstream:
+                matched_count_lower_bound = upstream_hits
+                add_warning(warnings, "HITS_COUNT_LOWER_BOUND")
+        if number_matched is None:
+            add_warning(warnings, "HITS_NUMBER_MATCHED_UNAVAILABLE")
+
     next_token: str | None = None
     if result_type == "results" and has_more_upstream:
         next_token = str(offset + limit)
@@ -863,7 +1056,7 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         "collection": collection,
         "bbox": list(bbox),
         "features": features_out,
-        "count": number_returned,
+        "count": count,
         "numberMatched": number_matched,
         "numberReturned": number_returned,
         "limit": limit,
@@ -894,8 +1087,8 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         response["excludeFields"] = exclude_fields
     if include_queryables:
         response["queryables"] = queryables
-    if result_type == "hits" and scan["partial"]:
-        response["matchedCountLowerBound"] = local_hit_total
+    if matched_count_lower_bound is not None:
+        response["matchedCountLowerBound"] = matched_count_lower_bound
 
     selected_mode = select_delivery_mode(
         requested_delivery=delivery or "auto",
