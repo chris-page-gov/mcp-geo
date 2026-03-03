@@ -248,6 +248,14 @@ def test_tools_list_explicit_toolset_overrides_default(monkeypatch):
     assert all(name.startswith("ons_") for name in names)
 
 
+def test_tools_list_query_filters_and_limits_results():
+    result = stdio_adapter.handle_list_tools({"query": "postcode", "limit": 5})
+    tools = result["tools"]
+    assert 1 <= len(tools) <= 5
+    original_names = [tool.get("annotations", {}).get("originalName") for tool in tools]
+    assert "os_places.by_postcode" in original_names
+
+
 def test_read_headers_invalid_content_length():
     buf = io.StringIO("Content-Length: nope\r\n\r\n")
     length, error = stdio_adapter._read_headers(buf)

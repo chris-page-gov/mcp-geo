@@ -760,24 +760,9 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
         "version": SERVER_VERSION,
     }
 
-def handle_list_tools(_params: Dict[str, Any]) -> Any:
-    toolset = _params.get("toolset")
-    if toolset is not None and not isinstance(toolset, str):
-        raise ValueError("toolset must be a string")
-    include_toolsets = parse_toolset_list(_params.get("includeToolsets"))
-    exclude_toolsets = parse_toolset_list(_params.get("excludeToolsets"))
-    toolset, include_toolsets, exclude_toolsets = apply_default_toolset_filters(
-        toolset=toolset,
-        include_toolsets=include_toolsets,
-        exclude_toolsets=exclude_toolsets,
-    )
+
+def _build_list_tool_entries(filtered_tools: list[Any]) -> list[dict[str, Any]]:
     tool_entries: list[dict[str, Any]] = []
-    filtered_tools = filter_tools_by_toolsets(
-        all_tools(),
-        toolset=toolset,
-        include_toolsets=include_toolsets,
-        exclude_toolsets=exclude_toolsets,
-    )
     original_to_sanitized, _ = _build_tool_name_maps()
     for t in filtered_tools:
         meta = get_tool_metadata(t)
@@ -816,7 +801,59 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
                 merged["mcp-geo"] = internal_meta
             entry["_meta"] = merged
         tool_entries.append(entry)
-    return {"tools": tool_entries, "toolsets": get_toolset_catalog()}
+    return tool_entries
+
+
+def handle_list_tools(_params: Dict[str, Any]) -> Any:
+    toolset = _params.get("toolset")
+    if toolset is not None and not isinstance(toolset, str):
+        raise ValueError("toolset must be a string")
+    include_toolsets = parse_toolset_list(_params.get("includeToolsets"))
+    exclude_toolsets = parse_toolset_list(_params.get("excludeToolsets"))
+    toolset, include_toolsets, exclude_toolsets = apply_default_toolset_filters(
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
+    tool_entries: list[dict[str, Any]] = []
+    filtered_tools = filter_tools_by_toolsets(
+        all_tools(),
+        toolset=toolset,
+        include_toolsets=include_toolsets,
+        exclude_toolsets=exclude_toolsets,
+    )
+    query = _params.get("query") or _params.get("q")
+    if query is not None:
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("query must be a non-empty string")
+        mode = _params.get("mode", "token")
+        if not isinstance(mode, str):
+            raise ValueError("mode must be a string")
+        limit = _params.get("limit", 10)
+        if not isinstance(limit, int) or limit < 1:
+            raise ValueError("limit must be >= 1")
+        category = _params.get("category")
+        if category is not None and not isinstance(category, str):
+            raise ValueError("category must be a string")
+        ranked = search_tools(
+            query,
+            mode=mode,
+            limit=limit,
+            category=category,
+            include_schemas=False,
+            toolset=toolset,
+            include_toolsets=include_toolsets,
+            exclude_toolsets=exclude_toolsets,
+        )
+        ranked_names = [
+            item["name"] for item in ranked if isinstance(item.get("name"), str)
+        ]
+        by_name = {tool.name: tool for tool in filtered_tools}
+        filtered_tools = [by_name[name] for name in ranked_names if name in by_name]
+    return {
+        "tools": _build_list_tool_entries(filtered_tools),
+        "toolsets": get_toolset_catalog(),
+    }
 
 
 def handle_search_tools(params: Dict[str, Any]) -> Any:

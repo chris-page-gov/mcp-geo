@@ -97,6 +97,25 @@ def test_mcp_http_list_tools_uses_default_toolset_env(client, monkeypatch):
     assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
 
 
+def test_mcp_http_list_tools_query_filters_and_limits(client):
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload(
+            "list-query-1",
+            "tools/list",
+            {"query": "postcode", "limit": 5},
+        ),
+    )
+    payload = resp.json()
+    tools = payload["result"]["tools"]
+    assert 1 <= len(tools) <= 5
+    original_names = [tool.get("annotations", {}).get("originalName") for tool in tools]
+    assert "os_places.by_postcode" in original_names
+
+
 def test_mcp_http_search_tools_toolset_filters(client):
     init_resp = client.post("/mcp", json=_initialize_payload())
     session_id = init_resp.headers.get("mcp-session-id")

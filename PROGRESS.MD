@@ -5,6 +5,14 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-03
 
+## Claude tool-search interop hardening (2026-03-03)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CTS-INT-1 `tools/list` query-compat for search-gated clients | done | none | Updated `server/stdio_adapter.py` so `tools/list` now honors search-style params (`query`/`q`, `mode`, `limit`, `category`) and returns ranked filtered tool definitions instead of full-catalog responses when query is present; preserves existing list behavior when query is absent. Added regression coverage in `tests/test_stdio_adapter_direct.py` and `tests/test_mcp_http.py`. Added standards-validation + troubleshooting evidence in `troubleshooting/claude-system-instructions-hide-mcp.md` against vendored MCP `2025-11-25` docs/schema. |
+
 ## Playground compact UX refinements (2026-03-03)
 
 Legend: pending, in_progress, done, blocked

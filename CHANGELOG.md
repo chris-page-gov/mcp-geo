@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
   vs API-key fallback tests and PMTiles trial execution.
 
 ### Changed
+- Hardened MCP interop for search-gated clients by teaching STDIO `tools/list`
+  to honor query-style discovery params (`query`/`q`, `mode`, `limit`,
+  `category`) and return ranked filtered tool definitions instead of full
+  catalog payloads when a query is provided.
 - Updated the Svelte playground UI preview host controls to expose explicit
   compact-window testing mode (`auto` / `force compact` / `force regular`) with
   configurable compact width/height passed via `hostContext.containerDimensions`.

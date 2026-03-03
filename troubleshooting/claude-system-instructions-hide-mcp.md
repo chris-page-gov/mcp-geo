@@ -81,3 +81,67 @@ For this incident, available evidence supports "host/model reporting
 instability" over "mcp-geo server unavailable." The fastest mitigation is to
 force concrete tool-call verification first and treat those results as
 authoritative.
+
+---
+
+## Follow-up Incident (2026-03-03): Claude tool-search gate fails before tool visibility
+
+### User-visible symptom
+
+- Claude stated tools were not visible until it had completed a tool-search step.
+- The displayed request shape was:
+  - `{"query":"geographic location mapping Leamington High Street","limit":10}`
+- Claude then stopped with "Claude's response could not be fully generated."
+
+### Local reproduction and findings
+
+- `tools/search` with that exact payload succeeds in this repo (stdio and HTTP):
+  - `count=10`, no handler error, deterministic ranked results.
+- Prior to the interop patch below, if a client sent search-style params on
+  `tools/list` (for example `query`, `limit`), `mcp-geo` ignored them and
+  returned the full catalog (`81` tools in this workspace), which can create
+  unnecessary context pressure in constrained clients.
+
+### Standards validation (MCP spec)
+
+Validated against local vendored MCP standard docs/schemas:
+
+- Standard `2025-11-25` defines `tools/list` and `tools/call` for tool
+  discovery/invocation.
+- Standard `tools/list` supports pagination (`nextCursor`) but does **not**
+  define a standard `tools/search` method.
+- Server `tools` capability is standard `listChanged`; custom behavior belongs
+  under extensions/experimental contract.
+
+Evidence paths:
+
+- `docs/vendor/mcp/repos/modelcontextprotocol/docs/specification/2025-11-25/server/tools.mdx`
+- `docs/vendor/mcp/repos/modelcontextprotocol/schema/2025-11-25/schema.json`
+  - `ListToolsRequest`
+  - `ListToolsResult`
+  - `ServerCapabilities.tools`
+
+### Fix applied in repo
+
+- Updated `server/stdio_adapter.py` `handle_list_tools(...)`:
+  - If `query`/`q` is present, it now performs ranked filtering (honoring
+    `mode`, `limit`, `category`, and toolset filters) and returns a **filtered**
+    `tools/list` result instead of the full catalog.
+  - If `query` is absent, behavior remains unchanged (full/filtered-by-toolset
+    list as before).
+
+### Verification
+
+- Focused tests:
+  - `tests/test_stdio_adapter_direct.py::test_tools_list_query_filters_and_limits_results`
+  - `tests/test_mcp_http.py::test_mcp_http_list_tools_query_filters_and_limits`
+- Command:
+  - `uv run --with pytest --with pytest-cov pytest -q --no-cov tests/test_stdio_adapter_direct.py tests/test_mcp_http.py`
+  - Result: `61 passed`
+
+### Practical mitigation for Claude sessions
+
+1. Prefer `tools/list` query-limited discovery first (`query` + small `limit`).
+2. If still interrupted, retry in a fresh Claude thread/session.
+3. Use `os_mcp_descriptor` as a deterministic first call to confirm live tool
+   access before deeper planning flows.
