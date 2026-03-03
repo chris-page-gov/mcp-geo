@@ -120,6 +120,9 @@ Evidence paths:
   - `ListToolsRequest`
   - `ListToolsResult`
   - `ServerCapabilities.tools`
+- Cross-check (official live docs, accessed 2026-03-03):
+  - `https://modelcontextprotocol.io/specification/draft/server/tools`
+  - `https://modelcontextprotocol.io/specification/2025-11-25/changelog`
 
 ### Fix applied in repo
 
