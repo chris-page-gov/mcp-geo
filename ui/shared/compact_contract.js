@@ -95,11 +95,28 @@
     const budgetWidth = Math.min(viewportWidth || width, width || viewportWidth);
     const budgetHeight = Math.min(viewportHeight || height, height || viewportHeight);
 
+    const screenWidth =
+      normalizeNumber(window?.screen?.availWidth) ||
+      normalizeNumber(window?.screen?.width) ||
+      null;
+
+    // Compact mode should apply for truly small windows and for narrow side panes
+    // (for example roughly one-third width in IDE/chat split layouts).
+    const compactSignals = {
+      narrowWidth:
+        budgetWidth <= 420 || (viewportWidth > 0 && viewportWidth <= 420),
+      shortHeight:
+        budgetHeight <= 540 || (viewportHeight > 0 && viewportHeight <= 540),
+      thirdScreenPane:
+        screenWidth && screenWidth > 0
+          ? budgetWidth <= 620 && budgetWidth / screenWidth <= 0.38
+          : false,
+    };
+
     let compact =
-      budgetWidth <= 380 ||
-      budgetHeight <= 520 ||
-      (viewportWidth > 0 && viewportWidth <= 380) ||
-      (viewportHeight > 0 && viewportHeight <= 520);
+      compactSignals.narrowWidth ||
+      compactSignals.shortHeight ||
+      compactSignals.thirdScreenPane;
 
     if (urlOverrides.compact !== null) {
       compact = urlOverrides.compact;
@@ -111,6 +128,8 @@
       budgetWidth,
       budgetHeight,
       compact,
+      compactSignals,
+      screenWidth,
       compactOverride: urlOverrides.compact,
       compactWidthOverride: urlOverrides.compactWidth,
       compactHeightOverride: urlOverrides.compactHeight,
@@ -249,6 +268,14 @@
     );
     body.setAttribute("data-compact-width", String(Math.round(budget.budgetWidth || 0)));
     body.setAttribute("data-compact-height", String(Math.round(budget.budgetHeight || 0)));
+    body.setAttribute(
+      "data-compact-screen-width",
+      budget.screenWidth ? String(Math.round(budget.screenWidth)) : "unknown"
+    );
+    body.setAttribute(
+      "data-compact-signals",
+      JSON.stringify(budget.compactSignals || {})
+    );
     body.setAttribute(
       "data-compact-width-override",
       budget.compactWidthOverride ? String(Math.round(budget.compactWidthOverride)) : "none"
