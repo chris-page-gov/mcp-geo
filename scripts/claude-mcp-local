@@ -18,6 +18,77 @@ log() {
   printf "[mcp-geo] %s\n" "$*" >&2
 }
 
+trim_space() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf "%s" "$value"
+}
+
+dotenv_get() {
+  local key="$1"
+  local file="$2"
+  [[ -f "$file" ]] || return 1
+  awk -v k="$key" '
+    /^[[:space:]]*#/ { next }
+    {
+      line = $0
+      sub(/^[[:space:]]*export[[:space:]]+/, "", line)
+      if (line !~ ("^[[:space:]]*" k "[[:space:]]*=")) {
+        next
+      }
+      sub("^[[:space:]]*" k "[[:space:]]*=", "", line)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+      if ((line ~ /^".*"$/) || (line ~ /^'\''.*'\''$/)) {
+        line = substr(line, 2, length(line) - 2)
+      }
+      print line
+      found = 1
+    }
+    END {
+      if (!found) {
+        exit 1
+      }
+    }
+  ' "$file"
+}
+
+hydrate_env_secret() {
+  local key="$1"
+  local file_var="${key}_FILE"
+  local value="${!key:-}"
+  if [[ -n "$value" ]]; then
+    return 0
+  fi
+
+  local file_path="${!file_var:-}"
+  if [[ -n "$file_path" && -r "$file_path" ]]; then
+    value="$(<"$file_path")"
+    value="$(trim_space "$value")"
+    if [[ -n "$value" ]]; then
+      export "$key=$value"
+      return 0
+    fi
+  fi
+
+  if [[ "$(uname -s)" == "Darwin" ]] && command -v launchctl >/dev/null 2>&1; then
+    value="$(launchctl getenv "$key" 2>/dev/null || true)"
+    value="$(trim_space "$value")"
+    if [[ -n "$value" ]]; then
+      export "$key=$value"
+      return 0
+    fi
+  fi
+
+  local dotenv_file="${MCP_GEO_ENV_FILE:-$REPO_ROOT/.env}"
+  value="$(dotenv_get "$key" "$dotenv_file" 2>/dev/null || true)"
+  value="$(trim_space "$value")"
+  if [[ -n "$value" ]]; then
+    export "$key=$value"
+    return 0
+  fi
+}
+
 if [[ -z "$DOCKER_BIN" ]]; then
   for candidate in /usr/local/bin/docker /opt/homebrew/bin/docker /usr/bin/docker; do
     if [[ -x "$candidate" ]]; then
@@ -38,6 +109,11 @@ if ! "$DOCKER_BIN" info >/dev/null 2>&1; then
   log "docker is installed but not running. Start Docker Desktop and retry."
   exit 1
 fi
+
+# Hydrate API secrets from host env/secret file/launchctl/.env without requiring
+# hardcoded values in Claude/VS Code MCP config.
+hydrate_env_secret "OS_API_KEY"
+hydrate_env_secret "ONS_API_KEY"
 
 mkdir -p "$DATA_DIR" "$LOG_DIR"
 

@@ -37,6 +37,22 @@ Need OS credentials or trial access before troubleshooting auth errors?
 | ELICITATION_INVALID_RESULT | Client returned malformed elicitation result | Client bug or unsupported elicitation response shape | Update client MCP support or disable elicitation (`MCP_STDIO_ELICITATION_ENABLED=0` / `MCP_HTTP_ELICITATION_ENABLED=0`) |
 | ELICITATION_UNAVAILABLE | No elicitation response arrived | Client announced support but did not answer prompt | Retry, verify client capability handling, or disable elicitation for deterministic flow |
 
+## Claude Desktop + Docker wrapper: `OS_API_KEY` not found after key rotation
+If Claude can connect to MCP but OS-backed calls return `NO_API_KEY`, the
+wrapper process likely cannot see your host key environment.
+
+`scripts/claude-mcp-local` now resolves secrets in this order (first hit wins):
+1. Existing process env (`OS_API_KEY`, `ONS_API_KEY`)
+2. Secret-file env (`OS_API_KEY_FILE`, `ONS_API_KEY_FILE`)
+3. macOS GUI env via `launchctl getenv <KEY>`
+4. Repo dotenv file (`MCP_GEO_ENV_FILE`, default: `.env`)
+
+Recommended setup:
+- Keep `OS_API_KEY` out of `claude_desktop_config.json`.
+- Put `OS_API_KEY=<your-key>` in repo `.env` (git-ignored), or set
+  `OS_API_KEY_FILE` to a local secret file.
+- Fully restart Claude Desktop after changing key material.
+
 ## `os_features.query` returns an XML `ExceptionReport`
 If `os_features.query` returns an `OS_API_ERROR` whose message starts with XML (for example `<?xml ... <ExceptionReport ...>`),
 it usually means the upstream OS endpoint rejected the request (wrong endpoint, unknown collection id, or missing entitlement).

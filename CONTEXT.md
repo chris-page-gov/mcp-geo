@@ -103,6 +103,10 @@ assumptions change.
 - Maintain compact startup-catalog behavior for Claude in
   `server/stdio_adapter.py` (`MCP_STDIO_LIST_COMPACT`) to reduce startup
   context pressure while retaining callable tool metadata.
+- Maintain Docker wrapper secret-hydration order in
+  `scripts/claude-mcp-local` (env -> `*_FILE` -> macOS `launchctl` -> `.env`)
+  so rotated OS credentials are picked up without embedding secrets in MCP
+  client config.
 - Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
 - Coordinate parallel OS gap workstreams and integration gates from
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.

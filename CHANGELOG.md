@@ -31,6 +31,12 @@ All notable changes to this project will be documented in this file.
   `tools/list` and `resources/list` omit heavy optional metadata
   (`outputSchema`, `toolsets`, resource `_meta` CSP blocks) and reduce startup
   payload pressure.
+- Updated `scripts/claude-mcp-local` to hydrate `OS_API_KEY`/`ONS_API_KEY`
+  without hardcoding secrets in MCP config, using fallback resolution from
+  process env, `*_FILE` env, macOS `launchctl getenv`, and repo `.env`
+  (`MCP_GEO_ENV_FILE` override supported).
+- Updated troubleshooting docs with the new wrapper key-resolution order and
+  restart guidance for Claude Desktop after key rotation.
 - Updated the Svelte playground UI preview host controls to expose explicit
   compact-window testing mode (`auto` / `force compact` / `force regular`) with
   configurable compact width/height passed via `hostContext.containerDimensions`.
