@@ -100,6 +100,9 @@ assumptions change.
   forwarding toolset/content env controls in `scripts/claude-mcp-local` so
   startup `tools/list` remains scoped (`starter` + include toolsets) when
   configured.
+- Maintain compact startup-catalog behavior for Claude in
+  `server/stdio_adapter.py` (`MCP_STDIO_LIST_COMPACT`) to reduce startup
+  context pressure while retaining callable tool metadata.
 - Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
 - Coordinate parallel OS gap workstreams and integration gates from
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.

@@ -256,6 +256,34 @@ def test_tools_list_query_filters_and_limits_results():
     assert "os_places.by_postcode" in original_names
 
 
+def test_tools_list_compact_for_claude_hides_heavy_fields(monkeypatch):
+    monkeypatch.delenv("MCP_STDIO_LIST_COMPACT", raising=False)
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
+    result = stdio_adapter.handle_list_tools({})
+    assert "toolsets" not in result
+    assert result["tools"]
+    tool = result["tools"][0]
+    assert "outputSchema" not in tool
+    assert "version" not in tool
+
+
+def test_tools_list_compact_can_be_disabled(monkeypatch):
+    monkeypatch.setenv("MCP_STDIO_LIST_COMPACT", "false")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
+    result = stdio_adapter.handle_list_tools({})
+    assert "toolsets" in result
+    assert result["tools"]
+    assert "outputSchema" in result["tools"][0]
+
+
+def test_resources_list_compact_for_claude_removes_meta(monkeypatch):
+    monkeypatch.delenv("MCP_STDIO_LIST_COMPACT", raising=False)
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
+    result = stdio_adapter.handle_list_resources({})
+    assert result["resources"]
+    assert all("_meta" not in item for item in result["resources"])
+
+
 def test_read_headers_invalid_content_length():
     buf = io.StringIO("Content-Length: nope\r\n\r\n")
     length, error = stdio_adapter._read_headers(buf)

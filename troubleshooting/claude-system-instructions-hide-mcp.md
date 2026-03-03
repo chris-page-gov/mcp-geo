@@ -195,3 +195,30 @@ Evidence paths:
    - `os_places_by_postcode` with `{"postcode":"CV1 3HB"}`
 4. Confirm trace no longer depends on full-catalog startup before first useful
    call.
+
+---
+
+## Specification Clarification (2026-03-03): MCP vs Claude Tool Search progressive disclosure
+
+What MCP `2025-11-25` requires:
+
+- `tools/list` is the standard discovery call and returns `result.tools`.
+- `tools/list` request supports only paginated params (`cursor`) in the core
+  schema.
+- Tool definitions must include at least `name` and `inputSchema`; `outputSchema`
+  is optional.
+- There is no standard `tools/search` RPC in core MCP.
+
+What this means operationally:
+
+- "Send nothing until a tool is selected" is **not** a core MCP requirement.
+- Progressive disclosure can still be implemented by client behavior and/or
+  server pagination/compact metadata, but that is beyond strict core
+  `tools/list` semantics.
+
+Claude-side behavior (non-core, client feature):
+
+- Claude Code docs describe Tool Search as a client mechanism where MCP tools
+  may be deferred in model context and searched on-demand.
+- This does not remove the need for MCP discovery calls; it changes how the
+  client uses and loads tool definitions for model context.

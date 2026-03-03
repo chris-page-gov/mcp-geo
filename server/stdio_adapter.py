@@ -455,6 +455,16 @@ def _tool_content_limit_bytes() -> int:
     return max(512, value)
 
 
+def _compact_startup_catalog() -> bool:
+    raw = os.getenv("MCP_STDIO_LIST_COMPACT", "").strip().lower()
+    if raw in {"1", "true", "yes", "on"}:
+        return True
+    if raw in {"0", "false", "no", "off"}:
+        return False
+    # Default to compact catalogs for Claude sessions to reduce startup context pressure.
+    return _is_claude_client()
+
+
 def _tool_content_from_data(data: Any, allow_resource: bool = True) -> List[Dict[str, Any]]:
     if data is None:
         return []
@@ -761,7 +771,11 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
     }
 
 
-def _build_list_tool_entries(filtered_tools: list[Any]) -> list[dict[str, Any]]:
+def _build_list_tool_entries(
+    filtered_tools: list[Any],
+    *,
+    compact: bool,
+) -> list[dict[str, Any]]:
     tool_entries: list[dict[str, Any]] = []
     original_to_sanitized, _ = _build_tool_name_maps()
     for t in filtered_tools:
@@ -780,19 +794,21 @@ def _build_list_tool_entries(filtered_tools: list[Any]) -> list[dict[str, Any]]:
         entry: Dict[str, Any] = {
             "name": name,
             "description": t.description,
-            "version": t.version,
             "inputSchema": input_schema,
-            "outputSchema": t.output_schema,
             "annotations": annotations,
         }
+        if not compact:
+            entry["version"] = t.version
+            entry["outputSchema"] = t.output_schema
         ui_meta = build_ui_tool_meta(t.name)
         internal_meta: dict[str, Any] = {}
         if meta.get("category") is not None:
             internal_meta["category"] = meta.get("category")
-        if meta.get("keywords"):
-            internal_meta["keywords"] = meta.get("keywords", [])
-        if meta.get("defer_loading") is not None:
-            internal_meta["deferLoading"] = meta.get("defer_loading")
+        if not compact:
+            if meta.get("keywords"):
+                internal_meta["keywords"] = meta.get("keywords", [])
+            if meta.get("defer_loading") is not None:
+                internal_meta["deferLoading"] = meta.get("defer_loading")
         if ui_meta or internal_meta:
             merged: dict[str, Any] = {}
             if ui_meta:
@@ -805,6 +821,7 @@ def _build_list_tool_entries(filtered_tools: list[Any]) -> list[dict[str, Any]]:
 
 
 def handle_list_tools(_params: Dict[str, Any]) -> Any:
+    compact = _compact_startup_catalog()
     toolset = _params.get("toolset")
     if toolset is not None and not isinstance(toolset, str):
         raise ValueError("toolset must be a string")
@@ -850,10 +867,12 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
         ]
         by_name = {tool.name: tool for tool in filtered_tools}
         filtered_tools = [by_name[name] for name in ranked_names if name in by_name]
-    return {
-        "tools": _build_list_tool_entries(filtered_tools),
-        "toolsets": get_toolset_catalog(),
+    result: Dict[str, Any] = {
+        "tools": _build_list_tool_entries(filtered_tools, compact=compact),
     }
+    if not compact:
+        result["toolsets"] = get_toolset_catalog()
+    return result
 
 
 def handle_search_tools(params: Dict[str, Any]) -> Any:
@@ -1004,8 +1023,22 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
         result["isError"] = True
     return result
 
+def _compact_resources(resources: List[dict[str, Any]]) -> List[dict[str, Any]]:
+    if not _compact_startup_catalog():
+        return resources
+    compact_resources: List[dict[str, Any]] = []
+    for item in resources:
+        compact_item: Dict[str, Any] = {
+            key: value
+            for key, value in item.items()
+            if key in {"uri", "name", "title", "description", "mimeType", "annotations", "type"}
+        }
+        compact_resources.append(compact_item)
+    return compact_resources
+
+
 def handle_list_resources(_params: Dict[str, Any]) -> Any:
-    return {"resources": RESOURCE_LIST}
+    return {"resources": _compact_resources(RESOURCE_LIST)}
 
 def handle_list_resource_templates(_params: Dict[str, Any]) -> Any:
     return {"resourceTemplates": []}
@@ -1032,7 +1065,7 @@ HANDLERS: Dict[str, Any] = {
     "tools/call": handle_call_tool,
     "resources/list": handle_list_resources,
     "resources/templates/list": handle_list_resource_templates,
-    "resources/describe": lambda _p: {"resources": RESOURCE_LIST},
+    "resources/describe": lambda _p: {"resources": _compact_resources(RESOURCE_LIST)},
     "resources/read": handle_get_resource,
     "prompts/list": handle_list_prompts,
     "prompts/get": handle_get_prompt,

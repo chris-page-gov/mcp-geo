@@ -26,6 +26,11 @@ All notable changes to this project will be documented in this file.
   `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`) and `MCP_STDIO_TOOL_CONTENT_MAX_BYTES`
   into the container so constrained clients do not regress to full-catalog
   startup discovery.
+- Added compact startup catalog behavior in `server/stdio_adapter.py` for
+  Claude sessions (`MCP_STDIO_LIST_COMPACT`, auto-enabled for Claude) so
+  `tools/list` and `resources/list` omit heavy optional metadata
+  (`outputSchema`, `toolsets`, resource `_meta` CSP blocks) and reduce startup
+  payload pressure.
 - Updated the Svelte playground UI preview host controls to expose explicit
   compact-window testing mode (`auto` / `force compact` / `force regular`) with
   configurable compact width/height passed via `hostContext.containerDimensions`.
