@@ -148,3 +148,50 @@ Evidence paths:
 2. If still interrupted, retry in a fresh Claude thread/session.
 3. Use `os_mcp_descriptor` as a deterministic first call to confirm live tool
    access before deeper planning flows.
+
+---
+
+## Follow-up Incident (2026-03-03): Docker rebuild alone did not apply scoped defaults
+
+### User-visible symptom
+
+- Rebuilding the Docker image did not resolve Claude failures.
+- Trace still showed immediate `tools/list` with empty params (`{}`), followed
+  by a full-catalog response.
+
+### Root cause
+
+- `claude_desktop`/wrapper environment included scoped defaults (for example
+  `MCP_TOOLS_DEFAULT_TOOLSET=starter`,
+  `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=features_layers`), but
+  `scripts/claude-mcp-local` was not forwarding those variables into
+  `docker run`.
+- Result: container runtime fell back to unscoped behavior (`tools/list` => all
+  tools).
+
+### Fix applied
+
+- Updated `scripts/claude-mcp-local` env passthrough list to include:
+  - `MCP_TOOLS_DEFAULT_TOOLSET`
+  - `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`
+  - `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`
+  - `MCP_STDIO_TOOL_CONTENT_MAX_BYTES`
+
+### Verification evidence
+
+- Local deterministic check via wrapper command path:
+  - without passthrough defaults: `tools/list` returned `81` tools
+  - with passthrough defaults (`starter` + `features_layers`): `tools/list`
+    returned `25` tools
+- This confirms rebuild-only is insufficient if runtime env propagation is
+  incomplete.
+
+### Operator runbook after rebuild
+
+1. Ensure wrapper/env now includes default toolset vars.
+2. Restart the MCP client session (Claude/VS Code) so it re-initializes.
+3. Run a deterministic smoke check:
+   - `os_mcp_descriptor`
+   - `os_places_by_postcode` with `{"postcode":"CV1 3HB"}`
+4. Confirm trace no longer depends on full-catalog startup before first useful
+   call.

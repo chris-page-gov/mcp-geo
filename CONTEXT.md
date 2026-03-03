@@ -96,6 +96,10 @@ assumptions change.
 - Maintain Claude tool-discovery interoperability hardening where some clients
   send search-style params via `tools/list`; keep filtered `tools/list` behavior
   and troubleshooting evidence synchronized with MCP standard references.
+- Keep Docker-backed Claude runs aligned with host/devcontainer defaults by
+  forwarding toolset/content env controls in `scripts/claude-mcp-local` so
+  startup `tools/list` remains scoped (`starter` + include toolsets) when
+  configured.
 - Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
 - Coordinate parallel OS gap workstreams and integration gates from
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.

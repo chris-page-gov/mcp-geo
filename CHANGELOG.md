@@ -17,6 +17,12 @@ All notable changes to this project will be documented in this file.
   to honor query-style discovery params (`query`/`q`, `mode`, `limit`,
   `category`) and return ranked filtered tool definitions instead of full
   catalog payloads when a query is provided.
+- Updated Docker Claude wrapper `scripts/claude-mcp-local` to pass through
+  default toolset env controls (`MCP_TOOLS_DEFAULT_TOOLSET`,
+  `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`,
+  `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`) and `MCP_STDIO_TOOL_CONTENT_MAX_BYTES`
+  into the container so constrained clients do not regress to full-catalog
+  startup discovery.
 - Updated the Svelte playground UI preview host controls to expose explicit
   compact-window testing mode (`auto` / `force compact` / `force regular`) with
   configurable compact width/height passed via `hostContext.containerDimensions`.

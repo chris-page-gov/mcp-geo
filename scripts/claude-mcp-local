@@ -102,7 +102,15 @@ env_args=(
   -e "UI_EVENT_LOG_PATH=${UI_EVENT_LOG_PATH:-/logs/ui-events.jsonl}"
 )
 
-for var in OS_API_KEY ONS_API_KEY STDIO_KEY BEARER_TOKENS; do
+for var in \
+  OS_API_KEY \
+  ONS_API_KEY \
+  STDIO_KEY \
+  BEARER_TOKENS \
+  MCP_TOOLS_DEFAULT_TOOLSET \
+  MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS \
+  MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS \
+  MCP_STDIO_TOOL_CONTENT_MAX_BYTES; do
   value="${!var:-}"
   if [[ -n "$value" ]]; then
     env_args+=(-e "$var=$value")
