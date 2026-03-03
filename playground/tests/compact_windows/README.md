@@ -18,3 +18,10 @@ Entry points:
 
 - `npm --prefix playground run test:compact`
 - `npm --prefix playground run test:compact-matrix`
+
+Manual compact override:
+
+- Append `?compact=1` to any UI URL to force compact layout.
+- Append `?compact=0` to force regular layout.
+- Optional: append `compactWidth=<px>&compactHeight=<px>` to emulate a host budget
+  while keeping your browser window large.

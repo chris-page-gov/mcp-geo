@@ -67,3 +67,45 @@ test.describe("compact matrix acceptance", () => {
     }
   }
 });
+
+test.describe("compact query override", () => {
+  for (const uiFile of UI_FILES) {
+    test(`${uiFile} forces compact with compact=1`, async ({ page }) => {
+      await installMcpBridge(page, {
+        hostContext: HOST_PROFILES.fullscreen_capable_desktop,
+        strictToolMatching: false,
+      });
+
+      await page.setViewportSize({ width: 1200, height: 900 });
+      await page.goto(`${uiFileUrl(uiFile)}?compact=1`, { waitUntil: "domcontentloaded" });
+
+      await expect
+        .poll(() =>
+          page.evaluate(() => ({
+            compact: document.body?.dataset?.compact || null,
+            override: document.body?.dataset?.compactOverride || null,
+          }))
+        )
+        .toEqual({ compact: "true", override: "true" });
+    });
+
+    test(`${uiFile} disables compact with compact=0`, async ({ page }) => {
+      await installMcpBridge(page, {
+        hostContext: HOST_PROFILES.claude_inline_500,
+        strictToolMatching: false,
+      });
+
+      await page.setViewportSize({ width: 320, height: 500 });
+      await page.goto(`${uiFileUrl(uiFile)}?compact=0`, { waitUntil: "domcontentloaded" });
+
+      await expect
+        .poll(() =>
+          page.evaluate(() => ({
+            compact: document.body?.dataset?.compact || null,
+            override: document.body?.dataset?.compactOverride || null,
+          }))
+        )
+        .toEqual({ compact: "false", override: "false" });
+    });
+  }
+});

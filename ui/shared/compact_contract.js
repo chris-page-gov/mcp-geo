@@ -36,6 +36,43 @@
     return Number.isFinite(asNumber) ? asNumber : null;
   }
 
+  function parseCompactOverride(value) {
+    if (typeof value !== "string") {
+      return null;
+    }
+    const normalized = value.trim().toLowerCase();
+    if (!normalized || normalized === "auto") {
+      return null;
+    }
+    if (["1", "true", "yes", "on", "compact"].includes(normalized)) {
+      return true;
+    }
+    if (["0", "false", "no", "off", "full", "regular"].includes(normalized)) {
+      return false;
+    }
+    return null;
+  }
+
+  function readUrlOverrides() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const compact = parseCompactOverride(params.get("compact"));
+      const compactWidth = normalizeNumber(params.get("compactWidth"));
+      const compactHeight = normalizeNumber(params.get("compactHeight"));
+      return {
+        compact,
+        compactWidth: compactWidth && compactWidth > 0 ? compactWidth : null,
+        compactHeight: compactHeight && compactHeight > 0 ? compactHeight : null,
+      };
+    } catch (_err) {
+      return {
+        compact: null,
+        compactWidth: null,
+        compactHeight: null,
+      };
+    }
+  }
+
   function readBudget() {
     const docEl = document.documentElement;
     const viewportWidth = Math.max(window.innerWidth || 0, docEl ? docEl.clientWidth : 0);
@@ -43,11 +80,14 @@
 
     const context = state.hostContext || {};
     const dims = context.containerDimensions || {};
+    const urlOverrides = readUrlOverrides();
     const width =
+      urlOverrides.compactWidth ||
       normalizeNumber(dims.width) ||
       normalizeNumber(dims.maxWidth) ||
       viewportWidth;
     const height =
+      urlOverrides.compactHeight ||
       normalizeNumber(dims.height) ||
       normalizeNumber(dims.maxHeight) ||
       viewportHeight;
@@ -55,11 +95,15 @@
     const budgetWidth = Math.min(viewportWidth || width, width || viewportWidth);
     const budgetHeight = Math.min(viewportHeight || height, height || viewportHeight);
 
-    const compact =
+    let compact =
       budgetWidth <= 380 ||
       budgetHeight <= 520 ||
       (viewportWidth > 0 && viewportWidth <= 380) ||
       (viewportHeight > 0 && viewportHeight <= 520);
+
+    if (urlOverrides.compact !== null) {
+      compact = urlOverrides.compact;
+    }
 
     return {
       viewportWidth,
@@ -67,6 +111,9 @@
       budgetWidth,
       budgetHeight,
       compact,
+      compactOverride: urlOverrides.compact,
+      compactWidthOverride: urlOverrides.compactWidth,
+      compactHeightOverride: urlOverrides.compactHeight,
     };
   }
 
@@ -196,8 +243,20 @@
     }
     const budget = readBudget();
     body.setAttribute("data-compact", budget.compact ? "true" : "false");
+    body.setAttribute(
+      "data-compact-override",
+      budget.compactOverride === null ? "auto" : budget.compactOverride ? "true" : "false"
+    );
     body.setAttribute("data-compact-width", String(Math.round(budget.budgetWidth || 0)));
     body.setAttribute("data-compact-height", String(Math.round(budget.budgetHeight || 0)));
+    body.setAttribute(
+      "data-compact-width-override",
+      budget.compactWidthOverride ? String(Math.round(budget.compactWidthOverride)) : "none"
+    );
+    body.setAttribute(
+      "data-compact-height-override",
+      budget.compactHeightOverride ? String(Math.round(budget.compactHeightOverride)) : "none"
+    );
 
     const overflowPx = overflowPixels();
     body.setAttribute("data-overflow-px", String(overflowPx));
