@@ -44,6 +44,42 @@ def test_nomis_query_success(monkeypatch):
     assert body["data"]["value"] == 123
 
 
+def test_nomis_query_normalizes_date_and_drops_cell_for_jsonstat(monkeypatch):
+    from tools import nomis_common
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        assert url.endswith("/dataset/NM_17_5.jsonstat.json")
+        params = params or {}
+        assert params.get("time") == "latest"
+        assert "date" not in params
+        assert "cell" not in params
+        return 200, {"dataset": "NM_17_5", "value": 321}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_17_5",
+            "params": {
+                "geography": "E07000222",
+                "date": "latest",
+                "cell": "0",
+                "variable": "1",
+                "measures": "20599",
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["value"] == 321
+    assert "paramNormalization" in body["queryAdjusted"]
+
+
 def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
     from tools import nomis_common
     from server.config import settings
@@ -108,6 +144,50 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
     assert body["queryAdjusted"]["geographyResolvedFromGss"] is True
     assert body["queryAdjusted"]["originalGeography"] == "E05012621,E05012622"
     assert body["queryAdjusted"]["resolvedGeography"] == "641733691,641733692"
+
+
+def test_nomis_query_error_surface_includes_guidance(monkeypatch):
+    from tools import nomis_common, nomis_data
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        return 200, {"error": "Cannot create query"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    monkeypatch.setattr(
+        nomis_data,
+        "_fetch_dataset_overview",
+        lambda dataset: {
+            "dimensions": [
+                {"concept": "geography"},
+                {"concept": "time"},
+                {"concept": "variable"},
+                {"concept": "measures", "sampleValues": ["20599", "21001", "21002", "21003"]},
+            ]
+        },
+    )
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_17_5",
+            "params": {
+                "geography": "E07000222",
+                "date": "latest",
+                "cell": "0",
+                "measures": "20100",
+            },
+        },
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "NOMIS_QUERY_ERROR"
+    assert "variable" in body["missingDimensions"]
+    assert "Provided measures='20100'" in body["hint"]
+    assert "queryAdjusted" in body
 
 
 def test_nomis_concepts_and_codelists_use_sdmx_json_endpoints(monkeypatch):

@@ -641,6 +641,95 @@ def _missing_dimensions_message(
     return missing, template
 
 
+def _normalize_query_params(
+    params: dict[str, Any],
+    fmt: str,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    normalized = dict(params)
+    changes: list[dict[str, Any]] = []
+    if "time" not in normalized and "date" in normalized:
+        normalized["time"] = normalized.pop("date")
+        changes.append(
+            {
+                "kind": "alias",
+                "from": "date",
+                "to": "time",
+                "reason": "NOMIS queries use 'time'.",
+            }
+        )
+    if fmt == "jsonstat" and "cell" in normalized:
+        normalized.pop("cell", None)
+        changes.append(
+            {
+                "kind": "drop",
+                "field": "cell",
+                "reason": "NOMIS JSON-stat queries do not support 'cell'.",
+            }
+        )
+    return normalized, changes
+
+
+def _dimension_samples(
+    overview: dict[str, Any] | None,
+    concept: str,
+) -> list[str]:
+    if not isinstance(overview, dict):
+        return []
+    dimensions = overview.get("dimensions")
+    if not isinstance(dimensions, list):
+        return []
+    for dim in dimensions:
+        if not isinstance(dim, dict):
+            continue
+        if str(dim.get("concept", "")).strip().lower() != concept:
+            continue
+        values = dim.get("sampleValues")
+        if not isinstance(values, list):
+            return []
+        return [str(value).strip() for value in values if str(value).strip()]
+    return []
+
+
+def _query_error_payload(
+    *,
+    dataset: str,
+    err: str,
+    params: dict[str, Any],
+    query_adjusted: dict[str, Any] | None,
+) -> tuple[int, dict[str, Any]]:
+    overview = _fetch_dataset_overview(dataset)
+    missing, template = _missing_dimensions_message(params, overview)
+    base_hint = "Use nomis.datasets with dataset=<id> to inspect queryTemplate and dimensions."
+    if missing:
+        hint = f"Required dimensions likely missing or malformed. {base_hint}"
+    else:
+        hint = (
+            "All required dimensions appear present; one or more dimension values may be invalid. "
+            f"{base_hint} Use nomis.codelists to inspect valid codes."
+        )
+    if isinstance(params.get("geography"), str):
+        hint = f"{hint} If providing GSS geography codes, NOMIS may require numeric IDs."
+    measures = params.get("measures")
+    measure_samples = _dimension_samples(overview, "measures")
+    if isinstance(measures, str) and measure_samples and measures not in measure_samples:
+        sample_preview = ", ".join(measure_samples[:6])
+        hint = (
+            f"{hint} Provided measures='{measures}' may be invalid for this dataset; "
+            f"sample valid values include: {sample_preview}."
+        )
+    payload: dict[str, Any] = {
+        "isError": True,
+        "code": "NOMIS_QUERY_ERROR",
+        "message": err,
+        "missingDimensions": missing,
+        "suggestedParams": template,
+        "hint": hint,
+    }
+    if query_adjusted is not None:
+        payload["queryAdjusted"] = query_adjusted
+    return 400, payload
+
+
 def _datasets(payload: dict[str, Any]) -> ToolResult:
     live = _require_live()
     if live:
@@ -892,16 +981,30 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "params must be an object"}
     suffix = "jsonstat.json" if fmt == "jsonstat" else "generic.sdmx.json"
     path = f"dataset/{dataset}.{suffix}"
-    params_dict = params or {}
+    params_dict, normalization_changes = _normalize_query_params(params or {}, fmt)
+    normalized = dict(params_dict)
+    if normalization_changes:
+        query_adjusted = {
+            "paramNormalization": {
+                "changes": normalization_changes,
+                "original": params or {},
+                "normalized": normalized,
+            }
+        }
     resolved = _maybe_resolve_gss_geographies(dataset, params_dict)
     if resolved:
-        params_dict, query_adjusted = resolved
+        params_dict, geography_adjusted = resolved
+        if query_adjusted is None:
+            query_adjusted = geography_adjusted
+        else:
+            query_adjusted.update(geography_adjusted)
     status, data = nomis_client.get_json(_build_url(path), params=params_dict)
     if status != 200:
         return status, data
     err = _extract_nomis_error(data)
     if err:
-        if "incomplete" in err.lower():
+        err_lower = err.lower()
+        if "incomplete" in err_lower or "cannot create query" in err_lower:
             adjusted = None
             adjusted_meta = None
             if query_adjusted is None:
@@ -927,34 +1030,27 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                         }
                         if adjusted_meta is not None:
                             result["queryAdjusted"] = adjusted_meta
+                        elif query_adjusted is not None:
+                            result["queryAdjusted"] = query_adjusted
                         return 200, result
-            overview = _fetch_dataset_overview(dataset)
-            missing, template = _missing_dimensions_message(params_dict, overview)
-            base_hint = "Use nomis.datasets with dataset=<id> to inspect queryTemplate and dimensions."
-            if missing:
-                hint = f"Required dimensions likely missing or malformed. {base_hint}"
-            else:
-                hint = (
-                    "All required dimensions appear present; one or more dimension values may be invalid. "
-                    f"{base_hint} Use nomis.codelists to inspect valid codes."
-                )
-            if isinstance(params_dict.get("geography"), str):
-                hint = f"{hint} If providing GSS geography codes, NOMIS may require numeric IDs."
-            return 400, {
-                "isError": True,
-                "code": "NOMIS_QUERY_ERROR",
-                "message": err,
-                "missingDimensions": missing,
-                "suggestedParams": template,
-                "hint": hint,
-            }
+            return _query_error_payload(
+                dataset=dataset,
+                err=err,
+                params=params_dict,
+                query_adjusted=query_adjusted,
+            )
         return 400, {"isError": True, "code": "NOMIS_QUERY_ERROR", "message": err}
     result: dict[str, Any] = {"live": True, "dataset": dataset, "format": fmt, "data": data}
     if query_adjusted is not None:
         result["queryAdjusted"] = query_adjusted
-        result["hints"] = [
-            "GSS geography codes were resolved to NOMIS numeric ids before querying.",
-        ]
+        hints: list[str] = []
+        if query_adjusted.get("geographyResolvedFromGss"):
+            hints.append("GSS geography codes were resolved to NOMIS numeric ids before querying.")
+        param_normalization = query_adjusted.get("paramNormalization")
+        if isinstance(param_normalization, dict):
+            hints.append("NOMIS query params were normalized for compatibility before querying.")
+        if hints:
+            result["hints"] = hints
     return 200, result
 
 

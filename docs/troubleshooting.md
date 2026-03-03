@@ -62,6 +62,20 @@ Remediation:
   If using `scripts/claude-mcp-local`, set `MCP_GEO_DOCKER_BUILD=always` at least once so the Docker image is rebuilt.
 - Confirm the `collection` id is valid and enabled for your OS Data Hub key.
 
+## `nomis.query` returns `NOMIS_QUERY_ERROR` with `Cannot create query` or `Query is incomplete`
+This usually means one or more query dimensions are missing or not valid for the selected dataset.
+
+Common pitfalls:
+- Using `date` instead of `time`
+- Including `cell` with `format=jsonstat`
+- Omitting required dimensions such as `variable`
+- Passing an invalid measure code for the dataset (for example `20100` for `NM_17_5`)
+
+Recommended flow:
+1. Call `nomis.datasets` with `dataset=<id>` and inspect `queryTemplate` + dimensions.
+2. Retry `nomis.query` with the required dimensions explicitly set.
+3. Use `nomis.codelists` if you need valid dimension codes.
+
 ## `os_features.query` warnings and partial scans
 `os_features.query` now emits structured hint metadata:
 

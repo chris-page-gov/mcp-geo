@@ -39,6 +39,10 @@ All notable changes to this project will be documented in this file.
   updated MCP templates/docs (`mcp.json`, `.vscode/mcp.json`, `.env.example`,
   `README.md`, `docs/getting_started.md`, `docs/vscode.md`) so file-based key
   injection can be used consistently across wrapper and non-wrapper launches.
+- Hardened `nomis.query` compatibility/error handling by normalizing common
+  model-generated params (`date` -> `time`, dropping `cell` for JSON-stat),
+  and returning actionable `NOMIS_QUERY_ERROR` guidance with
+  `missingDimensions`, `suggestedParams`, and dataset-specific measure hints.
 - Updated troubleshooting docs with the new wrapper key-resolution order and
   restart guidance for Claude Desktop after key rotation.
 - Updated the Svelte playground UI preview host controls to expose explicit
