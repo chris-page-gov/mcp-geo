@@ -409,6 +409,14 @@
     return source;
   };
 
+  const getServerOrigin = () => {
+    try {
+      return new URL(serverUrl).origin;
+    } catch (_err) {
+      return "";
+    }
+  };
+
   const buildCsp = (meta) => {
     const csp = meta?.ui?.csp;
     if (!csp) {
@@ -432,26 +440,30 @@
       normalizeCspSource
     );
 
-    let serverOrigin = "";
-    try {
-      serverOrigin = new URL(serverUrl).origin;
-    } catch (err) {
-      serverOrigin = "";
-    }
+    const serverOrigin = getServerOrigin();
     const connectSet = new Set(connectDomains);
     if (serverOrigin) {
       connectSet.add(serverOrigin);
     }
+    const resourceSet = new Set(resourceDomains);
+    if (serverOrigin) {
+      resourceSet.add(serverOrigin);
+    }
 
-    const scriptSources = ["'unsafe-inline'", ...resourceDomains];
-    const styleSources = ["'unsafe-inline'", ...resourceDomains];
-    const imgSources = ["data:", ...resourceDomains];
-    const mediaSources = ["data:", ...resourceDomains];
-    const fontSources = [...resourceDomains];
+    const resourceList = Array.from(resourceSet);
+    const scriptSources = ["'unsafe-inline'", ...resourceList];
+    const styleSources = ["'unsafe-inline'", ...resourceList];
+    const imgSources = ["data:", ...resourceList];
+    const mediaSources = ["data:", ...resourceList];
+    const fontSources = [...resourceList];
 
     const connectSrc = connectSet.size ? Array.from(connectSet).join(" ") : "'none'";
     const frameSrc = frameDomains.length ? frameDomains.join(" ") : "'none'";
-    const baseSrc = baseUriDomains.length ? baseUriDomains.join(" ") : "'self'";
+    const baseSrc = baseUriDomains.length
+      ? baseUriDomains.join(" ")
+      : serverOrigin
+      ? `'self' ${serverOrigin}`
+      : "'self'";
     const workerSrc = workerDomains.length ? `worker-src ${workerDomains.join(" ")}` : "";
 
     return [
@@ -469,6 +481,28 @@
     ]
       .filter((line) => line && line.trim().length)
       .join("; ");
+  };
+
+  const injectPreviewBase = (html) => {
+    if (!html) {
+      return "";
+    }
+    if (/<base\b[^>]*data-mcp-preview-base=["']1["'][^>]*>/i.test(html)) {
+      return html;
+    }
+    const serverOrigin = getServerOrigin();
+    if (!serverOrigin) {
+      return html;
+    }
+    const baseTag = `<base href="${serverOrigin}/ui/" data-mcp-preview-base="1">`;
+    if (html.includes("</head>")) {
+      return html.replace("</head>", `${baseTag}</head>`);
+    }
+    const headMatch = html.match(/<head\b[^>]*>/i);
+    if (headMatch) {
+      return html.replace(headMatch[0], `${headMatch[0]}${baseTag}`);
+    }
+    return `${baseTag}${html}`;
   };
 
   const injectCsp = (html, meta) => {
@@ -1227,7 +1261,7 @@
     COMPACT_HEIGHT_MAX
   );
   $: uiPreviewInlineStyle =
-    uiHostViewportMode === "compact" && !uiPreviewExpanded
+    uiHostViewportMode === "compact"
       ? `--preview-inline-width:${uiCompactWidthPx}px; --preview-inline-height:${uiCompactHeightPx}px;`
       : "";
   $: splitLeftWidthPx = normalizeDimension(
@@ -1237,7 +1271,7 @@
     SPLIT_LEFT_MAX
   );
 
-  $: uiResourceHtml = uiResourceText ? injectCsp(uiResourceText, uiResourceMeta) : "";
+  $: uiResourceHtml = uiResourceText ? injectPreviewBase(injectCsp(uiResourceText, uiResourceMeta)) : "";
   $: uiIframeSandbox = buildSandbox(uiResourceMeta, uiAllowSameOrigin);
   $: uiIframeAllow = buildAllow(uiResourceMeta);
   $: uiSameOriginRequested = wantsSameOrigin(uiResourceMeta?.ui?.permissions || {});
