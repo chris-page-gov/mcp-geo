@@ -1,0 +1,46 @@
+\chapter{Harness, Permissions, and Diagnostics Journey}
+\label{ch:harness}
+
+\section{Execution Progression}
+
+The execution model progressed through three practical stages:
+\begin{enumerate}
+  \item repo-local execution,
+  \item devcontainer execution,
+  \item host-integrated execution for real runtime diagnostics.
+\end{enumerate}
+
+\section{Diagnostics Loop}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=1.5cm,
+  box/.style={draw, rounded corners, align=center, inner sep=5pt},
+  >=Latex
+]
+\node[box] (a) {Capture failure};
+\node[box, right=of a] (b) {Collect traces};
+\node[box, right=of b] (c) {Classify domain};
+\node[box, right=of c] (d) {Patch + tests};
+\node[box, right=of d] (e) {Update docs};
+\draw[->] (a) -- (b);
+\draw[->] (b) -- (c);
+\draw[->] (c) -- (d);
+\draw[->] (d) -- (e);
+\end{tikzpicture}
+\caption{Repeatable troubleshooting loop used across incident classes.}
+\end{figure}
+
+\section{Incident Families Addressed}
+
+\begin{itemize}
+  \item constrained-host tool discovery and naming mismatches,
+  \item MCP-Apps runtime and bridge behaviors,
+  \item map payload and startup pressure,
+  \item NOMIS/ONS query-shape drift,
+  \item collection aliasing and count semantics in feature queries.
+\end{itemize}
+
+The resulting evidence base is represented in troubleshooting reports and tracker
+workstreams \cite{troubleshooting_master,peat_failure_chain,nomis_deep_analysis}.

@@ -1,0 +1,48 @@
+\chapter{System and Components}
+\label{ch:system}
+
+\section{Runtime Structure}
+
+The system exposes MCP functionality through:
+\begin{itemize}
+  \item HTTP transport (including \texttt{/mcp}),
+  \item STDIO transport via JSON-RPC adapter,
+  \item tool and resource catalogs with discovery and call endpoints.
+\end{itemize}
+
+\section{Component Map}
+
+\begin{itemize}
+  \item \texttt{server/}: transports, routing, protocol handling
+  \item \texttt{tools/}: domain handlers (OS, ONS, NOMIS, admin, map)
+  \item \texttt{resources/}: static or generated resource payloads
+  \item \texttt{tests/}: regression, compatibility, and harness validation
+\end{itemize}
+
+\section{Current Functional Scale}
+
+Current registry evidence shows 81 tools loaded in the runtime registry.
+
+\section{Architecture Diagram}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=1.8cm,
+  box/.style={draw, rounded corners, align=center, inner sep=5pt},
+  >=Latex
+]
+\node[box] (h1) {HTTP Host};
+\node[box, below=of h1] (h2) {STDIO Host};
+\node[box, right=2.4cm of h1] (srv) {MCP Server\\(dispatch)};
+\node[box, right=2.4cm of srv] (tools) {Tool Handlers};
+\node[box, right=2.4cm of tools] (data) {OS/ONS/NOMIS\\Data Sources};
+\draw[->] (h1) -- (srv);
+\draw[->] (h2) -- (srv);
+\draw[->] (srv) -- (tools);
+\draw[->] (tools) -- (data);
+\draw[->] (data) -- (tools);
+\draw[->] (tools) -- (srv);
+\end{tikzpicture}
+\caption{High-level runtime flow for user question execution.}
+\end{figure}

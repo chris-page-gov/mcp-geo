@@ -1,0 +1,43 @@
+\chapter{Origin, Scope, and Acknowledgement}
+\label{ch:origin}
+
+\section{Initial Concept}
+
+The initial concept selected a broad read-only capability surface combining
+geospatial and statistical queries. This was treated as a practical stress test
+for MCP delivery in public-sector contexts \cite{apps_to_answers_brief,deep_research_report}.
+
+\section{Acknowledgement of Early Contribution}
+
+The repository history includes an explicit linkage to early \texttt{os-mcp}
+work. The origin narrative also records acknowledgement of early contribution by
+Chris Carlon in initial project prompts captured by Codex reporting artifacts
+\cite{codex_long_horizon_20260304}.
+
+\section{Change of Course}
+
+Delivery moved toward a fully tracked repository model with:
+\begin{itemize}
+  \item durable context tracking,
+  \item progress tracker workstreams,
+  \item release-note discipline,
+  \item test and troubleshooting evidence loops.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=1.7cm,
+  box/.style={draw, rounded corners, align=center, inner sep=6pt},
+  >=Latex
+]
+\node[box] (a) {Initial AI\\design stage};
+\node[box, right=of a] (b) {Early \texttt{os-mcp}\\phase};
+\node[box, right=of b] (c) {New tracked\\repository path};
+\node[box, right=of c] (d) {\texttt{mcp-geo}\\delivery stream};
+\draw[->] (a) -- (b);
+\draw[->] (b) -- (c);
+\draw[->] (c) -- (d);
+\end{tikzpicture}
+\caption{Observed project lineage represented in repository artifacts.}
+\end{figure}

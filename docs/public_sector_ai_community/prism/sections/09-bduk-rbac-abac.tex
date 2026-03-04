@@ -1,0 +1,32 @@
+\chapter{BDUK Pilot Extension and Access-Control Requirements}
+\label{ch:bduk}
+
+\section{Pilot-Readiness Workstreams}
+
+A practical pilot extension path requires:
+\begin{enumerate}
+  \item governance and assurance gate,
+  \item access-control uplift,
+  \item operational hardening,
+  \item onboarding and support pathways.
+\end{enumerate}
+
+\section{RBAC and ABAC Requirement}
+
+As dataset sensitivity expands, policy controls need to move from prompt-level
+intent to enforced runtime checks.
+
+\begin{itemize}
+  \item RBAC: permission by role,
+  \item ABAC: permission by role + context + data attributes,
+  \item deterministic allow/deny records with audit linkage.
+\end{itemize}
+
+\section{Policy Integration Pattern}
+
+\begin{itemize}
+  \item identity propagation from host,
+  \item policy decision point before tool execution,
+  \item policy enforcement point in server logic,
+  \item logged evidence for assurance review.
+\end{itemize}

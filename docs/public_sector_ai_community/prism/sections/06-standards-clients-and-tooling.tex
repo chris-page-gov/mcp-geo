@@ -1,0 +1,31 @@
+\chapter{Standards, Clients, and Tooling Evolution}
+\label{ch:standards}
+
+\section{Protocol Compatibility Posture}
+
+The repository documents a compatibility-first approach:
+\begin{itemize}
+  \item preferred MCP protocol revision: 2025-11-25,
+  \item compatibility support for 2025-06-18, 2025-03-26, and 2024-11-05,
+  \item MCP Apps extension tracking for 2026-01-26.
+\end{itemize}
+
+This is evidenced in the protocol tracker and release notes
+\cite{spec_tracking,release_0212}.
+
+\section{Client Interoperability Evolution}
+
+Observed host/client differences materially affected implementation. The project
+added targeted mitigations for:
+\begin{itemize}
+  \item tool-name compatibility,
+  \item startup payload size constraints,
+  \item UI mount and runtime variance,
+  \item transport framing and metadata expectations.
+\end{itemize}
+
+\section{Tooling Surface Transition}
+
+Repository evidence shows a delivery transition from early Claude-focused
+interoperability work toward broader Codex-driven implementation throughput and
+reporting workflows \cite{progress_tracker,context_tracker,codex_long_horizon_20260304}.

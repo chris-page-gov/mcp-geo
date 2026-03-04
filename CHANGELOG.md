@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- None.
+
+### Changed
+- None.
+
+## [0.5.0] - 2026-03-04
+
+### Added
+- Added a UK Public Sector AI Community documentation collection under
+  `docs/public_sector_ai_community/`, including:
+  - novice/apprentice-oriented chapter set with section-level diagrams
+  - full project journey coverage (origin, timeline, standards/client evolution,
+    harness permissions and troubleshooting loops, evaluation, BDUK extension
+    requirements, RBAC/ABAC considerations, and future direction)
+  - evidence index linking repository research and troubleshooting artifacts.
+- Added Prism-ready LaTeX publication output for the documentation set under
+  `docs/public_sector_ai_community/prism/` (`main.tex`, sectionized chapters,
+  bibliography, and compile/runbook README).
+- Added refreshed Codex long-horizon summary artifacts for 2026-03-04:
+  `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.{md,json,svg}`.
+- Added public-release security review artifact:
+  `docs/reports/public_release_security_review_2026-03-04.md`.
+- Added release notes for public launch candidate:
+  `RELEASE_NOTES/0.5.0.md`.
 - Added a simple map exploration UI resource (`ui://mcp-geo/simple-map-lab`)
   and implementation (`ui/simple_map.html`) for minimal OS Vector vs PMTiles
   trials with basic timing telemetry and deterministic pan-benchmark controls.
@@ -16,6 +40,15 @@ All notable changes to this project will be documented in this file.
   toolset config regressions can be detected quickly.
 
 ### Changed
+- Updated top-level documentation navigation in `README.md` to include the new
+  UK Public Sector AI Community documentation set and Prism publication entry.
+- Added a public-launch caveat statement in `README.md` clarifying personal
+  development status and non-endorsement.
+- Updated reports index `docs/reports/README.md` with current Codex summary
+  report links (2026-03-04 and baseline 2026-02-25).
+- Updated reports index `docs/reports/README.md` to include the public-release
+  security review entry.
+- Bumped package version to `0.5.0` in `pyproject.toml` and `server/__init__.py`.
 - Hardened MCP interop for search-gated clients by teaching STDIO `tools/list`
   to honor query-style discovery params (`query`/`q`, `mode`, `limit`,
   `category`) and return ranked filtered tool definitions instead of full

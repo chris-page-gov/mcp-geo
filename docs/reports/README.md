@@ -23,3 +23,12 @@ This folder contains human-readable run reports and investigation summaries.
 ## Governance and Assurance
 
 - 2026-02-21: [Safe-by-design governance review](safe_by_design_review_2026-02-21.md)
+
+## Public Release Security Reviews
+
+- 2026-03-04: [Public release security review](public_release_security_review_2026-03-04.md)
+
+## Codex Session Reporting
+
+- 2026-03-04: [Codex long-horizon summary](mcp_geo_codex_long_horizon_summary_2026-03-04.md)
+- 2026-02-25: [Codex long-horizon summary (baseline)](mcp_geo_codex_long_horizon_summary_2026-02-25.md)

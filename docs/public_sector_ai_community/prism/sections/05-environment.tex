@@ -1,0 +1,34 @@
+\chapter{Reproducible Development Environment}
+\label{ch:environment}
+
+\section{Baseline Toolchain}
+
+\begin{itemize}
+  \item Python 3.11+
+  \item Node.js 20
+  \item Docker for containerized workflows
+  \item optional PostGIS service for boundary and cache pipelines
+\end{itemize}
+
+\section{Devcontainer Path}
+
+The recommended reproducible setup uses
+\texttt{.devcontainer/devcontainer.json} and docker-compose services with
+post-create dependency provisioning.
+
+\section{Secrets and Runtime Configuration}
+
+The repository supports both direct environment keys and file-based key loading
+(\texttt{OS\_API\_KEY\_FILE}) to reduce hardcoded secret handling in host
+configuration paths.
+
+\section{Core Verification Commands}
+
+\begin{itemize}
+  \item \texttt{pip install -e .[test]}
+  \item \texttt{uvicorn server.main:app --reload}
+  \item \texttt{pytest -q}
+  \item \texttt{npm --prefix playground run test}
+\end{itemize}
+
+Further details are documented in repository runbooks \cite{readme_main,getting_started,build_doc,tutorial_doc}.

@@ -4,6 +4,19 @@ A research Model Context Protocol (MCP) server for geospatial (Ordnance Survey)
 and statistical (Office of National Statistics) data.
 If you have Docker installed and Internet access, have this running in 3 minutes.
 
+## Public Launch Caveat
+
+This repository is a personal development project. It is not production code and
+is not approved by Warwickshire County Council or the Department for Science,
+Innovation and Technology.
+
+All opinions expressed, decisions made, and implementation choices documented in
+this repository come from a novice learning the opportunities afforded by
+emerging AI and MCP technology.
+
+This repository is a diary of that learning journey, not a recommended course of
+action and not a formal proposal.
+
 ## Start here — run the server and ask it a question
 
 This section is for first-time users.
@@ -179,6 +192,17 @@ MCP Inspector or the playground UI, and explore tools/resources.
 
 For a complete design specification (aims, personas, architecture, scenarios,
 diagrams, backlog), see `docs/spec_package/README.md`.
+
+## UK Public Sector AI Community Documentation Set
+
+For the full repository journey narrative (novice-readable chapters, timeline,
+evaluation, troubleshooting evidence index, and extension planning), see:
+
+- `docs/public_sector_ai_community/README.md`
+
+For publication output (LaTeX / Prism-ready with ToC and bibliography), see:
+
+- `docs/public_sector_ai_community/prism/main.tex`
 
 ## Codex Context (Mac App)
 

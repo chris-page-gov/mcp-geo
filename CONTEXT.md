@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
 Owner: @chris-page-gov
 
 ## Purpose
@@ -47,6 +47,9 @@ assumptions change.
 
 ## Current Focus
 
+- Finalizing public launch packaging for `v0.5.0`, including secret/sensitive
+  content review, release notes, tagging, and repository visibility transition
+  to Public.
 - Prioritizing reliable layered map rendering (polygons, lines, points) across
   all clients, with interaction as progressive enhancement where host runtime
   supports MCP-Apps UI; repo-side `LMR-BASE-0` through `LMR-FBK-3` are complete
@@ -86,9 +89,15 @@ assumptions change.
 - Maintaining completed unattended compact-window implementation on
   `codex/compact-windows` with strict six-UI acceptance gating, including
   smoke + matrix Playwright evidence.
+- Publishing and maintaining the UK Public Sector AI Community documentation
+  set (`docs/public_sector_ai_community/`) with novice/apprentice pathways,
+  timeline synthesis, and Prism-ready LaTeX outputs.
 
 ## Active Work
 
+- Complete `REL-PUB-4` publication steps after validation gates: release
+  commit/tag, GitHub release publication with explicit caveat statement, and
+  visibility change to Public.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker
@@ -119,7 +128,8 @@ assumptions change.
 - Track post-program stabilization and backlog sequencing in `PROGRESS.MD`.
 - Coordinate parallel OS gap workstreams and integration gates from
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.
-- Documentation pack and preparation for workshop/demo.
+- Documentation pack and preparation for workshop/demo, now delivered as
+  `docs/public_sector_ai_community/` with linked markdown and Prism outputs.
 - Deliver map delivery research package with personas, autonomous trials, and
   evidence capture under `research/map_delivery_research_2026-02/`.
 - Track recommendation-delivery workstreams in
@@ -234,6 +244,13 @@ assumptions change.
   now extended with deterministic summary-card SVG generation
   (`skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl`)
   and image-first markdown output.
+- Done: refreshed Codex long-horizon metrics on 2026-03-04
+  (`docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.{md,json,svg}`)
+  and integrated updated usage evidence into the new UK Public Sector AI
+  Community documentation set.
+- Done: public-release security review for `v0.5.0` recorded in
+  `docs/reports/public_release_security_review_2026-03-04.md`; no live
+  credential material identified (history detections were redacted placeholders).
 - Done: added repo extent/complexity analysis skill for `mcp-geo` via
   `scripts/repo_extent_complexity_report.py` and
   `skills/mcp-geo-repo-extent-complexity/`, with dual-scope reporting
@@ -278,8 +295,8 @@ assumptions change.
 
 ## Verification Status
 
-- Latest strict test run: `pytest -q` on 2026-02-21
-  (`785 passed`, `6 skipped`, coverage gate failed at `86.69%` vs required `>=90%`).
+- Latest strict test run: `uv run --extra test pytest -q` on 2026-03-04
+  (`994 passed`, `6 skipped`, coverage `91.53%`, gate passed).
 - Latest live harness run: `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live`
   on 2026-02-22 (`6900/6900`, `100%`, `69/69` passed, `rate_limit_429_total=0`).
 - Latest full tool operability aggregation:
@@ -296,6 +313,19 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-03-04: Prepared public-release `v0.5.0` packaging with a formal
+  repository security review (`docs/reports/public_release_security_review_2026-03-04.md`),
+  release notes (`RELEASE_NOTES/0.5.0.md`), version bump (`pyproject.toml`,
+  `server/__init__.py`), and an explicit public-launch caveat statement in
+  `README.md` clarifying personal-development status and non-endorsement by
+  Warwickshire County Council or the Department for Science, Innovation and
+  Technology.
+- 2026-03-04: Published an end-to-end UK Public Sector AI Community
+  documentation package under `docs/public_sector_ai_community/`, including
+  novice/apprentice markdown chapters, detailed internal/external timeline,
+  evaluation chapter, evidence index, and Prism-ready LaTeX publication set
+  (`prism/main.tex` + bibliography + section files). Linked the package from
+  `README.md` and synchronized trackers (`PROGRESS.MD`, `CHANGELOG.md`).
 - 2026-02-27: Started `codex/simple-map` exploration to validate a minimal map
   delivery path with browser bearer auth preferred for OS vector proxy calls
   and deterministic fallback to key header/query or server `OS_API_KEY`; added

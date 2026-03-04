@@ -3,7 +3,29 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
+
+## Public launch release `0.5.0` (2026-03-04)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REL-SEC-1 Public-release security review | done | none | Completed repository security review focused on secrets/sensitive credential leakage across authored content plus git-history scan. Added report `docs/reports/public_release_security_review_2026-03-04.md` and confirmed only redacted placeholder detections (`key=REDACTED`) in prior report artifacts. |
+| REL-PKG-2 Version and release packaging | done | REL-SEC-1 | Bumped version to `0.5.0` (`pyproject.toml`, `server/__init__.py`), promoted changelog content into `## [0.5.0] - 2026-03-04`, added `RELEASE_NOTES/0.5.0.md`, and added public-launch caveat text to `README.md`. |
+| REL-VAL-3 Regression validation gate | done | REL-PKG-2 | Full suite validation passed via `uv run --extra test pytest -q`: `994 passed`, `6 skipped`, coverage `91.53%` (threshold `>=90%`). |
+| REL-PUB-4 Commit/tag/publish + visibility change | in_progress | REL-VAL-3 | Preparing release commit, `v0.5.0` tag, push, GitHub release publication, and repo visibility transition to Public for launch. |
+
+## UK Public Sector AI Community documentation package (2026-03-04)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| DOCS-PLAN-1 Delivery planning and evidence capture | done | none | Compiled repository timeline and external standards/client milestones from `git` history, `RELEASE_NOTES/`, `PROGRESS.MD`, `CONTEXT.md`, `CHANGELOG.md`, and primary external sources (MCP, Anthropic, OpenAI, VS Code). |
+| DOCS-MD-2 Novice/apprentice documentation set | done | DOCS-PLAN-1 | Added `docs/public_sector_ai_community/` multi-file markdown collection covering origin story, architecture, timeline, standards/client evolution, harness and permissions journey, question patterns, effectiveness evaluation, Codex usage statistics, BDUK extension requirements, RBAC/ABAC needs, future direction, and evidence index; added section-level Mermaid diagrams and navigation entrypoint. |
+| DOCS-TEX-3 Publication output (LaTeX/Prism-ready) | done | DOCS-MD-2 | Added `docs/public_sector_ai_community/prism/` package with `main.tex`, chapterized section files, bibliography, ToC, and cross-references to repository evidence and external standards milestones; validated with local `pdflatex` + `bibtex` passes (generated `main.pdf`). |
+| DOCS-INT-4 Repo integration and reporting refresh | done | DOCS-MD-2, DOCS-TEX-3 | Linked new documentation set from `README.md`, refreshed report index entries in `docs/reports/README.md`, generated updated Codex summary artifacts `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.{md,json,svg}`, and synchronized tracker/changelog/context updates. |
 
 ## Peat survey failure-chain hardening (2026-03-03)
 

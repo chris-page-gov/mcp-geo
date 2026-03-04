@@ -1,0 +1,41 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\setlist[itemize]{leftmargin=*}
+\setlist[enumerate]{leftmargin=*}
+
+\title{MCP Geo Documentation Set for the UK Public Sector AI Community\\\large Repository Journey, Evaluation, and Delivery Readiness}
+\author{MCP Geo Project Team}
+\date{March 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\input{sections/01-introduction}
+\input{sections/02-origin-and-scope}
+\input{sections/03-system-and-components}
+\input{sections/04-timeline}
+\input{sections/05-environment}
+\input{sections/06-standards-clients-and-tooling}
+\input{sections/07-harness-and-diagnostics}
+\input{sections/08-evaluation}
+\input{sections/09-bduk-rbac-abac}
+\input{sections/10-future-direction}
+\input{sections/11-evidence-index}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}
