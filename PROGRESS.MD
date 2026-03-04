@@ -14,7 +14,7 @@ Legend: pending, in_progress, done, blocked
 | REL-SEC-1 Public-release security review | done | none | Completed repository security review focused on secrets/sensitive credential leakage across authored content plus git-history scan. Added report `docs/reports/public_release_security_review_2026-03-04.md` and confirmed only redacted placeholder detections (`key=REDACTED`) in prior report artifacts. |
 | REL-PKG-2 Version and release packaging | done | REL-SEC-1 | Bumped version to `0.5.0` (`pyproject.toml`, `server/__init__.py`), promoted changelog content into `## [0.5.0] - 2026-03-04`, added `RELEASE_NOTES/0.5.0.md`, and added public-launch caveat text to `README.md`. |
 | REL-VAL-3 Regression validation gate | done | REL-PKG-2 | Full suite validation passed via `uv run --extra test pytest -q`: `994 passed`, `6 skipped`, coverage `91.53%` (threshold `>=90%`). |
-| REL-PUB-4 Commit/tag/publish + visibility change | in_progress | REL-VAL-3 | Preparing release commit, `v0.5.0` tag, push, GitHub release publication, and repo visibility transition to Public for launch. |
+| REL-PUB-4 Commit/tag/publish + visibility change | done | REL-VAL-3 | Completed release commit (`a76ff59`), created/pushed tag `v0.5.0`, published GitHub release (`https://github.com/chris-page-gov/mcp-geo/releases/tag/v0.5.0`), and switched repository visibility to `PUBLIC`. |
 
 ## UK Public Sector AI Community documentation package (2026-03-04)
 

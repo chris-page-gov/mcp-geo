@@ -95,9 +95,8 @@ assumptions change.
 
 ## Active Work
 
-- Complete `REL-PUB-4` publication steps after validation gates: release
-  commit/tag, GitHub release publication with explicit caveat statement, and
-  visibility change to Public.
+- Maintain published `v0.5.0` launch state (release notes/caveat visibility,
+  security-review traceability, and public-repo hygiene checks).
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker
@@ -313,13 +312,12 @@ assumptions change.
 
 ## Decisions Log
 
-- 2026-03-04: Prepared public-release `v0.5.0` packaging with a formal
-  repository security review (`docs/reports/public_release_security_review_2026-03-04.md`),
-  release notes (`RELEASE_NOTES/0.5.0.md`), version bump (`pyproject.toml`,
-  `server/__init__.py`), and an explicit public-launch caveat statement in
-  `README.md` clarifying personal-development status and non-endorsement by
-  Warwickshire County Council or the Department for Science, Innovation and
-  Technology.
+- 2026-03-04: Completed public-release `v0.5.0` publication: formal repository
+  security review (`docs/reports/public_release_security_review_2026-03-04.md`),
+  release notes (`RELEASE_NOTES/0.5.0.md`), version bump
+  (`pyproject.toml`, `server/__init__.py`), public-launch caveat statement in
+  `README.md`, pushed tag/release (`https://github.com/chris-page-gov/mcp-geo/releases/tag/v0.5.0`),
+  and repository visibility transition to `PUBLIC`.
 - 2026-03-04: Published an end-to-end UK Public Sector AI Community
   documentation package under `docs/public_sector_ai_community/`, including
   novice/apprentice markdown chapters, detailed internal/external timeline,
