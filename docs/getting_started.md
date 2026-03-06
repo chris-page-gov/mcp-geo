@@ -468,6 +468,29 @@ If you need deterministic non-interactive routing, set
 (`os_mcp.stats_routing`, `ons_select.search`). For Streamable HTTP (`/mcp`), set
 `MCP_HTTP_ELICITATION_ENABLED=0`.
 
+## Appendix: Codex local wrapper (PostGIS + cache)
+
+For Codex CLI and Codex IDE, use the Codex-specific launcher so Codex does not
+inherit Claude-only startup defaults:
+
+```bash
+./scripts/codex-mcp-local
+```
+
+The devcontainer setup script now registers Codex against
+`scripts/codex-mcp-local`. Shared Docker/bootstrap logic lives in
+`scripts/mcp-docker-local`, while `scripts/claude-mcp-local` remains
+Claude-only.
+
+To verify scoped startup discovery with the Codex launcher:
+
+```bash
+./scripts/check_codex_startup_scope.sh
+```
+
+For host benchmarking and scored Codex vs Claude runs, use the runbook in
+`docs/benchmarking/codex_vs_claude_host_benchmark.md`.
+
 ## Appendix: ChatGPT local dev (HTTPS tunnel)
 
 ChatGPT requires the MCP server to be reachable over HTTPS. For local

@@ -3,319 +3,230 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import zipfile
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.trace_utils import (
+    classify_startup_discovery,
+    classify_tool_search_usage,
+    extract_fallback_responses,
+    find_trace_files,
+    format_bytes,
+    parse_mcp_trace,
+    parse_ui_events,
+    resolve_session_dir,
+    summarize_methods,
+    summarize_upstream_log,
+)
 
 DEFAULT_SESSION_ROOT = Path("logs") / "sessions"
 
 
-def _load_jsonl(path: Path) -> Iterable[dict[str, Any]]:
-    with path.open("r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                payload = json.loads(line)
-            except json.JSONDecodeError:
-                yield {"_parse_error": line}
-                continue
-            if isinstance(payload, dict):
-                yield payload
-
-
-def _resolve_session_dir(value: str) -> Path:
-    if value == "latest":
-        marker = DEFAULT_SESSION_ROOT / ".latest"
-        if not marker.exists():
-            raise FileNotFoundError("No latest session marker found.")
-        path = Path(marker.read_text(encoding="utf-8").strip())
-        if not path.exists():
-            raise FileNotFoundError(f"Latest session directory missing: {path}")
-        return path
-    return Path(value)
-
-
-def _find_trace_files(session_dir: Path) -> dict[str, Path]:
-    candidates = {
-        "stdio": session_dir / "mcp-stdio-trace.jsonl",
-        "http": session_dir / "mcp-http-trace.jsonl",
-        "ui": session_dir / "ui-events.jsonl",
-        "upstream": session_dir / "upstream.log",
-        "session": session_dir / "session.json",
-    }
-    return {key: path for key, path in candidates.items() if path.exists()}
-
-
-def _extract_method(record: dict[str, Any]) -> str | None:
-    if "method_name" in record:
-        return record.get("method_name")
-    if "method" in record:
-        return record.get("method")
-    payload = record.get("json")
-    if isinstance(payload, dict):
-        return payload.get("method")
-    return None
-
-
-def _extract_params(record: dict[str, Any]) -> dict[str, Any]:
-    payload = record.get("json")
-    if isinstance(payload, dict):
-        params = payload.get("params")
-        if isinstance(params, dict):
-            return params
-    return {}
-
-
-def _extract_tool_name(params: dict[str, Any]) -> str | None:
-    name = params.get("name") or params.get("tool")
-    if isinstance(name, str):
-        return name
-    return None
-
-
-def _parse_mcp_trace(path: Path, transport: str) -> dict[str, Any]:
-    requests: list[dict[str, Any]] = []
-    responses: list[dict[str, Any]] = []
-    parse_errors = 0
-    timestamps: list[float] = []
-
-    for record in _load_jsonl(path):
-        if "_parse_error" in record:
-            parse_errors += 1
-            continue
-        ts = record.get("ts")
-        if isinstance(ts, (int, float)):
-            timestamps.append(float(ts))
-        direction = record.get("direction")
-        if direction in {"client->server", "client->upstream"}:
-            method = _extract_method(record)
-            if not method:
-                continue
-            payload = record.get("json") if isinstance(record.get("json"), dict) else {}
-            req_id = record.get("id") or payload.get("id")
-            params = _extract_params(record)
-            tool = _extract_tool_name(params) if method == "tools/call" else None
-            requests.append(
-                {
-                    "id": req_id,
-                    "method": method,
-                    "tool": tool,
-                    "ts": ts,
-                    "transport": transport,
-                }
-            )
-        elif direction in {"server->client", "upstream->client"}:
-            payload = record.get("json")
-            if not isinstance(payload, dict):
-                continue
-            resp_id = payload.get("id")
-            if resp_id is None:
-                continue
-            error_code = None
-            error_message = None
-            is_error = False
-            if isinstance(payload.get("error"), dict):
-                is_error = True
-                error_code = payload["error"].get("code")
-                error_message = payload["error"].get("message")
-            else:
-                result = payload.get("result")
-                if isinstance(result, dict):
-                    data = result.get("data") if isinstance(result.get("data"), dict) else {}
-                    if result.get("isError") or (isinstance(data, dict) and data.get("isError")):
-                        is_error = True
-                        error_code = data.get("code") or result.get("code")
-                        error_message = data.get("message") or result.get("message")
-            responses.append(
-                {
-                    "id": resp_id,
-                    "is_error": is_error,
-                    "code": error_code,
-                    "message": error_message,
-                    "ts": ts,
-                    "transport": transport,
-                }
-            )
-
-    return {
-        "requests": requests,
-        "responses": responses,
-        "parse_errors": parse_errors,
-        "timestamps": timestamps,
-    }
-
-
-def _parse_ui_events(path: Path) -> dict[str, Any]:
-    events: list[dict[str, Any]] = []
-    parse_errors = 0
-    for record in _load_jsonl(path):
-        if "_parse_error" in record:
-            parse_errors += 1
-            continue
-        events.append(record)
-    return {"events": events, "parse_errors": parse_errors}
-
-
-def _summarize_upstream_log(path: Path, max_lines: int = 120) -> list[str]:
+def _load_session_meta(files: dict[str, Path]) -> dict[str, Any]:
+    session_path = files.get("session")
+    if not session_path or not session_path.exists():
+        return {}
     try:
-        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    except FileNotFoundError:
-        return []
-    tail = lines[-max_lines:]
-    highlights = [line for line in tail if "Upstream error" in line or "ERROR" in line]
-    return highlights if highlights else tail[-20:]
+        return json.loads(session_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
 
 
-def _format_bytes(value: int) -> str:
-    if value < 1024:
-        return f"{value} B"
-    if value < 1024 * 1024:
-        return f"{value / 1024:.1f} KB"
-    return f"{value / (1024 * 1024):.1f} MB"
-
-
-def _format_time(ts: float | None) -> str:
-    if ts is None:
-        return "n/a"
-    return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
-
-
-def _build_report(
+def _build_summary(
     session_dir: Path,
     files: dict[str, Path],
     mcp_summaries: list[dict[str, Any]],
     ui_summary: dict[str, Any] | None,
     upstream_lines: list[str],
+) -> dict[str, Any]:
+    session_meta = _load_session_meta(files)
+    requests = [request for summary in mcp_summaries for request in summary["requests"]]
+    responses = [response for summary in mcp_summaries for response in summary["responses"]]
+    method_counts = summarize_methods(requests)
+    tool_counts: Counter[str] = Counter(
+        request["tool"]
+        for request in requests
+        if request.get("method") == "tools/call" and isinstance(request.get("tool"), str)
+    )
+    error_counts: Counter[str] = Counter(
+        str(response.get("code") or "UNKNOWN")
+        for response in responses
+        if response.get("is_error")
+    )
+    timestamps = [ts for summary in mcp_summaries for ts in summary["timestamps"]]
+    duration = (max(timestamps) - min(timestamps)) if timestamps else None
+    initialize = next((request for request in requests if request.get("method") == "initialize"), None)
+    first_useful = next(
+        (
+            request
+            for request in requests
+            if request.get("method") == "tools/call"
+            and request.get("tool") not in {"os_apps.log_event", "os_apps_log_event"}
+        ),
+        None,
+    )
+    latency_ms = None
+    if initialize and first_useful:
+        init_ts = initialize.get("ts")
+        first_ts = first_useful.get("ts")
+        if isinstance(init_ts, (int, float)) and isinstance(first_ts, (int, float)):
+            latency_ms = max(0.0, (float(first_ts) - float(init_ts)) * 1000.0)
+    fallback_responses = extract_fallback_responses(responses)
+
+    summary = {
+        "generatedAt": datetime.now(tz=timezone.utc).isoformat(),
+        "session": {
+            "sessionId": session_meta.get("sessionId", session_dir.name),
+            "mode": session_meta.get("mode", "unknown"),
+            "source": session_meta.get("source", "unknown"),
+            "surface": session_meta.get("surface", "unknown"),
+            "hostProfile": session_meta.get("hostProfile"),
+            "clientVersion": session_meta.get("clientVersion"),
+            "model": session_meta.get("model"),
+            "scenarioPack": session_meta.get("scenarioPack"),
+            "scenarioId": session_meta.get("scenarioId"),
+            "version": session_meta.get("version"),
+            "git": session_meta.get("git", {}),
+        },
+        "artifacts": {
+            key: {"path": str(path), "sizeBytes": path.stat().st_size if path.exists() else 0}
+            for key, path in files.items()
+        },
+        "mcp": {
+            "requestCount": len(requests),
+            "responseCount": len(responses),
+            "errorCount": sum(1 for response in responses if response.get("is_error")),
+            "parseErrorCount": sum(summary["parse_errors"] for summary in mcp_summaries),
+            "durationSeconds": duration,
+            "methodCounts": dict(method_counts),
+            "toolCounts": dict(tool_counts),
+            "errorCounts": dict(error_counts),
+        },
+        "hostSignals": {
+            "initializeCount": method_counts.get("initialize", 0),
+            "startupDiscoveryPattern": classify_startup_discovery(requests),
+            "toolSearchUsage": classify_tool_search_usage(requests),
+            "resourcesReadCount": method_counts.get("resources/read", 0),
+            "uiEventCount": len(ui_summary["events"]) if ui_summary else 0,
+            "uiEventTypes": dict(
+                Counter(
+                    event.get("eventType")
+                    for event in (ui_summary["events"] if ui_summary else [])
+                    if isinstance(event.get("eventType"), str)
+                )
+            ),
+            "fallbackCount": len(fallback_responses),
+            "fallbackTools": [
+                response.get("result", {}).get("data", {}).get("tool")
+                for response in fallback_responses
+                if isinstance(response.get("result", {}).get("data"), dict)
+            ],
+            "latencyToFirstUsefulToolCallMs": latency_ms,
+        },
+        "upstreamLogHighlights": upstream_lines,
+    }
+    return summary
+
+
+def _build_report(
+    session_dir: Path,
+    files: dict[str, Path],
+    summary: dict[str, Any],
 ) -> str:
-    now = datetime.now(tz=timezone.utc).isoformat()
-    session_meta = {}
-    session_path = files.get("session")
-    if session_path and session_path.exists():
-        try:
-            session_meta = json.loads(session_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            session_meta = {}
+    session_meta = summary["session"]
+    mcp = summary["mcp"]
+    signals = summary["hostSignals"]
 
     lines: list[str] = []
     lines.append("# MCP Geo Trace Report")
-    lines.append(f"Generated: {now}")
+    lines.append(f"Generated: {summary['generatedAt']}")
     lines.append(f"Session dir: {session_dir}")
-    if session_meta:
-        lines.append(f"Session id: {session_meta.get('sessionId', session_dir.name)}")
-        lines.append(f"Mode: {session_meta.get('mode', 'unknown')}")
-        version = session_meta.get("version")
-        if version:
-            lines.append(f"Version: {version}")
-        git = session_meta.get("git", {})
-        if isinstance(git, dict) and git.get("commit"):
-            lines.append(f"Git: {git.get('branch', 'unknown')} @ {git['commit']}")
+    lines.append(f"Session id: {session_meta.get('sessionId', session_dir.name)}")
+    lines.append(f"Mode: {session_meta.get('mode', 'unknown')}")
+    lines.append(f"Source: {session_meta.get('source', 'unknown')}")
+    lines.append(f"Surface: {session_meta.get('surface', 'unknown')}")
+    if session_meta.get("hostProfile"):
+        lines.append(f"Host profile: {session_meta['hostProfile']}")
+    if session_meta.get("clientVersion"):
+        lines.append(f"Client version: {session_meta['clientVersion']}")
+    if session_meta.get("model"):
+        lines.append(f"Model: {session_meta['model']}")
+    if session_meta.get("scenarioPack"):
+        lines.append(f"Scenario pack: {session_meta['scenarioPack']}")
+    if session_meta.get("scenarioId"):
+        lines.append(f"Scenario id: {session_meta['scenarioId']}")
+    version = session_meta.get("version")
+    if version:
+        lines.append(f"Server version: {version}")
+    git = session_meta.get("git", {})
+    if isinstance(git, dict) and git.get("commit"):
+        lines.append(f"Git: {git.get('branch', 'unknown')} @ {git['commit']}")
     lines.append("")
 
     lines.append("## Artifacts")
-    for key, path in files.items():
-        size = path.stat().st_size if path.exists() else 0
-        lines.append(f"- {key}: {path} ({_format_bytes(size)})")
+    for key, details in summary["artifacts"].items():
+        lines.append(f"- {key}: {details['path']} ({format_bytes(int(details['sizeBytes']))})")
     lines.append("")
 
     lines.append("## MCP Summary")
-    total_requests = sum(len(s["requests"]) for s in mcp_summaries)
-    total_responses = sum(len(s["responses"]) for s in mcp_summaries)
-    total_errors = sum(1 for s in mcp_summaries for r in s["responses"] if r["is_error"])
-    parse_errors = sum(s["parse_errors"] for s in mcp_summaries)
-    timestamps = [ts for s in mcp_summaries for ts in s["timestamps"]]
-    duration = None
-    if timestamps:
-        duration = max(timestamps) - min(timestamps)
-    lines.append(f"- Requests: {total_requests}")
-    lines.append(f"- Responses: {total_responses}")
-    lines.append(f"- Errors: {total_errors}")
-    lines.append(f"- Parse errors: {parse_errors}")
-    if duration is not None:
-        start = _format_time(min(timestamps))
-        end = _format_time(max(timestamps))
-        lines.append(f"- Duration: {duration:.1f}s ({start} to {end})")
+    lines.append(f"- Requests: {mcp['requestCount']}")
+    lines.append(f"- Responses: {mcp['responseCount']}")
+    lines.append(f"- Errors: {mcp['errorCount']}")
+    lines.append(f"- Parse errors: {mcp['parseErrorCount']}")
+    duration = mcp.get("durationSeconds")
+    if isinstance(duration, (int, float)):
+        lines.append(f"- Duration: {duration:.1f}s")
     lines.append("")
 
-    tool_counts: Counter[str] = Counter()
-    method_counts: Counter[str] = Counter()
-    request_by_id: dict[Any, dict[str, Any]] = {}
-    response_ids: set[Any] = set()
-    error_counts: Counter[str] = Counter()
-    error_samples: dict[str, str] = {}
+    lines.append("## Host Signals")
+    lines.append(f"- Initialize calls: {signals['initializeCount']}")
+    lines.append(f"- Startup discovery: {signals['startupDiscoveryPattern']}")
+    lines.append(f"- Tool search usage: {signals['toolSearchUsage']}")
+    lines.append(f"- resources/read calls: {signals['resourcesReadCount']}")
+    lines.append(f"- UI events: {signals['uiEventCount']}")
+    lines.append(f"- Fallback responses: {signals['fallbackCount']}")
+    latency_ms = signals.get("latencyToFirstUsefulToolCallMs")
+    if isinstance(latency_ms, (int, float)):
+        lines.append(f"- Latency to first useful tool call: {latency_ms:.1f} ms")
+    lines.append("")
 
-    for summary in mcp_summaries:
-        for request in summary["requests"]:
-            method_counts[request["method"]] += 1
-            if request.get("tool"):
-                tool_counts[request["tool"]] += 1
-            req_id = request.get("id")
-            if req_id is not None:
-                request_by_id[(request["transport"], req_id)] = request
-        for response in summary["responses"]:
-            resp_id = response.get("id")
-            if resp_id is not None:
-                response_ids.add((response["transport"], resp_id))
-            if response["is_error"]:
-                code = response.get("code") or "UNKNOWN"
-                error_counts[code] += 1
-                if code not in error_samples and response.get("message"):
-                    error_samples[code] = str(response["message"])[:200]
-
+    tool_counts = Counter(mcp.get("toolCounts", {}))
     if tool_counts:
         lines.append("### Tool Calls")
         for tool, count in tool_counts.most_common(20):
             lines.append(f"- {tool}: {count}")
         lines.append("")
 
+    method_counts = Counter(mcp.get("methodCounts", {}))
     if method_counts:
         lines.append("### Method Counts")
         for method, count in method_counts.most_common(10):
             lines.append(f"- {method}: {count}")
         lines.append("")
 
+    error_counts = Counter(mcp.get("errorCounts", {}))
     if error_counts:
         lines.append("### Error Codes")
         for code, count in error_counts.most_common(10):
-            sample = error_samples.get(code, "")
-            if sample:
-                lines.append(f"- {code}: {count} (sample: {sample})")
-            else:
-                lines.append(f"- {code}: {count}")
+            lines.append(f"- {code}: {count}")
         lines.append("")
 
-    missing = []
-    for key, request in request_by_id.items():
-        if key not in response_ids:
-            missing.append(request)
-    if missing:
-        lines.append("### Missing Responses")
-        for req in missing[:20]:
-            tool = f" ({req['tool']})" if req.get("tool") else ""
-            lines.append(f"- {req['transport']} id={req['id']} {req['method']}{tool}")
-        if len(missing) > 20:
-            lines.append(f"- ... and {len(missing) - 20} more")
-        lines.append("")
-
-    if ui_summary:
-        events = ui_summary["events"]
-        lines.append("## UI Events")
-        lines.append(f"- Events: {len(events)}")
-        if ui_summary["parse_errors"]:
-            lines.append(f"- Parse errors: {ui_summary['parse_errors']}")
-        counts = Counter()
-        for event in events:
-            event_type = event.get("eventType")
-            if isinstance(event_type, str):
-                counts[event_type] += 1
-        for event_type, count in counts.most_common(10):
+    ui_event_types = Counter(signals.get("uiEventTypes", {}))
+    if ui_event_types:
+        lines.append("### UI Event Types")
+        for event_type, count in ui_event_types.most_common(10):
             lines.append(f"- {event_type}: {count}")
         lines.append("")
 
+    upstream_lines = summary.get("upstreamLogHighlights") or []
     if upstream_lines:
         lines.append("## Upstream Log Highlights")
         lines.append("```text")
@@ -323,20 +234,14 @@ def _build_report(
         lines.append("```")
         lines.append("")
 
-    if not mcp_summaries:
-        lines.append("## Notes")
-        lines.append(
-            "No MCP trace logs found. Ensure the session captured a stdio or HTTP trace log."
-        )
-        lines.append("")
-
     return "\n".join(lines).strip() + "\n"
 
 
-def _bundle_zip(session_dir: Path, report_path: Path, files: dict[str, Path]) -> Path:
+def _bundle_zip(session_dir: Path, report_path: Path, summary_path: Path, files: dict[str, Path]) -> Path:
     bundle_path = session_dir / "bundle.zip"
     with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.write(report_path, report_path.name)
+        zf.write(summary_path, summary_path.name)
         for path in files.values():
             if path.exists():
                 zf.write(path, path.relative_to(session_dir))
@@ -354,27 +259,31 @@ def main() -> int:
     parser.add_argument("--no-zip", action="store_true", help="Skip zip bundle creation.")
     args = parser.parse_args()
 
-    session_dir = _resolve_session_dir(args.session)
+    session_dir = resolve_session_dir(args.session, session_root=DEFAULT_SESSION_ROOT)
     if not session_dir.exists():
         raise SystemExit(f"Session directory not found: {session_dir}")
 
-    files = _find_trace_files(session_dir)
+    files = find_trace_files(session_dir)
 
     mcp_summaries = []
     if "stdio" in files:
-        mcp_summaries.append(_parse_mcp_trace(files["stdio"], "stdio"))
+        mcp_summaries.append(parse_mcp_trace(files["stdio"], "stdio"))
     if "http" in files:
-        mcp_summaries.append(_parse_mcp_trace(files["http"], "http"))
+        mcp_summaries.append(parse_mcp_trace(files["http"], "http"))
 
-    ui_summary = _parse_ui_events(files["ui"]) if "ui" in files else None
-    upstream_lines = _summarize_upstream_log(files["upstream"]) if "upstream" in files else []
+    ui_summary = parse_ui_events(files["ui"]) if "ui" in files else None
+    upstream_lines = summarize_upstream_log(files["upstream"]) if "upstream" in files else []
 
-    report_text = _build_report(session_dir, files, mcp_summaries, ui_summary, upstream_lines)
+    summary = _build_summary(session_dir, files, mcp_summaries, ui_summary, upstream_lines)
+    summary_path = session_dir / "summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    report_text = _build_report(session_dir, files, summary)
     report_path = session_dir / "report.md"
     report_path.write_text(report_text, encoding="utf-8")
 
     if not args.no_zip:
-        _bundle_zip(session_dir, report_path, files)
+        _bundle_zip(session_dir, report_path, summary_path, files)
 
     return 0
 

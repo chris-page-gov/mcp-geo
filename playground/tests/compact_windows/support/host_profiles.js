@@ -1,4 +1,28 @@
 export const HOST_PROFILES = {
+  codex_cli_stdio: {
+    displayMode: "inline",
+    availableDisplayModes: ["inline"],
+    platform: "desktop",
+    userAgent: "playwright-codex-cli",
+    containerDimensions: { maxHeight: 640, maxWidth: 720 },
+    mcpGeo: { proxyBase: "http://localhost:8000" },
+  },
+  codex_ide_ui: {
+    displayMode: "inline",
+    availableDisplayModes: ["inline", "fullscreen"],
+    platform: "desktop",
+    userAgent: "playwright-codex-ide",
+    containerDimensions: { maxHeight: 500, maxWidth: 360 },
+    mcpGeo: { proxyBase: "http://localhost:8000" },
+  },
+  claude_desktop_ui_partial: {
+    displayMode: "inline",
+    availableDisplayModes: ["inline", "fullscreen"],
+    platform: "desktop",
+    userAgent: "playwright-claude-desktop",
+    containerDimensions: { maxHeight: 500, maxWidth: 360 },
+    mcpGeo: { proxyBase: "http://localhost:8000" },
+  },
   vscode_inline_only_500: {
     displayMode: "inline",
     availableDisplayModes: ["inline"],

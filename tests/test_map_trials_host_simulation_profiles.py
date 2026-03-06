@@ -66,3 +66,10 @@ def test_load_profiles_rejects_invalid_fixture(tmp_path: Path) -> None:
     fixture.write_text(json.dumps({"profiles": []}), encoding="utf-8")
     with pytest.raises(ValueError):
         load_profiles(fixture)
+
+
+def test_default_fixture_includes_host_benchmark_profiles() -> None:
+    fixture = Path("playground/trials/fixtures/host_capability_profiles.json")
+    rows = load_profiles(fixture)
+    ids = {row.profile_id for row in rows}
+    assert {"codex_cli_stdio", "codex_ide_ui", "claude_desktop_ui_partial"} <= ids

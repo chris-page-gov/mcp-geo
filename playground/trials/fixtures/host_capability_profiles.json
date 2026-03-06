@@ -1,6 +1,48 @@
 {
-  "version": "2026-02-14",
+  "version": "2026-03-06",
   "profiles": [
+    {
+      "id": "codex_cli_stdio",
+      "description": "Codex CLI over stdio without MCP-Apps UI runtime; deterministic fallback required.",
+      "uiSupported": false,
+      "degradationMode": "no_ui",
+      "hostContext": {
+        "displayMode": "inline",
+        "availableDisplayModes": ["inline"],
+        "platform": "desktop",
+        "userAgent": "codex-cli",
+        "containerDimensions": {"maxHeight": 640, "maxWidth": 720},
+        "mcpGeo": {"proxyBase": "http://localhost:8000"}
+      }
+    },
+    {
+      "id": "codex_ide_ui",
+      "description": "Codex IDE with MCP-Apps UI support and inline display mode.",
+      "uiSupported": true,
+      "degradationMode": "full_ui",
+      "hostContext": {
+        "displayMode": "inline",
+        "availableDisplayModes": ["inline", "fullscreen"],
+        "platform": "desktop",
+        "userAgent": "codex-ide",
+        "containerDimensions": {"maxHeight": 760, "maxWidth": 1100},
+        "mcpGeo": {"proxyBase": "http://localhost:8000"}
+      }
+    },
+    {
+      "id": "claude_desktop_ui_partial",
+      "description": "Claude Desktop with partial MCP-Apps UI support and fullscreen capability.",
+      "uiSupported": true,
+      "degradationMode": "partial_ui",
+      "hostContext": {
+        "displayMode": "inline",
+        "availableDisplayModes": ["inline", "fullscreen"],
+        "platform": "desktop",
+        "userAgent": "claude-desktop",
+        "containerDimensions": {"maxHeight": 500, "maxWidth": 360},
+        "mcpGeo": {"proxyBase": "http://localhost:8000"}
+      }
+    },
     {
       "id": "ui_supported_inline",
       "description": "Host advertises MCP-Apps UI support with inline display mode.",

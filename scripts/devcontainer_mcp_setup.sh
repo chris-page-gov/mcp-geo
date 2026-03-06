@@ -14,7 +14,7 @@ fi
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 server_name="mcp-geo"
-server_cmd="$repo_root/scripts/os-mcp"
+server_cmd="$repo_root/scripts/codex-mcp-local"
 
 legacy_server_name="os-ngd-api"
 if codex mcp get "$legacy_server_name" >/dev/null 2>&1; then
@@ -22,8 +22,12 @@ if codex mcp get "$legacy_server_name" >/dev/null 2>&1; then
     codex mcp rm "$legacy_server_name" >/dev/null 2>&1 || true
 fi
 
-if codex mcp get "$server_name" >/dev/null 2>&1; then
-  exit 0
+if current_json="$(codex mcp get --json "$server_name" 2>/dev/null)"; then
+  if printf '%s' "$current_json" | grep -Fq "\"$server_cmd\""; then
+    exit 0
+  fi
+  codex mcp remove "$server_name" >/dev/null 2>&1 || \
+    codex mcp rm "$server_name" >/dev/null 2>&1 || true
 fi
 
 env_args=()
@@ -33,4 +37,4 @@ for var in OS_API_KEY ONS_API_KEY ONS_LIVE_ENABLED LOG_LEVEL STDIO_KEY BEARER_TO
   fi
 done
 
-codex mcp add "${env_args[@]}" "$server_name" -- python3 "$server_cmd"
+codex mcp add "${env_args[@]}" "$server_name" -- "$server_cmd"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Let Codex negotiate UI support through advertised client capabilities instead
+# of inheriting Claude-specific wrapper defaults.
+exec "$REPO_ROOT/scripts/mcp-docker-local"

@@ -10,8 +10,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.trace_utils import DOCKER_LOCAL_WRAPPER_NAMES
+
+
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
 SENSITIVE_ENV = {"OS_API_KEY", "ONS_API_KEY", "STDIO_KEY", "BEARER_TOKENS"}
 ENV_SNAPSHOT_KEYS = [
@@ -29,11 +34,11 @@ ENV_SNAPSHOT_KEYS = [
 
 
 def _utc_now() -> str:
-    return dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _session_id() -> str:
-    return dt.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    return dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _git_info() -> dict[str, str]:
@@ -84,10 +89,36 @@ def _snapshot_env() -> dict[str, Any]:
     return snapshot
 
 
-def _is_claude_local_command(cmd: list[str]) -> bool:
+def _is_docker_local_command(cmd: list[str]) -> bool:
     if not cmd:
         return False
-    return Path(cmd[0]).name == "claude-mcp-local" or cmd[0].endswith("claude-mcp-local")
+    command = Path(cmd[0]).name
+    if command in DOCKER_LOCAL_WRAPPER_NAMES:
+        return True
+    return any(str(cmd[0]).endswith(name) for name in DOCKER_LOCAL_WRAPPER_NAMES)
+
+
+def _infer_source(cmd: list[str]) -> str:
+    if not cmd:
+        return "unknown"
+    name = Path(cmd[0]).name
+    if "codex" in name:
+        return "codex"
+    if "claude" in name:
+        return "claude"
+    if "vscode" in name:
+        return "vscode"
+    return "unknown"
+
+
+def _default_surface(source: str) -> str:
+    if source == "codex":
+        return "cli"
+    if source == "claude":
+        return "desktop"
+    if source == "vscode":
+        return "ide"
+    return "unknown"
 
 
 def _pick_session_dir(session_root: Path, name: str | None) -> Path:
@@ -103,8 +134,10 @@ def _pick_session_dir(session_root: Path, name: str | None) -> Path:
     return candidate
 
 
-def _default_command(mode: str) -> list[str]:
+def _default_command(mode: str, source: str) -> list[str]:
     if mode == "stdio":
+        if source == "codex":
+            return [str(REPO_ROOT / "scripts" / "codex-mcp-local")]
         return [str(REPO_ROOT / "scripts" / "claude-mcp-local")]
     if mode == "http":
         return [str(REPO_ROOT / "scripts" / "start_https_proxy.sh")]
@@ -133,11 +166,26 @@ def _write_session_metadata(
     ui_event_path: str,
     http_trace_path: str,
     upstream_log_path: str,
+    *,
+    source: str,
+    surface: str,
+    host_profile: str | None,
+    client_version: str | None,
+    model: str | None,
+    scenario_pack: str | None,
+    scenario_id: str | None,
 ) -> None:
     payload = {
         "sessionId": session_dir.name,
         "startedAt": _utc_now(),
         "mode": mode,
+        "source": source,
+        "surface": surface,
+        "hostProfile": host_profile,
+        "clientVersion": client_version,
+        "model": model,
+        "scenarioPack": scenario_pack,
+        "scenarioId": scenario_id,
         "cwd": str(Path.cwd()),
         "repoRoot": str(REPO_ROOT),
         "command": command,
@@ -170,6 +218,13 @@ def main() -> int:
     )
     parser.add_argument("--name", help="Override the session directory name.")
     parser.add_argument("--no-report", action="store_true", help="Skip report generation.")
+    parser.add_argument("--source", help="Host source (for example: codex, claude, vscode).")
+    parser.add_argument("--surface", help="Host surface (for example: cli, ide, desktop).")
+    parser.add_argument("--host-profile", help="Benchmark host profile identifier.")
+    parser.add_argument("--client-version", help="Client version recorded in session metadata.")
+    parser.add_argument("--model", help="Model recorded in session metadata.")
+    parser.add_argument("--scenario-pack", help="Scenario pack identifier recorded in metadata.")
+    parser.add_argument("--scenario-id", help="Scenario identifier recorded in metadata.")
     parser.add_argument(
         "--debug-errors",
         action="store_true",
@@ -191,8 +246,10 @@ def main() -> int:
     if args.debug_errors:
         env["DEBUG_ERRORS"] = "true"
 
-    base_cmd = cmd if cmd else _default_command(args.mode)
-    if args.mode == "stdio" and _is_claude_local_command(base_cmd):
+    base_cmd = cmd if cmd else _default_command(args.mode, args.source or "unknown")
+    source = args.source or _infer_source(base_cmd)
+    surface = args.surface or _default_surface(source)
+    if args.mode == "stdio" and _is_docker_local_command(base_cmd):
         ui_event_path = f"/logs/sessions/{session_dir.name}/ui-events.jsonl"
     else:
         ui_event_path = str(session_dir / "ui-events.jsonl")
@@ -206,6 +263,13 @@ def main() -> int:
         ui_event_path,
         env["MCP_HTTP_TRACE_LOG"],
         env["MCP_UPSTREAM_LOG"],
+        source=source,
+        surface=surface,
+        host_profile=args.host_profile,
+        client_version=args.client_version,
+        model=args.model,
+        scenario_pack=args.scenario_pack,
+        scenario_id=args.scenario_id,
     )
 
     print(f"[mcp-geo] session: {session_dir}", file=sys.stderr)
