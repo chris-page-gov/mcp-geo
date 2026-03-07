@@ -36,6 +36,13 @@ def build_ui_event_env(
     return env
 
 
+def _has_scoped_tools_list_params(params: Mapping[str, Any]) -> bool:
+    return any(
+        params.get(key) is not None
+        for key in ("query", "q", "toolset", "includeToolsets", "excludeToolsets", "mode", "category")
+    )
+
+
 def load_jsonl(path: Path) -> Iterable[dict[str, Any]]:
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
@@ -244,10 +251,7 @@ def classify_startup_discovery(requests: list[dict[str, Any]]) -> str:
         if request.get("method") != "tools/list":
             continue
         params = request.get("params") or {}
-        if any(
-            params.get(key) is not None
-            for key in ("query", "q", "toolset", "includeToolsets", "excludeToolsets", "mode", "category")
-        ):
+        if _has_scoped_tools_list_params(params):
             scoped = True
             break
     if scoped:
@@ -267,7 +271,7 @@ def classify_tool_search_usage(requests: list[dict[str, Any]]) -> str:
         if method == "tools/list":
             discovery_seen = True
             params = request.get("params") or {}
-            if any(params.get(key) is not None for key in ("query", "q", "mode", "category", "limit")):
+            if _has_scoped_tools_list_params(params):
                 scoped_search = True
     if scoped_search:
         return "supported"

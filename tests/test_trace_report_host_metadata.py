@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 
@@ -54,3 +55,38 @@ def test_trace_report_writes_host_metadata_summary(tmp_path: Path) -> None:
     assert "Host profile: codex_cli_stdio" in report_text
     assert summary["session"]["model"] == "gpt-5.4"
     assert summary["hostSignals"]["toolSearchUsage"] == "used"
+
+
+def test_trace_report_bundle_avoids_duplicate_summary_entries(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    session_dir.mkdir()
+    (session_dir / "session.json").write_text(
+        json.dumps(
+            {
+                "sessionId": "host-meta",
+                "mode": "stdio",
+                "source": "codex",
+                "surface": "cli",
+                "hostProfile": "codex_cli_stdio",
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    _write_jsonl(
+        session_dir / "mcp-stdio-trace.jsonl",
+        [
+            {"ts": 1.0, "direction": "client->server", "json": {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"capabilities": {}}}},
+            {"ts": 1.1, "direction": "server->client", "json": {"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2025-11-25"}}},
+        ],
+    )
+
+    repo_root = Path(__file__).resolve().parents[1]
+    subprocess.run([sys.executable, "scripts/trace_report.py", str(session_dir)], check=True, cwd=repo_root)
+    subprocess.run([sys.executable, "scripts/trace_report.py", str(session_dir)], check=True, cwd=repo_root)
+
+    with zipfile.ZipFile(session_dir / "bundle.zip") as zf:
+        names = zf.namelist()
+
+    assert names.count("summary.json") == 1
+    assert names.count("report.md") == 1

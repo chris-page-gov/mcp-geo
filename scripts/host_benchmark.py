@@ -368,10 +368,15 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
     evidence = collect_session_evidence(session_dir)
     session_meta = evidence["session"]
     tool_calls = evidence["toolCalls"]
-    expected_tools = [tool for tool in scenario.get("expectedTools", []) if "/" not in tool]
+    expected_tool_signals = scenario.get("expectedTools", [])
+    expected_tools = [tool for tool in expected_tool_signals if "/" not in tool]
+    expected_methods = [method for method in expected_tool_signals if "/" in method]
     matched_tools = [tool for tool in expected_tools if tool in tool_calls]
-    tool_ratio = 1.0 if not expected_tools else len(matched_tools) / len(expected_tools)
     method_counts = evidence["methodCounts"]
+    matched_methods = [method for method in expected_methods if method_counts.get(method, 0) > 0]
+    expected_signal_count = len(expected_tools) + len(expected_methods)
+    matched_signal_count = len(matched_tools) + len(matched_methods)
+    tool_ratio = 1.0 if expected_signal_count == 0 else matched_signal_count / expected_signal_count
     resource_reads = evidence["resourceReads"]
     expected_resources = scenario.get("expectedResources", [])
     has_expected_resources = all(resource in resource_reads for resource in expected_resources)
@@ -474,10 +479,13 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
         "toolSearch": _category(tool_search_score, tool_search_usage),
         "toolSelection": _category(
             tool_ratio,
-            f"matched {len(matched_tools)}/{len(expected_tools)} expected tool calls",
+            f"matched {matched_signal_count}/{expected_signal_count} expected tool/method signals",
             matchedTools=matched_tools,
             expectedTools=expected_tools,
+            matchedMethods=matched_methods,
+            expectedMethods=expected_methods,
             observedTools=tool_calls,
+            observedMethods=sorted(method_counts),
         ),
         "errorRecovery": _category(
             error_recovery_score,

@@ -239,11 +239,12 @@ def _build_report(
 
 def _bundle_zip(session_dir: Path, report_path: Path, summary_path: Path, files: dict[str, Path]) -> Path:
     bundle_path = session_dir / "bundle.zip"
+    skip_paths = {report_path.resolve(), summary_path.resolve(), bundle_path.resolve()}
     with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.write(report_path, report_path.name)
         zf.write(summary_path, summary_path.name)
         for path in files.values():
-            if path.exists():
+            if path.exists() and path.resolve() not in skip_paths:
                 zf.write(path, path.relative_to(session_dir))
     return bundle_path
 

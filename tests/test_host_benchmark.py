@@ -231,6 +231,38 @@ def test_score_session_fails_unnormalized_error(tmp_path: Path) -> None:
     assert score["categories"]["errorRecovery"]["detail"] == "unnormalized error observed"
 
 
+def test_score_session_requires_expected_method_signals(tmp_path: Path) -> None:
+    pack = load_scenario_pack()
+    scenario = next(s for s in pack["scenarios"] if s["id"] == "tool_search_postcode")
+    session_dir = _make_session_dir(
+        tmp_path,
+        "tool-search-missing-method",
+        {
+            "sessionId": "tool-search-missing-method",
+            "mode": "stdio",
+            "source": "codex",
+            "surface": "cli",
+            "hostProfile": "codex_cli_stdio",
+            "scenarioId": scenario["id"],
+            "scenarioPack": pack["id"],
+        },
+        [
+            _request(1.0, 1, "initialize", {"capabilities": {}}),
+            _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
+            _request(1.2, 2, "tools/list", {"limit": 5}),
+            _response(1.3, 2, {"tools": [{"name": "os_places_by_postcode"}]}),
+        ],
+    )
+
+    evidence, score = score_session(session_dir, scenario)
+
+    assert evidence["toolSearchUsage"] == "unused"
+    assert score["categories"]["toolSelection"]["status"] == "fail"
+    assert score["categories"]["toolSelection"]["score"] == 0.0
+    assert score["categories"]["toolSelection"]["matchedMethods"] == []
+    assert score["categories"]["toolSelection"]["expectedMethods"] == ["tools/search"]
+
+
 def test_build_temp_stdio_server_keeps_host_ui_event_path_for_codex_wrapper(tmp_path: Path) -> None:
     session_dir = tmp_path / "logs" / "sessions" / "trace"
     session_dir.mkdir(parents=True)
