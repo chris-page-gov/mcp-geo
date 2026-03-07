@@ -442,8 +442,8 @@ def _mercator_y_normalized(lat: float) -> float:
 def _map_layout(
     bbox: list[float],
     *,
-    x: float = MAP_X,
-    y: float = MAP_Y,
+    x: float = 0.0,
+    y: float = 0.0,
     width: float = MAP_W,
     height: float = MAP_H,
     pad: float = MAP_PAD,
@@ -479,8 +479,8 @@ def _map_layout(
 def _projector(
     bbox: list[float],
     *,
-    x: float = MAP_X,
-    y: float = MAP_Y,
+    x: float = 0.0,
+    y: float = 0.0,
     width: float = MAP_W,
     height: float = MAP_H,
     pad: float = MAP_PAD,
@@ -503,6 +503,23 @@ def _projector(
         return round(px, 1), round(py, 1)
 
     return project
+
+
+def _initial_viewport(bbox: list[float]) -> dict[str, float]:
+    layout = _map_layout(bbox)
+    center_x_norm = (layout["min_x_norm"] + layout["max_x_norm"]) / 2.0
+    center_y_norm = (layout["top_y_norm"] + layout["bottom_y_norm"]) / 2.0
+    return {
+        "center_x_norm": center_x_norm,
+        "center_y_norm": center_y_norm,
+        "scale": layout["scale"],
+        "min_x_norm": layout["min_x_norm"],
+        "max_x_norm": layout["max_x_norm"],
+        "top_y_norm": layout["top_y_norm"],
+        "bottom_y_norm": layout["bottom_y_norm"],
+        "span_x_norm": layout["max_x_norm"] - layout["min_x_norm"],
+        "span_y_norm": layout["bottom_y_norm"] - layout["top_y_norm"],
+    }
 
 
 def _choose_basemap_zoom(
@@ -542,64 +559,18 @@ def _choose_basemap_zoom(
 
 def _build_basemap_tiles(bbox: list[float]) -> dict[str, Any]:
     layout = _map_layout(bbox)
-    zoom = _choose_basemap_zoom(bbox)
-    world_px = TILE_SIZE_PX * (2**zoom)
-    min_px = layout["min_x_norm"] * world_px
-    max_px = layout["max_x_norm"] * world_px
-    top_py = layout["top_y_norm"] * world_px
-    bottom_py = layout["bottom_y_norm"] * world_px
-    tile_x_min = math.floor(min_px / TILE_SIZE_PX)
-    tile_x_max = math.floor(max_px / TILE_SIZE_PX)
-    tile_y_min = math.floor(top_py / TILE_SIZE_PX)
-    tile_y_max = math.floor(bottom_py / TILE_SIZE_PX)
-    tiles: list[dict[str, Any]] = []
-    for tile_x in range(tile_x_min, tile_x_max + 1):
-        for tile_y in range(tile_y_min, tile_y_max + 1):
-            tile_min_x_norm = (tile_x * TILE_SIZE_PX) / world_px
-            tile_max_x_norm = ((tile_x + 1) * TILE_SIZE_PX) / world_px
-            tile_top_y_norm = (tile_y * TILE_SIZE_PX) / world_px
-            tile_bottom_y_norm = ((tile_y + 1) * TILE_SIZE_PX) / world_px
-            left = (
-                layout["x"]
-                + layout["pad"]
-                + layout["extra_x"]
-                + ((tile_min_x_norm - layout["min_x_norm"]) * layout["scale"])
-            )
-            right = (
-                layout["x"]
-                + layout["pad"]
-                + layout["extra_x"]
-                + ((tile_max_x_norm - layout["min_x_norm"]) * layout["scale"])
-            )
-            top = (
-                layout["y"]
-                + layout["pad"]
-                + layout["extra_y"]
-                + ((tile_top_y_norm - layout["top_y_norm"]) * layout["scale"])
-            )
-            bottom = (
-                layout["y"]
-                + layout["pad"]
-                + layout["extra_y"]
-                + ((tile_bottom_y_norm - layout["top_y_norm"]) * layout["scale"])
-            )
-            tiles.append(
-                {
-                    "z": zoom,
-                    "x": tile_x,
-                    "y": tile_y,
-                    "left": round(left, 1),
-                    "top": round(top, 1),
-                    "width": round(right - left, 1),
-                    "height": round(bottom - top, 1),
-                }
-            )
     return {
         "style": OS_LIGHT_STYLE,
-        "zoom": zoom,
         "storage_key": OS_BROWSER_KEY_STORAGE,
         "tile_url_template": OS_LIGHT_TILE_URL_TEMPLATE,
-        "tiles": tiles,
+        "tile_size_px": TILE_SIZE_PX,
+        "min_zoom": 12,
+        "max_zoom": 18,
+        "overscale": 1.35,
+        "max_tiles": 30,
+        "tile_padding": 1,
+        "base_zoom": _choose_basemap_zoom(bbox),
+        "layout": {key: round(value, 12) for key, value in layout.items()},
     }
 
 
@@ -779,22 +750,22 @@ def _select_callouts(
     )
     slot_map: dict[str, list[tuple[float, float]]] = {
         "left": [
-            (MAP_X + 104, MAP_Y + 196),
-            (MAP_X + 118, MAP_Y + 350),
-            (MAP_X + 132, MAP_Y + 618),
+            (104, 196),
+            (118, 350),
+            (132, 618),
         ],
         "top": [
-            (MAP_X + 408, MAP_Y + 94),
-            (MAP_X + 660, MAP_Y + 96),
+            (408, 94),
+            (660, 96),
         ],
         "right": [
-            (MAP_X + MAP_W - 192, MAP_Y + 138),
-            (MAP_X + MAP_W - 184, MAP_Y + 268),
-            (MAP_X + MAP_W - 206, MAP_Y + 640),
+            (MAP_W - 192, 138),
+            (MAP_W - 184, 268),
+            (MAP_W - 206, 640),
         ],
         "bottom": [
-            (MAP_X + 560, MAP_Y + MAP_H - 34),
-            (MAP_X + 758, MAP_Y + MAP_H - 36),
+            (560, MAP_H - 34),
+            (758, MAP_H - 36),
         ],
     }
     chosen: list[dict[str, Any]] = []
@@ -803,16 +774,16 @@ def _select_callouts(
         if not (min_lon <= lon <= max_lon and min_lat <= lat <= max_lat):
             continue
         px, py = project(lon, lat)
-        if py < MAP_Y + 30 or py > MAP_Y + MAP_H - 24:
+        if py < 30 or py > MAP_H - 24:
             continue
         if any(math.hypot(px - callout["target_x"], py - callout["target_y"]) < 88 for callout in chosen):
             continue
 
-        if px < MAP_X + (MAP_W * 0.34):
+        if px < MAP_W * 0.34:
             side = "left"
-        elif px > MAP_X + (MAP_W * 0.72):
+        elif px > MAP_W * 0.72:
             side = "right"
-        elif py < MAP_Y + (MAP_H * 0.34):
+        elif py < MAP_H * 0.34:
             side = "top"
         else:
             side = "bottom"
@@ -891,6 +862,10 @@ def _render_html(payload: dict[str, Any]) -> str:
     project = _projector(bbox)
     basemap = payload["basemap"]
     scale_bar = _scale_bar_spec(bbox)
+    center_lat = (bbox[1] + bbox[3]) / 2.0
+    base_meters_per_px = (
+        EARTH_CIRCUMFERENCE_M * math.cos(math.radians(center_lat))
+    ) / float(basemap["layout"]["scale"])
     water_paths = [
         path
         for feature in payload["context"]["water"]
@@ -955,14 +930,6 @@ def _render_html(payload: dict[str, Any]) -> str:
     pavement_svg = "\n".join(
         f'<path d="{path}" class="pavement-fill" />' for path in pavement_paths if path
     )
-    basemap_tile_svg = "\n".join(
-        (
-            f'<image x="{tile["left"]}" y="{tile["top"]}" width="{tile["width"]}" '
-            f'height="{tile["height"]}" preserveAspectRatio="none" class="os-tile" '
-            f'data-tile-src-template="{basemap["tile_url_template"].format(z=tile["z"], x=tile["x"], y=tile["y"])}" />'
-        )
-        for tile in basemap["tiles"]
-    )
 
     callout_svg_parts: list[str] = []
     for callout in callouts:
@@ -1026,10 +993,28 @@ def _render_html(payload: dict[str, Any]) -> str:
         for anchor in payload["anchors"]
     )
 
-    scale_bar_x = MAP_X + 34
-    scale_bar_y = MAP_Y + MAP_H - 34
-    north_x = MAP_X + MAP_W - 54
-    north_y = MAP_Y + 28
+    scale_bar_x = 34
+    scale_bar_y = MAP_H - 34
+    north_x = MAP_W - 54
+    north_y = 28
+    basemap_config = json.dumps(
+        {
+            "storageKey": basemap["storage_key"],
+            "tileUrlTemplate": basemap["tile_url_template"],
+            "tileSizePx": basemap["tile_size_px"],
+            "minZoom": basemap["min_zoom"],
+            "maxZoom": basemap["max_zoom"],
+            "overscale": basemap["overscale"],
+            "maxTiles": basemap["max_tiles"],
+            "tilePadding": basemap["tile_padding"],
+            "baseZoom": basemap["base_zoom"],
+            "layout": basemap["layout"],
+            "mapWidth": MAP_W,
+            "mapHeight": MAP_H,
+            "scaleBarTargetPx": 220,
+            "baseMetersPerPx": round(base_meters_per_px, 6),
+        }
+    )
 
     metrics_html = "\n".join(
         [
@@ -1148,16 +1133,26 @@ def _render_html(payload: dict[str, Any]) -> str:
         background: linear-gradient(180deg, #e8f0ef 0%, #edf0e9 100%);
         border: 1px solid #d2d8d3;
         overflow: hidden;
+        touch-action: none;
       }}
 
       .map-controls {{
         position: absolute;
         left: 18px;
+        right: 18px;
         top: 18px;
         z-index: 4;
         display: flex;
-        gap: 8px;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }}
+
+      .map-controls-left,
+      .map-controls-right {{
+        display: flex;
         align-items: center;
+        gap: 8px;
       }}
 
       .mode-group {{
@@ -1203,6 +1198,35 @@ def _render_html(payload: dict[str, Any]) -> str:
         border: 1px solid rgba(19, 56, 64, 0.12);
       }}
 
+      .zoom-group {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        border-radius: 999px;
+        background: rgba(255, 252, 245, 0.94);
+        border: 1px solid rgba(19, 56, 64, 0.12);
+        backdrop-filter: blur(10px);
+      }}
+
+      .zoom-button {{
+        appearance: none;
+        min-width: 42px;
+        border: 0;
+        border-radius: 999px;
+        padding: 9px 12px;
+        background: rgba(236, 232, 222, 0.9);
+        color: #17333a;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }}
+
+      .zoom-reset {{
+        min-width: 74px;
+      }}
+
       .map-status {{
         position: absolute;
         left: 18px;
@@ -1241,12 +1265,12 @@ def _render_html(payload: dict[str, Any]) -> str:
         border: 1px solid #ddd5c8;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
       }}
 
       .metric {{
-        min-height: 66px;
-        padding: 9px 11px;
+        min-height: 62px;
+        padding: 8px 10px;
         border-radius: 18px;
         border: 1px solid #d9d1c4;
         background: #fcfaf5;
@@ -1295,12 +1319,12 @@ def _render_html(payload: dict[str, Any]) -> str:
 
       .legend-block {{
         display: grid;
-        gap: 12px;
+        gap: 10px;
       }}
 
       .access-block {{
         display: grid;
-        gap: 10px;
+        gap: 8px;
       }}
 
       .access-row {{
@@ -1372,15 +1396,15 @@ def _render_html(payload: dict[str, Any]) -> str:
       }}
 
       .checks li + li {{
-        margin-top: 5px;
+        margin-top: 4px;
       }}
 
       .source-note {{
         margin-top: auto;
-        padding-top: 10px;
+        padding-top: 8px;
         border-top: 1px solid #e4dccd;
         color: #617078;
-        font-size: 9px;
+        font-size: 8.5px;
         line-height: 1.35;
       }}
 
@@ -1388,6 +1412,11 @@ def _render_html(payload: dict[str, Any]) -> str:
         width: 100%;
         height: 100%;
         display: block;
+        cursor: grab;
+      }}
+
+      .map-frame.is-dragging .map-svg {{
+        cursor: grabbing;
       }}
 
       .slide[data-basemap="simplified"] .basemap-os {{
@@ -1415,6 +1444,15 @@ def _render_html(payload: dict[str, Any]) -> str:
         pointer-events: none;
       }}
 
+      .slide[data-callouts="hidden"] .map-callouts {{
+        opacity: 0;
+        pointer-events: none;
+      }}
+
+      .map-callouts {{
+        transition: opacity 140ms ease;
+      }}
+
       .water-fill {{
         fill: #c9e5ef;
         stroke: #96bfcc;
@@ -1433,6 +1471,7 @@ def _render_html(payload: dict[str, Any]) -> str:
         stroke-width: 2.1;
         stroke-linecap: round;
         stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
       }}
 
       .path-context {{
@@ -1442,6 +1481,7 @@ def _render_html(payload: dict[str, Any]) -> str:
         stroke-linecap: round;
         stroke-linejoin: round;
         stroke-dasharray: 4 7;
+        vector-effect: non-scaling-stroke;
       }}
 
       .rail-line {{
@@ -1451,6 +1491,7 @@ def _render_html(payload: dict[str, Any]) -> str:
         stroke-linecap: round;
         stroke-linejoin: round;
         stroke-dasharray: 18 10;
+        vector-effect: non-scaling-stroke;
       }}
 
       .route-group {{
@@ -1463,6 +1504,7 @@ def _render_html(payload: dict[str, Any]) -> str:
         stroke-linecap: round;
         stroke-linejoin: round;
         pointer-events: stroke;
+        vector-effect: non-scaling-stroke;
       }}
 
       .route-outline {{
@@ -1507,6 +1549,7 @@ def _render_html(payload: dict[str, Any]) -> str:
         fill: none;
         stroke: rgba(20, 56, 64, 0.2);
         stroke-width: 8;
+        vector-effect: non-scaling-stroke;
       }}
 
       .anchor-chip {{
@@ -1550,6 +1593,10 @@ def _render_html(payload: dict[str, Any]) -> str:
 
       .callout-care .callout-chip {{
         fill: rgba(255, 246, 228, 0.97);
+      }}
+
+      .map-static {{
+        pointer-events: none;
       }}
 
       .north-label {{
@@ -1659,7 +1706,7 @@ def _render_html(payload: dict[str, Any]) -> str:
   <body>
     <div class="page">
       <div class="slide-shell">
-      <article class="slide" data-basemap="simplified">
+      <article class="slide" data-basemap="simplified" data-callouts="shown">
         <header class="title">
           <h1>{escape(payload['title'])}</h1>
           <p>
@@ -1669,20 +1716,43 @@ def _render_html(payload: dict[str, Any]) -> str:
 
         <section class="map-frame" aria-label="Wheelchair access map">
           <div class="map-controls">
-            <div class="mode-group" role="group" aria-label="Map context">
-              <span class="mode-label">Context</span>
-              <button type="button" class="mode-button is-active" data-basemap-mode="simplified">Simplified</button>
-              <button type="button" class="mode-button" data-basemap-mode="os-light">OS Light</button>
+            <div class="map-controls-left">
+              <div class="mode-group" role="group" aria-label="Map context">
+                <span class="mode-label">Context</span>
+                <button
+                  type="button"
+                  class="mode-button is-active"
+                  data-basemap-mode="simplified"
+                >
+                  Simplified
+                </button>
+                <button type="button" class="mode-button" data-basemap-mode="os-light">
+                  OS Light
+                </button>
+              </div>
+              <button type="button" class="mode-button mode-key" data-open-os-key>OS key</button>
             </div>
-            <button type="button" class="mode-button mode-key" data-open-os-key>OS key</button>
+            <div class="map-controls-right">
+              <div class="zoom-group" role="group" aria-label="Map zoom">
+                <button type="button" class="zoom-button" data-zoom-step="-1" aria-label="Zoom out">
+                  -
+                </button>
+                <button type="button" class="zoom-button zoom-reset" data-zoom-reset>
+                  Reset
+                </button>
+                <button type="button" class="zoom-button" data-zoom-step="1" aria-label="Zoom in">
+                  +
+                </button>
+              </div>
+            </div>
           </div>
           <div class="map-status" data-basemap-status>
-            Simplified context is shown. OS Light loads when a browser key is set.
+            Simplified context is shown. Wheel to zoom, drag to pan, and load OS Light when a browser key is set.
           </div>
           <svg class="map-svg" viewBox="0 0 {MAP_W} {MAP_H}" role="img" aria-label="{escape(payload['title'])}">
-            <g transform="translate(-{MAP_X}, -{MAP_Y})">
+            <g class="map-panzoom" data-panzoom-layer>
               <g class="basemap-os">
-                {basemap_tile_svg}
+                <g data-os-layer></g>
               </g>
               <g class="simple-context">
                 {water_svg}
@@ -1694,23 +1764,64 @@ def _render_html(payload: dict[str, Any]) -> str:
               {preferred_line_svg}
               {care_line_svg}
               {barrier_line_svg}
-              {callout_svg}
               {anchor_svg}
-              <g transform="translate({north_x}, {north_y})">
-                <text x="0" y="-8" class="north-label">N</text>
-                <path d="M 0 0 L 12 28 L 0 22 L -12 28 Z" fill="#17333a" />
-              </g>
-              <g transform="translate({scale_bar_x}, {scale_bar_y})">
-                <line x1="0" y1="0" x2="{scale_bar['width_px']}" y2="0" stroke="#17333a" stroke-width="4" stroke-linecap="round" />
-                <line x1="0" y1="-7" x2="0" y2="7" stroke="#17333a" stroke-width="2" />
-                <line x1="{scale_bar['half_width_px']}" y1="-7" x2="{scale_bar['half_width_px']}" y2="7" stroke="#17333a" stroke-width="2" />
-                <line x1="{scale_bar['width_px']}" y1="-7" x2="{scale_bar['width_px']}" y2="7" stroke="#17333a" stroke-width="2" />
-                <text x="0" y="-12" class="scale-label scale-label-start">0</text>
-                <text x="{scale_bar['half_width_px']}" y="-12" class="scale-label scale-label-middle">{escape(str(scale_bar['half_label']))}</text>
-                <text x="{scale_bar['width_px']}" y="-12" class="scale-label scale-label-end">{escape(str(scale_bar['label']))}</text>
-              </g>
-              <text x="{MAP_X + 30}" y="{MAP_Y + 100}" class="map-note">{escape(payload['rail_note'])}</text>
             </g>
+            <g class="map-callouts" data-callouts-layer>
+              {callout_svg}
+            </g>
+            <g class="map-static" transform="translate({north_x}, {north_y})">
+              <text x="0" y="-8" class="north-label">N</text>
+              <path d="M 0 0 L 12 28 L 0 22 L -12 28 Z" fill="#17333a" />
+            </g>
+            <g class="map-static" transform="translate({scale_bar_x}, {scale_bar_y})">
+              <line
+                x1="0"
+                y1="0"
+                x2="{scale_bar['width_px']}"
+                y2="0"
+                stroke="#17333a"
+                stroke-width="4"
+                stroke-linecap="round"
+                data-scale-line
+              />
+              <line x1="0" y1="-7" x2="0" y2="7" stroke="#17333a" stroke-width="2" />
+              <line
+                x1="{scale_bar['half_width_px']}"
+                y1="-7"
+                x2="{scale_bar['half_width_px']}"
+                y2="7"
+                stroke="#17333a"
+                stroke-width="2"
+                data-scale-half-tick
+              />
+              <line
+                x1="{scale_bar['width_px']}"
+                y1="-7"
+                x2="{scale_bar['width_px']}"
+                y2="7"
+                stroke="#17333a"
+                stroke-width="2"
+                data-scale-end-tick
+              />
+              <text x="0" y="-12" class="scale-label scale-label-start">0</text>
+              <text
+                x="{scale_bar['half_width_px']}"
+                y="-12"
+                class="scale-label scale-label-middle"
+                data-scale-half-label
+              >
+                {escape(str(scale_bar['half_label']))}
+              </text>
+              <text
+                x="{scale_bar['width_px']}"
+                y="-12"
+                class="scale-label scale-label-end"
+                data-scale-end-label
+              >
+                {escape(str(scale_bar['label']))}
+              </text>
+            </g>
+            <text x="30" y="100" class="map-note map-static">{escape(payload['rail_note'])}</text>
           </svg>
         </section>
 
@@ -1735,14 +1846,14 @@ def _render_html(payload: dict[str, Any]) -> str:
               <li>Grey streets are context only. They did not clear the wheelchair route filter.</li>
               <li>Final approach still needs checking: {escape(anchor_check_text)}.</li>
               <li>Not captured in current data: dropped kerbs, crossing type, tactile paving, parked cars, bins, café furniture, or temporary works.</li>
-              <li>In HTML, hover a coloured route for evidence text and use the OS Light toggle for street-name context when a browser-stored key is available.</li>
+              <li>In HTML, hover a coloured route for evidence text, wheel to zoom, drag to pan, and use the OS Light toggle for sharper street-name context when a browser-stored key is available.</li>
             </ul>
           </section>
 
           <div class="source-note">
             Live MCP-Geo extract on {escape(payload['generated_on'])}: roads, paths, pavement polygons,
             rail detail, water context, and named anchors. Route filter uses UK accessible-footway guidance,
-            a conservative 5% maximum grade rule, and optional OS Light browser tiles for map context.
+            a conservative 5% maximum grade rule, and optional zoom-aware OS Light browser tiles for map context.
           </div>
         </aside>
       </article>
@@ -1768,17 +1879,44 @@ def _render_html(payload: dict[str, Any]) -> str:
       (() => {{
         const root = document.documentElement;
         const slide = document.querySelector(".slide");
+        const mapFrame = document.querySelector(".map-frame");
+        const mapSvg = document.querySelector(".map-svg");
+        const panzoomLayer = document.querySelector("[data-panzoom-layer]");
+        const osLayer = document.querySelector("[data-os-layer]");
         const modeButtons = Array.from(document.querySelectorAll("[data-basemap-mode]"));
+        const zoomButtons = Array.from(document.querySelectorAll("[data-zoom-step]"));
+        const zoomResetButton = document.querySelector("[data-zoom-reset]");
         const statusEl = document.querySelector("[data-basemap-status]");
         const openKeyButton = document.querySelector("[data-open-os-key]");
         const dialog = document.getElementById("os-key-dialog");
         const keyInput = dialog?.querySelector("[data-os-key-input]");
         const saveKeyButton = dialog?.querySelector("[data-save-os-key]");
         const clearKeyButton = dialog?.querySelector("[data-clear-os-key]");
-        const osTiles = Array.from(document.querySelectorAll(".os-tile"));
-        const storageKey = {json.dumps(OS_BROWSER_KEY_STORAGE)};
+        const scaleLine = document.querySelector("[data-scale-line]");
+        const scaleHalfTick = document.querySelector("[data-scale-half-tick]");
+        const scaleEndTick = document.querySelector("[data-scale-end-tick]");
+        const scaleHalfLabel = document.querySelector("[data-scale-half-label]");
+        const scaleEndLabel = document.querySelector("[data-scale-end-label]");
+        const mapConfig = {basemap_config};
+        const storageKey = mapConfig.storageKey;
+        const maxScale = Math.min(
+          16,
+          Math.max(4, 2 ** Math.max(1, mapConfig.maxZoom - mapConfig.baseZoom))
+        );
         let osApiKey = "";
-        let osTilesHydrated = false;
+        let lastTileSignature = "";
+        let tileRenderToken = 0;
+        const state = {{
+          scale: 1,
+          offsetX: 0,
+          offsetY: 0,
+          dragActive: false,
+          pointerId: null,
+          dragStartX: 0,
+          dragStartY: 0,
+          originOffsetX: 0,
+          originOffsetY: 0,
+        }};
 
         const fit = () => {{
           const availableWidth = Math.max(320, window.innerWidth - 32);
@@ -1797,24 +1935,267 @@ def _render_html(payload: dict[str, Any]) -> str:
             button.classList.toggle("is-active", button.dataset.basemapMode === mode);
           }});
         }};
-        const clearTileRefs = () => {{
-          osTiles.forEach((tile) => {{
-            tile.removeAttribute("href");
-            tile.removeAttributeNS("http://www.w3.org/1999/xlink", "href");
-          }});
-          osTilesHydrated = false;
+        const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+        const setDragging = (dragging) => {{
+          mapFrame?.classList.toggle("is-dragging", dragging);
         }};
-        const hydrateTiles = () => {{
-          if (!osApiKey || osTilesHydrated) {{
+        const clearOsTiles = () => {{
+          osLayer?.replaceChildren();
+          lastTileSignature = "";
+          tileRenderToken += 1;
+        }};
+        const localPoint = (event) => {{
+          if (!(mapSvg instanceof SVGSVGElement)) {{
+            return {{ x: mapConfig.mapWidth / 2, y: mapConfig.mapHeight / 2 }};
+          }}
+          const rect = mapSvg.getBoundingClientRect();
+          if (!rect.width || !rect.height) {{
+            return {{ x: mapConfig.mapWidth / 2, y: mapConfig.mapHeight / 2 }};
+          }}
+          return {{
+            x: ((event.clientX - rect.left) / rect.width) * mapConfig.mapWidth,
+            y: ((event.clientY - rect.top) / rect.height) * mapConfig.mapHeight,
+          }};
+        }};
+        const clampView = (scale, offsetX, offsetY) => {{
+          const minOffsetX = Math.min(0, mapConfig.mapWidth - (mapConfig.mapWidth * scale));
+          const minOffsetY = Math.min(0, mapConfig.mapHeight - (mapConfig.mapHeight * scale));
+          return {{
+            scale,
+            offsetX: clamp(offsetX, minOffsetX, 0),
+            offsetY: clamp(offsetY, minOffsetY, 0),
+          }};
+        }};
+        const localToNormX = (localX) => {{
+          return (
+            mapConfig.layout.min_x_norm
+            + ((localX - mapConfig.layout.pad - mapConfig.layout.extra_x) / mapConfig.layout.scale)
+          );
+        }};
+        const localToNormY = (localY) => {{
+          return (
+            mapConfig.layout.top_y_norm
+            + ((localY - mapConfig.layout.pad - mapConfig.layout.extra_y) / mapConfig.layout.scale)
+          );
+        }};
+        const normToLocalX = (normX) => {{
+          return (
+            mapConfig.layout.pad
+            + mapConfig.layout.extra_x
+            + ((normX - mapConfig.layout.min_x_norm) * mapConfig.layout.scale)
+          );
+        }};
+        const normToLocalY = (normY) => {{
+          return (
+            mapConfig.layout.pad
+            + mapConfig.layout.extra_y
+            + ((normY - mapConfig.layout.top_y_norm) * mapConfig.layout.scale)
+          );
+        }};
+        const formatDistance = (meters) => {{
+          if (meters >= 1000) {{
+            const kilometers = meters / 1000;
+            const digits = kilometers >= 10 || Number.isInteger(kilometers) ? 0 : 1;
+            return `${{kilometers.toFixed(digits)}} km`;
+          }}
+          return `${{Math.round(meters)}} m`;
+        }};
+        const scaleBarSpec = () => {{
+          const metersPerPx = mapConfig.baseMetersPerPx / state.scale;
+          const maxLengthM = Math.max(1, mapConfig.scaleBarTargetPx * metersPerPx);
+          const exponent = Math.floor(Math.log10(maxLengthM));
+          const fraction = maxLengthM / (10 ** exponent);
+          let nice = 1;
+          if (fraction >= 5) {{
+            nice = 5;
+          }} else if (fraction >= 2) {{
+            nice = 2;
+          }}
+          const lengthM = nice * (10 ** exponent);
+          return {{
+            lengthM,
+            halfLengthM: lengthM / 2,
+            widthPx: lengthM / metersPerPx,
+            halfWidthPx: lengthM / (2 * metersPerPx),
+          }};
+        }};
+        const updateScaleBar = () => {{
+          const spec = scaleBarSpec();
+          scaleLine?.setAttribute("x2", spec.widthPx.toFixed(1));
+          scaleHalfTick?.setAttribute("x1", spec.halfWidthPx.toFixed(1));
+          scaleHalfTick?.setAttribute("x2", spec.halfWidthPx.toFixed(1));
+          scaleEndTick?.setAttribute("x1", spec.widthPx.toFixed(1));
+          scaleEndTick?.setAttribute("x2", spec.widthPx.toFixed(1));
+          if (scaleHalfLabel) {{
+            scaleHalfLabel.setAttribute("x", spec.halfWidthPx.toFixed(1));
+            scaleHalfLabel.textContent = formatDistance(spec.halfLengthM);
+          }}
+          if (scaleEndLabel) {{
+            scaleEndLabel.setAttribute("x", spec.widthPx.toFixed(1));
+            scaleEndLabel.textContent = formatDistance(spec.lengthM);
+          }}
+        }};
+        const updateCallouts = () => {{
+          if (!slide) {{
             return;
           }}
-          osTiles.forEach((tile) => {{
-            const template = tile.dataset.tileSrcTemplate || "";
-            const url = template.replace("__OS_API_KEY__", encodeURIComponent(osApiKey));
-            tile.setAttribute("href", url);
-            tile.setAttributeNS("http://www.w3.org/1999/xlink", "href", url);
+          const showCallouts = (
+            Math.abs(state.scale - 1) < 0.001
+            && Math.abs(state.offsetX) < 0.5
+            && Math.abs(state.offsetY) < 0.5
+          );
+          slide.dataset.callouts = showCallouts ? "shown" : "hidden";
+        }};
+        const visibleWorld = () => {{
+          const minLocalX = clamp((-state.offsetX) / state.scale, 0, mapConfig.mapWidth);
+          const maxLocalX = clamp(
+            (mapConfig.mapWidth - state.offsetX) / state.scale,
+            0,
+            mapConfig.mapWidth
+          );
+          const minLocalY = clamp((-state.offsetY) / state.scale, 0, mapConfig.mapHeight);
+          const maxLocalY = clamp(
+            (mapConfig.mapHeight - state.offsetY) / state.scale,
+            0,
+            mapConfig.mapHeight
+          );
+          return {{
+            minNormX: clamp(localToNormX(minLocalX), 0, 1),
+            maxNormX: clamp(localToNormX(maxLocalX), 0, 1),
+            minNormY: clamp(localToNormY(minLocalY), 0, 1),
+            maxNormY: clamp(localToNormY(maxLocalY), 0, 1),
+          }};
+        }};
+        const chooseTileZoom = (view) => {{
+          const spanX = Math.max(1e-9, view.maxNormX - view.minNormX);
+          const spanY = Math.max(1e-9, view.maxNormY - view.minNormY);
+          const innerW = mapConfig.mapWidth - (2 * mapConfig.layout.pad);
+          const innerH = mapConfig.mapHeight - (2 * mapConfig.layout.pad);
+          const zoomX = Math.log2((innerW * mapConfig.overscale) / (mapConfig.tileSizePx * spanX));
+          const zoomY = Math.log2((innerH * mapConfig.overscale) / (mapConfig.tileSizePx * spanY));
+          let zoom = clamp(
+            Math.floor(Math.min(zoomX, zoomY)),
+            mapConfig.minZoom,
+            mapConfig.maxZoom
+          );
+          while (zoom > mapConfig.minZoom) {{
+            const worldPx = mapConfig.tileSizePx * (2 ** zoom);
+            const tileCount = (
+              (Math.floor((view.maxNormX * worldPx) / mapConfig.tileSizePx)
+                - Math.floor((view.minNormX * worldPx) / mapConfig.tileSizePx)
+                + 1)
+              * (Math.floor((view.maxNormY * worldPx) / mapConfig.tileSizePx)
+                - Math.floor((view.minNormY * worldPx) / mapConfig.tileSizePx)
+                + 1)
+            );
+            if (tileCount <= mapConfig.maxTiles) {{
+              break;
+            }}
+            zoom -= 1;
+          }}
+          return zoom;
+        }};
+        const renderOsTiles = () => {{
+          if (!osLayer || !osApiKey || slide?.dataset.basemap !== "os-light") {{
+            return;
+          }}
+          const view = visibleWorld();
+          const zoom = chooseTileZoom(view);
+          const worldPx = mapConfig.tileSizePx * (2 ** zoom);
+          const maxTileIndex = (2 ** zoom) - 1;
+          let tileXMin = Math.floor((view.minNormX * worldPx) / mapConfig.tileSizePx);
+          let tileXMax = Math.floor((view.maxNormX * worldPx) / mapConfig.tileSizePx);
+          let tileYMin = Math.floor((view.minNormY * worldPx) / mapConfig.tileSizePx);
+          let tileYMax = Math.floor((view.maxNormY * worldPx) / mapConfig.tileSizePx);
+          tileXMin = clamp(tileXMin - mapConfig.tilePadding, 0, maxTileIndex);
+          tileXMax = clamp(tileXMax + mapConfig.tilePadding, 0, maxTileIndex);
+          tileYMin = clamp(tileYMin - mapConfig.tilePadding, 0, maxTileIndex);
+          tileYMax = clamp(tileYMax + mapConfig.tilePadding, 0, maxTileIndex);
+
+          const specs = [];
+          for (let tileX = tileXMin; tileX <= tileXMax; tileX += 1) {{
+            for (let tileY = tileYMin; tileY <= tileYMax; tileY += 1) {{
+              const tileMinNormX = (tileX * mapConfig.tileSizePx) / worldPx;
+              const tileMaxNormX = ((tileX + 1) * mapConfig.tileSizePx) / worldPx;
+              const tileTopNormY = (tileY * mapConfig.tileSizePx) / worldPx;
+              const tileBottomNormY = ((tileY + 1) * mapConfig.tileSizePx) / worldPx;
+              specs.push({{
+                key: `${{zoom}}/${{tileX}}/${{tileY}}`,
+                left: normToLocalX(tileMinNormX),
+                top: normToLocalY(tileTopNormY),
+                width: normToLocalX(tileMaxNormX) - normToLocalX(tileMinNormX),
+                height: normToLocalY(tileBottomNormY) - normToLocalY(tileTopNormY),
+                href: mapConfig.tileUrlTemplate
+                  .replace("__OS_API_KEY__", encodeURIComponent(osApiKey))
+                  .replace("{{z}}", String(zoom))
+                  .replace("{{x}}", String(tileX))
+                  .replace("{{y}}", String(tileY)),
+              }});
+            }}
+          }}
+          const signature = specs.map((spec) => spec.key).join("|");
+          if (signature === lastTileSignature) {{
+            if (slide?.dataset.basemap === "os-light") {{
+              setStatus("OS Light basemap is shown. Wheel to zoom and drag to pan.", "success");
+            }}
+            return;
+          }}
+          lastTileSignature = signature;
+          tileRenderToken += 1;
+          const token = tileRenderToken;
+          osLayer.replaceChildren();
+          if (!specs.length) {{
+            return;
+          }}
+          let pending = specs.length;
+          let sawError = false;
+          setStatus("Loading OS Light basemap. Wheel to zoom and drag to pan.", "info");
+          specs.forEach((spec) => {{
+            const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+            image.setAttribute("class", "os-tile");
+            image.setAttribute("x", spec.left.toFixed(1));
+            image.setAttribute("y", spec.top.toFixed(1));
+            image.setAttribute("width", spec.width.toFixed(1));
+            image.setAttribute("height", spec.height.toFixed(1));
+            image.setAttribute("preserveAspectRatio", "none");
+            image.setAttribute("href", spec.href);
+            image.setAttributeNS("http://www.w3.org/1999/xlink", "href", spec.href);
+            image.addEventListener("load", () => {{
+              if (token !== tileRenderToken) {{
+                return;
+              }}
+              pending -= 1;
+              if (!pending && slide?.dataset.basemap === "os-light") {{
+                setStatus("OS Light basemap is shown. Wheel to zoom and drag to pan.", "success");
+              }}
+            }});
+            image.addEventListener("error", () => {{
+              if (token !== tileRenderToken) {{
+                return;
+              }}
+              sawError = true;
+              pending -= 1;
+              if (!pending && slide?.dataset.basemap === "os-light") {{
+                setStatus(
+                  "One or more OS tiles failed to load. Check the key or switch back to Simplified.",
+                  "warning"
+                );
+              }}
+            }});
+            osLayer.appendChild(image);
           }});
-          osTilesHydrated = true;
+          if (!pending && !sawError && slide?.dataset.basemap === "os-light") {{
+            setStatus("OS Light basemap is shown. Wheel to zoom and drag to pan.", "success");
+          }}
+        }};
+        const applyTransform = () => {{
+          panzoomLayer?.setAttribute(
+            "transform",
+            `matrix(${{state.scale}} 0 0 ${{state.scale}} ${{state.offsetX}} ${{state.offsetY}})`
+          );
+          updateCallouts();
+          updateScaleBar();
+          renderOsTiles();
         }};
         const fallbackPrompt = () => {{
           const value = window.prompt("Enter your OS Maps API key for the OS Light basemap", osApiKey);
@@ -1827,9 +2208,12 @@ def _render_html(payload: dict[str, Any]) -> str:
             return false;
           }}
           osApiKey = trimmed;
-          window.localStorage.setItem(storageKey, osApiKey);
-          clearTileRefs();
-          hydrateTiles();
+          try {{
+            window.localStorage.setItem(storageKey, osApiKey);
+          }} catch (_error) {{
+            // Keep the session-only key if browser storage is unavailable.
+          }}
+          clearOsTiles();
           return true;
         }};
         const openKeyDialog = () => {{
@@ -1853,25 +2237,56 @@ def _render_html(payload: dict[str, Any]) -> str:
             if (!osApiKey) {{
               slide.dataset.basemap = "simplified";
               syncButtons("simplified");
-              setStatus("OS Light needs your OS Maps API key in this browser. Use OS key.", "warning");
+              setStatus(
+                "OS Light needs your OS Maps API key in this browser. Use OS key.",
+                "warning"
+              );
               if (allowDialog) {{
                 openKeyDialog();
               }}
               return;
             }}
-            hydrateTiles();
             slide.dataset.basemap = "os-light";
             syncButtons("os-light");
-            setStatus("Loading OS Light basemap under the route markup...", "info");
+            renderOsTiles();
             return;
           }}
           slide.dataset.basemap = "simplified";
           syncButtons("simplified");
           if (osApiKey) {{
-            setStatus("Simplified context is shown. OS Light is ready in this browser.", "info");
+            setStatus(
+              "Simplified context is shown. Wheel to zoom, drag to pan, and switch to OS Light when needed.",
+              "info"
+            );
           }} else {{
-            setStatus("Simplified context is shown. OS Light loads when a browser key is set.", "info");
+            setStatus(
+              "Simplified context is shown. Wheel to zoom, drag to pan, and load OS Light when a browser key is set.",
+              "info"
+            );
           }}
+        }};
+        const zoomAbout = (x, y, factor) => {{
+          const nextScale = clamp(state.scale * factor, 1, maxScale);
+          if (Math.abs(nextScale - state.scale) < 0.001) {{
+            return;
+          }}
+          const contentX = (x - state.offsetX) / state.scale;
+          const contentY = (y - state.offsetY) / state.scale;
+          const view = clampView(
+            nextScale,
+            x - (contentX * nextScale),
+            y - (contentY * nextScale)
+          );
+          state.scale = view.scale;
+          state.offsetX = view.offsetX;
+          state.offsetY = view.offsetY;
+          applyTransform();
+        }};
+        const resetView = () => {{
+          state.scale = 1;
+          state.offsetX = 0;
+          state.offsetY = 0;
+          applyTransform();
         }};
 
         fit();
@@ -1886,6 +2301,14 @@ def _render_html(payload: dict[str, Any]) -> str:
             setMode(button.dataset.basemapMode || "simplified");
           }});
         }});
+        zoomButtons.forEach((button) => {{
+          button.addEventListener("click", () => {{
+            const direction = Number(button.dataset.zoomStep || "0");
+            const factor = direction > 0 ? 1.35 : 1 / 1.35;
+            zoomAbout(mapConfig.mapWidth / 2, mapConfig.mapHeight / 2, factor);
+          }});
+        }});
+        zoomResetButton?.addEventListener("click", resetView);
         openKeyButton?.addEventListener("click", openKeyDialog);
         saveKeyButton?.addEventListener("click", () => {{
           if (!(keyInput instanceof HTMLInputElement)) {{
@@ -1904,9 +2327,12 @@ def _render_html(payload: dict[str, Any]) -> str:
             return;
           }}
           osApiKey = trimmed;
-          window.localStorage.setItem(storageKey, osApiKey);
-          clearTileRefs();
-          hydrateTiles();
+          try {{
+            window.localStorage.setItem(storageKey, osApiKey);
+          }} catch (_error) {{
+            // Keep the session-only key if browser storage is unavailable.
+          }}
+          clearOsTiles();
           if (dialog instanceof HTMLDialogElement) {{
             dialog.close();
           }}
@@ -1919,25 +2345,73 @@ def _render_html(payload: dict[str, Any]) -> str:
           }} catch (_error) {{
             // ignore storage failures and keep the simplified view available
           }}
-          clearTileRefs();
+          clearOsTiles();
           if (dialog instanceof HTMLDialogElement) {{
             dialog.close();
           }}
           setMode("simplified", {{ allowDialog: false }});
           setStatus("Saved OS Maps API key cleared. Simplified context is shown.", "info");
         }});
-        osTiles.forEach((tile) => {{
-          tile.addEventListener("load", () => {{
-            if (slide?.dataset.basemap === "os-light") {{
-              setStatus("OS Light basemap is shown under the route markup.", "success");
-            }}
-          }});
-          tile.addEventListener("error", () => {{
-            if (slide?.dataset.basemap === "os-light") {{
-              setStatus("One or more OS tiles failed to load. Check the key or switch back to Simplified.", "warning");
-            }}
-          }});
+        mapSvg?.addEventListener(
+          "wheel",
+          (event) => {{
+            event.preventDefault();
+            const point = localPoint(event);
+            const factor = event.deltaY < 0 ? 1.18 : 1 / 1.18;
+            zoomAbout(point.x, point.y, factor);
+          }},
+          {{ passive: false }}
+        );
+        mapSvg?.addEventListener("dblclick", (event) => {{
+          const point = localPoint(event);
+          zoomAbout(point.x, point.y, 1.35);
         }});
+        mapSvg?.addEventListener("pointerdown", (event) => {{
+          if (event.button !== 0) {{
+            return;
+          }}
+          const point = localPoint(event);
+          state.dragActive = true;
+          state.pointerId = event.pointerId;
+          state.dragStartX = point.x;
+          state.dragStartY = point.y;
+          state.originOffsetX = state.offsetX;
+          state.originOffsetY = state.offsetY;
+          mapSvg.setPointerCapture?.(event.pointerId);
+          setDragging(true);
+        }});
+        mapSvg?.addEventListener("pointermove", (event) => {{
+          if (!state.dragActive || event.pointerId !== state.pointerId) {{
+            return;
+          }}
+          const point = localPoint(event);
+          const view = clampView(
+            state.scale,
+            state.originOffsetX + (point.x - state.dragStartX),
+            state.originOffsetY + (point.y - state.dragStartY)
+          );
+          state.offsetX = view.offsetX;
+          state.offsetY = view.offsetY;
+          applyTransform();
+        }});
+        const endDrag = (event) => {{
+          if (!state.dragActive || event.pointerId !== state.pointerId) {{
+            return;
+          }}
+          state.dragActive = false;
+          state.pointerId = null;
+          mapSvg?.releasePointerCapture?.(event.pointerId);
+          setDragging(false);
+        }};
+        mapSvg?.addEventListener("pointerup", endDrag);
+        mapSvg?.addEventListener("pointercancel", endDrag);
+        mapSvg?.addEventListener("pointerleave", (event) => {{
+          if (state.dragActive && event.pointerId === state.pointerId && !(event.buttons & 1)) {{
+            endDrag(event);
+          }}
+        }});
+        updateScaleBar();
+        updateCallouts();
         setMode("simplified", {{ allowDialog: false }});
       }})();
     </script>
@@ -2003,7 +2477,9 @@ It uses live MCP-Geo extracts from `{date}` and focuses on what the current data
 - exact named anchors from search tools
 
 The HTML report also includes an optional `OS Light` basemap toggle. That layer loads
-browser-side from Ordnance Survey when the user supplies an OS Maps API key locally.
+browser-side from Ordnance Survey when the user supplies an OS Maps API key locally,
+and the browser view supports wheel zoom, drag pan, and higher-detail tile refresh as
+the user zooms in.
 
 It does **not** claim to validate dropped kerbs, crossing design, tactile paving, camber,
 temporary obstructions, parked cars, café furniture, or works on the day.
@@ -2018,7 +2494,8 @@ Primary map layers:
 - `{RAIL_COLLECTION}`
 - `{WATER_COLLECTION}`
 - {anchor_tools}
-- OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied
+- OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied,
+  with browser-side tile refresh on zoom for sharper street context
 
 ## Live findings from this extract
 

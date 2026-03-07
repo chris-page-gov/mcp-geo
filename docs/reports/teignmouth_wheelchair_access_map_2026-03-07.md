@@ -18,7 +18,9 @@ It uses live MCP-Geo extracts from `2026-03-07` and focuses on what the current 
 - exact named anchors from search tools
 
 The HTML report also includes an optional `OS Light` basemap toggle. That layer loads
-browser-side from Ordnance Survey when the user supplies an OS Maps API key locally.
+browser-side from Ordnance Survey when the user supplies an OS Maps API key locally,
+and the browser view supports wheel zoom, drag pan, and higher-detail tile refresh as
+the user zooms in.
 
 It does **not** claim to validate dropped kerbs, crossing design, tactile paving, camber,
 temporary obstructions, parked cars, café furniture, or works on the day.
@@ -33,7 +35,8 @@ Primary map layers:
 - `trn-fts-cartographicraildetail-1`
 - `wtr-fts-water-3`
 - `os_places.search`
-- OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied
+- OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied,
+  with browser-side tile refresh on zoom for sharper street context
 
 ## Live findings from this extract
 

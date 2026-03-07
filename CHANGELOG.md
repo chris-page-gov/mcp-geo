@@ -50,6 +50,9 @@ All notable changes to this project will be documented in this file.
   Exmouth, and Sidmouth map artefacts with Web Mercator overlay alignment,
   slimmer route casing, and an optional browser-side `OS Light` basemap toggle
   for richer street-name context without obscuring labels.
+- Extended the wheelchair-access HTML maps with wheel zoom, drag pan, reset
+  controls, zoom-aware scale bars, and browser-side OS tile refresh so the
+  optional `OS Light` context sharpens as the user zooms in.
 - Extended `scripts/generate_teignmouth_wheelchair_access_map.py` with reusable
   place presets and OS export-resource handling so wider footprints like Exmouth
   can be generated with the same scoring logic.

@@ -214,7 +214,9 @@ assumptions change.
   responsive slide-fit layout, Web Mercator overlay alignment, perimeter
   corridor callouts, hover evidence titles, sidebar-only access-point markers
   for Teignmouth station and Shopmobility, and an optional browser-side
-  `OS Light` basemap toggle with slimmer route overlays for label-safe context.
+  `OS Light` basemap toggle with slimmer route overlays for label-safe context
+  plus wheel zoom, drag pan, reset controls, zoom-aware scale-bar updates, and
+  browser-side tile refresh for sharper street context at higher zoom levels.
 - Maintain the Exmouth comparator outputs and side-by-side accessibility note in
   `data/exports/exmouth_wheelchair_access_map_2026-03-07.json`,
   `docs/reports/exmouth_wheelchair_access_map_2026-03-07.{html,md}`,
