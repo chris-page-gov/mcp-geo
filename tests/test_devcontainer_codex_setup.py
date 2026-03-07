@@ -48,5 +48,5 @@ def test_devcontainer_setup_registers_codex_launcher(tmp_path: Path) -> None:
     )
 
     log_text = log_path.read_text(encoding="utf-8")
-    assert "/Users/crpage/repos/mcp-geo/scripts/codex-mcp-local" in log_text
+    assert str(repo_root / "scripts" / "codex-mcp-local") in log_text
     assert "claude-mcp-local" not in log_text.splitlines()[-1]

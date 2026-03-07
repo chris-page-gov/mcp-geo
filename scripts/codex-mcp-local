@@ -2,7 +2,41 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOCAL_WRAPPER="${MCP_GEO_CODEX_LOCAL_WRAPPER:-$REPO_ROOT/scripts/os-mcp}"
+DOCKER_WRAPPER="${MCP_GEO_CODEX_DOCKER_WRAPPER:-$REPO_ROOT/scripts/mcp-docker-local}"
+LAUNCHER_MODE="${MCP_GEO_CODEX_LAUNCHER:-auto}"
 
 # Let Codex negotiate UI support through advertised client capabilities instead
-# of inheriting Claude-specific wrapper defaults.
-exec "$REPO_ROOT/scripts/mcp-docker-local"
+# of inheriting Claude-specific wrapper defaults. Prefer the Docker-backed
+# launcher on host surfaces, but fall back to the repo-local stdio adapter when
+# Docker is unavailable or when running inside a devcontainer.
+case "$LAUNCHER_MODE" in
+  local)
+    exec "$LOCAL_WRAPPER"
+    ;;
+  docker)
+    exec "$DOCKER_WRAPPER"
+    ;;
+  auto)
+    ;;
+  *)
+    printf "mcp-geo: unknown MCP_GEO_CODEX_LAUNCHER mode '%s' (use auto|local|docker)\n" \
+      "$LAUNCHER_MODE" >&2
+    exit 1
+    ;;
+esac
+
+if [[ -n "${REMOTE_CONTAINERS:-}" || -n "${DEVCONTAINER:-}" || -f "/.dockerenv" ]]; then
+  exec "$LOCAL_WRAPPER"
+fi
+
+DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
+if [[ -z "$DOCKER_BIN" ]] && command -v docker >/dev/null 2>&1; then
+  DOCKER_BIN="$(command -v docker)"
+fi
+
+if [[ -n "$DOCKER_BIN" ]] && "$DOCKER_BIN" info >/dev/null 2>&1; then
+  exec "$DOCKER_WRAPPER"
+fi
+
+exec "$LOCAL_WRAPPER"

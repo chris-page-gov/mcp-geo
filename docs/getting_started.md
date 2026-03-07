@@ -480,7 +480,9 @@ inherit Claude-only startup defaults:
 The devcontainer setup script now registers Codex against
 `scripts/codex-mcp-local`. Shared Docker/bootstrap logic lives in
 `scripts/mcp-docker-local`, while `scripts/claude-mcp-local` remains
-Claude-only.
+Claude-only. The Codex wrapper prefers the Docker-backed launcher on host
+surfaces and falls back to `scripts/os-mcp` when Docker is unavailable or the
+session is already running inside a devcontainer/container.
 
 To verify scoped startup discovery with the Codex launcher:
 

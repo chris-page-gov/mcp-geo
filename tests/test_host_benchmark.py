@@ -144,6 +144,89 @@ def test_score_session_classifies_ui_runtime_and_resources(tmp_path: Path) -> No
     assert score["categories"]["fallbackBehavior"]["status"] == "pass"
 
 
+def test_score_session_penalizes_unrecovered_but_normalized_error(tmp_path: Path) -> None:
+    pack = load_scenario_pack()
+    scenario = next(s for s in pack["scenarios"] if s["id"] == "boundary_not_found_recovery")
+    session_dir = _make_session_dir(
+        tmp_path,
+        "normalized-error-no-recovery",
+        {
+            "sessionId": "normalized-error-no-recovery",
+            "mode": "stdio",
+            "source": "codex",
+            "surface": "cli",
+            "hostProfile": "codex_cli_stdio",
+            "scenarioId": scenario["id"],
+            "scenarioPack": pack["id"],
+        },
+        [
+            _request(1.0, 1, "initialize", {"capabilities": {}}),
+            _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
+            _request(1.2, 2, "tools/call", {"name": "admin_lookup_area_geometry", "arguments": {"id": "bad"}}),
+            {
+                "ts": 1.3,
+                "direction": "server->client",
+                "json": {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "result": {
+                        "isError": True,
+                        "code": "NOT_FOUND",
+                        "message": "Area not found",
+                    },
+                },
+            },
+        ],
+    )
+
+    _evidence, score = score_session(session_dir, scenario)
+
+    assert score["categories"]["errorRecovery"]["status"] == "partial"
+    assert score["categories"]["errorRecovery"]["score"] == 0.5
+    assert score["categories"]["errorRecovery"]["detail"] == "normalized error observed without recovery"
+
+
+def test_score_session_fails_unnormalized_error(tmp_path: Path) -> None:
+    pack = load_scenario_pack()
+    scenario = next(s for s in pack["scenarios"] if s["id"] == "boundary_not_found_recovery")
+    session_dir = _make_session_dir(
+        tmp_path,
+        "unnormalized-error",
+        {
+            "sessionId": "unnormalized-error",
+            "mode": "stdio",
+            "source": "claude",
+            "surface": "desktop",
+            "hostProfile": "claude_desktop_ui_partial",
+            "scenarioId": scenario["id"],
+            "scenarioPack": pack["id"],
+        },
+        [
+            _request(1.0, 1, "initialize", {"capabilities": {}}),
+            _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
+            _request(1.2, 2, "tools/call", {"name": "admin_lookup_area_geometry", "arguments": {"id": "bad"}}),
+            {
+                "ts": 1.3,
+                "direction": "server->client",
+                "json": {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "result": {
+                        "isError": True,
+                        "message": "Unhandled failure",
+                    },
+                },
+            },
+        ],
+    )
+
+    _evidence, score = score_session(session_dir, scenario)
+
+    assert score["categories"]["errorRecovery"]["status"] == "fail"
+    assert score["categories"]["errorRecovery"]["score"] == 0.0
+    assert score["categories"]["errorRecovery"]["detail"] == "unnormalized error observed"
+
+
 def test_summarize_sessions_builds_three_track_report(tmp_path: Path) -> None:
     pack = load_scenario_pack()
     scenario = next(s for s in pack["scenarios"] if s["id"] == "tool_search_postcode")

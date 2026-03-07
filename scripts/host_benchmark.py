@@ -364,8 +364,12 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
     expects_ui_runtime = _surface_expects_ui_runtime(session_meta)
     fallback_expected = surface in set(scenario.get("scoringHints", {}).get("fallbackExpectedOn", []))
     fallback_observed = evidence["fallbackCount"] > 0
-    error_codes = evidence["errorCodes"]
-    normalized_error = bool(error_codes)
+    error_codes = [
+        str(pair.get("errorCode") or "UNKNOWN")
+        for pair in evidence["toolResponses"]
+        if pair.get("isError")
+    ]
+    normalized_error = bool(error_codes) and all(code != "UNKNOWN" for code in error_codes)
     recovered_after_error = False
     error_seen = False
     for pair in evidence["toolResponses"]:
@@ -375,6 +379,19 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
         if error_seen and not pair["isError"]:
             recovered_after_error = True
             break
+
+    if not error_seen:
+        error_recovery_score = 1.0
+        error_recovery_detail = "no error observed"
+    elif normalized_error and recovered_after_error:
+        error_recovery_score = 1.0
+        error_recovery_detail = "normalized error observed and host recovered"
+    elif normalized_error:
+        error_recovery_score = 0.5
+        error_recovery_detail = "normalized error observed without recovery"
+    else:
+        error_recovery_score = 0.0
+        error_recovery_detail = "unnormalized error observed"
 
     tool_search_hint = scenario.get("scoringHints", {}).get("toolSearch", "optional")
     tool_search_usage = evidence["toolSearchUsage"]
@@ -448,8 +465,8 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
             observedTools=tool_calls,
         ),
         "errorRecovery": _category(
-            1.0 if (not error_seen or normalized_error) else 0.0,
-            "normalized error observed" if normalized_error else "no error observed",
+            error_recovery_score,
+            error_recovery_detail,
             errorSeen=error_seen,
             recoveredAfterError=recovered_after_error,
             errorCodes=error_codes,

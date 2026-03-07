@@ -490,7 +490,9 @@ test("trial-5 deterministic host-simulation fixtures are stable across engines",
   const initResult = await roundTripUiInitialize(page);
   expect(initResult).toBeTruthy();
   expect(initResult.protocolVersion).toBe("2026-01-26");
-  expect(initResult.hostContext?.platform).toBe("web");
+  expect(initResult.hostContext?.platform).toBe(
+    selectedProfile?.hostContext?.platform || "web"
+  );
   expect(initResult.hostContext?.mcpGeo?.proxyBase).toBe("http://localhost:8000");
   const screenshot = await captureEvidence(page, testInfo, "trial-5-host-simulation");
   writeObservation(testInfo, "trial-5-host-simulation", {

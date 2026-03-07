@@ -142,4 +142,6 @@ The markdown report includes:
   `clientVersion`, `model`, `scenarioPack`, and `scenarioId` in `session.json`.
 - `trace_report.py` writes both `report.md` and `summary.json`.
 - Codex uses `scripts/codex-mcp-local`; Claude remains on
-  `scripts/claude-mcp-local` and retains Claude-only defaults.
+  `scripts/claude-mcp-local` and retains Claude-only defaults. The Codex
+  wrapper prefers Docker on host surfaces and falls back to `scripts/os-mcp`
+  when Docker is unavailable or the session is already inside a container.
