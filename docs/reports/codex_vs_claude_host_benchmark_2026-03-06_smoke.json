@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-03-06T07:59:33Z",
+  "scenarioPack": "codex_vs_claude_host_v1",
+  "sessions": [
+    {
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260306-codex-cli-tool-search-smoke",
+      "scenarioId": "tool_search_postcode",
+      "trackId": "codex_cli",
+      "overallScore": 0.7611,
+      "overallStatus": "partial"
+    }
+  ],
+  "tracks": {
+    "codex_cli": {
+      "label": "Codex CLI",
+      "source": "codex",
+      "surface": "cli",
+      "sessionCount": 1,
+      "scenarioCount": 1,
+      "overallScore": 0.7611,
+      "categoryAverages": {
+        "protocolNegotiation": 1.0,
+        "startupDiscovery": 0.35,
+        "toolSearch": 0.25,
+        "toolSelection": 1.0,
+        "errorRecovery": 1.0,
+        "resourcesRead": 1.0,
+        "mcpAppsRuntime": 1.0,
+        "fallbackBehavior": 1.0,
+        "latencyToFirstUsefulToolCall": 0.25
+      },
+      "scenarios": {
+        "tool_search_postcode": {
+          "status": "partial",
+          "score": 0.7611,
+          "toolSearchUsage": "unused",
+          "startupDiscoveryPattern": "full_catalog",
+          "uiEventCount": 0,
+          "fallbackCount": 0
+        }
+      }
+    },
+    "codex_ide": {
+      "label": "Codex IDE",
+      "source": "codex",
+      "surface": "ide",
+      "sessionCount": 0,
+      "scenarioCount": 0,
+      "overallScore": null,
+      "categoryAverages": {},
+      "scenarios": {}
+    },
+    "claude_desktop": {
+      "label": "Claude Desktop",
+      "source": "claude",
+      "surface": "desktop",
+      "sessionCount": 0,
+      "scenarioCount": 0,
+      "overallScore": null,
+      "categoryAverages": {},
+      "scenarios": {}
+    }
+  }
+}

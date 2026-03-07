@@ -92,11 +92,23 @@ assumptions change.
 - Publishing and maintaining the UK Public Sector AI Community documentation
   set (`docs/public_sector_ai_community/`) with novice/apprentice pathways,
   timeline synthesis, and Prism-ready LaTeX outputs.
+- Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
+  Desktop Opus 4.6, including launcher separation, trace/session scoring, and
+  reproducible comparison reports.
 
 ## Active Work
 
 - Maintain published `v0.5.0` launch state (release notes/caveat visibility,
   security-review traceability, and public-repo hygiene checks).
+- Maintain the Codex-vs-Claude host benchmark harness: `scripts/codex-mcp-local`,
+  `scripts/mcp-docker-local`, `scripts/host_benchmark.py`,
+  `docs/benchmarking/codex_vs_claude_host_benchmark.md`, and the
+  host-simulation profiles (`codex_cli_stdio`, `codex_ide_ui`,
+  `claude_desktop_ui_partial`).
+- Capture benchmark evidence runs for Codex CLI, Codex IDE, and Claude
+  Desktop using the new scenario pack
+  `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` and generate
+  side-by-side reports under `docs/reports/`.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

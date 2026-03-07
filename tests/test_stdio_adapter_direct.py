@@ -172,6 +172,17 @@ def test_claude_ui_content_mode_respects_explicit_override(monkeypatch):
     content = call.get("content", [])
     assert any(block.get("type") == "resource" for block in content if isinstance(block, dict))
 
+
+def test_codex_does_not_inherit_claude_resource_link_default(monkeypatch):
+    monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
+    monkeypatch.setenv("MCP_APPS_CONTENT_MODE", "embedded")
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "Codex CLI"})
+    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
+    assert call.get("ok") is True
+    content = call.get("content", [])
+    assert any(block.get("type") == "text" for block in content if isinstance(block, dict))
+    assert not any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+
 def test_stdio_client_supports_ui_nested(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_UI_SUPPORTED", raising=False)
     capabilities = {"extensions": {"io.modelcontextprotocol/ui": {"mimeTypes": [MCP_APPS_MIME]}}}
@@ -270,6 +281,15 @@ def test_tools_list_compact_for_claude_hides_heavy_fields(monkeypatch):
 def test_tools_list_compact_can_be_disabled(monkeypatch):
     monkeypatch.setenv("MCP_STDIO_LIST_COMPACT", "false")
     monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
+    result = stdio_adapter.handle_list_tools({})
+    assert "toolsets" in result
+    assert result["tools"]
+    assert "outputSchema" in result["tools"][0]
+
+
+def test_tools_list_not_compact_for_codex_by_default(monkeypatch):
+    monkeypatch.delenv("MCP_STDIO_LIST_COMPACT", raising=False)
+    monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "Codex CLI"})
     result = stdio_adapter.handle_list_tools({})
     assert "toolsets" in result
     assert result["tools"]

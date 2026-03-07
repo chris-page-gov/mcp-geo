@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added shared Docker-backed stdio launcher `scripts/mcp-docker-local` plus
+  Codex-specific launcher `scripts/codex-mcp-local`, keeping
+  `scripts/claude-mcp-local` Claude-only.
+- Added Codex startup-scope probe `scripts/check_codex_startup_scope.sh`.
+- Added Codex-vs-Claude host benchmark scenario pack
+  `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json`.
+- Added host benchmark runner `scripts/host_benchmark.py` for scenario export,
+  Codex CLI runs, per-session scoring, and aggregate comparison reports.
+- Added benchmark runbook
+  `docs/benchmarking/codex_vs_claude_host_benchmark.md`.
 - Added `scripts/generate_teignmouth_wheelchair_access_map.py` plus live Teignmouth
   wheelchair-access artifacts:
   `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.{html,md}`,
@@ -13,6 +23,14 @@ All notable changes to this project will be documented in this file.
   `output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png`.
 
 ### Changed
+- Updated `scripts/devcontainer_mcp_setup.sh` so Codex registers `mcp-geo`
+  against `scripts/codex-mcp-local` instead of the Claude wrapper.
+- Extended `scripts/trace_session.py` and `scripts/trace_report.py` with
+  host-aware metadata/reporting (`source`, `surface`, `hostProfile`,
+  `clientVersion`, `model`, `scenarioPack`, `scenarioId`, `summary.json`).
+- Extended host-simulation fixtures and compact host profiles with benchmark
+  profiles for `codex_cli_stdio`, `codex_ide_ui`, and
+  `claude_desktop_ui_partial`.
 - Updated `docs/reports/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to index the
   new Teignmouth wheelchair-access map work.
 - Refined the Teignmouth wheelchair-access HTML map to fit wide browser windows

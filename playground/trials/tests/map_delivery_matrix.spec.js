@@ -23,8 +23,9 @@ const logDir = path.join(evidenceRoot, "logs");
 const trialLogPath = path.join(logDir, "playwright_trials_observations.jsonl");
 const syntheticTilePath = path.join(repoRoot, "playground/trials/fixtures/synthetic_osm_tile.png");
 const hostProfileCatalog = loadHostCapabilityProfiles(repoRoot);
-const uiSupportedProfile = profileById(hostProfileCatalog, "ui_supported_inline");
-const uiUnsupportedProfile = profileById(hostProfileCatalog, "ui_unsupported_static");
+const codexIdeProfile = profileById(hostProfileCatalog, "codex_ide_ui");
+const codexCliProfile = profileById(hostProfileCatalog, "codex_cli_stdio");
+const claudePartialProfile = profileById(hostProfileCatalog, "claude_desktop_ui_partial");
 
 const LATENCY_BUDGETS_MS = {
   "trial-1-static-osm": { desktop: 8_000, mobile: 12_000 },
@@ -118,9 +119,10 @@ async function mcpCall(request, payload, sessionId = null) {
 test.beforeAll(() => {
   ensureEvidenceDirs();
   expect(fs.existsSync(syntheticTilePath)).toBeTruthy();
-  expect(hostProfileCatalog.profiles.length).toBeGreaterThanOrEqual(2);
-  expect(uiSupportedProfile).not.toBeNull();
-  expect(uiUnsupportedProfile).not.toBeNull();
+  expect(hostProfileCatalog.profiles.length).toBeGreaterThanOrEqual(3);
+  expect(codexIdeProfile).not.toBeNull();
+  expect(codexCliProfile).not.toBeNull();
+  expect(claudePartialProfile).not.toBeNull();
 });
 
 test("trial-1 static osm proxy map renders in browser", async ({ page }, testInfo) => {
@@ -235,7 +237,7 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
     "Widget host emulation with style/local-layer assertions is validated on desktop Chromium."
   );
   await installDeterministicHostBridge(page, {
-    profile: uiSupportedProfile,
+    profile: codexIdeProfile,
     seed: 17,
   });
 
@@ -315,7 +317,7 @@ test("trial-3 geography selector map persists overlays after style switch", asyn
     style: "osm",
     switchAfterOverlay: true,
     page: "ui/geography_selector.html",
-    hostProfile: uiSupportedProfile?.id || "unknown",
+    hostProfile: codexIdeProfile?.id || "unknown",
     accessibility: { altText: "Geography selector map with address overlays." },
     ...latencyDetails(testInfo, "trial-3-geography-selector", startedAt),
   });
@@ -331,7 +333,7 @@ test("trial-4 boundary explorer imports local layers and highlights matches", as
     "Widget host emulation with local-layer highlight assertions is validated on desktop Chromium."
   );
   await installDeterministicHostBridge(page, {
-    profile: uiSupportedProfile,
+    profile: codexIdeProfile,
     seed: 19,
   });
 
@@ -458,7 +460,7 @@ window.shp = async function () {
     mapPanel,
     style: "osm",
     highlightedUprns: 2,
-    hostProfile: uiSupportedProfile?.id || "unknown",
+    hostProfile: codexIdeProfile?.id || "unknown",
     accessibility: { altText: "Boundary explorer map with local-layer highlights." },
     ...latencyDetails(testInfo, "trial-4-boundary-explorer", startedAt),
   });
@@ -469,10 +471,15 @@ test("trial-5 deterministic host-simulation fixtures are stable across engines",
   testInfo
 ) => {
   const startedAt = Date.now();
-  const selectedProfile =
-    testInfo.project.name === "chromium-desktop" || testInfo.project.name === "chromium-mobile"
-      ? uiSupportedProfile
-      : uiUnsupportedProfile;
+  const selectedProfile = (() => {
+    if (testInfo.project.name === "chromium-desktop") {
+      return codexIdeProfile;
+    }
+    if (testInfo.project.name === "chromium-mobile") {
+      return codexCliProfile;
+    }
+    return claudePartialProfile;
+  })();
   await installDeterministicHostBridge(page, {
     profile: selectedProfile,
     seed: 23,
@@ -483,7 +490,9 @@ test("trial-5 deterministic host-simulation fixtures are stable across engines",
   const initResult = await roundTripUiInitialize(page);
   expect(initResult).toBeTruthy();
   expect(initResult.protocolVersion).toBe("2026-01-26");
-  expect(initResult.hostContext?.platform).toBe("web");
+  expect(initResult.hostContext?.platform).toBe(
+    selectedProfile?.hostContext?.platform || "web"
+  );
   expect(initResult.hostContext?.mcpGeo?.proxyBase).toBe("http://localhost:8000");
   const screenshot = await captureEvidence(page, testInfo, "trial-5-host-simulation");
   writeObservation(testInfo, "trial-5-host-simulation", {

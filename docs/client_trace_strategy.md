@@ -140,6 +140,7 @@ Each run creates a session directory under `logs/sessions/<timestamp>/` containi
 - `ui-events.jsonl`
 - `upstream.log`
 - `session.json`
+- `summary.json`
 - `report.md`
 - `bundle.zip`
 
@@ -166,3 +167,22 @@ to the trace session wrapper:
   }
 }
 ```
+
+`session.json` can now carry host benchmark metadata:
+
+- `source`: `codex`, `claude`, `vscode`
+- `surface`: `cli`, `ide`, `desktop`
+- `hostProfile`: for example `codex_cli_stdio`, `codex_ide_ui`
+- `clientVersion`
+- `model`
+- `scenarioPack`
+- `scenarioId`
+
+For scored Codex vs Claude comparisons, use the dedicated benchmark runner and
+runbook:
+
+```bash
+./.venv/bin/python scripts/host_benchmark.py scenario-pack
+```
+
+- Runbook: `docs/benchmarking/codex_vs_claude_host_benchmark.md`

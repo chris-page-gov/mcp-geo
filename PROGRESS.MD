@@ -5,6 +5,18 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-07
 
+## Codex GPT-5.4 MCP host benchmark harness (2026-03-06)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| HBM-OPS-1 Codex launcher separation and registration | done | none | Added shared Docker-backed stdio launcher `scripts/mcp-docker-local`, new `scripts/codex-mcp-local`, retained Claude-only wrapper defaults in `scripts/claude-mcp-local`, and updated `scripts/devcontainer_mcp_setup.sh` so Codex registers against the Codex launcher instead of the Claude wrapper. Added `scripts/check_codex_startup_scope.sh` for scoped-discovery validation. |
+| HBM-TRACE-2 Host-aware trace metadata and reporting | done | HBM-OPS-1 | Extended `scripts/trace_session.py` to record `source`, `surface`, `hostProfile`, `clientVersion`, `model`, `scenarioPack`, and `scenarioId`. Extended `scripts/trace_report.py` to emit host-aware `summary.json` plus markdown report sections for discovery, tool search, resources, fallback, UI runtime, and latency. |
+| HBM-HARNESS-3 Scenario pack, scoring, and aggregation | done | HBM-TRACE-2 | Added prompt-first scenario pack `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` plus `scripts/host_benchmark.py` for scenario export, Codex CLI execution, per-session scoring (`benchmark-evidence.json`, `benchmark-score.json`), and side-by-side aggregate report generation under `docs/reports/`. |
+| HBM-SIM-4 Host simulation profiles and regression coverage | done | HBM-HARNESS-3 | Extended host-simulation fixtures with `codex_cli_stdio`, `codex_ide_ui`, and `claude_desktop_ui_partial`; updated map-delivery Playwright matrix to use Codex/Claude benchmark profiles; added pytest coverage for benchmark scoring, trace metadata, devcontainer registration, startup-scope probe, and host-profile fixtures. |
+| HBM-EVID-5 Captured benchmark evidence runs | in_progress | HBM-HARNESS-3, HBM-SIM-4 | Harness and runbooks are in place. Pending operator-run evidence capture for Codex IDE and Claude Desktop; Codex CLI scripted runs can now be executed via `scripts/host_benchmark.py run-codex-cli <scenario>`. |
+
 ## Teignmouth wheelchair access map (2026-03-07)
 
 Legend: pending, in_progress, done, blocked

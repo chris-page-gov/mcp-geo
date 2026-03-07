@@ -1,0 +1,233 @@
+{
+  "id": "codex_vs_claude_host_v1",
+  "title": "Codex vs Claude MCP host benchmark scenarios",
+  "description": "Prompt-first host benchmark pack derived from the evaluation question corpus.",
+  "version": "2026-03-06",
+  "scenarios": [
+    {
+      "id": "address_lookup_postcode",
+      "label": "Address lookup by postcode",
+      "sourceQuestionId": "B002",
+      "prompt": "UPRNs for SW1A 1AA",
+      "intent": "address_lookup",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_mcp.route_query",
+        "tools/call:os_places.by_postcode"
+      ],
+      "expectedTools": ["os_mcp.route_query", "os_places.by_postcode"],
+      "expectedResources": [],
+      "successConditions": [
+        "Uses MCP tools to perform postcode lookup.",
+        "Returns address or UPRN evidence instead of generic narrative."
+      ],
+      "fallbackConditions": [],
+      "requiresOsApi": true,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "none",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": []
+      }
+    },
+    {
+      "id": "ambiguous_westminster_data",
+      "label": "Ambiguous routing prompt",
+      "sourceQuestionId": "M002",
+      "prompt": "Westminster data",
+      "intent": "statistics",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_mcp.route_query"
+      ],
+      "expectedTools": ["os_mcp.route_query"],
+      "expectedResources": [],
+      "successConditions": [
+        "Uses route_query or equivalent discovery step before making a domain-specific call.",
+        "Shows whether the host resolves ambiguity with tool search, descriptor lookup, or direct follow-on tools."
+      ],
+      "fallbackConditions": [],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "none",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": []
+      }
+    },
+    {
+      "id": "tool_search_postcode",
+      "label": "Scoped discovery and tool search",
+      "sourceQuestionId": "A005",
+      "prompt": "Find tools related to postcode search",
+      "intent": "unknown",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/search"
+      ],
+      "expectedTools": ["tools/search"],
+      "expectedResources": [],
+      "successConditions": [
+        "Shows whether the host uses tools/search, scoped tools/list, or broad full-catalog startup discovery.",
+        "Returns postcode-related tool choices instead of a generic summary."
+      ],
+      "fallbackConditions": [],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "preferred",
+        "resourcesRead": "none",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": []
+      }
+    },
+    {
+      "id": "skills_guide_resource",
+      "label": "Resource retrieval",
+      "sourceQuestionId": "A006",
+      "prompt": "Fetch the MCP Geo skills guide",
+      "intent": "unknown",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "resources/read"
+      ],
+      "expectedTools": ["os_mcp.route_query"],
+      "expectedResources": ["skills://mcp-geo/getting-started"],
+      "successConditions": [
+        "Reads the skills guide resource via resources/read rather than hallucinating the content.",
+        "Returns a grounded answer or excerpt summary based on the fetched resource."
+      ],
+      "fallbackConditions": [],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "required",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": []
+      }
+    },
+    {
+      "id": "static_map_render",
+      "label": "Static map render",
+      "sourceQuestionId": "B006",
+      "prompt": "Static map descriptor for Westminster bbox",
+      "intent": "map_render",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_maps.render"
+      ],
+      "expectedTools": ["os_mcp.route_query", "os_maps.render"],
+      "expectedResources": [],
+      "successConditions": [
+        "Obtains a render descriptor through os_maps.render.",
+        "Preserves render metadata and does not fall back to an unrelated map path."
+      ],
+      "fallbackConditions": [],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "none",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": []
+      }
+    },
+    {
+      "id": "geography_selector_widget",
+      "label": "Geography selector widget",
+      "sourceQuestionId": "M003",
+      "prompt": "Select Westminster ward",
+      "intent": "interactive_selection",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_apps.render_geography_selector",
+        "resources/read:ui://mcp-geo/geography-selector",
+        "tools/call:os_apps.log_event"
+      ],
+      "expectedTools": ["os_mcp.route_query", "os_apps.render_geography_selector"],
+      "expectedResources": ["ui://mcp-geo/geography-selector"],
+      "successConditions": [
+        "UI-capable hosts mount the geography selector resource and emit os_apps.log_event evidence.",
+        "Non-UI hosts consume deterministic fallback data instead of failing silently."
+      ],
+      "fallbackConditions": [
+        "CLI fallback should include static map or export handoff metadata when UI is not available."
+      ],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "ui_only",
+        "uiRuntime": "ui_only",
+        "fallbackExpectedOn": ["cli"]
+      }
+    },
+    {
+      "id": "boundary_explorer_widget",
+      "label": "Boundary explorer widget",
+      "sourceQuestionId": "B020",
+      "prompt": "Open the boundary explorer widget",
+      "intent": "interactive_selection",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_apps.render_boundary_explorer",
+        "resources/read:ui://mcp-geo/boundary-explorer",
+        "tools/call:os_apps.log_event"
+      ],
+      "expectedTools": ["os_mcp.route_query", "os_apps.render_boundary_explorer"],
+      "expectedResources": ["ui://mcp-geo/boundary-explorer"],
+      "successConditions": [
+        "UI-capable hosts mount the boundary explorer resource and emit runtime event evidence.",
+        "Non-UI hosts receive deterministic fallback guidance."
+      ],
+      "fallbackConditions": [
+        "CLI fallback should remain deterministic and structured."
+      ],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "ui_only",
+        "uiRuntime": "ui_only",
+        "fallbackExpectedOn": ["cli"]
+      }
+    },
+    {
+      "id": "boundary_not_found_recovery",
+      "label": "Failure and error recovery",
+      "sourceQuestionId": "E003",
+      "prompt": "Fetch boundary for unknown area id",
+      "intent": "boundary_fetch",
+      "targetSurfaces": ["cli", "ide", "desktop"],
+      "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:admin_lookup.area_geometry"
+      ],
+      "expectedTools": ["os_mcp.route_query", "admin_lookup.area_geometry"],
+      "expectedResources": [],
+      "successConditions": [
+        "Propagates normalized NOT_FOUND or equivalent structured error information.",
+        "Shows whether the host attempts a guided recovery after the initial failure."
+      ],
+      "fallbackConditions": [],
+      "requiresOsApi": false,
+      "requiresOnsLive": false,
+      "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "none",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": []
+      }
+    }
+  ]
+}
