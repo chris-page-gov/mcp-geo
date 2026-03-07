@@ -20,6 +20,12 @@ This folder contains human-readable run reports and investigation summaries.
 
 - 2026-02-19: [Peatland survey reliability implementation plan](peatland_survey_reliability_implementation_plan_2026-02-19.md)
 
+## Place Profiling
+
+- 2026-03-07: [Teignmouth wheelchair access map](teignmouth_wheelchair_access_map_2026-03-07.html)
+- 2026-03-07: [Teignmouth wheelchair access map notes](teignmouth_wheelchair_access_map_2026-03-07.md)
+- 2026-03-06: [Teignmouth peninsula building profile brief](teignmouth_peninsula_building_profile_brief_2026-03-06.md)
+
 ## Governance and Assurance
 
 - 2026-02-21: [Safe-by-design governance review](safe_by_design_review_2026-02-21.md)
