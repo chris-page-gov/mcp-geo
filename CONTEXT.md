@@ -211,9 +211,21 @@ assumptions change.
   `scripts/generate_teignmouth_wheelchair_access_map.py`,
   `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`, and
   `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.{html,md}` with
-  responsive slide-fit layout, perimeter corridor callouts, hover evidence
-  titles, and sidebar-only access-point markers for Teignmouth station and
-  Shopmobility.
+  responsive slide-fit layout, Web Mercator overlay alignment, perimeter
+  corridor callouts, hover evidence titles, sidebar-only access-point markers
+  for Teignmouth station and Shopmobility, and an optional browser-side
+  `OS Light` basemap toggle with slimmer route overlays for label-safe context.
+- Maintain the Exmouth comparator outputs and side-by-side accessibility note in
+  `data/exports/exmouth_wheelchair_access_map_2026-03-07.json`,
+  `docs/reports/exmouth_wheelchair_access_map_2026-03-07.{html,md}`,
+  `output/playwright/exmouth-wheelchair-access-map-2026-03-07.png`, and
+  `docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md`,
+  keeping the same optional `OS Light` browser basemap control available across
+  all comparator maps.
+- Maintain the Sidmouth comparator outputs in
+  `data/exports/sidmouth_wheelchair_access_map_2026-03-07.json`,
+  `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.{html,md}`, and
+  `output/playwright/sidmouth-wheelchair-access-map-2026-03-07.png`.
 - Refine playground + geography-selector compact UX for map-first workflows:
   compact-preserving maximize behavior, adjustable split-pane sizing, a
   compact tab workflow (`Map/Search/Results/Info/Debug/Help`), and

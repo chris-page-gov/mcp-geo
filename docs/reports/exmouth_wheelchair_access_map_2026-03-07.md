@@ -1,14 +1,14 @@
-# Teignmouth wheelchair access map
+# Exmouth wheelchair access map
 
 Generated artefacts:
 
-- HTML map: `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html`
-- JSON export: `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`
-- PNG render: `output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png`
+- HTML map: `docs/reports/exmouth_wheelchair_access_map_2026-03-07.html`
+- JSON export: `data/exports/exmouth_wheelchair_access_map_2026-03-07.json`
+- PNG render: `output/playwright/exmouth-wheelchair-access-map-2026-03-07.png`
 
 ## Scope
 
-This map is a conservative town-centre access aid for a powered wheelchair user in Teignmouth.
+This map is a conservative town-centre access aid for a powered wheelchair user in Exmouth.
 It uses live MCP-Geo extracts from `2026-03-07` and focuses on what the current data can validate:
 
 - road links with recorded pavement width and pavement coverage
@@ -32,39 +32,39 @@ Primary map layers:
 - `trn-fts-roadtrackorpath-3` filtered to `Pavement`
 - `trn-fts-cartographicraildetail-1`
 - `wtr-fts-water-3`
-- `os_places.search`
+- `os_poi.search`
 - OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied
 
 ## Live findings from this extract
 
-Area used: `[-3.5025, 50.5405, -3.4905, 50.5495]`
+Area used: `[-3.4215, 50.6095, -3.396, 50.6238]`
 
 Counts:
 
-- `422` road links
-- `306` path links
-- `145` pavement polygons
-- `58` rail-detail features
+- `910` road links
+- `532` path links
+- `276` pavement polygons
+- `3` rail-detail features
 - `10` water features
 
 Accessible-network summary:
 
-- Preferred route length: `2.84 km`
-- Use-with-care route length: `4.17 km`
-- Barrier length shown on the map: `1.25 km`
+- Preferred route length: `5.32 km`
+- Use-with-care route length: `18.90 km`
+- Barrier length shown on the map: `2.60 km`
 
 Named sections that read best in the current data:
 
-- Preferred roads: `Den Crescent`, `Bitton Park Road`, `Promenade`, `Higher Brook Street`, `Powderham Terrace`
-- Preferred paths: `OSMONDS LANE`, `BATH TERRACE`, `Regents Gardens`, `FRENCH STREET`, `CLAMPET LANE`
-- Use-with-care roads: `Promenade`, `Brunswick Street`, `Powderham Terrace`, `Salisbury Terrace`, `Strand`
-- Use-with-care paths: `Riverside Walk`, `The Mews`, `Sun Lane`, `Commercial Road`, `CLAY LANE`
-- Recorded barrier paths: `Mulberry Street`, `WILLOW STREET`, `Riverside Walk`, `SPERANZA GROVE`
+- Preferred roads: `Victoria Road`, `Cyprus Road`, `Esplanade`, `Queens Drive`, `Dagmar Road`
+- Preferred paths: `BEACH GARDENS`, `MANOR GARDENS`, `CHAPEL STREET`, `Magnolia Walk`, `THE STRAND`
+- Use-with-care roads: `Queens Drive`, `Marine Way`, `Salterton Road`, `Rosebery Road`, `Imperial Road`
+- Use-with-care paths: `Madeira Walk`, `MANOR GARDENS`, `Lime Kiln Lane`, `PLANTATION WALK`, `BATH ROAD`
+- Recorded barrier paths: `Fair View Terrace`, `Madeira Walk`, `Henrietta Place`, `PLANTATION WALK`, `ALBION TERRACE`
 
 Anchor-point check:
 
-- `Teignmouth station` is about `26 m` from the nearest cleared route segment.
-- `Shopmobility` is about `27 m` from the nearest cleared route segment.
+- `Exmouth railway station` is about `22 m` from the nearest cleared route segment.
+- `Exmouth indoor market` is about `28 m` from the nearest cleared route segment.
 
 That means the current route filter is useful for planning within the core, but the final approach to
 those anchor points still needs an on-the-ground crossing and kerb check.

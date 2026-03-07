@@ -1,4 +1,23 @@
 {
+  "slug": "teignmouth",
+  "place_name": "Teignmouth",
+  "title": "Teignmouth town-centre wheelchair access map",
+  "subtitle": "Conservative MCP-Geo route filter for a Quantum iLevel user. Width, slope, lighting, and pedestrian-path evidence are shown. Hover a coloured route in HTML for details. Dropped kerbs and crossing quality are not.",
+  "rail_note": "Railway line and station edge",
+  "callout_priority": {
+    "Promenade": 0,
+    "Bitton Park Road": 1,
+    "Higher Brook Street": 2,
+    "Regents Gardens": 3,
+    "CLAMPET LANE": 4,
+    "Riverside Walk": 5,
+    "East Cliff": 6,
+    "Quay Road": 7,
+    "STANLEY STREET": 8
+  },
+  "anchor_tools": [
+    "os_places.search"
+  ],
   "generated_on": "2026-03-07",
   "bbox": [
     -3.5025,
@@ -161192,5 +161211,121 @@
         "presenceofstreetlight_coverage": "Fully Unlit"
       }
     }
-  ]
+  ],
+  "basemap": {
+    "style": "Light_3857",
+    "zoom": 16,
+    "storage_key": "mcpGeo.osApiKey",
+    "tile_url_template": "https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=__OS_API_KEY__",
+    "tiles": [
+      {
+        "z": 16,
+        "x": 32130,
+        "y": 22069,
+        "left": 201.8,
+        "top": -70.7,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32130,
+        "y": 22070,
+        "left": 201.8,
+        "top": 205.4,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32130,
+        "y": 22071,
+        "left": 201.8,
+        "top": 481.6,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32130,
+        "y": 22072,
+        "left": 201.8,
+        "top": 757.7,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32131,
+        "y": 22069,
+        "left": 478.0,
+        "top": -70.7,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32131,
+        "y": 22070,
+        "left": 478.0,
+        "top": 205.4,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32131,
+        "y": 22071,
+        "left": 478.0,
+        "top": 481.6,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32131,
+        "y": 22072,
+        "left": 478.0,
+        "top": 757.7,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32132,
+        "y": 22069,
+        "left": 754.2,
+        "top": -70.7,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32132,
+        "y": 22070,
+        "left": 754.2,
+        "top": 205.4,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32132,
+        "y": 22071,
+        "left": 754.2,
+        "top": 481.6,
+        "width": 276.2,
+        "height": 276.2
+      },
+      {
+        "z": 16,
+        "x": 32132,
+        "y": 22072,
+        "left": 754.2,
+        "top": 757.7,
+        "width": 276.2,
+        "height": 276.2
+      }
+    ]
+  }
 }

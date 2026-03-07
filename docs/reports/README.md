@@ -22,6 +22,15 @@ This folder contains human-readable run reports and investigation summaries.
 
 ## Place Profiling
 
+Wheelchair-access HTML reports now include an optional browser-side `OS Light`
+basemap toggle for richer street-name context without changing the default
+standalone simplified view.
+
+- 2026-03-07: [Teignmouth, Exmouth and Sidmouth wheelchair-access comparison](teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md)
+- 2026-03-07: [Exmouth wheelchair access map](exmouth_wheelchair_access_map_2026-03-07.html)
+- 2026-03-07: [Exmouth wheelchair access map notes](exmouth_wheelchair_access_map_2026-03-07.md)
+- 2026-03-07: [Sidmouth wheelchair access map](sidmouth_wheelchair_access_map_2026-03-07.html)
+- 2026-03-07: [Sidmouth wheelchair access map notes](sidmouth_wheelchair_access_map_2026-03-07.md)
 - 2026-03-07: [Teignmouth wheelchair access map](teignmouth_wheelchair_access_map_2026-03-07.html)
 - 2026-03-07: [Teignmouth wheelchair access map notes](teignmouth_wheelchair_access_map_2026-03-07.md)
 - 2026-03-06: [Teignmouth peninsula building profile brief](teignmouth_peninsula_building_profile_brief_2026-03-06.md)

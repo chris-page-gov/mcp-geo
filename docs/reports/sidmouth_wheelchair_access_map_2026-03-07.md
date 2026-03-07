@@ -1,14 +1,14 @@
-# Teignmouth wheelchair access map
+# Sidmouth wheelchair access map
 
 Generated artefacts:
 
-- HTML map: `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html`
-- JSON export: `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`
-- PNG render: `output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png`
+- HTML map: `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.html`
+- JSON export: `data/exports/sidmouth_wheelchair_access_map_2026-03-07.json`
+- PNG render: `output/playwright/sidmouth-wheelchair-access-map-2026-03-07.png`
 
 ## Scope
 
-This map is a conservative town-centre access aid for a powered wheelchair user in Teignmouth.
+This map is a conservative town-centre access aid for a powered wheelchair user in Sidmouth.
 It uses live MCP-Geo extracts from `2026-03-07` and focuses on what the current data can validate:
 
 - road links with recorded pavement width and pavement coverage
@@ -32,39 +32,39 @@ Primary map layers:
 - `trn-fts-roadtrackorpath-3` filtered to `Pavement`
 - `trn-fts-cartographicraildetail-1`
 - `wtr-fts-water-3`
-- `os_places.search`
+- `os_poi.search`
 - OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied
 
 ## Live findings from this extract
 
-Area used: `[-3.5025, 50.5405, -3.4905, 50.5495]`
+Area used: `[-3.2445, 50.676, -3.233, 50.6826]`
 
 Counts:
 
-- `422` road links
-- `306` path links
-- `145` pavement polygons
-- `58` rail-detail features
-- `10` water features
+- `237` road links
+- `140` path links
+- `85` pavement polygons
+- `0` rail-detail features
+- `12` water features
 
 Accessible-network summary:
 
-- Preferred route length: `2.84 km`
-- Use-with-care route length: `4.17 km`
-- Barrier length shown on the map: `1.25 km`
+- Preferred route length: `1.26 km`
+- Use-with-care route length: `5.68 km`
+- Barrier length shown on the map: `0.44 km`
 
 Named sections that read best in the current data:
 
-- Preferred roads: `Den Crescent`, `Bitton Park Road`, `Promenade`, `Higher Brook Street`, `Powderham Terrace`
-- Preferred paths: `OSMONDS LANE`, `BATH TERRACE`, `Regents Gardens`, `FRENCH STREET`, `CLAMPET LANE`
-- Use-with-care roads: `Promenade`, `Brunswick Street`, `Powderham Terrace`, `Salisbury Terrace`, `Strand`
-- Use-with-care paths: `Riverside Walk`, `The Mews`, `Sun Lane`, `Commercial Road`, `CLAY LANE`
-- Recorded barrier paths: `Mulberry Street`, `WILLOW STREET`, `Riverside Walk`, `SPERANZA GROVE`
+- Preferred roads: `The Esplanade`, `All Saints Road`, `Station Road`
+- Preferred paths: `EAST STREET`
+- Use-with-care roads: `Station Road`, `Peak Hill Road`, `The Esplanade`, `All Saints Road`, `Mill Street`
+- Use-with-care paths: `Church Lane`, `Church Path`, `Heydon's Lane`, `RIVERSIDE`, `HEYDONS LANE`
+- Recorded barrier paths: No stable named segments cleared this category in the current extract.
 
 Anchor-point check:
 
-- `Teignmouth station` is about `26 m` from the nearest cleared route segment.
-- `Shopmobility` is about `27 m` from the nearest cleared route segment.
+- `Tourist Information Centre` is about `5 m` from the nearest cleared route segment.
+- `Sidmouth Market` is about `12 m` from the nearest cleared route segment.
 
 That means the current route filter is useful for planning within the core, but the final approach to
 those anchor points still needs an on-the-ground crossing and kerb check.

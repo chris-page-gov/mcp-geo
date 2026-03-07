@@ -11,13 +11,12 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 import server.mcp.tools  # noqa: F401
+from tools.os_delivery import os_exports_dir
 from tools.registry import get as get_tool
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "docs" / "reports"
 EXPORTS_DIR = REPO_ROOT / "data" / "exports"
-
-TEIGNMOUTH_BBOX = [-3.5025, 50.5405, -3.4905, 50.5495]
 
 ROAD_COLLECTION = "trn-ntwk-roadlink-5"
 PATH_COLLECTION = "trn-ntwk-pathlink-3"
@@ -53,17 +52,118 @@ RAIL_FIELDS = ["description"]
 
 LIT_GOOD = {"Fully Lit", "Mostly Lit"}
 
-CALLOUT_PRIORITY = {
-    "Promenade": 0,
-    "Bitton Park Road": 1,
-    "Higher Brook Street": 2,
-    "Regents Gardens": 3,
-    "CLAMPET LANE": 4,
-    "Riverside Walk": 5,
-    "East Cliff": 6,
-    "Quay Road": 7,
-    "STANLEY STREET": 8,
+PLACE_PRESETS: dict[str, dict[str, Any]] = {
+    "teignmouth": {
+        "slug": "teignmouth",
+        "place_name": "Teignmouth",
+        "bbox": [-3.5025, 50.5405, -3.4905, 50.5495],
+        "title": "Teignmouth town-centre wheelchair access map",
+        "subtitle": (
+            "Conservative MCP-Geo route filter for a Quantum iLevel user. Width, slope, "
+            "lighting, and pedestrian-path evidence are shown. Hover a coloured route in "
+            "HTML for details. Dropped kerbs and crossing quality are not."
+        ),
+        "rail_note": "Railway line and station edge",
+        "anchors": [
+            {
+                "label": "Teignmouth station",
+                "query": "teignmouth railway station",
+                "tool": "os_places.search",
+            },
+            {
+                "label": "Shopmobility",
+                "query": "teignmouth shopmobility",
+                "tool": "os_places.search",
+            },
+        ],
+        "callout_priority": {
+            "Promenade": 0,
+            "Bitton Park Road": 1,
+            "Higher Brook Street": 2,
+            "Regents Gardens": 3,
+            "CLAMPET LANE": 4,
+            "Riverside Walk": 5,
+            "East Cliff": 6,
+            "Quay Road": 7,
+            "STANLEY STREET": 8,
+        },
+    },
+    "exmouth": {
+        "slug": "exmouth",
+        "place_name": "Exmouth",
+        "bbox": [-3.4215, 50.6095, -3.3960, 50.6238],
+        "title": "Exmouth town-centre wheelchair access map",
+        "subtitle": (
+            "Conservative MCP-Geo route filter for a Quantum iLevel user. This comparison "
+            "tests the station-to-town-centre-to-seafront core using width, slope, lighting, "
+            "and pedestrian-path evidence. Hover a coloured route in HTML for details. "
+            "Dropped kerbs and crossing quality are not."
+        ),
+        "rail_note": "Railway line and station edge",
+        "anchors": [
+            {
+                "label": "Exmouth railway station",
+                "query": "exmouth railway station",
+                "tool": "os_poi.search",
+            },
+            {
+                "label": "Exmouth indoor market",
+                "query": "exmouth indoor market",
+                "tool": "os_poi.search",
+            },
+        ],
+        "callout_priority": {
+            "Imperial Road": 0,
+            "The Strand": 1,
+            "Queen Street": 2,
+            "Alexandra Terrace": 3,
+            "Esplanade": 4,
+            "Queens Drive": 5,
+            "Rolle Street": 6,
+            "Manchester Road": 7,
+            "The Beacon": 8,
+        },
+    },
+    "sidmouth": {
+        "slug": "sidmouth",
+        "place_name": "Sidmouth",
+        "bbox": [-3.2445, 50.6760, -3.2330, 50.6826],
+        "title": "Sidmouth town-centre wheelchair access map",
+        "subtitle": (
+            "Conservative MCP-Geo route filter for a Quantum iLevel user. This comparison "
+            "tests Sidmouth's market-square to seafront core using width, slope, lighting, "
+            "and pedestrian-path evidence. Hover a coloured route in HTML for details. "
+            "Dropped kerbs and crossing quality are not."
+        ),
+        "rail_note": "Seafront and river edge context",
+        "anchors": [
+            {
+                "label": "Tourist Information Centre",
+                "query": "sidmouth tourist information",
+                "tool": "os_poi.search",
+            },
+            {
+                "label": "Sidmouth Market",
+                "query": "sidmouth market place",
+                "tool": "os_poi.search",
+            },
+        ],
+        "callout_priority": {
+            "The Esplanade": 0,
+            "Ham Lane": 1,
+            "Market Place": 2,
+            "High Street": 3,
+            "Station Road": 4,
+            "All Saints Road": 5,
+            "Peak Hill Road": 6,
+            "Mill Street": 7,
+            "Church Street": 8,
+        },
+    },
 }
+
+DEFAULT_PRESET = "teignmouth"
+OS_EXPORT_RESOURCE_PREFIX = "resource://mcp-geo/os-exports/"
 
 SLIDE_WIDTH = 1600
 SLIDE_HEIGHT = 900
@@ -76,6 +176,13 @@ PANEL_X = 1210
 PANEL_Y = 96
 PANEL_W = 324
 PANEL_H = 748
+TILE_SIZE_PX = 256
+OS_LIGHT_STYLE = "Light_3857"
+OS_LIGHT_TILE_URL_TEMPLATE = (
+    "https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=__OS_API_KEY__"
+)
+OS_BROWSER_KEY_STORAGE = "mcpGeo.osApiKey"
+EARTH_CIRCUMFERENCE_M = 40_075_016.686
 
 
 def _call_tool(name: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -111,6 +218,13 @@ def _fetch_features(
             payload["pageToken"] = token
         data = _call_tool("os_features.query", payload)
         page = data.get("features")
+        if not isinstance(page, list) and data.get("delivery") == "resource":
+            resource_uri = data.get("resourceUri")
+            if isinstance(resource_uri, str) and resource_uri.startswith(OS_EXPORT_RESOURCE_PREFIX):
+                export_name = resource_uri.removeprefix(OS_EXPORT_RESOURCE_PREFIX)
+                export_path = os_exports_dir() / export_name
+                export_payload = json.loads(export_path.read_text(encoding="utf-8"))
+                page = export_payload.get("features")
         if not isinstance(page, list):
             raise RuntimeError(f"os_features.query returned invalid features for {collection}")
         features.extend(page)
@@ -120,11 +234,20 @@ def _fetch_features(
     return features
 
 
-def _search_place(text: str, bbox: list[float]) -> dict[str, Any]:
-    data = _call_tool("os_places.search", {"tool": "os_places.search", "text": text, "limit": 25})
+def _search_anchor(query: str, bbox: list[float], tool_name: str) -> dict[str, Any]:
+    payload: dict[str, Any] = {"tool": tool_name, "limit": 25}
+    if tool_name == "os_places.search":
+        payload["text"] = query
+    elif tool_name == "os_poi.search":
+        payload["text"] = query
+        payload["bbox"] = bbox
+    else:
+        raise RuntimeError(f"Unsupported anchor lookup tool: {tool_name}")
+
+    data = _call_tool(tool_name, payload)
     results = data.get("results")
     if not isinstance(results, list) or not results:
-        raise RuntimeError(f"os_places.search returned no results for {text!r}")
+        raise RuntimeError(f"{tool_name} returned no results for {query!r}")
     min_lon, min_lat, max_lon, max_lat = bbox
     for item in results:
         if not isinstance(item, dict):
@@ -137,7 +260,7 @@ def _search_place(text: str, bbox: list[float]) -> dict[str, Any]:
     for item in results:
         if isinstance(item, dict) and isinstance(item.get("lat"), (int, float)):
             return item
-    raise RuntimeError(f"os_places.search returned no geocoded result for {text!r}")
+    raise RuntimeError(f"{tool_name} returned no geocoded result for {query!r}")
 
 
 def _meters_per_lon_degree(lat: float) -> float:
@@ -306,6 +429,53 @@ def _distance_point_to_polyline_m(
     return best
 
 
+def _mercator_x_normalized(lon: float) -> float:
+    return (lon + 180.0) / 360.0
+
+
+def _mercator_y_normalized(lat: float) -> float:
+    clipped = max(-85.05112878, min(85.05112878, lat))
+    sin_lat = math.sin(math.radians(clipped))
+    return 0.5 - (math.log((1.0 + sin_lat) / (1.0 - sin_lat)) / (4.0 * math.pi))
+
+
+def _map_layout(
+    bbox: list[float],
+    *,
+    x: float = MAP_X,
+    y: float = MAP_Y,
+    width: float = MAP_W,
+    height: float = MAP_H,
+    pad: float = MAP_PAD,
+) -> dict[str, float]:
+    min_lon, min_lat, max_lon, max_lat = bbox
+    min_x_norm = _mercator_x_normalized(min_lon)
+    max_x_norm = _mercator_x_normalized(max_lon)
+    top_y_norm = _mercator_y_normalized(max_lat)
+    bottom_y_norm = _mercator_y_normalized(min_lat)
+    world_w = max_x_norm - min_x_norm
+    world_h = bottom_y_norm - top_y_norm
+    inner_w = width - (2 * pad)
+    inner_h = height - (2 * pad)
+    scale = min(inner_w / world_w, inner_h / world_h)
+    extra_x = (inner_w - (world_w * scale)) / 2.0
+    extra_y = (inner_h - (world_h * scale)) / 2.0
+    return {
+        "x": x,
+        "y": y,
+        "width": width,
+        "height": height,
+        "pad": pad,
+        "scale": scale,
+        "extra_x": extra_x,
+        "extra_y": extra_y,
+        "min_x_norm": min_x_norm,
+        "max_x_norm": max_x_norm,
+        "top_y_norm": top_y_norm,
+        "bottom_y_norm": bottom_y_norm,
+    }
+
+
 def _projector(
     bbox: list[float],
     *,
@@ -315,21 +485,150 @@ def _projector(
     height: float = MAP_H,
     pad: float = MAP_PAD,
 ) -> Callable[[float, float], tuple[float, float]]:
-    min_lon, min_lat, max_lon, max_lat = bbox
-    mid_lat = (min_lat + max_lat) / 2.0
-    lon_scale = math.cos(math.radians(mid_lat))
-    world_w = (max_lon - min_lon) * lon_scale
-    world_h = max_lat - min_lat
-    scale = min((width - (2 * pad)) / world_w, (height - (2 * pad)) / world_h)
-    extra_x = (width - (2 * pad) - (world_w * scale)) / 2.0
-    extra_y = (height - (2 * pad) - (world_h * scale)) / 2.0
+    layout = _map_layout(bbox, x=x, y=y, width=width, height=height, pad=pad)
 
     def project(lon: float, lat: float) -> tuple[float, float]:
-        px = x + pad + extra_x + ((lon - min_lon) * lon_scale * scale)
-        py = y + pad + extra_y + ((max_lat - lat) * scale)
+        px = (
+            layout["x"]
+            + layout["pad"]
+            + layout["extra_x"]
+            + ((_mercator_x_normalized(lon) - layout["min_x_norm"]) * layout["scale"])
+        )
+        py = (
+            layout["y"]
+            + layout["pad"]
+            + layout["extra_y"]
+            + ((_mercator_y_normalized(lat) - layout["top_y_norm"]) * layout["scale"])
+        )
         return round(px, 1), round(py, 1)
 
     return project
+
+
+def _choose_basemap_zoom(
+    bbox: list[float],
+    *,
+    width: float = MAP_W,
+    height: float = MAP_H,
+    pad: float = MAP_PAD,
+    overscale: float = 1.35,
+    min_zoom: int = 12,
+    max_zoom: int = 18,
+    max_tiles: int = 30,
+) -> int:
+    layout = _map_layout(bbox, width=width, height=height, pad=pad)
+    span_x = layout["max_x_norm"] - layout["min_x_norm"]
+    span_y = layout["bottom_y_norm"] - layout["top_y_norm"]
+    inner_w = width - (2 * pad)
+    inner_h = height - (2 * pad)
+    zoom_x = math.log2((inner_w * overscale) / (TILE_SIZE_PX * span_x))
+    zoom_y = math.log2((inner_h * overscale) / (TILE_SIZE_PX * span_y))
+    zoom = max(min_zoom, min(max_zoom, math.floor(min(zoom_x, zoom_y))))
+    while zoom > min_zoom:
+        world_px = TILE_SIZE_PX * (2**zoom)
+        min_px = layout["min_x_norm"] * world_px
+        max_px = layout["max_x_norm"] * world_px
+        top_py = layout["top_y_norm"] * world_px
+        bottom_py = layout["bottom_y_norm"] * world_px
+        tile_count = (
+            (math.floor(max_px / TILE_SIZE_PX) - math.floor(min_px / TILE_SIZE_PX) + 1)
+            * (math.floor(bottom_py / TILE_SIZE_PX) - math.floor(top_py / TILE_SIZE_PX) + 1)
+        )
+        if tile_count <= max_tiles:
+            break
+        zoom -= 1
+    return zoom
+
+
+def _build_basemap_tiles(bbox: list[float]) -> dict[str, Any]:
+    layout = _map_layout(bbox)
+    zoom = _choose_basemap_zoom(bbox)
+    world_px = TILE_SIZE_PX * (2**zoom)
+    min_px = layout["min_x_norm"] * world_px
+    max_px = layout["max_x_norm"] * world_px
+    top_py = layout["top_y_norm"] * world_px
+    bottom_py = layout["bottom_y_norm"] * world_px
+    tile_x_min = math.floor(min_px / TILE_SIZE_PX)
+    tile_x_max = math.floor(max_px / TILE_SIZE_PX)
+    tile_y_min = math.floor(top_py / TILE_SIZE_PX)
+    tile_y_max = math.floor(bottom_py / TILE_SIZE_PX)
+    tiles: list[dict[str, Any]] = []
+    for tile_x in range(tile_x_min, tile_x_max + 1):
+        for tile_y in range(tile_y_min, tile_y_max + 1):
+            tile_min_x_norm = (tile_x * TILE_SIZE_PX) / world_px
+            tile_max_x_norm = ((tile_x + 1) * TILE_SIZE_PX) / world_px
+            tile_top_y_norm = (tile_y * TILE_SIZE_PX) / world_px
+            tile_bottom_y_norm = ((tile_y + 1) * TILE_SIZE_PX) / world_px
+            left = (
+                layout["x"]
+                + layout["pad"]
+                + layout["extra_x"]
+                + ((tile_min_x_norm - layout["min_x_norm"]) * layout["scale"])
+            )
+            right = (
+                layout["x"]
+                + layout["pad"]
+                + layout["extra_x"]
+                + ((tile_max_x_norm - layout["min_x_norm"]) * layout["scale"])
+            )
+            top = (
+                layout["y"]
+                + layout["pad"]
+                + layout["extra_y"]
+                + ((tile_top_y_norm - layout["top_y_norm"]) * layout["scale"])
+            )
+            bottom = (
+                layout["y"]
+                + layout["pad"]
+                + layout["extra_y"]
+                + ((tile_bottom_y_norm - layout["top_y_norm"]) * layout["scale"])
+            )
+            tiles.append(
+                {
+                    "z": zoom,
+                    "x": tile_x,
+                    "y": tile_y,
+                    "left": round(left, 1),
+                    "top": round(top, 1),
+                    "width": round(right - left, 1),
+                    "height": round(bottom - top, 1),
+                }
+            )
+    return {
+        "style": OS_LIGHT_STYLE,
+        "zoom": zoom,
+        "storage_key": OS_BROWSER_KEY_STORAGE,
+        "tile_url_template": OS_LIGHT_TILE_URL_TEMPLATE,
+        "tiles": tiles,
+    }
+
+
+def _scale_bar_spec(bbox: list[float], *, target_px: float = 220.0) -> dict[str, float | str]:
+    layout = _map_layout(bbox)
+    center_lat = (bbox[1] + bbox[3]) / 2.0
+    meters_per_px = (EARTH_CIRCUMFERENCE_M * math.cos(math.radians(center_lat))) / layout["scale"]
+    max_length_m = target_px * meters_per_px
+    exponent = math.floor(math.log10(max_length_m))
+    fraction = max_length_m / (10**exponent)
+    if fraction >= 5:
+        nice = 5
+    elif fraction >= 2:
+        nice = 2
+    else:
+        nice = 1
+    length_m = nice * (10**exponent)
+    width_px = length_m / meters_per_px
+    if length_m >= 1000:
+        label = f"{length_m / 1000:.1f} km"
+    else:
+        label = f"{int(length_m)} m"
+    return {
+        "length_m": length_m,
+        "width_px": round(width_px, 1),
+        "half_width_px": round(width_px / 2.0, 1),
+        "label": label,
+        "half_label": f"{int(length_m / 2)} m" if length_m < 1000 else f"{length_m / 2000:.2f} km",
+    }
 
 
 def _line_path(coords: list[list[float]], project: Callable[[float, float], tuple[float, float]]) -> str:
@@ -371,6 +670,22 @@ def _geom_paths(
     if gtype == "MultiPolygon" and isinstance(coords, list):
         return [_polygon_path(poly, project) for poly in coords if isinstance(poly, list)]
     return []
+
+
+def _route_widths(segment: dict[str, Any]) -> tuple[float, float]:
+    props = segment.get("properties", {})
+    if segment.get("kind") == "road":
+        try:
+            road_width = float(props.get("roadwidth_average") or 0.0)
+        except (TypeError, ValueError):
+            road_width = 0.0
+        core = max(2.6, min(4.0, 1.9 + (road_width * 0.18)))
+    else:
+        core = 2.6 if segment.get("status") == "preferred" else 2.4
+    if segment.get("status") == "barrier":
+        core = min(core, 2.4)
+    outline = core + 1.8
+    return round(core, 1), round(outline, 1)
 
 
 def _segment_title(segment: dict[str, Any]) -> str:
@@ -420,6 +735,7 @@ def _select_callouts(
     segments: list[dict[str, Any]],
     bbox: list[float],
     project: Callable[[float, float], tuple[float, float]],
+    callout_priority: dict[str, int],
 ) -> list[dict[str, Any]]:
     min_lon, min_lat, max_lon, max_lat = bbox
     mean_lat = (min_lat + max_lat) / 2.0
@@ -455,7 +771,7 @@ def _select_callouts(
     candidates = sorted(
         by_name.values(),
         key=lambda item: (
-            CALLOUT_PRIORITY.get(str(item["name"]), 999),
+            callout_priority.get(str(item["name"]), 999),
             0 if item["status"] == "preferred" else 1,
             -float(item["length_m"]),
             item["name"],
@@ -559,7 +875,8 @@ def _legend_row(color: str, dash: str, label: str, body: str) -> str:
     return f"""
       <div class="legend-row">
         <svg width="54" height="18" viewBox="0 0 54 18" aria-hidden="true">
-          <line x1="4" y1="9" x2="50" y2="9" stroke="{color}" stroke-width="5" stroke-linecap="round" {dash_attr} />
+          <line x1="4" y1="9" x2="50" y2="9" stroke="rgba(19, 32, 36, 0.28)" stroke-width="7.2" stroke-linecap="round" {dash_attr} />
+          <line x1="4" y1="9" x2="50" y2="9" stroke="{color}" stroke-width="3.2" stroke-linecap="round" {dash_attr} />
         </svg>
         <div>
           <strong>{escape(label)}</strong>
@@ -572,6 +889,8 @@ def _legend_row(color: str, dash: str, label: str, body: str) -> str:
 def _render_html(payload: dict[str, Any]) -> str:
     bbox = payload["bbox"]
     project = _projector(bbox)
+    basemap = payload["basemap"]
+    scale_bar = _scale_bar_spec(bbox)
     water_paths = [
         path
         for feature in payload["context"]["water"]
@@ -597,16 +916,29 @@ def _render_html(payload: dict[str, Any]) -> str:
         for feature in payload["context"]["rail"]
         for path in _geom_paths(feature["geometry"], project)
     ]
-    callouts = _select_callouts(payload["display"]["preferred"] + payload["display"]["care"], bbox, project)
+    callouts = _select_callouts(
+        payload["display"]["preferred"] + payload["display"]["care"],
+        bbox,
+        project,
+        payload["callout_priority"],
+    )
 
     def route_svg(features: list[dict[str, Any]], css_class: str) -> str:
         chunks: list[str] = []
         for feature in features:
             title = escape(_segment_title(feature))
+            core_width, outline_width = _route_widths(feature)
             for path in _geom_paths(feature["geometry"], project):
                 if not path:
                     continue
-                chunks.append(f'<path d="{path}" class="{css_class}"><title>{title}</title></path>')
+                chunks.append(
+                    f"""
+                    <g class="route-group {css_class}" style="--route-core-width:{core_width}px; --route-outline-width:{outline_width}px;">
+                      <path d="{path}" class="route-outline"><title>{title}</title></path>
+                      <path d="{path}" class="route-core"><title>{title}</title></path>
+                    </g>
+                    """
+                )
         return "\n".join(chunks)
 
     preferred_line_svg = route_svg(payload["display"]["preferred"], "route-preferred")
@@ -622,6 +954,14 @@ def _render_html(payload: dict[str, Any]) -> str:
     water_svg = "\n".join(f'<path d="{path}" class="water-fill" />' for path in water_paths if path)
     pavement_svg = "\n".join(
         f'<path d="{path}" class="pavement-fill" />' for path in pavement_paths if path
+    )
+    basemap_tile_svg = "\n".join(
+        (
+            f'<image x="{tile["left"]}" y="{tile["top"]}" width="{tile["width"]}" '
+            f'height="{tile["height"]}" preserveAspectRatio="none" class="os-tile" '
+            f'data-tile-src-template="{basemap["tile_url_template"].format(z=tile["z"], x=tile["x"], y=tile["y"])}" />'
+        )
+        for tile in basemap["tiles"]
     )
 
     callout_svg_parts: list[str] = []
@@ -681,11 +1021,13 @@ def _render_html(payload: dict[str, Any]) -> str:
     preferred_total = _format_length_km(metrics["lengths_m"]["preferred"])
     care_total = _format_length_km(metrics["lengths_m"]["care"])
     barrier_total = _format_length_km(metrics["lengths_m"]["barrier"])
-    station_gap = round(payload["anchors"][0]["nearest_access_m"])
-    shopmobility_gap = round(payload["anchors"][1]["nearest_access_m"])
+    anchor_check_text = "; ".join(
+        f"{anchor['label']} about {round(anchor['nearest_access_m'])} m"
+        for anchor in payload["anchors"]
+    )
 
     scale_bar_x = MAP_X + 34
-    scale_bar_y = MAP_Y + MAP_H - 30
+    scale_bar_y = MAP_Y + MAP_H - 34
     north_x = MAP_X + MAP_W - 54
     north_y = MAP_Y + 28
 
@@ -732,7 +1074,7 @@ def _render_html(payload: dict[str, Any]) -> str:
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Teignmouth wheelchair access map</title>
+    <title>{escape(payload['title'])}</title>
     <style>
       :root {{
         color-scheme: light;
@@ -808,24 +1150,103 @@ def _render_html(payload: dict[str, Any]) -> str:
         overflow: hidden;
       }}
 
+      .map-controls {{
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        z-index: 4;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }}
+
+      .mode-group {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        border-radius: 999px;
+        background: rgba(255, 252, 245, 0.94);
+        border: 1px solid rgba(19, 56, 64, 0.12);
+        backdrop-filter: blur(10px);
+      }}
+
+      .mode-label {{
+        padding: 0 6px 0 8px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #50636a;
+      }}
+
+      .mode-button {{
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 9px 14px;
+        background: rgba(236, 232, 222, 0.9);
+        color: #17333a;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }}
+
+      .mode-button.is-active {{
+        background: #173840;
+        color: #ffffff;
+      }}
+
+      .mode-key {{
+        background: rgba(255, 252, 245, 0.94);
+        border: 1px solid rgba(19, 56, 64, 0.12);
+      }}
+
+      .map-status {{
+        position: absolute;
+        left: 18px;
+        top: 70px;
+        z-index: 4;
+        max-width: 420px;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: rgba(255, 252, 245, 0.92);
+        border: 1px solid rgba(19, 56, 64, 0.12);
+        color: #4f636a;
+        font-size: 11px;
+        line-height: 1.35;
+        backdrop-filter: blur(10px);
+      }}
+
+      .map-status[data-tone="warning"] {{
+        background: rgba(255, 243, 225, 0.95);
+        color: #7a4f12;
+      }}
+
+      .map-status[data-tone="success"] {{
+        background: rgba(238, 247, 244, 0.95);
+        color: #175153;
+      }}
+
       .panel {{
         position: absolute;
         left: {PANEL_X}px;
         top: {PANEL_Y}px;
         width: {PANEL_W}px;
         height: {PANEL_H}px;
-        padding: 22px 20px 18px 20px;
+        padding: 18px 18px 16px 18px;
         border-radius: 24px;
         background: #fffdf8;
         border: 1px solid #ddd5c8;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 10px;
       }}
 
       .metric {{
-        min-height: 74px;
-        padding: 10px 12px;
+        min-height: 66px;
+        padding: 9px 11px;
         border-radius: 18px;
         border: 1px solid #d9d1c4;
         background: #fcfaf5;
@@ -833,14 +1254,14 @@ def _render_html(payload: dict[str, Any]) -> str:
 
       .metric strong {{
         display: block;
-        margin-top: 7px;
-        font-size: 24px;
+        margin-top: 5px;
+        font-size: 20px;
         line-height: 1;
         letter-spacing: -0.03em;
       }}
 
       .metric-label {{
-        font-size: 12px;
+        font-size: 11px;
         color: #50626b;
       }}
 
@@ -862,7 +1283,7 @@ def _render_html(payload: dict[str, Any]) -> str:
 
       .panel h2 {{
         margin: 0;
-        font-size: 16px;
+        font-size: 15px;
         line-height: 1.2;
       }}
 
@@ -903,13 +1324,13 @@ def _render_html(payload: dict[str, Any]) -> str:
 
       .access-row strong {{
         display: block;
-        font-size: 12px;
+        font-size: 11px;
       }}
 
       .access-row span {{
         display: block;
         margin-top: 2px;
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1.35;
         color: #53646c;
       }}
@@ -923,14 +1344,14 @@ def _render_html(payload: dict[str, Any]) -> str:
 
       .legend-row strong {{
         display: block;
-        font-size: 12px;
+        font-size: 11px;
       }}
 
       .legend-row span {{
         display: block;
         margin-top: 2px;
-        font-size: 11px;
-        line-height: 1.4;
+        font-size: 10px;
+        line-height: 1.35;
         color: #53646c;
       }}
 
@@ -939,34 +1360,59 @@ def _render_html(payload: dict[str, Any]) -> str:
       }}
 
       .checks h2 {{
-        margin: 0 0 10px 0;
+        margin: 0 0 8px 0;
       }}
 
       .checks ul {{
         margin: 0;
-        padding-left: 18px;
+        padding-left: 16px;
         color: #42575f;
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 10.5px;
+        line-height: 1.35;
       }}
 
       .checks li + li {{
-        margin-top: 7px;
+        margin-top: 5px;
       }}
 
       .source-note {{
         margin-top: auto;
-        padding-top: 12px;
+        padding-top: 10px;
         border-top: 1px solid #e4dccd;
         color: #617078;
-        font-size: 10px;
-        line-height: 1.45;
+        font-size: 9px;
+        line-height: 1.35;
       }}
 
-      svg {{
+      .map-svg {{
         width: 100%;
         height: 100%;
         display: block;
+      }}
+
+      .slide[data-basemap="simplified"] .basemap-os {{
+        opacity: 0;
+      }}
+
+      .slide[data-basemap="os-light"] .simple-context {{
+        opacity: 0;
+      }}
+
+      .slide[data-basemap="os-light"] .basemap-os {{
+        opacity: 1;
+      }}
+
+      .simple-context,
+      .basemap-os {{
+        transition: opacity 160ms ease;
+      }}
+
+      .basemap-os {{
+        opacity: 0;
+      }}
+
+      .os-tile {{
+        pointer-events: none;
       }}
 
       .water-fill {{
@@ -978,21 +1424,21 @@ def _render_html(payload: dict[str, Any]) -> str:
       .pavement-fill {{
         fill: #eee6d8;
         stroke: none;
-        opacity: 0.72;
+        opacity: 0.66;
       }}
 
       .road-context {{
         fill: none;
-        stroke: #b8b0a5;
-        stroke-width: 2.4;
+        stroke: #bbb4aa;
+        stroke-width: 2.1;
         stroke-linecap: round;
         stroke-linejoin: round;
       }}
 
       .path-context {{
         fill: none;
-        stroke: #cbc5bc;
-        stroke-width: 1.6;
+        stroke: #cdc6bd;
+        stroke-width: 1.4;
         stroke-linecap: round;
         stroke-linejoin: round;
         stroke-dasharray: 4 7;
@@ -1007,32 +1453,50 @@ def _render_html(payload: dict[str, Any]) -> str:
         stroke-dasharray: 18 10;
       }}
 
-      .route-preferred {{
+      .route-group {{
+        cursor: help;
+      }}
+
+      .route-outline,
+      .route-core {{
         fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        pointer-events: stroke;
+      }}
+
+      .route-outline {{
+        stroke-width: var(--route-outline-width, 4.6px);
+      }}
+
+      .route-core {{
+        stroke-width: var(--route-core-width, 2.8px);
+      }}
+
+      .route-preferred .route-outline {{
+        stroke: rgba(8, 42, 43, 0.24);
+      }}
+
+      .route-preferred .route-core {{
         stroke: #0d7d7f;
-        stroke-width: 5.6;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        cursor: help;
       }}
 
-      .route-care {{
-        fill: none;
+      .route-care .route-outline {{
+        stroke: rgba(94, 67, 19, 0.24);
+      }}
+
+      .route-care .route-core {{
         stroke: #d08c1f;
-        stroke-width: 4.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        cursor: help;
       }}
 
-      .route-barrier {{
-        fill: none;
-        stroke: #c64d3d;
-        stroke-width: 4.2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      .route-barrier .route-outline {{
+        stroke: rgba(98, 42, 34, 0.22);
         stroke-dasharray: 10 8;
-        cursor: help;
+      }}
+
+      .route-barrier .route-core {{
+        stroke: #c64d3d;
+        stroke-dasharray: 10 8;
       }}
 
       .anchor-dot {{
@@ -1104,28 +1568,129 @@ def _render_html(payload: dict[str, Any]) -> str:
         font-size: 11px;
         fill: #17333a;
       }}
+
+      .scale-label-start {{
+        text-anchor: start;
+      }}
+
+      .scale-label-middle {{
+        text-anchor: middle;
+      }}
+
+      .scale-label-end {{
+        text-anchor: end;
+      }}
+
+      .os-key-dialog {{
+        width: min(420px, calc(100vw - 32px));
+        padding: 0;
+        border: 0;
+        border-radius: 22px;
+        box-shadow: 0 22px 54px rgba(18, 33, 39, 0.28);
+      }}
+
+      .os-key-dialog::backdrop {{
+        background: rgba(17, 31, 35, 0.32);
+      }}
+
+      .os-key-form {{
+        display: grid;
+        gap: 12px;
+        padding: 24px;
+        background: #fffdf8;
+      }}
+
+      .os-key-form h2 {{
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.05;
+      }}
+
+      .os-key-form p {{
+        margin: 0;
+        color: #4d6168;
+        font-size: 13px;
+        line-height: 1.45;
+      }}
+
+      .os-key-label {{
+        font-size: 12px;
+        font-weight: 600;
+      }}
+
+      .os-key-input {{
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #cfd5d0;
+        border-radius: 14px;
+        font: inherit;
+        font-size: 13px;
+      }}
+
+      .os-key-actions {{
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+      }}
+
+      .dialog-button {{
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }}
+
+      .dialog-button-ghost {{
+        background: #ede8de;
+        color: #17333a;
+      }}
+
+      .dialog-button-primary {{
+        background: #173840;
+        color: #ffffff;
+      }}
     </style>
   </head>
   <body>
     <div class="page">
       <div class="slide-shell">
-      <article class="slide">
+      <article class="slide" data-basemap="simplified">
         <header class="title">
-          <h1>Teignmouth town-centre wheelchair access map</h1>
+          <h1>{escape(payload['title'])}</h1>
           <p>
-            Conservative MCP-Geo route filter for a Quantum iLevel user.
-            Width, slope, lighting, and pedestrian-path evidence are shown. Hover a coloured route in HTML for details. Dropped kerbs and crossing quality are not.
+            {escape(payload['subtitle'])}
           </p>
         </header>
 
         <section class="map-frame" aria-label="Wheelchair access map">
-          <svg viewBox="0 0 {MAP_W} {MAP_H}" role="img" aria-label="Teignmouth wheelchair access map">
+          <div class="map-controls">
+            <div class="mode-group" role="group" aria-label="Map context">
+              <span class="mode-label">Context</span>
+              <button type="button" class="mode-button is-active" data-basemap-mode="simplified">Simplified</button>
+              <button type="button" class="mode-button" data-basemap-mode="os-light">OS Light</button>
+            </div>
+            <button type="button" class="mode-button mode-key" data-open-os-key>OS key</button>
+          </div>
+          <div class="map-status" data-basemap-status>
+            Simplified context is shown. OS Light loads when a browser key is set.
+          </div>
+          <svg class="map-svg" viewBox="0 0 {MAP_W} {MAP_H}" role="img" aria-label="{escape(payload['title'])}">
             <g transform="translate(-{MAP_X}, -{MAP_Y})">
-              {water_svg}
-              {pavement_svg}
-              {road_background_svg}
-              {path_background_svg}
-              {rail_svg}
+              <g class="basemap-os">
+                {basemap_tile_svg}
+              </g>
+              <g class="simple-context">
+                {water_svg}
+                {pavement_svg}
+                {road_background_svg}
+                {path_background_svg}
+                {rail_svg}
+              </g>
               {preferred_line_svg}
               {care_line_svg}
               {barrier_line_svg}
@@ -1136,15 +1701,15 @@ def _render_html(payload: dict[str, Any]) -> str:
                 <path d="M 0 0 L 12 28 L 0 22 L -12 28 Z" fill="#17333a" />
               </g>
               <g transform="translate({scale_bar_x}, {scale_bar_y})">
-                <line x1="0" y1="0" x2="212" y2="0" stroke="#17333a" stroke-width="4" stroke-linecap="round" />
+                <line x1="0" y1="0" x2="{scale_bar['width_px']}" y2="0" stroke="#17333a" stroke-width="4" stroke-linecap="round" />
                 <line x1="0" y1="-7" x2="0" y2="7" stroke="#17333a" stroke-width="2" />
-                <line x1="106" y1="-7" x2="106" y2="7" stroke="#17333a" stroke-width="2" />
-                <line x1="212" y1="-7" x2="212" y2="7" stroke="#17333a" stroke-width="2" />
-                <text x="0" y="-12" class="scale-label">0</text>
-                <text x="92" y="-12" class="scale-label">125 m</text>
-                <text x="195" y="-12" class="scale-label">250 m</text>
+                <line x1="{scale_bar['half_width_px']}" y1="-7" x2="{scale_bar['half_width_px']}" y2="7" stroke="#17333a" stroke-width="2" />
+                <line x1="{scale_bar['width_px']}" y1="-7" x2="{scale_bar['width_px']}" y2="7" stroke="#17333a" stroke-width="2" />
+                <text x="0" y="-12" class="scale-label scale-label-start">0</text>
+                <text x="{scale_bar['half_width_px']}" y="-12" class="scale-label scale-label-middle">{escape(str(scale_bar['half_label']))}</text>
+                <text x="{scale_bar['width_px']}" y="-12" class="scale-label scale-label-end">{escape(str(scale_bar['label']))}</text>
               </g>
-              <text x="{MAP_X + 30}" y="{MAP_Y + 42}" class="map-note">Railway line and station edge</text>
+              <text x="{MAP_X + 30}" y="{MAP_Y + 100}" class="map-note">{escape(payload['rail_note'])}</text>
             </g>
           </svg>
         </section>
@@ -1155,7 +1720,7 @@ def _render_html(payload: dict[str, Any]) -> str:
             {metrics_html}
           </div>
 
-            <div class="legend-block">
+          <div class="legend-block">
             {legends_html}
           </div>
 
@@ -1168,31 +1733,212 @@ def _render_html(payload: dict[str, Any]) -> str:
             <h2>Check before travel</h2>
             <ul>
               <li>Grey streets are context only. They did not clear the wheelchair route filter.</li>
-              <li>Final approach still needs checking: station about {station_gap} m; Shopmobility about {shopmobility_gap} m.</li>
+              <li>Final approach still needs checking: {escape(anchor_check_text)}.</li>
               <li>Not captured in current data: dropped kerbs, crossing type, tactile paving, parked cars, bins, café furniture, or temporary works.</li>
-              <li>In HTML, hover a coloured route or anchor label for the recorded name and evidence summary.</li>
+              <li>In HTML, hover a coloured route for evidence text and use the OS Light toggle for street-name context when a browser-stored key is available.</li>
             </ul>
           </section>
 
           <div class="source-note">
             Live MCP-Geo extract on {escape(payload['generated_on'])}: roads, paths, pavement polygons,
-            rail detail, water context, and OS Places anchors. Route filter uses UK accessible-footway guidance
-            and a conservative 5% maximum grade rule for display.
+            rail detail, water context, and named anchors. Route filter uses UK accessible-footway guidance,
+            a conservative 5% maximum grade rule, and optional OS Light browser tiles for map context.
           </div>
         </aside>
       </article>
       </div>
     </div>
+    <dialog class="os-key-dialog" id="os-key-dialog">
+      <form method="dialog" class="os-key-form">
+        <h2>Load OS Light basemap</h2>
+        <p>
+          Enter your OS Maps API key to request `Light_3857` tiles directly from Ordnance Survey.
+          The key is stored only in this browser on this machine and is never written into the report file.
+        </p>
+        <label class="os-key-label" for="os-key-input">OS Maps API key</label>
+        <input id="os-key-input" class="os-key-input" data-os-key-input type="password" autocomplete="off" />
+        <div class="os-key-actions">
+          <button type="button" class="dialog-button dialog-button-ghost" data-clear-os-key>Clear saved key</button>
+          <button value="cancel" class="dialog-button dialog-button-ghost">Cancel</button>
+          <button type="button" class="dialog-button dialog-button-primary" data-save-os-key>Use OS Light</button>
+        </div>
+      </form>
+    </dialog>
     <script>
       (() => {{
         const root = document.documentElement;
+        const slide = document.querySelector(".slide");
+        const modeButtons = Array.from(document.querySelectorAll("[data-basemap-mode]"));
+        const statusEl = document.querySelector("[data-basemap-status]");
+        const openKeyButton = document.querySelector("[data-open-os-key]");
+        const dialog = document.getElementById("os-key-dialog");
+        const keyInput = dialog?.querySelector("[data-os-key-input]");
+        const saveKeyButton = dialog?.querySelector("[data-save-os-key]");
+        const clearKeyButton = dialog?.querySelector("[data-clear-os-key]");
+        const osTiles = Array.from(document.querySelectorAll(".os-tile"));
+        const storageKey = {json.dumps(OS_BROWSER_KEY_STORAGE)};
+        let osApiKey = "";
+        let osTilesHydrated = false;
+
         const fit = () => {{
           const availableWidth = Math.max(320, window.innerWidth - 32);
           const scale = Math.min(1, availableWidth / {SLIDE_WIDTH});
           root.style.setProperty("--slide-scale", scale.toFixed(4));
         }};
+        const setStatus = (text, tone = "info") => {{
+          if (!statusEl) {{
+            return;
+          }}
+          statusEl.textContent = text;
+          statusEl.dataset.tone = tone;
+        }};
+        const syncButtons = (mode) => {{
+          modeButtons.forEach((button) => {{
+            button.classList.toggle("is-active", button.dataset.basemapMode === mode);
+          }});
+        }};
+        const clearTileRefs = () => {{
+          osTiles.forEach((tile) => {{
+            tile.removeAttribute("href");
+            tile.removeAttributeNS("http://www.w3.org/1999/xlink", "href");
+          }});
+          osTilesHydrated = false;
+        }};
+        const hydrateTiles = () => {{
+          if (!osApiKey || osTilesHydrated) {{
+            return;
+          }}
+          osTiles.forEach((tile) => {{
+            const template = tile.dataset.tileSrcTemplate || "";
+            const url = template.replace("__OS_API_KEY__", encodeURIComponent(osApiKey));
+            tile.setAttribute("href", url);
+            tile.setAttributeNS("http://www.w3.org/1999/xlink", "href", url);
+          }});
+          osTilesHydrated = true;
+        }};
+        const fallbackPrompt = () => {{
+          const value = window.prompt("Enter your OS Maps API key for the OS Light basemap", osApiKey);
+          if (value === null) {{
+            return false;
+          }}
+          const trimmed = value.trim();
+          if (!trimmed) {{
+            setStatus("Enter a valid OS Maps API key to load the OS Light basemap.", "warning");
+            return false;
+          }}
+          osApiKey = trimmed;
+          window.localStorage.setItem(storageKey, osApiKey);
+          clearTileRefs();
+          hydrateTiles();
+          return true;
+        }};
+        const openKeyDialog = () => {{
+          if (!(dialog instanceof HTMLDialogElement) || typeof dialog.showModal !== "function") {{
+            if (fallbackPrompt()) {{
+              setMode("os-light", {{ allowDialog: false }});
+            }}
+            return;
+          }}
+          if (keyInput instanceof HTMLInputElement) {{
+            keyInput.value = osApiKey;
+          }}
+          dialog.showModal();
+        }};
+        const setMode = (mode, options = {{}}) => {{
+          const allowDialog = options.allowDialog !== false;
+          if (!slide) {{
+            return;
+          }}
+          if (mode === "os-light") {{
+            if (!osApiKey) {{
+              slide.dataset.basemap = "simplified";
+              syncButtons("simplified");
+              setStatus("OS Light needs your OS Maps API key in this browser. Use OS key.", "warning");
+              if (allowDialog) {{
+                openKeyDialog();
+              }}
+              return;
+            }}
+            hydrateTiles();
+            slide.dataset.basemap = "os-light";
+            syncButtons("os-light");
+            setStatus("Loading OS Light basemap under the route markup...", "info");
+            return;
+          }}
+          slide.dataset.basemap = "simplified";
+          syncButtons("simplified");
+          if (osApiKey) {{
+            setStatus("Simplified context is shown. OS Light is ready in this browser.", "info");
+          }} else {{
+            setStatus("Simplified context is shown. OS Light loads when a browser key is set.", "info");
+          }}
+        }};
+
         fit();
         window.addEventListener("resize", fit);
+        try {{
+          osApiKey = window.localStorage.getItem(storageKey) || "";
+        }} catch (_error) {{
+          osApiKey = "";
+        }}
+        modeButtons.forEach((button) => {{
+          button.addEventListener("click", () => {{
+            setMode(button.dataset.basemapMode || "simplified");
+          }});
+        }});
+        openKeyButton?.addEventListener("click", openKeyDialog);
+        saveKeyButton?.addEventListener("click", () => {{
+          if (!(keyInput instanceof HTMLInputElement)) {{
+            if (fallbackPrompt()) {{
+              if (dialog instanceof HTMLDialogElement) {{
+                dialog.close();
+              }}
+              setMode("os-light", {{ allowDialog: false }});
+            }}
+            return;
+          }}
+          const trimmed = keyInput.value.trim();
+          if (!trimmed) {{
+            setStatus("Enter a valid OS Maps API key to load the OS Light basemap.", "warning");
+            keyInput.focus();
+            return;
+          }}
+          osApiKey = trimmed;
+          window.localStorage.setItem(storageKey, osApiKey);
+          clearTileRefs();
+          hydrateTiles();
+          if (dialog instanceof HTMLDialogElement) {{
+            dialog.close();
+          }}
+          setMode("os-light", {{ allowDialog: false }});
+        }});
+        clearKeyButton?.addEventListener("click", () => {{
+          osApiKey = "";
+          try {{
+            window.localStorage.removeItem(storageKey);
+          }} catch (_error) {{
+            // ignore storage failures and keep the simplified view available
+          }}
+          clearTileRefs();
+          if (dialog instanceof HTMLDialogElement) {{
+            dialog.close();
+          }}
+          setMode("simplified", {{ allowDialog: false }});
+          setStatus("Saved OS Maps API key cleared. Simplified context is shown.", "info");
+        }});
+        osTiles.forEach((tile) => {{
+          tile.addEventListener("load", () => {{
+            if (slide?.dataset.basemap === "os-light") {{
+              setStatus("OS Light basemap is shown under the route markup.", "success");
+            }}
+          }});
+          tile.addEventListener("error", () => {{
+            if (slide?.dataset.basemap === "os-light") {{
+              setStatus("One or more OS tiles failed to load. Check the key or switch back to Simplified.", "warning");
+            }}
+          }});
+        }});
+        setMode("simplified", {{ allowDialog: false }});
       }})();
     </script>
   </body>
@@ -1200,7 +1946,160 @@ def _render_html(payload: dict[str, Any]) -> str:
 """
 
 
-def _build_payload(bbox: list[float]) -> dict[str, Any]:
+def _top_named_segments(
+    payload: dict[str, Any],
+    *,
+    status: str,
+    kind: str,
+    limit: int = 5,
+) -> list[str]:
+    totals: defaultdict[str, float] = defaultdict(float)
+    for segment in payload["segments"]:
+        if segment.get("status") != status or segment.get("kind") != kind:
+            continue
+        name = str(segment.get("name") or "").strip()
+        if not name or name.upper() == "THE STREET WITH NO NAME":
+            continue
+        totals[name] += float(segment.get("length_m") or 0.0)
+    ranked = sorted(totals.items(), key=lambda item: (-item[1], item[0]))
+    return [name for name, _ in ranked[:limit]]
+
+
+def _format_name_list(names: list[str]) -> str:
+    if not names:
+        return "No stable named segments cleared this category in the current extract."
+    return ", ".join(f"`{name}`" for name in names)
+
+
+def _render_note(payload: dict[str, Any]) -> str:
+    counts = payload["metrics"]["counts"]
+    lengths = payload["metrics"]["lengths_m"]
+    anchor_lines = "\n".join(
+        f"- `{anchor['label']}` is about `{round(anchor['nearest_access_m'])} m` "
+        "from the nearest cleared route segment."
+        for anchor in payload["anchors"]
+    )
+    anchor_tools = ", ".join(f"`{tool}`" for tool in payload["anchor_tools"])
+    slug = payload["slug"]
+    date = payload["generated_on"]
+    place_name = payload["place_name"]
+    return f"""# {place_name} wheelchair access map
+
+Generated artefacts:
+
+- HTML map: `docs/reports/{slug}_wheelchair_access_map_{date}.html`
+- JSON export: `data/exports/{slug}_wheelchair_access_map_{date}.json`
+- PNG render: `output/playwright/{slug}-wheelchair-access-map-{date}.png`
+
+## Scope
+
+This map is a conservative town-centre access aid for a powered wheelchair user in {place_name}.
+It uses live MCP-Geo extracts from `{date}` and focuses on what the current data can validate:
+
+- road links with recorded pavement width and pavement coverage
+- path links with path type, surface, lighting coverage, and elevation gain
+- pavement polygons for pedestrian-realm context
+- rail and water geometry for orientation
+- exact named anchors from search tools
+
+The HTML report also includes an optional `OS Light` basemap toggle. That layer loads
+browser-side from Ordnance Survey when the user supplies an OS Maps API key locally.
+
+It does **not** claim to validate dropped kerbs, crossing design, tactile paving, camber,
+temporary obstructions, parked cars, café furniture, or works on the day.
+
+## Current MCP-Geo data used
+
+Primary map layers:
+
+- `{ROAD_COLLECTION}`
+- `{PATH_COLLECTION}`
+- `{PAVEMENT_COLLECTION}` filtered to `Pavement`
+- `{RAIL_COLLECTION}`
+- `{WATER_COLLECTION}`
+- {anchor_tools}
+- OS `Light_3857` raster tiles in the HTML view only, when a browser key is supplied
+
+## Live findings from this extract
+
+Area used: `{payload['bbox']}`
+
+Counts:
+
+- `{counts['roads_total']}` road links
+- `{counts['paths_total']}` path links
+- `{counts['pavements']}` pavement polygons
+- `{counts['rail_features']}` rail-detail features
+- `{counts['water_features']}` water features
+
+Accessible-network summary:
+
+- Preferred route length: `{_format_length_km(lengths['preferred'])}`
+- Use-with-care route length: `{_format_length_km(lengths['care'])}`
+- Barrier length shown on the map: `{_format_length_km(lengths['barrier'])}`
+
+Named sections that read best in the current data:
+
+- Preferred roads: {_format_name_list(_top_named_segments(payload, status='preferred', kind='road'))}
+- Preferred paths: {_format_name_list(_top_named_segments(payload, status='preferred', kind='path'))}
+- Use-with-care roads: {_format_name_list(_top_named_segments(payload, status='care', kind='road'))}
+- Use-with-care paths: {_format_name_list(_top_named_segments(payload, status='care', kind='path'))}
+- Recorded barrier paths: {_format_name_list(_top_named_segments(payload, status='barrier', kind='path'))}
+
+Anchor-point check:
+
+{anchor_lines}
+
+That means the current route filter is useful for planning within the core, but the final approach to
+those anchor points still needs an on-the-ground crossing and kerb check.
+
+## Filtering logic used
+
+Road links:
+
+- `Preferred`: recorded pavement, minimum width at least `1.2 m`, average pavement width at least
+  `1.8 m`, pavement coverage at least `80%`, gentle grade under `3%`, and mostly or fully lit
+- `Use with care`: minimum width at least `1.0 m`, average pavement width at least `1.4 m`,
+  pavement coverage at least `60%`, and grade up to `5%`
+- `Context only`: anything else, including steep or missing pavement evidence
+
+Path links:
+
+- `Preferred`: `Path`, `Made Sealed`, under `3%`, and mostly or fully lit
+- `Use with care`: plain `Path` up to `5%`, including unlit or less certain surfaces
+- `Barrier`: `Path With Steps`, `Footbridge`, `Subway`, or grade above `5%`
+
+These thresholds are deliberately stricter than “can a chair physically squeeze through”.
+`iLevel` is a seating system across multiple Quantum chair bases, so the map uses public-realm
+guidance rather than assuming one exact chair width.
+
+Reference guidance:
+
+- GOV.UK, *Inclusive Mobility*: <https://www.gov.uk/government/publications/inclusive-mobility-making-transport-accessible-for-passengers-and-pedestrians>
+- Active Travel England inclusive design guidance: <https://www.activetravelengland.gov.uk/>
+- Quantum Rehab `iLevel` product family: <https://www.quantumrehab.com/>
+
+## What MCP-Geo should consider adding
+
+Highest-value additions for a real disabled-navigation product:
+
+1. Dropped kerbs and crossing metadata:
+   kerb height, flush status, tactile paving, crossing type, refuge islands, signal control.
+2. Accessible parking:
+   Blue Badge bays, step-free access from car parks, payment constraints, and surface type.
+3. Public transport accessibility:
+   bus stop locations, raised kerbs, shelter availability, route identifiers, and timetable / GTFS links.
+4. Rest and support points:
+   public toilets, benches, Changing Places toilets, pharmacies, charging points, and mobility support.
+5. Temporary and environmental constraints:
+   works, diversions, flood / overtopping risk, and tide-sensitive waterfront access.
+6. Better amenity categorisation:
+   category-coded tourist and daily-life destinations instead of broad text search alone.
+"""
+
+
+def _build_payload(preset: dict[str, Any]) -> dict[str, Any]:
+    bbox = list(preset["bbox"])
     mean_lat = (bbox[1] + bbox[3]) / 2.0
     roads = _fetch_features(ROAD_COLLECTION, bbox, fields=ROAD_FIELDS)
     paths = _fetch_features(PATH_COLLECTION, bbox, fields=PATH_FIELDS)
@@ -1265,11 +2164,12 @@ def _build_payload(bbox: list[float]) -> dict[str, Any]:
             elif status == "barrier":
                 barriers.append(record)
 
-    station = _search_place("teignmouth railway station", bbox)
-    shopmobility = _search_place("teignmouth shopmobility", bbox)
-
     assessed = preferred + care
-    for anchor in (station, shopmobility):
+    anchor_rows: list[dict[str, Any]] = []
+    anchor_tools: list[str] = []
+    for index, anchor_spec in enumerate(preset["anchors"], start=1):
+        anchor = _search_anchor(anchor_spec["query"], bbox, anchor_spec["tool"])
+        anchor_tools.append(anchor_spec["tool"])
         nearest = float("inf")
         point = (float(anchor["lon"]), float(anchor["lat"]))
         for segment in assessed:
@@ -1277,30 +2177,28 @@ def _build_payload(bbox: list[float]) -> dict[str, Any]:
                 nearest,
                 _distance_point_to_polyline_m(point, segment["geometry"]["coordinates"], mean_lat),
             )
-        anchor["nearest_access_m"] = round(nearest, 1)
-
-    anchor_rows = [
-        {
-            "index": 1,
-            "label": "Teignmouth station",
-            "lon": float(station["lon"]),
-            "lat": float(station["lat"]),
-            "address": station["address"],
-            "nearest_access_m": station["nearest_access_m"],
-        },
-        {
-            "index": 2,
-            "label": "Shopmobility",
-            "lon": float(shopmobility["lon"]),
-            "lat": float(shopmobility["lat"]),
-            "address": shopmobility["address"],
-            "nearest_access_m": shopmobility["nearest_access_m"],
-        },
-    ]
+        anchor_rows.append(
+            {
+                "index": index,
+                "label": anchor_spec["label"],
+                "lon": float(anchor["lon"]),
+                "lat": float(anchor["lat"]),
+                "address": str(anchor.get("address") or anchor.get("name") or anchor_spec["query"]),
+                "nearest_access_m": round(nearest, 1),
+            }
+        )
 
     return {
+        "slug": preset["slug"],
+        "place_name": preset["place_name"],
+        "title": preset["title"],
+        "subtitle": preset["subtitle"],
+        "rail_note": preset["rail_note"],
+        "callout_priority": dict(preset["callout_priority"]),
+        "anchor_tools": sorted(set(anchor_tools)),
         "generated_on": dt.date.today().isoformat(),
         "bbox": bbox,
+        "basemap": _build_basemap_tiles(bbox),
         "collections": {
             "roads": ROAD_COLLECTION,
             "paths": PATH_COLLECTION,
@@ -1356,7 +2254,13 @@ def _write_text(path: Path, content: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate a Teignmouth wheelchair-access map from live MCP-Geo data."
+        description="Generate a wheelchair-access map from live MCP-Geo data."
+    )
+    parser.add_argument(
+        "--preset",
+        choices=sorted(PLACE_PRESETS),
+        default=DEFAULT_PRESET,
+        help="Named place preset to render. Defaults to teignmouth.",
     )
     parser.add_argument(
         "--date",
@@ -1368,23 +2272,30 @@ def main() -> None:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    payload = _build_payload(TEIGNMOUTH_BBOX)
+    preset = PLACE_PRESETS[args.preset]
+    payload = _build_payload(preset)
     payload["generated_on"] = args.date
 
-    json_path = EXPORTS_DIR / f"teignmouth_wheelchair_access_map_{args.date}.json"
-    html_path = REPORTS_DIR / f"teignmouth_wheelchair_access_map_{args.date}.html"
+    slug = payload["slug"]
+    json_path = EXPORTS_DIR / f"{slug}_wheelchair_access_map_{args.date}.json"
+    html_path = REPORTS_DIR / f"{slug}_wheelchair_access_map_{args.date}.html"
+    note_path = REPORTS_DIR / f"{slug}_wheelchair_access_map_{args.date}.md"
 
     _write_json(json_path, payload)
     _write_text(html_path, _render_html(payload))
+    _write_text(note_path, _render_note(payload))
 
     summary = {
+        "preset": args.preset,
         "json": str(json_path),
         "html": str(html_path),
+        "note": str(note_path),
         "preferred_km": payload["metrics"]["lengths_m"]["preferred"] / 1000.0,
         "care_km": payload["metrics"]["lengths_m"]["care"] / 1000.0,
         "barrier_km": payload["metrics"]["lengths_m"]["barrier"] / 1000.0,
-        "station_gap_m": payload["anchors"][0]["nearest_access_m"],
-        "shopmobility_gap_m": payload["anchors"][1]["nearest_access_m"],
+        "anchor_gaps_m": {
+            anchor["label"]: anchor["nearest_access_m"] for anchor in payload["anchors"]
+        },
     }
     print(json.dumps(summary, indent=2))
 

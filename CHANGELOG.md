@@ -21,6 +21,15 @@ All notable changes to this project will be documented in this file.
   `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.{html,md}`,
   `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`, and
   `output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png`.
+- Added Exmouth comparator artifacts:
+  `docs/reports/exmouth_wheelchair_access_map_2026-03-07.{html,md}`,
+  `data/exports/exmouth_wheelchair_access_map_2026-03-07.json`,
+  `output/playwright/exmouth-wheelchair-access-map-2026-03-07.png`, and
+  `docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md`.
+- Added Sidmouth comparator artifacts:
+  `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.{html,md}`,
+  `data/exports/sidmouth_wheelchair_access_map_2026-03-07.json`, and
+  `output/playwright/sidmouth-wheelchair-access-map-2026-03-07.png`.
 
 ### Changed
 - Updated `scripts/devcontainer_mcp_setup.sh` so Codex registers `mcp-geo`
@@ -37,6 +46,16 @@ All notable changes to this project will be documented in this file.
   cleanly, reduce named corridor callouts to a single representative segment per
   street, and move access-point labels into the sidebar with numbered map
   markers plus hover evidence text.
+- Refined the wheelchair-access report generator and regenerated the Teignmouth,
+  Exmouth, and Sidmouth map artefacts with Web Mercator overlay alignment,
+  slimmer route casing, and an optional browser-side `OS Light` basemap toggle
+  for richer street-name context without obscuring labels.
+- Extended `scripts/generate_teignmouth_wheelchair_access_map.py` with reusable
+  place presets and OS export-resource handling so wider footprints like Exmouth
+  can be generated with the same scoring logic.
+- Added Sidmouth as a compact-core preset and updated the comparison note to
+  distinguish Exmouth as the strongest positive comparator from Sidmouth's
+  smaller but tighter seafront-market core.
 - Fixed `os_poi.search` bbox handling to filter text-search results locally
   instead of sending unsupported bbox coordinates to the OS Places `/find`
   endpoint; updated focused regression coverage in `tests/test_os_poi.py`.
