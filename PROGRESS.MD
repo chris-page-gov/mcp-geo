@@ -29,6 +29,17 @@ Legend: pending, in_progress, done, blocked
 | TWA-COMP-4 Exmouth positive comparator | done | TWA-DATA-1, TWA-FIX-3 | Extended `scripts/generate_teignmouth_wheelchair_access_map.py` with named presets and resource-delivery handling so the same conservative scoring logic now generates Exmouth outputs. Added `docs/reports/exmouth_wheelchair_access_map_2026-03-07.{html,md}`, `data/exports/exmouth_wheelchair_access_map_2026-03-07.json`, screenshot artifact `output/playwright/exmouth-wheelchair-access-map-2026-03-07.png`, and expanded the multi-town comparison note now published as `docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md`. The refreshed Exmouth outputs now share the same optional `OS Detailed` vector basemap controls and slimmer overlay styling used in Teignmouth. |
 | TWA-COMP-5 Sidmouth compact-core comparator | done | TWA-COMP-4 | Added Sidmouth preset outputs `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.{html,md}`, `data/exports/sidmouth_wheelchair_access_map_2026-03-07.json`, screenshot artifact `output/playwright/sidmouth-wheelchair-access-map-2026-03-07.png`, and expanded the comparison note to `docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md`. Sidmouth reads as a compact seafront-and-market core with very short anchor gaps rather than a like-for-like replacement for Exmouth's broader positive network; the refreshed outputs now share the same optional `OS Detailed` vector basemap toggle and subtler overlay treatment as the other towns. |
 
+## MCP-Geo functionality showcase report (2026-03-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SHOW-INPUT-1 Curated example pack and source capture | done | none | Added curated input manifest `data/report_inputs/mcp_geo_functionality_showcase_examples.json` covering the Stanley House, peninsula profiling, and wheelchair-routing examples, plus public companion case note `docs/reports/stanley_house_clampet_lane_context_case_2026-03-07.md` so the address-context example can be cited from the public repo rather than a private source document. |
+| SHOW-GEN-2 Repeatable report generator and helper assets | done | SHOW-INPUT-1 | Added `scripts/generate_mcp_geo_functionality_showcase.py` to parse live counts from the existing notes, generate supporting PNG figures under `docs/reports/assets/`, and render markdown, DOCX, and PDF outputs with public GitHub citations driven by `--git-ref`. Added focused parser coverage in `tests/test_generate_mcp_geo_functionality_showcase.py`. |
+| SHOW-OUT-3 Published showcase outputs | done | SHOW-GEN-2 | Generated `docs/reports/mcp_geo_functionality_showcase_2026-03-07.{md,docx,pdf}` plus supporting figure assets `docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png`, `docs/reports/assets/wheelchair_route_comparison_2026-03-07.png`, and `docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png`. Tracked the Stanley House PNG artefacts used by the report under `output/playwright/stanley-house-*.png`. |
+| SHOW-VAL-4 Render validation and layout check | done | SHOW-OUT-3 | Validated the generator with `python3 -m py_compile` and focused pytest (`3 passed`). Render-checked the PDF via `pdftoppm` page images and DOCX via macOS Quick Look thumbnail after fixing an initial markdown-indentation issue that caused raw YAML/image markup to appear in the first PDF render. |
+
 ## Public launch release `0.5.0` (2026-03-04)
 
 Legend: pending, in_progress, done, blocked

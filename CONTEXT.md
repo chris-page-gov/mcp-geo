@@ -209,6 +209,12 @@ assumptions change.
 - Maintain the Teignmouth peninsula south-of-railway building-profile briefing
   and operational AOI polygon in
   `docs/reports/teignmouth_peninsula_building_profile_brief_2026-03-06.md`.
+- Maintain the repeatable MCP-Geo functionality showcase report workflow under
+  `scripts/generate_mcp_geo_functionality_showcase.py`,
+  `data/report_inputs/mcp_geo_functionality_showcase_examples.json`,
+  `docs/reports/mcp_geo_functionality_showcase_2026-03-07.{md,docx,pdf}`,
+  and the supporting Stanley House case note
+  `docs/reports/stanley_house_clampet_lane_context_case_2026-03-07.md`.
 - Maintain the Teignmouth wheelchair access map generator, live JSON export,
   and slide-format report artifacts in
   `scripts/generate_teignmouth_wheelchair_access_map.py`,

@@ -1,0 +1,141 @@
+{
+  "title": "MCP-Geo in practice",
+  "subtitle": "Example questions from Codex sessions showing address context, place profiling, and accessibility mapping",
+  "audience": "People evaluating or considering practical uses for MCP-Geo",
+  "cases": [
+    {
+      "id": "stanley_house",
+      "title": "From a random postcode to dual-road building context",
+      "question": "Can mcp-geo tell me the road and building details of Clampet Lane, Teignmouth TQ14 8GB?",
+      "follow_up": "Can mcp-geo show me this context, I believe the building referenced has access from both roads?",
+      "why_it_matters": "This starts with an ordinary address-level question and expands into road geometry, building-part massing, frontage context, and map output. It is a good illustration of how MCP-Geo moves from lookup to interpretation.",
+      "highlights": [
+        "Resolved `UPRN 10032973106` to `FLAT 4, STANLEY HOUSE, CLAMPET LANE, TEIGNMOUTH, TQ14 8GB`.",
+        "Identified `Clampet Lane` as a narrow `Local Road` with average width around `3.4 m` and `Orchard Gardens` as a broader nearby road around `7.5 m`.",
+        "Returned building-part footprints and heights for the Stanley House cluster, including parts around `20.2 m` and `19.9 m` maximum height.",
+        "Produced OS-backed screenshots that show the building cluster sitting between `Clampet Lane` and `Orchard Gardens`, consistent with dual-road context."
+      ],
+      "artifacts": [
+        {
+          "label": "Stanley House on OS MasterMap context",
+          "path": "output/playwright/stanley-house-os-mastermap-context.png",
+          "kind": "png"
+        },
+        {
+          "label": "Stanley House focused OS Light view",
+          "path": "output/playwright/stanley-house-os-light-focused.png",
+          "kind": "png"
+        },
+        {
+          "label": "Clampet Lane and Orchard Gardens wider context panel",
+          "path": "output/playwright/stanley-house-os-light-wider-panel.png",
+          "kind": "png"
+        }
+      ],
+      "sources": [
+        {
+          "path": "docs/reports/stanley_house_clampet_lane_context_case_2026-03-07.md",
+          "label": "Stanley House / Clampet Lane context case note"
+        },
+        {
+          "path": "README.md",
+          "label": "Repository overview and tool families"
+        },
+        {
+          "path": "server/mcp/tools.py",
+          "label": "Registered tool modules"
+        }
+      ]
+    },
+    {
+      "id": "peninsula_profile",
+      "title": "From a town-centre question to a repeatable profiling brief",
+      "question": "I’m interested in creating a profile of the buildings on the peninsula south of the railway line. Consider what data you have access to from MCP-Geo and ways this can be visualised in a series of infographics.",
+      "follow_up": "First a set of actual infographic mockups.",
+      "why_it_matters": "This shows MCP-Geo working as a profiling and planning tool rather than only a lookup service. The answer moved from area definition to exact layer counts, analytic framing, and a reproducible infographic specification.",
+      "highlights": [
+        "Defined a reproducible south-of-railway polygon for the Teignmouth peninsula.",
+        "Counted `743` whole buildings, `915` building parts, `297` road links, and `254` path links in the study area.",
+        "Identified the strongest profile layers: building footprints, building parts, road links, path links, grouped address inventories, and ONS/NOMIS context layers.",
+        "Specified a practical infographic set covering built form, skyline, street character, frontage density, use mix, permeability, and edge conditions."
+      ],
+      "artifacts": [
+        {
+          "label": "Generated peninsula profile counts chart",
+          "path": "docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png",
+          "kind": "png"
+        }
+      ],
+      "sources": [
+        {
+          "path": "docs/reports/teignmouth_peninsula_building_profile_brief_2026-03-06.md",
+          "label": "Teignmouth peninsula building profile brief"
+        },
+        {
+          "path": "README.md",
+          "label": "Repository overview and tool families"
+        },
+        {
+          "path": "server/mcp/tools.py",
+          "label": "Registered tool modules"
+        }
+      ]
+    },
+    {
+      "id": "wheelchair_routes",
+      "title": "From a wheelchair-routing question to comparative town maps",
+      "question": "I want to use mcp-geo to create a map that shows roads that have pavements suitable for the Quantum iLevel Wheelchair.",
+      "follow_up": "Continue as suggested. Add Sidmouth.",
+      "why_it_matters": "This case shows MCP-Geo supporting a real public-realm question: turning road width, pavement coverage, lighting, and gradient evidence into route hypotheses, then comparing towns using the same conservative filter.",
+      "highlights": [
+        "Created a route filter using road-link widths, pavement coverage, path type, elevation gain, and lighting rather than a simple nearest-path map.",
+        "Produced both static PNG outputs and interactive HTML maps for Teignmouth, Exmouth, and Sidmouth.",
+        "Showed meaningful differentiation across the three towns: Teignmouth as the constrained case, Exmouth as the broad positive comparator, and Sidmouth as the compact-core comparator.",
+        "Captured product limits explicitly, including dropped-kerb, crossing, clutter, and on-the-day access gaps that MCP-Geo does not yet model."
+      ],
+      "artifacts": [
+        {
+          "label": "Teignmouth wheelchair access map PNG",
+          "path": "output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png",
+          "kind": "png",
+          "html_path": "docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html"
+        },
+        {
+          "label": "Exmouth wheelchair access map PNG",
+          "path": "output/playwright/exmouth-wheelchair-access-map-2026-03-07.png",
+          "kind": "png",
+          "html_path": "docs/reports/exmouth_wheelchair_access_map_2026-03-07.html"
+        },
+        {
+          "label": "Sidmouth wheelchair access map PNG",
+          "path": "output/playwright/sidmouth-wheelchair-access-map-2026-03-07.png",
+          "kind": "png",
+          "html_path": "docs/reports/sidmouth_wheelchair_access_map_2026-03-07.html"
+        },
+        {
+          "label": "Generated wheelchair comparison routes chart",
+          "path": "docs/reports/assets/wheelchair_route_comparison_2026-03-07.png",
+          "kind": "png"
+        }
+      ],
+      "sources": [
+        {
+          "path": "docs/reports/teignmouth_wheelchair_access_map_2026-03-07.md",
+          "label": "Teignmouth wheelchair access map note"
+        },
+        {
+          "path": "docs/reports/exmouth_wheelchair_access_map_2026-03-07.md",
+          "label": "Exmouth wheelchair access map note"
+        },
+        {
+          "path": "docs/reports/sidmouth_wheelchair_access_map_2026-03-07.md",
+          "label": "Sidmouth wheelchair access map note"
+        },
+        {
+          "path": "docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md",
+          "label": "Three-town wheelchair comparison note"
+        }
+      ]
+    }
+  ]
+}

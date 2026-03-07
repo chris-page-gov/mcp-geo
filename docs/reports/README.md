@@ -26,6 +26,10 @@ Wheelchair-access HTML reports now include an optional browser-side `OS Detailed
 vector basemap toggle for richer street and building context without changing
 the fallback simplified view when no local browser key is available.
 
+- 2026-03-07: [MCP-Geo functionality showcase report](mcp_geo_functionality_showcase_2026-03-07.md)
+- 2026-03-07: [MCP-Geo functionality showcase report (DOCX)](mcp_geo_functionality_showcase_2026-03-07.docx)
+- 2026-03-07: [MCP-Geo functionality showcase report (PDF)](mcp_geo_functionality_showcase_2026-03-07.pdf)
+- 2026-03-07: [Stanley House / Clampet Lane context case note](stanley_house_clampet_lane_context_case_2026-03-07.md)
 - 2026-03-07: [Teignmouth, Exmouth and Sidmouth wheelchair-access comparison](teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md)
 - 2026-03-07: [Exmouth wheelchair access map](exmouth_wheelchair_access_map_2026-03-07.html)
 - 2026-03-07: [Exmouth wheelchair access map notes](exmouth_wheelchair_access_map_2026-03-07.md)

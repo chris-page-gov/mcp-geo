@@ -30,6 +30,15 @@ All notable changes to this project will be documented in this file.
   `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.{html,md}`,
   `data/exports/sidmouth_wheelchair_access_map_2026-03-07.json`, and
   `output/playwright/sidmouth-wheelchair-access-map-2026-03-07.png`.
+- Added repeatable showcase-report inputs and generation pipeline:
+  `data/report_inputs/mcp_geo_functionality_showcase_examples.json`,
+  `scripts/generate_mcp_geo_functionality_showcase.py`, and focused parser
+  coverage in `tests/test_generate_mcp_geo_functionality_showcase.py`.
+- Added public showcase artifacts:
+  `docs/reports/mcp_geo_functionality_showcase_2026-03-07.{md,docx,pdf}`,
+  supporting figure assets under `docs/reports/assets/`, public companion note
+  `docs/reports/stanley_house_clampet_lane_context_case_2026-03-07.md`, and
+  tracked Stanley House illustration PNGs under `output/playwright/`.
 
 ### Changed
 - Updated `scripts/devcontainer_mcp_setup.sh` so Codex registers `mcp-geo`
@@ -69,6 +78,8 @@ All notable changes to this project will be documented in this file.
 - Fixed `os_poi.search` bbox handling to filter text-search results locally
   instead of sending unsupported bbox coordinates to the OS Places `/find`
   endpoint; updated focused regression coverage in `tests/test_os_poi.py`.
+- Updated `docs/reports/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to index the
+  new functionality-showcase report workflow and generated outputs.
 
 ## [0.5.0] - 2026-03-04
 
