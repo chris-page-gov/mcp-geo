@@ -13,6 +13,7 @@ DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
 PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
 TRACE_LOG="${MCP_STDIO_TRACE_LOG:-}"
 BUILD_MODE="${MCP_GEO_DOCKER_BUILD:-missing}"
+DOCKER_UI_EVENT_LOG_PATH="${MCP_GEO_DOCKER_UI_EVENT_LOG_PATH:-${UI_EVENT_LOG_PATH:-/logs/ui-events.jsonl}}"
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
@@ -173,7 +174,7 @@ env_args=(
   -e "MCP_APPS_RESOURCE_LINK=${MCP_APPS_RESOURCE_LINK:-0}"
   -e "MCP_APPS_CONTENT_MODE=${MCP_APPS_CONTENT_MODE:-embedded}"
   -e "ONS_LIVE_ENABLED=${ONS_LIVE_ENABLED:-true}"
-  -e "UI_EVENT_LOG_PATH=${UI_EVENT_LOG_PATH:-/logs/ui-events.jsonl}"
+  -e "UI_EVENT_LOG_PATH=${DOCKER_UI_EVENT_LOG_PATH}"
 )
 
 for var in \

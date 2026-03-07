@@ -19,6 +19,8 @@ from tests.evaluation.questions import ALL_QUESTIONS
 
 from scripts.trace_report import _build_summary as build_trace_summary
 from scripts.trace_utils import (
+    DOCKER_LOCAL_WRAPPER_NAMES,
+    build_ui_event_env,
     classify_startup_discovery,
     classify_tool_search_usage,
     extract_fallback_responses,
@@ -137,10 +139,14 @@ def _build_temp_stdio_server(
     wrapper: Path,
     inherited_env: dict[str, str],
 ) -> dict[str, Any]:
-    env = dict(inherited_env)
+    env = build_ui_event_env(
+        session_dir,
+        existing_env=inherited_env,
+        default_log_root=REPO_ROOT / "logs",
+        docker_compatible=wrapper.name in DOCKER_LOCAL_WRAPPER_NAMES,
+    )
     env.pop("MCP_STDIO_UI_SUPPORTED", None)
     env.pop("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", None)
-    env["UI_EVENT_LOG_PATH"] = f"/logs/sessions/{session_dir.name}/ui-events.jsonl"
     return {
         "command": sys.executable,
         "args": [
@@ -151,6 +157,25 @@ def _build_temp_stdio_server(
             str(wrapper),
         ],
         "env": env,
+    }
+
+
+def _prepare_restore_server_config(previous: dict[str, Any] | None) -> dict[str, Any] | None:
+    if previous is None:
+        return None
+    transport = previous.get("transport") or {}
+    if transport.get("type") != "stdio":
+        raise RuntimeError(
+            "Benchmark harness only supports temporarily replacing stdio MCP "
+            "registrations; refusing to mutate a non-stdio server config."
+        )
+    command = transport.get("command")
+    if not isinstance(command, str) or not command:
+        raise RuntimeError("Cannot restore stdio server without a command.")
+    return {
+        "command": command,
+        "args": transport.get("args") or [],
+        "env": transport.get("env") or {},
     }
 
 
@@ -185,21 +210,11 @@ def _codex_add_stdio_server(name: str, server_config: dict[str, Any]) -> None:
     subprocess.run(command, cwd=REPO_ROOT, check=True)
 
 
-def _restore_server(name: str, previous: dict[str, Any] | None) -> None:
+def _restore_server(name: str, restore_config: dict[str, Any] | None) -> None:
     _codex_remove_server(name)
-    if previous is None:
+    if restore_config is None:
         return
-    transport = previous.get("transport") or {}
-    if transport.get("type") != "stdio":
-        raise RuntimeError("Only stdio server restore is supported by the benchmark harness.")
-    _codex_add_stdio_server(
-        name,
-        {
-            "command": transport.get("command"),
-            "args": transport.get("args") or [],
-            "env": transport.get("env") or {},
-        },
-    )
+    _codex_add_stdio_server(name, restore_config)
 
 
 def _codex_client_version() -> str | None:
@@ -767,6 +782,7 @@ def cmd_run_codex_cli(args: argparse.Namespace) -> int:
     }
     temp_server = _build_temp_stdio_server(session_dir, wrapper=wrapper, inherited_env=inherited_env)
     previous = _codex_get_server(args.server_name)
+    restore_config = _prepare_restore_server_config(previous)
     _write_initial_session_meta(
         session_dir,
         command=["codex", "exec", "-m", args.model, "--json", _prompt_for_scenario(scenario)],
@@ -807,7 +823,7 @@ def cmd_run_codex_cli(args: argparse.Namespace) -> int:
         if proc.returncode != 0:
             raise RuntimeError(f"codex exec failed with code {proc.returncode}")
     finally:
-        _restore_server(args.server_name, previous)
+        _restore_server(args.server_name, restore_config)
 
     subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "trace_report.py"), str(session_dir)],

@@ -4,11 +4,36 @@ import json
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 DEFAULT_SESSION_ROOT = Path("logs") / "sessions"
 DOCKER_LOCAL_WRAPPER_NAMES = {"claude-mcp-local", "codex-mcp-local", "mcp-docker-local"}
 IGNORE_USEFUL_TOOL_NAMES = {"os_apps.log_event", "os_apps_log_event"}
+
+
+def build_ui_event_env(
+    session_dir: Path,
+    *,
+    existing_env: Mapping[str, str] | None,
+    default_log_root: Path,
+    docker_compatible: bool,
+) -> dict[str, str]:
+    env = dict(existing_env or {})
+    host_ui_path = (session_dir / "ui-events.jsonl").resolve()
+    env["UI_EVENT_LOG_PATH"] = str(host_ui_path)
+    if not docker_compatible:
+        env.pop("MCP_GEO_DOCKER_UI_EVENT_LOG_PATH", None)
+        return env
+
+    log_root = Path(env.get("MCP_GEO_LOG_DIR") or default_log_root).expanduser().resolve()
+    try:
+        relative = host_ui_path.relative_to(log_root)
+    except ValueError:
+        log_root = session_dir.parent.resolve()
+        env["MCP_GEO_LOG_DIR"] = str(log_root)
+        relative = host_ui_path.relative_to(log_root)
+    env["MCP_GEO_DOCKER_UI_EVENT_LOG_PATH"] = f"/logs/{relative.as_posix()}"
+    return env
 
 
 def load_jsonl(path: Path) -> Iterable[dict[str, Any]]:

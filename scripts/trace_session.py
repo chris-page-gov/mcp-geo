@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.trace_utils import DOCKER_LOCAL_WRAPPER_NAMES
+from scripts.trace_utils import build_ui_event_env
 
 
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
@@ -249,11 +250,13 @@ def main() -> int:
     base_cmd = cmd if cmd else _default_command(args.mode, args.source or "unknown")
     source = args.source or _infer_source(base_cmd)
     surface = args.surface or _default_surface(source)
-    if args.mode == "stdio" and _is_docker_local_command(base_cmd):
-        ui_event_path = f"/logs/sessions/{session_dir.name}/ui-events.jsonl"
-    else:
-        ui_event_path = str(session_dir / "ui-events.jsonl")
-    env["UI_EVENT_LOG_PATH"] = ui_event_path
+    env = build_ui_event_env(
+        session_dir,
+        existing_env=env,
+        default_log_root=REPO_ROOT / "logs",
+        docker_compatible=args.mode == "stdio" and _is_docker_local_command(base_cmd),
+    )
+    ui_event_path = env["UI_EVENT_LOG_PATH"]
 
     command = _build_command(args.mode, base_cmd, session_dir)
     _write_session_metadata(

@@ -3,8 +3,12 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from argparse import Namespace
 from pathlib import Path
 
+import pytest
+
+import scripts.host_benchmark as host_benchmark
 from scripts.host_benchmark import load_scenario_pack, score_session, summarize_sessions, write_score_artifacts
 
 
@@ -225,6 +229,49 @@ def test_score_session_fails_unnormalized_error(tmp_path: Path) -> None:
     assert score["categories"]["errorRecovery"]["status"] == "fail"
     assert score["categories"]["errorRecovery"]["score"] == 0.0
     assert score["categories"]["errorRecovery"]["detail"] == "unnormalized error observed"
+
+
+def test_build_temp_stdio_server_keeps_host_ui_event_path_for_codex_wrapper(tmp_path: Path) -> None:
+    session_dir = tmp_path / "logs" / "sessions" / "trace"
+    session_dir.mkdir(parents=True)
+
+    server = host_benchmark._build_temp_stdio_server(
+        session_dir,
+        wrapper=Path("/tmp/codex-mcp-local"),
+        inherited_env={"MCP_GEO_LOG_DIR": str(tmp_path / "logs")},
+    )
+
+    assert server["env"]["UI_EVENT_LOG_PATH"] == str(session_dir / "ui-events.jsonl")
+    assert (
+        server["env"]["MCP_GEO_DOCKER_UI_EVENT_LOG_PATH"]
+        == "/logs/sessions/trace/ui-events.jsonl"
+    )
+
+
+def test_run_codex_cli_refuses_to_clobber_non_stdio_server(monkeypatch, tmp_path: Path) -> None:
+    removed: list[str] = []
+    added: list[tuple[str, dict]] = []
+
+    monkeypatch.setattr(host_benchmark, "_codex_get_server", lambda _name: {"transport": {"type": "http", "url": "http://127.0.0.1:8000/mcp"}})
+    monkeypatch.setattr(host_benchmark, "_codex_remove_server", lambda name: removed.append(name))
+    monkeypatch.setattr(host_benchmark, "_codex_add_stdio_server", lambda name, config: added.append((name, config)))
+    monkeypatch.setattr(host_benchmark, "_codex_client_version", lambda: "codex-cli test")
+
+    args = Namespace(
+        scenario_id="tool_search_postcode",
+        scenario_pack=str(host_benchmark.DEFAULT_SCENARIO_PACK),
+        model="gpt-5.4",
+        server_name="mcp-geo",
+        wrapper=str(host_benchmark.REPO_ROOT / "scripts" / "codex-mcp-local"),
+        session_root=str(tmp_path / "logs" / "sessions"),
+        name="non-stdio-guard",
+    )
+
+    with pytest.raises(RuntimeError, match="refusing to mutate a non-stdio server config"):
+        host_benchmark.cmd_run_codex_cli(args)
+
+    assert removed == []
+    assert added == []
 
 
 def test_summarize_sessions_builds_three_track_report(tmp_path: Path) -> None:
