@@ -6,10 +6,22 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- None.
+- Added `scripts/generate_teignmouth_wheelchair_access_map.py` plus live Teignmouth
+  wheelchair-access artifacts:
+  `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.{html,md}`,
+  `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`, and
+  `output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png`.
 
 ### Changed
-- None.
+- Updated `docs/reports/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to index the
+  new Teignmouth wheelchair-access map work.
+- Refined the Teignmouth wheelchair-access HTML map to fit wide browser windows
+  cleanly, reduce named corridor callouts to a single representative segment per
+  street, and move access-point labels into the sidebar with numbered map
+  markers plus hover evidence text.
+- Fixed `os_poi.search` bbox handling to filter text-search results locally
+  instead of sending unsupported bbox coordinates to the OS Places `/find`
+  endpoint; updated focused regression coverage in `tests/test_os_poi.py`.
 
 ## [0.5.0] - 2026-03-04
 

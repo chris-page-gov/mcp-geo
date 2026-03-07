@@ -239,8 +239,8 @@ def test_os_poi_handlers_cover_error_and_bbox_paths(monkeypatch):
     assert status == 200
     assert payload["count"] == 0
     assert captured["url"].endswith("/find")
-    assert captured["params"]["bbox"] == "51.4,-0.2,51.5,-0.1"
-    assert captured["params"]["srs"] == "WGS84"
+    assert "bbox" not in captured["params"]
+    assert "srs" not in captured["params"]
 
     assert os_poi._nearest({"lat": "bad", "lon": -0.1})[0] == 400
     assert os_poi._nearest({"lat": 51.5, "lon": -0.1, "limit": 0})[0] == 400

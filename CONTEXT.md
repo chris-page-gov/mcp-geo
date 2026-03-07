@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-04
+Last updated: 2026-03-07
 Owner: @chris-page-gov
 
 ## Purpose
@@ -191,6 +191,17 @@ assumptions change.
 - Maintain compact-window implementation and test hardening artifacts from
   `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`
   with strict acceptance evidence from the unattended Playwright suites.
+- Maintain the Teignmouth peninsula south-of-railway building-profile briefing
+  and operational AOI polygon in
+  `docs/reports/teignmouth_peninsula_building_profile_brief_2026-03-06.md`.
+- Maintain the Teignmouth wheelchair access map generator, live JSON export,
+  and slide-format report artifacts in
+  `scripts/generate_teignmouth_wheelchair_access_map.py`,
+  `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`, and
+  `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.{html,md}` with
+  responsive slide-fit layout, perimeter corridor callouts, hover evidence
+  titles, and sidebar-only access-point markers for Teignmouth station and
+  Shopmobility.
 - Refine playground + geography-selector compact UX for map-first workflows:
   compact-preserving maximize behavior, adjustable split-pane sizing, a
   compact tab workflow (`Map/Search/Results/Info/Debug/Help`), and

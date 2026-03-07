@@ -121,18 +121,26 @@ def _search(payload: dict[str, Any]) -> ToolResult:
         "maxresults": limit,
     }
     bbox = payload.get("bbox")
+    parsed_bbox: list[float] | None = None
     if bbox is not None:
         parsed_bbox = _parse_bbox(bbox)
         if parsed_bbox is None:
             return _invalid("bbox must be [minLon,minLat,maxLon,maxLat] with numeric values")
-        min_lon, min_lat, max_lon, max_lat = parsed_bbox
-        params["bbox"] = f"{min_lat},{min_lon},{max_lat},{max_lon}"
-        params["srs"] = "WGS84"
 
     status, raw = client.get_json(f"{client.base_places}/find", params)
     if status != 200:
         return 501, raw
     results = _normalize_results(raw)
+    if parsed_bbox is not None:
+        min_lon, min_lat, max_lon, max_lat = parsed_bbox
+        results = [
+            item
+            for item in results
+            if isinstance(item.get("lat"), (int, float))
+            and isinstance(item.get("lon"), (int, float))
+            and min_lat <= float(item["lat"]) <= max_lat
+            and min_lon <= float(item["lon"]) <= max_lon
+        ]
     return 200, {
         "results": results,
         "count": len(results),

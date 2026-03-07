@@ -3,7 +3,17 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-04
+Last updated: 2026-03-07
+
+## Teignmouth wheelchair access map (2026-03-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| TWA-DATA-1 Live access-layer extraction and scoring | done | none | Added `scripts/generate_teignmouth_wheelchair_access_map.py` to pull live Teignmouth roads, paths, pavement polygons, water, rail, and OS Places anchors through MCP-Geo; applies conservative width/slope/lighting rules and writes `data/exports/teignmouth_wheelchair_access_map_2026-03-07.json`. |
+| TWA-OUT-2 User-facing map and methods note | done | TWA-DATA-1 | Generated slide-format HTML map `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html`, screenshot artifact `output/playwright/teignmouth-wheelchair-access-map-2026-03-07.png`, and methods/additions note `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.md`. Follow-up refinement removed wide-window clipping, moved station/Shopmobility into sidebar access points with numbered map markers, added hover evidence titles, and reduced map callouts to six named corridors. |
+| TWA-FIX-3 POI bbox filtering hardening | done | none | Fixed `os_poi.search` bbox behavior to filter text-search results locally instead of sending unsupported bbox coordinates upstream to `/find`; updated `tests/test_os_poi.py` and validated with focused pytest + live Teignmouth query. |
 
 ## Public launch release `0.5.0` (2026-03-04)
 
