@@ -188,6 +188,9 @@ assumptions change.
 - Maintain the repo extent/complexity analysis skill and report pipeline under
   `scripts/repo_extent_complexity_report.py`,
   `skills/mcp-geo-repo-extent-complexity/`, and `docs/reports/`.
+- Maintain the detailed OS map runbook skill under
+  `skills/mcp-geo-detailed-os-maps/` so report-style map work defaults to
+  MapLibre + OS vector basemaps with label-safe overlays and browser validation.
 - Drive the `codex/simple-map` exploration stream (`SMAP-*`) for minimal auth
   handling and PMTiles performance-trial setup artifacts (`ui/simple_map.html`,
   `docs/simple_map_lab.md`, `tests/test_maps_proxy.py`).
@@ -214,16 +217,18 @@ assumptions change.
   responsive slide-fit layout, Web Mercator overlay alignment, perimeter
   corridor callouts, hover evidence titles, sidebar-only access-point markers
   for Teignmouth station and Shopmobility, and an optional browser-side
-  `OS Light` basemap toggle with slimmer route overlays for label-safe context
-  plus wheel zoom, drag pan, reset controls, zoom-aware scale-bar updates, and
-  browser-side tile refresh for sharper street context at higher zoom levels.
+  `OS Detailed` vector basemap toggle with slimmer route overlays for label-safe
+  context plus wheel zoom, drag pan, reset controls, zoom-aware scale-bar
+  updates, browser-side MapLibre sync for sharper street and building context
+  at higher zoom levels, and a `--reuse-export` regeneration path for
+  presentation-only refreshes when no live OS key is available.
 - Maintain the Exmouth comparator outputs and side-by-side accessibility note in
   `data/exports/exmouth_wheelchair_access_map_2026-03-07.json`,
   `docs/reports/exmouth_wheelchair_access_map_2026-03-07.{html,md}`,
   `output/playwright/exmouth-wheelchair-access-map-2026-03-07.png`, and
   `docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md`,
-  keeping the same optional `OS Light` browser basemap control available across
-  all comparator maps.
+  keeping the same optional `OS Detailed` browser vector basemap control
+  available across all comparator maps.
 - Maintain the Sidmouth comparator outputs in
   `data/exports/sidmouth_wheelchair_access_map_2026-03-07.json`,
   `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.{html,md}`, and

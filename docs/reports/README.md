@@ -22,9 +22,9 @@ This folder contains human-readable run reports and investigation summaries.
 
 ## Place Profiling
 
-Wheelchair-access HTML reports now include an optional browser-side `OS Light`
-basemap toggle for richer street-name context without changing the default
-standalone simplified view.
+Wheelchair-access HTML reports now include an optional browser-side `OS Detailed`
+vector basemap toggle for richer street and building context without changing
+the fallback simplified view when no local browser key is available.
 
 - 2026-03-07: [Teignmouth, Exmouth and Sidmouth wheelchair-access comparison](teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md)
 - 2026-03-07: [Exmouth wheelchair access map](exmouth_wheelchair_access_map_2026-03-07.html)

@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sidmouth town-centre wheelchair access map</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css"
+    />
     <style>
       :root {
         color-scheme: light;
@@ -78,6 +82,28 @@
         border: 1px solid #d2d8d3;
         overflow: hidden;
         touch-action: none;
+      }
+
+      .maplibre-stage {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        opacity: 0;
+        background: linear-gradient(180deg, #e8f0ef 0%, #edf0e9 100%);
+        transition: opacity 160ms ease;
+      }
+
+      .maplibre-stage .maplibregl-map,
+      .maplibre-stage .maplibregl-canvas,
+      .maplibre-stage .maplibregl-canvas-container {
+        width: 100%;
+        height: 100%;
+      }
+
+      .maplibre-stage .maplibregl-canvas-container,
+      .maplibre-stage .maplibregl-canvas,
+      .maplibre-stage .maplibregl-ctrl-group {
+        pointer-events: none;
       }
 
       .map-controls {
@@ -353,6 +379,8 @@
       }
 
       .map-svg {
+        position: relative;
+        z-index: 1;
         width: 100%;
         height: 100%;
         display: block;
@@ -363,29 +391,16 @@
         cursor: grabbing;
       }
 
-      .slide[data-basemap="simplified"] .basemap-os {
+      .slide[data-basemap="os-vector"] .simple-context {
         opacity: 0;
       }
 
-      .slide[data-basemap="os-light"] .simple-context {
-        opacity: 0;
-      }
-
-      .slide[data-basemap="os-light"] .basemap-os {
+      .slide[data-basemap="os-vector"] .maplibre-stage {
         opacity: 1;
       }
 
-      .simple-context,
-      .basemap-os {
+      .simple-context {
         transition: opacity 160ms ease;
-      }
-
-      .basemap-os {
-        opacity: 0;
-      }
-
-      .os-tile {
-        pointer-events: none;
       }
 
       .slide[data-callouts="hidden"] .map-callouts {
@@ -659,10 +674,11 @@
         </header>
 
         <section class="map-frame" aria-label="Wheelchair access map">
+          <div class="maplibre-stage" data-maplibre-stage></div>
           <div class="map-controls">
             <div class="map-controls-left">
               <div class="mode-group" role="group" aria-label="Map context">
-                <span class="mode-label">Context</span>
+                <span class="mode-label">Basemap</span>
                 <button
                   type="button"
                   class="mode-button is-active"
@@ -670,8 +686,8 @@
                 >
                   Simplified
                 </button>
-                <button type="button" class="mode-button" data-basemap-mode="os-light">
-                  OS Light
+                <button type="button" class="mode-button" data-basemap-mode="os-vector">
+                  OS Detailed
                 </button>
               </div>
               <button type="button" class="mode-button mode-key" data-open-os-key>OS key</button>
@@ -691,13 +707,10 @@
             </div>
           </div>
           <div class="map-status" data-basemap-status>
-            Simplified context is shown. Wheel to zoom, drag to pan, and load OS Light when a browser key is set.
+            Simplified context is shown. Wheel to zoom, drag to pan, and load detailed OS context when a browser key is set.
           </div>
           <svg class="map-svg" viewBox="0 0 1110 748" role="img" aria-label="Sidmouth town-centre wheelchair access map">
             <g class="map-panzoom" data-panzoom-layer>
-              <g class="basemap-os">
-                <g data-os-layer></g>
-              </g>
               <g class="simple-context">
                 <path d="M 847.0 362.0 L 849.8 361.3 L 864.7 357.3 L 865.0 357.2 L 864.9 356.6 L 864.8 356.0 L 864.5 354.1 L 862.8 352.1 L 861.0 349.0 L 857.3 337.9 L 848.6 315.4 L 842.1 299.9 L 841.9 298.8 L 842.7 298.6 L 843.3 298.3 L 843.7 297.8 L 844.0 297.4 L 844.4 296.4 L 844.6 295.9 L 844.9 294.4 L 845.0 292.9 L 844.6 289.0 L 843.7 283.5 L 843.5 282.2 L 840.7 270.2 L 838.6 267.1 L 836.6 264.9 L 834.2 262.2 L 831.6 257.6 L 830.3 252.2 L 823.1 256.6 L 820.7 257.9 L 820.9 258.1 L 824.1 267.0 L 827.0 281.6 L 847.0 362.0 Z" class="water-fill" />
 <path d="M 747.1 46.0 L 746.1 45.3 L 745.9 45.2 L 742.9 28.8 L 739.4 6.3 L 739.1 1.0 L 739.5 -5.7 L 739.9 -7.3 L 741.5 -10.8 L 743.4 -15.3 L 745.1 -19.6 L 745.3 -20.1 L 745.8 -21.1 L 746.1 -22.1 L 746.4 -23.1 L 746.4 -23.6 L 746.6 -24.3 L 746.8 -26.4 L 747.0 -29.0 L 747.9 -36.4 L 749.9 -55.8 L 749.6 -61.2 L 749.6 -61.6 L 743.2 -58.8 L 743.3 -57.6 L 743.3 -56.9 L 743.5 -55.7 L 743.6 -54.7 L 742.9 -51.3 L 742.8 -50.6 L 742.5 -48.9 L 742.3 -47.2 L 742.6 -43.7 L 742.6 -42.1 L 742.7 -40.7 L 742.6 -39.1 L 742.5 -38.7 L 741.1 -33.7 L 740.8 -32.2 L 740.6 -30.9 L 740.6 -27.3 L 740.6 -26.8 L 740.2 -24.9 L 740.0 -24.2 L 739.7 -23.4 L 739.5 -23.1 L 739.0 -22.3 L 738.8 -22.0 L 738.2 -20.4 L 737.8 -18.9 L 736.3 -15.2 L 735.9 -14.2 L 735.7 -13.6 L 734.6 -10.8 L 734.3 -10.2 L 733.6 -8.8 L 732.1 -4.9 L 731.3 -0.7 L 731.3 3.1 L 732.1 11.6 L 734.1 29.9 L 735.4 37.2 L 735.5 38.9 L 735.5 39.3 L 735.9 43.0 L 736.0 43.7 L 736.3 46.1 L 736.5 47.2 L 737.8 52.8 L 739.0 58.9 L 739.2 60.2 L 739.5 61.9 L 739.6 63.6 L 739.6 66.2 L 739.6 67.6 L 739.8 67.9 L 747.1 46.0 Z" class="water-fill" />
@@ -2546,14 +2559,14 @@
               <li>Grey streets are context only. They did not clear the wheelchair route filter.</li>
               <li>Final approach still needs checking: Tourist Information Centre about 5 m; Sidmouth Market about 12 m.</li>
               <li>Not captured in current data: dropped kerbs, crossing type, tactile paving, parked cars, bins, café furniture, or temporary works.</li>
-              <li>In HTML, hover a coloured route for evidence text, wheel to zoom, drag to pan, and use the OS Light toggle for sharper street-name context when a browser-stored key is available.</li>
+              <li>In HTML, hover a coloured route for evidence text, wheel to zoom, drag to pan, and use the OS Detailed toggle for sharper street and building context when a browser-stored key is available.</li>
             </ul>
           </section>
 
           <div class="source-note">
             Live MCP-Geo extract on 2026-03-07: roads, paths, pavement polygons,
             rail detail, water context, and named anchors. Route filter uses UK accessible-footway guidance,
-            a conservative 5% maximum grade rule, and optional zoom-aware OS Light browser tiles for map context.
+            a conservative 5% maximum grade rule, and optional zoom-aware OS vector context for street and building detail.
           </div>
         </aside>
       </article>
@@ -2561,28 +2574,30 @@
     </div>
     <dialog class="os-key-dialog" id="os-key-dialog">
       <form method="dialog" class="os-key-form">
-        <h2>Load OS Light basemap</h2>
+        <h2>Load detailed OS basemap</h2>
         <p>
-          Enter your OS Maps API key to request `Light_3857` tiles directly from Ordnance Survey.
-          The key is stored only in this browser on this machine and is never written into the report file.
+          Enter your OS Maps API key to request the detailed OS vector Light style directly from
+          Ordnance Survey. The key is stored only in this browser on this machine and is never
+          written into the report file.
         </p>
         <label class="os-key-label" for="os-key-input">OS Maps API key</label>
         <input id="os-key-input" class="os-key-input" data-os-key-input type="password" autocomplete="off" />
         <div class="os-key-actions">
           <button type="button" class="dialog-button dialog-button-ghost" data-clear-os-key>Clear saved key</button>
           <button value="cancel" class="dialog-button dialog-button-ghost">Cancel</button>
-          <button type="button" class="dialog-button dialog-button-primary" data-save-os-key>Use OS Light</button>
+          <button type="button" class="dialog-button dialog-button-primary" data-save-os-key>Use OS Detailed</button>
         </div>
       </form>
     </dialog>
+    <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
     <script>
       (() => {
         const root = document.documentElement;
         const slide = document.querySelector(".slide");
         const mapFrame = document.querySelector(".map-frame");
+        const mapStage = document.querySelector("[data-maplibre-stage]");
         const mapSvg = document.querySelector(".map-svg");
         const panzoomLayer = document.querySelector("[data-panzoom-layer]");
-        const osLayer = document.querySelector("[data-os-layer]");
         const modeButtons = Array.from(document.querySelectorAll("[data-basemap-mode]"));
         const zoomButtons = Array.from(document.querySelectorAll("[data-zoom-step]"));
         const zoomResetButton = document.querySelector("[data-zoom-reset]");
@@ -2597,15 +2612,15 @@
         const scaleEndTick = document.querySelector("[data-scale-end-tick]");
         const scaleHalfLabel = document.querySelector("[data-scale-half-label]");
         const scaleEndLabel = document.querySelector("[data-scale-end-label]");
-        const mapConfig = {"storageKey": "mcpGeo.osApiKey", "tileUrlTemplate": "https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=__OS_API_KEY__", "tileSizePx": 256, "minZoom": 12, "maxZoom": 18, "overscale": 1.35, "maxTiles": 30, "tilePadding": 1, "baseZoom": 16, "layout": {"x": 0.0, "y": 0.0, "width": 1110, "height": 748, "pad": 18, "scale": 24609065.92306033, "extra_x": 143.938530395721, "extra_y": 0.0, "min_x_norm": 0.4909875, "max_x_norm": 0.491019444444, "top_y_norm": 0.336173737045, "bottom_y_norm": 0.336202669472}, "mapWidth": 1110, "mapHeight": 748, "scaleBarTargetPx": 220, "baseMetersPerPx": 1.031894};
+        const mapConfig = {"storageKey": "mcpGeo.osApiKey", "styleName": "OS_VTS_3857_Light.json", "styleUrlTemplate": "https://api.os.uk/maps/vector/v1/vts/resources/styles?style=OS_VTS_3857_Light.json&srs=3857&key=__OS_API_KEY__", "maplibreVersion": "5.7.1", "layout": {"x": 0.0, "y": 0.0, "width": 1110, "height": 748, "pad": 18, "scale": 24609065.92306033, "extra_x": 143.938530395721, "extra_y": 0.0, "min_x_norm": 0.4909875, "max_x_norm": 0.491019444444, "top_y_norm": 0.336173737045, "bottom_y_norm": 0.336202669472}, "mapWidth": 1110, "mapHeight": 748, "scaleBarTargetPx": 220, "baseMetersPerPx": 1.031894};
         const storageKey = mapConfig.storageKey;
-        const maxScale = Math.min(
-          16,
-          Math.max(4, 2 ** Math.max(1, mapConfig.maxZoom - mapConfig.baseZoom))
-        );
+        const WORLD_TILE_SIZE = 512;
+        const maxScale = 18;
         let osApiKey = "";
-        let lastTileSignature = "";
-        let tileRenderToken = 0;
+        let detailedMap = null;
+        let detailedStyleLoaded = false;
+        let lastDetailedStyleUrl = "";
+        let lastDetailedWarning = "";
         const state = {
           scale: 1,
           offsetX: 0,
@@ -2639,10 +2654,15 @@
         const setDragging = (dragging) => {
           mapFrame?.classList.toggle("is-dragging", dragging);
         };
-        const clearOsTiles = () => {
-          osLayer?.replaceChildren();
-          lastTileSignature = "";
-          tileRenderToken += 1;
+        const resetDetailedStyle = () => {
+          detailedStyleLoaded = false;
+          if (detailedMap) {
+            detailedMap.setStyle({
+              version: 8,
+              sources: {},
+              layers: [{ id: "blank", type: "background", paint: { "background-color": "#edf0e9" } }],
+            }, { diff: false });
+          }
         };
         const localPoint = (event) => {
           if (!(mapSvg instanceof SVGSVGElement)) {
@@ -2691,6 +2711,11 @@
             + mapConfig.layout.extra_y
             + ((normY - mapConfig.layout.top_y_norm) * mapConfig.layout.scale)
           );
+        };
+        const normToLon = (normX) => (normX * 360) - 180;
+        const normToLat = (normY) => {
+          const mercatorY = Math.PI * (1 - (2 * normY));
+          return (180 / Math.PI) * Math.atan(Math.sinh(mercatorY));
         };
         const formatDistance = (meters) => {
           if (meters >= 1000) {
@@ -2766,126 +2791,133 @@
             maxNormY: clamp(localToNormY(maxLocalY), 0, 1),
           };
         };
-        const chooseTileZoom = (view) => {
+        const currentCamera = () => {
+          const view = visibleWorld();
           const spanX = Math.max(1e-9, view.maxNormX - view.minNormX);
           const spanY = Math.max(1e-9, view.maxNormY - view.minNormY);
-          const innerW = mapConfig.mapWidth - (2 * mapConfig.layout.pad);
-          const innerH = mapConfig.mapHeight - (2 * mapConfig.layout.pad);
-          const zoomX = Math.log2((innerW * mapConfig.overscale) / (mapConfig.tileSizePx * spanX));
-          const zoomY = Math.log2((innerH * mapConfig.overscale) / (mapConfig.tileSizePx * spanY));
-          let zoom = clamp(
-            Math.floor(Math.min(zoomX, zoomY)),
-            mapConfig.minZoom,
-            mapConfig.maxZoom
-          );
-          while (zoom > mapConfig.minZoom) {
-            const worldPx = mapConfig.tileSizePx * (2 ** zoom);
-            const tileCount = (
-              (Math.floor((view.maxNormX * worldPx) / mapConfig.tileSizePx)
-                - Math.floor((view.minNormX * worldPx) / mapConfig.tileSizePx)
-                + 1)
-              * (Math.floor((view.maxNormY * worldPx) / mapConfig.tileSizePx)
-                - Math.floor((view.minNormY * worldPx) / mapConfig.tileSizePx)
-                + 1)
-            );
-            if (tileCount <= mapConfig.maxTiles) {
-              break;
-            }
-            zoom -= 1;
-          }
-          return zoom;
+          const zoomX = Math.log2(mapConfig.mapWidth / (WORLD_TILE_SIZE * spanX));
+          const zoomY = Math.log2(mapConfig.mapHeight / (WORLD_TILE_SIZE * spanY));
+          const centerNormX = (view.minNormX + view.maxNormX) / 2;
+          const centerNormY = (view.minNormY + view.maxNormY) / 2;
+          return {
+            center: [normToLon(centerNormX), normToLat(centerNormY)],
+            zoom: clamp(Math.min(zoomX, zoomY), 0, 20),
+          };
         };
-        const renderOsTiles = () => {
-          if (!osLayer || !osApiKey || slide?.dataset.basemap !== "os-light") {
-            return;
+        const detailedStyleUrl = () => {
+          return mapConfig.styleUrlTemplate.replace("__OS_API_KEY__", encodeURIComponent(osApiKey));
+        };
+        const transformRequest = (url) => {
+          let parsed;
+          try {
+            parsed = new URL(url, window.location.href);
+          } catch (_error) {
+            return { url };
           }
-          const view = visibleWorld();
-          const zoom = chooseTileZoom(view);
-          const worldPx = mapConfig.tileSizePx * (2 ** zoom);
-          const maxTileIndex = (2 ** zoom) - 1;
-          let tileXMin = Math.floor((view.minNormX * worldPx) / mapConfig.tileSizePx);
-          let tileXMax = Math.floor((view.maxNormX * worldPx) / mapConfig.tileSizePx);
-          let tileYMin = Math.floor((view.minNormY * worldPx) / mapConfig.tileSizePx);
-          let tileYMax = Math.floor((view.maxNormY * worldPx) / mapConfig.tileSizePx);
-          tileXMin = clamp(tileXMin - mapConfig.tilePadding, 0, maxTileIndex);
-          tileXMax = clamp(tileXMax + mapConfig.tilePadding, 0, maxTileIndex);
-          tileYMin = clamp(tileYMin - mapConfig.tilePadding, 0, maxTileIndex);
-          tileYMax = clamp(tileYMax + mapConfig.tilePadding, 0, maxTileIndex);
-
-          const specs = [];
-          for (let tileX = tileXMin; tileX <= tileXMax; tileX += 1) {
-            for (let tileY = tileYMin; tileY <= tileYMax; tileY += 1) {
-              const tileMinNormX = (tileX * mapConfig.tileSizePx) / worldPx;
-              const tileMaxNormX = ((tileX + 1) * mapConfig.tileSizePx) / worldPx;
-              const tileTopNormY = (tileY * mapConfig.tileSizePx) / worldPx;
-              const tileBottomNormY = ((tileY + 1) * mapConfig.tileSizePx) / worldPx;
-              specs.push({
-                key: `${zoom}/${tileX}/${tileY}`,
-                left: normToLocalX(tileMinNormX),
-                top: normToLocalY(tileTopNormY),
-                width: normToLocalX(tileMaxNormX) - normToLocalX(tileMinNormX),
-                height: normToLocalY(tileBottomNormY) - normToLocalY(tileTopNormY),
-                href: mapConfig.tileUrlTemplate
-                  .replace("__OS_API_KEY__", encodeURIComponent(osApiKey))
-                  .replace("{z}", String(zoom))
-                  .replace("{x}", String(tileX))
-                  .replace("{y}", String(tileY)),
-              });
+          if (parsed.hostname === "api.os.uk" && parsed.pathname.startsWith("/maps/vector/")) {
+            if (osApiKey && !parsed.searchParams.has("key")) {
+              parsed.searchParams.set("key", osApiKey);
             }
           }
-          const signature = specs.map((spec) => spec.key).join("|");
-          if (signature === lastTileSignature) {
-            if (slide?.dataset.basemap === "os-light") {
-              setStatus("OS Light basemap is shown. Wheel to zoom and drag to pan.", "success");
+          return { url: parsed.toString() };
+        };
+        const preflightDetailedStyle = async () => {
+          const controller = new AbortController();
+          const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+          try {
+            const response = await fetch(detailedStyleUrl(), { signal: controller.signal });
+            if (!response.ok) {
+              throw new Error(`Detailed style check failed (${response.status} ${response.statusText}).`);
             }
+          } catch (error) {
+            if (error && error.name === "AbortError") {
+              throw new Error("Detailed style check timed out. Check the OS key and try again.");
+            }
+            const message = String(error?.message || error || "");
+            if (error instanceof TypeError || message === "Failed to fetch") {
+              throw new Error(
+                "Detailed style check failed. Check the OS key and try again."
+              );
+            }
+            throw error;
+          } finally {
+            window.clearTimeout(timeoutId);
+          }
+        };
+        const ensureDetailedMap = () => {
+          if (detailedMap || !mapStage || !window.maplibregl) {
             return;
           }
-          lastTileSignature = signature;
-          tileRenderToken += 1;
-          const token = tileRenderToken;
-          osLayer.replaceChildren();
-          if (!specs.length) {
-            return;
-          }
-          let pending = specs.length;
-          let sawError = false;
-          setStatus("Loading OS Light basemap. Wheel to zoom and drag to pan.", "info");
-          specs.forEach((spec) => {
-            const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
-            image.setAttribute("class", "os-tile");
-            image.setAttribute("x", spec.left.toFixed(1));
-            image.setAttribute("y", spec.top.toFixed(1));
-            image.setAttribute("width", spec.width.toFixed(1));
-            image.setAttribute("height", spec.height.toFixed(1));
-            image.setAttribute("preserveAspectRatio", "none");
-            image.setAttribute("href", spec.href);
-            image.setAttributeNS("http://www.w3.org/1999/xlink", "href", spec.href);
-            image.addEventListener("load", () => {
-              if (token !== tileRenderToken) {
-                return;
-              }
-              pending -= 1;
-              if (!pending && slide?.dataset.basemap === "os-light") {
-                setStatus("OS Light basemap is shown. Wheel to zoom and drag to pan.", "success");
-              }
-            });
-            image.addEventListener("error", () => {
-              if (token !== tileRenderToken) {
-                return;
-              }
-              sawError = true;
-              pending -= 1;
-              if (!pending && slide?.dataset.basemap === "os-light") {
-                setStatus(
-                  "One or more OS tiles failed to load. Check the key or switch back to Simplified.",
-                  "warning"
-                );
-              }
-            });
-            osLayer.appendChild(image);
+          const workerUrl = new URL("../../ui/vendor/maplibre-gl-csp-worker.js", window.location.href).toString();
+          window.maplibregl.workerUrl = workerUrl;
+          const camera = currentCamera();
+          detailedMap = new window.maplibregl.Map({
+            container: mapStage,
+            style: {
+              version: 8,
+              sources: {},
+              layers: [{ id: "blank", type: "background", paint: { "background-color": "#edf0e9" } }],
+            },
+            center: camera.center,
+            zoom: camera.zoom,
+            interactive: false,
+            attributionControl: true,
+            transformRequest,
           });
-          if (!pending && !sawError && slide?.dataset.basemap === "os-light") {
-            setStatus("OS Light basemap is shown. Wheel to zoom and drag to pan.", "success");
+          detailedMap.on("style.load", () => {
+            detailedStyleLoaded = true;
+            syncDetailedMapView();
+            if (slide?.dataset.basemap === "os-vector") {
+              setStatus("Detailed OS basemap is shown. Wheel to zoom and drag to pan.", "success");
+            }
+          });
+          detailedMap.on("error", (event) => {
+            const message = String(event?.error?.message || "Detailed OS basemap failed to load.");
+            if (message === lastDetailedWarning) {
+              return;
+            }
+            lastDetailedWarning = message;
+            if (slide?.dataset.basemap === "os-vector") {
+              slide.dataset.basemap = "simplified";
+              syncButtons("simplified");
+              setStatus(
+                "Detailed OS basemap failed to load. Check the key or switch back later.",
+                "warning"
+              );
+            }
+          });
+        };
+        const syncDetailedMapView = () => {
+          if (!detailedMap) {
+            return;
+          }
+          const camera = currentCamera();
+          detailedMap.resize();
+          detailedMap.jumpTo({
+            center: camera.center,
+            zoom: camera.zoom,
+            animate: false,
+          });
+        };
+        const applyDetailedStyle = async () => {
+          if (!osApiKey) {
+            throw new Error("OS Detailed needs your OS Maps API key in this browser.");
+          }
+          if (!window.maplibregl) {
+            throw new Error("MapLibre failed to load in this browser.");
+          }
+          await preflightDetailedStyle();
+          ensureDetailedMap();
+          if (!detailedMap) {
+            throw new Error("Detailed map stage could not be initialized.");
+          }
+          const styleUrl = detailedStyleUrl();
+          if (styleUrl !== lastDetailedStyleUrl || !detailedStyleLoaded) {
+            detailedStyleLoaded = false;
+            lastDetailedStyleUrl = styleUrl;
+            detailedMap.setStyle(styleUrl, { diff: false });
+          } else {
+            syncDetailedMapView();
           }
         };
         const applyTransform = () => {
@@ -2895,16 +2927,16 @@
           );
           updateCallouts();
           updateScaleBar();
-          renderOsTiles();
+          syncDetailedMapView();
         };
         const fallbackPrompt = () => {
-          const value = window.prompt("Enter your OS Maps API key for the OS Light basemap", osApiKey);
+          const value = window.prompt("Enter your OS Maps API key for the detailed OS basemap", osApiKey);
           if (value === null) {
             return false;
           }
           const trimmed = value.trim();
           if (!trimmed) {
-            setStatus("Enter a valid OS Maps API key to load the OS Light basemap.", "warning");
+            setStatus("Enter a valid OS Maps API key to load the detailed OS basemap.", "warning");
             return false;
           }
           osApiKey = trimmed;
@@ -2913,13 +2945,13 @@
           } catch (_error) {
             // Keep the session-only key if browser storage is unavailable.
           }
-          clearOsTiles();
+          lastDetailedWarning = "";
           return true;
         };
         const openKeyDialog = () => {
           if (!(dialog instanceof HTMLDialogElement) || typeof dialog.showModal !== "function") {
             if (fallbackPrompt()) {
-              setMode("os-light", { allowDialog: false });
+              void setMode("os-vector", { allowDialog: false });
             }
             return;
           }
@@ -2928,17 +2960,17 @@
           }
           dialog.showModal();
         };
-        const setMode = (mode, options = {}) => {
+        const setMode = async (mode, options = {}) => {
           const allowDialog = options.allowDialog !== false;
           if (!slide) {
             return;
           }
-          if (mode === "os-light") {
+          if (mode === "os-vector") {
             if (!osApiKey) {
               slide.dataset.basemap = "simplified";
               syncButtons("simplified");
               setStatus(
-                "OS Light needs your OS Maps API key in this browser. Use OS key.",
+                "Detailed OS context needs your OS Maps API key in this browser. Use OS key.",
                 "warning"
               );
               if (allowDialog) {
@@ -2946,21 +2978,32 @@
               }
               return;
             }
-            slide.dataset.basemap = "os-light";
-            syncButtons("os-light");
-            renderOsTiles();
+            try {
+              setStatus("Loading detailed OS basemap...", "info");
+              await applyDetailedStyle();
+              slide.dataset.basemap = "os-vector";
+              syncButtons("os-vector");
+              syncDetailedMapView();
+            } catch (error) {
+              slide.dataset.basemap = "simplified";
+              syncButtons("simplified");
+              setStatus(
+                String(error?.message || error || "Detailed OS basemap failed to load."),
+                "warning"
+              );
+            }
             return;
           }
           slide.dataset.basemap = "simplified";
           syncButtons("simplified");
           if (osApiKey) {
             setStatus(
-              "Simplified context is shown. Wheel to zoom, drag to pan, and switch to OS Light when needed.",
+              "Simplified context is shown. Wheel to zoom, drag to pan, and switch to OS Detailed when needed.",
               "info"
             );
           } else {
             setStatus(
-              "Simplified context is shown. Wheel to zoom, drag to pan, and load OS Light when a browser key is set.",
+              "Simplified context is shown. Wheel to zoom, drag to pan, and load OS Detailed when a browser key is set.",
               "info"
             );
           }
@@ -2998,7 +3041,7 @@
         }
         modeButtons.forEach((button) => {
           button.addEventListener("click", () => {
-            setMode(button.dataset.basemapMode || "simplified");
+            void setMode(button.dataset.basemapMode || "simplified");
           });
         });
         zoomButtons.forEach((button) => {
@@ -3016,13 +3059,13 @@
               if (dialog instanceof HTMLDialogElement) {
                 dialog.close();
               }
-              setMode("os-light", { allowDialog: false });
+              void setMode("os-vector", { allowDialog: false });
             }
             return;
           }
           const trimmed = keyInput.value.trim();
           if (!trimmed) {
-            setStatus("Enter a valid OS Maps API key to load the OS Light basemap.", "warning");
+            setStatus("Enter a valid OS Maps API key to load the detailed OS basemap.", "warning");
             keyInput.focus();
             return;
           }
@@ -3032,11 +3075,12 @@
           } catch (_error) {
             // Keep the session-only key if browser storage is unavailable.
           }
-          clearOsTiles();
+          lastDetailedWarning = "";
+          lastDetailedStyleUrl = "";
           if (dialog instanceof HTMLDialogElement) {
             dialog.close();
           }
-          setMode("os-light", { allowDialog: false });
+          void setMode("os-vector", { allowDialog: false });
         });
         clearKeyButton?.addEventListener("click", () => {
           osApiKey = "";
@@ -3045,11 +3089,13 @@
           } catch (_error) {
             // ignore storage failures and keep the simplified view available
           }
-          clearOsTiles();
+          lastDetailedWarning = "";
+          lastDetailedStyleUrl = "";
+          resetDetailedStyle();
           if (dialog instanceof HTMLDialogElement) {
             dialog.close();
           }
-          setMode("simplified", { allowDialog: false });
+          void setMode("simplified", { allowDialog: false });
           setStatus("Saved OS Maps API key cleared. Simplified context is shown.", "info");
         });
         mapSvg?.addEventListener(
@@ -3112,7 +3158,12 @@
         });
         updateScaleBar();
         updateCallouts();
-        setMode("simplified", { allowDialog: false });
+        applyTransform();
+        if (osApiKey) {
+          void setMode("os-vector", { allowDialog: false });
+        } else {
+          void setMode("simplified", { allowDialog: false });
+        }
       })();
     </script>
   </body>

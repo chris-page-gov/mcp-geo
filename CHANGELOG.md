@@ -48,17 +48,24 @@ All notable changes to this project will be documented in this file.
   markers plus hover evidence text.
 - Refined the wheelchair-access report generator and regenerated the Teignmouth,
   Exmouth, and Sidmouth map artefacts with Web Mercator overlay alignment,
-  slimmer route casing, and an optional browser-side `OS Light` basemap toggle
-  for richer street-name context without obscuring labels.
+  slimmer route casing, and an optional browser-side `OS Detailed` vector
+  basemap toggle for richer street-name and building context without obscuring
+  labels.
 - Extended the wheelchair-access HTML maps with wheel zoom, drag pan, reset
-  controls, zoom-aware scale bars, and browser-side OS tile refresh so the
-  optional `OS Light` context sharpens as the user zooms in.
+  controls, zoom-aware scale bars, and browser-side OS vector basemap syncing
+  so the optional `OS Detailed` context sharpens as the user zooms in.
 - Extended `scripts/generate_teignmouth_wheelchair_access_map.py` with reusable
   place presets and OS export-resource handling so wider footprints like Exmouth
   can be generated with the same scoring logic.
 - Added Sidmouth as a compact-core preset and updated the comparison note to
   distinguish Exmouth as the strongest positive comparator from Sidmouth's
   smaller but tighter seafront-market core.
+- Added repo guidance in `AGENTS.md` plus the new skill
+  `skills/mcp-geo-detailed-os-maps/SKILL.md` so future agents default to
+  MapLibre + OS vector detail for user-facing report maps.
+- Added `--reuse-export` to `scripts/generate_teignmouth_wheelchair_access_map.py`
+  so HTML and note artefacts can be regenerated reliably from saved JSON exports
+  when presentation changes do not require a fresh live data pull.
 - Fixed `os_poi.search` bbox handling to filter text-search results locally
   instead of sending unsupported bbox coordinates to the OS Places `/find`
   endpoint; updated focused regression coverage in `tests/test_os_poi.py`.

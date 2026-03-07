@@ -127,6 +127,15 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 - Keep the implementation plan in `PROGRESS.MD` updated as plan items move from
   pending to in progress to done. Update `CHANGELOG.md` when a plan item is
   completed and adjust related docs in the same change.
+- For user-facing HTML maps or report maps that need street-level or building-level
+  Ordnance Survey detail, default to a MapLibre-based OS vector basemap
+  (`OS_VTS_3857_Light.json` or a justified equivalent) rather than `Light_3857`
+  raster tiles.
+- Keep analytical overlays separate from the basemap, favoring route casing,
+  outline-only emphasis, or other label-safe treatments so OS names remain
+  readable in the detailed view.
+- Validate user-facing maps in a real browser at desktop width with zoom, pan,
+  and label readability checks before closing the task.
 
 ## Agent Skills (Codex)
 
