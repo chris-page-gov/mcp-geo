@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-08
+
 ### Added
 - Added shared Docker-backed stdio launcher `scripts/mcp-docker-local` plus
   Codex-specific launcher `scripts/codex-mcp-local`, keeping
