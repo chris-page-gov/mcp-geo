@@ -3,7 +3,17 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-07
+Last updated: 2026-03-08
+
+## Minor release integration prep (2026-03-08)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| RELI-SCOPE-1 Release scope freeze and branch cleanup | done | none | Preserved the dirty OpenAI Documentation MCP changes on `codex/openai-documentation-mcp` and rescued the detached showcase-report worktree on `codex/showcase-report-date-fix`. Explicitly deferred dependency-only PRs `#24` and `#29` plus `codex/reporting-2026-03-01` from the minor-release merge set. |
+| RELI-INTEG-2 Map Lab + boundary harness integration branch | done | RELI-SCOPE-1 | Built clean branch `codex/release-0.6.0-integration` from `main`, integrated `origin/codex/validate-maps` (merge-resolution commit plus follow-up review fixes), folded in `origin/codex/boundary-widget-harness-debug`, and reconciled the newer compact-window/Codex launcher surfaces with the Map Lab work. Preserved named-volume PostGIS defaults for `scripts/claude-mcp-local` by teaching shared launcher `scripts/mcp-docker-local` to honor `MCP_GEO_POSTGIS_STORAGE_MODE` and `MCP_GEO_POSTGIS_VOLUME`. |
+| RELI-VAL-3 Manual release gate on integrated merge set | done | RELI-INTEG-2 | Validation passed on the integrated branch via `./scripts/check_non_runtime_quality.sh`, `./.venv/bin/pytest -q` (`1026 passed`, `6 skipped`, coverage `90.57%`), and `npm --prefix playground run test:boundary-ui` (`4 passed`). Follow-up integration fix: classified new async export polling tool `os_map.get_export` as a specialist surface in `tests/test_evaluation_harness_full.py` so the evaluation harness coverage gate matches the intended question-bank scope. |
 
 ## Codex GPT-5.4 MCP host benchmark harness (2026-03-06)
 

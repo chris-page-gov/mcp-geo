@@ -102,6 +102,9 @@ assumptions change.
 
 ## Active Work
 
+- Prepare the minor-release integration branch `codex/release-0.6.0-integration`
+  by landing `codex/validate-maps` plus the boundary harness follow-up while
+  explicitly deferring PRs `#24`, `#29`, and `codex/reporting-2026-03-01`.
 - Maintain published `v0.5.0` launch state (release notes/caveat visibility,
   security-review traceability, and public-repo hygiene checks).
 - Maintain the Codex-vs-Claude host benchmark harness: `scripts/codex-mcp-local`,

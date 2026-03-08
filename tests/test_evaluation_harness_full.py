@@ -222,6 +222,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
         "os_net.rinex_years",
         "os_net.station_get",
         "os_net.station_log",
+        "os_map.get_export",
         "ons_geo.by_postcode",
         "ons_geo.by_uprn",
         "ons_geo.cache_status",
