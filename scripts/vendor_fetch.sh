@@ -1,26 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Static snapshotter for specific documentation pages so an offline code assistant can read them.
+# Static snapshotter for supported documentation pages that still need local HTML snapshots.
 # Requires: wget
 #
 # Usage:
 #   ./scripts/vendor_fetch.sh
 #
 # Output:
-#   docs/vendor/openai/_snapshot/<host>/<path>/index.html (and assets)
 #   docs/vendor/mcp/_snapshot/<host>/<path>/index.html (and assets)
 #   docs/vendor/os/_snapshot/<host>/<path>/index.html (and assets)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-OPENAI_OUT="$ROOT_DIR/docs/vendor/openai/_snapshot"
 MCP_OUT="$ROOT_DIR/docs/vendor/mcp/_snapshot"
 OS_OUT="$ROOT_DIR/docs/vendor/os/_snapshot"
 
-mkdir -p "$OPENAI_OUT" "$MCP_OUT" "$OS_OUT"
+mkdir -p "$MCP_OUT" "$OS_OUT"
 
-VENDOR_TARGETS="${VENDOR_TARGETS:-openai,mcp,os}"
+VENDOR_TARGETS="${VENDOR_TARGETS:-mcp,os}"
 
 has_target() {
   local target="$1"
@@ -40,21 +38,6 @@ WGET_COMMON=(
   --tries=3
   --timeout=20
   --user-agent="mcp-geo-doc-vendor/1.0"
-)
-
-# We avoid crawling entire sites; we fetch only these pages and their requisites.
-OPENAI_URLS=(
-  "https://platform.openai.com/docs/mcp"
-  "https://platform.openai.com/docs/guides/developer-mode"
-  "https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt-beta"
-  "https://help.openai.com/en/articles/11487775-connectors-in-chatgpt"
-  "https://developers.openai.com/apps-sdk/"
-  "https://developers.openai.com/apps-sdk/quickstart/"
-  "https://developers.openai.com/apps-sdk/deploy/connect-chatgpt/"
-  "https://developers.openai.com/apps-sdk/build/mcp-server/"
-  "https://developers.openai.com/apps-sdk/build/chatgpt-ui/"
-  "https://developers.openai.com/apps-sdk/reference/"
-  "https://help.openai.com/en/articles/12515353-build-with-the-apps-sdk"
 )
 
 MCP_URLS=(
@@ -78,8 +61,8 @@ OS_URLS=(
 )
 
 if has_target "openai"; then
-  echo "==> Fetching OpenAI docs pages…"
-  ( cd "$OPENAI_OUT" && wget "${WGET_COMMON[@]}" "${OPENAI_URLS[@]}" )
+  echo "==> Skipping deprecated OpenAI docs snapshot refresh."
+  echo "    Use the shared openaiDeveloperDocs MCP server at https://developers.openai.com/mcp instead."
 fi
 
 if has_target "mcp"; then
@@ -93,9 +76,6 @@ if has_target "os"; then
 fi
 
 echo "==> Done."
-if has_target "openai"; then
-  echo "OpenAI snapshots: $OPENAI_OUT"
-fi
 if has_target "mcp"; then
   echo "MCP snapshots:    $MCP_OUT"
 fi

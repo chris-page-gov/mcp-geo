@@ -17,6 +17,9 @@ if [[ "$1" == "mcp" && "$2" == "get" && "$3" == "--json" && "$4" == "mcp-geo" ]]
 JSON
   exit 0
 fi
+if [[ "$1" == "mcp" && "$2" == "get" && "$3" == "--json" && "$4" == "openaiDeveloperDocs" ]]; then
+  exit 1
+fi
 if [[ "$1" == "mcp" && ( "$2" == "remove" || "$2" == "rm" ) ]]; then
   exit 0
 fi
@@ -48,5 +51,10 @@ def test_devcontainer_setup_registers_codex_launcher(tmp_path: Path) -> None:
     )
 
     log_text = log_path.read_text(encoding="utf-8")
-    assert str(repo_root / "scripts" / "codex-mcp-local") in log_text
-    assert "claude-mcp-local" not in log_text.splitlines()[-1]
+    add_lines = [line for line in log_text.splitlines() if line.startswith("mcp add")]
+    assert any(str(repo_root / "scripts" / "codex-mcp-local") in line for line in add_lines)
+    assert any(
+        "openaiDeveloperDocs --url https://developers.openai.com/mcp" in line
+        for line in add_lines
+    )
+    assert not any("claude-mcp-local" in line for line in add_lines)

@@ -51,6 +51,10 @@
     "mcp-geo-http": {
       "url": "http://localhost:8000/mcp",
       "autoApprove": ["tools", "resources"]
+    },
+    "openaiDeveloperDocs": {
+      "url": "https://developers.openai.com/mcp",
+      "autoApprove": ["tools", "resources"]
     }
   }
 }

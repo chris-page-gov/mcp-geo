@@ -108,6 +108,9 @@ All notable changes to this project will be documented in this file.
   Codex-specific launcher `scripts/codex-mcp-local`, keeping
   `scripts/claude-mcp-local` Claude-only.
 - Added Codex startup-scope probe `scripts/check_codex_startup_scope.sh`.
+- Added shared `openaiDeveloperDocs` MCP configuration pointing at
+  `https://developers.openai.com/mcp` in `mcp.json`, `.vscode/mcp.json`, and
+  `scripts/devcontainer_mcp_setup.sh`.
 - Added Codex-vs-Claude host benchmark scenario pack
   `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json`.
 - Added host benchmark runner `scripts/host_benchmark.py` for scenario export,
@@ -141,6 +144,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated `scripts/devcontainer_mcp_setup.sh` so Codex registers `mcp-geo`
   against `scripts/codex-mcp-local` instead of the Claude wrapper.
+- Deprecated the local OpenAI-docs vendor workflow in `docs/vendor/openai/` and
+  switched repo guidance to the official OpenAI Documentation MCP for current
+  developer docs.
 - Extended `scripts/trace_session.py` and `scripts/trace_report.py` with
   host-aware metadata/reporting (`source`, `surface`, `hostProfile`,
   `clientVersion`, `model`, `scenarioPack`, `scenarioId`, `summary.json`).

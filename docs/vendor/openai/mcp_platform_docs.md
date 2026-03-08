@@ -1,6 +1,7 @@
-# OpenAI MCP docs (platform)
+# Deprecated local pointer: OpenAI Documentation MCP
 
-Source: https://platform.openai.com/docs/mcp
+Use the shared `openaiDeveloperDocs` MCP server (`https://developers.openai.com/mcp`)
+or the setup guide at `https://developers.openai.com/resources/docs-mcp`.
 
-Status: snapshot captured.
-Offline copy: `docs/vendor/openai/_snapshot/docs/mcp.html`
+This local pointer remains only as a legacy marker and is no longer maintained
+as a source of truth.

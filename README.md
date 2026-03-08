@@ -122,7 +122,10 @@ No data is stored or redistributed.
 
 See [Latest Specification which this MUST conform to](https://modelcontextprotocol.io/specification/2025-11-25).
 This is a preview spec; tracking and review cadence live in `docs/spec_tracking.md`.
-OpenAI's MCP documentation is at <https://platform.openai.com/docs/mcp> (preview; tracked in `docs/spec_tracking.md`).
+OpenAI's Documentation MCP guide is at
+<https://developers.openai.com/resources/docs-mcp>, with the shared server
+available at <https://developers.openai.com/mcp> (preview; tracked in
+`docs/spec_tracking.md`).
 
 Protocol negotiation behavior:
 
@@ -210,6 +213,9 @@ For publication output (LaTeX / Prism-ready with ToC and bibliography), see:
 - Use `CONTEXT.md` as the durable project context for Codex across environments.
 - If you use the Codex Mac app, open this repo as a project and read `CONTEXT.md`
   at session start.
+- The repo MCP configs include `openaiDeveloperDocs`
+  (`https://developers.openai.com/mcp`) so OpenAI/Codex/API/App SDK docs can
+  be read through MCP instead of the legacy `docs/vendor/openai/` copies.
 - Codex app documentation: <https://developers.openai.com/codex/app/>
 - Codex app features: <https://developers.openai.com/codex/app/features>
 

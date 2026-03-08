@@ -15,6 +15,9 @@ Defined in `.vscode/mcp.json`:
 - `mcp-geo` (STDIO): runs `python3 scripts/vscode_mcp_stdio.py` from the workspace root, enables MCP-Apps UI, and defaults discovery to `starter` plus `features_layers` so boundary explorer can call `os_map.inventory`/`os_map.export`.
 - `mcp-geo-trace` (STDIO + trace): wraps the same server with `scripts/mcp_stdio_trace_proxy.py` and the same default toolset filters.
 - `mcp-geo-http` (HTTP): points to `http://127.0.0.1:8000/mcp` (you must run `uvicorn` yourself).
+- `openaiDeveloperDocs` (HTTP): points to `https://developers.openai.com/mcp` so
+  VS Code Agent mode can read current OpenAI developer docs without relying on
+  the deprecated local `docs/vendor/openai/` copies.
 
 Tool set file for VS Code Configure Tools:
 
@@ -50,7 +53,8 @@ venv at `.venv/` if present to avoid missing dependencies (for example `loguru`)
 ## Start and Verify
 
 1. Open this repo folder in VS Code.
-2. Command Palette: `MCP: List Servers` and confirm `mcp-geo` is present.
+2. Command Palette: `MCP: List Servers` and confirm `mcp-geo` and
+   `openaiDeveloperDocs` are present.
 3. Start `mcp-geo` (or `mcp-geo-trace`) from the MCP Servers UI.
 4. If it fails to start, check the VS Code **Output** panel for an MCP-related channel.
 
@@ -59,6 +63,7 @@ venv at `.venv/` if present to avoid missing dependencies (for example `loguru`)
 In Copilot Chat, switch to **Agent mode**, then try:
 
 - "List available tools for mcp-geo."
+- "Use `openaiDeveloperDocs` to find the latest OpenAI Documentation MCP guidance."
 - "Call `os_mcp.route_query` with: Open a map so I can select wards in Westminster."
 - "Open the geography selector UI (`os_apps.render_geography_selector`)."
 - "Probe UI rendering support (`os_apps.render_ui_probe`)."

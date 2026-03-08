@@ -41,6 +41,10 @@ assumptions change.
 - Spec package exports are ignored in git: `docs/spec_package/build/`.
 - External ref (Codex app overview/install): `https://developers.openai.com/codex/app/`.
 - External ref (Codex app features): `https://developers.openai.com/codex/app/features`.
+- OpenAI developer docs are now expected to be read via the shared
+  `openaiDeveloperDocs` MCP server (`https://developers.openai.com/mcp`) when
+  current OpenAI/Codex/API/App SDK guidance is needed; `docs/vendor/openai/`
+  is deprecated legacy fallback material only.
 - External ref (Codex app announcement): `https://openai.com/index/introducing-the-codex-app/`.
 - External ref (VS Code devcontainer mounts): `https://code.visualstudio.com/remote/advancedcontainers/add-local-file-mount`.
 - External ref (Docker volumes reference): `https://docs.docker.com/engine/storage/volumes/`.

@@ -68,6 +68,10 @@
     "mcp-geo-http": {
       "type": "http",
       "url": "http://127.0.0.1:8000/mcp"
+    },
+    "openaiDeveloperDocs": {
+      "type": "http",
+      "url": "https://developers.openai.com/mcp"
     }
   }
 }

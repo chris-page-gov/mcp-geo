@@ -1,3 +1,5 @@
-# MCP Transport: Streamable HTTP / HTTP-SSE (Placeholder)
+# Deprecated local pointer: MCP Transport guidance
 
-Pending vendor drop of the official OpenAI documentation.
+Use the current normative MCP transport docs rather than this placeholder. For
+OpenAI developer guidance, start with the shared `openaiDeveloperDocs` MCP
+server (`https://developers.openai.com/mcp`).

@@ -29,7 +29,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Create script-free HTML copies for offline viewing."
     )
-    parser.add_argument("src", help="Source snapshot directory (e.g. docs/vendor/openai/_snapshot)")
+    parser.add_argument("src", help="Source snapshot directory (e.g. docs/vendor/mcp/_snapshot)")
     parser.add_argument(
         "--dest",
         help="Destination directory for script-free copies (default: <src>_noscript)",
