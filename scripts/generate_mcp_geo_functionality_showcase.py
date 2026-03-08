@@ -428,6 +428,7 @@ def _write_report_markdown(
     report_path: Path,
     repo_url: str,
     git_ref: str,
+    report_date: str,
     peninsula_counts: PeninsulaCounts,
     wheelchair_metrics: list[WheelchairTownMetrics],
     peninsula_chart_path: Path,
@@ -499,7 +500,7 @@ def _write_report_markdown(
         ---
         title: "{manifest['title']}"
         subtitle: "{manifest['subtitle']}"
-        date: "{date.today().isoformat()}"
+        date: "{report_date}"
         toc: true
         geometry: margin=0.85in
         colorlinks: true
@@ -655,9 +656,9 @@ def _write_report_markdown(
 
         Outputs written by the generator:
 
-        - `docs/reports/mcp_geo_functionality_showcase_{date.today().isoformat()}.md`
-        - `docs/reports/mcp_geo_functionality_showcase_{date.today().isoformat()}.docx`
-        - `docs/reports/mcp_geo_functionality_showcase_{date.today().isoformat()}.pdf`
+        - `docs/reports/mcp_geo_functionality_showcase_{report_date}.md`
+        - `docs/reports/mcp_geo_functionality_showcase_{report_date}.docx`
+        - `docs/reports/mcp_geo_functionality_showcase_{report_date}.pdf`
 
         # Repository Sources Used
 
@@ -736,6 +737,7 @@ def main() -> int:
         report_path=report_path,
         repo_url=args.repo_url,
         git_ref=args.git_ref,
+        report_date=args.date,
         peninsula_counts=peninsula_counts,
         wheelchair_metrics=wheelchair_metrics,
         peninsula_chart_path=peninsula_chart_path,
