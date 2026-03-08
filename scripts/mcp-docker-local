@@ -6,6 +6,8 @@ IMAGE="${MCP_GEO_IMAGE:-mcp-geo-server}"
 NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo}"
 POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis}"
 POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-postgis/postgis:16-3.4}"
+POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-bind}"
+POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
 DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
 POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-5432}"
@@ -116,7 +118,19 @@ fi
 hydrate_env_secret "OS_API_KEY"
 hydrate_env_secret "ONS_API_KEY"
 
-mkdir -p "$DATA_DIR" "$LOG_DIR"
+case "$POSTGIS_STORAGE_MODE" in
+  volume|bind)
+    ;;
+  *)
+    log "invalid MCP_GEO_POSTGIS_STORAGE_MODE: $POSTGIS_STORAGE_MODE (use volume|bind)"
+    exit 1
+    ;;
+esac
+
+if [[ "$POSTGIS_STORAGE_MODE" == "bind" ]]; then
+  mkdir -p "$DATA_DIR"
+fi
+mkdir -p "$LOG_DIR"
 
 if ! "$DOCKER_BIN" network inspect "$NETWORK" >/dev/null 2>&1; then
   log "creating docker network: $NETWORK"
@@ -124,6 +138,14 @@ if ! "$DOCKER_BIN" network inspect "$NETWORK" >/dev/null 2>&1; then
 fi
 
 if "$DOCKER_BIN" inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
+  existing_storage="$("$DOCKER_BIN" inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Type}}|{{.Name}}|{{.Source}}{{end}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
+  if [[ "$POSTGIS_STORAGE_MODE" == "volume" && "$existing_storage" == bind* ]]; then
+    log "PostGIS container uses bind storage but volume mode is requested."
+    log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
+  elif [[ "$POSTGIS_STORAGE_MODE" == "bind" && "$existing_storage" == volume* ]]; then
+    log "PostGIS container uses volume storage but bind mode is requested."
+    log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
+  fi
   if [[ "$("$DOCKER_BIN" inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
     log "starting existing PostGIS container: $POSTGIS_CONTAINER"
     "$DOCKER_BIN" start "$POSTGIS_CONTAINER" >/dev/null
@@ -131,14 +153,22 @@ if "$DOCKER_BIN" inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
 else
   log "starting PostGIS container: $POSTGIS_CONTAINER"
   port_args=()
+  storage_args=()
   if [[ -n "$POSTGIS_PUBLISH_PORT" && "$POSTGIS_PUBLISH_PORT" != "0" ]]; then
     port_args=(-p "$POSTGIS_PUBLISH_PORT:5432")
+  fi
+  if [[ "$POSTGIS_STORAGE_MODE" == "bind" ]]; then
+    storage_args=(-v "$DATA_DIR:/var/lib/postgresql/data")
+    log "PostGIS storage mode: bind ($DATA_DIR)"
+  else
+    storage_args=(-v "$POSTGIS_VOLUME:/var/lib/postgresql/data")
+    log "PostGIS storage mode: volume ($POSTGIS_VOLUME)"
   fi
   "$DOCKER_BIN" run -d --name "$POSTGIS_CONTAINER" --network "$NETWORK" \
     -e POSTGRES_DB=mcp_geo \
     -e POSTGRES_USER=mcp_geo \
     -e POSTGRES_PASSWORD=mcp_geo \
-    -v "$DATA_DIR:/var/lib/postgresql/data" \
+    "${storage_args[@]}" \
     "${port_args[@]}" \
     "$POSTGIS_IMAGE" >/dev/null
 fi

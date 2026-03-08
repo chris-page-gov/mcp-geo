@@ -71,6 +71,17 @@ def _increment_counter(rate_limited: bool = False):
             _rate_limited_total += 1
 
 
+def _rate_limit_exempt_prefixes() -> tuple[str, ...]:
+    raw = getattr(settings, "RATE_LIMIT_EXEMPT_PATH_PREFIXES", "")
+    if not isinstance(raw, str):
+        return tuple()
+    return tuple(prefix.strip() for prefix in raw.split(",") if prefix.strip())
+
+
+def _is_rate_limit_exempt(path: str) -> bool:
+    return any(path.startswith(prefix) for prefix in _rate_limit_exempt_prefixes())
+
+
 def _check_rate_limit(request: Request) -> bool:
     limit = settings.RATE_LIMIT_PER_MIN
     # Allow explicit bypass via settings (tests set to False to exercise path)
@@ -78,9 +89,12 @@ def _check_rate_limit(request: Request) -> bool:
         return True
     if limit <= 0:
         return True
+    path = request.url.path
+    if _is_rate_limit_exempt(path):
+        return True
     # Key by client IP (remote addr) and coarse path segment
     client_ip = request.client.host if request.client else "unknown"
-    path_key = request.url.path.split('/')[1] if '/' in request.url.path else request.url.path
+    path_key = path.split('/')[1] if '/' in path else path
     key = (client_ip, path_key)
     now = _time.time()
     window_start = now // 60  # minute window

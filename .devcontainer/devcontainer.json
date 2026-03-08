@@ -38,11 +38,14 @@
     8899,
     5432
   ],
-  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install .[dev,boundaries] && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
+  "postCreateCommand": "python3 -m pip install --upgrade pip && python3 -m pip install -e . && python3 -m pip install -e '.[dev,test]' && (python3 -m pip install -e '.[boundaries]' || echo 'mcp-geo: optional boundaries extras failed; continuing with core runtime') && (cd playground && npm install --no-audit --no-fund && npx playwright install --with-deps || true)",
   "postStartCommand": "bash ./scripts/devcontainer_post_start.sh",
   "postAttachCommand": "bash ./scripts/devcontainer_mcp_setup.sh",
   "customizations": {
     "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/bin/python3"
+      },
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",

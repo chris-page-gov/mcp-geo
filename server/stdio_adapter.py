@@ -84,6 +84,14 @@ RESOURCE_LIST.extend(list_ui_resources())
 RESOURCE_LIST.extend(list_data_resources())
 
 
+def _resource_mime_from_meta(meta: dict[str, Any] | None) -> str:
+    if isinstance(meta, dict):
+        value = meta.get("mimeType")
+        if isinstance(value, str) and value.strip():
+            return value
+    return "application/json"
+
+
 def handle_get_resource(params: Dict[str, Any]) -> Any:
     name = params.get("name")
     uri = params.get("uri")
@@ -94,7 +102,7 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
             entry = resolve_data_resource(uri)
             if entry:
                 content, _etag, meta = load_data_content(entry)
-                return _read_result(uri, "application/json", content, meta)
+                return _read_result(uri, _resource_mime_from_meta(meta), content, meta)
             raise LookupError(f"Unknown resource '{uri}'")
         else:
             ui_entry = resolve_ui_resource(str(uri))
@@ -134,7 +142,7 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
                     if str(name).startswith(DATA_RESOURCE_PREFIX)
                     else f"{DATA_RESOURCE_PREFIX}{entry.get('slug', '')}"
                 )
-                return _read_result(uri_value, "application/json", content, meta)
+                return _read_result(uri_value, _resource_mime_from_meta(meta), content, meta)
     if not isinstance(name, str):
         raise ValueError("Missing resource name")
     raise LookupError(f"Unknown resource '{name}'")

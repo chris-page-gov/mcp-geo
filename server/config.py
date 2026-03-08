@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MIN: int = 207  # calibrated default per client IP
     METRICS_ENABLED: bool = True
     RATE_LIMIT_BYPASS: bool = False  # secure default; tests/dev may opt in explicitly
+    RATE_LIMIT_EXEMPT_PATH_PREFIXES: str = (
+        "/maps/vector/vts/tile,/maps/raster/osm,/maps/static/osm"
+    )
     ADMIN_LOOKUP_LIVE_ENABLED: bool = True
     ADMIN_LOOKUP_ARCGIS_BASE: str = (
         "https://services1.arcgis.com/ESMARspQHYMw9BZ9/ArcGIS/rest/services"

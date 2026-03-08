@@ -127,6 +127,20 @@ def test_ons_geo_cache_refresh_ingests_all_products(tmp_path: Path) -> None:
     conn = sqlite3.connect(str(cache_dir / db_name))
     row_count = conn.execute("SELECT COUNT(*) FROM ons_geo_rows").fetchone()[0]
     assert row_count == 4
+    uprn_index_count = conn.execute("SELECT COUNT(*) FROM ons_geo_uprn_index").fetchone()[0]
+    assert uprn_index_count == 2
+    indexed = conn.execute(
+        """
+        SELECT uprn, lad_code, lad_name
+        FROM ons_geo_uprn_index
+        WHERE derivation_mode = 'exact'
+        ORDER BY uprn
+        """
+    ).fetchall()
+    assert indexed
+    assert indexed[0][0] == "100023336959"
+    assert indexed[0][1] == "E08000026"
+    assert indexed[0][2] == "Coventry"
     derivation_modes = {
         row[0]
         for row in conn.execute(

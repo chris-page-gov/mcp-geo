@@ -13,8 +13,12 @@
 
   const AnySchema = z.object({}).passthrough();
 
-  let serverUrl = "http://localhost:8000/mcp";
-  let playgroundUrl = "http://localhost:8000/playground";
+  const defaultOrigin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "http://localhost:5173";
+  let serverUrl = `${defaultOrigin}/mcp`;
+  let playgroundUrl = `${defaultOrigin}/playground`;
   let status = "disconnected";
   let error = "";
   let client = null;

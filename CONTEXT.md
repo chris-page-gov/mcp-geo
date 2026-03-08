@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-07
+Last updated: 2026-03-08
 Owner: @chris-page-gov
 
 ## Purpose
@@ -95,9 +95,16 @@ assumptions change.
 - Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
   Desktop Opus 4.6, including launcher separation, trace/session scoring, and
   reproducible comparison reports.
+- Rolling out the Map Lab novice-learning and selector-based collection/export
+  workflow on the compatibility-locked boundary explorer entrypoint.
+- Hardening storage isolation so mutable database/cache/log state is decoupled
+  from git worktrees (named-volume PostGIS + runtime data roots).
 
 ## Active Work
 
+- Prepare the minor-release integration branch `codex/release-0.6.0-integration`
+  by landing `codex/validate-maps` plus the boundary harness follow-up while
+  explicitly deferring PRs `#24`, `#29`, and `codex/reporting-2026-03-01`.
 - Maintain published `v0.5.0` launch state (release notes/caveat visibility,
   security-review traceability, and public-repo hygiene checks).
 - Maintain the Codex-vs-Claude host benchmark harness: `scripts/codex-mcp-local`,
@@ -284,6 +291,10 @@ assumptions change.
 - Done: dual-derivation ONS geography cache baseline (`ONSPD` + `ONSUD` exact,
   `NSPL` + `NSUL` best_fit) with tooling (`ons_geo.*`), refresh automation,
   route-query integration, and focused regression coverage.
+- Done: devcontainer cold-start bootstrap now auto-creates boundary-cache
+  PostGIS tables and auto-seeds `ons_geo` cache from bundled bootstrap CSVs in
+  `scripts/devcontainer_post_start.sh`, reducing first-run Map Lab degraded
+  status on fresh named volumes.
 - Done: added Long Horizon-style Codex session reporting for `mcp-geo` via
   `scripts/codex_long_horizon_summary.py`, a dedicated skill runbook
   (`skills/mcp-geo-long-horizon-summary/SKILL.md`), and baseline report
@@ -372,6 +383,34 @@ assumptions change.
   evaluation chapter, evidence index, and Prism-ready LaTeX publication set
   (`prism/main.tex` + bibliography + section files). Linked the package from
   `README.md` and synchronized trackers (`PROGRESS.MD`, `CHANGELOG.md`).
+- 2026-02-28: Hardened devcontainer/VS Code stdio dependency bootstrap after
+  repeated `ModuleNotFoundError: loguru` startup failures by installing core
+  runtime before optional extras and adding launcher-level best-effort
+  `pip install -e .` fallback in `scripts/vscode_mcp_stdio.py` and
+  `scripts/os_mcp.py`.
+- 2026-02-28: Mitigated devcontainer interpreter `ENOENT` failures caused by
+  host-created workspace `.venv` paths by defaulting container VS Code Python
+  to `/usr/bin/python3` and making `scripts/vscode_mcp_stdio.py` treat
+  unspawnable interpreter paths as unavailable.
+- 2026-02-28: Switched devcontainer and local Claude wrapper defaults away from
+  repo bind-mounted PostGIS data toward Docker named volumes, added runtime-data
+  volume-backed cache/log paths, and documented host env strategy (separate
+  secrets file sourced from shell startup remains recommended practice).
+- 2026-02-28: Hardened Map Lab readability/runtime diagnostics in
+  `ui/boundary_explorer.html` by defaulting boundary fills off, adding explicit
+  opacity controls, introducing a dynamic Guidance & Status panel, surfacing
+  cache readiness via `admin_lookup.get_cache_status` +
+  `ons_geo.cache_status`, and adding boundary-interaction hit layers so
+  selection works even when fills are hidden. Added focused Playwright coverage
+  in `playground/tests/boundary_explorer_controls.spec.js` plus exhaustive
+  option-matrix screenshot/summary coverage in
+  `playground/tests/boundary_explorer_option_matrix.spec.js`.
+- 2026-02-28: Completed Map Lab implementation on the existing
+  `ui://mcp-geo/boundary-explorer` entrypoint: added Help/Map/Collections tabs,
+  detailed tutorial content with persisted help state, selector-based local
+  collections, async selector-driven `os_map.export` + `os_map.get_export`,
+  and ONS UPRN reverse-lookup cache indexing for OA/LSOA/MSOA/LAD/postcode
+  export resolution.
 - 2026-02-27: Started `codex/simple-map` exploration to validate a minimal map
   delivery path with browser bearer auth preferred for OS vector proxy calls
   and deterministic fallback to key header/query or server `OS_API_KEY`; added

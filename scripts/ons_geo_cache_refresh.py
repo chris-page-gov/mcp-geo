@@ -33,6 +33,7 @@ from server.ons_geo_cache import (
     DERIVATION_MODES,
     KEY_TYPES,
     ensure_schema,
+    extract_geography_fields,
     normalize_derivation_mode,
     normalize_key,
 )
@@ -183,6 +184,133 @@ def _pick_key_field(reader: csv.DictReader, candidates: list[str]) -> str:
     raise ValueError(f"Could not find key column in CSV header using candidates {candidates}")
 
 
+def _row_value_ci(row: dict[str, Any], candidates: list[str]) -> str | None:
+    lower_lookup = {
+        str(key).strip().lower(): value
+        for key, value in row.items()
+        if isinstance(key, str)
+    }
+    for candidate in candidates:
+        value = lower_lookup.get(candidate.lower())
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return None
+
+
+def _coerce_delivery_flag(row: dict[str, Any]) -> int | None:
+    value = _row_value_ci(
+        row,
+        [
+            "postal_delivery",
+            "postaldelivery",
+            "is_postal_delivery",
+            "delivery",
+            "delivery_point",
+            "has_delivery_point",
+            "receives_post",
+            "postal_address",
+        ],
+    )
+    if value is None:
+        return None
+    norm = value.strip().lower()
+    if norm in {"1", "true", "t", "yes", "y"}:
+        return 1
+    if norm in {"0", "false", "f", "no", "n"}:
+        return 0
+    return None
+
+
+def _code_from_geographies(
+    geographies: dict[str, dict[str, str]],
+    stems: list[str],
+) -> str | None:
+    for stem in stems:
+        entry = geographies.get(stem)
+        if not isinstance(entry, dict):
+            continue
+        code = entry.get("code")
+        if isinstance(code, str) and code.strip():
+            return code.strip()
+    return None
+
+
+def _name_from_geographies(
+    geographies: dict[str, dict[str, str]],
+    stems: list[str],
+) -> str | None:
+    for stem in stems:
+        entry = geographies.get(stem)
+        if not isinstance(entry, dict):
+            continue
+        name = entry.get("name")
+        if isinstance(name, str) and name.strip():
+            return name.strip()
+    return None
+
+
+def _insert_uprn_index_row(
+    *,
+    conn: sqlite3.Connection,
+    product: ProductConfig,
+    uprn: str,
+    row: dict[str, Any],
+    cached_at: str,
+) -> None:
+    geographies = extract_geography_fields(row)
+    postcode_raw = _row_value_ci(row, ["pcds", "pcd", "postcode", "post_code"])
+    postcode = normalize_key("postcode", postcode_raw) if postcode_raw else None
+
+    oa_code = _code_from_geographies(geographies, ["oa21", "oa11", "oa"])
+    lsoa_code = _code_from_geographies(geographies, ["lsoa21", "lsoa11", "lsoa01", "lsoa"])
+    msoa_code = _code_from_geographies(geographies, ["msoa21", "msoa11", "msoa01", "msoa"])
+    lad_code = _code_from_geographies(
+        geographies,
+        ["lad24", "lad23", "lad22", "lad21", "lad20", "lad19", "lad18", "lad17", "lad"],
+    )
+    lad_name = _name_from_geographies(
+        geographies,
+        ["lad24", "lad23", "lad22", "lad21", "lad20", "lad19", "lad18", "lad17", "lad"],
+    )
+    postal_delivery = _coerce_delivery_flag(row)
+
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO ons_geo_uprn_index (
+            product_id,
+            derivation_mode,
+            uprn,
+            postcode,
+            oa_code,
+            lsoa_code,
+            msoa_code,
+            lad_code,
+            lad_name,
+            postal_delivery,
+            geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            product.product_id,
+            product.derivation_mode,
+            uprn,
+            postcode,
+            oa_code,
+            lsoa_code,
+            msoa_code,
+            lad_code,
+            lad_name,
+            postal_delivery,
+            json.dumps(geographies, ensure_ascii=True, separators=(",", ":")),
+            cached_at,
+        ),
+    )
+
+
 def _ingest_product(
     *,
     conn: sqlite3.Connection,
@@ -196,6 +324,8 @@ def _ingest_product(
     with _open_csv_rows(source_path) as reader:
         chosen_key_field = _pick_key_field(reader, product.key_candidates)
         conn.execute("DELETE FROM ons_geo_rows WHERE product_id = ?", (product.product_id,))
+        if product.key_type == "uprn":
+            conn.execute("DELETE FROM ons_geo_uprn_index WHERE product_id = ?", (product.product_id,))
         for row in reader:
             if not isinstance(row, dict):
                 continue
@@ -233,6 +363,14 @@ def _ingest_product(
                     now_iso,
                 ),
             )
+            if product.key_type == "uprn":
+                _insert_uprn_index_row(
+                    conn=conn,
+                    product=product,
+                    uprn=key_norm,
+                    row=row,
+                    cached_at=now_iso,
+                )
             inserted += 1
             if max_rows is not None and inserted >= max_rows:
                 break

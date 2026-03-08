@@ -1,5 +1,6 @@
 {
   "cSpell.language": "en-GB",
+  "python.defaultInterpreterPath": "/usr/bin/python3",
   "python.testing.pytestArgs": [
     "tests"
   ],

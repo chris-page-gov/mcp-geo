@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MCP Geo - Boundary Explorer</title>
+    <title>MCP Geo - Map Lab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -449,6 +449,257 @@
         height: 18px;
       }
 
+      .slider-grid {
+        display: grid;
+        gap: 8px;
+        margin-top: 6px;
+      }
+
+      .slider-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        color: rgba(29, 36, 32, 0.78);
+      }
+
+      .slider-control output {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        color: rgba(29, 36, 32, 0.84);
+        min-width: 38px;
+        text-align: right;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        margin: 0;
+      }
+
+      .guidance-list {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 5px;
+      }
+
+      .guidance-list li {
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .cache-status-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .cache-item {
+        border: 1px solid rgba(29, 36, 32, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 8px 10px;
+      }
+
+      .cache-item-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .cache-item-sub {
+        margin-top: 4px;
+        font-size: 12px;
+        color: rgba(29, 36, 32, 0.68);
+      }
+
+      .tabbar {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 0 24px 10px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .tab-button {
+        border-radius: 999px;
+        border: 1px solid rgba(29, 36, 32, 0.16);
+        background: rgba(255, 255, 255, 0.92);
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+      }
+
+      .tab-button.active {
+        border-color: rgba(22, 106, 69, 0.42);
+        background: rgba(22, 106, 69, 0.12);
+        color: var(--accent);
+        font-weight: 650;
+      }
+
+      .tab-panel {
+        display: none;
+      }
+
+      .tab-panel.active {
+        display: block;
+      }
+
+      .help-layout {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1.55fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .help-toc-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .help-toc-item {
+        text-align: left;
+      }
+
+      .help-content {
+        max-height: calc(100vh - 240px);
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .help-content .help-intro {
+        margin-bottom: 10px;
+      }
+
+      .help-content h4 {
+        margin: 8px 0 6px;
+        font-size: 13px;
+      }
+
+      .help-content p {
+        margin: 6px 0;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .help-content ul {
+        margin: 6px 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 4px;
+      }
+
+      .help-content li {
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .help-content a {
+        color: #14563a;
+        text-decoration: underline;
+      }
+
+      .help-content code {
+        font-size: 11px;
+        padding: 1px 4px;
+        border-radius: 4px;
+        background: rgba(29, 36, 32, 0.08);
+      }
+
+      .help-section {
+        margin: 0 0 10px;
+        border: 1px solid rgba(29, 36, 32, 0.1);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 8px 10px;
+      }
+
+      .help-section summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        color: rgba(29, 36, 32, 0.84);
+      }
+
+      .help-section .hint {
+        margin-top: 8px;
+      }
+
+      .help-mode-block {
+        margin-top: 8px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(22, 106, 69, 0.24);
+        background: rgba(22, 106, 69, 0.08);
+      }
+
+      .help-recipe {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(29, 36, 32, 0.1);
+        background: rgba(246, 249, 246, 0.95);
+      }
+
+      .help-warning {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(163, 79, 38, 0.24);
+        background: rgba(255, 245, 235, 0.96);
+      }
+
+      .collections-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .collections-list {
+        display: grid;
+        gap: 8px;
+        max-height: 520px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .collection-item.active {
+        border-color: rgba(22, 106, 69, 0.42);
+        background: rgba(22, 106, 69, 0.08);
+      }
+
+      .selectors-list {
+        display: grid;
+        gap: 8px;
+        max-height: 220px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .selector-entry {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border: 1px solid rgba(29, 36, 32, 0.12);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .selector-label {
+        font-size: 12px;
+      }
+
+      .collection-status {
+        margin-top: 8px;
+        min-height: 16px;
+      }
+
       @keyframes float-in {
         from {
           opacity: 0;
@@ -463,6 +714,9 @@
       @media (max-width: 1180px) {
         header {
           padding: 18px 18px 8px;
+        }
+        .tabbar {
+          padding: 0 18px 8px;
         }
         .shell {
           padding: 0 18px 18px;
@@ -486,6 +740,10 @@
             "left"
             "right";
           grid-template-columns: minmax(0, 1fr);
+        }
+        .help-layout,
+        .collections-grid {
+          grid-template-columns: 1fr;
         }
         .map {
           min-height: 400px;
@@ -514,11 +772,10 @@
   <body>
     <header data-compact-header>
       <div>
-        <div class="title">Boundary Explorer</div>
+        <div class="title">Map Lab</div>
         <div class="subtitle">
-          Ask simple questions, get a usable map. Select boundaries, progressively reveal detail (postcode
-          → UPRN), and keep geography intact with density/width/border aggregation. Import local layers
-          (GeoJSON/CSV/Shapefile.zip) to drive selection.
+          Welcome to Map Lab. Learn web mapping fundamentals and experiment with UK geospatial data,
+          from boundaries and postcodes to UPRNs, buildings, and transport links.
         </div>
       </div>
       <div class="status-row">
@@ -530,8 +787,312 @@
       </div>
     </header>
 
+    <div class="tabbar" role="tablist" aria-label="Map Lab tabs">
+      <button id="tabButtonHelp" class="tab-button" data-tab-target="help" role="tab" aria-selected="false">
+        Help
+      </button>
+      <button id="tabButtonMap" class="tab-button active" data-tab-target="map" role="tab" aria-selected="true">
+        Map
+      </button>
+      <button
+        id="tabButtonCollections"
+        class="tab-button"
+        data-tab-target="collections"
+        role="tab"
+        aria-selected="false"
+      >
+        Collections
+      </button>
+    </div>
+
     <div class="shell" data-compact-shell>
-      <div class="grid" data-compact-grid>
+      <section id="tab-help" class="tab-panel" role="tabpanel" aria-labelledby="tabButtonHelp">
+        <div class="help-layout">
+          <div class="panel">
+            <h3>Help Contents</h3>
+            <div class="hint" style="margin-bottom: 10px">
+              Welcome to Map Lab. Use this tutorial as a practical guide to UK web mapping.
+            </div>
+            <div class="help-toc-list" id="helpToc">
+              <button class="help-toc-item" type="button" data-help-jump="help-welcome">1. Welcome</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-basics">2. Web Map Basics</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-uk">3. UK Geography Primer</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-ids">4. Identifier Primer</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-hierarchy">5. Hierarchy Strategy</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-postcode">6. Postcode Stream</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-styling">7. Styling Lab</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-collections">8. Collections</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-troubleshooting">9. Troubleshooting</button>
+              <button class="help-toc-item" type="button" data-help-jump="help-glossary">10. Glossary</button>
+            </div>
+            <div class="row" style="margin-top: 12px">
+              <button id="helpToggleToc" type="button">Toggle TOC</button>
+              <button id="helpResetState" type="button">Reset help state</button>
+            </div>
+          </div>
+          <div class="panel help-content" id="helpContent" aria-label="Map Lab help content">
+            <details id="help-welcome" class="help-section" open>
+              <summary>1. Welcome to Map Lab</summary>
+              <div class="help-intro">
+                <p>
+                  Map Lab is a novice-first workspace for learning how UK geospatial mapping works on
+                  the web. You can search geographies, inspect UPRNs/buildings/links, test map styling,
+                  and export selector-based collections to resolved UPRN outputs.
+                </p>
+                <p>
+                  A practical first goal (about 15 minutes): find one area, add layers, apply a hierarchy
+                  preset, create a collection with OA/LSOA/MSOA selectors, and export a CSV.
+                </p>
+              </div>
+              <div class="help-mode-block">
+                <h4>Mode Guide (important)</h4>
+                <ul>
+                  <li>
+                    <strong>Server-proxy mode (recommended)</strong>: browser requests stay on local
+                    <code>/maps/...</code> routes and credentials are injected server-side.
+                  </li>
+                  <li>
+                    <strong>Direct API mode (advanced)</strong>: browser calls external APIs directly and
+                    handles credentials client-side with stricter CORS/exposure constraints.
+                  </li>
+                  <li>
+                    Verify mode in browser DevTools network: local host requests imply proxy mode.
+                  </li>
+                </ul>
+              </div>
+              <h4>Start Here</h4>
+              <ul>
+                <li>Open the <strong>Map</strong> tab and search for a boundary (for example, a ward or MSOA).</li>
+                <li>Refresh inventory to pull UPRNs/buildings/links for your current scope.</li>
+                <li>Open <strong>Collections</strong> and define reusable selector specs.</li>
+                <li>Export resolved UPRNs when you are ready for analysis or QA.</li>
+              </ul>
+            </details>
+            <details id="help-basics" class="help-section" open>
+              <summary>2. How Web Maps Work</summary>
+              <p>A web map combines three building blocks:</p>
+              <ul>
+                <li><strong>Basemap style</strong>: visual context (roads, labels, land, water).</li>
+                <li><strong>Data sources</strong>: your points/lines/polygons.</li>
+                <li><strong>Render layers</strong>: rules that turn source data into visible symbology.</li>
+              </ul>
+              <p>
+                Good cartography changes emphasis by zoom level. At high zoom you can show detailed points
+                and building geometry; at low zoom you should generalize toward line and area clarity.
+              </p>
+              <h4>Core Concepts</h4>
+              <ul>
+                <li><strong>Raster vs vector tiles</strong>: vector enables dynamic styling and interaction.</li>
+                <li><strong>Tile coordinates</strong>: most web maps use slippy map z/x/y tiling.</li>
+                <li>
+                  <strong>CRS</strong>: common UK/web references include EPSG:27700 (BNG),
+                  EPSG:3857 (web map), EPSG:4326 (lat/lon).
+                </li>
+              </ul>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://maplibre.org/maplibre-gl-js/docs" target="_blank" rel="noreferrer">MapLibre GL JS docs</a></li>
+                <li><a href="https://maplibre.org/maplibre-style-spec/" target="_blank" rel="noreferrer">MapLibre style specification</a></li>
+                <li><a href="https://maplibre.org/maplibre-style-spec/expressions/" target="_blank" rel="noreferrer">MapLibre expressions</a></li>
+                <li><a href="https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames" target="_blank" rel="noreferrer">Slippy map tilenames</a></li>
+                <li><a href="https://mapbox.github.io/vector-tile-spec/" target="_blank" rel="noreferrer">Mapbox vector tile spec</a></li>
+                <li><a href="https://datatracker.ietf.org/doc/html/rfc7946" target="_blank" rel="noreferrer">GeoJSON RFC 7946</a></li>
+              </ul>
+            </details>
+            <details id="help-uk" class="help-section" open>
+              <summary>3. UK Geography Primer</summary>
+              <p>
+                UK geographies are purpose-driven and do not always nest perfectly. Treat statistical and
+                administrative boundaries as complementary layers, not a single perfect hierarchy.
+              </p>
+              <h4>Common Geography Families</h4>
+              <ul>
+                <li><strong>Statistical</strong>: OA, LSOA, MSOA (useful for census/indicator analysis).</li>
+                <li><strong>Administrative</strong>: wards, parishes, districts, local authorities.</li>
+                <li><strong>Electoral</strong>: parliamentary constituencies and related boundaries.</li>
+                <li><strong>Other</strong>: built-up areas and thematic boundaries.</li>
+              </ul>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://www.ons.gov.uk/methodology/geography/ukgeographies/statisticalgeographies" target="_blank" rel="noreferrer">ONS statistical geographies</a></li>
+                <li><a href="https://www.ons.gov.uk/methodology/geography/ukgeographies/administrativegeography/england" target="_blank" rel="noreferrer">ONS administrative geographies</a></li>
+                <li><a href="https://www.ons.gov.uk/methodology/geography/ukgeographies/othergeographies" target="_blank" rel="noreferrer">ONS other geographies</a></li>
+                <li><a href="https://www.ons.gov.uk/methodology/geography/geographicalproducts/namescodesandlookups/lookups" target="_blank" rel="noreferrer">ONS names/codes and lookups</a></li>
+                <li><a href="https://docs.os.uk/os-downloads/products/areas-and-zones-portfolio/boundary-line/boundary-line-overview/data-overview" target="_blank" rel="noreferrer">OS Boundary-Line overview</a></li>
+              </ul>
+            </details>
+            <details id="help-ids" class="help-section" open>
+              <summary>4. Identifier Primer</summary>
+              <p>
+                Use identifiers for selection, joins, and persistence. Names are useful for search and UI,
+                but codes are what make workflows reproducible.
+              </p>
+              <ul>
+                <li><strong>UPRN</strong>: unique property/address reference.</li>
+                <li><strong>USRN</strong>: unique street reference.</li>
+                <li><strong>GSS code</strong>: statistical/administrative geography code.</li>
+                <li><strong>TOID/OSID</strong>: additional feature identifiers used in OS datasets.</li>
+              </ul>
+              <div class="help-recipe">
+                <strong>Practical rule</strong>: store selections by identifier set (for example OA/LSOA/MSOA
+                codes + explicit UPRN overrides), then resolve current membership at export time.
+              </div>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/os-open-uprn/os-open-uprn-overview" target="_blank" rel="noreferrer">OS Open UPRN overview</a></li>
+                <li><a href="https://docs.os.uk/osngd/getting-started/os-ngd-fundamentals/unique-identifiers" target="_blank" rel="noreferrer">OS NGD unique identifiers</a></li>
+                <li><a href="https://docs.os.uk/os-apis/accessing-os-apis/os-linked-identifiers-api" target="_blank" rel="noreferrer">OS Linked Identifiers API</a></li>
+                <li><a href="https://www.ons.gov.uk/methodology/geography/geographicalproducts/namescodesandlookups/namesandcodeslistings/namesandcodesforsuperoutputareassoa" target="_blank" rel="noreferrer">ONS OA/LSOA/MSOA names and codes</a></li>
+              </ul>
+            </details>
+            <details id="help-hierarchy" class="help-section" open>
+              <summary>5. Primary Hierarchy Display Strategy</summary>
+              <p>
+                The map uses cartographic generalization: you do not lose data as you zoom out, you change
+                what is emphasized to preserve legibility.
+              </p>
+              <ul>
+                <li><strong>High zoom</strong>: UPRN points and building polygons for precise local detail.</li>
+                <li><strong>Mid zoom</strong>: building emphasis with selective road/path links.</li>
+                <li><strong>Low zoom</strong>: link and area structure for orientation and comparison.</li>
+              </ul>
+              <div class="help-recipe">
+                <strong>Using hierarchy presets</strong>: select <code>Auto by zoom</code> to let Map Lab
+                transition styles automatically, or use <code>Detail-first</code>, <code>Balanced</code>,
+                and <code>Links-first</code> to force a learning mode.
+              </div>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://docs.os.uk/osngd/data-structure/buildings" target="_blank" rel="noreferrer">OS NGD buildings</a></li>
+                <li><a href="https://docs.os.uk/osngd/data-structure/transport/transport-network/road-link" target="_blank" rel="noreferrer">OS NGD road link</a></li>
+                <li><a href="https://docs.os.uk/osngd/data-structure/transport/transport-network/path-link" target="_blank" rel="noreferrer">OS NGD path link</a></li>
+                <li><a href="https://maplibre.org/maplibre-style-spec/layers/" target="_blank" rel="noreferrer">MapLibre layer spec</a></li>
+              </ul>
+            </details>
+            <details id="help-postcode" class="help-section" open>
+              <summary>6. Postcode Parallel Stream</summary>
+              <p>
+                Postcode workflows run in parallel to the primary hierarchy. Instead of drawing a coarse
+                postcode outline, Map Lab highlights postcode member UPRNs through the same hierarchy logic.
+              </p>
+              <ul>
+                <li>At high zoom you can inspect member UPRNs directly.</li>
+                <li>At broader zooms you can emphasize buildings/links representing those members.</li>
+                <li>Exports can include postal-delivery filtering when delivery flags are available.</li>
+              </ul>
+              <div class="help-warning">
+                <strong>Data caveat</strong>: if delivery flags are unavailable in the indexed source,
+                postal-delivery filtering falls back to best effort and reports a warning.
+              </div>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://www.ons.gov.uk/methodology/geography/geographicalproducts/postcodeproducts" target="_blank" rel="noreferrer">ONS postcode products (ONSPD/NSPL)</a></li>
+                <li><a href="https://docs.os.uk/os-apis/accessing-os-apis/os-places-api/technical-specification/postcode" target="_blank" rel="noreferrer">OS Places postcode endpoint</a></li>
+                <li><a href="https://docs.os.uk/os-downloads/products/areas-and-zones-portfolio/code-point-open" target="_blank" rel="noreferrer">Code-Point Open</a></li>
+              </ul>
+            </details>
+            <details id="help-styling" class="help-section" open>
+              <summary>7. Styling and Cartography Lab</summary>
+              <p>
+                Styling controls are a lab: try combinations deliberately and evaluate clarity, not just
+                visual effect. Good thematic maps preserve context while making selected features obvious.
+              </p>
+              <h4>Recommended Experiments</h4>
+              <ul>
+                <li>Switch basemap style and compare boundary readability.</li>
+                <li>Toggle UPRN density versus UPRN dots and inspect overplotting.</li>
+                <li>Test hierarchy presets at multiple zoom bands.</li>
+                <li>Enable buildings then roads/paths to compare urban/rural legibility.</li>
+              </ul>
+              <div class="help-recipe">
+                <strong>Recipe: improve clarity quickly</strong>
+                <ul>
+                  <li>Use a lighter basemap style.</li>
+                  <li>Keep one dominant highlight color for selected geography.</li>
+                  <li>Avoid maximum opacity on all layers at once.</li>
+                </ul>
+              </div>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://docs.os.uk/os-apis/accessing-os-apis/os-vector-tile-api/getting-started" target="_blank" rel="noreferrer">OS Vector Tile API getting started</a></li>
+                <li><a href="https://docs.os.uk/os-apis/accessing-os-apis/os-vector-tile-api/technical-specification/stylesheet" target="_blank" rel="noreferrer">OS style endpoint</a></li>
+                <li><a href="https://maplibre.org/maplibre-gl-js/docs/examples/display-buildings-in-3d/" target="_blank" rel="noreferrer">MapLibre 3D buildings example</a></li>
+                <li><a href="https://maplibre.org/maplibre-gl-js/docs/examples/hover-styles/" target="_blank" rel="noreferrer">MapLibre hover/feature-state example</a></li>
+              </ul>
+            </details>
+            <details id="help-collections" class="help-section" open>
+              <summary>8. Build Your Own Collections</summary>
+              <p>
+                Collections are selector specifications, not materialized UPRN snapshots. This keeps them
+                compact, editable, and up to date as source memberships evolve over time.
+              </p>
+              <h4>Collection Model</h4>
+              <ul>
+                <li>Selectors: <code>gss_code</code>, <code>postcode</code>, <code>uprn</code>, <code>polygon</code>.</li>
+                <li>UPRN overrides: explicit include and exclude lists.</li>
+                <li>Export: resolve selectors, apply overrides, emit canonical and membership columns.</li>
+              </ul>
+              <h4>Workflow</h4>
+              <ul>
+                <li>Create collection and set name/description.</li>
+                <li>Add OA/LSOA/MSOA/LAD selectors using a GSS level picker.</li>
+                <li>Add optional explicit UPRNs for corrections or edge cases.</li>
+                <li>Export resolved UPRNs and poll async job status until complete.</li>
+              </ul>
+              <div class="help-recipe">
+                <strong>Export default schema</strong>: <code>uprn</code>, <code>postcode</code>,
+                <code>oa_code</code>, <code>local_authority_name</code>, plus canonical geography and
+                selector-membership columns when available.
+              </div>
+            </details>
+            <details id="help-troubleshooting" class="help-section" open>
+              <summary>9. Troubleshooting</summary>
+              <h4>Quick Checks</h4>
+              <ul>
+                <li>Confirm you are in server-proxy mode for simplest setup.</li>
+                <li>Check request host in DevTools network panel.</li>
+                <li>Use <code>Refresh inventory</code> after changing scope or boundary selections.</li>
+              </ul>
+              <h4>Common Symptoms</h4>
+              <ul>
+                <li><strong>429 Too Many Requests</strong>: local rate limit reached; reduce burst traffic or adjust server limits/exemptions.</li>
+                <li><strong>401/403</strong>: credential missing/invalid for OS-backed endpoints.</li>
+                <li><strong>No features returned</strong>: selector mismatch, empty area, or filtered scope.</li>
+                <li><strong>CRS mismatch look/offset</strong>: verify expected projection and source assumptions.</li>
+              </ul>
+              <h4>Reference Links</h4>
+              <ul>
+                <li><a href="https://docs.os.uk/welcome" target="_blank" rel="noreferrer">OS docs welcome</a></li>
+                <li><a href="https://docs.os.uk/os-apis/accessing-os-apis/os-features-api/technical-specification/filtering" target="_blank" rel="noreferrer">OS Features filtering guide</a></li>
+                <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tabs/" target="_blank" rel="noreferrer">WAI ARIA tabs pattern</a></li>
+              </ul>
+            </details>
+            <details id="help-glossary" class="help-section" open>
+              <summary>10. Glossary</summary>
+              <ul>
+                <li><strong>Basemap</strong>: contextual reference map beneath thematic overlays.</li>
+                <li><strong>GSS code</strong>: official code for a UK statistical/administrative geography.</li>
+                <li><strong>Hierarchy preset</strong>: zoom-aware styling mode for feature emphasis.</li>
+                <li><strong>LAD</strong>: local authority district code/area.</li>
+                <li><strong>MSOA / LSOA / OA</strong>: statistical output-area geography levels.</li>
+                <li><strong>Postcode stream</strong>: postcode member highlighting through UPRN membership.</li>
+                <li><strong>UPRN</strong>: Unique Property Reference Number for an address/property.</li>
+                <li><strong>USRN</strong>: Unique Street Reference Number for a street entity.</li>
+                <li><strong>Vector tile</strong>: tiled vector geometry that can be re-styled client-side.</li>
+              </ul>
+              <h4>Further Learning</h4>
+              <ul>
+                <li><a href="https://www.ons.gov.uk/methodology/geography" target="_blank" rel="noreferrer">ONS geography hub</a></li>
+                <li><a href="https://docs.os.uk/os-downloads/products/transport-network-portfolio/os-open-roads" target="_blank" rel="noreferrer">OS Open Roads docs</a></li>
+                <li><a href="https://docs.qgis.org/3.40/en/docs/training_manual/" target="_blank" rel="noreferrer">QGIS training manual</a></li>
+              </ul>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-map" class="tab-panel active" role="tabpanel" aria-labelledby="tabButtonMap">
+        <div class="grid" data-compact-grid>
         <div class="left-column">
           <div class="panel" data-compact-panel>
             <h3>Find Boundary</h3>
@@ -539,7 +1100,7 @@
               <label for="searchInput">Search</label>
               <input id="searchInput" placeholder="e.g. Westminster, Coventry West, SW1A 1AA" />
             </div>
-            <div class="row">
+            <div class="row" data-compact-row>
               <div class="field">
                 <label for="levelSelect">Level</label>
                 <select id="levelSelect">
@@ -605,6 +1166,10 @@
                 <input id="layerPaths" type="checkbox" data-testid="layer-paths" />
               </div>
               <div class="toggle">
+                <span>Area fill</span>
+                <input id="layerBoundaryFill" type="checkbox" />
+              </div>
+              <div class="toggle">
                 <span>Border by count</span>
                 <input id="borderByCount" type="checkbox" checked />
               </div>
@@ -631,9 +1196,66 @@
                 </select>
               </div>
             </div>
+            <div class="field" style="margin-top: 10px">
+              <label for="hierarchyPreset">Hierarchy Preset</label>
+              <select id="hierarchyPreset">
+                <option value="auto">Auto by zoom</option>
+                <option value="detail">Detail-first</option>
+                <option value="balanced">Balanced</option>
+                <option value="links">Links-first</option>
+              </select>
+            </div>
+            <div class="field" style="margin-top: 10px">
+              <label>Visual Controls</label>
+              <div class="slider-grid">
+                <label for="basemapOpacity" class="slider-control">
+                  Basemap dim
+                  <output id="basemapOpacityValue">0.12</output>
+                </label>
+                <input id="basemapOpacity" type="range" min="0" max="0.65" step="0.01" value="0.12" />
+                <label for="boundaryFillOpacity" class="slider-control">
+                  Area fill opacity
+                  <output id="boundaryFillOpacityValue">0.00</output>
+                </label>
+                <input
+                  id="boundaryFillOpacity"
+                  type="range"
+                  min="0"
+                  max="0.45"
+                  step="0.01"
+                  value="0.00"
+                />
+                <label for="uprnDensityOpacity" class="slider-control">
+                  UPRN density opacity
+                  <output id="uprnDensityOpacityValue">0.52</output>
+                </label>
+                <input
+                  id="uprnDensityOpacity"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.52"
+                />
+                <label for="buildingOpacity" class="slider-control">
+                  Building opacity
+                  <output id="buildingOpacityValue">0.22</output>
+                </label>
+                <input id="buildingOpacity" type="range" min="0" max="0.7" step="0.01" value="0.22" />
+                <label for="linkOpacity" class="slider-control">
+                  Road/Path opacity
+                  <output id="linkOpacityValue">0.85</output>
+                </label>
+                <input id="linkOpacity" type="range" min="0" max="1" step="0.01" value="0.85" />
+              </div>
+            </div>
             <div class="row" style="margin-top: 10px" data-compact-row>
               <button id="refreshInventory" class="primary" type="button">Refresh inventory</button>
+              <button id="resetStyleControls" type="button">Reset styling</button>
+            </div>
+            <div class="row" style="margin-top: 10px" data-compact-row>
               <button id="exportButton" type="button">Export JSON</button>
+              <button id="refreshCacheStatus" type="button">Refresh cache</button>
             </div>
             <div class="field" style="margin-top: 10px">
               <label for="uprnAddressFilter">UPRN address contains</label>
@@ -731,6 +1353,14 @@
           </div>
 
           <div class="panel" data-compact-panel>
+            <h3>Guidance &amp; Status</h3>
+            <div id="guidancePanel" class="hint">
+              Add a boundary, refresh inventory, and use hierarchy/style controls to tune clarity.
+            </div>
+            <div id="cacheStatus" class="cache-status-list" style="margin-top: 10px"></div>
+          </div>
+
+          <div class="panel" data-compact-panel>
             <h3>Debug</h3>
             <div class="hint">
               This widget uses <span class="mono">os_map.inventory</span> for data fetch and performs
@@ -741,6 +1371,97 @@
           </div>
         </div>
       </div>
+      </section>
+
+      <section id="tab-collections" class="tab-panel" role="tabpanel" aria-labelledby="tabButtonCollections">
+        <div class="collections-grid">
+          <div class="panel">
+            <h3>Saved Collections</h3>
+            <div class="hint" style="margin-bottom: 10px">
+              Collections are stored locally in your browser as selector specifications.
+            </div>
+            <div class="collections-list" id="collectionsList"></div>
+            <div class="row" style="margin-top: 10px">
+              <button id="newCollection" class="primary" type="button">New Collection</button>
+              <button id="deleteCollection" type="button">Delete Collection</button>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <button id="importCollection" type="button">Import JSON</button>
+              <button id="exportCollectionSpec" type="button">Export Spec JSON</button>
+            </div>
+            <input id="importCollectionInput" type="file" accept=".json" style="display: none" />
+          </div>
+
+          <div class="panel">
+            <h3>Collection Editor</h3>
+            <div class="field">
+              <label for="collectionName">Name</label>
+              <input id="collectionName" placeholder="Collection name" />
+            </div>
+            <div class="field">
+              <label for="collectionDescription">Description</label>
+              <textarea id="collectionDescription" rows="3" placeholder="Purpose and notes"></textarea>
+            </div>
+            <div class="field">
+              <label for="selectorType">Add Selector</label>
+              <select id="selectorType">
+                <option value="gss_code">GSS Code</option>
+                <option value="postcode">Postcode</option>
+                <option value="uprn">UPRN</option>
+                <option value="polygon">Polygon (GeoJSON)</option>
+              </select>
+            </div>
+            <div class="row" id="selectorGssRow">
+              <div class="field" style="margin: 0">
+                <label for="selectorLevel">GSS Level</label>
+                <select id="selectorLevel">
+                  <option value="OA">OA</option>
+                  <option value="LSOA">LSOA</option>
+                  <option value="MSOA">MSOA</option>
+                  <option value="LAD">LAD</option>
+                </select>
+              </div>
+              <div class="field" style="margin: 0">
+                <label for="selectorCode">Code</label>
+                <input id="selectorCode" placeholder="e.g. E02000001" />
+              </div>
+            </div>
+            <div class="field" id="selectorValueRow" style="display: none">
+              <label for="selectorValue">Value</label>
+              <input id="selectorValue" placeholder="Postcode or UPRN" />
+            </div>
+            <div class="field" id="selectorPolygonRow" style="display: none">
+              <label for="selectorPolygon">Polygon GeoJSON</label>
+              <textarea
+                id="selectorPolygon"
+                rows="4"
+                placeholder='{\"type\":\"Polygon\",\"coordinates\":[[[-1.0,52.0],[-1.0,52.1],[-0.9,52.1],[-0.9,52.0],[-1.0,52.0]]]}'
+              ></textarea>
+            </div>
+            <button id="addSelectorButton" class="primary" type="button">Add Selector</button>
+
+            <div class="field" style="margin-top: 12px">
+              <label>Selectors</label>
+              <div id="selectorsList" class="selectors-list"></div>
+            </div>
+            <div class="row">
+              <div class="field" style="margin: 0">
+                <label for="includeUprns">UPRN Overrides: Include (one per line)</label>
+                <textarea id="includeUprns" rows="4"></textarea>
+              </div>
+              <div class="field" style="margin: 0">
+                <label for="excludeUprns">UPRN Overrides: Exclude (one per line)</label>
+                <textarea id="excludeUprns" rows="4"></textarea>
+              </div>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <button id="saveCollection" class="primary" type="button">Save Collection</button>
+              <button id="exportResolvedCollection" type="button">Export Resolved UPRNs</button>
+            </div>
+            <div class="collection-status hint" id="collectionStatus"></div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <script
@@ -759,6 +1480,16 @@
       const tooltipEl = document.getElementById("tooltip");
       const debugEl = document.getElementById("debug");
       const fullscreenToggle = document.getElementById("fullscreenToggle");
+      const tabButtonHelp = document.getElementById("tabButtonHelp");
+      const tabButtonMap = document.getElementById("tabButtonMap");
+      const tabButtonCollections = document.getElementById("tabButtonCollections");
+      const tabHelp = document.getElementById("tab-help");
+      const tabMap = document.getElementById("tab-map");
+      const tabCollections = document.getElementById("tab-collections");
+
+      const helpContent = document.getElementById("helpContent");
+      const helpToggleToc = document.getElementById("helpToggleToc");
+      const helpResetState = document.getElementById("helpResetState");
 
       const searchInput = document.getElementById("searchInput");
       const levelSelect = document.getElementById("levelSelect");
@@ -773,11 +1504,27 @@
       const layerBuildings = document.getElementById("layerBuildings");
       const layerRoads = document.getElementById("layerRoads");
       const layerPaths = document.getElementById("layerPaths");
+      const layerBoundaryFill = document.getElementById("layerBoundaryFill");
       const borderByCount = document.getElementById("borderByCount");
       const detailLevel = document.getElementById("detailLevel");
       const basemapStyle = document.getElementById("basemapStyle");
+      const hierarchyPreset = document.getElementById("hierarchyPreset");
+      const basemapOpacity = document.getElementById("basemapOpacity");
+      const basemapOpacityValue = document.getElementById("basemapOpacityValue");
+      const boundaryFillOpacity = document.getElementById("boundaryFillOpacity");
+      const boundaryFillOpacityValue = document.getElementById("boundaryFillOpacityValue");
+      const uprnDensityOpacity = document.getElementById("uprnDensityOpacity");
+      const uprnDensityOpacityValue = document.getElementById("uprnDensityOpacityValue");
+      const buildingOpacity = document.getElementById("buildingOpacity");
+      const buildingOpacityValue = document.getElementById("buildingOpacityValue");
+      const linkOpacity = document.getElementById("linkOpacity");
+      const linkOpacityValue = document.getElementById("linkOpacityValue");
       const refreshInventory = document.getElementById("refreshInventory");
+      const resetStyleControls = document.getElementById("resetStyleControls");
+      const refreshCacheStatusButton = document.getElementById("refreshCacheStatus");
       const exportButton = document.getElementById("exportButton");
+      const guidancePanelEl = document.getElementById("guidancePanel");
+      const cacheStatusEl = document.getElementById("cacheStatus");
       const uprnAddressFilter = document.getElementById("uprnAddressFilter");
       const uprnClassificationFilter = document.getElementById("uprnClassificationFilter");
       const uprnFilterScope = document.getElementById("uprnFilterScope");
@@ -801,6 +1548,29 @@
             ctaSelector: "#searchButton",
           })
         : null;
+      const collectionsListEl = document.getElementById("collectionsList");
+      const collectionNameInput = document.getElementById("collectionName");
+      const collectionDescriptionInput = document.getElementById("collectionDescription");
+      const selectorType = document.getElementById("selectorType");
+      const selectorLevel = document.getElementById("selectorLevel");
+      const selectorCode = document.getElementById("selectorCode");
+      const selectorValue = document.getElementById("selectorValue");
+      const selectorPolygon = document.getElementById("selectorPolygon");
+      const selectorGssRow = document.getElementById("selectorGssRow");
+      const selectorValueRow = document.getElementById("selectorValueRow");
+      const selectorPolygonRow = document.getElementById("selectorPolygonRow");
+      const addSelectorButton = document.getElementById("addSelectorButton");
+      const selectorsListEl = document.getElementById("selectorsList");
+      const includeUprns = document.getElementById("includeUprns");
+      const excludeUprns = document.getElementById("excludeUprns");
+      const saveCollectionButton = document.getElementById("saveCollection");
+      const newCollectionButton = document.getElementById("newCollection");
+      const deleteCollectionButton = document.getElementById("deleteCollection");
+      const importCollectionButton = document.getElementById("importCollection");
+      const importCollectionInput = document.getElementById("importCollectionInput");
+      const exportCollectionSpecButton = document.getElementById("exportCollectionSpec");
+      const exportResolvedCollectionButton = document.getElementById("exportResolvedCollection");
+      const collectionStatusEl = document.getElementById("collectionStatus");
 
       const pendingCalls = new Map();
       let rpcId = 0;
@@ -810,6 +1580,8 @@
         proxyBase: null,
         map: null,
         mapInitError: null,
+        lastInventoryError: null,
+        inventoryRequestedLayers: [],
         boundaries: [],
         boundaryById: new Map(),
         hoveredBoundaryId: null,
@@ -826,7 +1598,16 @@
         highlightedUprns: new Set(),
         excludedUprns: new Set(),
         localLayers: [],
+        activeTab: "map",
+        helpTocCollapsed: false,
+        collections: [],
+        currentCollectionId: null,
         osAvailable: true,
+        cacheStatus: {
+          admin: null,
+          ons: null,
+          refreshedAt: null,
+        },
         lastSearchResults: [],
         displayMode: "inline",
         availableDisplayModes: [],
@@ -842,6 +1623,541 @@
       };
 
       const SEARCH_FALLBACK_ORDER = ["WARD", "DISTRICT", "COUNTY", "REGION", "NATION", "MSOA", "LSOA", "OA"];
+      const MAPLAB_COLLECTIONS_KEY = "maplab.collections.v1";
+      const MAPLAB_COLLECTION_CURRENT_KEY = "maplab.collections.current.v1";
+      const HELP_ACTIVE_TAB_KEY = "maplab.help.activeTab";
+      const HELP_TOC_COLLAPSED_KEY = "maplab.help.tocCollapsed";
+      const HELP_LAST_STEP_KEY = "maplab.help.lastStep";
+      const HELP_SCROLL_KEY_PREFIX = "maplab.help.scroll.";
+      const HELP_SECTION_KEY_PREFIX = "maplab.help.section.";
+      const HELP_SCROLL_SECTION_ID = "help";
+      const MAPLAB_STYLE_CONTROLS_KEY = "maplab.style.controls.v1";
+      const STORAGE_FALLBACK = new Map();
+      const STYLE_CONTROL_DEFAULTS = Object.freeze({
+        basemapOpacity: 0.12,
+        boundaryFillOpacity: 0.0,
+        uprnDensityOpacity: 0.52,
+        buildingOpacity: 0.22,
+        linkOpacity: 0.85,
+      });
+
+      function safeJsonParse(text, fallback) {
+        try {
+          const parsed = JSON.parse(text);
+          return parsed ?? fallback;
+        } catch (_err) {
+          return fallback;
+        }
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function getBrowserStorage() {
+        try {
+          return window.localStorage;
+        } catch (_err) {
+          return null;
+        }
+      }
+
+      function storageGetItem(key) {
+        const storage = getBrowserStorage();
+        if (!storage) {
+          return STORAGE_FALLBACK.has(key) ? STORAGE_FALLBACK.get(key) : null;
+        }
+        try {
+          return storage.getItem(key);
+        } catch (_err) {
+          return STORAGE_FALLBACK.has(key) ? STORAGE_FALLBACK.get(key) : null;
+        }
+      }
+
+      function storageSetItem(key, value) {
+        const normalized = String(value);
+        const storage = getBrowserStorage();
+        if (!storage) {
+          STORAGE_FALLBACK.set(key, normalized);
+          return;
+        }
+        try {
+          storage.setItem(key, normalized);
+        } catch (_err) {
+          STORAGE_FALLBACK.set(key, normalized);
+        }
+      }
+
+      function storageRemoveItem(key) {
+        const storage = getBrowserStorage();
+        if (!storage) {
+          STORAGE_FALLBACK.delete(key);
+          return;
+        }
+        try {
+          storage.removeItem(key);
+        } catch (_err) {
+          STORAGE_FALLBACK.delete(key);
+        }
+      }
+
+      function readStoredJson(key, fallback) {
+        try {
+          const raw = storageGetItem(key);
+          if (!raw) return fallback;
+          return safeJsonParse(raw, fallback);
+        } catch (_err) {
+          return fallback;
+        }
+      }
+
+      function writeStoredJson(key, value) {
+        try {
+          storageSetItem(key, JSON.stringify(value));
+        } catch (_err) {
+          return;
+        }
+      }
+
+      function setActiveTab(tabId, options = {}) {
+        const persist = options.persist !== false;
+        state.activeTab = tabId;
+        const mapActive = tabId === "map";
+        const helpActive = tabId === "help";
+        const collectionsActive = tabId === "collections";
+
+        tabMap.classList.toggle("active", mapActive);
+        tabHelp.classList.toggle("active", helpActive);
+        tabCollections.classList.toggle("active", collectionsActive);
+        tabButtonMap.classList.toggle("active", mapActive);
+        tabButtonHelp.classList.toggle("active", helpActive);
+        tabButtonCollections.classList.toggle("active", collectionsActive);
+        tabButtonMap.setAttribute("aria-selected", mapActive ? "true" : "false");
+        tabButtonHelp.setAttribute("aria-selected", helpActive ? "true" : "false");
+        tabButtonCollections.setAttribute("aria-selected", collectionsActive ? "true" : "false");
+
+        if (persist && helpActive) {
+          storageSetItem(HELP_ACTIVE_TAB_KEY, "help");
+        } else if (persist) {
+          storageRemoveItem(HELP_ACTIVE_TAB_KEY);
+        }
+
+        if (helpActive) {
+          restoreHelpScroll();
+        }
+      }
+
+      function switchToMapTab() {
+        setActiveTab("map", { persist: false });
+      }
+
+      function helpSectionStorageKey(id) {
+        return `${HELP_SECTION_KEY_PREFIX}${id}.open`;
+      }
+
+      function restoreHelpScroll() {
+        if (!helpContent) return;
+        const key = `${HELP_SCROLL_KEY_PREFIX}${HELP_SCROLL_SECTION_ID}`;
+        const raw = storageGetItem(key);
+        if (!raw) return;
+        const parsed = Number(raw);
+        if (Number.isFinite(parsed)) {
+          helpContent.scrollTop = parsed;
+        }
+      }
+
+      function persistHelpState() {
+        if (!helpContent) return;
+        storageSetItem(
+          `${HELP_SCROLL_KEY_PREFIX}${HELP_SCROLL_SECTION_ID}`,
+          String(helpContent.scrollTop || 0)
+        );
+      }
+
+      function applyHelpTocState() {
+        const collapsed = storageGetItem(HELP_TOC_COLLAPSED_KEY) === "1";
+        state.helpTocCollapsed = collapsed;
+        const toc = document.getElementById("helpToc");
+        if (!toc) return;
+        toc.style.display = collapsed ? "none" : "grid";
+      }
+
+      function toggleHelpToc() {
+        state.helpTocCollapsed = !state.helpTocCollapsed;
+        storageSetItem(HELP_TOC_COLLAPSED_KEY, state.helpTocCollapsed ? "1" : "0");
+        applyHelpTocState();
+      }
+
+      function resetHelpState() {
+        storageRemoveItem(HELP_ACTIVE_TAB_KEY);
+        storageRemoveItem(HELP_TOC_COLLAPSED_KEY);
+        storageRemoveItem(HELP_LAST_STEP_KEY);
+        storageRemoveItem(`${HELP_SCROLL_KEY_PREFIX}${HELP_SCROLL_SECTION_ID}`);
+        document.querySelectorAll(".help-section").forEach((el) => {
+          if (el && el.id) {
+            storageRemoveItem(helpSectionStorageKey(el.id));
+            el.open = true;
+          }
+        });
+        if (helpContent) {
+          helpContent.scrollTop = 0;
+        }
+        state.helpTocCollapsed = false;
+        applyHelpTocState();
+      }
+
+      function nowIso() {
+        return new Date().toISOString();
+      }
+
+      function createEmptyCollection() {
+        const id = `collection_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`;
+        const ts = nowIso();
+        return {
+          id,
+          name: "New Collection",
+          description: "",
+          createdAt: ts,
+          updatedAt: ts,
+          selectionSpec: {
+            selectors: [],
+            uprnOverrides: { include: [], exclude: [] },
+          },
+          presentation: { color: "#166a45", label: "", notes: "" },
+        };
+      }
+
+      function loadCollections() {
+        const loaded = readStoredJson(MAPLAB_COLLECTIONS_KEY, []);
+        state.collections = Array.isArray(loaded) ? loaded : [];
+        if (!state.collections.length) {
+          const created = createEmptyCollection();
+          state.collections = [created];
+          writeStoredJson(MAPLAB_COLLECTIONS_KEY, state.collections);
+        }
+        const storedCurrent = storageGetItem(MAPLAB_COLLECTION_CURRENT_KEY);
+        if (storedCurrent && state.collections.some((row) => row && row.id === storedCurrent)) {
+          state.currentCollectionId = storedCurrent;
+        } else {
+          state.currentCollectionId = state.collections[0].id;
+        }
+      }
+
+      function persistCollections() {
+        writeStoredJson(MAPLAB_COLLECTIONS_KEY, state.collections);
+        if (state.currentCollectionId) {
+          storageSetItem(MAPLAB_COLLECTION_CURRENT_KEY, state.currentCollectionId);
+        }
+      }
+
+      function getCurrentCollection() {
+        return state.collections.find((row) => row && row.id === state.currentCollectionId) || null;
+      }
+
+      function collectionSelectorSummary(selector) {
+        if (!selector || typeof selector !== "object") return "Invalid selector";
+        const type = String(selector.type || "").toLowerCase();
+        if (type === "gss_code") {
+          return `${selector.level || "LEVEL"}:${selector.code || ""}`;
+        }
+        if (type === "postcode") {
+          return `Postcode:${selector.postcode || ""}`;
+        }
+        if (type === "uprn") {
+          return `UPRN:${selector.uprn || ""}`;
+        }
+        if (type === "polygon") {
+          return `Polygon:${selector.id || "unnamed"}`;
+        }
+        return type || "selector";
+      }
+
+      function renderCollectionsList() {
+        collectionsListEl.innerHTML = "";
+        if (!state.collections.length) {
+          collectionsListEl.innerHTML = '<div class="hint">No collections saved yet.</div>';
+          return;
+        }
+        state.collections.forEach((collection) => {
+          const selectors = collection?.selectionSpec?.selectors;
+          const selectorCount = Array.isArray(selectors) ? selectors.length : 0;
+          const el = document.createElement("div");
+          el.className = `inv-item collection-item ${
+            collection.id === state.currentCollectionId ? "active" : ""
+          }`;
+          el.innerHTML = `
+            <div style="display:flex; justify-content: space-between; gap: 10px; align-items: center">
+              <strong>${escapeHtml(collection.name || collection.id)}</strong>
+              <span class="chip subtle">${selectorCount} selectors</span>
+            </div>
+            <div class="hint">${escapeHtml(collection.description || "No description")}</div>
+          `;
+          el.addEventListener("click", () => {
+            state.currentCollectionId = collection.id;
+            renderCollectionsList();
+            renderCollectionEditor();
+            persistCollections();
+          });
+          collectionsListEl.appendChild(el);
+        });
+      }
+
+      function parseUprnLines(text) {
+        return String(text || "")
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => /^[0-9]+$/.test(line));
+      }
+
+      function renderSelectors() {
+        const current = getCurrentCollection();
+        selectorsListEl.innerHTML = "";
+        const selectors =
+          current && current.selectionSpec && Array.isArray(current.selectionSpec.selectors)
+            ? current.selectionSpec.selectors
+            : [];
+        if (!selectors.length) {
+          selectorsListEl.innerHTML = '<div class="hint">No selectors added.</div>';
+          return;
+        }
+        selectors.forEach((selector, idx) => {
+          const el = document.createElement("div");
+          el.className = "selector-entry";
+          el.innerHTML = `
+            <span class="selector-label">${escapeHtml(collectionSelectorSummary(selector))}</span>
+            <button type="button" data-index="${idx}">Remove</button>
+          `;
+          el.querySelector("button").addEventListener("click", () => {
+            const active = getCurrentCollection();
+            if (!active) return;
+            active.selectionSpec.selectors.splice(idx, 1);
+            active.updatedAt = nowIso();
+            renderSelectors();
+            renderCollectionsList();
+            persistCollections();
+          });
+          selectorsListEl.appendChild(el);
+        });
+      }
+
+      function renderCollectionEditor() {
+        const current = getCurrentCollection();
+        if (!current) return;
+        collectionNameInput.value = current.name || "";
+        collectionDescriptionInput.value = current.description || "";
+        includeUprns.value = (current.selectionSpec?.uprnOverrides?.include || []).join("\n");
+        excludeUprns.value = (current.selectionSpec?.uprnOverrides?.exclude || []).join("\n");
+        renderSelectors();
+      }
+
+      function persistCollectionEdits() {
+        const current = getCurrentCollection();
+        if (!current) return;
+        current.name = String(collectionNameInput.value || "Untitled Collection").trim() || "Untitled Collection";
+        current.description = String(collectionDescriptionInput.value || "").trim();
+        current.selectionSpec = current.selectionSpec || { selectors: [], uprnOverrides: {} };
+        current.selectionSpec.uprnOverrides = {
+          include: parseUprnLines(includeUprns.value),
+          exclude: parseUprnLines(excludeUprns.value),
+        };
+        current.updatedAt = nowIso();
+        renderCollectionsList();
+        persistCollections();
+      }
+
+      function updateSelectorInputs() {
+        const type = String(selectorType.value || "gss_code");
+        selectorGssRow.style.display = type === "gss_code" ? "grid" : "none";
+        selectorValueRow.style.display = type === "postcode" || type === "uprn" ? "grid" : "none";
+        selectorPolygonRow.style.display = type === "polygon" ? "grid" : "none";
+        selectorValue.placeholder = type === "postcode" ? "e.g. SW1A 1AA" : "e.g. 100023336959";
+      }
+
+      function addSelector() {
+        const current = getCurrentCollection();
+        if (!current) return;
+        const type = String(selectorType.value || "").trim();
+        if (!type) return;
+        let selector = null;
+        if (type === "gss_code") {
+          const level = String(selectorLevel.value || "").trim().toUpperCase();
+          const code = String(selectorCode.value || "").trim().toUpperCase();
+          if (!level || !code) {
+            collectionStatusEl.textContent = "GSS selector requires level and code.";
+            return;
+          }
+          selector = { type: "gss_code", level, code, id: `${level}:${code}` };
+        } else if (type === "postcode") {
+          const postcode = String(selectorValue.value || "").trim().toUpperCase();
+          if (!postcode) {
+            collectionStatusEl.textContent = "Postcode selector requires a value.";
+            return;
+          }
+          selector = { type: "postcode", postcode };
+        } else if (type === "uprn") {
+          const uprn = String(selectorValue.value || "").trim();
+          if (!/^[0-9]+$/.test(uprn)) {
+            collectionStatusEl.textContent = "UPRN selector requires a numeric UPRN.";
+            return;
+          }
+          selector = { type: "uprn", uprn };
+        } else if (type === "polygon") {
+          const raw = String(selectorPolygon.value || "").trim();
+          if (!raw) {
+            collectionStatusEl.textContent = "Polygon selector requires GeoJSON.";
+            return;
+          }
+          let geometry = null;
+          try {
+            geometry = JSON.parse(raw);
+          } catch (_err) {
+            collectionStatusEl.textContent = "Polygon selector must be valid JSON.";
+            return;
+          }
+          selector = { type: "polygon", id: `polygon-${Date.now()}`, geometry };
+        }
+        if (!selector) return;
+        if (!current.selectionSpec || !Array.isArray(current.selectionSpec.selectors)) {
+          current.selectionSpec = {
+            selectors: [],
+            uprnOverrides: { include: [], exclude: [] },
+          };
+        }
+        current.selectionSpec.selectors.push(selector);
+        current.updatedAt = nowIso();
+        renderSelectors();
+        renderCollectionsList();
+        persistCollections();
+        collectionStatusEl.textContent = "Selector added.";
+      }
+
+      function createCollection() {
+        persistCollectionEdits();
+        const created = createEmptyCollection();
+        state.collections.unshift(created);
+        state.currentCollectionId = created.id;
+        persistCollections();
+        renderCollectionsList();
+        renderCollectionEditor();
+        collectionStatusEl.textContent = "Collection created.";
+      }
+
+      function deleteCurrentCollection() {
+        if (!state.currentCollectionId) return;
+        const index = state.collections.findIndex((row) => row && row.id === state.currentCollectionId);
+        if (index < 0) return;
+        state.collections.splice(index, 1);
+        if (!state.collections.length) {
+          state.collections.push(createEmptyCollection());
+        }
+        state.currentCollectionId = state.collections[0].id;
+        persistCollections();
+        renderCollectionsList();
+        renderCollectionEditor();
+        collectionStatusEl.textContent = "Collection deleted.";
+      }
+
+      function downloadText(filename, text, mimeType = "application/json") {
+        const blob = new Blob([text], { type: mimeType });
+        const href = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = href;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(href);
+      }
+
+      function exportCurrentCollectionSpec() {
+        persistCollectionEdits();
+        const current = getCurrentCollection();
+        if (!current) return;
+        const filename = `${(current.name || current.id).replace(/\\s+/g, "_")}.collection.json`;
+        downloadText(filename, JSON.stringify(current, null, 2) + "\\n");
+        collectionStatusEl.textContent = "Collection spec exported.";
+      }
+
+      async function importCollectionFile(file) {
+        if (!file) return;
+        let parsed = null;
+        try {
+          parsed = safeJsonParse(await file.text(), null);
+        } catch (_err) {
+          parsed = null;
+        }
+        if (!parsed || typeof parsed !== "object") {
+          collectionStatusEl.textContent = "Import failed: invalid JSON.";
+          return;
+        }
+        const id = `collection_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`;
+        const imported = {
+          id,
+          name: String(parsed.name || "Imported Collection"),
+          description: String(parsed.description || ""),
+          createdAt: nowIso(),
+          updatedAt: nowIso(),
+          selectionSpec: parsed.selectionSpec || { selectors: [], uprnOverrides: { include: [], exclude: [] } },
+          presentation: parsed.presentation || { color: "#166a45", label: "", notes: "" },
+        };
+        state.collections.unshift(imported);
+        state.currentCollectionId = id;
+        persistCollections();
+        renderCollectionsList();
+        renderCollectionEditor();
+        collectionStatusEl.textContent = "Collection imported.";
+      }
+
+      async function exportResolvedCollection() {
+        persistCollectionEdits();
+        const current = getCurrentCollection();
+        if (!current) return;
+        collectionStatusEl.textContent = "Queued export job...";
+        try {
+          const response = await requestTool("os_map.export", {
+            exportType: "selection_uprn",
+            selectionSpec: current.selectionSpec,
+            format: "csv",
+            columns: {
+              defaultSet: "maplab_default_v1",
+              selectorMembership: true,
+            },
+            filters: {
+              postalDeliveryOnly: false,
+            },
+            delivery: "resource",
+          });
+          const exportId = response && response.exportId ? String(response.exportId) : "";
+          if (!exportId) {
+            collectionStatusEl.textContent = "Export queued but no exportId returned.";
+            return;
+          }
+          collectionStatusEl.textContent = `Export queued (${exportId}). Polling status...`;
+          const started = Date.now();
+          let finished = null;
+          while (Date.now() - started < 120000) {
+            const status = await requestTool("os_map.get_export", { exportId });
+            const stateValue = String(status && status.status ? status.status : "").toLowerCase();
+            if (stateValue === "completed") {
+              finished = status;
+              break;
+            }
+            if (stateValue === "failed") {
+              const msg = status?.error?.message || "Export failed";
+              collectionStatusEl.textContent = `Export failed: ${msg}`;
+              return;
+            }
+            await wait(1200);
+          }
+          if (!finished) {
+            collectionStatusEl.textContent = `Export still running. Track via ${response.statusUri || "statusUri unavailable"}`;
+            return;
+          }
+          collectionStatusEl.textContent = `Export complete: ${finished.resultUri || "result URI unavailable"}`;
+        } catch (err) {
+          collectionStatusEl.textContent = `Export error: ${String(err?.message || err)}`;
+        }
+      }
 
       function sourceFeatureCount(sourceId) {
         const map = state.map;
@@ -882,6 +2198,10 @@
       function currentBoundaryExplorerSnapshot() {
         const map = state.map;
         const center = map ? map.getCenter() : null;
+        const style = map ? map.getStyle() : null;
+        const styleMeta = style && style.metadata && typeof style.metadata === "object"
+          ? style.metadata
+          : null;
         return {
           host: {
             ready: state.hostReady,
@@ -903,13 +2223,50 @@
             center: center
               ? { lng: Number(center.lng.toFixed(6)), lat: Number(center.lat.toFixed(6)) }
               : null,
+            basemapSelection: basemapStyle && typeof basemapStyle.value === "string"
+              ? basemapStyle.value
+              : null,
+            styleMetadata: styleMeta,
           },
           boundaries: {
             sourceFeatureCount: sourceFeatureCount("boundaries"),
             hoverSourceFeatureCount: sourceFeatureCount("boundaries-hover"),
+            renderedBoundaryHitCount: renderedFeatureCount("boundary-hit"),
             renderedBoundaryFillCount: renderedFeatureCount("boundary-fill"),
             renderedBoundaryLineCount: renderedFeatureCount("boundary-line"),
             renderedSelectedOutlineCount: renderedFeatureCount("boundary-selected-outline"),
+          },
+          sourceCounts: {
+            uprns: sourceFeatureCount("uprns"),
+            uprnsHighlight: sourceFeatureCount("uprns-highlight"),
+            buildings: sourceFeatureCount("buildings"),
+            roads: sourceFeatureCount("roads"),
+            paths: sourceFeatureCount("paths"),
+          },
+          inventory: {
+            uprnSourceFeatureCount: sourceFeatureCount("uprns"),
+            buildingSourceFeatureCount: sourceFeatureCount("buildings"),
+            roadSourceFeatureCount: sourceFeatureCount("roads"),
+            pathSourceFeatureCount: sourceFeatureCount("paths"),
+            renderedUprnHeatCount: renderedFeatureCount("uprn-heat"),
+            renderedUprnDotCount: renderedFeatureCount("uprn-dots"),
+            renderedBuildingCount: renderedFeatureCount("buildings-fill"),
+            renderedRoadCount: renderedFeatureCount("roads-line"),
+            renderedPathCount: renderedFeatureCount("paths-line"),
+          },
+          layers: {
+            uprnDensity: !!layerUprns.checked,
+            uprnDots: !!layerUprnDots.checked,
+            buildings: !!layerBuildings.checked,
+            roads: !!layerRoads.checked,
+            paths: !!layerPaths.checked,
+            areaFill: !!layerBoundaryFill.checked,
+          },
+          styleControls: currentStyleControlValues(),
+          cacheStatus: {
+            admin: state.cacheStatus.admin,
+            ons: state.cacheStatus.ons,
+            refreshedAt: state.cacheStatus.refreshedAt,
           },
           banners: {
             info: (infoBannerEl?.textContent || "").trim(),
@@ -1235,7 +2592,7 @@
             map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
             map.on("style.load", () => {
               ensureSourcesAndLayers();
-              applyLayerVisibility();
+              applyHierarchyPreset();
             });
             map.on("error", (event) => {
               const detail = {
@@ -1248,6 +2605,11 @@
             });
             map.on("mousemove", onMapMove);
             map.on("click", onMapClick);
+            map.on("zoomend", () => {
+              if (String(hierarchyPreset.value || "auto") === "auto") {
+                applyHierarchyPreset();
+              }
+            });
             return true;
           } catch (err) {
             const detail = describeError(err);
@@ -1260,6 +2622,7 @@
           }
         },
         setBasemap(styleId) {
+          switchToMapTab();
           if (!state.map || !window.maplibregl) return;
           const proxyBase = state.proxyBase;
           if (styleId && styleId.startsWith("os_")) {
@@ -1274,7 +2637,7 @@
               state.map.setStyle(styleUrl, { diff: false });
               state.map.once("style.load", () => {
                 ensureSourcesAndLayers();
-                applyLayerVisibility();
+                applyHierarchyPreset();
                 hideOsWarning();
               });
               state.map.once("error", (e) => {
@@ -1381,13 +2744,13 @@
           source: "basemap-veil",
           paint: {
             "fill-color": "rgba(255,255,255,1.0)",
-            "fill-opacity": 0.48,
+            "fill-opacity": STYLE_CONTROL_DEFAULTS.basemapOpacity,
           },
         });
 
         if (map.getLayer("osm")) {
           try {
-            map.setPaintProperty("osm", "raster-opacity", 0.62);
+            map.setPaintProperty("osm", "raster-opacity", 1);
           } catch (_err) {
             // Ignore style differences across basemap sources.
           }
@@ -1401,10 +2764,20 @@
             "fill-color": [
               "case",
               ["==", ["get", "selected"], true],
-              "rgba(214,104,0,0.24)",
-              "rgba(22,106,69,0.10)",
+              "rgb(214,104,0)",
+              "rgb(22,106,69)",
             ],
+            "fill-opacity": 0,
             "fill-outline-color": "rgba(214,104,0,0.70)",
+          },
+        });
+        addLayerIfMissing({
+          id: "boundary-hit",
+          type: "fill",
+          source: "boundaries",
+          paint: {
+            "fill-color": "rgba(0,0,0,0)",
+            "fill-opacity": 0,
           },
         });
         addLayerIfMissing({
@@ -1450,7 +2823,7 @@
             "heatmap-weight": 1,
             "heatmap-intensity": 1.0,
             "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 7, 10, 12, 22, 15, 38],
-            "heatmap-opacity": 0.72,
+            "heatmap-opacity": STYLE_CONTROL_DEFAULTS.uprnDensityOpacity,
             "heatmap-color": [
               "interpolate",
               ["linear"],
@@ -1496,7 +2869,11 @@
           id: "buildings-fill",
           type: "fill",
           source: "buildings",
-          paint: { "fill-color": "rgba(40,90,180,0.12)", "fill-outline-color": "rgba(40,90,180,0.38)" },
+          paint: {
+            "fill-color": "rgb(40,90,180)",
+            "fill-opacity": STYLE_CONTROL_DEFAULTS.buildingOpacity,
+            "fill-outline-color": "rgba(40,90,180,0.38)",
+          },
         });
         addLayerIfMissing({
           id: "roads-line",
@@ -1505,7 +2882,7 @@
           paint: {
             "line-color": "rgba(90,55,180,0.82)",
             "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "nearbyCount"], 0], 0, 1.2, 30, 7],
-            "line-opacity": 0.85,
+            "line-opacity": STYLE_CONTROL_DEFAULTS.linkOpacity,
           },
         });
         addLayerIfMissing({
@@ -1515,7 +2892,7 @@
           paint: {
             "line-color": "rgba(90,55,180,0.46)",
             "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "nearbyCount"], 0], 0, 0.8, 20, 5.2],
-            "line-opacity": 0.75,
+            "line-opacity": Math.max(0, STYLE_CONTROL_DEFAULTS.linkOpacity * 0.82),
           },
         });
         addLayerIfMissing({
@@ -1532,6 +2909,8 @@
 
         applyBorderByCount();
         syncMapStateToStyle();
+        applyLayerVisibility();
+        applyStyleControls({ persist: false });
       }
 
       function setLayerVisible(layerId, visible) {
@@ -1543,6 +2922,7 @@
           buildings: ["buildings-fill"],
           roads: ["roads-line"],
           paths: ["paths-line"],
+          boundaryFill: ["boundary-fill"],
         };
         (ids[layerId] || []).forEach((id) => {
           if (map.getLayer(id)) {
@@ -1557,6 +2937,76 @@
         setLayerVisible("buildings", layerBuildings.checked);
         setLayerVisible("roads", layerRoads.checked);
         setLayerVisible("paths", layerPaths.checked);
+        setLayerVisible("boundaryFill", layerBoundaryFill.checked);
+        applyStyleControls({ persist: true });
+        updateGuidancePanel();
+      }
+
+      function onLayerToggleChange() {
+        applyLayerVisibility();
+        if (!state.inventory) {
+          return;
+        }
+        const requested = new Set(Array.isArray(state.inventoryRequestedLayers) ? state.inventoryRequestedLayers : []);
+        const needsRefresh =
+          ((layerUprns.checked || layerUprnDots.checked) && !requested.has("uprns")) ||
+          (layerBuildings.checked && !requested.has("buildings")) ||
+          (layerRoads.checked && !requested.has("road_links")) ||
+          (layerPaths.checked && !requested.has("path_links"));
+        if (!needsRefresh) {
+          return;
+        }
+        showInfo("Fetching data for newly enabled layers...");
+        void refreshInventoryNow();
+      }
+
+      function applyHierarchyPreset() {
+        const map = state.map;
+        const preset = String(hierarchyPreset.value || "auto");
+        const zoom = map ? map.getZoom() : 10;
+
+        if (preset === "detail") {
+          layerUprns.checked = true;
+          layerUprnDots.checked = true;
+          layerBuildings.checked = true;
+          layerRoads.checked = true;
+          layerPaths.checked = true;
+        } else if (preset === "balanced") {
+          layerUprns.checked = true;
+          layerUprnDots.checked = false;
+          layerBuildings.checked = true;
+          layerRoads.checked = true;
+          layerPaths.checked = true;
+        } else if (preset === "links") {
+          layerUprns.checked = false;
+          layerUprnDots.checked = false;
+          layerBuildings.checked = false;
+          layerRoads.checked = true;
+          layerPaths.checked = true;
+        } else {
+          if (zoom >= 17) {
+            layerUprns.checked = true;
+            layerUprnDots.checked = true;
+            layerBuildings.checked = true;
+            layerRoads.checked = true;
+            layerPaths.checked = false;
+          } else if (zoom >= 14) {
+            layerUprns.checked = true;
+            layerUprnDots.checked = false;
+            layerBuildings.checked = true;
+            layerRoads.checked = true;
+            layerPaths.checked = true;
+          } else {
+            layerUprns.checked = false;
+            layerUprnDots.checked = false;
+            layerBuildings.checked = false;
+            layerRoads.checked = true;
+            layerPaths.checked = true;
+          }
+        }
+
+        applyLayerVisibility();
+        updateGuidancePanel();
       }
 
       function applyBorderByCount() {
@@ -1602,6 +3052,7 @@
             keyToken,
             " in the MCP server environment. Step 3 (inventory + export) is unavailable until configured.",
           );
+          updateGuidancePanel();
           return;
         }
         if (normalizedReason === "auth") {
@@ -1610,6 +3061,7 @@
           osBannerDetailEl.textContent =
             detailText ||
             "The configured OS_API_KEY was rejected by OS upstream APIs. Check entitlement and key validity.";
+          updateGuidancePanel();
           return;
         }
         if (normalizedReason === "proxy_missing") {
@@ -1618,6 +3070,7 @@
           osBannerDetailEl.textContent =
             detailText ||
             "This host did not provide mcpGeo.proxyBase. OS basemap and proxied OS layers are unavailable in this rendering mode.";
+          updateGuidancePanel();
           return;
         }
         if (normalizedReason === "inventory_unavailable") {
@@ -1626,6 +3079,7 @@
           osBannerDetailEl.textContent =
             detailText ||
             "The host did not expose os_map.inventory for this session. Add the features_layers toolset to make Step 3 available.";
+          updateGuidancePanel();
           return;
         }
         osStatusEl.textContent = "OS offline";
@@ -1633,12 +3087,14 @@
         osBannerDetailEl.textContent =
           detailText ||
           "OS-backed layers are unavailable in this session due to an upstream or host runtime error.";
+        updateGuidancePanel();
       }
 
       function hideOsWarning() {
         state.osAvailable = true;
         osStatusEl.style.display = "none";
         osBannerEl.style.display = "none";
+        updateGuidancePanel();
       }
 
       function showInfo(text) {
@@ -2060,6 +3516,7 @@
       }
 
       async function searchBoundaries() {
+        switchToMapTab();
         const text = (searchInput.value || "").trim();
         if (!text) return;
         resultsEl.textContent = "Searching...";
@@ -2172,6 +3629,366 @@
           .replace(/>/g, "&gt;")
           .replace(/\"/g, "&quot;")
           .replace(/'/g, "&#039;");
+      }
+
+      function readNumberInput(input, fallback, min, max) {
+        const raw = Number(input?.value);
+        const candidate = Number.isFinite(raw) ? raw : fallback;
+        return Math.max(min, Math.min(max, candidate));
+      }
+
+      function currentStyleControlValues() {
+        return {
+          basemapOpacity: readNumberInput(
+            basemapOpacity,
+            STYLE_CONTROL_DEFAULTS.basemapOpacity,
+            0,
+            0.65
+          ),
+          boundaryFillOpacity: readNumberInput(
+            boundaryFillOpacity,
+            STYLE_CONTROL_DEFAULTS.boundaryFillOpacity,
+            0,
+            0.45
+          ),
+          uprnDensityOpacity: readNumberInput(
+            uprnDensityOpacity,
+            STYLE_CONTROL_DEFAULTS.uprnDensityOpacity,
+            0,
+            1
+          ),
+          buildingOpacity: readNumberInput(
+            buildingOpacity,
+            STYLE_CONTROL_DEFAULTS.buildingOpacity,
+            0,
+            0.7
+          ),
+          linkOpacity: readNumberInput(
+            linkOpacity,
+            STYLE_CONTROL_DEFAULTS.linkOpacity,
+            0,
+            1
+          ),
+        };
+      }
+
+      function updateStyleControlOutputs(values) {
+        basemapOpacityValue.textContent = values.basemapOpacity.toFixed(2);
+        boundaryFillOpacityValue.textContent = values.boundaryFillOpacity.toFixed(2);
+        uprnDensityOpacityValue.textContent = values.uprnDensityOpacity.toFixed(2);
+        buildingOpacityValue.textContent = values.buildingOpacity.toFixed(2);
+        linkOpacityValue.textContent = values.linkOpacity.toFixed(2);
+      }
+
+      function persistStyleControls(values) {
+        writeStoredJson(MAPLAB_STYLE_CONTROLS_KEY, values);
+      }
+
+      function restoreStyleControls() {
+        const stored = readStoredJson(MAPLAB_STYLE_CONTROLS_KEY, null);
+        const merged = {
+          basemapOpacity:
+            Number.isFinite(Number(stored?.basemapOpacity))
+              ? Number(stored.basemapOpacity)
+              : STYLE_CONTROL_DEFAULTS.basemapOpacity,
+          boundaryFillOpacity:
+            Number.isFinite(Number(stored?.boundaryFillOpacity))
+              ? Number(stored.boundaryFillOpacity)
+              : STYLE_CONTROL_DEFAULTS.boundaryFillOpacity,
+          uprnDensityOpacity:
+            Number.isFinite(Number(stored?.uprnDensityOpacity))
+              ? Number(stored.uprnDensityOpacity)
+              : STYLE_CONTROL_DEFAULTS.uprnDensityOpacity,
+          buildingOpacity:
+            Number.isFinite(Number(stored?.buildingOpacity))
+              ? Number(stored.buildingOpacity)
+              : STYLE_CONTROL_DEFAULTS.buildingOpacity,
+          linkOpacity:
+            Number.isFinite(Number(stored?.linkOpacity))
+              ? Number(stored.linkOpacity)
+              : STYLE_CONTROL_DEFAULTS.linkOpacity,
+        };
+        basemapOpacity.value = String(merged.basemapOpacity);
+        boundaryFillOpacity.value = String(merged.boundaryFillOpacity);
+        uprnDensityOpacity.value = String(merged.uprnDensityOpacity);
+        buildingOpacity.value = String(merged.buildingOpacity);
+        linkOpacity.value = String(merged.linkOpacity);
+        updateStyleControlOutputs(merged);
+      }
+
+      function applyStyleControls(options = {}) {
+        const map = state.map;
+        const values = currentStyleControlValues();
+        updateStyleControlOutputs(values);
+        if (options.persist !== false) {
+          persistStyleControls(values);
+        }
+        if (!map) {
+          return;
+        }
+        if (map.getLayer("basemap-veil-layer")) {
+          map.setPaintProperty("basemap-veil-layer", "fill-opacity", values.basemapOpacity);
+        }
+        if (map.getLayer("osm")) {
+          try {
+            map.setPaintProperty("osm", "raster-opacity", 1);
+          } catch (_err) {
+            // Ignore basemap style differences across sources.
+          }
+        }
+        if (map.getLayer("boundary-fill")) {
+          const fillBase = layerBoundaryFill.checked ? values.boundaryFillOpacity : 0;
+          const selectedFill = Math.min(0.45, fillBase * 1.35);
+          const unselectedFill = Math.min(0.3, fillBase * 0.7);
+          map.setPaintProperty("boundary-fill", "fill-opacity", [
+            "case",
+            ["==", ["get", "selected"], true],
+            selectedFill,
+            unselectedFill,
+          ]);
+        }
+        if (map.getLayer("uprn-heat")) {
+          map.setPaintProperty("uprn-heat", "heatmap-opacity", values.uprnDensityOpacity);
+        }
+        if (map.getLayer("buildings-fill")) {
+          map.setPaintProperty("buildings-fill", "fill-opacity", values.buildingOpacity);
+          map.setPaintProperty(
+            "buildings-fill",
+            "fill-outline-color",
+            `rgba(40,90,180,${Math.min(1, values.buildingOpacity + 0.25).toFixed(3)})`
+          );
+        }
+        if (map.getLayer("roads-line")) {
+          map.setPaintProperty("roads-line", "line-opacity", values.linkOpacity);
+        }
+        if (map.getLayer("paths-line")) {
+          map.setPaintProperty("paths-line", "line-opacity", Math.max(0, values.linkOpacity * 0.82));
+        }
+      }
+
+      function resetStyleControlValues() {
+        basemapOpacity.value = String(STYLE_CONTROL_DEFAULTS.basemapOpacity);
+        boundaryFillOpacity.value = String(STYLE_CONTROL_DEFAULTS.boundaryFillOpacity);
+        uprnDensityOpacity.value = String(STYLE_CONTROL_DEFAULTS.uprnDensityOpacity);
+        buildingOpacity.value = String(STYLE_CONTROL_DEFAULTS.buildingOpacity);
+        linkOpacity.value = String(STYLE_CONTROL_DEFAULTS.linkOpacity);
+        applyStyleControls();
+      }
+
+      function requestedLayerDisplayName(layerId) {
+        if (layerId === "uprns") return "UPRN density";
+        if (layerId === "buildings") return "Buildings";
+        if (layerId === "road_links") return "Road links";
+        if (layerId === "path_links") return "Path links";
+        return layerId;
+      }
+
+      function updateGuidancePanel() {
+        if (!guidancePanelEl) {
+          return;
+        }
+        const notes = [];
+        const zoom = state.map ? Number(state.map.getZoom().toFixed(1)) : null;
+        const preset = String(hierarchyPreset.value || "auto");
+        const selectedCount = state.boundaries.length;
+        const requested = new Set(Array.isArray(state.inventoryRequestedLayers) ? state.inventoryRequestedLayers : []);
+        const requiredLayers = [];
+        if (layerUprns.checked) requiredLayers.push("uprns");
+        if (layerBuildings.checked) requiredLayers.push("buildings");
+        if (layerRoads.checked) requiredLayers.push("road_links");
+        if (layerPaths.checked) requiredLayers.push("path_links");
+        const missingRequested = requiredLayers.filter((layerId) => !requested.has(layerId));
+
+        if (!layerBoundaryFill.checked) {
+          notes.push("Area fill is disabled, so only outlines render for selected boundaries.");
+        }
+        if (preset === "auto") {
+          notes.push(
+            `Hierarchy preset is Auto${
+              Number.isFinite(zoom) ? ` (zoom ${zoom.toFixed(1)})` : ""
+            }, so layer visibility changes by zoom.`
+          );
+        }
+        if (!selectedCount) {
+          notes.push("No boundary selected yet. Search and add a boundary to inspect counts and overlays.");
+        }
+        if (missingRequested.length) {
+          notes.push(
+            `Some enabled layers are not in the latest inventory payload: ${missingRequested
+              .map((layerId) => requestedLayerDisplayName(layerId))
+              .join(", ")}. Refresh inventory to fetch them.`
+          );
+        }
+        if (state.lastInventoryError) {
+          notes.push(`Latest inventory issue: ${state.lastInventoryError}`);
+        } else if (!state.osAvailable) {
+          notes.push(
+            "OS-backed inventory/export is currently unavailable. Basemap fallback can still render while inventory fails."
+          );
+        } else if (state.osAvailable) {
+          notes.push("OS connectivity looks healthy. Basemap and inventory should both be available.");
+        }
+        if (!notes.length) {
+          notes.push("Map Lab is ready. Toggle layers and style controls to compare map readability.");
+        }
+
+        guidancePanelEl.innerHTML = `<ul class="guidance-list">${notes
+          .map((item) => `<li>${escapeHtml(item)}</li>`)
+          .join("")}</ul>`;
+      }
+
+      function cacheStatusChip(isHealthy, labelHealthy, labelDegraded) {
+        return isHealthy
+          ? `<span class="chip"> ${escapeHtml(labelHealthy)} </span>`
+          : `<span class="chip subtle"> ${escapeHtml(labelDegraded)} </span>`;
+      }
+
+      function renderCacheStatus() {
+        if (!cacheStatusEl) {
+          return;
+        }
+        const sections = [];
+        const admin = state.cacheStatus.admin;
+        const ons = state.cacheStatus.ons;
+        const refreshedAt = state.cacheStatus.refreshedAt;
+
+        if (admin) {
+          const healthy = !admin.degraded && !!admin.available;
+          sections.push(`
+            <div class="cache-item">
+              <div class="cache-item-title">
+                <span>Boundary cache</span>
+                ${cacheStatusChip(healthy, "ready", "degraded")}
+              </div>
+              <div class="cache-item-sub">
+                ${escapeHtml(admin.summary)}
+              </div>
+            </div>
+          `);
+        }
+
+        if (ons) {
+          const healthy = !ons.degraded && !!ons.available;
+          sections.push(`
+            <div class="cache-item">
+              <div class="cache-item-title">
+                <span>ONS geo cache</span>
+                ${cacheStatusChip(healthy, "ready", "degraded")}
+              </div>
+              <div class="cache-item-sub">
+                ${escapeHtml(ons.summary)}
+              </div>
+            </div>
+          `);
+        }
+
+        if (!sections.length) {
+          cacheStatusEl.innerHTML =
+            '<div class="hint">Cache status not loaded yet. Click "Refresh cache".</div>';
+          return;
+        }
+
+        const refreshed =
+          refreshedAt && Number.isFinite(Date.parse(refreshedAt))
+            ? new Date(refreshedAt).toLocaleString()
+            : "unknown";
+        cacheStatusEl.innerHTML = `${sections.join("")}<div class="hint">Last refresh: ${escapeHtml(
+          refreshed
+        )}</div>`;
+      }
+
+      function parseAdminCacheStatus(payload) {
+        if (!payload || typeof payload !== "object") {
+          return null;
+        }
+        const errorDetails = toolErrorDetails(payload);
+        if (errorDetails) {
+          return { available: false, degraded: true, summary: `${errorDetails.code}: ${errorDetails.message}` };
+        }
+        const perf = payload.performance || {};
+        const maturity = payload.maturity || {};
+        const total = payload.total;
+        const available = Number.isFinite(Number(total)) || !!payload.cacheEnabled;
+        const degraded = !!perf.degraded;
+        const reason = String(perf.reason || "").trim();
+        const impact = String(perf.impact || "").trim();
+        const maturitySummary = maturity.label ? `maturity=${maturity.label}` : null;
+        const countSummary = Number.isFinite(Number(total)) ? `records=${Number(total)}` : "records=unknown";
+        const reasonSummary = reason ? `${reason}${impact ? ` (${impact})` : ""}` : null;
+        const summary = [countSummary, maturitySummary, reasonSummary].filter(Boolean).join(" | ");
+        return { available, degraded, summary };
+      }
+
+      function parseOnsCacheStatus(payload) {
+        if (!payload || typeof payload !== "object") {
+          return null;
+        }
+        const errorDetails = toolErrorDetails(payload);
+        if (errorDetails) {
+          return { available: false, degraded: true, summary: `${errorDetails.code}: ${errorDetails.message}` };
+        }
+        const perf = payload.performance || {};
+        const degraded = !!perf.degraded;
+        const reason = String(perf.reason || "").trim();
+        const impact = String(perf.impact || "").trim();
+        const rows = Number(payload.rowCount || payload.rows || 0);
+        const hasRows = Number.isFinite(rows) && rows > 0;
+        const refreshed = payload.lastRefreshed || payload.updatedAt || null;
+        const summary = [
+          hasRows ? `rows=${rows}` : "rows=unknown",
+          refreshed ? `lastRefreshed=${refreshed}` : null,
+          reason ? `${reason}${impact ? ` (${impact})` : ""}` : null,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+        return { available: hasRows || !!payload.available, degraded, summary };
+      }
+
+      async function refreshCacheStatus() {
+        if (!state.hostReady) {
+          state.cacheStatus.refreshedAt = null;
+          renderCacheStatus();
+          return;
+        }
+        if (refreshCacheStatusButton) {
+          refreshCacheStatusButton.disabled = true;
+        }
+        try {
+          const [adminResult, onsResult] = await Promise.allSettled([
+            requestTool("admin_lookup.get_cache_status", {}),
+            requestTool("ons_geo.cache_status", {}),
+          ]);
+
+          if (adminResult.status === "fulfilled") {
+            state.cacheStatus.admin = parseAdminCacheStatus(adminResult.value) || {
+              available: false,
+              degraded: true,
+              summary: "unavailable",
+            };
+          } else {
+            const msg = String(adminResult.reason?.message || "unavailable");
+            state.cacheStatus.admin = { available: false, degraded: true, summary: msg };
+          }
+
+          if (onsResult.status === "fulfilled") {
+            state.cacheStatus.ons = parseOnsCacheStatus(onsResult.value) || {
+              available: false,
+              degraded: true,
+              summary: "unavailable",
+            };
+          } else {
+            const msg = String(onsResult.reason?.message || "unavailable");
+            state.cacheStatus.ons = { available: false, degraded: true, summary: msg };
+          }
+
+          state.cacheStatus.refreshedAt = new Date().toISOString();
+          renderCacheStatus();
+        } finally {
+          if (refreshCacheStatusButton) {
+            refreshCacheStatusButton.disabled = false;
+          }
+          updateGuidancePanel();
+        }
       }
 
       async function zoomToBoundary(id, candidate) {
@@ -2409,18 +4226,33 @@
       }
 
       async function refreshInventoryNow() {
+        switchToMapTab();
         const bbox = currentInventoryBbox();
         if (!bbox) return;
         const layers = [];
-        if (layerUprns.checked) layers.push("uprns");
+        if (layerUprns.checked || layerUprnDots.checked) layers.push("uprns");
         if (layerBuildings.checked) layers.push("buildings");
         if (layerRoads.checked) layers.push("road_links");
         if (layerPaths.checked) layers.push("path_links");
+        if (!layers.length) {
+          state.inventoryRequestedLayers = [];
+          state.lastInventoryError = null;
+          state.inventory = null;
+          state.uprnPoints = [];
+          setUprnSources();
+          setNgdLayer("buildings", []);
+          setNgdLayer("roads", []);
+          setNgdLayer("paths", []);
+          showInfo("No inventory layers enabled. Enable one or more layers before refreshing.");
+          updateGuidancePanel();
+          return;
+        }
         const includeGeometry = {
           buildings: !!layerBuildings.checked,
           road_links: !!layerRoads.checked,
           path_links: !!layerPaths.checked,
         };
+        state.inventoryRequestedLayers = layers.slice();
         try {
           const inv = await requestTool("os_map.inventory", {
             bbox,
@@ -2446,16 +4278,21 @@
             } else {
               showOsWarning("generic", summary);
             }
+            state.lastInventoryError = summary;
             showInfo(`Inventory unavailable: ${summary}`);
             debugEl.textContent = summary;
+            updateGuidancePanel();
             return;
           }
           state.inventory = inv;
+          state.lastInventoryError = null;
           hideOsWarning();
           applyInventoryToMap(inv);
           await refreshCounts();
+          updateGuidancePanel();
         } catch (err) {
           const message = String(err?.message || err);
+          state.lastInventoryError = message;
           if (/NO_API_KEY/i.test(message)) {
             showOsWarning("no_api_key");
           } else if (/OS_API_KEY_(INVALID|EXPIRED)/i.test(message)) {
@@ -2475,6 +4312,7 @@
           }
           showInfo(`Inventory request failed: ${message}`);
           debugEl.textContent = message;
+          updateGuidancePanel();
         }
       }
 
@@ -2535,6 +4373,7 @@
           null,
           2
         );
+        updateGuidancePanel();
       }
 
       function annotateLineDensity(lineFeatures, pointFeatures) {
@@ -2588,6 +4427,7 @@
         // Update map source data (to refresh line-width based on detailCount).
         setBoundaries();
         renderInventory(invItems, detail, total);
+        updateGuidancePanel();
       }
 
       function renderInventory(items, detail, total) {
@@ -2621,7 +4461,11 @@
       function boundaryAtPoint(point) {
         const map = state.map;
         if (!map) return null;
-        const feats = map.queryRenderedFeatures(point, { layers: ["boundary-fill"] });
+        const layers = ["boundary-hit", "boundary-selected-outline", "boundary-line"];
+        if (map.getLayer("boundary-fill") && layerBoundaryFill.checked) {
+          layers.push("boundary-fill");
+        }
+        const feats = map.queryRenderedFeatures(point, { layers });
         if (!feats || !feats.length) return null;
         const f = feats[0];
         const id = f.properties && (f.properties.id || f.properties.ID);
@@ -2798,6 +4642,8 @@
         state.boundaryById = new Map();
         state.uprnPoints = [];
         state.activeUprnPoints = [];
+        state.inventoryRequestedLayers = [];
+        state.lastInventoryError = null;
         state.highlightedPostcodes = new Set();
         state.highlightedUprns = new Set();
         state.excludedUprns = new Set();
@@ -2813,6 +4659,7 @@
         showInfo("");
         setSearchStatus("");
         setImportStatus("");
+        updateGuidancePanel();
       }
 
       function onDetailLevelChange() {
@@ -2821,6 +4668,7 @@
       }
 
       async function exportJson() {
+        switchToMapTab();
         const bbox = currentInventoryBbox();
         if (!bbox) return;
         try {
@@ -3110,6 +4958,8 @@
             maplibreLoaded: !!window.maplibregl,
             proxyBase: state.proxyBase || null,
           });
+          void refreshCacheStatus();
+          updateGuidancePanel();
         } catch (err) {
           hostStatusEl.textContent = "Host connection failed";
           hostStatusEl.classList.add("warn");
@@ -3118,7 +4968,63 @@
             null,
             2
           );
+          updateGuidancePanel();
         }
+      }
+
+      function initializeHelpState() {
+        const preferredTab = storageGetItem(HELP_ACTIVE_TAB_KEY) === "help" ? "help" : "map";
+        setActiveTab(preferredTab, { persist: false });
+        applyHelpTocState();
+
+        if (helpContent) {
+          helpContent.addEventListener("scroll", () => {
+            persistHelpState();
+          });
+        }
+
+        document.querySelectorAll(".help-section").forEach((el) => {
+          if (!el || !el.id) return;
+          const openState = storageGetItem(helpSectionStorageKey(el.id));
+          if (openState === "0") {
+            el.open = false;
+          } else if (openState === "1") {
+            el.open = true;
+          }
+          el.addEventListener("toggle", () => {
+            storageSetItem(helpSectionStorageKey(el.id), el.open ? "1" : "0");
+            if (el.open) {
+              storageSetItem(HELP_LAST_STEP_KEY, el.id);
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-help-jump]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const targetId = button.getAttribute("data-help-jump");
+            if (!targetId) return;
+            const section = document.getElementById(targetId);
+            if (!section) return;
+            section.open = true;
+            storageSetItem(HELP_LAST_STEP_KEY, targetId);
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        });
+
+        const lastStep = storageGetItem(HELP_LAST_STEP_KEY);
+        if (lastStep) {
+          const section = document.getElementById(lastStep);
+          if (section && section.classList.contains("help-section")) {
+            section.open = true;
+          }
+        }
+      }
+
+      function initializeCollectionsUi() {
+        loadCollections();
+        renderCollectionsList();
+        renderCollectionEditor();
+        updateSelectorInputs();
       }
 
       searchButton.addEventListener("click", () => void searchBoundaries());
@@ -3134,11 +5040,13 @@
         fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
       }
       basemapStyle.addEventListener("change", () => mapAdapter.setBasemap(basemapStyle.value));
-      layerUprns.addEventListener("change", () => applyLayerVisibility());
-      layerUprnDots.addEventListener("change", () => applyLayerVisibility());
-      layerBuildings.addEventListener("change", () => applyLayerVisibility());
-      layerRoads.addEventListener("change", () => applyLayerVisibility());
-      layerPaths.addEventListener("change", () => applyLayerVisibility());
+      layerUprns.addEventListener("change", () => onLayerToggleChange());
+      layerUprnDots.addEventListener("change", () => onLayerToggleChange());
+      layerBuildings.addEventListener("change", () => onLayerToggleChange());
+      layerRoads.addEventListener("change", () => onLayerToggleChange());
+      layerPaths.addEventListener("change", () => onLayerToggleChange());
+      layerBoundaryFill.addEventListener("change", () => applyLayerVisibility());
+      hierarchyPreset.addEventListener("change", () => applyHierarchyPreset());
       borderByCount.addEventListener("change", () => applyBorderByCount());
       detailLevel.addEventListener("change", () => onDetailLevelChange());
       if (uprnAddressFilter) {
@@ -3159,6 +5067,40 @@
       if (uprnFlagResidential) {
         uprnFlagResidential.addEventListener("change", () => applyUprnFilters("flags"));
       }
+      basemapOpacity.addEventListener("input", () => applyStyleControls());
+      boundaryFillOpacity.addEventListener("input", () => applyStyleControls());
+      uprnDensityOpacity.addEventListener("input", () => applyStyleControls());
+      buildingOpacity.addEventListener("input", () => applyStyleControls());
+      linkOpacity.addEventListener("input", () => applyStyleControls());
+      resetStyleControls.addEventListener("click", () => resetStyleControlValues());
+      refreshCacheStatusButton.addEventListener("click", () => void refreshCacheStatus());
+
+      tabButtonHelp.addEventListener("click", () => setActiveTab("help"));
+      tabButtonMap.addEventListener("click", () => setActiveTab("map", { persist: false }));
+      tabButtonCollections.addEventListener("click", () => setActiveTab("collections", { persist: false }));
+      helpToggleToc.addEventListener("click", () => toggleHelpToc());
+      helpResetState.addEventListener("click", () => resetHelpState());
+
+      selectorType.addEventListener("change", () => updateSelectorInputs());
+      addSelectorButton.addEventListener("click", () => addSelector());
+      saveCollectionButton.addEventListener("click", () => {
+        persistCollectionEdits();
+        collectionStatusEl.textContent = "Collection saved.";
+      });
+      newCollectionButton.addEventListener("click", () => createCollection());
+      deleteCollectionButton.addEventListener("click", () => deleteCurrentCollection());
+      importCollectionButton.addEventListener("click", () => importCollectionInput.click());
+      importCollectionInput.addEventListener("change", (event) => {
+        const file = event.target && event.target.files ? event.target.files[0] : null;
+        void importCollectionFile(file);
+        importCollectionInput.value = "";
+      });
+      exportCollectionSpecButton.addEventListener("click", () => exportCurrentCollectionSpec());
+      exportResolvedCollectionButton.addEventListener("click", () => void exportResolvedCollection());
+      collectionNameInput.addEventListener("input", () => persistCollectionEdits());
+      collectionDescriptionInput.addEventListener("input", () => persistCollectionEdits());
+      includeUprns.addEventListener("input", () => persistCollectionEdits());
+      excludeUprns.addEventListener("input", () => persistCollectionEdits());
 
       // Local layer drop zone
       dropzone.addEventListener("dragover", (e) => {
@@ -3182,6 +5124,11 @@
       setImportStatus("");
       installDebugProbe();
       updateFullscreenControl();
+      restoreStyleControls();
+      renderCacheStatus();
+      initializeHelpState();
+      initializeCollectionsUi();
+      updateGuidancePanel();
       initializeUi();
     </script>
   </body>

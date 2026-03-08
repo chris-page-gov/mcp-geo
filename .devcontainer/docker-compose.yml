@@ -10,8 +10,14 @@ services:
       BOUNDARY_CACHE_MAX_AGE_DAYS: "180"
       ADMIN_LOOKUP_LIVE_ENABLED: "true"
       MCP_GEO_LIVE_DB_DSN: "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
+      ONS_DATASET_CACHE_DIR: "/var/lib/mcp-geo/cache/ons"
+      ONS_GEO_CACHE_DIR: "/var/lib/mcp-geo/cache/ons_geo"
+      OS_DATA_CACHE_DIR: "/var/lib/mcp-geo/cache/os"
+      UI_EVENT_LOG_PATH: "/var/lib/mcp-geo/logs/ui-events.jsonl"
+      PLAYGROUND_EVENT_LOG_PATH: "/var/lib/mcp-geo/logs/playground-events.jsonl"
     volumes:
       - ..:/workspaces/mcp-geo:cached
+      - runtime-data:/var/lib/mcp-geo
     command: sleep infinity
     depends_on:
       - postgis
@@ -32,4 +38,10 @@ services:
     ports:
       - "${MCP_GEO_POSTGIS_HOST_PORT:-0}:5432"
     volumes:
-      - ../data/postgres:/var/lib/postgresql/data
+      - postgis-data:/var/lib/postgresql/data
+
+volumes:
+  postgis-data:
+    name: "${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
+  runtime-data:
+    name: "${MCP_GEO_RUNTIME_DATA_VOLUME:-mcp-geo-runtime-data}"

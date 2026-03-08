@@ -111,6 +111,13 @@ def read_resource(
         candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
         return etag in candidates or "*" in candidates
 
+    def _meta_mime_type(meta: Dict[str, Any] | None) -> str:
+        if isinstance(meta, dict):
+            value = meta.get("mimeType")
+            if isinstance(value, str) and value.strip():
+                return value
+        return "application/json"
+
     if uri:
         if uri.startswith(DATA_RESOURCE_PREFIX):
             entry = resolve_data_resource(uri)
@@ -122,7 +129,7 @@ def read_resource(
                     return None
                 response.headers["ETag"] = etag
                 response.headers["Cache-Control"] = "public, max-age=300"
-                return _read_result(uri, "application/json", content, meta)
+                return _read_result(uri, _meta_mime_type(meta), content, meta)
             raise HTTPException(status_code=404, detail="Resource not found")
         else:
             ui_entry = resolve_ui_resource(uri)
@@ -189,7 +196,7 @@ def read_resource(
                 response.headers["ETag"] = etag
                 response.headers["Cache-Control"] = "public, max-age=300"
                 uri_value = name if name.startswith(DATA_RESOURCE_PREFIX) else f"{DATA_RESOURCE_PREFIX}{entry.get('slug','')}"
-                return _read_result(uri_value, "application/json", content, meta)
+                return _read_result(uri_value, _meta_mime_type(meta), content, meta)
 
     raise HTTPException(status_code=404, detail="Resource not found")
 

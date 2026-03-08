@@ -26,6 +26,12 @@ Set env vars for live data when you have keys:
 - `LOG_JSON=true` to force JSON logs (now default)
 - `MCP_TOOLS_DEFAULT_TOOLSET=starter` to reduce startup `tools/list` payloads for STDIO clients
 
+Host shell best-practice:
+- Keep non-secret runtime vars in your shell profile (or sourced env file).
+- Keep secrets (API keys/tokens) in a separate `chmod 600` file and source it
+  from `.zshrc`/`.bashrc`.
+- This is a good pattern and is recommended for this repo.
+
 Need OS credentials or trial access?
 - OS API authentication overview:
   <https://docs.os.uk/os-apis/core-concepts/authentication>
@@ -43,6 +49,16 @@ Optional: enable the PostGIS boundary cache for full admin boundaries:
 Devcontainer note:
 - The devcontainer starts PostGIS as the `postgis` service; use
   `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
+- PostGIS data now uses a Docker named volume by default (not a repo bind
+  mount), so corruption/isolation issues do not spill across git worktrees.
+  Override the volume names if needed:
+  - `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis`)
+  - `MCP_GEO_RUNTIME_DATA_VOLUME` (default `mcp-geo-runtime-data`)
+  Set distinct values per worktree if you want fully isolated local state.
+  For CLI compose runs, copy `.devcontainer/.env.example` to
+  `.devcontainer/.env` and pass `--env-file .devcontainer/.env`.
+  For VS Code Dev Containers, export the same vars in the host shell before
+  launching VS Code.
 - The PostGIS *host* port is random by default; set `MCP_GEO_POSTGIS_HOST_PORT=5433`
   before starting the devcontainer if you want it pinned.
 - Default devcontainer-forwarded ports:
@@ -75,6 +91,15 @@ export BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo
 echo BOUNDARY_CACHE_ENABLED
 echo BOUNDARY_CACHE_DSN
 ```
+
+Storage best-practice for host runs (outside devcontainer):
+- Keep PostGIS `PGDATA` out of repo trees (use Docker named volumes).
+- Keep cache/log paths out of repo trees, for example:
+  - `ONS_DATASET_CACHE_DIR="$HOME/Library/Application Support/mcp-geo/cache/ons"`
+  - `ONS_GEO_CACHE_DIR="$HOME/Library/Application Support/mcp-geo/cache/ons_geo"`
+  - `OS_DATA_CACHE_DIR="$HOME/Library/Application Support/mcp-geo/cache/os"`
+  - `UI_EVENT_LOG_PATH="$HOME/Library/Application Support/mcp-geo/logs/ui-events.jsonl"`
+  - `PLAYGROUND_EVENT_LOG_PATH="$HOME/Library/Application Support/mcp-geo/logs/playground-events.jsonl"`
 
 See `docs/boundary_cache.md` for ingest + validation steps.
 
@@ -438,6 +463,8 @@ The wrapper starts PostGIS in Docker, builds the image if needed, and uses
 `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` for the cache.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
+By default it stores PostGIS data in a Docker named volume
+(`mcp-geo-postgis-claude`) rather than a repo bind mount.
 
 Control rebuilds with `MCP_GEO_DOCKER_BUILD`:
 - `missing` (default): build only when the image is absent.
@@ -462,6 +489,12 @@ PATH), set the Docker binary explicitly:
 
 If port `5432` is already in use, set `MCP_GEO_POSTGIS_PUBLISH_PORT` to another
 port or `0` to disable host publishing.
+
+Storage controls for the wrapper:
+- `MCP_GEO_POSTGIS_STORAGE_MODE=volume` (default) uses Docker volume
+  `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis-claude`).
+- `MCP_GEO_POSTGIS_STORAGE_MODE=bind` uses
+  `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
 
 If you need deterministic non-interactive routing, set
 `MCP_STDIO_ELICITATION_ENABLED=0` to disable STDIO form elicitation prompts

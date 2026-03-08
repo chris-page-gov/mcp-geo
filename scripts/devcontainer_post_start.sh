@@ -7,6 +7,7 @@ set -euo pipefail
 
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-/workspaces/mcp-geo}"
 CODEX_HOME_DIR="${CODEX_HOME:-/home/vscode/.codex}"
+RUNTIME_DATA_ROOT="${MCP_GEO_RUNTIME_DATA_ROOT:-/var/lib/mcp-geo}"
 
 if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
   sudo find "$WORKSPACE_ROOT" -xdev \
@@ -18,6 +19,11 @@ if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
     sudo mkdir -p "$CODEX_HOME_DIR" >/dev/null 2>&1 || true
     sudo chown -R vscode:vscode "$CODEX_HOME_DIR" >/dev/null 2>&1 || true
   fi
+
+  if [[ -n "$RUNTIME_DATA_ROOT" ]]; then
+    sudo mkdir -p "$RUNTIME_DATA_ROOT" >/dev/null 2>&1 || true
+    sudo chown -R vscode:vscode "$RUNTIME_DATA_ROOT" >/dev/null 2>&1 || true
+  fi
 fi
 
 if ! python3 - <<'PY' >/dev/null 2>&1
@@ -27,8 +33,126 @@ except Exception:
     raise SystemExit(1)
 PY
 then
-  if ! python3 -m pip install -e ".[dev,boundaries,test]" >/dev/null 2>&1; then
-    echo "mcp-geo: dependency auto-install failed; run: python3 -m pip install -e \".[dev,boundaries,test]\"" >&2
+  if ! python3 -m pip install -e . >/dev/null 2>&1; then
+    echo "mcp-geo: runtime dependency auto-install failed; run: python3 -m pip install -e ." >&2
+  elif ! python3 -m pip install -e ".[dev,test]" >/dev/null 2>&1; then
+    echo "mcp-geo: optional dev/test extras install failed; run: python3 -m pip install -e \".[dev,test]\"" >&2
+  fi
+fi
+
+# Auto-create boundary cache tables for fresh PostGIS named volumes.
+if ! python3 - <<'PY' >/dev/null 2>&1
+from __future__ import annotations
+
+from pathlib import Path
+
+try:
+    import psycopg
+except Exception:
+    raise SystemExit(0)
+
+from server.config import settings
+
+if not (settings.BOUNDARY_CACHE_ENABLED and settings.BOUNDARY_CACHE_DSN):
+    raise SystemExit(0)
+
+schema_name = settings.BOUNDARY_CACHE_SCHEMA
+table_name = settings.BOUNDARY_CACHE_TABLE
+dataset_table_name = settings.BOUNDARY_DATASET_TABLE
+
+with psycopg.connect(settings.BOUNDARY_CACHE_DSN) as conn:
+    with conn.cursor() as cur:
+        cur.execute("SELECT to_regclass(%s), to_regclass(%s)", (
+            f"{schema_name}.{table_name}",
+            f"{schema_name}.{dataset_table_name}",
+        ))
+        boundary_table, dataset_table = cur.fetchone()
+if boundary_table and dataset_table:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+then
+  if ! python3 - <<'PY' >/dev/null 2>&1
+from __future__ import annotations
+
+from pathlib import Path
+
+import psycopg
+
+from server.config import settings
+
+schema_sql = Path("scripts/boundary_cache_schema.sql")
+if not schema_sql.exists():
+    raise SystemExit(1)
+
+sql_text = schema_sql.read_text(encoding="utf-8")
+with psycopg.connect(settings.BOUNDARY_CACHE_DSN, autocommit=True) as conn:
+    with conn.cursor() as cur:
+        cur.execute(sql_text)
+PY
+  then
+    echo "mcp-geo: boundary cache schema bootstrap failed; run: psql \"\$BOUNDARY_CACHE_DSN\" -f scripts/boundary_cache_schema.sql" >&2
+  fi
+fi
+
+# Auto-seed ons_geo cache with bundled bootstrap files when cache DB is empty.
+if ! python3 - <<'PY' >/dev/null 2>&1
+from __future__ import annotations
+
+import sqlite3
+from pathlib import Path
+
+from server.config import settings
+
+db_path = Path(settings.ONS_GEO_CACHE_DIR) / settings.ONS_GEO_CACHE_DB
+if not db_path.exists():
+    raise SystemExit(1)
+try:
+    with sqlite3.connect(str(db_path)) as conn:
+        cur = conn.cursor()
+        tables = {
+            str(row[0])
+            for row in cur.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+            if row and row[0]
+        }
+        count_targets = []
+        if "ons_geo_rows" in tables:
+            count_targets.append("ons_geo_rows")
+        if "ons_geo_uprn_index" in tables:
+            count_targets.append("ons_geo_uprn_index")
+        # Backward compatibility for older cache schema names.
+        if "geo_lookup" in tables:
+            count_targets.append("geo_lookup")
+        if not count_targets:
+            raise SystemExit(1)
+        row_count = 0
+        for table_name in count_targets:
+            cur.execute(f"SELECT COUNT(*) FROM {table_name}")
+            row_count += int(cur.fetchone()[0])
+except Exception:
+    raise SystemExit(1)
+if row_count > 0:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+then
+  bootstrap_dir="data/cache/ons_geo/bootstrap"
+  if [[ -f "$bootstrap_dir/onspd_bootstrap.csv" \
+     && -f "$bootstrap_dir/nspl_bootstrap.csv" \
+     && -f "$bootstrap_dir/onsud_bootstrap.csv" \
+     && -f "$bootstrap_dir/nsul_bootstrap.csv" ]]; then
+    if ! python3 scripts/ons_geo_cache_refresh.py \
+      --sources resources/ons_geo_sources.json \
+      --cache-dir "${ONS_GEO_CACHE_DIR:-data/cache/ons_geo}" \
+      --index-path "${ONS_GEO_CACHE_INDEX_PATH:-resources/ons_geo_cache_index.json}" \
+      --db-name "${ONS_GEO_CACHE_DB:-ons_geo_cache.sqlite}" \
+      --product-file "ONSPD=$bootstrap_dir/onspd_bootstrap.csv" \
+      --product-file "NSPL=$bootstrap_dir/nspl_bootstrap.csv" \
+      --product-file "ONSUD=$bootstrap_dir/onsud_bootstrap.csv" \
+      --product-file "NSUL=$bootstrap_dir/nsul_bootstrap.csv" \
+      >/dev/null 2>&1; then
+      echo "mcp-geo: ons_geo cache bootstrap failed; run scripts/ons_geo_cache_refresh.py manually." >&2
+    fi
   fi
 fi
 

@@ -8,6 +8,12 @@ export default {
   server: {
     host: true,
     port: 5173,
+    proxy: {
+      "/mcp": "http://127.0.0.1:8000",
+      "/playground": "http://127.0.0.1:8000",
+      "/maps": "http://127.0.0.1:8000",
+      "/resources": "http://127.0.0.1:8000"
+    },
     hmr: {
       protocol: "ws",
       host: hmrHost,

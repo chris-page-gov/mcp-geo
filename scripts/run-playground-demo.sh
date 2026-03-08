@@ -43,16 +43,25 @@ require_cmd python3
 
 mkdir -p "$LOG_DIR"
 
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  if [[ -x "$REPO_ROOT/.venv/bin/python" ]]; then
+    PYTHON_BIN="$REPO_ROOT/.venv/bin/python"
+  else
+    PYTHON_BIN="$(command -v python3)"
+  fi
+fi
+
 port_report "$HTTP_PORT" || true
 port_report "$UI_PORT" || true
 
 if ! port_listening "$HTTP_PORT"; then
-  if ! python3 -c "import uvicorn" >/dev/null 2>&1; then
-    log "python deps missing; run 'pip install -e .[test]' first."
+  if ! "$PYTHON_BIN" -c "import uvicorn" >/dev/null 2>&1; then
+    log "python deps missing for $PYTHON_BIN; run 'pip install -e \".[test]\"' in that environment."
     exit 1
   fi
-  log "starting HTTP server on port $HTTP_PORT"
-  nohup python3 -m uvicorn server.main:app --host 0.0.0.0 --port "$HTTP_PORT" \
+  log "starting HTTP server on port $HTTP_PORT using $PYTHON_BIN"
+  nohup "$PYTHON_BIN" -m uvicorn server.main:app --host 0.0.0.0 --port "$HTTP_PORT" \
     >"$HTTP_LOG" 2>&1 &
   echo $! > "$HTTP_PID"
 fi
