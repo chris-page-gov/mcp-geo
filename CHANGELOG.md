@@ -21,6 +21,11 @@ All notable changes to this project will be documented in this file.
   the benchmark can score gold answers at `100/100` while current MCP-Geo
   support remains `partial`/`blocked`, and recording the missing capability
   work needed to answer the 10 stakeholder scenarios directly.
+- Added stakeholder live-rerun harness `scripts/stakeholder_live_run.py`,
+  machine-readable live evidence
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`, second report
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, and focused
+  regression coverage in `tests/test_stakeholder_live_run.py`.
 - Added focused regression coverage in
   `tests/test_stakeholder_benchmark_pack.py`.
 
@@ -31,6 +36,10 @@ All notable changes to this project will be documented in this file.
 - Clarified the stakeholder benchmark report so `Reference score` is explicitly
   described as gold-answer completeness, not current MCP-Geo capability
   completeness.
+- Added an authenticated live rerun of the stakeholder scenarios and reported
+  the result separately from the benchmark pack: `0` first-class-ready
+  scenarios, `9 partial`, `1 blocked`, with live OS-backed evidence now proven
+  in-session via `OS_API_KEY_FILE`.
 
 ## [0.6.0] - 2026-03-08
 

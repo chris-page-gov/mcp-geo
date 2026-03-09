@@ -61,3 +61,4 @@ the fallback simplified view when no local browser key is available.
 - 2026-03-09: [MCP-Geo stakeholder evaluation benchmark pack](MCP-Geo_evaluation_questions.md)
 - 2026-03-09: [Stakeholder benchmark workflow validation](mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md)
 - 2026-03-09: [Stakeholder benchmark gap analysis](mcp_geo_stakeholder_gap_analysis_2026-03-09.md)
+- 2026-03-09: [Stakeholder live rerun report](mcp_geo_stakeholder_live_run_2026-03-09.md)

@@ -105,6 +105,12 @@ assumptions change.
   separation between benchmark gold-answer scoring and current MCP-Geo feature
   completeness plus the missing work to make the 10 scenarios runnable against
   live tools.
+- Maintaining the stakeholder live-rerun harness under
+  `scripts/stakeholder_live_run.py` and the resulting evidence artifacts under
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json` and
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, so authenticated
+  OS-backed reruns can be compared directly with the benchmark pack and still
+  report first-class product readiness separately from raw live tool success.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -136,6 +142,11 @@ assumptions change.
   `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
   runtime finding that `OS_API_KEY` was not visible to the benchmark-generation
   process in the Codex workspace.
+- Maintain the stakeholder live-rerun harness and report under
+  `scripts/stakeholder_live_run.py`,
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`, and
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, including the
+  stricter `firstClassProductReady` interpretation for live OS-backed runs.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker
