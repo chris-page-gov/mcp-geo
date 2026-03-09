@@ -1,0 +1,107 @@
+{
+  "concise_answer": "Reference scoring expects a 60% exact/high-confidence match rate, 2 plausible manual-review cases, 1 unmatched record, and 1 duplicate/collision pair from the 10-row batch.",
+  "method_used": [
+    "Normalize punctuation, postcode spacing, street abbreviations, and PAON/SAON ordering before matching.",
+    "Use OS Places or an AddressBase-backed service to resolve candidate UPRNs.",
+    "Separate duplicate raw rows from ambiguous address-to-premises collisions."
+  ],
+  "datasets_tools_used": [
+    "Synthetic benchmark batch derived from HM Land Registry Price Paid Data 2025 Bassetlaw rows",
+    "MCP-Geo tools: os_places.search, os_places.by_postcode, os_places.by_uprn"
+  ],
+  "confidence_caveats": [
+    "The dirty-address file is synthetic, but every underlying address came from a real public record.",
+    "The unmatched case is driven by an intentional postcode typo and should not be forced into a likely match."
+  ],
+  "verification_steps": [
+    "Check review-queue records manually against authoritative address lookup.",
+    "Inspect the duplicate pair for 50 Canal Road to confirm whether it is a duplicate raw row rather than a second premises."
+  ],
+  "structured_output": {
+    "qualityMetrics": {
+      "totalRecords": 10,
+      "exactHighConfidence": 6,
+      "plausibleReview": 2,
+      "unmatched": 1,
+      "duplicateCollision": 1,
+      "matchRatePercent": 60.0
+    },
+    "reviewQueue": [
+      {
+        "sourceId": "ADDR-003",
+        "reason": "Millbridge/Mill Bridge normalization needs confirmation"
+      },
+      {
+        "sourceId": "ADDR-006",
+        "reason": "PAON/SAON order reversed for The Close / Church Lane"
+      },
+      {
+        "sourceId": "ADDR-010",
+        "reason": "Postcode typo NG22 ORU prevents safe match"
+      }
+    ],
+    "suggestedExportFormat": "CSV matched results plus a separate CSV manual-review queue."
+  },
+  "short_summary": "The pack is calibrated so that the model must surface a 60% exact match rate, one unmatched typo, one duplicate raw-row pair, and two plausible manual-review address normalizations.",
+  "quality_metrics": {
+    "total_records": 10,
+    "exact_high_confidence": 6,
+    "plausible_review": 2,
+    "unmatched": 1,
+    "duplicate_collision": 1,
+    "top_failure_reasons": [
+      "postcode typo",
+      "street-name normalization",
+      "PAON/SAON order ambiguity",
+      "duplicate raw row"
+    ]
+  },
+  "matched_output_schema": [
+    "source_id",
+    "normalized_address",
+    "candidate_uprn",
+    "match_quality",
+    "review_required",
+    "failure_reason"
+  ],
+  "review_queue": [
+    {
+      "source_id": "ADDR-003",
+      "priority": "medium",
+      "reason": "street name normalization"
+    },
+    {
+      "source_id": "ADDR-006",
+      "priority": "medium",
+      "reason": "sub-building ordering"
+    },
+    {
+      "source_id": "ADDR-010",
+      "priority": "high",
+      "reason": "postcode typo / unmatched"
+    }
+  ],
+  "failure_reason_analysis": [
+    {
+      "reason": "postcode typo",
+      "count": 1
+    },
+    {
+      "reason": "duplicate raw row",
+      "count": 1
+    },
+    {
+      "reason": "street-name normalization",
+      "count": 1
+    },
+    {
+      "reason": "PAON/SAON ordering",
+      "count": 1
+    }
+  ],
+  "recommended_remediation_actions": [
+    "Enforce postcode validation before batch submission.",
+    "Retain PAON and SAON in separate fields instead of concatenating them.",
+    "Flag exact duplicate raw rows upstream before UPRN matching."
+  ]
+}

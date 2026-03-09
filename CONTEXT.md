@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-08
+Last updated: 2026-03-09
 Owner: @chris-page-gov
 
 ## Purpose
@@ -95,6 +95,11 @@ assumptions change.
 - Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
   Desktop Opus 4.6, including launcher separation, trace/session scoring, and
   reproducible comparison reports.
+- Maintaining the stakeholder-evaluation benchmark pack under
+  `scripts/stakeholder_benchmark_pack.py` and
+  `data/benchmarking/stakeholder_eval/` so the Phase 3 prompt bank stays tied
+  to concrete public examples, scored reference outputs, and a repeatable
+  workflow note.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -116,6 +121,12 @@ assumptions change.
   Desktop using the new scenario pack
   `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` and generate
   side-by-side reports under `docs/reports/`.
+- Maintain the stakeholder benchmark generator, fixture pack, scored reference
+  outputs, and workflow-validation report under
+  `scripts/stakeholder_benchmark_pack.py`,
+  `data/benchmarking/stakeholder_eval/`,
+  `docs/reports/MCP-Geo_evaluation_questions.md`, and
+  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md`.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

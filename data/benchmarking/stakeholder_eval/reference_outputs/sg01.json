@@ -1,0 +1,135 @@
+{
+  "concise_answer": "The benchmark incident area affects 4 unique premises and 5 vulnerable-household records after deduplication review. One duplicated address variant maps to the same Mill Bridge Close premises, so the operational answer must separate affected premises from raw records.",
+  "method_used": [
+    "Use the supplied incident polygon clipped from planning.data flood-risk-zone references 402042/2 and 167647/3.",
+    "Resolve each supplied address to a candidate premises or UPRN using MCP-Geo address tools where available.",
+    "Join the synthetic vulnerability file by normalized address, then deduplicate the two variants of 6 Mill Bridge Close.",
+    "Assign affected premises to Bassetlaw using the postcode and area context already embedded in the example."
+  ],
+  "datasets_tools_used": [
+    "planning.data.gov.uk flood-risk-zone references 402042/2 and 167647/3",
+    "HM Land Registry Price Paid Data 2025 addresses used as the real-address base for the synthetic vulnerability file",
+    "MCP-Geo tools: os_places.search, os_places.by_uprn, ons_geo.by_uprn, admin_lookup.containing_areas"
+  ],
+  "confidence_caveats": [
+    "Public vulnerable-household data is synthetic in this benchmark, so counts test workflow quality rather than real emergency truth.",
+    "Exact UPRN resolution depends on OS Places availability; without it, a high-quality answer must still report address-level matches and caveats.",
+    "The incident polygon is a clipped operational exercise area derived from authoritative flood-zone geometry rather than the full published geometry."
+  ],
+  "verification_steps": [
+    "Re-run the four affected addresses through OS Places or AddressBase-backed matching and confirm the UPRN mapping.",
+    "Verify whether the duplicate 6 Mill Bridge Close records are two services for one household or two households at one premises.",
+    "Cross-check the affected set against the latest flood-warning or incident perimeter before export."
+  ],
+  "structured_output": {
+    "affectedPremises": [
+      {
+        "premisesLabel": "Navigation Lodge, Wharf Road, Retford DN22 6EN",
+        "recordCount": 1,
+        "joinQuality": "high",
+        "status": "affected"
+      },
+      {
+        "premisesLabel": "6 Mill Bridge Close, Retford DN22 6FE",
+        "recordCount": 2,
+        "joinQuality": "review_duplicate",
+        "status": "affected"
+      },
+      {
+        "premisesLabel": "18 Mill Bridge Close, Retford DN22 6FE",
+        "recordCount": 1,
+        "joinQuality": "high",
+        "status": "affected"
+      },
+      {
+        "premisesLabel": "115 Mill Bridge Close, Retford DN22 6FE",
+        "recordCount": 1,
+        "joinQuality": "high",
+        "status": "affected"
+      }
+    ],
+    "vulnerabilitySummary": [
+      {
+        "category": "mobility_support",
+        "records": 1
+      },
+      {
+        "category": "older_person",
+        "records": 1
+      },
+      {
+        "category": "medically_dependent",
+        "records": 1
+      },
+      {
+        "category": "young_children",
+        "records": 1
+      },
+      {
+        "category": "visual_impairment",
+        "records": 1
+      }
+    ]
+  },
+  "executive_summary": "4 affected premises, 5 affected records, 1 duplicate-address anomaly, and 2 negative-control records outside the incident area.",
+  "affected_premises_table": [
+    {
+      "premises": "Navigation Lodge, Wharf Road, Retford DN22 6EN",
+      "affectedRecords": 1,
+      "boundary": "Bassetlaw",
+      "notes": "Inside clipped flood incident area"
+    },
+    {
+      "premises": "6 Mill Bridge Close, Retford DN22 6FE",
+      "affectedRecords": 2,
+      "boundary": "Bassetlaw",
+      "notes": "Duplicate address forms require review"
+    },
+    {
+      "premises": "18 Mill Bridge Close, Retford DN22 6FE",
+      "affectedRecords": 1,
+      "boundary": "Bassetlaw",
+      "notes": "Inside clipped flood incident area"
+    },
+    {
+      "premises": "115 Mill Bridge Close, Retford DN22 6FE",
+      "affectedRecords": 1,
+      "boundary": "Bassetlaw",
+      "notes": "Inside clipped flood incident area"
+    }
+  ],
+  "vulnerability_summary_table": [
+    {
+      "category": "mobility_support",
+      "affectedRecords": 1
+    },
+    {
+      "category": "older_person",
+      "affectedRecords": 1
+    },
+    {
+      "category": "medically_dependent",
+      "affectedRecords": 1
+    },
+    {
+      "category": "young_children",
+      "affectedRecords": 1
+    },
+    {
+      "category": "visual_impairment",
+      "affectedRecords": 1
+    }
+  ],
+  "duplicates_anomalies_table": [
+    {
+      "issue": "Duplicate candidate",
+      "records": [
+        "VH-002",
+        "VH-003"
+      ],
+      "premises": "6 Mill Bridge Close, Retford DN22 6FE",
+      "action": "Manual dedupe before operational export"
+    }
+  ],
+  "suggested_export_format": "CSV for the premises list plus GeoJSON if point coordinates are resolved during the live MCP-Geo run."
+}

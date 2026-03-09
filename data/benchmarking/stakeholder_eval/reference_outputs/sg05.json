@@ -1,0 +1,72 @@
+{
+  "concise_answer": "Goodwin Hall should be treated as a constrained site: the benchmark evidence shows direct intersection with fluvial flood-risk zones 2 and 3 plus the Retford conservation area.",
+  "method_used": [
+    "Resolve Goodwin Hall as the site reference.",
+    "Check open planning.data constraint layers for direct point/geometry intersection.",
+    "Name the planning layers that are not available through MCP-Geo today."
+  ],
+  "datasets_tools_used": [
+    "Bassetlaw land and building assets register",
+    "planning.data.gov.uk flood-risk-zone and conservation-area datasets",
+    "MCP-Geo tools: os_places.search, admin_lookup.containing_areas, os_features.collections"
+  ],
+  "confidence_caveats": [
+    "Constraint intersections are strong because they come from open planning.data geometries.",
+    "Local policy, heritage-setting, and nearby-constraint analysis remains incomplete without additional layers."
+  ],
+  "verification_steps": [
+    "Resolve the exact site polygon or building footprint before making any planning submission decision.",
+    "Check the local plan, heritage setting, and local land charges systems for non-open constraints."
+  ],
+  "structured_output": {
+    "intersections": [
+      {
+        "dataset": "flood-risk-zone",
+        "reference": "406550/2",
+        "level": "2"
+      },
+      {
+        "dataset": "flood-risk-zone",
+        "reference": "167647/3",
+        "level": "3"
+      },
+      {
+        "dataset": "conservation-area",
+        "reference": "18",
+        "name": "Retford"
+      }
+    ],
+    "suggestedExportFormat": "CSV constraint register plus GeoJSON site and intersecting constraints."
+  },
+  "concise_site_summary": "Goodwin Hall is inside both level-2 and level-3 fluvial flood-risk zones and inside the Retford conservation area.",
+  "intersecting_constraints_table": [
+    {
+      "dataset": "flood-risk-zone",
+      "reference": "406550/2",
+      "detail": "Fluvial Models, level 2"
+    },
+    {
+      "dataset": "flood-risk-zone",
+      "reference": "167647/3",
+      "detail": "Fluvial Models, level 3"
+    },
+    {
+      "dataset": "conservation-area",
+      "reference": "18",
+      "detail": "Retford conservation area"
+    }
+  ],
+  "nearby_constraints_table": [
+    {
+      "dataset": "listed-building",
+      "detail": "No direct site-centroid intersection in sampled open layers"
+    },
+    {
+      "dataset": "tree-preservation-zone",
+      "detail": "No direct site-centroid intersection in sampled open layers"
+    }
+  ],
+  "missing_data_note": "Local plan policies, setting analysis, land-charges constraints, and any local flood-mitigation evidence are not in the supplied benchmark pack.",
+  "confidence_statement": "Moderate to high: direct open-layer intersections are strong, but the site polygon is still a proxy from the asset register rather than a planning-application boundary.",
+  "map_recommended_description": "Map recommended: show Goodwin Hall, both flood-risk-zone polygons, and the Retford conservation-area outline on the same view."
+}

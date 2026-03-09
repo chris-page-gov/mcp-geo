@@ -55,3 +55,8 @@ the fallback simplified view when no local browser key is available.
 ## MCP Host Benchmarking
 
 - 2026-03-06: [Codex vs Claude host benchmark smoke report](codex_vs_claude_host_benchmark_2026-03-06_smoke.md)
+
+## Stakeholder Evaluation
+
+- 2026-03-09: [MCP-Geo stakeholder evaluation benchmark pack](MCP-Geo_evaluation_questions.md)
+- 2026-03-09: [Stakeholder benchmark workflow validation](mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md)

@@ -3,7 +3,17 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-08
+Last updated: 2026-03-09
+
+## Stakeholder evaluation benchmark pack (2026-03-09)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SEB-SRC-1 Public examples and comparator capture | done | none | Converted the Phase 3 prompt bank into 10 concrete examples using public anchors from planning.data, HM Land Registry Price Paid, Rutland highways transparency, Bassetlaw assets, BDUK release guidance, and the North Yorkshire housing-fragmentation workflow; synthetic fixtures are used only where privacy or publication gaps block a real reusable input. |
+| SEB-HAR-2 Generator, fixtures, and scored reference outputs | done | SEB-SRC-1 | Added `scripts/stakeholder_benchmark_pack.py` to generate the machine-readable benchmark pack, local fixture files, 10 scenario reference outputs, a rendered benchmark report, and the scenario-1 workflow-validation note. |
+| SEB-VAL-3 Regression coverage and end-to-end validation | done | SEB-HAR-2 | Focused validation is green (`scripts/stakeholder_benchmark_pack.py build` / `validate` and `tests/test_stakeholder_benchmark_pack.py`), all 10 scenarios score `100/100`, and full repo regression passed on 2026-03-09 (`1029 passed`, `6 skipped`, coverage `90.63%`). |
 
 ## Minor release integration prep (2026-03-08)
 

@@ -1,0 +1,75 @@
+{
+  "concise_answer": "Rutland is the benchmark area. The published comparator totals are 77 km of A roads, 221 km of B/C roads, 222 km of U roads, and 520 km of total maintained roads.",
+  "method_used": [
+    "Resolve Rutland as the target authority.",
+    "Use NGD road-maintenance collections for a live run if available.",
+    "Compare any live total against Rutland\u2019s published comparator figures before treating it as statutory-quality output."
+  ],
+  "datasets_tools_used": [
+    "Rutland County Council road-length transparency page",
+    "MCP-Geo tools: admin_lookup.find_by_name, os_features.collections, os_features.query"
+  ],
+  "confidence_caveats": [
+    "The published totals are authoritative comparators for this benchmark.",
+    "Without a live NGD segment run, MCP-Geo should treat the result as comparator-led rather than generated."
+  ],
+  "verification_steps": [
+    "Check live NGD collection availability for trn-rami-maintenance* and any road-class fields.",
+    "Reconcile any discrepancy against the latest authority publication before using it operationally.",
+    "If separate B and C totals are needed, derive them from segment-level data rather than the transparency-page aggregate."
+  ],
+  "structured_output": {
+    "lengthByClassKm": [
+      {
+        "roadClass": "A",
+        "lengthKm": 77.0
+      },
+      {
+        "roadClass": "B/C",
+        "lengthKm": 221.0
+      },
+      {
+        "roadClass": "U",
+        "lengthKm": 222.0
+      },
+      {
+        "roadClass": "Total roads",
+        "lengthKm": 520.0
+      }
+    ],
+    "suggestedExportFormat": "CSV by published road class totals, plus segment GeoJSON if a live NGD roll-up is run."
+  },
+  "short_answer": "Rutland\u2019s published maintained-road comparator totals are ready-made benchmark control values.",
+  "summary_table_by_class": [
+    {
+      "road_class": "A",
+      "length_km": 77.0
+    },
+    {
+      "road_class": "B/C",
+      "length_km": 221.0
+    },
+    {
+      "road_class": "U",
+      "length_km": 222.0
+    },
+    {
+      "road_class": "Total roads",
+      "length_km": 520.0
+    }
+  ],
+  "anomaly_table": [
+    {
+      "issue": "No live segment roll-up in benchmark environment",
+      "impact": "Comparator-led only"
+    },
+    {
+      "issue": "Published comparator merges B and C roads",
+      "impact": "Separate B/C analysis needs live segment data"
+    }
+  ],
+  "suggested_follow_up_checks": [
+    "Confirm whether the authority publication date matches the benchmark year being tested.",
+    "Sample-test a handful of segments for class and maintainability coding if a live NGD run becomes available."
+  ]
+}

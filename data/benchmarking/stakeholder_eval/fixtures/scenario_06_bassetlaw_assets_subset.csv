@@ -1,0 +1,8 @@
+uprn,site,name_or_number,street_name,postal_town,postcode,easting,northing,tenure,occupancy,land_only
+100032031194,Land,Nottinghamshire County Council,Chancery Lane,Retford,DN22 6DG,470397,381121,Freehold,Vacant,Yes
+100032031210,Library,Retford Library 17,Churchgate,Retford,DN22 6PE,470548,381340,Freehold,Leasehold,No
+100032031287,Community Centre,Goodwin Hall,Chancery Lane,Retford,DN22 6DF,470361,381078,Freehold,Leasehold,No
+10023266359,Shop,Retford Shopmobility,Chancery Lane,Retford,DN22 6EY,470450,381086,Freehold,Leasehold,No
+10023266361,Car Park,Public Car Park,Chancery Lane,Retford,DN22 6EY,470427,381075,Freehold,,Yes
+10023269092,Car Park,North Public Car Park,Chancery Lane,Retford,DN22 6EY,470441,381108,Freehold,,Yes
+10023270715,Pavillion,Pavillion at Kings Park,Chancery Lane,Retford,DN22 6EY,470320,380951,Freehold,,No

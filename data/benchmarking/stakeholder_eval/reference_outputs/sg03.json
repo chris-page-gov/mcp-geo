@@ -1,0 +1,44 @@
+{
+  "concise_answer": "Current MCP-Geo can resolve the two sites and open the route-planner workflow, but it cannot yet return a verified shortest emergency route or distance because the repo does not expose a routing engine over OS Highways Network.",
+  "method_used": [
+    "Resolve the origin and destination as named premises.",
+    "Classify the request as a route-planning workflow with MCP-Geo routing guidance.",
+    "Return the required blocker: route-planner UI is available, shortest-path computation is not."
+  ],
+  "datasets_tools_used": [
+    "MCP-Geo tools: os_mcp.route_query, os_places.search, os_apps.render_route_planner",
+    "Published comparator: OS MasterMap Highways Network routing guidance"
+  ],
+  "confidence_caveats": [
+    "Endpoint resolution is high confidence because the sites are public named premises.",
+    "Route distance, restrictions, and turn-level directions are unavailable in the current repo surface."
+  ],
+  "verification_steps": [
+    "Build or attach a precomputed routable network from OS Highways Network before re-running this scenario.",
+    "Confirm whether flood-zone avoidance should be modelled as hard exclusion or advisory constraint."
+  ],
+  "structured_output": {
+    "status": "blocked_partial",
+    "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+    "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+    "routeDistanceKm": null,
+    "routePath": null,
+    "blocker": "No shortest-path routing engine is exposed through MCP-Geo; current support is UI-only.",
+    "suggestedExportFormat": "JSON blocker record plus GeoJSON endpoints once coordinates are resolved."
+  },
+  "concise_operational_answer": "Resolve the two premises, then stop with a grounded blocker: current MCP-Geo cannot compute the route.",
+  "structured_route_summary": {
+    "route_status": "blocked_partial",
+    "recommended_tool": "os_apps.render_route_planner",
+    "published_blocker": "OS routing guidance warns that network build steps can take two to three days and should be automated overnight."
+  },
+  "assumptions_limitations": [
+    "No route network or live restrictions are available in the repo surface.",
+    "Flood-zone avoidance is a scenario requirement but cannot be encoded without a route engine."
+  ],
+  "verification_notes": [
+    "Confirm endpoint coordinates in an authoritative address service before routing.",
+    "Validate any future route against local emergency access policies and temporary closures."
+  ],
+  "map_recommended_description": "Map recommended: show both premises, the flood-risk-zone 167647/3 polygon, and the road network segment that would need route computation once available."
+}

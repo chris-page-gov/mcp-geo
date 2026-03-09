@@ -1,0 +1,68 @@
+{
+  "concise_answer": "Within the benchmark sample, 5 properties are high-confidence at-risk cases and 2 are negative-control records outside the zone. The answer should explicitly keep field verification in scope.",
+  "method_used": [
+    "Use the supplied flood-zone references as the risk geometry.",
+    "Treat DN22 6EN and DN22 6FE sample addresses as affected because their postcode centroids intersect the published zones in benchmark prep.",
+    "Keep outside-zone controls separate and prioritize wharf-side and duplicate/leasehold properties for verification."
+  ],
+  "datasets_tools_used": [
+    "HM Land Registry Price Paid sample properties",
+    "planning.data.gov.uk flood-risk-zone references 402042/2 and 167647/3",
+    "MCP-Geo tools: os_places.search, os_places.by_uprn, admin_lookup.containing_areas"
+  ],
+  "confidence_caveats": [
+    "This is a sampled property list rather than a full property inventory.",
+    "Several properties are classified from postcode-level evidence and should be verified on the ground or against building footprints."
+  ],
+  "verification_steps": [
+    "Verify 6 Mill Bridge Close because duplicate leasehold/freehold transaction records can distort property counts.",
+    "Check Navigation Lodge and other wharf-side premises first because zone-3 exposure is highest there.",
+    "Use building footprints or authoritative address-to-UPRN resolution to confirm the exact number of premises at each postcode."
+  ],
+  "structured_output": {
+    "headlineCounts": {
+      "highConfidenceAffected": 5,
+      "borderline": 0,
+      "negativeControls": 2
+    },
+    "suggestedExportFormat": "CSV verification queue plus GeoJSON points for the sampled properties."
+  },
+  "headline_counts": {
+    "high_confidence_affected": 5,
+    "borderline_uncertain": 0,
+    "manual_verification": 3
+  },
+  "classification_summary": [
+    {
+      "class": "zone_3_or_core_floodplain",
+      "properties": 2
+    },
+    {
+      "class": "zone_2_or_adjacent_floodplain",
+      "properties": 3
+    },
+    {
+      "class": "outside_sampled_zone",
+      "properties": 2
+    }
+  ],
+  "verification_priority_table": [
+    {
+      "property": "Navigation Lodge, Wharf Road, Retford DN22 6EN",
+      "priority": "high",
+      "reason": "wharf-side / zone-3 exposure"
+    },
+    {
+      "property": "6 Mill Bridge Close, Retford DN22 6FE",
+      "priority": "high",
+      "reason": "duplicate transaction records / exact-premises confirmation"
+    },
+    {
+      "property": "115 Mill Bridge Close, Retford DN22 6FE",
+      "priority": "medium",
+      "reason": "postcode-centroid rather than footprint evidence"
+    }
+  ],
+  "uncertainty_explanation": "The benchmark uses a sampled property list and postcode-derived checks, so it is deliberately designed to reward honest uncertainty handling instead of false precision.",
+  "map_recommended_description": "Map recommended: show the sampled addresses, flood-zone 2/3 polygons, and a symbol distinction between high-confidence properties and negative controls."
+}

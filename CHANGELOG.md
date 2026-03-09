@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added stakeholder benchmark pack generator
+  `scripts/stakeholder_benchmark_pack.py` to turn the Phase 3 evaluation
+  prompts into concrete benchmark scenarios with reusable-header prompts,
+  scored reference outputs, and workflow validation.
+- Added stakeholder benchmark machine-readable assets under
+  `data/benchmarking/stakeholder_eval/`, including fixture files, 10 JSON
+  reference outputs, and `benchmark_pack_v1.json`.
+- Added generated stakeholder benchmark reports
+  `docs/reports/MCP-Geo_evaluation_questions.md` and
+  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md`.
+- Added focused regression coverage in
+  `tests/test_stakeholder_benchmark_pack.py`.
+
+### Changed
+- Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
+  pack that embeds populated prompts, comparator notes, capability gaps, and
+  full expected-output JSON for all 10 scenarios.
+
 ## [0.6.0] - 2026-03-08
 
 ### Added

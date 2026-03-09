@@ -1,0 +1,8 @@
+record_id,address_text,postcode,resident_group,support_notes,synthetic_case_note
+VH-001,"Navigation Lodge, Wharf Road, Retford, DN22 6EN",DN22 6EN,mobility_support,Wheelchair user; evacuation support required.,Synthetic vulnerability annotation applied to a real HMLR address.
+VH-002,"6 Mill Bridge Close, Retford, DN22 6FE",DN22 6FE,older_person,Lives alone; welfare check requested.,Synthetic vulnerability annotation applied to a real HMLR address.
+VH-003,"6 Mill Bridge Cl, Retford DN22 6FE",DN22 6FE,medically_dependent,Oxygen dependency recorded in synthetic benchmark notes.,Intentional duplicate-address variant for join and dedupe scoring.
+VH-004,"18 Mill Bridge Close, Retford, DN22 6FE",DN22 6FE,young_children,Two children under five in household.,Synthetic vulnerability annotation applied to a real HMLR address.
+VH-005,"115 Mill Bridge Close, Retford, DN22 6FE",DN22 6FE,visual_impairment,Accessible transport required.,Synthetic vulnerability annotation applied to a real HMLR address.
+VH-006,"13 Welham Road, Retford, DN22 6TN",DN22 6TN,older_person,Outside incident polygon in benchmark ground truth.,Real HMLR address kept as negative-control record.
+VH-007,"22A Chapelgate, Retford, DN22 6PJ",DN22 6PJ,carer_household,Outside incident polygon in benchmark ground truth.,Real HMLR address kept as negative-control record.

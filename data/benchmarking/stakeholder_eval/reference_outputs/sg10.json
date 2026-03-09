@@ -1,0 +1,62 @@
+{
+  "concise_answer": "The benchmark is calibrated for 5 exact matches, 2 plausible review matches, and 1 unmatched council-tax-like record after identifier reconciliation.",
+  "method_used": [
+    "Normalize both datasets to comparable address tokens.",
+    "Use UPRN lookup where possible; otherwise fall back to grounded address matching with hierarchy checks.",
+    "Separate exact joins from plausible but reviewable sub-building or legacy-address cases."
+  ],
+  "datasets_tools_used": [
+    "Synthetic council-tax-like Bassetlaw address file",
+    "HM Land Registry Price Paid subset",
+    "MCP-Geo tools: os_places.search, os_places.by_postcode, os_places.by_uprn"
+  ],
+  "confidence_caveats": [
+    "Dataset A is synthetic; dataset B is real.",
+    "Canalside Wharf needs hierarchy-aware handling because PAON/SAON order differs across systems."
+  ],
+  "verification_steps": [
+    "Resolve each review-queue record to a UPRN before loading it into a production join table.",
+    "Split PAON and SAON explicitly in both datasets to reduce future mismatch rates."
+  ],
+  "structured_output": {
+    "matchMetrics": {
+      "exact": 5,
+      "plausibleReview": 2,
+      "unmatched": 1
+    },
+    "suggestedExportFormat": "CSV joined output plus CSV review queue for unresolved records."
+  },
+  "summary_of_join_success": "Most of the curated Bassetlaw records align cleanly, but one hierarchy case and one postcode-normalization problem still need review.",
+  "matched_unmatched_metrics": {
+    "exact_matches": 5,
+    "plausible_matches_needing_review": 2,
+    "unmatched_records": 1
+  },
+  "mismatch_reason_table": [
+    {
+      "reason": "PAON/SAON ordering mismatch",
+      "records": 1
+    },
+    {
+      "reason": "postcode normalization or typo",
+      "records": 1
+    },
+    {
+      "reason": "dataset coverage gap",
+      "records": 1
+    }
+  ],
+  "recommended_remediation_actions": [
+    "Keep sub-building names in dedicated fields in both systems.",
+    "Validate postcodes before attempting UPRN alignment.",
+    "Store authoritative UPRNs once resolved to prevent repeated fuzzy matching."
+  ],
+  "structured_output_schema": [
+    "record_id",
+    "normalized_address",
+    "candidate_uprn",
+    "match_quality",
+    "review_reason",
+    "source_dataset"
+  ]
+}
