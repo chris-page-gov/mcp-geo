@@ -52,6 +52,8 @@ Scoring thresholds:
 - Pack valid: `True`
 - Machine-readable pack: `data/benchmarking/stakeholder_eval/benchmark_pack_v1.json`
 - Workflow report: [mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md](mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md)
+- Interpretation note: the `Reference score` grades the completeness and auditability of the benchmark's gold answer, not the current implementation completeness of MCP-Geo itself.
+- Read `MCP-Geo support level` separately: `partial` and `blocked` mark product capability gaps even when the benchmark reference output scores `100/100`.
 
 ## Scenario Pack
 

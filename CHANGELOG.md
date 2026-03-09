@@ -16,6 +16,11 @@ All notable changes to this project will be documented in this file.
 - Added generated stakeholder benchmark reports
   `docs/reports/MCP-Geo_evaluation_questions.md` and
   `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md`.
+- Added stakeholder gap-analysis report
+  `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md` explaining why
+  the benchmark can score gold answers at `100/100` while current MCP-Geo
+  support remains `partial`/`blocked`, and recording the missing capability
+  work needed to answer the 10 stakeholder scenarios directly.
 - Added focused regression coverage in
   `tests/test_stakeholder_benchmark_pack.py`.
 
@@ -23,6 +28,9 @@ All notable changes to this project will be documented in this file.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
   full expected-output JSON for all 10 scenarios.
+- Clarified the stakeholder benchmark report so `Reference score` is explicitly
+  described as gold-answer completeness, not current MCP-Geo capability
+  completeness.
 
 ## [0.6.0] - 2026-03-08
 

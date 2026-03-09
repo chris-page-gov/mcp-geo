@@ -1904,6 +1904,8 @@ def render_markdown(pack: dict[str, Any], validation: dict[str, Any]) -> str:
             f"- Pack valid: `{validation['ok']}`",
             f"- Machine-readable pack: `{PACK_JSON_PATH.relative_to(REPO_ROOT)}`",
             f"- Workflow report: [{WORKFLOW_REPORT_PATH.name}]({WORKFLOW_REPORT_PATH.name})",
+            "- Interpretation note: the `Reference score` grades the completeness and auditability of the benchmark's gold answer, not the current implementation completeness of MCP-Geo itself.",
+            "- Read `MCP-Geo support level` separately: `partial` and `blocked` mark product capability gaps even when the benchmark reference output scores `100/100`.",
             "",
             "## Scenario Pack",
             "",

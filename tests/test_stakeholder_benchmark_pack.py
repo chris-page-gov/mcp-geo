@@ -65,6 +65,7 @@ def test_rendered_report_includes_full_reference_outputs(monkeypatch, tmp_path: 
     assert report.count("**Reference Output (JSON)**") == 10
     assert '"suggested_export_format"' in report
     assert '"structured_route_summary"' in report
+    assert "Reference score` grades the completeness and auditability of the benchmark's gold answer" in report
     assert (
         f"[mcp_geo_stakeholder_benchmark_workflow_{stakeholder_pack.DATE_STAMP}.md]"
         f"(mcp_geo_stakeholder_benchmark_workflow_{stakeholder_pack.DATE_STAMP}.md)"

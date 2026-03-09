@@ -100,6 +100,11 @@ assumptions change.
   `data/benchmarking/stakeholder_eval/` so the Phase 3 prompt bank stays tied
   to concrete public examples, scored reference outputs, and a repeatable
   workflow note.
+- Tracking the follow-up stakeholder capability gap analysis in
+  `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
+  separation between benchmark gold-answer scoring and current MCP-Geo feature
+  completeness plus the missing work to make the 10 scenarios runnable against
+  live tools.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -127,6 +132,10 @@ assumptions change.
   `data/benchmarking/stakeholder_eval/`,
   `docs/reports/MCP-Geo_evaluation_questions.md`, and
   `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md`.
+- Maintain the stakeholder benchmark gap-analysis note under
+  `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
+  runtime finding that `OS_API_KEY` was not visible to the benchmark-generation
+  process in the Codex workspace.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker
