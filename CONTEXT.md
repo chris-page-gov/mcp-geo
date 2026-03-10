@@ -141,6 +141,9 @@ assumptions change.
 - Standardizing benchmark startup on a single shared PostGIS cache across
   clients, with `scripts/check_shared_benchmark_cache.sh` as the required
   preflight before Codex-vs-Claude or stakeholder live comparison runs.
+- Keeping route-graph bootstrap/provenance tooling free of raw credential
+  storage/logging by sanitizing MRN download metadata and redacting DSN-derived
+  secrets in `scripts/route_graph_pipeline.py`.
 
 ## Active Work
 

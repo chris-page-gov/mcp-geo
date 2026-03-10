@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 try:
     import psycopg
@@ -13,11 +14,55 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     psycopg = None  # type: ignore[assignment]
 
 from server.config import settings
+from server.security import configured_secrets, mask_in_text, mask_in_value
 from tools.os_common import client
 
 _DOWNLOADS_BASE = "https://api.os.uk/downloads/v1"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SCHEMA_SQL = _REPO_ROOT / "scripts" / "route_graph_schema.sql"
+_PRODUCT_FIELDS = (
+    "id",
+    "name",
+    "title",
+    "description",
+    "license",
+    "version",
+)
+_DOWNLOAD_FIELDS = (
+    "id",
+    "name",
+    "fileName",
+    "title",
+    "description",
+    "releaseDate",
+    "release_date",
+    "created",
+    "createdAt",
+    "updated",
+    "publishedAt",
+    "publicationDate",
+    "fileSize",
+    "size",
+    "checksum",
+    "sha256",
+    "sha1",
+    "md5",
+    "format",
+    "mediaType",
+    "mimeType",
+    "coverage",
+)
+_DROPPED_FIELD_MARKERS = (
+    "password",
+    "token",
+    "secret",
+    "signature",
+    "authorization",
+    "url",
+    "uri",
+    "href",
+    "link",
+)
 
 
 def _runtime_dir() -> Path:
@@ -41,6 +86,64 @@ def _downloads_get(path: str) -> tuple[int, Any]:
     return client.get_json(f"{_DOWNLOADS_BASE}{path}", None)
 
 
+def _is_dropped_field_name(key: object) -> bool:
+    if not isinstance(key, str):
+        return False
+    normalized = key.strip().lower().replace("-", "_")
+    return any(marker in normalized for marker in _DROPPED_FIELD_MARKERS)
+
+
+def _sanitize_nested(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: _sanitize_nested(item)
+            for key, item in value.items()
+            if not _is_dropped_field_name(key)
+        }
+    if isinstance(value, list):
+        return [_sanitize_nested(item) for item in value]
+    return value
+
+
+def _pick_fields(item: dict[str, Any], allowed_fields: tuple[str, ...]) -> dict[str, Any]:
+    safe: dict[str, Any] = {}
+    for field in allowed_fields:
+        if field not in item:
+            continue
+        value = _sanitize_nested(item[field])
+        if value in (None, "", [], {}):
+            continue
+        safe[field] = value
+    return safe
+
+
+def _safe_product_record(product: dict[str, Any]) -> dict[str, Any]:
+    return _pick_fields(product, _PRODUCT_FIELDS)
+
+
+def _safe_download_record(download: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(download, dict):
+        return None
+    return _pick_fields(download, _DOWNLOAD_FIELDS)
+
+
+def _output_secrets(dsn: str = "") -> list[str]:
+    secrets: list[str] = []
+    seen: set[str] = set()
+    for raw in configured_secrets(settings):
+        if raw and raw not in seen:
+            secrets.append(raw)
+            seen.add(raw)
+    if dsn and dsn not in seen:
+        secrets.append(dsn)
+        seen.add(dsn)
+    if dsn:
+        parsed = urlparse(dsn)
+        if parsed.password and parsed.password not in seen:
+            secrets.append(parsed.password)
+    return secrets
+
+
 def _bootstrap_schema(dsn: str) -> dict[str, Any]:
     if not dsn:
         raise RuntimeError("Missing ROUTE_GRAPH_DSN/BOUNDARY_CACHE_DSN")
@@ -50,7 +153,7 @@ def _bootstrap_schema(dsn: str) -> dict[str, Any]:
     with psycopg.connect(dsn, autocommit=True) as conn:
         with conn.cursor() as cur:
             cur.execute(sql_text)
-    return {"dsn": dsn, "schemaSql": str(_SCHEMA_SQL), "status": "bootstrapped"}
+    return {"dsnConfigured": True, "schemaSql": str(_SCHEMA_SQL), "status": "bootstrapped"}
 
 
 def _capture_provenance(product_query: str, *, limit: int, output_path: Path) -> dict[str, Any]:
@@ -90,12 +193,14 @@ def _capture_provenance(product_query: str, *, limit: int, output_path: Path) ->
         reverse=True,
     )
     latest = sorted_downloads[0] if sorted_downloads else None
+    safe_selected = _safe_product_record(selected)
+    safe_downloads = [_safe_download_record(item) for item in sorted_downloads[:limit]]
     payload = {
         "capturedAt": datetime.now(timezone.utc).isoformat(),
         "productQuery": product_query,
-        "selectedProduct": selected,
-        "latestDownload": latest,
-        "downloads": sorted_downloads[:limit],
+        "selectedProduct": safe_selected,
+        "latestDownload": _safe_download_record(latest),
+        "downloads": [item for item in safe_downloads if item],
         "downloadCount": len(sorted_downloads),
         "notes": [
             "This captures MRN package provenance and schema bootstrap state.",
@@ -219,10 +324,12 @@ def main() -> int:
                 "metadata": metadata_result,
             }
     except Exception as exc:
-        print(json.dumps({"status": "error", "message": str(exc)}, ensure_ascii=True))
+        safe_message = mask_in_text(str(exc), _output_secrets(getattr(args, "dsn", "")))
+        print(json.dumps({"status": "error", "message": safe_message}, ensure_ascii=True))
         return 1
 
-    print(json.dumps(result, indent=2, ensure_ascii=True))
+    safe_result = mask_in_value(result, _output_secrets(getattr(args, "dsn", "")))
+    print(json.dumps(safe_result, indent=2, ensure_ascii=True))
     return 0
 
 
