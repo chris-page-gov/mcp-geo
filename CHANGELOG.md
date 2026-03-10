@@ -61,6 +61,11 @@ All notable changes to this project will be documented in this file.
   `tests/test_stakeholder_benchmark_pack.py`.
 
 ### Changed
+- Added repo-level LF line-ending policy via `.gitattributes` and
+  `.editorconfig`, made devcontainer `ngrok` installation opt-in, and wired
+  devcontainer/Docker proxy plus local CA handling through `.devcontainer/.env`
+  and `.devcontainer/certs/` so Windows/macOS checkouts and TLS-inspected
+  networks behave consistently without touching application code.
 - Preserved hard-avoid routing intent in `server/route_planning.py` so route
   queries that omit softening language such as `if possible` now produce hard
   exclusions instead of silent soft penalties.

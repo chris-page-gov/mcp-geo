@@ -4,6 +4,14 @@ This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-10
+
+## Cross-platform devcontainer hardening (2026-03-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| XPLAT-1 Repo line-ending and devcontainer TLS hardening | done | none | Added repo-level LF policy (`.gitattributes`, `.editorconfig`), made devcontainer `ngrok` install opt-in, added proxy build/runtime plumbing for the app and repo-built PostGIS sidecar, added an ignored `.devcontainer/certs/` drop point for local corporate root CAs, switched container HTTP clients to the system CA bundle path so injected roots are honored, and updated build/getting-started/troubleshooting docs plus focused regression checks. |
  
 ## Host/devcontainer verification wrappers (2026-03-10)
 

@@ -656,7 +656,18 @@ Copy `.env.example` → `.env` and set `OS_API_KEY`. Optional flags:
 
 ## SSL & Certificates
 
-Container and dev setup ensure current CA bundle (certifi) for stable TLS to OS APIs.
+Container and dev setup now use the system CA bundle path
+`/etc/ssl/certs/ca-certificates.crt` so local corporate root CAs can be added
+without code changes.
+
+- Put local proxy/root CA `.crt` files in `.devcontainer/certs/` before
+  rebuilding the devcontainer or Docker image.
+- For proxied networks, set `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` via
+  `.devcontainer/.env` (or host env exports).
+- Proxy settings are only used at build/runtime injection points and are not
+  persisted into the final runtime image metadata.
+- `INSTALL_NGROK` is opt-in for the devcontainer build so TLS-inspected
+  networks do not fail on the optional tunnel binary fetch.
 
 ## License
 

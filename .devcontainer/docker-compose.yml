@@ -3,6 +3,14 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+      args:
+        INSTALL_NGROK: "${INSTALL_NGROK:-false}"
+        HTTP_PROXY: "${HTTP_PROXY:-}"
+        HTTPS_PROXY: "${HTTPS_PROXY:-}"
+        NO_PROXY: "${NO_PROXY:-}"
+        http_proxy: "${http_proxy:-}"
+        https_proxy: "${https_proxy:-}"
+        no_proxy: "${no_proxy:-}"
     environment:
       BOUNDARY_CACHE_ENABLED: "true"
       BOUNDARY_CACHE_DSN: "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
@@ -17,6 +25,12 @@ services:
       OS_DATA_CACHE_DIR: "/var/lib/mcp-geo/cache/os"
       UI_EVENT_LOG_PATH: "/var/lib/mcp-geo/logs/ui-events.jsonl"
       PLAYGROUND_EVENT_LOG_PATH: "/var/lib/mcp-geo/logs/playground-events.jsonl"
+      HTTP_PROXY: "${HTTP_PROXY:-}"
+      HTTPS_PROXY: "${HTTPS_PROXY:-}"
+      NO_PROXY: "${NO_PROXY:-}"
+      http_proxy: "${http_proxy:-}"
+      https_proxy: "${https_proxy:-}"
+      no_proxy: "${no_proxy:-}"
     volumes:
       - ..:/workspaces/mcp-geo:cached
       - runtime-data:/var/lib/mcp-geo
@@ -29,6 +43,13 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/postgis.Dockerfile
+      args:
+        HTTP_PROXY: "${HTTP_PROXY:-}"
+        HTTPS_PROXY: "${HTTPS_PROXY:-}"
+        NO_PROXY: "${NO_PROXY:-}"
+        http_proxy: "${http_proxy:-}"
+        https_proxy: "${https_proxy:-}"
+        no_proxy: "${no_proxy:-}"
     platform: "${MCP_GEO_POSTGIS_PLATFORM:-linux/amd64}"
     restart: unless-stopped
     environment:
