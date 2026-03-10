@@ -45,10 +45,15 @@ Need OS credentials or trial access?
 Optional: enable the PostGIS boundary cache for full admin boundaries:
 - `BOUNDARY_CACHE_ENABLED=true`
 - `BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
+- `ROUTE_GRAPH_ENABLED=true`
+- `ROUTE_GRAPH_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
 
 Devcontainer note:
 - The devcontainer starts PostGIS as the `postgis` service; use
   `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
+- The `postgis` service now uses a pgRouting-capable image by default and the
+  post-start hook bootstraps both `scripts/boundary_cache_schema.sql` and
+  `scripts/route_graph_schema.sql` on fresh named volumes.
 - PostGIS data now uses a Docker named volume by default (not a repo bind
   mount), so corruption/isolation issues do not spill across git worktrees.
   Override the volume names if needed:
@@ -86,10 +91,13 @@ Devcontainer startup modes (HTTP vs STDIO):
 ```bash
 export BOUNDARY_CACHE_ENABLED=true
 export BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo
-
+export ROUTE_GRAPH_ENABLED=true
+export ROUTE_GRAPH_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo
 
 echo BOUNDARY_CACHE_ENABLED
 echo BOUNDARY_CACHE_DSN
+echo ROUTE_GRAPH_ENABLED
+echo ROUTE_GRAPH_DSN
 ```
 
 Storage best-practice for host runs (outside devcontainer):
@@ -495,6 +503,10 @@ Storage controls for the wrapper:
   `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis-claude`).
 - `MCP_GEO_POSTGIS_STORAGE_MODE=bind` uses
   `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
+- `MCP_GEO_POSTGIS_IMAGE` defaults to `pgrouting/pgrouting:16-3.4-3.6.1`.
+- The wrapper now sets `PGDATA=/var/lib/postgresql/data/pgdata` to match the
+  devcontainer layout and bootstraps the boundary-cache/route-graph schema
+  files after the PostGIS sidecar becomes ready.
 
 If you need deterministic non-interactive routing, set
 `MCP_STDIO_ELICITATION_ENABLED=0` to disable STDIO form elicitation prompts

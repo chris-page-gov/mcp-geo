@@ -95,6 +95,71 @@ PY
   fi
 fi
 
+# Auto-create route-graph tables/extensions for fresh PostGIS named volumes when
+# routing is enabled so descriptor/readiness checks are environment-stable.
+if ! python3 - <<'PY' >/dev/null 2>&1
+from __future__ import annotations
+
+try:
+    import psycopg
+except Exception:
+    raise SystemExit(0)
+
+from server.config import settings
+
+if not settings.ROUTE_GRAPH_ENABLED:
+    raise SystemExit(0)
+
+dsn = settings.ROUTE_GRAPH_DSN or settings.BOUNDARY_CACHE_DSN
+if not dsn:
+    raise SystemExit(0)
+
+schema_name = settings.ROUTE_GRAPH_SCHEMA
+metadata_table = f"{schema_name}.{settings.ROUTE_GRAPH_METADATA_TABLE}"
+
+with psycopg.connect(dsn) as conn:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT
+                EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgrouting'),
+                to_regclass(%s)
+            """,
+            (metadata_table,),
+        )
+        has_pgrouting, graph_metadata = cur.fetchone()
+if has_pgrouting and graph_metadata:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+then
+  if ! python3 - <<'PY' >/dev/null 2>&1
+from __future__ import annotations
+
+from pathlib import Path
+
+import psycopg
+
+from server.config import settings
+
+schema_sql = Path("scripts/route_graph_schema.sql")
+if not schema_sql.exists():
+    raise SystemExit(1)
+
+dsn = settings.ROUTE_GRAPH_DSN or settings.BOUNDARY_CACHE_DSN
+if not dsn:
+    raise SystemExit(1)
+
+sql_text = schema_sql.read_text(encoding="utf-8")
+with psycopg.connect(dsn, autocommit=True) as conn:
+    with conn.cursor() as cur:
+        cur.execute(sql_text)
+PY
+  then
+    echo "mcp-geo: route graph schema bootstrap failed; run: python3 scripts/route_graph_pipeline.py bootstrap --dsn \"\$ROUTE_GRAPH_DSN\"" >&2
+  fi
+fi
+
 # Auto-seed ons_geo cache with bundled bootstrap files when cache DB is empty.
 if ! python3 - <<'PY' >/dev/null 2>&1
 from __future__ import annotations

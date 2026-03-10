@@ -5,20 +5,33 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${MCP_GEO_IMAGE:-mcp-geo-server}"
 NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo}"
 POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis}"
-POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-postgis/postgis:16-3.4}"
-POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-bind}"
+POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-pgrouting/pgrouting:16-3.4-3.6.1}"
+POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
 POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
 DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
 POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-5432}"
+POSTGIS_PGDATA="${MCP_GEO_POSTGIS_PGDATA:-/var/lib/postgresql/data/pgdata}"
 DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
 PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
 TRACE_LOG="${MCP_STDIO_TRACE_LOG:-}"
 BUILD_MODE="${MCP_GEO_DOCKER_BUILD:-missing}"
 DOCKER_UI_EVENT_LOG_PATH="${MCP_GEO_DOCKER_UI_EVENT_LOG_PATH:-${UI_EVENT_LOG_PATH:-/logs/ui-events.jsonl}}"
+ROUTE_GRAPH_ENABLED_VALUE="${ROUTE_GRAPH_ENABLED:-true}"
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
+}
+
+is_truthy() {
+  case "${1,,}" in
+    1|true|yes|on)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 trim_space() {
@@ -92,6 +105,30 @@ hydrate_env_secret() {
   fi
 }
 
+wait_for_postgis() {
+  local attempt
+  for attempt in $(seq 1 30); do
+    if "$DOCKER_BIN" exec "$POSTGIS_CONTAINER" \
+      pg_isready -U mcp_geo -d mcp_geo >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+bootstrap_postgis_sql() {
+  local sql_file="$1"
+  local label="$2"
+  [[ -f "$sql_file" ]] || return 0
+  if "$DOCKER_BIN" exec -i "$POSTGIS_CONTAINER" \
+    psql -v ON_ERROR_STOP=1 -U mcp_geo -d mcp_geo >/dev/null 2>&1 < "$sql_file"; then
+    return 0
+  fi
+  log "$label bootstrap failed; run: docker exec -i $POSTGIS_CONTAINER psql -U mcp_geo -d mcp_geo < $sql_file"
+  return 1
+}
+
 if [[ -z "$DOCKER_BIN" ]]; then
   for candidate in /usr/local/bin/docker /opt/homebrew/bin/docker /usr/bin/docker; do
     if [[ -x "$candidate" ]]; then
@@ -139,11 +176,21 @@ fi
 
 if "$DOCKER_BIN" inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
   existing_storage="$("$DOCKER_BIN" inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Type}}|{{.Name}}|{{.Source}}{{end}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
+  existing_image="$("$DOCKER_BIN" inspect -f '{{.Config.Image}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
+  existing_pgdata="$("$DOCKER_BIN" inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null | awk -F= '/^PGDATA=/{print $2}')"
   if [[ "$POSTGIS_STORAGE_MODE" == "volume" && "$existing_storage" == bind* ]]; then
     log "PostGIS container uses bind storage but volume mode is requested."
     log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
   elif [[ "$POSTGIS_STORAGE_MODE" == "bind" && "$existing_storage" == volume* ]]; then
     log "PostGIS container uses volume storage but bind mode is requested."
+    log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
+  fi
+  if [[ -n "$existing_image" && "$existing_image" != "$POSTGIS_IMAGE" ]]; then
+    log "PostGIS container image is $existing_image but desired image is $POSTGIS_IMAGE."
+    log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
+  fi
+  if [[ -n "$existing_pgdata" && "$existing_pgdata" != "$POSTGIS_PGDATA" ]]; then
+    log "PostGIS container PGDATA is $existing_pgdata but desired PGDATA is $POSTGIS_PGDATA."
     log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
   fi
   if [[ "$("$DOCKER_BIN" inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
@@ -168,9 +215,19 @@ else
     -e POSTGRES_DB=mcp_geo \
     -e POSTGRES_USER=mcp_geo \
     -e POSTGRES_PASSWORD=mcp_geo \
+    -e PGDATA="$POSTGIS_PGDATA" \
     "${storage_args[@]}" \
     "${port_args[@]}" \
     "$POSTGIS_IMAGE" >/dev/null
+fi
+
+if wait_for_postgis; then
+  bootstrap_postgis_sql "$REPO_ROOT/scripts/boundary_cache_schema.sql" "boundary cache" || true
+  if is_truthy "$ROUTE_GRAPH_ENABLED_VALUE"; then
+    bootstrap_postgis_sql "$REPO_ROOT/scripts/route_graph_schema.sql" "route graph" || true
+  fi
+else
+  log "PostGIS did not become ready in time."
 fi
 
 should_build=false
@@ -200,6 +257,9 @@ fi
 env_args=(
   -e "BOUNDARY_CACHE_ENABLED=true"
   -e "BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
+  -e "ROUTE_GRAPH_ENABLED=${ROUTE_GRAPH_ENABLED_VALUE}"
+  -e "ROUTE_GRAPH_DSN=postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
+  -e "MCP_GEO_LIVE_DB_DSN=postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo"
   -e "MCP_STDIO_FRAMING=${MCP_STDIO_FRAMING:-line}"
   -e "MCP_APPS_RESOURCE_LINK=${MCP_APPS_RESOURCE_LINK:-0}"
   -e "MCP_APPS_CONTENT_MODE=${MCP_APPS_CONTENT_MODE:-embedded}"

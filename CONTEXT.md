@@ -123,6 +123,14 @@ assumptions change.
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
   from git worktrees (named-volume PostGIS + runtime data roots).
+- Standardizing local Docker PostGIS on the repo-owned named volume
+  `mcp-geo-postgis`; the March 10, 2026 cleanup consolidated the seed boundary
+  cache rows from `mcpgeo_cache_local_data` into that canonical volume and left
+  the legacy bind-mounted `data/postgres/pgdata` cluster non-canonical because
+  it is storage-corrupted (`invalid checkpoint record`).
+- Standardizing devcontainer/host PostGIS on a pgRouting-capable image and
+  automatic boundary-cache/route-schema bootstrap so local route planning
+  defaults no longer depend on a plain PostGIS sidecar missing `pgrouting`.
 
 ## Active Work
 

@@ -240,8 +240,10 @@ Claude Desktop config example (STDIO transport):
 }
 ```
 
-The wrapper script starts PostGIS locally (Docker), builds the image if needed,
-and runs STDIO with the boundary cache enabled.
+The wrapper script starts a pgRouting-capable PostGIS container locally
+(Docker), bootstraps the boundary-cache and route-graph schemas idempotently,
+builds the app image if needed, and runs STDIO with the cache/routing DSNs
+pointed at that sidecar.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
@@ -251,6 +253,8 @@ Set `MCP_GEO_POSTGIS_STORAGE_MODE=bind` only if you explicitly want a host path
 mount (`MCP_GEO_POSTGIS_DATA_DIR`).
 Set `MCP_GEO_POSTGIS_VOLUME` differently per worktree if you want isolated
 local PostGIS state for each branch workspace.
+Override `MCP_GEO_POSTGIS_IMAGE` only if you need a different pgRouting-capable
+tag.
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
