@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-09
+Last updated: 2026-03-10
 Owner: @chris-page-gov
 
 ## Purpose
@@ -95,6 +95,11 @@ assumptions change.
 - Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
   Desktop Opus 4.6, including launcher separation, trace/session scoring, and
   reproducible comparison reports.
+- Maintaining the new OS MRN route-planning stack under `tools/os_route.py`,
+  `server/route_graph.py`, `server/route_planning.py`, and
+  `ui/route_planner.html`, with pgRouting/PostGIS graph readiness surfaced via
+  `os_route.descriptor` and SG03-style prompts routed through
+  `os_route.get`.
 - Maintaining the stakeholder-evaluation benchmark pack under
   `scripts/stakeholder_benchmark_pack.py` and
   `data/benchmarking/stakeholder_eval/` so the Phase 3 prompt bank stays tied
@@ -110,7 +115,10 @@ assumptions change.
   `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json` and
   `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, so authenticated
   OS-backed reruns can be compared directly with the benchmark pack and still
-  report first-class product readiness separately from raw live tool success.
+  report first-class product readiness separately from raw live tool success;
+  the current live SG03 result is now a graph-readiness blocker
+  (`route_graph_disabled` / `ROUTE_GRAPH_NOT_READY`) rather than a router or
+  UI-shell failure.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -141,12 +149,14 @@ assumptions change.
 - Maintain the stakeholder benchmark gap-analysis note under
   `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
   runtime finding that `OS_API_KEY` was not visible to the benchmark-generation
-  process in the Codex workspace.
+  process in the Codex workspace and the updated SG03 blocker state now that a
+  dedicated routing surface exists.
 - Maintain the stakeholder live-rerun harness and report under
   `scripts/stakeholder_live_run.py`,
   `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`, and
   `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, including the
-  stricter `firstClassProductReady` interpretation for live OS-backed runs.
+  stricter `firstClassProductReady` interpretation for live OS-backed runs and
+  the route-graph-readiness evidence for SG03.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

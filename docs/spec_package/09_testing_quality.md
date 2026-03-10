@@ -6,11 +6,20 @@
 - Success, validation, and upstream error paths covered.
 - STDIO adapter behaviors tested (notification handling, framing).
 
-## Current execution status (2026-02-21)
+## Current execution status (2026-03-09)
 
 - Strict regression (`pytest -q`):
-  - `785 passed`, `6 skipped`
-  - Coverage gate failed: `86.69%` (required `>= 90%`)
+  - `1070 passed`, `7 skipped`
+  - Coverage gate passed: `90.01%` (required `>= 90%`)
+- Route-planning additions covered in the regression suite:
+  - `tests/test_os_mcp_route_query.py`
+  - `tests/test_os_route_tools.py`
+  - `tests/test_route_planning.py`
+  - `tests/test_route_graph.py`
+  - `tests/test_route_graph_integration.py` (PostGIS-backed miniature graph; skips
+    cleanly when no DSN is configured)
+  - `playground/tests/route_planner.spec.js`
+  - `playground/tests/compact_windows/smoke.spec.js` route-planner coverage
 - Live evaluation harness:
   - Report: `data/evaluation_results_live_review_2026-02-21_after_patch2_full.json`
   - Score: `6290/6900` (`91.16%`)
@@ -78,6 +87,8 @@
 - MCP-Apps UI rendering in a real client (Inspector + Claude).
 - Boundary cache regression tests for freshness metadata.
 - ONS dataset cache snapshot tests.
+- pgRouting turn-restriction enforcement tests once hard turn restrictions are
+  encoded in the solver rather than surfaced as warnings.
 
 ## Map output quality checks
 

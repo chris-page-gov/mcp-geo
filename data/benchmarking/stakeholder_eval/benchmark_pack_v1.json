@@ -447,9 +447,9 @@
       "rank": 3,
       "title": "Shortest route between two premises using authoritative road network constraints",
       "exampleMode": "public",
-      "supportLevel": "blocked",
-      "benchmarkRationale": "Real public sites in Retford are used for the route endpoints, while the comparator is the Ordnance Survey routing guidance that states network build steps can take two to three days and should be run overnight.",
-      "populatedPrompt": "You are GPT-5.4 using MCP-Geo as the authoritative geospatial tool layer.\n\nRules:\n- Use MCP-Geo tools wherever possible rather than answering from memory.\n- Prefer authoritative OS-backed data and identifiers.\n- Never invent UPRNs, geometries, classifications, or road-network facts.\n- If data is missing, stale, ambiguous, or unavailable, say so explicitly.\n- Show the exact reasoning steps in operational form, not hidden chain-of-thought: dataset discovery, lookup, joins, filters, overlays, routing, aggregation, and verification.\n- Distinguish confirmed results from assumptions or inferred limitations.\n- Return:\n  1) concise answer\n  2) method used\n  3) datasets/tools used\n  4) confidence and caveats\n  5) verification steps\n  6) exportable structured output where relevant\n- Where useful, produce both a short narrative answer and a machine-readable table/JSON block.\n- Where a map would materially help, say \u201cMap recommended\u201d and describe what should be shown.\n\nTask:\nGiven:\n- origin: Retford Library, 17 Churchgate, Retford, DN22 6PE\n- destination: Goodwin Hall, Chancery Lane, Retford, DN22 6DF\n- route mode: EMERGENCY\n- optional constraints: avoid known flood-risk-zone reference 167647/3 if the routing engine can represent hazards or closures\n\nUse MCP-Geo to answer:\n\u201cWhat is the best route, distance, and major restrictions affecting it?\u201d\n\nRequired steps:\n- Resolve origin and destination to authoritative locations.\n- Confirm the road/network dataset being used.\n- Compute the shortest valid route respecting known restrictions if available.\n- Return:\n  - route distance\n  - estimated travel path\n  - key turning/restriction notes\n  - any uncertainty caused by unavailable live restrictions or incomplete network state\n- If the network is prebuilt or cached, say so.\n- If MCP-Geo cannot fully compute routing, provide the furthest grounded partial result and explain the blocker.\n\nReturn:\n- concise operational answer\n- structured route summary\n- assumptions/limitations\n- verification notes\n- \u201cMap recommended\u201d output description\n",
+      "supportLevel": "partial",
+      "benchmarkRationale": "Real public sites in Retford are used for the route endpoints. The benchmark checks whether MCP-Geo uses the first-class routing surface (`os_route.get`) and either returns a grounded route or an explicit graph-readiness blocker without inventing distance or turn-by-turn details.",
+      "populatedPrompt": "You are GPT-5.4 using MCP-Geo as the authoritative geospatial tool layer.\n\nRules:\n- Use MCP-Geo tools wherever possible rather than answering from memory.\n- Prefer authoritative OS-backed data and identifiers.\n- Never invent UPRNs, geometries, classifications, or road-network facts.\n- If data is missing, stale, ambiguous, or unavailable, say so explicitly.\n- Show the exact reasoning steps in operational form, not hidden chain-of-thought: dataset discovery, lookup, joins, filters, overlays, routing, aggregation, and verification.\n- Distinguish confirmed results from assumptions or inferred limitations.\n- Return:\n  1) concise answer\n  2) method used\n  3) datasets/tools used\n  4) confidence and caveats\n  5) verification steps\n  6) exportable structured output where relevant\n- Where useful, produce both a short narrative answer and a machine-readable table/JSON block.\n- Where a map would materially help, say \u201cMap recommended\u201d and describe what should be shown.\n\nTask:\nGiven:\n- origin: Retford Library, 17 Churchgate, Retford, DN22 6PE\n- destination: Goodwin Hall, Chancery Lane, Retford, DN22 6DF\n- route mode: EMERGENCY\n- optional constraints: avoid known flood-risk-zone reference 167647/3 if the routing engine can represent hazards or closures\n\nUse MCP-Geo to answer:\n\u201cWhat is the best route, distance, and major restrictions affecting it?\u201d\n\nRequired steps:\n- Resolve origin and destination to authoritative locations.\n- Confirm the active road/network dataset and graph-readiness state.\n- Compute the shortest valid route respecting known restrictions if available.\n- Return:\n  - route distance\n  - estimated travel path\n  - key turning/restriction notes\n  - any uncertainty caused by unavailable live restrictions or incomplete network state\n- If the network is prebuilt or cached, say so.\n- If MCP-Geo cannot fully compute routing, provide the furthest grounded partial result and explain the blocker.\n\nReturn:\n- concise operational answer\n- structured route summary\n- assumptions/limitations\n- verification notes\n- \u201cMap recommended\u201d output description\n",
       "scenarioReturnFields": [
         "concise_operational_answer",
         "structured_route_summary",
@@ -465,71 +465,75 @@
           "role": "benchmark rationale"
         },
         {
-          "title": "OS MasterMap Highways Network guide to routing",
-          "url": "https://docs.os.uk/os-downloads/accessing-os-downloads/os-mastermap-highways-network-guidance#routing",
-          "role": "published blocker evidence"
+          "title": "OS Multi-modal Routing Network pgRouting getting started guide",
+          "url": "https://docs.os.uk/os-downloads/networks/os-multi-modal-routing-network/os-mrn-getting-started-guide/pgrouting",
+          "role": "published implementation reference"
         }
       ],
-      "comparatorSummary": "The comparator is not a route distance. It is the published operational constraint that building a routing network can take two to three days. MCP-Geo therefore passes this benchmark if it returns a grounded partial result and the correct blocker.",
+      "comparatorSummary": "MCP-Geo passes this benchmark if it uses `os_route.get` as the authoritative path and then either returns a grounded route from a ready graph or an explicit graph blocker such as `ROUTE_GRAPH_NOT_READY`.",
       "mcpGeoTools": [
         "os_places.search",
-        "os_apps.render_route_planner",
-        "os_mcp.route_query"
+        "os_mcp.route_query",
+        "os_route.descriptor",
+        "os_route.get",
+        "os_apps.render_route_planner"
       ],
       "knownGaps": [
-        "Current MCP-Geo exposes a route-planner UI surface but no authoritative shortest-path engine.",
-        "No live road-closure or hazard-avoidance model is wired into the repo today."
+        "Default repo environments may not yet have a provisioned MRN routing graph, so SG03 can still block at graph readiness.",
+        "Restriction richness depends on the loaded edge/turn/hazard tables; live closures are not yet guaranteed."
       ],
       "requiredTerms": [
         "route",
-        "blocked",
+        "graph",
+        "os_route.get",
         "route planner",
-        "map recommended",
-        "two to three days"
+        "map recommended"
       ],
       "referenceOutput": {
-        "concise_answer": "Current MCP-Geo can resolve the two sites and open the route-planner workflow, but it cannot yet return a verified shortest emergency route or distance because the repo does not expose a routing engine over OS Highways Network.",
+        "concise_answer": "MCP-Geo now routes this prompt correctly and exposes a route solver, but the grounded answer still depends on graph readiness: return the computed emergency route when the graph is ready, otherwise return an explicit graph-state blocker instead of inventing distance or turn notes.",
         "method_used": [
           "Resolve the origin and destination as named premises.",
           "Classify the request as a route-planning workflow with MCP-Geo routing guidance.",
-          "Return the required blocker: route-planner UI is available, shortest-path computation is not."
+          "Check graph readiness with os_route.descriptor, then call os_route.get with emergency profile and soft flood-zone avoidance."
         ],
         "datasets_tools_used": [
-          "MCP-Geo tools: os_mcp.route_query, os_places.search, os_apps.render_route_planner",
-          "Published comparator: OS MasterMap Highways Network routing guidance"
+          "MCP-Geo tools: os_mcp.route_query, os_route.descriptor, os_route.get, os_places.search, os_apps.render_route_planner",
+          "Routing source model: OS Multi-modal Routing Network loaded into PostGIS/pgRouting when provisioned"
         ],
         "confidence_caveats": [
           "Endpoint resolution is high confidence because the sites are public named premises.",
-          "Route distance, restrictions, and turn-level directions are unavailable in the current repo surface."
+          "A definitive route answer depends on an active routing graph; if the graph is not ready, no distance or turn list should be invented."
         ],
         "verification_steps": [
-          "Build or attach a precomputed routable network from OS Highways Network before re-running this scenario.",
-          "Confirm whether flood-zone avoidance should be modelled as hard exclusion or advisory constraint."
+          "Check os_route.descriptor for graph readiness and provenance before operational use.",
+          "If the graph is ready, validate the returned route against temporary closures and emergency-access policy."
         ],
         "structured_output": {
-          "status": "blocked_partial",
+          "status": "graph_not_ready",
           "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
           "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+          "profile": "emergency",
           "routeDistanceKm": null,
           "routePath": null,
-          "blocker": "No shortest-path routing engine is exposed through MCP-Geo; current support is UI-only.",
-          "suggestedExportFormat": "JSON blocker record plus GeoJSON endpoints once coordinates are resolved."
+          "blocker": "Route solver exists, but the active routing graph is not ready in this environment.",
+          "suggestedExportFormat": "JSON blocker record plus GeoJSON route output once the graph is ready."
         },
-        "concise_operational_answer": "Resolve the two premises, then stop with a grounded blocker: current MCP-Geo cannot compute the route.",
+        "concise_operational_answer": "Resolve the two premises, check os_route.descriptor, then either return the computed emergency route or stop with ROUTE_GRAPH_NOT_READY.",
         "structured_route_summary": {
-          "route_status": "blocked_partial",
-          "recommended_tool": "os_apps.render_route_planner",
-          "published_blocker": "OS routing guidance warns that network build steps can take two to three days and should be automated overnight."
+          "route_status": "graph_not_ready",
+          "recommended_tool": "os_route.get",
+          "interactive_companion_tool": "os_apps.render_route_planner",
+          "graph_readiness_step": "Call os_route.descriptor before relying on the route."
         },
         "assumptions_limitations": [
-          "No route network or live restrictions are available in the repo surface.",
-          "Flood-zone avoidance is a scenario requirement but cannot be encoded without a route engine."
+          "The default repo environment may not have a built MRN graph attached.",
+          "Hazard and turn-restriction handling depends on the loaded graph and restriction tables."
         ],
         "verification_notes": [
           "Confirm endpoint coordinates in an authoritative address service before routing.",
-          "Validate any future route against local emergency access policies and temporary closures."
+          "When a route is returned, review key restrictions and any soft-avoid penalties before operational use."
         ],
-        "map_recommended_description": "Map recommended: show both premises, the flood-risk-zone 167647/3 polygon, and the road network segment that would need route computation once available."
+        "map_recommended_description": "Map recommended: show both premises, the flood-risk-zone 167647/3 polygon, and the solved route if the graph is ready; otherwise show the endpoints plus the graph-readiness blocker."
       }
     },
     {

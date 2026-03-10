@@ -4,20 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Route Planner</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
+    />
     <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
-        --bg-1: #eef5ff;
-        --bg-2: #f8f1e9;
-        --ink: #1b2330;
-        --muted: #5a677a;
-        --accent: #2e6de6;
-        --accent-2: #f59f5a;
-        --panel: rgba(255, 255, 255, 0.9);
-        --line: rgba(27, 35, 48, 0.12);
-        --shadow: 0 24px 55px rgba(27, 35, 48, 0.2);
+        --bg-1: #eff3ea;
+        --bg-2: #f7ede3;
+        --ink: #17211d;
+        --muted: #53615b;
+        --accent: #125c4c;
+        --accent-2: #d16d3b;
+        --panel: rgba(255, 255, 255, 0.92);
+        --line: rgba(23, 33, 29, 0.12);
+        --shadow: 0 24px 58px rgba(23, 33, 29, 0.16);
         --radius: 18px;
-        --font: "Work Sans", "IBM Plex Sans", "Segoe UI", sans-serif;
       }
 
       * {
@@ -27,57 +31,60 @@
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: var(--font);
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
         color: var(--ink);
-        background: radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 40%, var(--bg-2) 100%);
+        background:
+          radial-gradient(circle at top, #ffffff 0%, var(--bg-1) 44%, var(--bg-2) 100%),
+          linear-gradient(140deg, rgba(18, 92, 76, 0.05), transparent 42%);
       }
 
       .shell {
-        padding: 24px;
-        max-width: 1200px;
+        max-width: 1280px;
         margin: 0 auto;
+        padding: 24px;
       }
 
       header {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
+        gap: 16px;
       }
 
       .title {
-        font-size: 28px;
+        font-size: 30px;
         font-weight: 600;
+        letter-spacing: 0.02em;
       }
 
       .subtitle {
-        font-size: 14px;
+        margin-top: 6px;
         color: var(--muted);
-      }
-
-      .badge {
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(46, 109, 230, 0.15);
-        color: var(--accent);
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-size: 14px;
+        max-width: 560px;
       }
 
       .header-actions {
         display: flex;
         align-items: center;
         gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .status-action,
+      .badge {
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
       }
 
       .status-action {
-        border-radius: 999px;
-        border: 1px solid rgba(46, 109, 230, 0.35);
-        background: rgba(46, 109, 230, 0.08);
+        border: 1px solid rgba(18, 92, 76, 0.25);
+        background: rgba(18, 92, 76, 0.08);
         color: var(--accent);
-        padding: 8px 12px;
-        font-size: 12px;
-        letter-spacing: 0.03em;
         cursor: pointer;
       }
 
@@ -86,129 +93,223 @@
         cursor: not-allowed;
       }
 
+      .badge {
+        background: rgba(18, 92, 76, 0.14);
+        color: var(--accent);
+      }
+
       .grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-        gap: 20px;
-        margin-top: 22px;
-      }
-
-      .map {
-        background: var(--panel);
-        border-radius: var(--radius);
-        padding: 18px;
-        border: 1px solid var(--line);
-        box-shadow: var(--shadow);
-        min-height: 360px;
-        position: relative;
-        overflow: hidden;
-        animation: rise 0.6s ease-out;
-      }
-
-      .map::before {
-        content: "";
-        position: absolute;
-        inset: 24px;
-        border-radius: 14px;
-        background:
-          linear-gradient(120deg, rgba(46, 109, 230, 0.18), transparent 50%),
-          linear-gradient(220deg, rgba(245, 159, 90, 0.2), transparent 45%),
-          repeating-linear-gradient(
-            0deg,
-            rgba(27, 35, 48, 0.08) 0px,
-            rgba(27, 35, 48, 0.08) 1px,
-            transparent 1px,
-            transparent 26px
-          );
+        grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+        gap: 22px;
+        margin-top: 24px;
       }
 
       .panel {
         background: var(--panel);
         border-radius: var(--radius);
-        padding: 18px;
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
-        animation: rise 0.6s ease-out 0.1s both;
+        overflow: hidden;
       }
 
-      .panel h3 {
-        margin: 0 0 12px;
+      .map-panel {
+        min-height: 560px;
+        position: relative;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        min-height: 560px;
+      }
+
+      .map-overlay {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        z-index: 5;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        pointer-events: none;
+      }
+
+      .map-chip {
+        pointer-events: auto;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(23, 33, 29, 0.12);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .map-fallback {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+        background:
+          linear-gradient(135deg, rgba(18, 92, 76, 0.1), transparent 50%),
+          repeating-linear-gradient(
+            0deg,
+            rgba(23, 33, 29, 0.06) 0,
+            rgba(23, 33, 29, 0.06) 1px,
+            transparent 1px,
+            transparent 28px
+          );
+      }
+
+      .control-panel {
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+        align-content: start;
+      }
+
+      .section {
+        display: grid;
+        gap: 10px;
+      }
+
+      .section h3 {
+        margin: 0;
         font-size: 16px;
       }
 
       .field {
-        display: flex;
-        flex-direction: column;
+        display: grid;
         gap: 6px;
-        margin-bottom: 12px;
       }
 
-      .field label {
+      label {
         font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.09em;
         color: var(--muted);
       }
 
-      .field input {
-        padding: 10px 12px;
-        border-radius: 10px;
+      input,
+      select {
+        width: 100%;
+        border-radius: 12px;
         border: 1px solid var(--line);
-        font-size: 14px;
-      }
-
-      .field select {
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid var(--line);
-        font-size: 14px;
+        padding: 11px 12px;
+        font: inherit;
+        background: #fff;
       }
 
       .cta {
         width: 100%;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: none;
-        background: linear-gradient(120deg, var(--accent), #1f4fb5);
+        border: 0;
+        border-radius: 14px;
+        padding: 13px 16px;
+        font: inherit;
+        background: linear-gradient(135deg, var(--accent), #0b4639);
         color: #fff;
-        font-size: 14px;
         cursor: pointer;
       }
 
+      .flow-status,
+      .summary,
+      .warning-list,
+      .payload {
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.88);
+        padding: 12px 14px;
+      }
+
+      .flow-status[data-state="error"] {
+        border-color: rgba(177, 62, 62, 0.26);
+        background: rgba(255, 242, 242, 0.94);
+        color: #8b2e2e;
+      }
+
+      .flow-status[data-state="loading"] {
+        border-color: rgba(18, 92, 76, 0.18);
+        background: rgba(240, 247, 244, 0.94);
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .metric {
+        border-radius: 12px;
+        background: rgba(18, 92, 76, 0.06);
+        padding: 10px 12px;
+      }
+
+      .metric-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .metric-value {
+        margin-top: 4px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
       .steps {
-        margin-top: 14px;
         display: grid;
         gap: 8px;
-        font-size: 13px;
+      }
+
+      .step {
+        border-radius: 12px;
+        border: 1px solid rgba(23, 33, 29, 0.08);
+        background: rgba(23, 33, 29, 0.03);
+        padding: 10px 12px;
+      }
+
+      .step-meta {
+        margin-top: 4px;
+        font-size: 12px;
         color: var(--muted);
+      }
+
+      .warning-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .warning-item {
+        border-radius: 12px;
+        background: rgba(209, 109, 59, 0.12);
+        color: #7a431d;
+        padding: 10px 12px;
+        font-size: 13px;
       }
 
       .payload {
-        margin-top: 14px;
-        padding: 12px;
-        border-radius: 12px;
-        background: rgba(27, 35, 48, 0.05);
         font-size: 12px;
         color: var(--muted);
-        height: 120px;
-        overflow: auto;
         white-space: pre-wrap;
-      }
-
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(12px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        max-height: 220px;
+        overflow: auto;
       }
 
       @media (max-width: 960px) {
         .grid {
           grid-template-columns: 1fr;
+        }
+
+        .map-panel,
+        #map {
+          min-height: 360px;
         }
       }
     </style>
@@ -218,7 +319,10 @@
       <header data-compact-header>
         <div>
           <div class="title">Route Planner</div>
-          <div class="subtitle">Plot a route and review turn by turn steps.</div>
+          <div class="subtitle">
+            Compute a routed path with <span class="mono">os_route.get</span>, then inspect the
+            geometry, steps, warnings, and graph freshness on the map.
+          </div>
         </div>
         <div class="header-actions">
           <button id="fullscreenToggle" class="status-action" type="button">Maximise</button>
@@ -227,63 +331,144 @@
       </header>
 
       <section class="grid" data-compact-grid>
-        <div class="map" data-compact-panel data-compact-map data-testid="map-stage">
-          <div class="badge" style="position: absolute; top: 32px; left: 32px">Route map</div>
+        <div class="panel map-panel" data-compact-panel data-compact-map data-testid="map-stage">
+          <div class="map-overlay">
+            <div class="map-chip" id="mapStateChip">Map initialising</div>
+            <div class="map-chip" id="graphChip">Graph unknown</div>
+          </div>
+          <div id="map"></div>
+          <div class="map-fallback" id="mapFallback">
+            This host can still compute routes, but the basemap is unavailable in the current runtime.
+          </div>
         </div>
 
-        <aside class="panel" data-compact-panel>
-          <h3>Route inputs</h3>
-          <div class="field">
-            <label for="startInput">Start</label>
-            <input id="startInput" value="51.505,-0.120" placeholder="lat,lon" data-testid="route-start" />
+        <aside class="panel control-panel" data-compact-panel>
+          <div class="section">
+            <h3>Route inputs</h3>
+            <div class="field">
+              <label for="startInput">Start</label>
+              <input
+                id="startInput"
+                value="Coventry"
+                placeholder="Address, place, UPRN, or lat,lon"
+                data-testid="route-start"
+              />
+            </div>
+            <div class="field">
+              <label for="endInput">End</label>
+              <input
+                id="endInput"
+                value="London"
+                placeholder="Address, place, UPRN, or lat,lon"
+                data-testid="route-end"
+              />
+            </div>
+            <div class="field">
+              <label for="viaInput">Via (optional)</label>
+              <input
+                id="viaInput"
+                value=""
+                placeholder="Comma-separated stop list"
+                data-testid="route-via"
+              />
+            </div>
+            <div class="field">
+              <label for="avoidInput">Avoid (optional)</label>
+              <input
+                id="avoidInput"
+                value=""
+                placeholder="IDs or area refs, comma-separated"
+                data-testid="route-avoid"
+              />
+            </div>
+            <div class="field">
+              <label for="routeMode">Profile</label>
+              <select id="routeMode" data-testid="route-mode">
+                <option value="drive">Drive</option>
+                <option value="walk">Walk</option>
+                <option value="cycle">Cycle</option>
+                <option value="emergency">Emergency</option>
+                <option value="multimodal">Multimodal</option>
+              </select>
+            </div>
+            <button
+              class="cta"
+              id="calculateRoute"
+              type="button"
+              data-testid="primary-cta"
+              data-compact-cta
+            >
+              Calculate route
+            </button>
           </div>
-          <div class="field">
-            <label for="endInput">End</label>
-            <input id="endInput" value="51.515,-0.100" placeholder="lat,lon" data-testid="route-end" />
+
+          <div id="flowStatus" class="flow-status" data-state="idle" data-testid="flow-status">
+            Idle. Enter route stops and calculate a path.
           </div>
-          <div class="field">
-            <label for="routeMode">Mode</label>
-            <select id="routeMode" data-testid="route-mode">
-              <option value="car">Car</option>
-              <option value="walk">Walk</option>
-              <option value="cycle">Cycle</option>
-            </select>
+
+          <div class="summary" id="routeSummary" data-testid="route-summary">
+            Waiting for route output.
           </div>
-          <button class="cta" id="calculateRoute" type="button" data-testid="primary-cta" data-compact-cta>
-            Calculate route
-          </button>
-          <div id="flowStatus" class="steps" data-testid="flow-status">
-            <div>Idle. Enter coordinates and click Calculate route.</div>
+
+          <div class="section">
+            <h3>Steps</h3>
+            <div id="routeSteps" class="steps">
+              <div class="step">No route calculated yet.</div>
+            </div>
           </div>
-          <div id="routeSteps" class="steps">
-            <div>1. Head north on Example Road</div>
-            <div>2. Turn right onto Sample Street</div>
-            <div>3. Arrive at destination</div>
+
+          <div class="section">
+            <h3>Warnings</h3>
+            <div id="warnings" class="warning-list">
+              <div class="warning-item">No warnings.</div>
+            </div>
           </div>
+
           <div id="payload" class="payload">Waiting for MCP host payload...</div>
         </aside>
       </section>
     </div>
 
+    <script
+      src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+      onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
+    ></script>
     <script src="shared/compact_contract.js"></script>
     <script>
       const pendingCalls = new Map();
       let rpcId = 0;
 
-      const statusBadge = document.getElementById("statusBadge");
-      const fullscreenToggle = document.getElementById("fullscreenToggle");
-      const startInput = document.getElementById("startInput");
-      const endInput = document.getElementById("endInput");
-      const routeMode = document.getElementById("routeMode");
-      const payload = document.getElementById("payload");
-      const flowStatus = document.getElementById("flowStatus");
-      const routeSteps = document.getElementById("routeSteps");
-      const calculateRoute = document.getElementById("calculateRoute");
+      const elements = {
+        statusBadge: document.getElementById("statusBadge"),
+        fullscreenToggle: document.getElementById("fullscreenToggle"),
+        startInput: document.getElementById("startInput"),
+        endInput: document.getElementById("endInput"),
+        viaInput: document.getElementById("viaInput"),
+        avoidInput: document.getElementById("avoidInput"),
+        routeMode: document.getElementById("routeMode"),
+        payload: document.getElementById("payload"),
+        flowStatus: document.getElementById("flowStatus"),
+        routeSteps: document.getElementById("routeSteps"),
+        routeSummary: document.getElementById("routeSummary"),
+        warnings: document.getElementById("warnings"),
+        calculateRoute: document.getElementById("calculateRoute"),
+        graphChip: document.getElementById("graphChip"),
+        mapStateChip: document.getElementById("mapStateChip"),
+        mapFallback: document.getElementById("mapFallback"),
+      };
+
       const state = {
         hostReady: false,
         displayMode: "inline",
         availableDisplayModes: [],
+        proxyBase:
+          window.location.origin && window.location.origin !== "null"
+            ? window.location.origin
+            : "http://localhost",
+        map: null,
+        graph: null,
       };
+
       const compactContract = window.MCP_GEO_COMPACT
         ? window.MCP_GEO_COMPACT.init({
             uiId: "route_planner",
@@ -291,25 +476,6 @@
             ctaSelector: "#calculateRoute",
           })
         : null;
-      let lastMessage = { info: "Waiting for MCP host payload..." };
-
-      function setStatus(text) {
-        statusBadge.textContent = text;
-      }
-
-      function setFlowStatus(stateName, text) {
-        flowStatus.dataset.state = stateName || "idle";
-        flowStatus.innerHTML = `<div>${text}</div>`;
-      }
-
-      function renderRouteSteps(items) {
-        routeSteps.innerHTML = "";
-        items.forEach((item, index) => {
-          const row = document.createElement("div");
-          row.textContent = `${index + 1}. ${item}`;
-          routeSteps.appendChild(row);
-        });
-      }
 
       function postToHost(message) {
         if (window.parent) {
@@ -337,6 +503,15 @@
         postToHost({ jsonrpc: "2.0", method, params });
       }
 
+      function setStatus(text) {
+        elements.statusBadge.textContent = text;
+      }
+
+      function setFlowStatus(stateName, text) {
+        elements.flowStatus.dataset.state = stateName || "idle";
+        elements.flowStatus.textContent = text || "Idle.";
+      }
+
       function normalizeDisplayMode(mode) {
         if (typeof mode !== "string") {
           return null;
@@ -345,48 +520,23 @@
         if (!normalized) {
           return null;
         }
-        if (normalized === "inline" || normalized === "fullscreen" || normalized === "pip") {
-          return normalized;
-        }
-        return null;
-      }
-
-      function applyHostContext(hostContext) {
-        if (!hostContext || typeof hostContext !== "object") {
-          return;
-        }
-        if (compactContract) {
-          compactContract.mergeHostContext(hostContext);
-        }
-        if (Array.isArray(hostContext.availableDisplayModes)) {
-          state.availableDisplayModes = hostContext.availableDisplayModes
-            .map((mode) => normalizeDisplayMode(mode))
-            .filter(Boolean);
-        }
-        const mode = normalizeDisplayMode(hostContext.displayMode);
-        if (mode) {
-          state.displayMode = mode;
-        }
-        updateFullscreenControl();
+        return ["inline", "fullscreen", "pip"].includes(normalized) ? normalized : null;
       }
 
       function updateFullscreenControl() {
-        if (!fullscreenToggle) {
-          return;
-        }
         const canFullscreen =
           Array.isArray(state.availableDisplayModes) &&
           state.availableDisplayModes.includes("fullscreen");
-        fullscreenToggle.disabled = !state.hostReady;
+        elements.fullscreenToggle.disabled = !state.hostReady;
         if (!state.hostReady) {
-          fullscreenToggle.textContent = "Maximise";
+          elements.fullscreenToggle.textContent = "Maximise";
           return;
         }
         if (!canFullscreen) {
-          fullscreenToggle.textContent = "Try maximise";
+          elements.fullscreenToggle.textContent = "Try maximise";
           return;
         }
-        fullscreenToggle.textContent =
+        elements.fullscreenToggle.textContent =
           state.displayMode === "fullscreen" ? "Exit maximise" : "Maximise";
       }
 
@@ -399,97 +549,507 @@
             state.displayMode = resolvedMode;
           }
           updateFullscreenControl();
-        } catch (err) {
+        } catch (_err) {
           setStatus("Fullscreen unavailable");
         }
       }
 
-      function parseLatLon(text) {
-        const value = String(text || "")
+      function sanitizeToolName(toolName) {
+        if (typeof toolName !== "string") {
+          return toolName;
+        }
+        return toolName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 64);
+      }
+
+      function extractToolPayload(result) {
+        if (!result || typeof result !== "object") {
+          return result;
+        }
+        if (result.data && typeof result.data === "object") {
+          return result.data;
+        }
+        if (result.structuredContent && typeof result.structuredContent === "object") {
+          return result.structuredContent;
+        }
+        if (Array.isArray(result.content)) {
+          for (const block of result.content) {
+            if (!block || typeof block !== "object") {
+              continue;
+            }
+            if (block.type === "json" && block.json && typeof block.json === "object") {
+              return block.json;
+            }
+            if (block.type === "text" && typeof block.text === "string") {
+              const text = block.text.trim();
+              if (text.startsWith("{") || text.startsWith("[")) {
+                try {
+                  const parsed = JSON.parse(text);
+                  if (parsed && typeof parsed === "object") {
+                    return parsed;
+                  }
+                } catch (_err) {
+                  // Ignore invalid JSON text blocks.
+                }
+              }
+            }
+          }
+        }
+        return result;
+      }
+
+      async function requestTool(tool, args) {
+        try {
+          const result = await rpcCall("tools/call", { name: tool, arguments: args || {} });
+          return extractToolPayload(result);
+        } catch (err) {
+          const message = String(err?.message || "");
+          const sanitized = sanitizeToolName(tool);
+          const looksMissing = /tool not found|unknown tool|not found on server/i.test(message);
+          if (sanitized && sanitized !== tool && looksMissing) {
+            const result = await rpcCall("tools/call", { name: sanitized, arguments: args || {} });
+            return extractToolPayload(result);
+          }
+          throw err;
+        }
+      }
+
+      function splitListInput(text) {
+        return String(text || "")
+          .split(",")
+          .map((part) => part.trim())
+          .filter(Boolean);
+      }
+
+      function normalizeCoordinates(text) {
+        const parts = String(text || "")
           .split(",")
           .map((part) => Number(part.trim()));
-        if (value.length !== 2 || value.some((item) => !Number.isFinite(item))) {
+        if (parts.length !== 2 || parts.some((value) => !Number.isFinite(value))) {
           return null;
         }
-        const lat = value[0];
-        const lon = value[1];
-        return { lat, lon };
+        const lat = parts[0];
+        const lon = parts[1];
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+          return null;
+        }
+        return [lon, lat];
       }
 
-      function haversineKm(start, end) {
-        const toRad = (deg) => (deg * Math.PI) / 180;
-        const earthKm = 6371;
-        const dLat = toRad(end.lat - start.lat);
-        const dLon = toRad(end.lon - start.lon);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(toRad(start.lat)) *
-            Math.cos(toRad(end.lat)) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return earthKm * c;
+      function toStop(text) {
+        const trimmed = String(text || "").trim();
+        if (!trimmed) {
+          return null;
+        }
+        const coordinates = normalizeCoordinates(trimmed);
+        if (coordinates) {
+          return { coordinates };
+        }
+        if (/^\d{8,13}$/.test(trimmed)) {
+          return { uprn: trimmed };
+        }
+        return { query: trimmed };
       }
 
-      function estimateMinutes(distanceKm, mode) {
-        const speedKmh = mode === "walk" ? 5 : mode === "cycle" ? 16 : 35;
-        return Math.max(1, Math.round((distanceKm / speedKmh) * 60));
+      function readRouteRequest() {
+        const start = toStop(elements.startInput.value);
+        const end = toStop(elements.endInput.value);
+        if (!start || !end) {
+          return { error: "Enter valid start and end stops. Coordinates must be lat,lon." };
+        }
+        const via = splitListInput(elements.viaInput.value).map(toStop).filter(Boolean);
+        const avoidItems = splitListInput(elements.avoidInput.value);
+        const avoidIds = avoidItems.filter((value) => /\//.test(value));
+        const avoidAreas = avoidItems.filter((value) => !/\//.test(value));
+        return {
+          stops: [start, end],
+          via,
+          profile: elements.routeMode.value || "drive",
+          constraints: {
+            avoidAreas,
+            avoidIds,
+            softAvoid: true,
+          },
+        };
+      }
+
+      function renderSteps(steps) {
+        if (!Array.isArray(steps) || !steps.length) {
+          elements.routeSteps.innerHTML = '<div class="step">No route steps returned.</div>';
+          return;
+        }
+        elements.routeSteps.innerHTML = "";
+        steps.forEach((step, index) => {
+          const item = document.createElement("div");
+          item.className = "step";
+          const instruction =
+            step && typeof step === "object" ? step.instruction || step.name || `Step ${index + 1}` : String(step);
+          const distance =
+            step && typeof step === "object" && Number.isFinite(step.distanceMeters)
+              ? `${(step.distanceMeters / 1000).toFixed(2)} km`
+              : null;
+          const duration =
+            step && typeof step === "object" && Number.isFinite(step.durationSeconds)
+              ? `${Math.round(step.durationSeconds / 60)} min`
+              : null;
+          item.innerHTML = `
+            <div>${index + 1}. ${instruction}</div>
+            <div class="step-meta">${[distance, duration, step?.mode].filter(Boolean).join(" • ")}</div>
+          `;
+          elements.routeSteps.appendChild(item);
+        });
+      }
+
+      function renderWarnings(warnings) {
+        if (!Array.isArray(warnings) || !warnings.length) {
+          elements.warnings.innerHTML = '<div class="warning-item">No warnings.</div>';
+          return;
+        }
+        elements.warnings.innerHTML = "";
+        warnings.forEach((warning) => {
+          const item = document.createElement("div");
+          item.className = "warning-item";
+          if (warning && typeof warning === "object") {
+            item.textContent =
+              warning.message ||
+              warning.category ||
+              warning.restrictionType ||
+              JSON.stringify(warning);
+          } else {
+            item.textContent = String(warning);
+          }
+          elements.warnings.appendChild(item);
+        });
+      }
+
+      function renderSummary(result) {
+        if (!result || typeof result !== "object" || result.isError) {
+          elements.routeSummary.textContent = "Waiting for route output.";
+          return;
+        }
+        const distanceKm = Number(result.distanceMeters || 0) / 1000;
+        const durationMinutes = Math.round(Number(result.durationSeconds || 0) / 60);
+        const graph = result.graph || {};
+        elements.graphChip.textContent = graph.graphVersion
+          ? `Graph ${graph.graphVersion}`
+          : graph.reason
+            ? `Graph ${graph.reason}`
+            : "Graph ready";
+        elements.routeSummary.innerHTML = `
+          <div><strong>Route ready</strong></div>
+          <div class="summary-grid">
+            <div class="metric">
+              <div class="metric-label">Distance</div>
+              <div class="metric-value">${distanceKm.toFixed(2)} km</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Duration</div>
+              <div class="metric-value">${durationMinutes} min</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Profile</div>
+              <div class="metric-value">${String(result.profile || "drive")}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Freshness</div>
+              <div class="metric-value">${graph.sourceReleaseDate || graph.builtAt || "Unknown"}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function routeFeatureCollection(result) {
+        const routeFeature =
+          result &&
+          typeof result === "object" &&
+          result.route &&
+          typeof result.route === "object" &&
+          result.route.geometry
+            ? result.route
+            : null;
+        return {
+          type: "FeatureCollection",
+          features: routeFeature ? [routeFeature] : [],
+        };
+      }
+
+      function stopFeatureCollection(result) {
+        const stops = Array.isArray(result?.resolvedStops) ? result.resolvedStops : [];
+        return {
+          type: "FeatureCollection",
+          features: stops
+            .filter((stop) => typeof stop?.lon === "number" && typeof stop?.lat === "number")
+            .map((stop) => ({
+              type: "Feature",
+              properties: {
+                label: stop.label || "Stop",
+              },
+              geometry: {
+                type: "Point",
+                coordinates: [stop.lon, stop.lat],
+              },
+            })),
+        };
+      }
+
+      function fitMapToRoute(result) {
+        if (!state.map || !window.maplibregl) {
+          return;
+        }
+        const stops = Array.isArray(result?.resolvedStops) ? result.resolvedStops : [];
+        if (!stops.length) {
+          return;
+        }
+        const bounds = new maplibregl.LngLatBounds();
+        stops.forEach((stop) => {
+          if (typeof stop?.lon === "number" && typeof stop?.lat === "number") {
+            bounds.extend([stop.lon, stop.lat]);
+          }
+        });
+        if (!bounds.isEmpty()) {
+          state.map.fitBounds(bounds, { padding: 48, maxZoom: 15 });
+        }
+      }
+
+      function renderMapRoute(result) {
+        if (!state.map) {
+          return;
+        }
+        const routeSource = state.map.getSource("route-geometry");
+        if (routeSource) {
+          routeSource.setData(routeFeatureCollection(result));
+        }
+        const stopSource = state.map.getSource("route-stops");
+        if (stopSource) {
+          stopSource.setData(stopFeatureCollection(result));
+        }
+        const hasRoute =
+          result &&
+          typeof result === "object" &&
+          result.route &&
+          result.route.geometry &&
+          Array.isArray(result.route.geometry.coordinates) &&
+          result.route.geometry.coordinates.length > 1;
+        document.getElementById("map").dataset.routeRendered = hasRoute ? "true" : "false";
+        fitMapToRoute(result);
+      }
+
+      function rewriteOsRequest(url) {
+        try {
+          const proxyBase = state.proxyBase || "http://localhost";
+          const resolved = new URL(url, proxyBase);
+          if (resolved.pathname.includes("/maps/vector/v1/")) {
+            resolved.pathname = resolved.pathname.replace("/maps/vector/v1/", "/maps/vector/");
+          }
+          return resolved.toString();
+        } catch (_err) {
+          return url;
+        }
+      }
+
+      function ensureMapLayers() {
+        if (!state.map) {
+          return;
+        }
+        if (!state.map.getSource("route-geometry")) {
+          state.map.addSource("route-geometry", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+          });
+        }
+        if (!state.map.getLayer("route-line")) {
+          state.map.addLayer({
+            id: "route-line",
+            type: "line",
+            source: "route-geometry",
+            paint: {
+              "line-color": "#d16d3b",
+              "line-width": 5,
+              "line-opacity": 0.88,
+            },
+          });
+        }
+        if (!state.map.getSource("route-stops")) {
+          state.map.addSource("route-stops", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+          });
+        }
+        if (!state.map.getLayer("route-stops-layer")) {
+          state.map.addLayer({
+            id: "route-stops-layer",
+            type: "circle",
+            source: "route-stops",
+            paint: {
+              "circle-color": "#125c4c",
+              "circle-radius": 6,
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": 2,
+            },
+          });
+        }
+      }
+
+      function initMap() {
+        if (!window.maplibregl) {
+          elements.mapFallback.hidden = false;
+          elements.mapStateChip.textContent = "Map runtime missing";
+          return;
+        }
+        const workerUrl = `${state.proxyBase}/maps/worker/maplibre-gl-csp-worker.js`;
+        maplibregl.workerUrl = workerUrl;
+        state.map = new maplibregl.Map({
+          container: "map",
+          style: {
+            version: 8,
+            sources: {},
+            layers: [{ id: "background", type: "background", paint: { "background-color": "#eff3ea" } }],
+          },
+          center: [-1.5, 52.4],
+          zoom: 8,
+          transformRequest: (url) => ({ url: rewriteOsRequest(url) }),
+        });
+        state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        state.map.on("load", () => {
+          elements.mapFallback.hidden = true;
+          elements.mapStateChip.textContent = "Map ready";
+          ensureMapLayers();
+          const styleUrl =
+            `${state.proxyBase}/maps/vector/vts/resources/styles?style=` +
+            encodeURIComponent("OS_VTS_3857_Light.json") +
+            "&srs=3857";
+          state.map.setStyle(styleUrl);
+        });
+        state.map.on("styledata", () => {
+          ensureMapLayers();
+        });
+        state.map.on("error", (event) => {
+          elements.mapFallback.hidden = false;
+          elements.mapStateChip.textContent =
+            event?.error?.message || "Map error";
+        });
+      }
+
+      async function logRouteEvent(payload) {
+        try {
+          await requestTool("os_apps.log_event", {
+            eventType: "route_plan",
+            payload,
+          });
+        } catch (_err) {
+          // Best-effort analytics only.
+        }
       }
 
       async function calculateRoutePlan() {
-        const start = parseLatLon(startInput.value);
-        const end = parseLatLon(endInput.value);
-        const mode = routeMode.value || "car";
-        if (!start || !end) {
-          setFlowStatus("error", "Use `lat,lon` format for start and end.");
-          setStatus("Invalid coordinates");
+        const request = readRouteRequest();
+        if (request.error) {
+          setFlowStatus("error", request.error);
+          setStatus("Invalid stops");
           return;
         }
 
         setFlowStatus("loading", "Calculating route...");
         setStatus("Calculating...");
-        const distanceKm = haversineKm(start, end);
-        const minutes = estimateMinutes(distanceKm, mode);
-        const steps = [
-          `Start at ${start.lat.toFixed(4)}, ${start.lon.toFixed(4)}`,
-          `Travel ${distanceKm.toFixed(2)} km by ${mode}`,
-          `Estimated duration: ${minutes} min`,
-          `Arrive at ${end.lat.toFixed(4)}, ${end.lon.toFixed(4)}`,
-        ];
-
-        const responsePayload = {
-          start,
-          end,
-          mode,
-          distanceKm: Number(distanceKm.toFixed(3)),
-          etaMinutes: minutes,
-          steps,
-          hostReady: state.hostReady,
-        };
-
         try {
-          await rpcCall("tools/call", {
-            name: "os_apps.log_event",
-            arguments: {
-              eventType: "route_plan",
-              payload: responsePayload,
-            },
+          const result = await requestTool("os_route.get", request);
+          elements.payload.textContent = JSON.stringify(result, null, 2);
+          if (result && typeof result === "object" && result.isError) {
+            const graph = result.graph || {};
+            elements.graphChip.textContent = graph.reason || "Graph unavailable";
+            renderWarnings(result.warnings || [result.message || "Routing failed"]);
+            renderSteps([]);
+            renderSummary(null);
+            setFlowStatus("error", result.message || "Routing failed.");
+            setStatus("Route failed");
+            return;
+          }
+          state.graph = result.graph || null;
+          renderSummary({ ...result, profile: request.profile });
+          renderSteps(result.steps || []);
+          renderWarnings(result.warnings || []);
+          renderMapRoute(result);
+          await logRouteEvent({
+            profile: request.profile,
+            distanceMeters: result.distanceMeters,
+            durationSeconds: result.durationSeconds,
+            warnings: result.warnings || [],
           });
-        } catch (_err) {
-          // host logging is best-effort in this compact flow
+          const distanceKm = (Number(result.distanceMeters || 0) / 1000).toFixed(2);
+          setFlowStatus("success", `Route ready: ${distanceKm} km.`);
+          setStatus("Route ready");
+          rpcNotify("ui/notifications/initialized", { routeReady: true });
+        } catch (err) {
+          renderWarnings([String(err?.message || "Routing failed")]);
+          renderSteps([]);
+          renderSummary(null);
+          setFlowStatus("error", String(err?.message || "Routing failed."));
+          setStatus("Route failed");
         }
-
-        lastMessage = responsePayload;
-        payload.textContent = JSON.stringify(responsePayload, null, 2);
-        renderRouteSteps(steps);
-        setFlowStatus("success", `Route ready: ${distanceKm.toFixed(2)} km, ${minutes} min.`);
-        setStatus("Route ready");
-        rpcNotify("ui/notifications/initialized", { routeReady: true });
       }
 
-      calculateRoute.addEventListener("click", () => void calculateRoutePlan());
-      if (fullscreenToggle) {
-        fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
+      function stopToText(stop) {
+        if (!stop || typeof stop !== "object") {
+          return "";
+        }
+        if (typeof stop.query === "string") {
+          return stop.query;
+        }
+        if (typeof stop.uprn === "string") {
+          return stop.uprn;
+        }
+        const coordinates = stop.coordinates;
+        if (Array.isArray(coordinates) && coordinates.length === 2) {
+          return `${coordinates[1]},${coordinates[0]}`;
+        }
+        return "";
+      }
+
+      function applyRouteConfig(config) {
+        if (!config || typeof config !== "object") {
+          return;
+        }
+        if (config.proxyBase && typeof config.proxyBase === "string") {
+          state.proxyBase = config.proxyBase.replace(/\/+$/, "");
+        }
+        const stops = Array.isArray(config.stops) ? config.stops : [];
+        if (stops[0]) {
+          elements.startInput.value = stopToText(stops[0]);
+        }
+        if (stops[1]) {
+          elements.endInput.value = stopToText(stops[stops.length - 1]);
+        }
+        if (Array.isArray(config.via) && config.via.length) {
+          elements.viaInput.value = config.via.map(stopToText).filter(Boolean).join(", ");
+        }
+        const constraints = config.constraints || {};
+        const avoidIds = Array.isArray(constraints.avoidIds) ? constraints.avoidIds : [];
+        const avoidAreas = Array.isArray(constraints.avoidAreas) ? constraints.avoidAreas : [];
+        elements.avoidInput.value = [...avoidIds, ...avoidAreas].join(", ");
+        if (typeof config.profile === "string") {
+          elements.routeMode.value = config.profile;
+        }
+      }
+
+      function applyHostContext(hostContext) {
+        if (!hostContext || typeof hostContext !== "object") {
+          return;
+        }
+        if (compactContract) {
+          compactContract.mergeHostContext(hostContext);
+        }
+        if (Array.isArray(hostContext.availableDisplayModes)) {
+          state.availableDisplayModes = hostContext
+            .availableDisplayModes.map((mode) => normalizeDisplayMode(mode))
+            .filter(Boolean);
+        }
+        const mode = normalizeDisplayMode(hostContext.displayMode);
+        if (mode) {
+          state.displayMode = mode;
+        }
+        updateFullscreenControl();
+        if (state.map) {
+          setTimeout(() => state.map.resize(), 0);
+        }
       }
 
       window.addEventListener("message", (event) => {
@@ -513,23 +1073,24 @@
           return;
         }
         if (message.method === "ui/notifications/tool-input") {
-          const args = message.params?.arguments || message.params?.args || {};
-          if (args.start) {
-            startInput.value = String(args.start);
-          }
-          if (args.end) {
-            endInput.value = String(args.end);
-          }
-          if (args.mode) {
-            routeMode.value = String(args.mode);
-          }
+          const params = message.params || {};
+          const config =
+            params.config ||
+            params.arguments ||
+            params.args ||
+            params.structuredContent ||
+            params.result ||
+            {};
+          applyRouteConfig(config);
           return;
         }
         if (message.method === "ui/notifications/host-context-changed") {
           applyHostContext(message.params || {});
-          return;
         }
       });
+
+      elements.calculateRoute.addEventListener("click", () => void calculateRoutePlan());
+      elements.fullscreenToggle.addEventListener("click", () => void toggleFullscreen());
 
       async function initializeUi() {
         try {
@@ -547,11 +1108,9 @@
       }
 
       updateFullscreenControl();
-      setFlowStatus("idle", "Idle. Enter coordinates and click Calculate route.");
+      initMap();
       initializeUi();
-      window.__MCP_GEO_ROUTE_PLANNER__ = {
-        calculateRoutePlan,
-      };
+      window.__MCP_GEO_ROUTE_PLANNER__ = { calculateRoutePlan, applyRouteConfig };
     </script>
   </body>
 </html>

@@ -30,6 +30,7 @@ for _mod in [
     "tools.ons_codes",
     "tools.nomis_data",
     "tools.os_mcp",
+    "tools.os_route",
     "tools.os_apps",
 ]:
     try:

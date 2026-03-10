@@ -268,6 +268,8 @@ def infer_source(tool: str, body: Any, ok: bool) -> str:
         return "Admin lookup live" if isinstance(body, dict) and body.get("live") else "Admin lookup"
     if tool.startswith("ons_geo."):
         return "ONS geography cache"
+    if tool.startswith("os_route."):
+        return "Routing engine"
     if tool.startswith("os_apps."):
         return "UI shell"
     if tool == "os_mcp.route_query":
@@ -385,6 +387,26 @@ def summarize_response(tool: str, body: Any) -> dict[str, Any]:
             "recommendedTool": body.get("recommended_tool"),
             "workflowSteps": body.get("workflow_steps"),
         }
+    if tool == "os_route.descriptor":
+        graph = body.get("graph") if isinstance(body.get("graph"), dict) else {}
+        return {
+            "status": body.get("status"),
+            "graphReady": graph.get("ready"),
+            "graphReason": graph.get("reason"),
+            "graphVersion": graph.get("graphVersion"),
+        }
+    if tool == "os_route.get":
+        graph = body.get("graph") if isinstance(body.get("graph"), dict) else {}
+        return {
+            "profile": body.get("profile"),
+            "distanceMeters": body.get("distanceMeters"),
+            "durationSeconds": body.get("durationSeconds"),
+            "stepCount": len(body.get("steps", [])) if isinstance(body.get("steps"), list) else 0,
+            "warningCount": len(body.get("warnings", []))
+            if isinstance(body.get("warnings"), list)
+            else 0,
+            "graphVersion": graph.get("graphVersion"),
+        }
     if tool == "ons_geo.by_uprn":
         return {
             "uprn": body.get("uprn"),
@@ -399,6 +421,20 @@ def resolve_address(runner: ToolRunner, text: str) -> tuple[dict[str, Any], dict
     results = body.get("results", []) if isinstance(body, dict) else []
     match = choose_best_place_match(text, results)
     return call, match
+
+
+def route_stop_from_match(match: dict[str, Any], fallback_text: str) -> dict[str, Any]:
+    uprn = match.get("uprn")
+    if isinstance(uprn, str) and uprn.strip():
+        return {"uprn": uprn.strip()}
+    lat = match.get("lat")
+    lon = match.get("lon")
+    try:
+        lat_f = float(lat)
+        lon_f = float(lon)
+    except (TypeError, ValueError):
+        return {"query": fallback_text}
+    return {"coordinates": [lon_f, lat_f]}
 
 
 def _district_from_containing_areas(body: Any) -> str | None:
@@ -613,41 +649,142 @@ def run_sg02(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_sg03(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    origin_text = "Retford Library, 17 Churchgate, Retford, DN22 6PE"
+    destination_text = "Goodwin Hall, Chancery Lane, Retford, DN22 6DF"
+    prompt = (
+        "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "
+        "to Goodwin Hall, Chancery Lane, Retford, DN22 6DF avoiding flood restrictions if possible?"
+    )
     tool_calls: list[dict[str, Any]] = []
-    origin_call, origin_match = resolve_address(
-        runner, "Retford Library, 17 Churchgate, Retford, DN22 6PE"
-    )
-    dest_call, dest_match = resolve_address(runner, "Goodwin Hall, Chancery Lane, Retford, DN22 6DF")
+    origin_call, origin_match = resolve_address(runner, origin_text)
+    dest_call, dest_match = resolve_address(runner, destination_text)
     tool_calls.extend([origin_call, dest_call])
-    route_call, route_body = runner.call(
-        "os_mcp.route_query",
-        query=(
-            "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "
-            "to Goodwin Hall, Chancery Lane, Retford, DN22 6DF avoiding flood restrictions if possible?"
-        ),
+    route_query_call, route_query_body = runner.call("os_mcp.route_query", query=prompt)
+    descriptor_call, descriptor_body = runner.call("os_route.descriptor")
+
+    route_params = {}
+    if isinstance(route_query_body, dict):
+        recommended = route_query_body.get("recommended_parameters")
+        if isinstance(recommended, dict):
+            route_params = deepcopy(recommended)
+
+    route_params["stops"] = [
+        route_stop_from_match(origin_match, origin_text),
+        route_stop_from_match(dest_match, destination_text),
+    ]
+    route_params["profile"] = route_params.get("profile") or "emergency"
+    constraints = route_params.get("constraints")
+    if not isinstance(constraints, dict):
+        constraints = {}
+    route_params["constraints"] = {
+        "avoidAreas": constraints.get("avoidAreas")
+        if isinstance(constraints.get("avoidAreas"), list)
+        else ["flood restrictions"],
+        "avoidIds": constraints.get("avoidIds")
+        if isinstance(constraints.get("avoidIds"), list)
+        else [],
+        "softAvoid": bool(constraints.get("softAvoid", True)),
+    }
+
+    route_call, route_body = runner.call("os_route.get", **route_params)
+    ui_call, ui_body = runner.call("os_apps.render_route_planner", **route_params)
+    tool_calls.extend([route_query_call, descriptor_call, route_call, ui_call])
+
+    graph = descriptor_body.get("graph") if isinstance(descriptor_body, dict) else {}
+    route_error_code = route_body.get("code") if isinstance(route_body, dict) else None
+    route_distance = route_body.get("distanceMeters") if isinstance(route_body, dict) else None
+    route_steps = route_body.get("steps") if isinstance(route_body, dict) else None
+    route_warnings = route_body.get("warnings") if isinstance(route_body, dict) else None
+    graph_ready = bool(graph.get("ready")) if isinstance(graph, dict) else False
+    classification_ok = (
+        isinstance(route_query_body, dict)
+        and route_query_body.get("intent") == "route_planning"
+        and route_query_body.get("recommended_tool") == "os_route.get"
     )
-    ui_call, ui_body = runner.call(
-        "os_apps.render_route_planner",
-        origin="Retford Library, 17 Churchgate, Retford, DN22 6PE",
-        destination="Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
-        routeMode="EMERGENCY",
+    route_success = (
+        route_call["ok"]
+        and isinstance(route_body, dict)
+        and isinstance(route_body.get("route"), dict)
+        and isinstance(route_distance, (int, float))
     )
-    tool_calls.extend([route_call, ui_call])
     evidence = {
         "originUprn": origin_match.get("uprn"),
         "destinationUprn": dest_match.get("uprn"),
-        "routeQueryIntent": route_body.get("intent") if isinstance(route_body, dict) else None,
-        "routeQueryRecommendedTool": route_body.get("recommended_tool")
+        "routeQueryIntent": route_query_body.get("intent")
+        if isinstance(route_query_body, dict)
+        else None,
+        "routeQueryRecommendedTool": route_query_body.get("recommended_tool")
+        if isinstance(route_query_body, dict)
+        else None,
+        "routeQueryWorkflowSteps": route_query_body.get("workflow_steps")
+        if isinstance(route_query_body, dict)
+        else None,
+        "graphReady": graph_ready,
+        "graphReason": graph.get("reason") if isinstance(graph, dict) else None,
+        "graphVersion": graph.get("graphVersion") if isinstance(graph, dict) else None,
+        "graphSourceProduct": graph.get("sourceProduct") if isinstance(graph, dict) else None,
+        "routeStatusCode": route_call["statusCode"],
+        "routeCode": route_error_code,
+        "routeProfile": route_body.get("profile") if isinstance(route_body, dict) else None,
+        "routeDistanceMeters": route_distance,
+        "routeDurationSeconds": route_body.get("durationSeconds")
         if isinstance(route_body, dict)
         else None,
+        "routeWarningsCount": len(route_warnings) if isinstance(route_warnings, list) else 0,
         "routePlannerResource": ui_body.get("resourceUri") if isinstance(ui_body, dict) else None,
-        "distanceReturned": False,
-        "turnByTurnReturned": False,
+        "interactiveCompanionTool": "os_apps.render_route_planner",
+        "distanceReturned": isinstance(route_distance, (int, float)),
+        "turnByTurnReturned": isinstance(route_steps, list) and bool(route_steps),
     }
+    if route_success and classification_ok:
+        summary = (
+            "The live rerun now classifies the SG03 prompt correctly, exposes the dedicated routing surface, "
+            "and returns a grounded route with distance, duration, steps, and graph provenance."
+        )
+        return build_scenario_result(
+            scenario,
+            live_outcome="full",
+            first_class_ready=True,
+            summary=summary,
+            evidence=evidence,
+            confirmed_capabilities=[
+                "Both benchmark premises resolve to authoritative locations before routing.",
+                "The router correctly recommends `os_route.get` for this emergency routing prompt.",
+                "The live route tool returns computed geometry, distance, duration, and turn-by-turn steps.",
+            ],
+            confirmed_gaps=[
+                "Restriction richness still depends on the currently loaded MRN and restriction tables.",
+            ],
+            tool_calls=tool_calls,
+        )
+
+    if classification_ok and (not graph_ready or route_error_code == "ROUTE_GRAPH_NOT_READY"):
+        summary = (
+            "The live rerun confirms that MCP-Geo now has the right routing product shape for SG03, but this "
+            "environment still lacks an active MRN graph, so the scenario remains blocked at graph readiness "
+            "rather than prompt classification or missing tool surface."
+        )
+        return build_scenario_result(
+            scenario,
+            live_outcome="blocked",
+            first_class_ready=False,
+            summary=summary,
+            evidence=evidence,
+            confirmed_capabilities=[
+                "Both benchmark premises can be resolved to authoritative locations.",
+                "The router now classifies the prompt as `route_planning` and recommends `os_route.get`.",
+                "The route planner remains available as an interactive companion.",
+            ],
+            confirmed_gaps=[
+                "No active MRN route graph is ready in this environment.",
+                "Restriction-aware routing cannot execute until the graph build is provisioned and enabled.",
+            ],
+            tool_calls=tool_calls,
+        )
+
     summary = (
-        "Live address resolution works for both endpoints, but the routing scenario remains blocked. "
-        "The natural-language router still misclassifies the request as address lookup, and the route planner "
-        "tool only returns a UI resource shell rather than a computed path, distance, or restriction-aware route."
+        "The live rerun reaches the dedicated routing surface and no longer relies on the UI shell alone, but "
+        "SG03 is still blocked by the current route execution result."
     )
     return build_scenario_result(
         scenario,
@@ -657,12 +794,10 @@ def run_sg03(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
         evidence=evidence,
         confirmed_capabilities=[
             "Both benchmark premises can be resolved to authoritative locations.",
-            "A route-planner UI resource is available for manual exploration.",
+            "The router now directs this prompt to the dedicated route toolchain.",
         ],
         confirmed_gaps=[
-            "No authoritative shortest-path engine is exposed through MCP-Geo.",
-            "No restriction-aware closure or hazard-routing model is wired into the product.",
-            "The router still does not recognize this routing prompt correctly.",
+            f"Route execution did not return a usable path (`{route_error_code or 'UNKNOWN_ERROR'}`).",
         ],
         tool_calls=tool_calls,
     )

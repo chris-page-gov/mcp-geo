@@ -48,7 +48,7 @@ benchmark harness should fail fast when `settings.OS_API_KEY` is empty.
 | --- | --- | --- |
 | SG01 incident + vulnerable households | partial | No first-class protected household join workflow, no bulk address-to-UPRN matcher, no built-in incident polygon to premises resolver. |
 | SG02 batch free-text address matching | partial | No dedicated batch matcher with confidence bands, collision handling, or manual-review queue output. |
-| SG03 shortest route between premises | blocked | UI exists, but no actual routing engine or routable network backend is exposed. |
+| SG03 shortest route between premises | blocked | The dedicated routing surface now exists, but default environments can still be blocked when no active MRN route graph is provisioned and enabled. |
 | SG04 maintainable road lengths by class | partial | No live maintained-road rollup flow for statutory-quality totals from segment-level data. |
 | SG05 planning constraints summary | partial | Planning layers used in the example are not first-class MCP-Geo tools. |
 | SG06 asset register + flood overlay | partial | No generic CSV-to-UPRN-to-overlay workflow; current answer depends on pre-curated fixtures. |
@@ -244,14 +244,14 @@ Primary blocker:
 
 Needed to answer fully:
 
-- routable network backend
-- restriction-aware routing
+- active MRN route graph in the target environment
+- restriction-aware routing tables loaded alongside the graph
 - route geometry + distance output
 - operational map/export output
 
 Primary blocker:
 
-- no route solver in MCP-Geo today
+- graph provisioning and readiness in default environments
 
 ### SG04
 
@@ -378,11 +378,11 @@ This unlocks:
 - SG08
 - stronger SG09
 
-### Phase D: solve the blocked routing case
+### Phase D: operationalize the routing case
 
-1. Expose a true routing backend over OS Highways Network.
-2. Add restriction-aware route computation and export.
-3. Feed routing output into route-planner UI instead of using UI-only launch.
+1. Provision and enable the OS MRN-backed pgRouting graph in default environments.
+2. Keep restriction and hazard tables in sync with the graph so warning coverage stays credible.
+3. Feed routing output into the route-planner UI and report graph-readiness blockers explicitly.
 
 This unlocks:
 

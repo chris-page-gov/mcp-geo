@@ -111,6 +111,39 @@ def test_route_query_map_render():
     assert body["recommended_tool"] == "os_maps.render"
 
 
+def test_route_query_sg03_style_prompt_prefers_os_route_tool():
+    body = _route(
+        "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "
+        "to Goodwin Hall, Chancery Lane, Retford, DN22 6DF and avoid flood-risk-zone reference "
+        "167647/3 if possible?"
+    )
+    assert body["intent"] == "route_planning"
+    assert body["recommended_tool"] == "os_route.get"
+    params = body["recommended_parameters"]
+    assert params["profile"] == "emergency"
+    assert params["constraints"]["softAvoid"] is True
+    assert params["constraints"]["avoidIds"] == ["167647/3"]
+    assert params["stops"][0]["query"].startswith("Retford Library")
+    assert params["stops"][1]["query"].startswith("Goodwin Hall")
+    assert body["workflow_steps"][:2] == ["os_route.get", "os_apps.render_route_planner"]
+    assert body["interactive_companion_tool"] == "os_apps.render_route_planner"
+
+
+def test_route_query_extracts_coordinate_and_via_route_hints():
+    body = _route(
+        "Give me walking directions from 51.5034,-0.1276 to Westminster Abbey via Big Ben"
+    )
+    assert body["intent"] == "route_planning"
+    assert body["recommended_tool"] == "os_route.get"
+    params = body["recommended_parameters"]
+    assert params["profile"] == "walk"
+    assert params["stops"][0]["coordinates"] == [-0.1276, 51.5034]
+    assert params["stops"][1]["query"] == "Westminster Abbey"
+    assert params["via"][0]["query"] == "Big Ben"
+    hints = body.get("routeHints", {})
+    assert hints.get("startText") == "51.5034,-0.1276"
+
+
 def test_route_query_statistics_nomis():
     body = _route("Unemployment rate for LSOA in Warwick")
     assert body["intent"] == "statistics"

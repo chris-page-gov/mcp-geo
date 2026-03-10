@@ -30,7 +30,7 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 | --- | --- | --- | --- | ---: | ---: |
 | SG01 | partial | partial | False | 8/8 | 8 |
 | SG02 | partial | partial | False | 10/10 | 10 |
-| SG03 | blocked | blocked | False | 4/4 | 2 |
+| SG03 | partial | blocked | False | 5/6 | 2 |
 | SG04 | partial | partial | False | 4/4 | 4 |
 | SG05 | partial | partial | False | 3/3 | 3 |
 | SG06 | partial | partial | False | 7/7 | 7 |
@@ -97,26 +97,38 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 
 ### SG03 Shortest route between two premises using authoritative road network constraints
 
-- Benchmark support level: `blocked`
+- Benchmark support level: `partial`
 - Live outcome: `blocked`
 - First-class ready now: `False`
-- Summary: Live address resolution works for both endpoints, but the routing scenario remains blocked. The natural-language router still misclassifies the request as address lookup, and the route planner tool only returns a UI resource shell rather than a computed path, distance, or restriction-aware route.
+- Summary: The live rerun confirms that MCP-Geo now has the right routing product shape for SG03, but this environment still lacks an active MRN graph, so the scenario remains blocked at graph readiness rather than prompt classification or missing tool surface.
 
 **Confirmed capabilities**
 - Both benchmark premises can be resolved to authoritative locations.
-- A route-planner UI resource is available for manual exploration.
+- The router now classifies the prompt as `route_planning` and recommends `os_route.get`.
+- The route planner remains available as an interactive companion.
 
 **Confirmed gaps**
-- No authoritative shortest-path engine is exposed through MCP-Geo.
-- No restriction-aware closure or hazard-routing model is wired into the product.
-- The router still does not recognize this routing prompt correctly.
+- No active MRN route graph is ready in this environment.
+- Restriction-aware routing cannot execute until the graph build is provisioned and enabled.
 
 **Evidence snapshot**
 - `originUprn`: `100032031210`
 - `destinationUprn`: `100032031287`
-- `routeQueryIntent`: `address_lookup`
-- `routeQueryRecommendedTool`: `os_places.by_postcode`
+- `routeQueryIntent`: `route_planning`
+- `routeQueryRecommendedTool`: `os_route.get`
+- `routeQueryWorkflowSteps`: `["os_route.get", "os_apps.render_route_planner"]`
+- `graphReady`: `False`
+- `graphReason`: `route_graph_disabled`
+- `graphVersion`: `None`
+- `graphSourceProduct`: `None`
+- `routeStatusCode`: `503`
+- `routeCode`: `ROUTE_GRAPH_NOT_READY`
+- `routeProfile`: `None`
+- `routeDistanceMeters`: `None`
+- `routeDurationSeconds`: `None`
+- `routeWarningsCount`: `0`
 - `routePlannerResource`: `ui://mcp-geo/route-planner`
+- `interactiveCompanionTool`: `os_apps.render_route_planner`
 - `distanceReturned`: `False`
 - `turnByTurnReturned`: `False`
 
@@ -124,6 +136,8 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - `os_apps.render_route_planner`: calls=1, ok=1, liveEvidence=0, cached=0
 - `os_mcp.route_query`: calls=1, ok=1, liveEvidence=0, cached=0
 - `os_places.search`: calls=2, ok=2, liveEvidence=2, cached=0
+- `os_route.descriptor`: calls=1, ok=1, liveEvidence=0, cached=0
+- `os_route.get`: calls=1, ok=0, liveEvidence=0, cached=0
 
 ### SG04 Maintainable road segments and total length by class
 

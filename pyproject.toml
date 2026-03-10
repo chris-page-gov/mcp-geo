@@ -21,6 +21,7 @@ dependencies = [
     "httpx",  # required by starlette.testclient used in tests
     "openpyxl",  # XLSX generation for filter output
     "pyproj",  # WGS84 -> BNG conversion for os_names.nearest
+    "psycopg[binary]",  # PostGIS / pgRouting-backed boundary and routing access
 ]
 
 [project.scripts]

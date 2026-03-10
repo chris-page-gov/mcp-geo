@@ -59,6 +59,9 @@ data/
 # Playground build artifacts
 playground/node_modules/
 playground/test-results/
+test-results/
+tmp/stakeholder_benchmark_sources/
+output/playwright/teignmouth-peninsula-*.png
 
 # Translations
 *.mo

@@ -17,6 +17,7 @@ class ToolCategory(str, Enum):
     FEATURES = "features"
     LINKED = "linked"
     MAPS = "maps"
+    ROUTING = "routing"
     VECTOR = "vector"
     ADMIN = "admin"
     STATISTICS = "statistics"
@@ -39,6 +40,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "os_landscape": ToolCategory.ADMIN,
     "os_linked_ids": ToolCategory.LINKED,
     "os_maps": ToolCategory.MAPS,
+    "os_route": ToolCategory.ROUTING,
     "os_vector_tiles": ToolCategory.VECTOR,
     "os_qgis": ToolCategory.MAPS,
     "os_tiles_ota": ToolCategory.VECTOR,
@@ -66,6 +68,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_landscape": ["aonb", "national landscape", "protected", "boundary", "bowland"],
     "os_linked_ids": ["uprn", "usrn", "toid", "linked"],
     "os_maps": ["map", "render", "static"],
+    "os_route": ["route", "routing", "directions", "journey", "multimodal", "pgrouting"],
     "os_vector_tiles": ["vector", "tiles", "style", "descriptor"],
     "os_qgis": ["qgis", "vector", "tiles", "geopackage", "descriptor", "qml"],
     "os_tiles_ota": ["tiles", "ota", "ngd", "ogc"],
@@ -97,6 +100,8 @@ STARTER_TOOLS: tuple[str, ...] = (
     "os_apps.log_event",
     "os_apps.render_boundary_explorer",
     "os_apps.render_geography_selector",
+    "os_route.descriptor",
+    "os_route.get",
     "os_mcp.descriptor",
     "os_mcp.route_query",
     "os_mcp.select_toolsets",
@@ -117,6 +122,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
         "os_map.inventory",
         "os_map.export",
     ),
+    "routing": ("os_route.*", "os_apps.render_route_planner"),
     "peat_survey": ("os_peat.*", "os_landscape.*", "os_features.query"),
     "protected_landscapes": ("os_landscape.*",),
     "maps_tiles": ("os_maps.render", "os_vector_tiles.descriptor"),
@@ -143,6 +149,7 @@ EXTERNAL_PREFIXES: Set[str] = {
     "os_landscape",
     "os_linked_ids",
     "os_maps",
+    "os_route",
     "os_vector_tiles",
     "os_qgis",
     "os_tiles_ota",

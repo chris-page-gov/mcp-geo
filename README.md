@@ -140,6 +140,7 @@ Protocol negotiation behavior:
 - Tool annotations + defer-loading metadata for tool search integrations
 - Agent skills resource (`skills://mcp-geo/getting-started`)
 - MCP-Apps UI resources (`ui://mcp-geo/...`) with helper `os_apps.*` tools
+- pgRouting-backed route planning surface (`os_route.get`, `os_route.descriptor`)
 - Svelte playground UI for MCP tool calls, prompt capture, and auditing
 - Routing tool `os_mcp.route_query` for intent classification and workflow guidance
 - Structured logging & correlation IDs
@@ -341,10 +342,12 @@ For clients that always request `tools/list` with empty params, set
 | nomis.query                         | Query NOMIS datasets (JSON-stat/SDMX)                                         |
 | os_mcp.descriptor                   | Server capabilities and tool search configuration                             |
 | os_mcp.route_query                  | Intent classification and tool/workflow recommendation                        |
+| os_route.descriptor                 | Route solver capabilities, supported profiles, and graph readiness            |
+| os_route.get                        | Resolve stops and compute a graph-backed route                                |
 | os_apps.render_geography_selector   | Open the MCP-Apps geography selector widget                                   |
 | os_apps.render_statistics_dashboard | Open the MCP-Apps statistics dashboard widget                                 |
 | os_apps.render_feature_inspector    | Open the MCP-Apps feature inspector widget                                    |
-| os_apps.render_route_planner        | Open the MCP-Apps route planner widget                                        |
+| os_apps.render_route_planner        | Open the MCP-Apps route planner widget backed by `os_route.get`               |
 | os_apps.render_ui_probe             | Probe MCP-Apps UI rendering support                                           |
 
 ## Resources, Filtering & Provenance
@@ -369,6 +372,21 @@ In addition to data resources, MCP Geo exposes:
 
 Use `GET /resources/read?uri=...` to fetch these resources. MCP-Apps widgets are
 HTML documents with `text/html;profile=mcp-app` MIME types.
+
+## Route Planning
+
+Route planning now has a deterministic tool path as well as a widget path.
+
+- Call `os_mcp.route_query` to classify free-text prompts and extract stop hints.
+- Call `os_route.descriptor` to check whether the active PostGIS/pgRouting graph is ready.
+- Call `os_route.get` to resolve stops and return distance, duration, geometry, legs,
+  steps, mode changes, warnings, and graph provenance.
+- Call `os_apps.render_route_planner` when the host can open MCP-Apps UI; the widget
+  mirrors the `os_route.get` contract and delegates calculation to that tool.
+
+The intended backend is an OS Multi-modal Routing Network build loaded into PostGIS,
+with pgRouting used for shortest-path execution and route warnings enriched from
+restriction tables when available.
 
 MCP-Apps support varies by client. If the client does not advertise UI support,
 the stdio adapter injects a `fallback` static map payload for

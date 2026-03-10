@@ -10,6 +10,7 @@ from typing import Any
 
 from server.config import settings
 from server.mcp.resource_catalog import MCP_APPS_MIME, load_ui_content, resolve_ui_resource
+from server.route_planning import normalize_route_profile, normalize_stop
 from tools.registry import Tool, ToolResult, register
 
 _UI_URIS = {
@@ -645,6 +646,18 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
     }
     """
     config: dict[str, Any] = {}
+    stops_value = payload.get("stops")
+    via_value = payload.get("via")
+    if stops_value is not None and not isinstance(stops_value, list):
+        return _error("stops must be a list when provided")
+    if via_value is not None and not isinstance(via_value, list):
+        return _error("via must be a list when provided")
+
+    normalized_stops = [normalize_stop(stop) for stop in (stops_value or [])]
+    normalized_via = [normalize_stop(stop) for stop in (via_value or [])]
+    if any(stop is None for stop in normalized_stops) or any(stop is None for stop in normalized_via):
+        return _error("Each route stop must include exactly one of query, uprn, or coordinates")
+
     start_lat = payload.get("startLat")
     start_lng = payload.get("startLng")
     end_lat = payload.get("endLat")
@@ -657,21 +670,54 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
     }.items():
         if value is not None and not isinstance(value, (int, float)):
             return _error(f"{key} must be a number")
-    if start_lat is not None and start_lng is not None:
-        config["start"] = {"lat": float(start_lat), "lng": float(start_lng)}
-    if end_lat is not None and end_lng is not None:
-        config["end"] = {"lat": float(end_lat), "lng": float(end_lng)}
-    mode = payload.get("mode")
-    if mode is not None and not isinstance(mode, str):
-        return _error("mode must be a string")
-    if mode:
-        config["mode"] = mode
+    if not normalized_stops:
+        if start_lat is not None and start_lng is not None and end_lat is not None and end_lng is not None:
+            normalized_stops = [
+                {"coordinates": [float(start_lng), float(start_lat)]},
+                {"coordinates": [float(end_lng), float(end_lat)]},
+            ]
+        else:
+            origin = payload.get("origin", payload.get("start"))
+            destination = payload.get("destination", payload.get("end"))
+            if origin is not None or destination is not None:
+                normalized_origin = normalize_stop(origin)
+                normalized_destination = normalize_stop(destination)
+                if normalized_origin is None or normalized_destination is None:
+                    return _error("origin/destination must be stop objects, coordinates, or strings")
+                normalized_stops = [normalized_origin, normalized_destination]
+
+    if normalized_stops:
+        config["stops"] = normalized_stops
+    if normalized_via:
+        config["via"] = normalized_via
+
+    constraints = payload.get("constraints")
+    if constraints is not None and not isinstance(constraints, dict):
+        return _error("constraints must be an object when provided")
+    if isinstance(constraints, dict):
+        config["constraints"] = {
+            "avoidAreas": constraints.get("avoidAreas")
+            if isinstance(constraints.get("avoidAreas"), list)
+            else [],
+            "avoidIds": constraints.get("avoidIds")
+            if isinstance(constraints.get("avoidIds"), list)
+            else [],
+            "softAvoid": bool(constraints.get("softAvoid", True)),
+        }
+
+    profile = normalize_route_profile(payload.get("profile") or payload.get("routeMode") or payload.get("mode"))
+    config["profile"] = profile
+    delivery = payload.get("delivery")
+    if delivery is not None and not isinstance(delivery, str):
+        return _error("delivery must be a string when provided")
+    if delivery:
+        config["delivery"] = delivery
     content_mode = payload.get("contentMode")
     if content_mode is not None and not isinstance(content_mode, str):
         return _error("contentMode must be a string")
     return _build_widget_response(
         config,
-        "Open the route planner to set start and end points and view directions.",
+        "Open the route planner to review the os_route.get result and inspect the path on the map.",
         resource_uri=_UI_URIS["route"],
         content_mode=content_mode,
     )
@@ -873,11 +919,45 @@ register(
             "type": "object",
             "properties": {
                 "tool": {"type": "string", "const": "os_apps.render_route_planner"},
+                "stops": {"type": "array", "items": {"type": "object"}},
+                "via": {"type": "array", "items": {"type": "object"}},
+                "profile": {"type": "string"},
+                "constraints": {"type": "object"},
+                "delivery": {"type": "string"},
+                "origin": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "object"},
+                        {"type": "array"},
+                    ]
+                },
+                "destination": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "object"},
+                        {"type": "array"},
+                    ]
+                },
+                "start": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "object"},
+                        {"type": "array"},
+                    ]
+                },
+                "end": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "object"},
+                        {"type": "array"},
+                    ]
+                },
                 "startLat": {"type": "number"},
                 "startLng": {"type": "number"},
                 "endLat": {"type": "number"},
                 "endLng": {"type": "number"},
                 "mode": {"type": "string"},
+                "routeMode": {"type": "string"},
                 "contentMode": {"type": "string"},
             },
             "required": [],

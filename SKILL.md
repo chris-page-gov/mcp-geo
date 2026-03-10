@@ -65,6 +65,16 @@ OS NGD features and links:
 - Use `os_features.query` for feature searches by collection + bbox.
 - Use `os_linked_ids.get` to resolve UPRN/USRN/TOID relationships.
 
+Route planning:
+- Use `os_route.descriptor` to check graph readiness, supported profiles, and stop limits.
+- Use `os_route.get` for deterministic routing with `stops`, optional `via`, `profile`,
+  and `constraints`.
+- Use `os_apps.render_route_planner` only when an interactive MCP-Apps host is available;
+  it is the companion UI for `os_route.get`, not the authoritative solver.
+- For free-text prompts such as "best emergency route from ... to ... avoid ... if
+  possible", start with `os_mcp.route_query` and then follow its
+  `recommended_parameters`.
+
 Maps and tiles:
 - Use `os_maps.render` for static map image URLs (served by MCP Geo proxy).
 - Use `os_vector_tiles.descriptor` for vector tile style metadata.
@@ -81,7 +91,9 @@ to open them inside MCP-Apps compatible hosts.
 
 UI tools are linked via tool metadata (`_meta.ui.resourceUri`). Hosts should load
 the UI resource from `/resources/list` or `/resources/read` and use tool results
-for status/config/instructions.
+for status/config/instructions. The route planner widget accepts the same
+`stops` / `via` / `profile` / `constraints` shape as `os_route.get`, while
+remaining backward-compatible with the legacy coordinate prefill fields.
 
 ## Tool Search
 
@@ -111,5 +123,6 @@ Errors follow this shape:
 ```
 
 Common codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`,
-`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`,
-`UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.
+`LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`,
+`ADMIN_LOOKUP_API_ERROR`, `ROUTE_GRAPH_NOT_READY`, `NO_ROUTE`,
+`AMBIGUOUS_STOP`, `STOP_NOT_FOUND`, `UPSTREAM_CONNECT_ERROR`, `RATE_LIMITED`.

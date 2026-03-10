@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 import scripts.stakeholder_live_run as stakeholder_live_run
 
 
@@ -107,3 +109,178 @@ def test_render_markdown_includes_interpretation_note() -> None:
     assert "gold-answer completeness score" in report
     assert "| SG01 | partial | partial | False | 1/1 | 1 |" in report
     assert "`inputRecords`: `1`" in report
+
+
+class _FakeRunner:
+    def __init__(self, responses):
+        self._responses = responses
+
+    def call(self, tool: str, **payload):
+        response = self._responses[tool]
+        call = deepcopy(response["call"])
+        call.setdefault("tool", tool)
+        call.setdefault("request", payload)
+        body = deepcopy(response["body"])
+        return call, body
+
+
+def test_run_sg03_reports_graph_not_ready_with_correct_router(monkeypatch) -> None:
+    origin_match = {"uprn": "10000000001", "lat": 53.321, "lon": -0.944}
+    destination_match = {"uprn": "10000000002", "lat": 53.322, "lon": -0.943}
+
+    def fake_resolve_address(_runner, text: str):
+        return (
+            {
+                "tool": "os_places.search",
+                "statusCode": 200,
+                "ok": True,
+                "durationMs": 12.0,
+                "cached": False,
+                "source": "OS Places live",
+                "liveEvidence": True,
+                "responseSummary": {"count": 1},
+            },
+            origin_match if "Library" in text else destination_match,
+        )
+
+    monkeypatch.setattr(stakeholder_live_run, "resolve_address", fake_resolve_address)
+    runner = _FakeRunner(
+        {
+            "os_mcp.route_query": {
+                "call": {"statusCode": 200, "ok": True, "source": "Router", "liveEvidence": False},
+                "body": {
+                    "intent": "route_planning",
+                    "recommended_tool": "os_route.get",
+                    "workflow_steps": ["os_route.get", "os_apps.render_route_planner"],
+                    "recommended_parameters": {
+                        "stops": [{"query": "origin"}, {"query": "destination"}],
+                        "profile": "emergency",
+                        "constraints": {
+                            "avoidAreas": ["flood restrictions"],
+                            "avoidIds": [],
+                            "softAvoid": True,
+                        },
+                    },
+                },
+            },
+            "os_route.descriptor": {
+                "call": {
+                    "statusCode": 200,
+                    "ok": True,
+                    "source": "Routing engine",
+                    "liveEvidence": False,
+                },
+                "body": {"status": "not_ready", "graph": {"ready": False, "reason": "route_graph_disabled"}},
+            },
+            "os_route.get": {
+                "call": {
+                    "statusCode": 503,
+                    "ok": False,
+                    "source": "error",
+                    "liveEvidence": False,
+                },
+                "body": {
+                    "isError": True,
+                    "code": "ROUTE_GRAPH_NOT_READY",
+                    "message": "Route graph is not ready.",
+                },
+            },
+            "os_apps.render_route_planner": {
+                "call": {"statusCode": 200, "ok": True, "source": "UI shell", "liveEvidence": False},
+                "body": {"resourceUri": "ui://mcp-geo/route-planner", "status": "ok"},
+            },
+        }
+    )
+
+    result = stakeholder_live_run.run_sg03(runner, {"id": "SG03", "title": "Routing", "supportLevel": "partial"})
+
+    assert result["liveOutcome"] == "blocked"
+    assert result["firstClassProductReady"] is False
+    assert result["evidence"]["routeQueryRecommendedTool"] == "os_route.get"
+    assert result["evidence"]["graphReady"] is False
+    assert result["evidence"]["routeCode"] == "ROUTE_GRAPH_NOT_READY"
+    assert "graph readiness" in result["summary"]
+
+
+def test_run_sg03_reports_full_when_route_executes(monkeypatch) -> None:
+    origin_match = {"uprn": "10000000001", "lat": 53.321, "lon": -0.944}
+    destination_match = {"uprn": "10000000002", "lat": 53.322, "lon": -0.943}
+
+    def fake_resolve_address(_runner, text: str):
+        return (
+            {
+                "tool": "os_places.search",
+                "statusCode": 200,
+                "ok": True,
+                "durationMs": 12.0,
+                "cached": False,
+                "source": "OS Places live",
+                "liveEvidence": True,
+                "responseSummary": {"count": 1},
+            },
+            origin_match if "Library" in text else destination_match,
+        )
+
+    monkeypatch.setattr(stakeholder_live_run, "resolve_address", fake_resolve_address)
+    runner = _FakeRunner(
+        {
+            "os_mcp.route_query": {
+                "call": {"statusCode": 200, "ok": True, "source": "Router", "liveEvidence": False},
+                "body": {
+                    "intent": "route_planning",
+                    "recommended_tool": "os_route.get",
+                    "workflow_steps": ["os_route.get", "os_apps.render_route_planner"],
+                    "recommended_parameters": {
+                        "stops": [{"query": "origin"}, {"query": "destination"}],
+                        "profile": "emergency",
+                        "constraints": {
+                            "avoidAreas": ["flood restrictions"],
+                            "avoidIds": [],
+                            "softAvoid": True,
+                        },
+                    },
+                },
+            },
+            "os_route.descriptor": {
+                "call": {
+                    "statusCode": 200,
+                    "ok": True,
+                    "source": "Routing engine",
+                    "liveEvidence": False,
+                },
+                "body": {
+                    "status": "ready",
+                    "graph": {"ready": True, "reason": None, "graphVersion": "mrn-v1"},
+                },
+            },
+            "os_route.get": {
+                "call": {
+                    "statusCode": 200,
+                    "ok": True,
+                    "source": "Routing engine",
+                    "liveEvidence": False,
+                },
+                "body": {
+                    "profile": "emergency",
+                    "distanceMeters": 1234.5,
+                    "durationSeconds": 210.0,
+                    "route": {"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}},
+                    "steps": [{"instruction": "Head north"}],
+                    "warnings": [{"type": "soft_avoid"}],
+                    "graph": {"graphVersion": "mrn-v1"},
+                },
+            },
+            "os_apps.render_route_planner": {
+                "call": {"statusCode": 200, "ok": True, "source": "UI shell", "liveEvidence": False},
+                "body": {"resourceUri": "ui://mcp-geo/route-planner", "status": "ok"},
+            },
+        }
+    )
+
+    result = stakeholder_live_run.run_sg03(runner, {"id": "SG03", "title": "Routing", "supportLevel": "partial"})
+
+    assert result["liveOutcome"] == "full"
+    assert result["firstClassProductReady"] is True
+    assert result["evidence"]["distanceReturned"] is True
+    assert result["evidence"]["turnByTurnReturned"] is True
+    assert result["evidence"]["routeDistanceMeters"] == 1234.5

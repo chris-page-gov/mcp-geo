@@ -10,12 +10,18 @@ flowchart LR
   Tools --> OS["Ordnance Survey APIs\n(OS Places, NGD)"]
   Tools --> ONS["ONS APIs\n(dataset, search, observations)"]
   Tools --> Cache["PostGIS Boundary Cache"]
+  Tools --> RouteDB["PostGIS + pgRouting\n(routing schema)"]
   MCP --> Logs["Structured Logs + Correlation IDs"]
   MCP --> Metrics["Prometheus Metrics /metrics"]
 
   subgraph Boundary Pipeline
     Pipeline["Boundary Pipeline\n(download -> ingest -> validate)"] --> Cache
     Pipeline --> Reports["Run reports + ticker"]
+  end
+
+  subgraph Routing Pipeline
+    MRN["OS Downloads API\n(OS MRN packages)"] --> Build["Routing build pipeline\n(provenance -> ingest -> graph tables)"]
+    Build --> RouteDB
   end
 ```
 
@@ -37,7 +43,11 @@ flowchart TB
 - **MCP routers**: `/tools/*`, `/resources/*`, `/prompts/*`, `/mcp`.
 - **Tools layer**: OS + ONS + admin lookup tools with schema metadata.
 - **Boundary cache**: PostGIS-backed admin boundaries cache, served by admin tools.
+- **Routing graph**: PostGIS + pgRouting schema populated from OS MRN packages,
+  surfaced through `os_route.get` and `os_route.descriptor`.
 - **MCP-Apps UI**: HTML resources delivered by `resources/read`.
+- **Route planner widget**: `os_apps.render_route_planner` is an interactive shell
+  over `os_route.get`, not a standalone route engine.
 
 ## Optional map sidecar profile
 

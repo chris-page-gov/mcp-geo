@@ -85,7 +85,37 @@ sequenceDiagram
   Client-->>User: metrics + context
 ```
 
-## 5) Static map render (os_maps.render -> /maps/static/osm)
+## 5) Route planning (os_mcp.route_query -> os_route.get -> os_apps.render_route_planner)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor User
+  participant Client as MCP Client
+  participant Server as MCP Geo
+  participant Places as OS Places / Names
+  participant Graph as PostGIS + pgRouting
+  participant UI as MCP-Apps host
+
+  User->>Client: "Best emergency route from Retford Library to Goodwin Hall"
+  Client->>Server: tools/call os_mcp.route_query
+  Server-->>Client: intent=route_planning, recommended_tool=os_route.get
+  Client->>Server: tools/call os_route.get
+  Server->>Places: resolve stops (Places/Names as needed)
+  Places-->>Server: normalized coordinates / candidates
+  Server->>Graph: nearest-node lookup + pgRouting route solve
+  Graph-->>Server: route geometry, legs, steps, warnings, provenance
+  Server-->>Client: deterministic route payload
+  opt Interactive review
+    Client->>Server: tools/call os_apps.render_route_planner
+    Server-->>UI: ui:// route planner + mirrored route config
+    UI->>Server: tools/call os_route.get
+    Server-->>UI: route result for map rendering
+  end
+  Client-->>User: route summary or explicit graph/error state
+```
+
+## 6) Static map render (os_maps.render -> /maps/static/osm)
 
 ```mermaid
 sequenceDiagram
@@ -105,7 +135,7 @@ sequenceDiagram
   Client-->>User: static map image
 ```
 
-## 6) MCP-Apps UI open (ui:// resources)
+## 7) MCP-Apps UI open (ui:// resources)
 
 ```mermaid
 sequenceDiagram
@@ -124,7 +154,7 @@ sequenceDiagram
   Client-->>User: Interactive UI widget
 ```
 
-## 7) Boundary cache status (admin_lookup.get_cache_status)
+## 8) Boundary cache status (admin_lookup.get_cache_status)
 
 ```mermaid
 sequenceDiagram

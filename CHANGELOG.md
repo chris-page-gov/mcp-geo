@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added first-class route-planning tools `os_route.descriptor` and
+  `os_route.get`, backed by the new pgRouting/PostGIS graph service in
+  `server/route_graph.py` and route parsing helpers in
+  `server/route_planning.py`.
+- Added OS MRN graph bootstrap assets
+  `scripts/route_graph_schema.sql` and `scripts/route_graph_pipeline.py` for
+  versioned routing-schema setup and download/provenance handling.
 - Added stakeholder benchmark pack generator
   `scripts/stakeholder_benchmark_pack.py` to turn the Phase 3 evaluation
   prompts into concrete benchmark scenarios with reusable-header prompts,
@@ -30,6 +37,12 @@ All notable changes to this project will be documented in this file.
   `tests/test_stakeholder_benchmark_pack.py`.
 
 ### Changed
+- Replaced the route planner's demo-shell behavior with a live MCP-Apps widget
+  contract wired to `os_route.get`, including route geometry rendering,
+  payload normalization, and explicit graph/ambiguity error states.
+- Hardened `os_mcp.route_query` so SG03-style prompts classify as
+  `route_planning`, recommend `os_route.get`, and surface route hints before
+  postcode/UPRN fast paths fire.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
   full expected-output JSON for all 10 scenarios.
@@ -39,7 +52,9 @@ All notable changes to this project will be documented in this file.
 - Added an authenticated live rerun of the stakeholder scenarios and reported
   the result separately from the benchmark pack: `0` first-class-ready
   scenarios, `9 partial`, `1 blocked`, with live OS-backed evidence now proven
-  in-session via `OS_API_KEY_FILE`.
+  in-session via `OS_API_KEY_FILE`. SG03 is no longer blocked by misrouting or
+  UI-shell-only behavior; the current blocker is `ROUTE_GRAPH_NOT_READY` /
+  `route_graph_disabled` in the default environment.
 
 ## [0.6.0] - 2026-03-08
 
