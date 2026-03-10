@@ -44,10 +44,11 @@ All notable changes to this project will be documented in this file.
   `route_planning`, recommend `os_route.get`, and surface route hints before
   postcode/UPRN fast paths fire.
 - Switched the devcontainer and local Docker launchers to a pgRouting-capable
-  PostGIS image, aligned them on the `PGDATA=/var/lib/postgresql/data/pgdata`
-  layout plus named-volume storage, and added idempotent boundary-cache and
-  route-graph schema bootstrap so local route readiness no longer depends on a
-  plain PostGIS sidecar.
+  repo-built PostGIS image, aligned them on the
+  `PGDATA=/var/lib/postgresql/data/pgdata` layout plus named-volume storage,
+  and added idempotent boundary-cache and route-graph schema bootstrap so
+  local route readiness no longer depends on a plain PostGIS sidecar or an
+  external `pgrouting/pgrouting` image tag.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
   full expected-output JSON for all 10 scenarios.

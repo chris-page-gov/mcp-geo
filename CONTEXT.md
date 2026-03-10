@@ -130,7 +130,10 @@ assumptions change.
   it is storage-corrupted (`invalid checkpoint record`).
 - Standardizing devcontainer/host PostGIS on a pgRouting-capable image and
   automatic boundary-cache/route-schema bootstrap so local route planning
-  defaults no longer depend on a plain PostGIS sidecar missing `pgrouting`.
+  defaults no longer depend on a plain PostGIS sidecar missing `pgrouting` or
+  an external pgRouting image tag; the repo now builds
+  `.devcontainer/postgis.Dockerfile` as the canonical sidecar image, though the
+  upstream `postgis/postgis:16-3.4` base is still amd64-only.
 
 ## Active Work
 

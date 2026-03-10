@@ -82,16 +82,20 @@ Environment variables:
 - `MCP_GEO_LIVE_DB_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
 - `OS_API_KEY=...` (required for OS-backed calls)
 
-Optional PostGIS container (uses a Docker named volume and a pgRouting-capable image):
+Optional PostGIS container (builds the repo-local PostGIS+pgRouting image and
+uses a Docker named volume):
 
 ```bash
+docker build --platform linux/amd64 \
+  -f .devcontainer/postgis.Dockerfile \
+  -t mcp-geo-postgis-pgrouting:16-3.4 .
 docker run --rm -p 5432:5432 \\
   -e POSTGRES_DB=mcp_geo \\
   -e POSTGRES_USER=mcp_geo \\
   -e POSTGRES_PASSWORD=mcp_geo \\
   -e PGDATA=/var/lib/postgresql/data/pgdata \\
   -v mcp-geo-postgis:/var/lib/postgresql/data \\
-  pgrouting/pgrouting:16-3.4-3.6.1
+  mcp-geo-postgis-pgrouting:16-3.4
 ```
 
 Run the live capture test:

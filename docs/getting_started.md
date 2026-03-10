@@ -51,9 +51,13 @@ Optional: enable the PostGIS boundary cache for full admin boundaries:
 Devcontainer note:
 - The devcontainer starts PostGIS as the `postgis` service; use
   `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` inside the container.
-- The `postgis` service now uses a pgRouting-capable image by default and the
-  post-start hook bootstraps both `scripts/boundary_cache_schema.sql` and
-  `scripts/route_graph_schema.sql` on fresh named volumes.
+- The `postgis` service now builds the repo-local
+  `.devcontainer/postgis.Dockerfile` image so pgRouting is installed in the
+  same sidecar the app uses, and the post-start hook bootstraps both
+  `scripts/boundary_cache_schema.sql` and `scripts/route_graph_schema.sql` on
+  fresh named volumes.
+- The upstream `postgis/postgis:16-3.4` base is currently `linux/amd64` only,
+  so `MCP_GEO_POSTGIS_PLATFORM` defaults to `linux/amd64` on Apple Silicon.
 - PostGIS data now uses a Docker named volume by default (not a repo bind
   mount), so corruption/isolation issues do not spill across git worktrees.
   Override the volume names if needed:
@@ -503,7 +507,8 @@ Storage controls for the wrapper:
   `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis-claude`).
 - `MCP_GEO_POSTGIS_STORAGE_MODE=bind` uses
   `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
-- `MCP_GEO_POSTGIS_IMAGE` defaults to `pgrouting/pgrouting:16-3.4-3.6.1`.
+- `MCP_GEO_POSTGIS_IMAGE` defaults to `mcp-geo-postgis-pgrouting:16-3.4`.
+- `MCP_GEO_POSTGIS_PLATFORM` defaults to `linux/amd64`.
 - The wrapper now sets `PGDATA=/var/lib/postgresql/data/pgdata` to match the
   devcontainer layout and bootstraps the boundary-cache/route-graph schema
   files after the PostGIS sidecar becomes ready.

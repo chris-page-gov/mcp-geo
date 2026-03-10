@@ -5,13 +5,17 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${MCP_GEO_IMAGE:-mcp-geo-server}"
 NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo}"
 POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis}"
-POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-pgrouting/pgrouting:16-3.4-3.6.1}"
+POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-mcp-geo-postgis-pgrouting:16-3.4}"
 POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
 POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
 DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
 POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-5432}"
 POSTGIS_PGDATA="${MCP_GEO_POSTGIS_PGDATA:-/var/lib/postgresql/data/pgdata}"
+POSTGIS_PLATFORM="${MCP_GEO_POSTGIS_PLATFORM:-linux/amd64}"
+POSTGIS_DOCKERFILE="${MCP_GEO_POSTGIS_DOCKERFILE:-$REPO_ROOT/.devcontainer/postgis.Dockerfile}"
+POSTGIS_BUILD_CONTEXT="${MCP_GEO_POSTGIS_BUILD_CONTEXT:-$REPO_ROOT}"
+POSTGIS_BUILD_MODE="${MCP_GEO_POSTGIS_BUILD:-missing}"
 DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
 PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
 TRACE_LOG="${MCP_STDIO_TRACE_LOG:-}"
@@ -129,6 +133,40 @@ bootstrap_postgis_sql() {
   return 1
 }
 
+ensure_postgis_image() {
+  local should_build=false
+  case "$POSTGIS_BUILD_MODE" in
+    always)
+      should_build=true
+      ;;
+    missing)
+      if ! "$DOCKER_BIN" image inspect "$POSTGIS_IMAGE" >/dev/null 2>&1; then
+        should_build=true
+      fi
+      ;;
+    never)
+      should_build=false
+      ;;
+    *)
+      log "unknown MCP_GEO_POSTGIS_BUILD mode: $POSTGIS_BUILD_MODE (use always|missing|never)"
+      exit 1
+      ;;
+  esac
+  if [[ "$should_build" != "true" ]]; then
+    return 0
+  fi
+  if [[ ! -f "$POSTGIS_DOCKERFILE" ]]; then
+    log "PostGIS Dockerfile not found: $POSTGIS_DOCKERFILE"
+    exit 1
+  fi
+  log "building PostGIS image: $POSTGIS_IMAGE"
+  "$DOCKER_BIN" build \
+    --platform "$POSTGIS_PLATFORM" \
+    -t "$POSTGIS_IMAGE" \
+    -f "$POSTGIS_DOCKERFILE" \
+    "$POSTGIS_BUILD_CONTEXT" >&2
+}
+
 if [[ -z "$DOCKER_BIN" ]]; then
   for candidate in /usr/local/bin/docker /opt/homebrew/bin/docker /usr/bin/docker; do
     if [[ -x "$candidate" ]]; then
@@ -168,6 +206,8 @@ if [[ "$POSTGIS_STORAGE_MODE" == "bind" ]]; then
   mkdir -p "$DATA_DIR"
 fi
 mkdir -p "$LOG_DIR"
+
+ensure_postgis_image
 
 if ! "$DOCKER_BIN" network inspect "$NETWORK" >/dev/null 2>&1; then
   log "creating docker network: $NETWORK"

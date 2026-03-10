@@ -240,10 +240,10 @@ Claude Desktop config example (STDIO transport):
 }
 ```
 
-The wrapper script starts a pgRouting-capable PostGIS container locally
-(Docker), bootstraps the boundary-cache and route-graph schemas idempotently,
-builds the app image if needed, and runs STDIO with the cache/routing DSNs
-pointed at that sidecar.
+The wrapper script builds and starts the repo's PostGIS+pgRouting sidecar
+image locally (Docker), bootstraps the boundary-cache and route-graph schemas
+idempotently, builds the app image if needed, and runs STDIO with the
+cache/routing DSNs pointed at that sidecar.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
@@ -254,7 +254,9 @@ mount (`MCP_GEO_POSTGIS_DATA_DIR`).
 Set `MCP_GEO_POSTGIS_VOLUME` differently per worktree if you want isolated
 local PostGIS state for each branch workspace.
 Override `MCP_GEO_POSTGIS_IMAGE` only if you need a different pgRouting-capable
-tag.
+tag. The repo-local image currently builds on `postgis/postgis:16-3.4`, which
+is upstream-amd64-only for this tag, so Apple Silicon still runs the sidecar as
+`linux/amd64` under Docker emulation.
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
