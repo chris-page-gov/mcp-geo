@@ -99,6 +99,14 @@ assumptions change.
 - Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
   Desktop Opus 4.6, including launcher separation, trace/session scoring, and
   reproducible comparison reports.
+- Implementing the new Decision Support Audit Pack (DSAP) program as an
+  additive audit layer over the existing trace/session tooling. Milestones 1-6
+  are now in place under `server/audit/` with canonical event normalization,
+  pack assembly, integrity manifests, episode slicing, decision records,
+  source registers, disclosure/redaction derivatives, retention-state support,
+  legal-hold handling, dedicated audit HTTP/CLI entrypoints, pack discovery
+  under `AUDIT_PACK_ROOT`, and SHA-256 sidecars for original and derivative
+  bundle zips.
 - Maintaining the new OS MRN route-planning stack under `tools/os_route.py`,
   `server/route_graph.py`, `server/route_planning.py`, and
   `ui/route_planner.html`, with pgRouting/PostGIS graph readiness surfaced via
@@ -160,6 +168,10 @@ assumptions change.
 - Prepare the minor-release integration branch `codex/release-0.6.0-integration`
   by landing `codex/validate-maps` plus the boundary harness follow-up while
   explicitly deferring PRs `#24`, `#29`, and `codex/reporting-2026-03-01`.
+- Maintain the additive DSAP implementation under `server/audit/`, including
+  pack assembly, integrity verification, disclosure derivatives, retention
+  state, pack discovery, bundle sidecar hashing, and the audit API surface,
+  while preserving the current trace/session capture stack.
 - Maintain published `v0.5.0` launch state (release notes/caveat visibility,
   security-review traceability, and public-repo hygiene checks).
 - Maintain the Codex-vs-Claude host benchmark harness: `scripts/codex-mcp-local`,

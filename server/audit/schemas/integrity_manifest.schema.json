@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-geo.local/schemas/dsap/integrity_manifest.schema.json",
+  "title": "DSAP Integrity Manifest",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "packId",
+    "algorithm",
+    "disclosureProfile",
+    "verificationStatus",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "packId": {
+      "type": "string"
+    },
+    "algorithm": {
+      "const": "sha256"
+    },
+    "disclosureProfile": {
+      "type": "string"
+    },
+    "verificationStatus": {
+      "type": "string",
+      "enum": ["recorded", "verified", "failed"]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": ["path", "sizeBytes", "sha256", "verificationStatus"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "verificationStatus": {
+          "type": "string",
+          "enum": ["recorded", "verified", "failed"]
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -204,6 +204,21 @@ def _write_session_metadata(
     (session_dir / "session.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def _update_session_completion(session_dir: Path, exit_code: int) -> None:
+    path = session_dir / "session.json"
+    if not path.exists():
+        return
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return
+    if not isinstance(payload, dict):
+        return
+    payload["endedAt"] = _utc_now()
+    payload["exitCode"] = exit_code
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run a traceable MCP Geo session.")
     parser.add_argument("mode", choices=["stdio", "http"], help="Which transport to run.")
@@ -280,6 +295,7 @@ def main() -> int:
     print(f"[mcp-geo] ui events: {ui_event_path}", file=sys.stderr)
 
     proc = subprocess.run(command, env=env, check=False)
+    _update_session_completion(session_dir, proc.returncode)
 
     if not args.no_report:
         report_cmd = [

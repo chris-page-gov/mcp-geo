@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-geo.local/schemas/dsap/audit_card.schema.json",
+  "title": "DSAP Audit Card",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "packId",
+    "createdAt",
+    "conversationId",
+    "scopeType",
+    "disclosureProfile",
+    "retentionClass",
+    "legalHold",
+    "completeness",
+    "sourceOfTruth"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "packId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "conversationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decisionEpisodeId": {
+      "type": ["string", "null"]
+    },
+    "scopeType": {
+      "type": "string",
+      "enum": ["conversation", "episode", "snapshot"]
+    },
+    "title": {
+      "type": "string"
+    },
+    "disclosureProfile": {
+      "type": "string",
+      "enum": ["internal_full", "internal_restricted", "foi_redacted"]
+    },
+    "retentionClass": {
+      "type": "string"
+    },
+    "legalHold": {
+      "type": "boolean"
+    },
+    "eventCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "evidenceItemCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sourceAccessCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completeness": {
+      "type": "object",
+      "required": ["grade", "reasons"],
+      "properties": {
+        "grade": {
+          "type": "string",
+          "enum": ["A", "B", "C"]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sourceOfTruth": {
+      "type": "object",
+      "required": ["eventLedger", "retainedEvidenceRoot"],
+      "properties": {
+        "eventLedger": {
+          "type": "string"
+        },
+        "retainedEvidenceRoot": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

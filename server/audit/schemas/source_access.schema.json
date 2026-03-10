@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-geo.local/schemas/dsap/source_access.schema.json",
+  "title": "DSAP Source Access",
+  "type": "object",
+  "required": [
+    "sourceAccessId",
+    "heldStatus"
+  ],
+  "properties": {
+    "sourceAccessId": {
+      "type": "string"
+    },
+    "source": {
+      "type": ["string", "null"]
+    },
+    "method": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "requestedAt": {
+      "type": ["string", "null"]
+    },
+    "respondedAt": {
+      "type": ["string", "null"]
+    },
+    "statusCode": {
+      "type": ["integer", "string", "null"]
+    },
+    "requestEventId": {
+      "type": ["string", "null"]
+    },
+    "responseEventId": {
+      "type": ["string", "null"]
+    },
+    "heldStatus": {
+      "type": "string",
+      "enum": ["held", "partial", "not_held"]
+    },
+    "evidence": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

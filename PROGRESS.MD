@@ -13,6 +13,17 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | TOOLWRAP-1 Repo-local test/lint/type wrappers | done | none | Added `scripts/run-local-tool` plus `scripts/pytest-local`, `scripts/ruff-local`, and `scripts/mypy-local` so host-side Codex/CLI sessions automatically prefer the running repo devcontainer app container, then the repo `.venv`, then `uv run`. Updated `scripts/check_non_runtime_quality.sh` to use the wrappers and synced the main host-facing docs (`README.md`, `docs/getting_started.md`, `docs/troubleshooting.md`, `docs/Build.md`, `AGENTS.md`). |
 
+## Decision Support Audit Pack groundwork (2026-03-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| DSAP-DOC-1 Design, runbook, and implementation log | done | none | Added `docs/decision_support_audit_pack.md`, `implement.md`, and `documentation.md` to define the governed DSAP model, milestone order, acceptance expectations, and the running implementation log. |
+| DSAP-NORM-2 Canonical event schema and normalization | done | DSAP-DOC-1 | Added `server/audit/` scaffolding, implemented `server/audit/normalise.py`, and added `server/audit/schemas/event.schema.json` so existing session artifacts can be normalized into canonical DSAP events without replacing the current trace/session stack. |
+| DSAP-INT-3 Additive trace/session integration and focused regression coverage | done | DSAP-NORM-2 | Extended `scripts/trace_report.py` additively to emit `event-ledger.jsonl`, updated `scripts/trace_session.py` to record `endedAt` and `exitCode`, and added focused coverage in `tests/test_audit_normalise.py`, `tests/test_trace_report_audit.py`, and `tests/test_trace_session.py` while preserving the existing trace/session workflows. |
+| DSAP-NEXT-4 Integrity, disclosure, retention, and APIs | done | DSAP-INT-3 | Completed Milestones 2-6 additively under `server/audit/`: DSAP pack assembly, episode slicing, decision records, source-register held-status semantics, disclosure/redaction derivatives, SHA-256 integrity manifests with verification, retention-state/legal-hold handling, CLI entrypoints, focused API endpoints, and acceptance-style regression coverage. Follow-on polish now also includes pack discovery/listing under `AUDIT_PACK_ROOT` plus SHA-256 sidecars for original and derivative bundle zips. Existing trace/session capture and `scripts/trace_report.py` workflows remain intact. |
+
 ## OS MRN route planning and router repair (2026-03-10)
 
 Legend: pending, in_progress, done, blocked

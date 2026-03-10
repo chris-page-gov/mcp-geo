@@ -26,6 +26,7 @@ from scripts.trace_utils import (
     summarize_methods,
     summarize_upstream_log,
 )
+from server.audit.normalise import write_event_ledger
 
 DEFAULT_SESSION_ROOT = Path("logs") / "sessions"
 
@@ -265,6 +266,8 @@ def main() -> int:
         raise SystemExit(f"Session directory not found: {session_dir}")
 
     files = find_trace_files(session_dir)
+    ledger_path = write_event_ledger(session_dir)
+    files["eventLedger"] = ledger_path
 
     mcp_summaries = []
     if "stdio" in files:

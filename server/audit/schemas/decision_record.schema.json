@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-geo.local/schemas/dsap/decision_record.schema.json",
+  "title": "DSAP Decision Record",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "conversationId",
+    "decisionEpisodeId",
+    "scopeType",
+    "assumptions",
+    "uncertainties",
+    "conclusions",
+    "counts",
+    "gaps"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "conversationId": {
+      "type": "string"
+    },
+    "decisionEpisodeId": {
+      "type": "string"
+    },
+    "scopeType": {
+      "type": "string",
+      "enum": ["conversation", "episode", "snapshot"]
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decisionEntry"
+      }
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decisionEntry"
+      }
+    },
+    "conclusions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decisionEntry"
+      }
+    },
+    "counts": {
+      "type": "object"
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "decisionEntry": {
+      "type": "object",
+      "required": ["eventId", "occurredAt", "source"],
+      "properties": {
+        "eventId": {
+          "type": ["string", "null"]
+        },
+        "occurredAt": {
+          "type": ["string", "null"]
+        },
+        "content": {},
+        "source": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

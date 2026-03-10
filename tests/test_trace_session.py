@@ -50,3 +50,5 @@ def test_trace_session_keeps_host_ui_event_path_for_codex_wrapper(monkeypatch, t
 
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["paths"]["uiEvents"] == str(host_ui_path)
+    assert session_meta["exitCode"] == 0
+    assert session_meta["endedAt"].endswith("Z")

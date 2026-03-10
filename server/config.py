@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 
 class Settings(BaseSettings):
     OS_API_KEY: str = ""
+    AUDIT_PACK_ROOT: str = "logs/audit-packs"
     DEBUG_ERRORS: bool = False
     LOG_JSON: bool = True
     RATE_LIMIT_PER_MIN: int = 207  # calibrated default per client IP

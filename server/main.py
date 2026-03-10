@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from server import observability
+from server.audit import api as audit_api
 from server.mcp import http_transport, playground, resources, tools
 from server import maps_proxy
 from server.logging import configure_logging
@@ -147,6 +148,7 @@ app.include_router(resources.router)
 app.include_router(playground.router)
 app.include_router(http_transport.router)
 app.include_router(maps_proxy.router)
+app.include_router(audit_api.router)
 
 
 @app.get("/metrics")

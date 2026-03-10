@@ -75,6 +75,7 @@ def find_trace_files(session_dir: Path) -> dict[str, Path]:
         "stdio": session_dir / "mcp-stdio-trace.jsonl",
         "http": session_dir / "mcp-http-trace.jsonl",
         "ui": session_dir / "ui-events.jsonl",
+        "eventLedger": session_dir / "event-ledger.jsonl",
         "upstream": session_dir / "upstream.log",
         "session": session_dir / "session.json",
         "summary": session_dir / "summary.json",

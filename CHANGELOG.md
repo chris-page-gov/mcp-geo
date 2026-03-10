@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added governed DSAP design and implementation docs:
+  `docs/decision_support_audit_pack.md`, `implement.md`, and
+  `documentation.md`.
+- Added additive DSAP scaffolding under `server/audit/`, including the
+  canonical event normalization pipeline in `server/audit/normalise.py`, the
+  canonical event schema `server/audit/schemas/event.schema.json`, and
+  milestone-placeholder modules and schemas for later DSAP work.
+- Added full DSAP Milestones 2-6 under `server/audit/`: pack assembly,
+  retained-evidence materialization, completeness grading, decision episodes,
+  decision records, source-register held-status handling, disclosure/redaction
+  derivatives, SHA-256 integrity manifests with verification, retention-state
+  and legal-hold handling, and additive audit HTTP/CLI entrypoints.
+- Added DSAP follow-on discovery/hash support: `GET /audit/packs`, bundle
+  SHA-256 sidecars for original and derivative zip bundles, and bundle-hash
+  metadata surfaced through the audit API.
+- Added focused DSAP Milestone 1 regression coverage in
+  `tests/test_audit_normalise.py` and `tests/test_trace_report_audit.py`.
+- Added DSAP acceptance-focused regression coverage in
+  `tests/test_audit_pack_builder.py` and `tests/test_audit_api.py`.
 - Added first-class route-planning tools `os_route.descriptor` and
   `os_route.get`, backed by the new pgRouting/PostGIS graph service in
   `server/route_graph.py` and route parsing helpers in
@@ -58,6 +77,16 @@ All notable changes to this project will be documented in this file.
 - Fixed `scripts/generate_mcp_geo_functionality_showcase.py` so the report
   generator no longer uses invalid f-string `"\n".join(...)` expressions that
   break test collection.
+- Extended `scripts/trace_report.py` additively so existing traced sessions now
+  emit `event-ledger.jsonl` alongside the existing summary and report outputs.
+- Extended `scripts/trace_session.py` additively so `session.json` now records
+  `endedAt` and `exitCode`, allowing DSAP normalization to emit
+  `conversation.closed` without reconstructing missing evidence.
+- Extended `server/main.py` and `server/config.py` additively so DSAP packs can
+  be assembled, verified, redacted, and placed under the configured
+  `AUDIT_PACK_ROOT` without replacing the current tracing stack.
+- Extended DSAP pack metadata to report discoverable redacted derivatives and
+  bundle-hash sidecars without changing the sealed original pack structure.
 - Replaced the route planner's demo-shell behavior with a live MCP-Apps widget
   contract wired to `os_route.get`, including route geometry rendering,
   payload normalization, and explicit graph/ambiguity error states.
