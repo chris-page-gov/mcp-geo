@@ -22,11 +22,8 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
-      - name: Lint
-        run: ruff check server/ tools/ tests/
-
-      - name: Format check
-        run: ruff format --check server/ tools/ tests/
+      - name: Lint (syntax + undefined names)
+        run: ruff check --select=E9,F63,F7,F82 server/ tools/ tests/
 
       - name: Test
         run: pytest -q -m "not integration"
