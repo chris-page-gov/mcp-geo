@@ -599,10 +599,17 @@ Note: The Svelte playground is served by Vite (`npm run dev`). The legacy
 Run tests with:
 
 ```bash
-pytest -q
+./scripts/pytest-local -q
 ```
 
 Coverage gate (configured) requires ≥90%. Add tests for both success and error branches (retry paths, validation failures, upstream errors). Avoid broad mocks that skip normalization logic.
+
+Host-side wrappers:
+- `./scripts/pytest-local`, `./scripts/ruff-local`, and
+  `./scripts/mypy-local` prefer the running repo devcontainer app container.
+- If no devcontainer is running, they fall back to the repo `.venv`.
+- If the tool is still unavailable, they fall back to `uv run`.
+- Override with `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
 
 ## Contributing
 

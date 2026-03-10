@@ -26,6 +26,14 @@ Set env vars for live data when you have keys:
 - `LOG_JSON=true` to force JSON logs (now default)
 - `MCP_TOOLS_DEFAULT_TOOLSET=starter` to reduce startup `tools/list` payloads for STDIO clients
 
+Host-side verification wrappers:
+- `./scripts/pytest-local -q`
+- `./scripts/ruff-local check <paths...>`
+- `./scripts/mypy-local <paths...>`
+- These wrappers prefer the running repo devcontainer app container, then the
+  repo `.venv`, then `uv run`. Override with
+  `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
+
 Host shell best-practice:
 - Keep non-secret runtime vars in your shell profile (or sourced env file).
 - Keep secrets (API keys/tokens) in a separate `chmod 600` file and source it

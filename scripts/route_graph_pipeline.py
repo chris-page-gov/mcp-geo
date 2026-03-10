@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -74,7 +74,7 @@ def _runtime_dir() -> Path:
 
 
 def _default_dsn() -> str:
-    return (
+    return str(
         os.getenv("ROUTE_GRAPH_DSN")
         or getattr(settings, "ROUTE_GRAPH_DSN", "")
         or os.getenv("BOUNDARY_CACHE_DSN")
@@ -196,7 +196,7 @@ def _capture_provenance(product_query: str, *, limit: int, output_path: Path) ->
     safe_selected = _safe_product_record(selected)
     safe_downloads = [_safe_download_record(item) for item in sorted_downloads[:limit]]
     payload = {
-        "capturedAt": datetime.now(timezone.utc).isoformat(),
+        "capturedAt": datetime.now(UTC).isoformat(),
         "productQuery": product_query,
         "selectedProduct": safe_selected,
         "latestDownload": _safe_download_record(latest),
@@ -204,7 +204,10 @@ def _capture_provenance(product_query: str, *, limit: int, output_path: Path) ->
         "downloadCount": len(sorted_downloads),
         "notes": [
             "This captures MRN package provenance and schema bootstrap state.",
-            "Populate routing.graph_nodes / routing.graph_edges from the selected package before enabling live routing.",
+            (
+                "Populate routing.graph_nodes / routing.graph_edges from the selected "
+                "package before enabling live routing."
+            ),
         ],
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -236,7 +239,7 @@ def _upsert_metadata(dsn: str, *, provenance_path: Path, payload: dict[str, Any]
     latest = payload.get("latestDownload") if isinstance(payload, dict) else {}
     latest = latest if isinstance(latest, dict) else {}
     graph_version = str(latest.get("id") or latest.get("name") or "mrn-provenance")
-    built_at = datetime.now(timezone.utc).isoformat()
+    built_at = datetime.now(UTC).isoformat()
     with psycopg.connect(dsn, autocommit=True) as conn:
         with conn.cursor() as cur:
             cur.execute(_SCHEMA_SQL.read_text(encoding="utf-8"))
@@ -303,7 +306,10 @@ def main() -> int:
     capture_parser.add_argument("--limit", type=int, default=25)
     capture_parser.add_argument(
         "--output",
-        default=str(_runtime_dir() / getattr(settings, "ROUTE_GRAPH_PROVENANCE_FILE", "os_mrn_downloads.json")),
+        default=str(
+            _runtime_dir()
+            / getattr(settings, "ROUTE_GRAPH_PROVENANCE_FILE", "os_mrn_downloads.json")
+        ),
     )
 
     args = parser.parse_args()
@@ -314,8 +320,16 @@ def main() -> int:
             output_path = Path(args.output)
             if not output_path.is_absolute():
                 output_path = _REPO_ROOT / output_path
-            payload = _capture_provenance(args.product_query, limit=args.limit, output_path=output_path)
-            metadata_result = _upsert_metadata(args.dsn, provenance_path=output_path, payload=payload)
+            payload = _capture_provenance(
+                args.product_query,
+                limit=args.limit,
+                output_path=output_path,
+            )
+            metadata_result = _upsert_metadata(
+                args.dsn,
+                provenance_path=output_path,
+                payload=payload,
+            )
             result = {
                 "status": "captured",
                 "output": str(output_path),

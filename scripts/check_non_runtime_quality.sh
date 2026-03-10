@@ -2,13 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-RUFF_BIN="${ROOT_DIR}/.venv/bin/ruff"
-MYPY_BIN="${ROOT_DIR}/.venv/bin/mypy"
-
-if [[ ! -x "${RUFF_BIN}" || ! -x "${MYPY_BIN}" ]]; then
-  echo "Missing .venv quality tooling. Install with: pip install -e '.[dev]'" >&2
-  exit 1
-fi
+RUFF_BIN="${ROOT_DIR}/scripts/ruff-local"
+MYPY_BIN="${ROOT_DIR}/scripts/mypy-local"
+cd "${ROOT_DIR}"
 
 RUFF_TARGETS=(
   "server/mcp/tools.py"
@@ -32,9 +28,9 @@ MYPY_TARGETS=(
 )
 
 echo "[quality] ruff (non-runtime reliability surfaces)"
-"${RUFF_BIN}" check "${RUFF_TARGETS[@]/#/${ROOT_DIR}/}"
+"${RUFF_BIN}" check "${RUFF_TARGETS[@]}"
 
 echo "[quality] mypy (non-runtime reliability surfaces)"
-"${MYPY_BIN}" --follow-imports=skip "${MYPY_TARGETS[@]/#/${ROOT_DIR}/}"
+"${MYPY_BIN}" --follow-imports=skip "${MYPY_TARGETS[@]}"
 
 echo "[quality] non-runtime static gates passed"

@@ -67,6 +67,10 @@ All notable changes to this project will be documented in this file.
 - Sanitized `scripts/route_graph_pipeline.py` provenance capture/output so it
   no longer stores or prints raw DSNs, signed download URLs, or other
   credential-like fields from MRN download metadata.
+- Added host/devcontainer-aware tool wrappers `scripts/pytest-local`,
+  `scripts/ruff-local`, `scripts/mypy-local`, and `scripts/run-local-tool` so
+  host-side verification commands automatically reuse the repo devcontainer,
+  then the repo `.venv`, then `uv run`.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
   full expected-output JSON for 20 scenarios, including a new 10-scenario

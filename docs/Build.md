@@ -44,7 +44,14 @@ python run.py
 ## Tests
 
 ```bash
-pytest -q
+./scripts/pytest-local -q
+```
+
+Focused host-side lint/type checks:
+
+```bash
+./scripts/ruff-local check <paths...>
+./scripts/mypy-local <paths...>
 ```
 
 ## Environment variables

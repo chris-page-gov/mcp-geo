@@ -144,6 +144,10 @@ assumptions change.
 - Keeping route-graph bootstrap/provenance tooling free of raw credential
   storage/logging by sanitizing MRN download metadata and redacting DSN-derived
   secrets in `scripts/route_graph_pipeline.py`.
+- Standardizing host-side verification commands on repo-local wrappers
+  (`scripts/pytest-local`, `scripts/ruff-local`, `scripts/mypy-local`) so
+  Codex/CLI sessions reuse the running devcontainer toolchain before falling
+  back to `.venv` or `uv run`.
 
 ## Active Work
 

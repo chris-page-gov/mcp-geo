@@ -75,7 +75,7 @@ def test_bootstrap_schema_result_does_not_include_raw_dsn(monkeypatch, tmp_path:
     executed: list[str] = []
 
     class _Cursor:
-        def __enter__(self) -> "_Cursor":
+        def __enter__(self) -> _Cursor:
             return self
 
         def __exit__(self, exc_type, exc, tb) -> None:
@@ -85,7 +85,7 @@ def test_bootstrap_schema_result_does_not_include_raw_dsn(monkeypatch, tmp_path:
             executed.append(sql)
 
     class _Connection:
-        def __enter__(self) -> "_Connection":
+        def __enter__(self) -> _Connection:
             return self
 
         def __exit__(self, exc_type, exc, tb) -> None:

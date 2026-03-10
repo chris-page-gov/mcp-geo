@@ -1239,7 +1239,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_apps.render_ui_probe",
             "admin_lookup.find_by_name",
         ],
-        QueryIntent.ROUTE_PLANNING: ["os_apps.render_route_planner", "os_route.descriptor", "os_maps.render"],
+        QueryIntent.ROUTE_PLANNING: [
+            "os_apps.render_route_planner",
+            "os_route.descriptor",
+            "os_maps.render",
+        ],
         QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
         QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],
         QueryIntent.VECTOR_TILES: ["os_maps.render"],

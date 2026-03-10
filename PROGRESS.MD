@@ -5,6 +5,14 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-10
 
+## Host/devcontainer verification wrappers (2026-03-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| TOOLWRAP-1 Repo-local test/lint/type wrappers | done | none | Added `scripts/run-local-tool` plus `scripts/pytest-local`, `scripts/ruff-local`, and `scripts/mypy-local` so host-side Codex/CLI sessions automatically prefer the running repo devcontainer app container, then the repo `.venv`, then `uv run`. Updated `scripts/check_non_runtime_quality.sh` to use the wrappers and synced the main host-facing docs (`README.md`, `docs/getting_started.md`, `docs/troubleshooting.md`, `docs/Build.md`, `AGENTS.md`). |
+
 ## OS MRN route planning and router repair (2026-03-10)
 
 Legend: pending, in_progress, done, blocked
