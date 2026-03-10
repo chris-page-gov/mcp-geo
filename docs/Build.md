@@ -151,6 +151,10 @@ docker build \
   -t mcp-geo-server .
 ```
 
+Those proxy values are build-scoped only and are not baked into the final
+image metadata. If the running container also needs proxy access, pass the same
+variables explicitly to `docker run -e ...`.
+
 Run HTTP transport:
 
 ```bash

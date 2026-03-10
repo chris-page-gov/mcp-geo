@@ -664,6 +664,8 @@ without code changes.
   rebuilding the devcontainer or Docker image.
 - For proxied networks, set `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` via
   `.devcontainer/.env` (or host env exports).
+- Proxy settings are only used at build/runtime injection points and are not
+  persisted into the final runtime image metadata.
 - `INSTALL_NGROK` is opt-in for the devcontainer build so TLS-inspected
   networks do not fail on the optional tunnel binary fetch.
 

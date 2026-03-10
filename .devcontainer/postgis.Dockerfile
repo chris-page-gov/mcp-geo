@@ -7,13 +7,6 @@ ARG http_proxy=""
 ARG https_proxy=""
 ARG no_proxy=""
 
-ENV HTTP_PROXY=${HTTP_PROXY} \
-    HTTPS_PROXY=${HTTPS_PROXY} \
-    NO_PROXY=${NO_PROXY} \
-    http_proxy=${http_proxy} \
-    https_proxy=${https_proxy} \
-    no_proxy=${no_proxy}
-
 COPY .devcontainer/certs/ /tmp/devcontainer-certs/
 RUN set -eu; \
     mkdir -p /usr/local/share/ca-certificates/custom; \
@@ -23,7 +16,9 @@ RUN set -eu; \
         update-ca-certificates; \
     fi
 
-RUN apt-get update \
+RUN HTTP_PROXY="${HTTP_PROXY}" HTTPS_PROXY="${HTTPS_PROXY}" NO_PROXY="${NO_PROXY}" \
+    http_proxy="${http_proxy}" https_proxy="${https_proxy}" no_proxy="${no_proxy}" \
+    apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         postgresql-16-pgrouting \

@@ -28,6 +28,7 @@ def test_devcontainer_supports_proxy_env_and_optional_ngrok() -> None:
     assert 'HTTP_PROXY: "${HTTP_PROXY:-}"' in compose_text
     assert 'HTTPS_PROXY: "${HTTPS_PROXY:-}"' in compose_text
     assert 'NO_PROXY: "${NO_PROXY:-}"' in compose_text
+    assert 'HTTP_PROXY="${HTTP_PROXY}"' in dockerfile_text
     assert 'ARG INSTALL_NGROK="false"' in dockerfile_text
     assert "Skipping ngrok install" in dockerfile_text
     assert "HTTP_PROXY=http://proxy.example:8080" in env_example
@@ -49,6 +50,7 @@ def test_container_images_use_system_ca_bundle_and_local_cert_drop_point() -> No
     for text in (devcontainer_dockerfile, repo_dockerfile):
         assert "REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" in text
         assert "COPY .devcontainer/certs/" in text
+        assert "HTTP_PROXY=${HTTP_PROXY}" not in text
 
     assert "COPY .devcontainer/certs/ /tmp/devcontainer-certs/" in devcontainer_dockerfile
     assert "COPY .devcontainer/certs/ /tmp/devcontainer-certs/" in postgis_dockerfile
