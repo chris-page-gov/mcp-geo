@@ -12,6 +12,8 @@ POSTCODE_REGEX = re.compile(
 UPRN_REGEX = re.compile(r"\b\d{8,13}\b")
 LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
 AVOID_REFERENCE_REGEX = re.compile(r"\b[A-Z0-9]+(?:/[A-Z0-9]+)+\b", re.IGNORECASE)
+AVOID_TOKEN_REGEX = re.compile(r"[A-Z0-9/_-]+", re.IGNORECASE)
+AVOID_COMPACT_ID_REGEX = re.compile(r"^[A-Z0-9_-]+$", re.IGNORECASE)
 ROUTE_VERB_REGEX = re.compile(
     r"\b(route|directions?|journey|travel|drive|walk|cycle|emergency route|best route)\b",
     re.IGNORECASE,
@@ -170,7 +172,7 @@ def extract_route_request(query: str) -> dict[str, Any] | None:
         return None
 
     profile = detect_route_profile(normalized_query)
-    constraints = extract_route_constraints(normalized_query)
+    constraints, unresolved_avoid_texts = _extract_route_constraints_with_hints(normalized_query)
     base_text = strip_constraints_text(normalized_query)
     start_text, end_text, via_texts = _extract_route_segments(base_text)
     if not start_text or not end_text:
@@ -182,24 +184,33 @@ def extract_route_request(query: str) -> dict[str, Any] | None:
     if not start_stop or not end_stop:
         return None
 
+    extracted = {
+        "startText": clean_stop_text(start_text),
+        "endText": clean_stop_text(end_text),
+        "viaText": [clean_stop_text(text) for text in via_texts if clean_stop_text(text)],
+    }
+    if unresolved_avoid_texts:
+        extracted["unresolvedAvoidTexts"] = unresolved_avoid_texts
+
     return {
         "stops": [start_stop, end_stop],
         "via": via_stops,
         "profile": profile,
         "constraints": constraints,
-        "extracted": {
-            "startText": clean_stop_text(start_text),
-            "endText": clean_stop_text(end_text),
-            "viaText": [clean_stop_text(text) for text in via_texts if clean_stop_text(text)],
-        },
+        "extracted": extracted,
     }
 
 
 def extract_route_constraints(query: str) -> dict[str, Any]:
+    constraints, _ = _extract_route_constraints_with_hints(query)
+    return constraints
+
+
+def _extract_route_constraints_with_hints(query: str) -> tuple[dict[str, Any], list[str]]:
     query = _normalize_query_text(query)
     query_lower = query.lower()
-    avoid_areas: list[str] = []
     avoid_ids: list[str] = []
+    unresolved_avoid_texts: list[str] = []
 
     for match in re.finditer(
         r"\bavoid(?:ing)?\b\s+(.+?)(?=(?:\bfrom\b|\bto\b|\bvia\b|\bwith\b|$))",
@@ -209,17 +220,20 @@ def extract_route_constraints(query: str) -> dict[str, Any]:
         value = clean_stop_text(match.group(1))
         if not value:
             continue
-        refs = [ref.upper() for ref in AVOID_REFERENCE_REGEX.findall(value)]
+        refs = _extract_avoid_id_tokens(value)
         if refs:
             avoid_ids.extend(refs)
-        else:
-            avoid_areas.append(value)
+            continue
+        unresolved_avoid_texts.append(value)
 
-    return {
-        "avoidAreas": _dedupe_text(avoid_areas),
-        "avoidIds": _dedupe_text(avoid_ids),
-        "softAvoid": _has_soft_avoid_language(query_lower),
-    }
+    return (
+        {
+            "avoidAreas": [],
+            "avoidIds": _dedupe_text(avoid_ids),
+            "softAvoid": _has_soft_avoid_language(query_lower),
+        },
+        _dedupe_text(unresolved_avoid_texts),
+    )
 
 
 def strip_constraints_text(query: str) -> str:
@@ -302,3 +316,26 @@ def _has_soft_avoid_language(query_lower: str) -> bool:
 
 def _normalize_query_text(query: str) -> str:
     return re.sub(r"\s+", " ", query).strip()
+
+
+def _extract_avoid_id_tokens(value: str) -> list[str]:
+    tokens = AVOID_REFERENCE_REGEX.findall(value)
+    tokens.extend(
+        token
+        for token in AVOID_TOKEN_REGEX.findall(value)
+        if _looks_like_avoid_id_token(token)
+    )
+    return _dedupe_text(tokens)
+
+
+def _looks_like_avoid_id_token(token: str) -> bool:
+    candidate = token.strip(" ,.;:!?")
+    if not candidate or " " in candidate:
+        return False
+    if AVOID_REFERENCE_REGEX.fullmatch(candidate):
+        return True
+    if candidate.isdigit():
+        return len(candidate) >= 3
+    if not AVOID_COMPACT_ID_REGEX.fullmatch(candidate):
+        return False
+    return any(char.isalpha() for char in candidate) and any(char.isdigit() for char in candidate)

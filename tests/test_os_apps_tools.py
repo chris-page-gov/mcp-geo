@@ -149,6 +149,23 @@ def test_os_apps_render_route_planner_supports_legacy_coordinate_payload(monkeyp
     assert 'id="map"' in html
 
 
+def test_os_apps_render_route_planner_embedded_includes_plain_id_avoid_classification(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
+    resp = client.post("/tools/call", json={"tool": "os_apps.render_route_planner"})
+    assert resp.status_code == 200
+    body = resp.json()
+    resource_blocks = [
+        block
+        for block in body.get("content", [])
+        if isinstance(block, dict) and block.get("type") == "resource"
+    ]
+    assert resource_blocks
+    html = resource_blocks[0].get("resource", {}).get("text", "")
+    assert "function looksLikeAvoidId" in html
+    assert "const avoidIds = avoidItems.filter((value) => looksLikeAvoidId(value));" in html
+    assert "const avoidAreas = avoidItems.filter((value) => !looksLikeAvoidId(value));" in html
+
+
 def test_os_apps_render_ui_probe_embedded(monkeypatch):
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
     resp = client.post(

@@ -650,6 +650,20 @@
         return { query: trimmed };
       }
 
+      function looksLikeAvoidId(value) {
+        const trimmed = String(value || "").trim();
+        if (!trimmed || /\s/.test(trimmed)) {
+          return false;
+        }
+        if (trimmed.includes("/")) {
+          return true;
+        }
+        if (/^\d{3,}$/.test(trimmed)) {
+          return true;
+        }
+        return /^[A-Za-z0-9_-]+$/.test(trimmed) && /[A-Za-z]/.test(trimmed) && /\d/.test(trimmed);
+      }
+
       function readRouteRequest() {
         const start = toStop(elements.startInput.value);
         const end = toStop(elements.endInput.value);
@@ -658,8 +672,8 @@
         }
         const via = splitListInput(elements.viaInput.value).map(toStop).filter(Boolean);
         const avoidItems = splitListInput(elements.avoidInput.value);
-        const avoidIds = avoidItems.filter((value) => /\//.test(value));
-        const avoidAreas = avoidItems.filter((value) => !/\//.test(value));
+        const avoidIds = avoidItems.filter((value) => looksLikeAvoidId(value));
+        const avoidAreas = avoidItems.filter((value) => !looksLikeAvoidId(value));
         return {
           stops: [start, end],
           via,

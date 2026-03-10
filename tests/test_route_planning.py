@@ -68,8 +68,9 @@ def test_extract_route_request_parses_labeled_origin_destination():
     assert request is not None
     assert request["stops"] == [{"query": "Coventry rail station"}, {"query": "London Euston"}]
     assert request["profile"] == "multimodal"
-    assert request["constraints"]["avoidAreas"] == ["central cordon"]
+    assert request["constraints"]["avoidAreas"] == []
     assert request["constraints"]["softAvoid"] is True
+    assert request["extracted"]["unresolvedAvoidTexts"] == ["central cordon"]
 
 
 def test_extract_route_request_without_soft_language_uses_hard_avoid():
@@ -79,6 +80,16 @@ def test_extract_route_request_without_soft_language_uses_hard_avoid():
     assert request is not None
     assert request["constraints"]["avoidIds"] == ["167647/3"]
     assert request["constraints"]["softAvoid"] is False
+
+
+def test_extract_route_request_classifies_plain_avoid_tokens_as_ids():
+    request = route_planning.extract_route_request(
+        "Plan the best route from Coventry to London and avoid edge-1001 and 1001 if possible"
+    )
+    assert request is not None
+    assert request["constraints"]["avoidIds"] == ["edge-1001", "1001"]
+    assert request["constraints"]["avoidAreas"] == []
+    assert "unresolvedAvoidTexts" not in request["extracted"]
 
 
 def test_extract_route_request_parses_via_segments():

@@ -1586,6 +1586,13 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         extracted = route_request.get("extracted")
         if isinstance(extracted, dict):
             response["routeHints"] = extracted
+            unresolved_avoids = extracted.get("unresolvedAvoidTexts")
+            if isinstance(unresolved_avoids, list) and unresolved_avoids:
+                response["guidance"] = (
+                    f"{response['guidance']} Review routeHints.unresolvedAvoidTexts before "
+                    "calling os_route.get: those phrases were not normalized into route IDs "
+                    "or supported geometry."
+                )
         response["interactive_companion_tool"] = "os_apps.render_route_planner"
     return 200, response
 

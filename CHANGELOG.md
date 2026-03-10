@@ -48,6 +48,13 @@ All notable changes to this project will be documented in this file.
 - Hardened `server/route_graph.py` to reject unparseable `avoidAreas`
   constraints with `INVALID_INPUT` rather than silently dropping them and
   returning an unconstrained route.
+- Kept `os_mcp.route_query` route suggestions executable by surfacing
+  unresolved free-text avoidance phrases under
+  `routeHints.unresolvedAvoidTexts` instead of forwarding invalid
+  `avoidAreas` into `os_route.get`.
+- Widened `ui/route_planner.html` avoid-id classification so compact tokens
+  such as `1001` and `edge-1001` are sent through `avoidIds` rather than the
+  geometry-only `avoidAreas` path.
 - Fixed `scripts/generate_mcp_geo_functionality_showcase.py` so the report
   generator no longer uses invalid f-string `"\n".join(...)` expressions that
   break test collection.

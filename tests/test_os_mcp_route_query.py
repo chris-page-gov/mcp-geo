@@ -142,6 +142,28 @@ def test_route_query_without_if_possible_preserves_hard_avoid():
     assert params["constraints"]["softAvoid"] is False
 
 
+def test_route_query_surfaces_unresolved_avoid_text_without_invalid_parameters():
+    body = _route(
+        "Plan the best route from Coventry rail station to London Euston and avoid central cordon if possible"
+    )
+    assert body["intent"] == "route_planning"
+    params = body["recommended_parameters"]
+    assert params["constraints"]["avoidAreas"] == []
+    assert params["constraints"]["avoidIds"] == []
+    assert body["routeHints"]["unresolvedAvoidTexts"] == ["central cordon"]
+    assert "routeHints.unresolvedAvoidTexts" in body["guidance"]
+
+
+def test_route_query_treats_plain_avoid_tokens_as_ids():
+    body = _route(
+        "Plan the best route from Coventry rail station to London Euston and avoid edge-1001 if possible"
+    )
+    assert body["intent"] == "route_planning"
+    params = body["recommended_parameters"]
+    assert params["constraints"]["avoidIds"] == ["edge-1001"]
+    assert params["constraints"]["avoidAreas"] == []
+
+
 def test_route_query_extracts_coordinate_and_via_route_hints():
     body = _route(
         "Give me walking directions from 51.5034,-0.1276 to Westminster Abbey via Big Ben"
