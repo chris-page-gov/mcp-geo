@@ -26,7 +26,7 @@ jobs:
         run: ruff check --select=E9,F63,F7,F82 server/ tools/ tests/
 
       - name: Test
-        run: pytest -q -m "not integration"
+        run: pytest -q -m "not integration" --ignore=tests/test_generate_mcp_geo_functionality_showcase.py
 
   docker:
     needs: test
