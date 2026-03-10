@@ -140,6 +140,17 @@ Build the image:
 docker build -t mcp-geo-server .
 ```
 
+Or pull the pre-built multi-arch image published from GitHub Actions:
+
+```bash
+docker pull ghcr.io/chris-page-gov/mcp-geo:latest
+```
+
+Published tags:
+- `latest` for the default branch image
+- `<sha>` for a specific commit image
+- `<version>` for release tags such as `0.6.0`
+
 For proxied networks, pass the same build args explicitly if you are using the
 top-level Dockerfile outside the devcontainer flow:
 
@@ -172,6 +183,26 @@ docker run --rm -i \
   -e OS_API_KEY=your-api-key-here \
   -e ONS_LIVE_ENABLED=true \
   mcp-geo-server
+```
+
+For desktop clients that shell out to `docker run`, keep `--env-file` on an
+absolute path because GUI apps do not start from the repo directory. Example:
+
+```json
+{
+  "mcpServers": {
+    "geo": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--env-file",
+        "/absolute/path/to/mcp-geo/.env",
+        "ghcr.io/chris-page-gov/mcp-geo:latest"
+      ]
+    }
+  }
+}
 ```
 
 When to use STDIO:

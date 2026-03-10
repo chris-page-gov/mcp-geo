@@ -62,7 +62,9 @@ assumptions change.
   explicitly under `LMR-HOST-4`.
 - Keeping the completed phased progress program stable with full regression coverage.
 - Driving the OS catalog/tooling gap closure plan via parallel workstreams.
-- Prioritizing next major gap after gap closure: CI pipeline implementation.
+- Maintaining the new GitHub Actions CI + GHCR multi-arch image workflow,
+  including the repo-supported Ruff/Mypy gate surface plus full Python pytest
+  coverage on PRs and pushes.
 - Maintaining post-remediation safe-by-design/governance compliance against UK
   standards (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM
   guidance, W3C provenance/catalog standards, and MCP `2025-11-25`.

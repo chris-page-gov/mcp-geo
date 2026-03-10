@@ -5,6 +5,14 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-10
 
+## GitHub Actions CI and GHCR publishing (2026-03-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CI-GHA-1 Fresh GitHub Actions pipeline from current `main` | done | none | Added `.github/workflows/ci.yml` with repo-supported Ruff/Mypy gates, full `pytest -q -m "not integration"` coverage enforcement, multi-arch Docker build validation for `linux/amd64` and `linux/arm64`, and GHCR publishing on `main`/`v*` tags. Folded the stale README env-file fix into the same change by documenting absolute `--env-file` paths for desktop clients and the new pre-built GHCR image path in `README.md` and `docs/Build.md`. |
+
 ## Cross-platform devcontainer hardening (2026-03-10)
 
 Legend: pending, in_progress, done, blocked

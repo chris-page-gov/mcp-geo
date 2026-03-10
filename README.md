@@ -53,6 +53,12 @@ docker build -t mcp-geo-server .
 docker run -i --env-file .env mcp-geo-server
 ```
 
+Or skip the build and use the pre-built image:
+
+```bash
+docker run -i --env-file .env ghcr.io/chris-page-gov/mcp-geo:latest
+```
+
 You should see something similar to:
 
 ```text
@@ -82,7 +88,24 @@ Example: Claude Desktop configuration
   "mcpServers": {
     "geo": {
       "command": "docker",
-      "args": ["run", "-i", "--env-file", ".env", "mcp-geo-server"]
+      "args": ["run", "-i", "--env-file", "/absolute/path/to/mcp-geo/.env", "mcp-geo-server"]
+    }
+  }
+}
+```
+
+> Replace `/absolute/path/to/mcp-geo/.env` with the actual path to your `.env`
+> file. See [`.env.example`](.env.example) for available settings; at minimum
+> you need `OS_API_KEY`.
+
+Or use the pre-built image in the same Claude Desktop config:
+
+```json
+{
+  "mcpServers": {
+    "geo": {
+      "command": "docker",
+      "args": ["run", "-i", "--env-file", "/absolute/path/to/mcp-geo/.env", "ghcr.io/chris-page-gov/mcp-geo:latest"]
     }
   }
 }
@@ -227,6 +250,19 @@ Build the image:
 docker build -t mcp-geo-server .
 ```
 
+Or pull the pre-built multi-arch image:
+
+```bash
+docker pull ghcr.io/chris-page-gov/mcp-geo:latest
+```
+
+Available tags:
+- `latest` for the default branch image
+- `<sha>` for a specific commit image
+- `<version>` for release tags such as `0.6.0`
+
+The published image targets `linux/amd64` and `linux/arm64`.
+
 Claude Desktop config example (STDIO transport):
 
 ```json
@@ -280,6 +316,9 @@ docker run --rm -p 8000:8000 \
   mcp-geo-server \
   uvicorn server.main:app --host 0.0.0.0 --port 8000
 ```
+
+> Tip: Replace `mcp-geo-server` with `ghcr.io/chris-page-gov/mcp-geo:latest`
+> in any Docker command to use the pre-built image instead of a local build.
 
 ## Tutorial
 
