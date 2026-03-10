@@ -82,11 +82,14 @@ Example: Claude Desktop configuration
   "mcpServers": {
     "geo": {
       "command": "docker",
-      "args": ["run", "-i", "--env-file", ".env", "mcp-geo-server"]
+      "args": ["run", "-i", "--env-file", "/absolute/path/to/mcp-geo/.env", "mcp-geo-server"]
     }
   }
 }
 ```
+
+> Replace `/absolute/path/to/mcp-geo/.env` with the actual path to your `.env` file.
+> See [`.env.example`](.env.example) for available settings — at minimum you need `OS_API_KEY`.
 
 Restart Claude Desktop.
 
