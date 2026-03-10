@@ -53,6 +53,12 @@ docker build -t mcp-geo-server .
 docker run -i --env-file .env mcp-geo-server
 ```
 
+Or skip the build and use the pre-built image:
+
+```bash
+docker run -i --env-file .env ghcr.io/chris-page-gov/mcp-geo:latest
+```
+
 You should see something similar to:
 
 ```text
@@ -83,6 +89,19 @@ Example: Claude Desktop configuration
     "geo": {
       "command": "docker",
       "args": ["run", "-i", "--env-file", ".env", "mcp-geo-server"]
+    }
+  }
+}
+```
+
+Or, using the pre-built image:
+
+```json
+{
+  "mcpServers": {
+    "geo": {
+      "command": "docker",
+      "args": ["run", "-i", "--env-file", "/absolute/path/to/mcp-geo/.env", "ghcr.io/chris-page-gov/mcp-geo:latest"]
     }
   }
 }
@@ -220,6 +239,19 @@ Build the image:
 docker build -t mcp-geo-server .
 ```
 
+Or pull the pre-built multi-arch image:
+
+```bash
+docker pull ghcr.io/chris-page-gov/mcp-geo:latest
+```
+
+Available tags:
+- `latest` — current `main` branch
+- `<sha>` — specific commit (e.g. `ghcr.io/chris-page-gov/mcp-geo:38815ff`)
+- `<version>` — release (e.g. `ghcr.io/chris-page-gov/mcp-geo:0.6.0`)
+
+Supports `linux/amd64` and `linux/arm64` (Apple Silicon / AWS Graviton).
+
 Claude Desktop config example (STDIO transport):
 
 ```json
@@ -262,6 +294,8 @@ docker run --rm -p 8000:8000 \
   mcp-geo-server \
   uvicorn server.main:app --host 0.0.0.0 --port 8000
 ```
+
+> Tip: Replace `mcp-geo-server` with `ghcr.io/chris-page-gov/mcp-geo:latest` in any Docker command to use the pre-built image.
 
 ## Tutorial
 
