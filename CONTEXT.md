@@ -134,6 +134,9 @@ assumptions change.
   an external pgRouting image tag; the repo now builds
   `.devcontainer/postgis.Dockerfile` as the canonical sidecar image, though the
   upstream `postgis/postgis:16-3.4` base is still amd64-only.
+- Standardizing Claude Desktop on the same PostGIS instance as the repo
+  devcontainer when it is already running, with Docker-sidecar fallback only
+  when the devcontainer database is absent.
 
 ## Active Work
 

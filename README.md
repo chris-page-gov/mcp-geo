@@ -243,7 +243,9 @@ Claude Desktop config example (STDIO transport):
 The wrapper script builds and starts the repo's PostGIS+pgRouting sidecar
 image locally (Docker), bootstraps the boundary-cache and route-graph schemas
 idempotently, builds the app image if needed, and runs STDIO with the
-cache/routing DSNs pointed at that sidecar.
+cache/routing DSNs pointed at that sidecar. When the repo devcontainer PostGIS
+service is already running, the Claude wrapper now prefers that existing
+container/network instead of starting a second database.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.

@@ -49,6 +49,9 @@ All notable changes to this project will be documented in this file.
   and added idempotent boundary-cache and route-graph schema bootstrap so
   local route readiness no longer depends on a plain PostGIS sidecar or an
   external `pgrouting/pgrouting` image tag.
+- Updated the Claude Desktop launcher to reuse the running repo devcontainer
+  PostGIS container/network when available, falling back to its own sidecar
+  only when the devcontainer database is absent.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
   full expected-output JSON for all 10 scenarios.

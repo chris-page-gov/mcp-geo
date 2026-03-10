@@ -509,6 +509,9 @@ Storage controls for the wrapper:
   `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
 - `MCP_GEO_POSTGIS_IMAGE` defaults to `mcp-geo-postgis-pgrouting:16-3.4`.
 - `MCP_GEO_POSTGIS_PLATFORM` defaults to `linux/amd64`.
+- `scripts/claude-mcp-local` now prefers the running repo devcontainer PostGIS
+  container (`mcp-geo_devcontainer-postgis-1`) when available; otherwise it
+  falls back to its own Docker sidecar.
 - The wrapper now sets `PGDATA=/var/lib/postgresql/data/pgdata` to match the
   devcontainer layout and bootstraps the boundary-cache/route-graph schema
   files after the PostGIS sidecar becomes ready.
