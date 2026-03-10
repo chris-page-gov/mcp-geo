@@ -1,0 +1,62 @@
+{
+  "concise_answer": "In the benchmark client pattern, Ellesmere Port and Tarvin look least well served because they are not colocated with the named trust sites and carry meaningful synthetic demand. Chester and Macclesfield align more closely with the current site pattern.",
+  "method_used": [
+    "Resolve the cluster towns and trust service sites.",
+    "Compare synthetic client volume and need against the current service-site pattern.",
+    "Flag clusters without a clearly colocated or nearby service site for review."
+  ],
+  "datasets_tools_used": [
+    "Synthetic client-cluster benchmark file",
+    "Public Cheshire and Wirral Partnership service-site addresses",
+    "MCP-Geo tools: os_names.find, os_places.search"
+  ],
+  "confidence_caveats": [
+    "Town and site locations are grounded.",
+    "The client distribution is synthetic and should be treated as a planning benchmark only."
+  ],
+  "verification_steps": [
+    "Confirm the town anchors resolve to the intended Cheshire context.",
+    "Replace synthetic client counts with approved service-planning data before any operational decision."
+  ],
+  "structured_output": {
+    "underservedClusterCount": 2,
+    "synthetic": true,
+    "suggestedExportFormat": "CSV underserved cluster table plus map-ready town/service-site overlay."
+  },
+  "concise_coverage_answer": "Ellesmere Port and Tarvin are the clearest synthetic underserved clusters in the benchmark.",
+  "underserved_cluster_table": [
+    {
+      "town_name": "Ellesmere Port",
+      "synthetic_clients": 73,
+      "synthetic_need_index": 88,
+      "coverage_status": "underserved_review"
+    },
+    {
+      "town_name": "Tarvin",
+      "synthetic_clients": 24,
+      "synthetic_need_index": 55,
+      "coverage_status": "underserved_review"
+    }
+  ],
+  "service_site_context_table": [
+    {
+      "site_name": "Countess of Chester Health Park",
+      "context": "closest major site for Chester and nearby clusters"
+    },
+    {
+      "site_name": "Delamere Resource Centre",
+      "context": "Crewe-aligned service site"
+    },
+    {
+      "site_name": "York House",
+      "context": "Macclesfield-aligned service site"
+    }
+  ],
+  "synthetic_data_note": "Synthetic scenario: client counts and need indices are benchmark-only values attached to real towns and real trust sites.",
+  "caveats": [
+    "No live service-capacity or appointment data is included in this benchmark."
+  ],
+  "verification_notes_detail": [
+    "Validate cluster-to-site travel times before acting on a service-coverage recommendation."
+  ]
+}

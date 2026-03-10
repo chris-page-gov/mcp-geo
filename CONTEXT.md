@@ -103,22 +103,23 @@ assumptions change.
 - Maintaining the stakeholder-evaluation benchmark pack under
   `scripts/stakeholder_benchmark_pack.py` and
   `data/benchmarking/stakeholder_eval/` so the Phase 3 prompt bank stays tied
-  to concrete public examples, scored reference outputs, and a repeatable
-  workflow note.
+  to concrete public examples, scored reference outputs, a repeatable
+  workflow note, and the Phase 1 extension scenarios added on 2026-03-10 via
+  `scripts/stakeholder_phase1_extension.py`.
 - Tracking the follow-up stakeholder capability gap analysis in
   `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
   separation between benchmark gold-answer scoring and current MCP-Geo feature
-  completeness plus the missing work to make the 10 scenarios runnable against
+  completeness plus the missing work to make the 20 scenarios runnable against
   live tools.
 - Maintaining the stakeholder live-rerun harness under
   `scripts/stakeholder_live_run.py` and the resulting evidence artifacts under
-  `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json` and
-  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, so authenticated
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json` and
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, so authenticated
   OS-backed reruns can be compared directly with the benchmark pack and still
-  report first-class product readiness separately from raw live tool success;
-  the current live SG03 result is now a graph-readiness blocker
-  (`route_graph_disabled` / `ROUTE_GRAPH_NOT_READY`) rather than a router or
-  UI-shell failure.
+  report first-class product readiness separately from raw live tool success.
+  The current seeded-graph live baseline is `1 full`, `17 partial`, `2 blocked`;
+  SG03 now returns a full routed answer, while SG17 and SG20 remain the only
+  blocked scenarios.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -162,18 +163,22 @@ assumptions change.
   `scripts/stakeholder_benchmark_pack.py`,
   `data/benchmarking/stakeholder_eval/`,
   `docs/reports/MCP-Geo_evaluation_questions.md`, and
-  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md`.
+  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-10.md`,
+  including the 10 additional Phase 1-derived scenarios shipped via
+  `scripts/stakeholder_phase1_extension.py`.
 - Maintain the stakeholder benchmark gap-analysis note under
   `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
   runtime finding that `OS_API_KEY` was not visible to the benchmark-generation
-  process in the Codex workspace and the updated SG03 blocker state now that a
-  dedicated routing surface exists.
+  process in the Codex workspace and the scenario-by-scenario capability gaps
+  that still explain why only 1 of the 20 live rerun scenarios is first-class
+  ready.
 - Maintain the stakeholder live-rerun harness and report under
   `scripts/stakeholder_live_run.py`,
-  `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`, and
-  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, including the
-  stricter `firstClassProductReady` interpretation for live OS-backed runs and
-  the route-graph-readiness evidence for SG03.
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`, and
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, including the
+  stricter `firstClassProductReady` interpretation for live OS-backed runs, the
+  seeded route-graph preflight from `scripts/seed_benchmark_route_graph.py`,
+  and the updated SG03 full-pass evidence.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

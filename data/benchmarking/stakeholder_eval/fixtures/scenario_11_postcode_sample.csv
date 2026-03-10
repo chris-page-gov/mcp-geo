@@ -1,0 +1,2 @@
+sample_id,postcode,service_context
+PC-001,DN22 6PE,Single-address postcode used to benchmark authoritative lookup plus cache-freshness commentary.

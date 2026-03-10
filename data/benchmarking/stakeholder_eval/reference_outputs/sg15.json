@@ -1,0 +1,58 @@
+{
+  "concise_answer": "The benchmark pack shows three different UPRN outcomes: one row has the same LAD result in exact and best-fit mode, one row diverges between Westminster and City of London, and one row is missing entirely from the current cache.",
+  "method_used": [
+    "Resolve each UPRN to a public address with os_places.by_uprn.",
+    "Query ons_geo.by_uprn in exact mode and best_fit mode for each UPRN.",
+    "Keep missing rows explicit and report the cache provenance rather than guessing absent geographies."
+  ],
+  "datasets_tools_used": [
+    "MCP-Geo tools: os_places.by_uprn, ons_geo.by_uprn, ons_geo.cache_status",
+    "Published comparator: ONS AddressBase-backed geography allocation workflow"
+  ],
+  "confidence_caveats": [
+    "High confidence on rows that are present in the current cache.",
+    "Coverage is intentionally limited in the bootstrap cache, so NOT_FOUND is an expected benchmark outcome for some UPRNs."
+  ],
+  "verification_steps": [
+    "Confirm the current cache status and generation timestamp before relying on any lookup.",
+    "Rebuild the ONS geography cache if wider UPRN coverage is needed."
+  ],
+  "structured_output": {
+    "coveredRows": 2,
+    "missingRows": 1,
+    "suggestedExportFormat": "CSV exact/best-fit comparison table plus JSON cache-status snapshot."
+  },
+  "concise_geography_answer": "Two of the three benchmark UPRNs resolve in the current cache, and one of those shows an exact-versus-best-fit LAD difference.",
+  "geography_comparison_table": [
+    {
+      "uprn": "100023336959",
+      "address": "FOREIGN COMMONWEALTH & DEVELOPMENT OFFICE, KING CHARLES STREET, LONDON, SW1A 2AH",
+      "exact_lad": "Coventry",
+      "best_fit_lad": "Coventry",
+      "difference_flag": false
+    },
+    {
+      "uprn": "100120786206",
+      "address": "3, THE MAGNOLIAS, BICESTER, OX26 3YG",
+      "exact_lad": "Westminster",
+      "best_fit_lad": "City of London",
+      "difference_flag": true
+    }
+  ],
+  "missing_rows_table": [
+    {
+      "uprn": "100032031210",
+      "label": "Retford Library",
+      "exact_status": "NOT_FOUND",
+      "best_fit_status": "NOT_FOUND"
+    }
+  ],
+  "cache_provenance_note": "Cache provenance should be read from ons_geo.cache_status; the current benchmark cache is a small bootstrap rather than a full production UPRN directory.",
+  "caveats": [
+    "The bootstrap cache currently exposes only limited geography fields for the covered UPRNs."
+  ],
+  "verification_notes_detail": [
+    "Always compare exact and best-fit results before aggregating public-sector metrics by geography.",
+    "Treat unexpected LAD differences as a signal to inspect the underlying ONS reference product."
+  ]
+}

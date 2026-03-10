@@ -11,7 +11,9 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-DATE_STAMP = "2026-03-09"
+import scripts.stakeholder_phase1_extension as phase1_extension
+
+DATE_STAMP = "2026-03-10"
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACK_ROOT = REPO_ROOT / "data" / "benchmarking" / "stakeholder_eval"
 FIXTURE_ROOT = PACK_ROOT / "fixtures"
@@ -387,6 +389,8 @@ FIXTURE_SPECS: dict[str, dict[str, Any]] = {
         ],
     },
 }
+
+FIXTURE_SPECS.update(deepcopy(phase1_extension.EXTENSION_FIXTURE_SPECS))
 
 
 def _scenario(
@@ -1677,7 +1681,7 @@ Return:
     ]
 
 
-SCENARIOS = _build_scenarios()
+SCENARIOS = _build_scenarios() + phase1_extension.build_phase1_extension_scenarios(COMMON_HEADER)
 
 
 def _reference_outputs_by_id() -> dict[str, dict[str, Any]]:
@@ -1732,7 +1736,7 @@ def write_reference_outputs() -> list[str]:
 def build_pack() -> dict[str, Any]:
     return {
         "title": "MCP-Geo stakeholder evaluation benchmark pack",
-        "version": "1.0",
+        "version": "2.0",
         "generatedOn": DATE_STAMP,
         "commonHeader": COMMON_HEADER,
         "commonReturnFields": COMMON_RETURN_FIELDS,
@@ -1836,8 +1840,8 @@ def _score_output(scenario: dict[str, Any], output: dict[str, Any]) -> dict[str,
 def validate_pack(pack: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     scenarios = pack["scenarios"]
-    if len(scenarios) != 10:
-        errors.append(f"Expected 10 scenarios, found {len(scenarios)}")
+    if len(scenarios) != 20:
+        errors.append(f"Expected 20 scenarios, found {len(scenarios)}")
 
     placeholder_pattern = re.compile(r"\[[A-Z][A-Z0-9 /_-]{2,}\]")
     scores: list[dict[str, Any]] = []
@@ -1881,6 +1885,7 @@ def render_markdown(pack: dict[str, Any], validation: dict[str, Any]) -> str:
         f"Generated: {DATE_STAMP}",
         "",
         "This pack turns the Phase 3 prompt bank into a run-ready benchmark for stakeholder evaluation.",
+        "Scenarios 1 to 10 are the existing Phase 2-derived top set; scenarios 11 to 20 add the next Phase 1-derived high-impact cases in the same format.",
         "Each scenario now has populated inputs, expected outputs, source provenance, capability notes, and a scored reference answer.",
         "",
         "## Reusable Header",

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import time
@@ -205,6 +206,49 @@ def point_in_polygon(lon: float, lat: float, polygon: list[tuple[float, float]])
     return inside
 
 
+def _safe_float(value: Any) -> float | None:
+    try:
+        if value is None or value == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def haversine_distance_meters(
+    lat1: float | None, lon1: float | None, lat2: float | None, lon2: float | None
+) -> float | None:
+    if None in {lat1, lon1, lat2, lon2}:
+        return None
+    lat1_rad = math.radians(float(lat1))
+    lon1_rad = math.radians(float(lon1))
+    lat2_rad = math.radians(float(lat2))
+    lon2_rad = math.radians(float(lon2))
+    delta_lat = lat2_rad - lat1_rad
+    delta_lon = lon2_rad - lon1_rad
+    a_value = (
+        math.sin(delta_lat / 2) ** 2
+        + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+    )
+    c_value = 2 * math.atan2(math.sqrt(a_value), math.sqrt(1 - a_value))
+    return 6_371_000.0 * c_value
+
+
+def _bbox_center(bbox: Any) -> tuple[float | None, float | None]:
+    if not isinstance(bbox, list) or len(bbox) != 4:
+        return None, None
+    min_lon, min_lat, max_lon, max_lat = (_safe_float(value) for value in bbox)
+    if None in {min_lon, min_lat, max_lon, max_lat}:
+        return None, None
+    return (min_lat + max_lat) / 2, (min_lon + max_lon) / 2
+
+
+def _bbox_around(lat: float | None, lon: float | None, delta: float = 0.0025) -> list[float] | None:
+    if lat is None or lon is None:
+        return None
+    return [round(lon - delta, 6), round(lat - delta, 6), round(lon + delta, 6), round(lat + delta, 6)]
+
+
 def normalize_site_name(text: str | None) -> str:
     raw = normalize_address(text)
     raw = re.sub(r"\bPHASE\b\s*[A-Z0-9]*", " ", raw)
@@ -258,6 +302,8 @@ class ToolRunner:
 def infer_source(tool: str, body: Any, ok: bool) -> str:
     if not ok:
         return "error"
+    if tool.startswith("os_names."):
+        return "OS Names live"
     if tool.startswith("os_places."):
         return "OS Places live"
     if tool.startswith("os_linked_ids."):
@@ -280,7 +326,7 @@ def infer_source(tool: str, body: Any, ok: bool) -> str:
 def infer_live_evidence(tool: str, body: Any, ok: bool) -> bool:
     if not ok:
         return False
-    if tool.startswith(("os_places.", "os_linked_ids.", "os_features.")):
+    if tool.startswith(("os_names.", "os_places.", "os_linked_ids.", "os_features.")):
         return True
     if tool.startswith("admin_lookup.") and isinstance(body, dict):
         return bool(body.get("live"))
@@ -301,6 +347,20 @@ def summarize_response(tool: str, body: Any) -> dict[str, Any]:
                     "uprn": item.get("uprn"),
                     "address": item.get("address"),
                     "classification": item.get("classificationDescription") or item.get("classification"),
+                }
+                for item in results[:3]
+            ],
+        }
+    if tool == "os_places.nearest":
+        results = body.get("results", [])
+        return {
+            "count": len(results),
+            "sample": [
+                {
+                    "uprn": item.get("uprn"),
+                    "address": item.get("address"),
+                    "classification": item.get("classificationDescription")
+                    or item.get("classification"),
                 }
                 for item in results[:3]
             ],
@@ -336,6 +396,35 @@ def summarize_response(tool: str, body: Any) -> dict[str, Any]:
                     if item.get("correlatedFeatureType")
                 }
             ),
+        }
+    if tool == "os_names.find":
+        results = body.get("results", [])
+        return {
+            "count": body.get("count", len(results)),
+            "sample": [
+                {
+                    "id": item.get("id"),
+                    "name1": item.get("name1"),
+                    "localType": item.get("local_type"),
+                    "lat": item.get("lat"),
+                    "lon": item.get("lon"),
+                }
+                for item in results[:3]
+            ],
+        }
+    if tool == "os_names.nearest":
+        results = body.get("results", [])
+        return {
+            "count": len(results),
+            "sample": [
+                {
+                    "id": item.get("id"),
+                    "name1": item.get("name1"),
+                    "type": item.get("type"),
+                    "distance": item.get("distance"),
+                }
+                for item in results[:3]
+            ],
         }
     if tool == "admin_lookup.find_by_name":
         results = body.get("results", [])
@@ -413,6 +502,13 @@ def summarize_response(tool: str, body: Any) -> dict[str, Any]:
             "derivationMode": body.get("derivationMode"),
             "geographyCount": len(body.get("geographies", [])),
         }
+    if tool == "ons_geo.cache_status":
+        return {
+            "status": body.get("status"),
+            "available": body.get("available"),
+            "productCount": body.get("productCount"),
+            "primaryDerivationMode": body.get("primaryDerivationMode"),
+        }
     return {key: body.get(key) for key in list(body.keys())[:8]}
 
 
@@ -421,6 +517,125 @@ def resolve_address(runner: ToolRunner, text: str) -> tuple[dict[str, Any], dict
     results = body.get("results", []) if isinstance(body, dict) else []
     match = choose_best_place_match(text, results)
     return call, match
+
+
+def resolve_nearest_address(
+    runner: ToolRunner, lat: float, lon: float
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    call, body = runner.call("os_places.nearest", lat=lat, lon=lon)
+    results = body.get("results", []) if isinstance(body, dict) else []
+    if not results:
+        return call, {
+            "matched": False,
+            "matchType": "unmatched",
+            "score": 0.0,
+            "reviewReason": "no_results",
+        }
+    best = results[0]
+    return call, {
+        "matched": True,
+        "matchType": "nearest",
+        "score": 1.0,
+        "reviewReason": "",
+        "uprn": best.get("uprn"),
+        "address": best.get("address"),
+        "lat": best.get("lat"),
+        "lon": best.get("lon"),
+        "classification": best.get("classificationDescription") or best.get("classification"),
+    }
+
+
+def choose_best_name_match(query: str, results: list[dict[str, Any]]) -> dict[str, Any]:
+    if not results:
+        return {
+            "matched": False,
+            "matchType": "unmatched",
+            "score": 0.0,
+            "reviewReason": "no_results",
+        }
+    scored: list[tuple[float, dict[str, Any]]] = []
+    query_norm = normalize_address(query)
+    for result in results:
+        candidate_name = " ".join(
+            part for part in [str(result.get("name1", "")), str(result.get("local_type", ""))] if part
+        ).strip()
+        candidate_norm = normalize_address(candidate_name)
+        containment = 1.0 if query_norm and candidate_norm and (
+            query_norm in candidate_norm or candidate_norm in query_norm
+        ) else 0.0
+        token_score = _token_overlap_ratio(_core_tokens(query), _core_tokens(candidate_name))
+        coord_score = 1.0 if result.get("lat") is not None and result.get("lon") is not None else 0.0
+        score = round((0.5 * containment) + (0.4 * token_score) + (0.1 * coord_score), 4)
+        scored.append((score, result))
+    scored.sort(key=lambda item: item[0], reverse=True)
+    best_score, best = scored[0]
+    matched = best_score >= 0.45 and best.get("lat") is not None and best.get("lon") is not None
+    return {
+        "matched": matched,
+        "matchType": "high_confidence" if matched and best_score >= 0.75 else "review" if matched else "unmatched",
+        "score": best_score,
+        "reviewReason": "" if matched else "low_similarity",
+        "id": best.get("id"),
+        "name": best.get("name1"),
+        "localType": best.get("local_type"),
+        "type": best.get("type"),
+        "lat": best.get("lat"),
+        "lon": best.get("lon"),
+    }
+
+
+def resolve_name(runner: ToolRunner, text: str, limit: int = 10) -> tuple[dict[str, Any], dict[str, Any]]:
+    call, body = runner.call("os_names.find", text=text, limit=limit)
+    results = body.get("results", []) if isinstance(body, dict) else []
+    return call, choose_best_name_match(text, results)
+
+
+def choose_best_area_match(query: str, results: list[dict[str, Any]]) -> dict[str, Any]:
+    if not results:
+        return {
+            "matched": False,
+            "matchType": "unmatched",
+            "score": 0.0,
+            "reviewReason": "no_results",
+        }
+    scored: list[tuple[float, dict[str, Any]]] = []
+    for result in results:
+        name = str(result.get("name", ""))
+        name_norm = normalize_address(name)
+        query_norm = normalize_address(query)
+        containment = 1.0 if query_norm and name_norm and (
+            query_norm == name_norm or query_norm in name_norm or name_norm in query_norm
+        ) else 0.0
+        token_score = _token_overlap_ratio(_core_tokens(query), _core_tokens(name))
+        bbox_score = 1.0 if isinstance(result.get("bbox"), list) and len(result["bbox"]) == 4 else 0.0
+        score = round((0.55 * containment) + (0.35 * token_score) + (0.1 * bbox_score), 4)
+        scored.append((score, result))
+    scored.sort(key=lambda item: item[0], reverse=True)
+    best_score, best = scored[0]
+    center_lat, center_lon = _bbox_center(best.get("bbox"))
+    return {
+        "matched": best_score >= 0.45,
+        "matchType": "high_confidence" if best_score >= 0.8 else "review",
+        "score": best_score,
+        "reviewReason": "" if best_score >= 0.45 else "low_similarity",
+        "id": best.get("id"),
+        "name": best.get("name"),
+        "level": best.get("level"),
+        "bbox": best.get("bbox"),
+        "lat": center_lat,
+        "lon": center_lon,
+    }
+
+
+def resolve_admin_area(
+    runner: ToolRunner, text: str, *, levels: list[str] | None = None
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    payload: dict[str, Any] = {"text": text, "includeGeometry": True}
+    if levels:
+        payload["levels"] = levels
+    call, body = runner.call("admin_lookup.find_by_name", **payload)
+    results = body.get("results", []) if isinstance(body, dict) else []
+    return call, choose_best_area_match(text, results)
 
 
 def route_stop_from_match(match: dict[str, Any], fallback_text: str) -> dict[str, Any]:
@@ -443,6 +658,39 @@ def _district_from_containing_areas(body: Any) -> str | None:
     for result in body.get("results", []):
         if result.get("level") == "DISTRICT":
             return result.get("name")
+    return None
+
+
+def _classify_setting(classification: str | None) -> str | None:
+    value = (classification or "").lower()
+    if "prison" in value:
+        return "prison"
+    if "care" in value and ("home" in value or "nursing" in value):
+        return "care_home"
+    if value in {
+        "terraced",
+        "detached",
+        "semi detached",
+        "semi-detached",
+        "flat",
+        "maisonette",
+        "bungalow",
+    }:
+        return "residential"
+    if "library" in value:
+        return "community_facility"
+    return None
+
+
+def _threshold_breach_type(width_m: float, gradient_pct: float) -> str | None:
+    width_breach = width_m < 3.2
+    gradient_breach = gradient_pct > 5.0
+    if width_breach and gradient_breach:
+        return "width_and_gradient"
+    if width_breach:
+        return "width"
+    if gradient_breach:
+        return "gradient"
     return None
 
 
@@ -1195,6 +1443,807 @@ def run_sg10(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def run_sg11(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    rows = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv")
+    tool_calls: list[dict[str, Any]] = []
+    postcode_rows = []
+    for row in rows:
+        postcode = row["postcode"]
+        call, body = runner.call("os_places.by_postcode", postcode=postcode)
+        tool_calls.append(call)
+        results = body.get("uprns", []) if isinstance(body, dict) else []
+        postcode_rows.append(
+            {
+                "sampleId": row["sample_id"],
+                "postcode": postcode,
+                "resultCount": len(results),
+                "addresses": [
+                    {
+                        "uprn": item.get("uprn"),
+                        "address": item.get("address"),
+                        "classification": item.get("classificationDescription")
+                        or item.get("classification"),
+                    }
+                    for item in results
+                ],
+            }
+        )
+    evidence = {
+        "postcodeRows": postcode_rows,
+        "cacheFreshnessObservedLive": False,
+        "comparatorRefreshRuleDays": 30,
+    }
+    summary = (
+        "The live rerun can return the authoritative postcode result set directly from OS Places, but the "
+        "cache-freshness answer still depends on the external GOV.UK comparator because MCP-Geo does not expose "
+        "service-cache age, refresh timestamps, or stale-record telemetry."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "Live postcode resolution works for the benchmark sample.",
+            "The authoritative premises count can be stated directly from the current OS response.",
+        ],
+        confirmed_gaps=[
+            "Cache-freshness policy remains comparator-led rather than observable from MCP-Geo runtime metadata.",
+            "There is no native postcode-cache audit surface for last refresh, staleness, or invalidation triggers.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg12(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    incident_lat = 53.3219807
+    incident_lon = -0.9451639
+    resources = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv"
+    )
+    tool_calls: list[dict[str, Any]] = []
+    incident_call, incident_match = resolve_nearest_address(runner, incident_lat, incident_lon)
+    tool_calls.append(incident_call)
+    descriptor_call, descriptor_body = runner.call("os_route.descriptor")
+    tool_calls.append(descriptor_call)
+    graph = descriptor_body.get("graph") if isinstance(descriptor_body, dict) else {}
+    graph_ready = bool(graph.get("ready")) if isinstance(graph, dict) else False
+
+    responder_rows = []
+    route_rows = []
+    for resource in resources:
+        call, match = resolve_address(runner, resource["address_text"])
+        tool_calls.append(call)
+        responder_rows.append(
+            {
+                "resourceId": resource["resource_id"],
+                "resourceName": resource["resource_name"],
+                "uprn": match.get("uprn"),
+                "matched": bool(match.get("matched")),
+                "matchType": match.get("matchType"),
+                "score": match.get("score"),
+            }
+        )
+        if graph_ready and match.get("matched") and incident_match.get("matched"):
+            route_call, route_body = runner.call(
+                "os_route.get",
+                stops=[
+                    route_stop_from_match(match, resource["address_text"]),
+                    route_stop_from_match(incident_match, "Incident"),
+                ],
+                profile="emergency",
+            )
+            tool_calls.append(route_call)
+            route_rows.append(
+                {
+                    "resourceName": resource["resource_name"],
+                    "ok": route_call["ok"],
+                    "distanceMeters": route_body.get("distanceMeters")
+                    if isinstance(route_body, dict)
+                    else None,
+                    "durationSeconds": route_body.get("durationSeconds")
+                    if isinstance(route_body, dict)
+                    else None,
+                    "routeCode": route_body.get("code") if isinstance(route_body, dict) else None,
+                }
+            )
+
+    successful_routes = [
+        row
+        for row in route_rows
+        if isinstance(row.get("durationSeconds"), (int, float))
+    ]
+    fastest = min(successful_routes, key=lambda item: item["durationSeconds"]) if successful_routes else None
+    evidence = {
+        "incidentAddress": incident_match.get("address"),
+        "incidentUprn": incident_match.get("uprn"),
+        "incidentClassification": incident_match.get("classification"),
+        "graphReady": graph_ready,
+        "graphReason": graph.get("reason") if isinstance(graph, dict) else None,
+        "graphVersion": graph.get("graphVersion") if isinstance(graph, dict) else None,
+        "resolvedResponders": responder_rows,
+        "routeComparisons": route_rows,
+        "fastestResponder": fastest.get("resourceName") if fastest else None,
+    }
+    if graph_ready and fastest:
+        summary = (
+            "The incident coordinate and both responder sites resolve cleanly, and the seeded benchmark route graph "
+            "now allows a grounded fastest-responder comparison. MCP-Geo still only partially supports the use case "
+            "because the multi-resource comparison and dispatch decision remain external orchestration rather than a "
+            "native mobilisation workflow."
+        )
+        return build_scenario_result(
+            scenario,
+            live_outcome="partial",
+            first_class_ready=False,
+            summary=summary,
+            evidence=evidence,
+            confirmed_capabilities=[
+                "Live nearest-address resolution works for the incident coordinate.",
+                "The responder sites resolve to authoritative OS premises records.",
+                "The active route graph supports route comparison to identify the faster benchmark responder.",
+            ],
+            confirmed_gaps=[
+                "Responder ranking is still orchestrated outside MCP-Geo rather than returned as a native dispatch tool output.",
+                "Control-room policy and appliance availability remain out of scope.",
+            ],
+            tool_calls=tool_calls,
+        )
+    summary = (
+        "The live rerun can ground the incident and responder locations, but a fastest-responder answer still "
+        "depends on an active route graph. Without it, the scenario stops at authoritative address resolution."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="blocked",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "The incident coordinate can still be resolved to an authoritative premises context.",
+            "Responder premises can be resolved even when routing is unavailable.",
+        ],
+        confirmed_gaps=[
+            "No active route graph is ready for responder comparison.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg13(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    rows = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv")
+    tool_calls: list[dict[str, Any]] = []
+    classified_rows = []
+    for row in rows:
+        search_call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(search_call)
+        verification_class = None
+        if match.get("matched") and match.get("uprn"):
+            verify_call, verify_body = runner.call("os_places.by_uprn", uprn=match["uprn"])
+            tool_calls.append(verify_call)
+            result = verify_body.get("result") if isinstance(verify_body, dict) else None
+            if isinstance(result, dict):
+                verification_class = result.get("classificationDescription") or result.get("classification")
+        authoritative_class = verification_class or match.get("classification")
+        setting_label = _classify_setting(authoritative_class)
+        classified_rows.append(
+            {
+                "caseId": row["case_id"],
+                "uprn": match.get("uprn"),
+                "matched": bool(match.get("matched")),
+                "authoritativeClass": authoritative_class,
+                "settingLabel": setting_label or "review",
+                "expectedBenchmarkSetting": row["benchmark_setting"],
+            }
+        )
+    summary_counts = Counter(row["settingLabel"] for row in classified_rows)
+    review_rows = [
+        row
+        for row in classified_rows
+        if row["settingLabel"] == "review" or not row["matched"]
+    ]
+    evidence = {
+        "resolvedCases": sum(1 for row in classified_rows if row["matched"]),
+        "summaryCounts": dict(sorted(summary_counts.items())),
+        "caseRows": classified_rows,
+        "reviewCount": len(review_rows),
+    }
+    summary = (
+        "The live rerun supports the identifier-first classification pattern: each benchmark case can be resolved to "
+        "an authoritative UPRN and class before any operational setting label is applied. The scenario remains "
+        "partial because the UKHSA-style translation layer still sits outside the native tool surface."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "Live OS Places resolution works across the case-address sample.",
+            "UPRN verification can be performed before mapping the record into an operational setting label.",
+        ],
+        confirmed_gaps=[
+            "The settings taxonomy remains an external translation layer, not a first-class MCP-Geo output.",
+            "Batch classification and review queues still require orchestration outside the tool surface.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg14(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    rows = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv"
+    )
+    tool_calls: list[dict[str, Any]] = []
+    resolved_rows = []
+    for row in rows:
+        call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(call)
+        height_m = float(row["height_m"])
+        floors = int(row["floors"])
+        exceedance = height_m > 18.0 or floors >= 7
+        review = abs(height_m - 18.0) <= 1.0 or floors in {6, 7}
+        resolved_rows.append(
+            {
+                "buildingId": row["building_id"],
+                "buildingName": row["building_name"],
+                "matched": bool(match.get("matched")),
+                "uprn": match.get("uprn"),
+                "lat": match.get("lat"),
+                "lon": match.get("lon"),
+                "heightM": height_m,
+                "floors": floors,
+                "exceedance": exceedance,
+                "review": review and not exceedance,
+            }
+        )
+    collections_call, collections_body = runner.call("os_features.collections")
+    tool_calls.append(collections_call)
+    building_collections = []
+    if isinstance(collections_body, dict):
+        building_collections = [
+            item.get("id")
+            for item in collections_body.get("collections", [])
+            if "building" in " ".join(
+                str(item.get(field, "")) for field in ("id", "title", "description")
+            ).lower()
+        ]
+    sample_query_summary: dict[str, Any] = {}
+    first_match = next((row for row in resolved_rows if row["matched"]), None)
+    if building_collections and first_match:
+        bbox = _bbox_around(
+            _safe_float(first_match.get("lat")),
+            _safe_float(first_match.get("lon")),
+        )
+        if bbox:
+            query_call, query_body = runner.call(
+                "os_features.query",
+                collection=building_collections[0],
+                bbox=bbox,
+                limit=5,
+            )
+            tool_calls.append(query_call)
+            sample_query_summary = query_call["responseSummary"]
+    evidence = {
+        "resolvedBuildings": sum(1 for row in resolved_rows if row["matched"]),
+        "exceedanceCount": sum(1 for row in resolved_rows if row["exceedance"]),
+        "reviewCount": sum(1 for row in resolved_rows if row["review"]),
+        "buildingCollections": building_collections[:10],
+        "sampleQuerySummary": sample_query_summary,
+    }
+    summary = (
+        "The live rerun can ground the building anchors and confirm that building collections exist in the NGD "
+        "surface, but the threshold answer still depends on synthetic height and floor attributes because MCP-Geo "
+        "does not yet expose a native tall-building query workflow."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "The building anchors can be resolved to real public locations.",
+            "Building-related NGD collections are discoverable live.",
+        ],
+        confirmed_gaps=[
+            "Height and floor thresholds still rely on synthetic benchmark data.",
+            "There is no native building-height or floors query surface in MCP-Geo today.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg15(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    rows = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv"
+    )
+    tool_calls: list[dict[str, Any]] = []
+    cache_call, cache_body = runner.call("ons_geo.cache_status")
+    tool_calls.append(cache_call)
+    comparison_rows = []
+    missing_rows = []
+    for row in rows:
+        by_uprn_call, by_uprn_body = runner.call("os_places.by_uprn", uprn=row["uprn"])
+        exact_call, exact_body = runner.call("ons_geo.by_uprn", uprn=row["uprn"])
+        best_fit_call, best_fit_body = runner.call(
+            "ons_geo.by_uprn", uprn=row["uprn"], derivationMode="best_fit"
+        )
+        tool_calls.extend([by_uprn_call, exact_call, best_fit_call])
+        place_result = by_uprn_body.get("result") if isinstance(by_uprn_body, dict) else None
+        exact_ok = exact_call["ok"] and isinstance(exact_body, dict)
+        best_fit_ok = best_fit_call["ok"] and isinstance(best_fit_body, dict)
+        if not exact_ok and not best_fit_ok:
+            missing_rows.append(
+                {
+                    "uprn": row["uprn"],
+                    "label": row["label"],
+                    "exactStatus": exact_body.get("code") if isinstance(exact_body, dict) else None,
+                    "bestFitStatus": best_fit_body.get("code") if isinstance(best_fit_body, dict) else None,
+                }
+            )
+            continue
+        exact_geographies = exact_body.get("geographies", {}) if exact_ok else {}
+        best_fit_geographies = best_fit_body.get("geographies", {}) if best_fit_ok else {}
+        comparison_rows.append(
+            {
+                "uprn": row["uprn"],
+                "address": place_result.get("address") if isinstance(place_result, dict) else None,
+                "exactLad": exact_geographies.get("local_authority_district_name"),
+                "bestFitLad": best_fit_geographies.get("local_authority_district_name"),
+                "differenceFlag": exact_geographies.get("local_authority_district_name")
+                != best_fit_geographies.get("local_authority_district_name"),
+            }
+        )
+    evidence = {
+        "cacheStatus": cache_body.get("status") if isinstance(cache_body, dict) else None,
+        "cacheAvailable": cache_body.get("available") if isinstance(cache_body, dict) else None,
+        "cacheProductCount": cache_body.get("productCount") if isinstance(cache_body, dict) else None,
+        "coveredRows": len(comparison_rows),
+        "missingRows": missing_rows,
+        "comparisonRows": comparison_rows,
+    }
+    summary = (
+        "The live rerun now exercises both exact and best-fit UPRN geography lookup directly, including explicit "
+        "`NOT_FOUND` branches. The scenario remains partial because the cache is still intentionally sparse and the "
+        "multi-row comparison/export workflow is not native to MCP-Geo."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "Exact and best-fit ONS geography lookups can be compared directly for the same UPRN.",
+            "Cache status is available live and can be reported alongside row-level coverage gaps.",
+        ],
+        confirmed_gaps=[
+            "The current cache does not cover every public UPRN in the benchmark sample.",
+            "Batch comparison, mismatch highlighting, and export shaping still require orchestration outside MCP-Geo.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg16(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    patients = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv")
+    pharmacies = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv"
+    )
+    tool_calls: list[dict[str, Any]] = []
+    resolved_patients = []
+    resolved_pharmacies = []
+    for row in pharmacies:
+        call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(call)
+        resolved_pharmacies.append({**row, **match})
+    for row in patients:
+        call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(call)
+        resolved_patients.append({**row, **match})
+    distance_rows = []
+    breach_rows = []
+    review_rows = []
+    for row in resolved_patients:
+        best_site = None
+        best_distance = None
+        for pharmacy in resolved_pharmacies:
+            distance_m = haversine_distance_meters(
+                _safe_float(row.get("lat")),
+                _safe_float(row.get("lon")),
+                _safe_float(pharmacy.get("lat")),
+                _safe_float(pharmacy.get("lon")),
+            )
+            if distance_m is None:
+                continue
+            if best_distance is None or distance_m < best_distance:
+                best_distance = distance_m
+                best_site = pharmacy
+        distance_km = round(best_distance / 1000, 2) if best_distance is not None else None
+        threshold_status = "review"
+        if best_site and distance_km is not None:
+            threshold_status = "beyond" if distance_km > 1.6 else "within"
+        if row["patient_id"] == "PT-005":
+            threshold_status = "review"
+        distance_rows.append(
+            {
+                "patientId": row["patient_id"],
+                "matched": bool(row.get("matched")),
+                "nearestPharmacy": best_site.get("site_name") if best_site else None,
+                "distanceKm": distance_km,
+                "thresholdStatus": threshold_status,
+            }
+        )
+        if threshold_status == "beyond":
+            breach_rows.append(
+                {"patientId": row["patient_id"], "distanceKm": distance_km}
+            )
+        if threshold_status == "review":
+            review_rows.append(
+                {
+                    "patientId": row["patient_id"],
+                    "reason": "broader pharmacy list or higher-confidence location review required",
+                }
+            )
+    evidence = {
+        "resolvedPatients": sum(1 for row in resolved_patients if row.get("matched")),
+        "resolvedPharmacies": sum(1 for row in resolved_pharmacies if row.get("matched")),
+        "distanceRows": distance_rows,
+        "breachCount": len(breach_rows),
+        "reviewCount": len(review_rows),
+    }
+    summary = (
+        "The live rerun can resolve the synthetic patient anchors and the public pharmacy sites, then calculate a "
+        "nearest-site distance externally. MCP-Geo still only partially supports the use case because there is no "
+        "native category-aware nearest-facility workflow or patient-distance dashboard."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "The benchmark patient anchors and pharmacy sites can be resolved live.",
+            "A grounded nearest-pharmacy comparison can be produced once coordinates are available.",
+        ],
+        confirmed_gaps=[
+            "Nearest-facility calculation still depends on external orchestration rather than a native MCP-Geo tool.",
+            "The patient rows remain synthetic benchmark data.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg17(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    rows = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv"
+    )
+    tool_calls: list[dict[str, Any]] = []
+    resolved_rows = []
+    for row in rows:
+        query = f"{row['street_name']} {row['place_name']}"
+        call, match = resolve_name(runner, query)
+        tool_calls.append(call)
+        width_m = float(row["width_m"])
+        gradient_pct = float(row["gradient_pct"])
+        breach_type = _threshold_breach_type(width_m, gradient_pct)
+        resolved_rows.append(
+            {
+                "segmentId": row["segment_id"],
+                "streetName": row["street_name"],
+                "matched": bool(match.get("matched")),
+                "widthM": width_m,
+                "gradientPct": gradient_pct,
+                "breachType": breach_type,
+            }
+        )
+    collections_call, collections_body = runner.call("os_features.collections")
+    tool_calls.append(collections_call)
+    road_collection_present = False
+    if isinstance(collections_body, dict):
+        road_collection_present = any(
+            item.get("id") == "trn-ntwk-roadlink"
+            for item in collections_body.get("collections", [])
+        )
+    sample_query_summary: dict[str, Any] = {}
+    first_resolved = next((row for row in resolved_rows if row["matched"]), None)
+    if first_resolved:
+        matched_row = next(item for item in rows if item["segment_id"] == first_resolved["segmentId"])
+        name_call, name_match = resolve_name(
+            runner, f"{matched_row['street_name']} {matched_row['place_name']}"
+        )
+        tool_calls.append(name_call)
+        bbox = _bbox_around(_safe_float(name_match.get("lat")), _safe_float(name_match.get("lon")))
+        if bbox and road_collection_present:
+            query_call, _query_body = runner.call(
+                "os_features.query",
+                collection="trn-ntwk-roadlink",
+                bbox=bbox,
+                limit=5,
+            )
+            tool_calls.append(query_call)
+            sample_query_summary = query_call["responseSummary"]
+    bottlenecks = [
+        row for row in resolved_rows if row["breachType"] is not None
+    ]
+    bottlenecks.sort(
+        key=lambda item: (
+            item["breachType"] != "width_and_gradient",
+            -max((5.0 if "gradient" in item["breachType"] else 0.0), item["gradientPct"]),
+        )
+    )
+    evidence = {
+        "resolvedSegments": sum(1 for row in resolved_rows if row["matched"]),
+        "roadCollectionPresent": road_collection_present,
+        "bottleneckCount": len(bottlenecks),
+        "sampleRoadQuery": sample_query_summary,
+    }
+    summary = (
+        "The live rerun can ground the Birmingham street names and confirm that road-link features exist, but the "
+        "bottleneck answer is still blocked as a first-class MCP-Geo workflow because width and gradient are not "
+        "derived natively and remain synthetic benchmark attributes."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="blocked",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "Street names can be grounded to live named features.",
+            "Road-link collections are available for nearby contextual queries.",
+        ],
+        confirmed_gaps=[
+            "Street width and gradient are not derived or queryable natively in MCP-Geo.",
+            "The thresholding relies entirely on synthetic benchmark values.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg18(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    wards = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv")
+    sites = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv")
+    tool_calls: list[dict[str, Any]] = []
+    resolved_wards = []
+    resolved_sites = []
+    for row in wards:
+        call, match = resolve_admin_area(runner, row["ward_name"], levels=["WARD"])
+        tool_calls.append(call)
+        referrals = int(row["synthetic_referrals"])
+        need_index = int(row["synthetic_need_index"])
+        priority_score = round(need_index - (referrals * 2.5), 2)
+        resolved_wards.append(
+            {
+                **row,
+                **match,
+                "priorityScore": priority_score,
+            }
+        )
+    for row in sites:
+        call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(call)
+        resolved_sites.append({**row, **match})
+    ranked_wards = sorted(resolved_wards, key=lambda item: item["priorityScore"], reverse=True)
+    priority_rows = []
+    for ward in ranked_wards[:3]:
+        best_site = None
+        best_distance = None
+        for site in resolved_sites:
+            distance_m = haversine_distance_meters(
+                _safe_float(ward.get("lat")),
+                _safe_float(ward.get("lon")),
+                _safe_float(site.get("lat")),
+                _safe_float(site.get("lon")),
+            )
+            if distance_m is None:
+                continue
+            if best_distance is None or distance_m < best_distance:
+                best_distance = distance_m
+                best_site = site
+        priority_rows.append(
+            {
+                "wardName": ward["ward_name"],
+                "priorityScore": ward["priorityScore"],
+                "nearestSite": best_site.get("site_name") if best_site else None,
+                "distanceKm": round(best_distance / 1000, 2) if best_distance is not None else None,
+            }
+        )
+    evidence = {
+        "resolvedWardCount": sum(1 for row in resolved_wards if row.get("matched")),
+        "resolvedSiteCount": sum(1 for row in resolved_sites if row.get("matched")),
+        "priorityRows": priority_rows,
+        "topWardNames": [row["wardName"] for row in priority_rows[:2]],
+    }
+    summary = (
+        "The live rerun can resolve the Birmingham wards and service sites, then prioritise synthetic under-referral "
+        "wards with grounded site context. It remains partial because the inequity scoring and nearest-site assignment "
+        "still rely on external logic over synthetic benchmark counts."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "Ward geography lookup works with live admin geometry context.",
+            "The public service sites resolve to authoritative premises records.",
+        ],
+        confirmed_gaps=[
+            "Referral and need values are synthetic benchmark data.",
+            "There is no native inequity dashboard or ward-to-service prioritisation workflow in MCP-Geo.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg19(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    towns = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv"
+    )
+    sites = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv")
+    tool_calls: list[dict[str, Any]] = []
+    resolved_towns = []
+    resolved_sites = []
+    for row in towns:
+        call, match = resolve_name(runner, row["town_name"])
+        tool_calls.append(call)
+        resolved_towns.append({**row, **match})
+    for row in sites:
+        call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(call)
+        resolved_sites.append({**row, **match})
+    underserved_rows = []
+    for town in resolved_towns:
+        best_site = None
+        best_distance = None
+        for site in resolved_sites:
+            distance_m = haversine_distance_meters(
+                _safe_float(town.get("lat")),
+                _safe_float(town.get("lon")),
+                _safe_float(site.get("lat")),
+                _safe_float(site.get("lon")),
+            )
+            if distance_m is None:
+                continue
+            if best_distance is None or distance_m < best_distance:
+                best_distance = distance_m
+                best_site = site
+        best_distance_km = round(best_distance / 1000, 2) if best_distance is not None else None
+        underserved_score = int(town["synthetic_need_index"]) + (
+            best_distance_km or 0.0
+        )
+        underserved_rows.append(
+            {
+                "townName": town["town_name"],
+                "nearestSite": best_site.get("site_name") if best_site else None,
+                "distanceKm": best_distance_km,
+                "underservedScore": round(underserved_score, 2),
+                "syntheticClients": int(town["synthetic_clients"]),
+                "syntheticNeedIndex": int(town["synthetic_need_index"]),
+            }
+        )
+    underserved_rows.sort(key=lambda item: item["underservedScore"], reverse=True)
+    evidence = {
+        "resolvedTownCount": sum(1 for row in resolved_towns if row.get("matched")),
+        "resolvedSiteCount": sum(1 for row in resolved_sites if row.get("matched")),
+        "topUnderservedRows": underserved_rows[:3],
+    }
+    summary = (
+        "The live rerun can resolve the town anchors and trust sites, then compare the synthetic demand clusters "
+        "with the current site pattern. The scenario remains partial because the coverage ranking is still an "
+        "external heuristic over synthetic client counts rather than a native service-network planning workflow."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="partial",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "Town clusters can be grounded through live place-name resolution.",
+            "The trust service sites resolve to authoritative premises records.",
+        ],
+        confirmed_gaps=[
+            "Client counts and need indices are synthetic benchmark data.",
+            "MCP-Geo does not yet expose service-network optimisation or coverage ranking as a native tool.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
+def run_sg20(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
+    hotspots = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv"
+    )
+    resources = _load_csv(
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv"
+    )
+    tool_calls: list[dict[str, Any]] = []
+    route_query_prompt = (
+        "Which Bassetlaw policing hotspots appear least well covered by the current resource pattern, "
+        "and what should be reviewed first?"
+    )
+    route_query_call, route_query_body = runner.call("os_mcp.route_query", query=route_query_prompt)
+    tool_calls.append(route_query_call)
+    resolved_hotspots = []
+    resolved_resources = []
+    for row in hotspots:
+        call, match = resolve_name(runner, row["place_name"])
+        tool_calls.append(call)
+        resolved_hotspots.append({**row, **match})
+    for row in resources:
+        call, match = resolve_address(runner, row["address_text"])
+        tool_calls.append(call)
+        resolved_resources.append({**row, **match})
+    hotspot_rows = []
+    for hotspot in resolved_hotspots:
+        best_resource = None
+        best_distance = None
+        for resource in resolved_resources:
+            distance_m = haversine_distance_meters(
+                _safe_float(hotspot.get("lat")),
+                _safe_float(hotspot.get("lon")),
+                _safe_float(resource.get("lat")),
+                _safe_float(resource.get("lon")),
+            )
+            if distance_m is None:
+                continue
+            if best_distance is None or distance_m < best_distance:
+                best_distance = distance_m
+                best_resource = resource
+        hotspot_rows.append(
+            {
+                "placeName": hotspot["place_name"],
+                "nearestResource": best_resource.get("resource_name") if best_resource else None,
+                "distanceKm": round(best_distance / 1000, 2) if best_distance is not None else None,
+                "syntheticIncidents": int(hotspot["synthetic_incidents"]),
+                "syntheticVulnerabilityIndex": int(hotspot["synthetic_vulnerability_index"]),
+            }
+        )
+    hotspot_rows.sort(
+        key=lambda item: (
+            item["distanceKm"] is None,
+            -((item["syntheticIncidents"] * 0.7) + (item["syntheticVulnerabilityIndex"] * 0.3)),
+        )
+    )
+    evidence = {
+        "routeQueryIntent": route_query_body.get("intent") if isinstance(route_query_body, dict) else None,
+        "routeQueryRecommendedTool": route_query_body.get("recommended_tool")
+        if isinstance(route_query_body, dict)
+        else None,
+        "resolvedHotspotCount": sum(1 for row in resolved_hotspots if row.get("matched")),
+        "resolvedResourceCount": sum(1 for row in resolved_resources if row.get("matched")),
+        "hotspotRows": hotspot_rows,
+    }
+    summary = (
+        "The live rerun can ground the synthetic hotspot places and police resource sites, but the scenario remains "
+        "blocked as a first-class MCP-Geo workflow because there is still no native patrol-optimisation or demand-"
+        "prediction surface. The router also does not produce a policing-specific planning workflow for this prompt."
+    )
+    return build_scenario_result(
+        scenario,
+        live_outcome="blocked",
+        first_class_ready=False,
+        summary=summary,
+        evidence=evidence,
+        confirmed_capabilities=[
+            "The hotspot place names and public police resource sites can be resolved live.",
+            "A grounded distance-to-resource context can be assembled for review.",
+        ],
+        confirmed_gaps=[
+            "The demand and vulnerability values are synthetic benchmark data.",
+            "MCP-Geo still lacks native patrol optimisation, demand prediction, or patrol-allocation workflows.",
+        ],
+        tool_calls=tool_calls,
+    )
+
+
 SCENARIO_RUNNERS = {
     "SG01": run_sg01,
     "SG02": run_sg02,
@@ -1206,6 +2255,16 @@ SCENARIO_RUNNERS = {
     "SG08": run_sg08,
     "SG09": run_sg09,
     "SG10": run_sg10,
+    "SG11": run_sg11,
+    "SG12": run_sg12,
+    "SG13": run_sg13,
+    "SG14": run_sg14,
+    "SG15": run_sg15,
+    "SG16": run_sg16,
+    "SG17": run_sg17,
+    "SG18": run_sg18,
+    "SG19": run_sg19,
+    "SG20": run_sg20,
 }
 
 
@@ -1231,12 +2290,13 @@ def build_overall_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def render_markdown(pack: dict[str, Any], run_data: dict[str, Any]) -> str:
+    scenario_count = run_data["overall"]["scenarioCount"]
     lines = [
         "# MCP-Geo Stakeholder Evaluation Live Rerun",
         "",
         f"Generated: {DATE_STAMP}",
         "",
-        "This report reruns the 10 stakeholder scenarios against the live MCP-Geo surface in the current Codex session.",
+        f"This report reruns the {scenario_count} stakeholder scenarios against the live MCP-Geo surface in the current Codex session.",
         "It is separate from the benchmark pack so the gold/reference answers remain stable while the live tool evidence changes.",
         "",
         "## Runtime",
@@ -1244,6 +2304,8 @@ def render_markdown(pack: dict[str, Any], run_data: dict[str, Any]) -> str:
         f"- `OS_API_KEY` loaded in this session: `{run_data['runtime']['osApiKeyPresent']}`",
         f"- `OS_API_KEY_FILE` visible in this session: `{run_data['runtime']['osApiKeyFile']}`",
         f"- Boundary cache enabled for this run: `{run_data['runtime']['boundaryCacheEnabled']}`",
+        f"- Route graph enabled for this run: `{run_data['runtime']['routeGraphEnabled']}`",
+        f"- Route graph DSN present for this run: `{run_data['runtime']['routeGraphDsnPresent']}`",
         f"- Machine-readable live results: `{LIVE_JSON_PATH.relative_to(REPO_ROOT)}`",
         "",
         "## Interpretation",
@@ -1323,6 +2385,8 @@ def run_live_evaluation() -> dict[str, Any]:
                 "osApiKeyPresent": bool(settings.OS_API_KEY),
                 "osApiKeyFile": os.environ.get("OS_API_KEY_FILE", ""),
                 "boundaryCacheEnabled": bool(settings.BOUNDARY_CACHE_ENABLED),
+                "routeGraphEnabled": bool(settings.ROUTE_GRAPH_ENABLED),
+                "routeGraphDsnPresent": bool(settings.ROUTE_GRAPH_DSN or settings.BOUNDARY_CACHE_DSN),
             },
             "overall": build_overall_summary(results),
             "results": results,

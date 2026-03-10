@@ -17,12 +17,17 @@ All notable changes to this project will be documented in this file.
   `scripts/stakeholder_benchmark_pack.py` to turn the Phase 3 evaluation
   prompts into concrete benchmark scenarios with reusable-header prompts,
   scored reference outputs, and workflow validation.
+- Added Phase 1 stakeholder benchmark extension module
+  `scripts/stakeholder_phase1_extension.py` plus seeded routing helper
+  `scripts/seed_benchmark_route_graph.py` so the benchmark harness can expand
+  beyond the original 10 scenarios and exercise routed live examples against a
+  deterministic graph.
 - Added stakeholder benchmark machine-readable assets under
-  `data/benchmarking/stakeholder_eval/`, including fixture files, 10 JSON
+  `data/benchmarking/stakeholder_eval/`, including fixture files, 20 JSON
   reference outputs, and `benchmark_pack_v1.json`.
 - Added generated stakeholder benchmark reports
   `docs/reports/MCP-Geo_evaluation_questions.md` and
-  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md`.
+  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-10.md`.
 - Added stakeholder gap-analysis report
   `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md` explaining why
   the benchmark can score gold answers at `100/100` while current MCP-Geo
@@ -30,8 +35,8 @@ All notable changes to this project will be documented in this file.
   work needed to answer the 10 stakeholder scenarios directly.
 - Added stakeholder live-rerun harness `scripts/stakeholder_live_run.py`,
   machine-readable live evidence
-  `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`, second report
-  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`, and focused
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`, second report
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, and focused
   regression coverage in `tests/test_stakeholder_live_run.py`.
 - Added focused regression coverage in
   `tests/test_stakeholder_benchmark_pack.py`.
@@ -43,6 +48,9 @@ All notable changes to this project will be documented in this file.
 - Hardened `os_mcp.route_query` so SG03-style prompts classify as
   `route_planning`, recommend `os_route.get`, and surface route hints before
   postcode/UPRN fast paths fire.
+- Fixed `server/route_graph.py` SQL rendering so route execution no longer
+  crashes when `_run_leg()` formats a query containing a default JSONB value;
+  this removed the live `ROUTE_GRAPH_ERROR` seen in seeded stakeholder runs.
 - Switched the devcontainer and local Docker launchers to a pgRouting-capable
   repo-built PostGIS image, aligned them on the
   `PGDATA=/var/lib/postgresql/data/pgdata` layout plus named-volume storage,
@@ -58,16 +66,17 @@ All notable changes to this project will be documented in this file.
   parity before scoring Codex vs Claude or stakeholder live runs.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
-  full expected-output JSON for all 10 scenarios.
+  full expected-output JSON for 20 scenarios, including a new 10-scenario
+  Phase 1 extension.
 - Clarified the stakeholder benchmark report so `Reference score` is explicitly
   described as gold-answer completeness, not current MCP-Geo capability
   completeness.
 - Added an authenticated live rerun of the stakeholder scenarios and reported
-  the result separately from the benchmark pack: `0` first-class-ready
-  scenarios, `9 partial`, `1 blocked`, with live OS-backed evidence now proven
-  in-session via `OS_API_KEY_FILE`. SG03 is no longer blocked by misrouting or
-  UI-shell-only behavior; the current blocker is `ROUTE_GRAPH_NOT_READY` /
-  `route_graph_disabled` in the default environment.
+  the result separately from the benchmark pack. The latest seeded-graph live
+  rerun reports `1` first-class-ready scenario, `17 partial`, and `2 blocked`,
+  with live OS-backed evidence proven in-session via `OS_API_KEY_FILE`. SG03
+  now returns a full routed answer on the seeded graph and SG12 moves from
+  blocked to partial; SG17 and SG20 remain blocked for capability reasons.
 
 ## [0.6.0] - 2026-03-08
 

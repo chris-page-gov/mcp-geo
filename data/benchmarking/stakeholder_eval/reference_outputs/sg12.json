@@ -1,0 +1,57 @@
+{
+  "concise_answer": "The incident coordinate resolves to Goodwin Hall, Chancery Lane, Retford, DN22 6DF. On the benchmark route graph, Retford Fire Station is the quickest responder and Tuxford Fire Station is slower by design.",
+  "method_used": [
+    "Use os_places.nearest to resolve the incident coordinate to the closest authoritative address context.",
+    "Resolve each responder site with os_places.search or os_places.by_uprn.",
+    "Check os_route.descriptor before comparing responder journeys with os_route.get."
+  ],
+  "datasets_tools_used": [
+    "MCP-Geo tools: os_places.nearest, os_places.search, os_route.descriptor, os_route.get",
+    "Benchmark public responder sites for Retford and Tuxford fire stations"
+  ],
+  "confidence_caveats": [
+    "Incident-to-address resolution is high confidence because the benchmark coordinate is anchored to a known public premises.",
+    "Fastest-responder ranking depends on an active benchmark route graph rather than a full live dispatch system."
+  ],
+  "verification_steps": [
+    "Confirm the coordinate still resolves nearest to Goodwin Hall.",
+    "Check os_route.descriptor to ensure the benchmark graph is active before using route timings.",
+    "Treat appliance availability and control-room dispatch policy as out of scope unless supplied separately."
+  ],
+  "structured_output": {
+    "incidentAddress": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
+    "quickestResource": "Retford Fire Station",
+    "graphReadyRequired": true,
+    "suggestedExportFormat": "JSON dispatch comparison plus GeoJSON route layers."
+  },
+  "concise_dispatch_answer": "Resolve the coordinate first; if the route graph is ready, Retford Fire Station is the benchmark quickest responder.",
+  "incident_resolution_table": [
+    {
+      "incident_label": "Benchmark incident",
+      "lat": 53.3219807,
+      "lon": -0.9451639,
+      "resolved_address": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
+      "uprn": "100032031287"
+    }
+  ],
+  "responder_comparison_table": [
+    {
+      "resource_name": "Retford Fire Station",
+      "route_status": "benchmark_fastest",
+      "distance_m": 260.0,
+      "duration_s": 120.0
+    },
+    {
+      "resource_name": "Tuxford Fire Station",
+      "route_status": "benchmark_slower",
+      "distance_m": 11100.0,
+      "duration_s": 900.0
+    }
+  ],
+  "blocker_or_limitations": "If os_route.descriptor reports the graph as not ready, stop after grounded address resolution and return ROUTE_GRAPH_NOT_READY instead of inventing responder timings.",
+  "verification_notes": [
+    "Check the incident and responder points on a map before dispatch rehearsal.",
+    "Review any loaded route warnings or restriction rows on the active benchmark graph."
+  ],
+  "map_recommended_description": "Map recommended: show the incident point at Goodwin Hall plus both responder sites and their compared routes."
+}

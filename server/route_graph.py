@@ -475,7 +475,7 @@ class RouteGraph:
                         THEN ST_AsGeoJSON(ST_Reverse(edge.geom))
                         ELSE ST_AsGeoJSON(edge.geom)
                     END AS geometry,
-                    COALESCE(edge.flags, '{}'::jsonb) AS flags
+                    COALESCE(edge.flags, '{{}}'::jsonb) AS flags
                 FROM path
                 JOIN {edges_table} edge
                   ON edge.id = path.edge

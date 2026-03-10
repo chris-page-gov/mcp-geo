@@ -1,0 +1,5 @@
+case_id,address_text,benchmark_setting,source_note
+CASE-001,"H M Prison, Ranby, Retford, DN22 8EU",prison,Public institution used as a UKHSA-style setting-classification benchmark row.
+CASE-002,"Westvilla Nursing Home, Westfield Road, Retford, DN22 7BT",care_home,Public care home used as a UKHSA-style setting-classification benchmark row.
+CASE-003,"6 Mill Bridge Close, Retford, DN22 6FE",residential,Public residential address from HM Land Registry benchmark subsets.
+CASE-004,"Retford Library, 17 Churchgate, Retford, DN22 6PE",community_facility,Public civic building included as a negative-control non-residential record.

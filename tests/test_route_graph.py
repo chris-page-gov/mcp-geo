@@ -241,6 +241,39 @@ def test_route_graph_restriction_queries(monkeypatch, tmp_path):
     assert turn_warnings[0]["restrictionType"] == "no_left_turn"
 
 
+def test_route_graph_run_leg_handles_default_flags(monkeypatch, tmp_path):
+    graph = _graph(tmp_path)
+    conn = FakeConn(
+        [
+            [
+                {
+                    "edge_id": 1001,
+                    "external_id": "edge-1001",
+                    "name": "Churchgate",
+                    "mode": "drive",
+                    "length_m": 365.0,
+                    "cost": 55.0,
+                    "geometry": '{"type":"LineString","coordinates":[[-0.94,53.32],[-0.945,53.321]]}',
+                    "flags": {},
+                }
+            ]
+        ]
+    )
+    monkeypatch.setattr(graph, "_edge_sql", lambda *_args, **_kwargs: "SELECT 1")
+
+    segments = graph._run_leg(
+        conn,
+        start_node=1,
+        end_node=2,
+        profile="drive",
+        constraints={"avoidAreas": [], "avoidIds": [], "softAvoid": True},
+    )
+
+    assert len(segments) == 1
+    assert segments[0]["edgeId"] == 1001
+    assert segments[0]["flags"] == {}
+
+
 def test_route_graph_geometry_and_step_helpers():
     first = {"type": "LineString", "coordinates": [[-1.0, 52.0], [-0.9, 51.9]]}
     second = {"type": "LineString", "coordinates": [[-0.9, 51.9], [-0.8, 51.8]]}

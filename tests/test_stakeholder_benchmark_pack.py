@@ -62,9 +62,10 @@ def test_rendered_report_includes_full_reference_outputs(monkeypatch, tmp_path: 
         tmp_path / "docs" / "reports" / "MCP-Geo_evaluation_questions.md"
     ).read_text(encoding="utf-8")
 
-    assert report.count("**Reference Output (JSON)**") == 10
+    assert report.count("**Reference Output (JSON)**") == 20
     assert '"suggested_export_format"' in report
     assert '"structured_route_summary"' in report
+    assert '"cache_provenance_note"' in report
     assert "Reference score` grades the completeness and auditability of the benchmark's gold answer" in report
     assert (
         f"[mcp_geo_stakeholder_benchmark_workflow_{stakeholder_pack.DATE_STAMP}.md]"
@@ -85,3 +86,15 @@ def test_sg04_uses_current_rutland_transparency_comparator() -> None:
         {"road_class": "Total roads", "length_km": 520.0},
     ]
     assert json.dumps(scenario["referenceOutput"], sort_keys=True)
+
+
+def test_pack_includes_phase1_extension_scenarios() -> None:
+    pack = stakeholder_pack.build_pack()
+    scenario_ids = [item["id"] for item in pack["scenarios"]]
+
+    assert len(scenario_ids) == 20
+    assert scenario_ids[-3:] == ["SG18", "SG19", "SG20"]
+    sg15 = next(item for item in pack["scenarios"] if item["id"] == "SG15")
+    assert sg15["exampleMode"] == "public"
+    assert "exact and best-fit" in sg15["benchmarkRationale"].lower()
+    assert sg15["referenceOutput"]["missing_rows_table"][0]["uprn"] == "100032031210"
