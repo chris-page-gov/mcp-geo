@@ -34,7 +34,11 @@ def test_resources_get_ui_uri():
 
 
 def test_map_widgets_use_absolute_maplibre_assets():
-    for uri in ("ui://mcp-geo/geography-selector", "ui://mcp-geo/boundary-explorer"):
+    for uri in (
+        "ui://mcp-geo/geography-selector",
+        "ui://mcp-geo/boundary-explorer",
+        "ui://mcp-geo/route-planner",
+    ):
         resp = client.get("/resources/read", params={"uri": uri})
         assert resp.status_code == 200
         contents = resource_contents(resp)

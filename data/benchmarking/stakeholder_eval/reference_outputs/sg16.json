@@ -1,0 +1,85 @@
+{
+  "concise_answer": "In the benchmark pack, three synthetic patient rows are beyond the 1.6 km threshold, one is within range, and one should stay in review until both the patient and nearest pharmacy resolution are confirmed.",
+  "method_used": [
+    "Resolve each synthetic patient row and each public pharmacy address to authoritative coordinates.",
+    "Measure each patient against the nearest resolved pharmacy.",
+    "Keep unresolved or low-confidence rows in a review queue instead of forcing a threshold decision."
+  ],
+  "datasets_tools_used": [
+    "Synthetic patient benchmark file anchored to public addresses",
+    "Public Worksop pharmacy addresses",
+    "MCP-Geo tools: os_places.search, os_places.by_postcode"
+  ],
+  "confidence_caveats": [
+    "Distance logic is strong once both patient and pharmacy sites resolve.",
+    "This benchmark uses synthetic patient rows and an external nearest-facility calculation rather than a native MCP-Geo workflow."
+  ],
+  "verification_steps": [
+    "Confirm every patient and pharmacy location resolves cleanly before applying the threshold.",
+    "Re-run the nearest-site calculation if the pharmacy list changes."
+  ],
+  "structured_output": {
+    "breachCount": 3,
+    "reviewCount": 1,
+    "synthetic": true,
+    "suggestedExportFormat": "CSV patient-to-pharmacy distance table plus CSV review queue."
+  },
+  "concise_distance_answer": "Three synthetic benchmark patients are beyond 1.6 km from their nearest pharmacy, one is within range, and one remains in review.",
+  "patient_distance_table": [
+    {
+      "patient_id": "PT-001",
+      "nearest_pharmacy": "Worksop Pharmacy",
+      "distance_km": 1.2,
+      "threshold_status": "within"
+    },
+    {
+      "patient_id": "PT-002",
+      "nearest_pharmacy": "Manton Pharmacy",
+      "distance_km": 2.1,
+      "threshold_status": "beyond"
+    },
+    {
+      "patient_id": "PT-003",
+      "nearest_pharmacy": "Worksop Pharmacy",
+      "distance_km": 7.6,
+      "threshold_status": "beyond"
+    },
+    {
+      "patient_id": "PT-004",
+      "nearest_pharmacy": "Worksop Pharmacy",
+      "distance_km": 15.4,
+      "threshold_status": "beyond"
+    },
+    {
+      "patient_id": "PT-005",
+      "nearest_pharmacy": "Worksop Pharmacy",
+      "distance_km": null,
+      "threshold_status": "review"
+    }
+  ],
+  "threshold_breach_table": [
+    {
+      "patient_id": "PT-002",
+      "distance_km": 2.1
+    },
+    {
+      "patient_id": "PT-003",
+      "distance_km": 7.6
+    },
+    {
+      "patient_id": "PT-004",
+      "distance_km": 15.4
+    }
+  ],
+  "review_table": [
+    {
+      "patient_id": "PT-005",
+      "reason": "Retford row requires a broader pharmacy site list or confirmation of the nearest resolved site."
+    }
+  ],
+  "synthetic_data_note": "Synthetic scenario: patient rows are benchmark-only records anchored to public addresses because real dispensing-list patient addresses are not public.",
+  "verification_notes_detail": [
+    "Confirm the nearest pharmacy list covers the operational area before using the threshold output.",
+    "Keep the synthetic patient flag in any downstream export or scorecard."
+  ]
+}

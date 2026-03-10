@@ -1,0 +1,7 @@
+building_id,building_name,address_text,height_m,floors,synthetic_note
+BLD-001,York Minster,"York Minster, Deangate, York, YO1 7HH",23.0,5,Synthetic height benchmark attached to a real public building.
+BLD-002,Hudson House,"Hudson House, Toft Green, York, YO1 6JT",22.0,7,Synthetic height benchmark attached to a real public building.
+BLD-003,County Hall,"County Hall, Racecourse Lane, Northallerton, DL7 8AD",15.0,4,Synthetic height benchmark attached to a real public building.
+BLD-004,The Grand Hotel York,"The Grand, Station Rise, York, YO1 6GD",18.5,6,Synthetic height benchmark attached to a real public building.
+BLD-005,York Hospital South Block,"York Hospital, Wigginton Road, York, YO31 8HE",21.0,8,Synthetic height benchmark attached to a real public building.
+BLD-006,Scarborough Town Hall,"Town Hall, St Nicholas Street, Scarborough, YO11 2HG",14.0,3,Synthetic height benchmark attached to a real public building.

@@ -1,0 +1,87 @@
+{
+  "concise_answer": "All 7 benchmark assets are already keyed by real UPRN. 4 assets are confirmed in-risk from point-on-zone checks, 0 are unmatched, and 3 remain review candidates rather than confirmed near-risk assets.",
+  "method_used": [
+    "Read UPRN, address, and coordinate fields directly from the asset register.",
+    "Use the supplied Retford flood-risk-zone references for overlay.",
+    "Keep non-intersecting assets in a review queue unless a distance rule is supplied."
+  ],
+  "datasets_tools_used": [
+    "Bassetlaw asset register subset",
+    "planning.data.gov.uk flood-risk-zone references 402042/2, 406550/2, 167647/3",
+    "MCP-Geo tools: os_places.by_uprn, admin_lookup.containing_areas"
+  ],
+  "confidence_caveats": [
+    "UPRN linkage is high confidence because the published asset register supplies the UPRN directly.",
+    "In-risk classification is strong for the four intersecting points.",
+    "Near-risk is intentionally conservative: the benchmark expects review-candidate labelling, not guessed distance classes."
+  ],
+  "verification_steps": [
+    "Confirm any export uses the latest flood-zone release before publication.",
+    "If near-risk assets matter operationally, run a true distance-to-zone calculation instead of point-only checks."
+  ],
+  "structured_output": {
+    "matchedAssets": 7,
+    "unmatchedAssets": 0,
+    "confirmedInRiskAssets": 4,
+    "reviewQueueAssets": 3
+  },
+  "executive_summary": "Seven assets matched cleanly by UPRN; four sit inside sampled flood zones and three require proximity review rather than being labelled safe.",
+  "matched_asset_table": [
+    {
+      "uprn": "100032031194",
+      "asset": "Nottinghamshire County Council land",
+      "postcode": "DN22 6DG",
+      "risk_status": "in_risk"
+    },
+    {
+      "uprn": "100032031210",
+      "asset": "Retford Library 17",
+      "postcode": "DN22 6PE",
+      "risk_status": "review_candidate"
+    },
+    {
+      "uprn": "100032031287",
+      "asset": "Goodwin Hall",
+      "postcode": "DN22 6DF",
+      "risk_status": "in_risk"
+    },
+    {
+      "uprn": "10023266359",
+      "asset": "Retford Shopmobility",
+      "postcode": "DN22 6EY",
+      "risk_status": "review_candidate"
+    },
+    {
+      "uprn": "10023266361",
+      "asset": "Public Car Park",
+      "postcode": "DN22 6EY",
+      "risk_status": "in_risk"
+    },
+    {
+      "uprn": "10023269092",
+      "asset": "North Public Car Park",
+      "postcode": "DN22 6EY",
+      "risk_status": "review_candidate"
+    },
+    {
+      "uprn": "10023270715",
+      "asset": "Pavillion at Kings Park",
+      "postcode": "DN22 6EY",
+      "risk_status": "in_risk"
+    }
+  ],
+  "unmatched_asset_table": [],
+  "flood_risk_overlay_summary": {
+    "confirmed_in_risk_assets": 4,
+    "review_queue_assets": 3,
+    "intersecting_zone_references": [
+      "402042/2",
+      "406550/2",
+      "167647/3"
+    ]
+  },
+  "recommended_exports": [
+    "CSV asset risk register",
+    "GeoJSON or map layer if coordinates are included in the live run"
+  ]
+}

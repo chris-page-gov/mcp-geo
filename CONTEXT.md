@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-08
+Last updated: 2026-03-10
 Owner: @chris-page-gov
 
 ## Purpose
@@ -95,10 +95,59 @@ assumptions change.
 - Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
   Desktop Opus 4.6, including launcher separation, trace/session scoring, and
   reproducible comparison reports.
+- Maintaining the new OS MRN route-planning stack under `tools/os_route.py`,
+  `server/route_graph.py`, `server/route_planning.py`, and
+  `ui/route_planner.html`, with pgRouting/PostGIS graph readiness surfaced via
+  `os_route.descriptor` and SG03-style prompts routed through
+  `os_route.get`.
+- Maintaining the stakeholder-evaluation benchmark pack under
+  `scripts/stakeholder_benchmark_pack.py` and
+  `data/benchmarking/stakeholder_eval/` so the Phase 3 prompt bank stays tied
+  to concrete public examples, scored reference outputs, a repeatable
+  workflow note, and the Phase 1 extension scenarios added on 2026-03-10 via
+  `scripts/stakeholder_phase1_extension.py`.
+- Tracking the follow-up stakeholder capability gap analysis in
+  `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
+  separation between benchmark gold-answer scoring and current MCP-Geo feature
+  completeness plus the missing work to make the 20 scenarios runnable against
+  live tools.
+- Maintaining the stakeholder live-rerun harness under
+  `scripts/stakeholder_live_run.py` and the resulting evidence artifacts under
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json` and
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, so authenticated
+  OS-backed reruns can be compared directly with the benchmark pack and still
+  report first-class product readiness separately from raw live tool success.
+  The current seeded-graph live baseline is `1 full`, `17 partial`, `2 blocked`;
+  SG03 now returns a full routed answer, while SG17 and SG20 remain the only
+  blocked scenarios.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
   from git worktrees (named-volume PostGIS + runtime data roots).
+- Standardizing local Docker PostGIS on the repo-owned named volume
+  `mcp-geo-postgis`; the March 10, 2026 cleanup consolidated the seed boundary
+  cache rows from `mcpgeo_cache_local_data` into that canonical volume and left
+  the legacy bind-mounted `data/postgres/pgdata` cluster non-canonical because
+  it is storage-corrupted (`invalid checkpoint record`).
+- Standardizing devcontainer/host PostGIS on a pgRouting-capable image and
+  automatic boundary-cache/route-schema bootstrap so local route planning
+  defaults no longer depend on a plain PostGIS sidecar missing `pgrouting` or
+  an external pgRouting image tag; the repo now builds
+  `.devcontainer/postgis.Dockerfile` as the canonical sidecar image, though the
+  upstream `postgis/postgis:16-3.4` base is still amd64-only.
+- Standardizing Claude Desktop on the same PostGIS instance as the repo
+  devcontainer when it is already running, with Docker-sidecar fallback only
+  when the devcontainer database is absent.
+- Standardizing benchmark startup on a single shared PostGIS cache across
+  clients, with `scripts/check_shared_benchmark_cache.sh` as the required
+  preflight before Codex-vs-Claude or stakeholder live comparison runs.
+- Keeping route-graph bootstrap/provenance tooling free of raw credential
+  storage/logging by sanitizing MRN download metadata and redacting DSN-derived
+  secrets in `scripts/route_graph_pipeline.py`.
+- Standardizing host-side verification commands on repo-local wrappers
+  (`scripts/pytest-local`, `scripts/ruff-local`, `scripts/mypy-local`) so
+  Codex/CLI sessions reuse the running devcontainer toolchain before falling
+  back to `.venv` or `uv run`.
 
 ## Active Work
 
@@ -116,6 +165,27 @@ assumptions change.
   Desktop using the new scenario pack
   `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` and generate
   side-by-side reports under `docs/reports/`.
+- Maintain the stakeholder benchmark generator, fixture pack, scored reference
+  outputs, and workflow-validation report under
+  `scripts/stakeholder_benchmark_pack.py`,
+  `data/benchmarking/stakeholder_eval/`,
+  `docs/reports/MCP-Geo_evaluation_questions.md`, and
+  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-10.md`,
+  including the 10 additional Phase 1-derived scenarios shipped via
+  `scripts/stakeholder_phase1_extension.py`.
+- Maintain the stakeholder benchmark gap-analysis note under
+  `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, including the
+  runtime finding that `OS_API_KEY` was not visible to the benchmark-generation
+  process in the Codex workspace and the scenario-by-scenario capability gaps
+  that still explain why only 1 of the 20 live rerun scenarios is first-class
+  ready.
+- Maintain the stakeholder live-rerun harness and report under
+  `scripts/stakeholder_live_run.py`,
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`, and
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, including the
+  stricter `firstClassProductReady` interpretation for live OS-backed runs, the
+  seeded route-graph preflight from `scripts/seed_benchmark_route_graph.py`,
+  and the updated SG03 full-pass evidence.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

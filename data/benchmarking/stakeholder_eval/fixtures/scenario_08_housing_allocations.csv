@@ -1,0 +1,4 @@
+source_ref,site_name,ward,polling_district,expected_units,geometry_type,status
+ALLOC-001,Abbey Quarter Phase A,Selby West,SEL-A,120,polygon,allocation
+ALLOC-002,Cayton East Extension,Cayton,CAY-A,48,polygon,allocation
+ALLOC-003,Ripon South Yard,Ripon South,RIP-C,30,polygon,allocation

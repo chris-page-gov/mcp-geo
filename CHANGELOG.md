@@ -5,6 +5,102 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added first-class route-planning tools `os_route.descriptor` and
+  `os_route.get`, backed by the new pgRouting/PostGIS graph service in
+  `server/route_graph.py` and route parsing helpers in
+  `server/route_planning.py`.
+- Added OS MRN graph bootstrap assets
+  `scripts/route_graph_schema.sql` and `scripts/route_graph_pipeline.py` for
+  versioned routing-schema setup and download/provenance handling.
+- Added stakeholder benchmark pack generator
+  `scripts/stakeholder_benchmark_pack.py` to turn the Phase 3 evaluation
+  prompts into concrete benchmark scenarios with reusable-header prompts,
+  scored reference outputs, and workflow validation.
+- Added Phase 1 stakeholder benchmark extension module
+  `scripts/stakeholder_phase1_extension.py` plus seeded routing helper
+  `scripts/seed_benchmark_route_graph.py` so the benchmark harness can expand
+  beyond the original 10 scenarios and exercise routed live examples against a
+  deterministic graph.
+- Added stakeholder benchmark machine-readable assets under
+  `data/benchmarking/stakeholder_eval/`, including fixture files, 20 JSON
+  reference outputs, and `benchmark_pack_v1.json`.
+- Added generated stakeholder benchmark reports
+  `docs/reports/MCP-Geo_evaluation_questions.md` and
+  `docs/reports/mcp_geo_stakeholder_benchmark_workflow_2026-03-10.md`.
+- Added stakeholder gap-analysis report
+  `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md` explaining why
+  the benchmark can score gold answers at `100/100` while current MCP-Geo
+  support remains `partial`/`blocked`, and recording the missing capability
+  work needed to answer the 10 stakeholder scenarios directly.
+- Added stakeholder live-rerun harness `scripts/stakeholder_live_run.py`,
+  machine-readable live evidence
+  `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`, second report
+  `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, and focused
+  regression coverage in `tests/test_stakeholder_live_run.py`.
+- Added focused regression coverage in
+  `tests/test_stakeholder_benchmark_pack.py`.
+
+### Changed
+- Preserved hard-avoid routing intent in `server/route_planning.py` so route
+  queries that omit softening language such as `if possible` now produce hard
+  exclusions instead of silent soft penalties.
+- Hardened `server/route_graph.py` to reject unparseable `avoidAreas`
+  constraints with `INVALID_INPUT` rather than silently dropping them and
+  returning an unconstrained route.
+- Kept `os_mcp.route_query` route suggestions executable by surfacing
+  unresolved free-text avoidance phrases under
+  `routeHints.unresolvedAvoidTexts` instead of forwarding invalid
+  `avoidAreas` into `os_route.get`.
+- Widened `ui/route_planner.html` avoid-id classification so compact tokens
+  such as `1001` and `edge-1001` are sent through `avoidIds` rather than the
+  geometry-only `avoidAreas` path.
+- Fixed `scripts/generate_mcp_geo_functionality_showcase.py` so the report
+  generator no longer uses invalid f-string `"\n".join(...)` expressions that
+  break test collection.
+- Replaced the route planner's demo-shell behavior with a live MCP-Apps widget
+  contract wired to `os_route.get`, including route geometry rendering,
+  payload normalization, and explicit graph/ambiguity error states.
+- Hardened `os_mcp.route_query` so SG03-style prompts classify as
+  `route_planning`, recommend `os_route.get`, and surface route hints before
+  postcode/UPRN fast paths fire.
+- Fixed `server/route_graph.py` SQL rendering so route execution no longer
+  crashes when `_run_leg()` formats a query containing a default JSONB value;
+  this removed the live `ROUTE_GRAPH_ERROR` seen in seeded stakeholder runs.
+- Switched the devcontainer and local Docker launchers to a pgRouting-capable
+  repo-built PostGIS image, aligned them on the
+  `PGDATA=/var/lib/postgresql/data/pgdata` layout plus named-volume storage,
+  and added idempotent boundary-cache and route-graph schema bootstrap so
+  local route readiness no longer depends on a plain PostGIS sidecar or an
+  external `pgrouting/pgrouting` image tag.
+- Updated the Claude Desktop launcher to reuse the running repo devcontainer
+  PostGIS container/network when available, falling back to its own sidecar
+  only when the devcontainer database is absent.
+- Defaulted the shared Docker launcher to devcontainer-PostGIS reuse for all
+  host clients, added `scripts/check_shared_benchmark_cache.sh`, and documented
+  the exact benchmark startup order required to guarantee cross-client cache
+  parity before scoring Codex vs Claude or stakeholder live runs.
+- Sanitized `scripts/route_graph_pipeline.py` provenance capture/output so it
+  no longer stores or prints raw DSNs, signed download URLs, or other
+  credential-like fields from MRN download metadata.
+- Added host/devcontainer-aware tool wrappers `scripts/pytest-local`,
+  `scripts/ruff-local`, `scripts/mypy-local`, and `scripts/run-local-tool` so
+  host-side verification commands automatically reuse the repo devcontainer,
+  then the repo `.venv`, then `uv run`.
+- Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
+  pack that embeds populated prompts, comparator notes, capability gaps, and
+  full expected-output JSON for 20 scenarios, including a new 10-scenario
+  Phase 1 extension.
+- Clarified the stakeholder benchmark report so `Reference score` is explicitly
+  described as gold-answer completeness, not current MCP-Geo capability
+  completeness.
+- Added an authenticated live rerun of the stakeholder scenarios and reported
+  the result separately from the benchmark pack. The latest seeded-graph live
+  rerun reports `1` first-class-ready scenario, `17 partial`, and `2 blocked`,
+  with live OS-backed evidence proven in-session via `OS_API_KEY_FILE`. SG03
+  now returns a full routed answer on the seeded graph and SG12 moves from
+  blocked to partial; SG17 and SG20 remain blocked for capability reasons.
+
 ## [0.6.0] - 2026-03-08
 
 ### Added

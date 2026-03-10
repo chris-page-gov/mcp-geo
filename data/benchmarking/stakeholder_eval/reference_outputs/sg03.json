@@ -1,0 +1,46 @@
+{
+  "concise_answer": "MCP-Geo now routes this prompt correctly and exposes a route solver, but the grounded answer still depends on graph readiness: return the computed emergency route when the graph is ready, otherwise return an explicit graph-state blocker instead of inventing distance or turn notes.",
+  "method_used": [
+    "Resolve the origin and destination as named premises.",
+    "Classify the request as a route-planning workflow with MCP-Geo routing guidance.",
+    "Check graph readiness with os_route.descriptor, then call os_route.get with emergency profile and soft flood-zone avoidance."
+  ],
+  "datasets_tools_used": [
+    "MCP-Geo tools: os_mcp.route_query, os_route.descriptor, os_route.get, os_places.search, os_apps.render_route_planner",
+    "Routing source model: OS Multi-modal Routing Network loaded into PostGIS/pgRouting when provisioned"
+  ],
+  "confidence_caveats": [
+    "Endpoint resolution is high confidence because the sites are public named premises.",
+    "A definitive route answer depends on an active routing graph; if the graph is not ready, no distance or turn list should be invented."
+  ],
+  "verification_steps": [
+    "Check os_route.descriptor for graph readiness and provenance before operational use.",
+    "If the graph is ready, validate the returned route against temporary closures and emergency-access policy."
+  ],
+  "structured_output": {
+    "status": "graph_not_ready",
+    "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+    "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+    "profile": "emergency",
+    "routeDistanceKm": null,
+    "routePath": null,
+    "blocker": "Route solver exists, but the active routing graph is not ready in this environment.",
+    "suggestedExportFormat": "JSON blocker record plus GeoJSON route output once the graph is ready."
+  },
+  "concise_operational_answer": "Resolve the two premises, check os_route.descriptor, then either return the computed emergency route or stop with ROUTE_GRAPH_NOT_READY.",
+  "structured_route_summary": {
+    "route_status": "graph_not_ready",
+    "recommended_tool": "os_route.get",
+    "interactive_companion_tool": "os_apps.render_route_planner",
+    "graph_readiness_step": "Call os_route.descriptor before relying on the route."
+  },
+  "assumptions_limitations": [
+    "The default repo environment may not have a built MRN graph attached.",
+    "Hazard and turn-restriction handling depends on the loaded graph and restriction tables."
+  ],
+  "verification_notes": [
+    "Confirm endpoint coordinates in an authoritative address service before routing.",
+    "When a route is returned, review key restrictions and any soft-avoid penalties before operational use."
+  ],
+  "map_recommended_description": "Map recommended: show both premises, the flood-risk-zone 167647/3 polygon, and the solved route if the graph is ready; otherwise show the endpoints plus the graph-readiness blocker."
+}

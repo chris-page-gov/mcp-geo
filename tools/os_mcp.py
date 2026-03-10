@@ -18,6 +18,7 @@ from server.protocol import (
     PROTOCOL_VERSION,
     SUPPORTED_PROTOCOL_VERSIONS,
 )
+from server.route_planning import extract_route_request, looks_like_route_query
 from tools.registry import Tool, ToolResult, all_tools, register
 
 
@@ -337,7 +338,7 @@ INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.FEATURE_SEARCH: ["core_router", "features_layers"],
     QueryIntent.BOUNDARY_FETCH: ["core_router", "admin_boundaries"],
     QueryIntent.INTERACTIVE_SELECTION: ["core_router", "apps_ui", "admin_boundaries"],
-    QueryIntent.ROUTE_PLANNING: ["core_router", "apps_ui", "maps_tiles"],
+    QueryIntent.ROUTE_PLANNING: ["core_router", "routing", "apps_ui", "maps_tiles"],
     QueryIntent.DATASET_DISCOVERY: ["core_router", "ons_selection", "ons_data"],
     QueryIntent.MAP_RENDER: ["core_router", "maps_tiles"],
     QueryIntent.VECTOR_TILES: ["core_router", "maps_tiles"],
@@ -708,6 +709,19 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     uprn = _extract_uprn(query)
     if re.search(r"\blinked ids?\b|\blinked identifiers?\b|\bcrosswalk\b", query_lower):
         return _classify_linked_identifier_query(query, query_lower, uprn, context)
+
+    route_request = extract_route_request(query) if looks_like_route_query(query) else None
+    if route_request:
+        context["route_request"] = route_request
+        context["route_profile"] = route_request.get("profile")
+        route_params = {
+            "stops": route_request.get("stops", []),
+            "profile": route_request.get("profile"),
+            "constraints": route_request.get("constraints", {}),
+        }
+        if route_request.get("via"):
+            route_params["via"] = route_request["via"]
+        return QueryIntent.ROUTE_PLANNING, 0.96, route_params, context
 
     postcode = _extract_postcode(query)
     if postcode:
@@ -1121,9 +1135,12 @@ def _get_tool_for_intent(
         )
     if intent == QueryIntent.ROUTE_PLANNING:
         return (
-            "os_apps.render_route_planner",
-            ["os_apps.render_route_planner"],
-            "Open the route planner to choose start/end points.",
+            "os_route.get",
+            ["os_route.get", "os_apps.render_route_planner"],
+            (
+                "Resolve the route with os_route.get first, then use the route planner widget "
+                "as the interactive companion for map review and replay."
+            ),
         )
     if intent == QueryIntent.DATASET_DISCOVERY:
         if context.get("nomis_preferred"):
@@ -1222,7 +1239,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_apps.render_ui_probe",
             "admin_lookup.find_by_name",
         ],
-        QueryIntent.ROUTE_PLANNING: ["os_maps.render"],
+        QueryIntent.ROUTE_PLANNING: [
+            "os_apps.render_route_planner",
+            "os_route.descriptor",
+            "os_maps.render",
+        ],
         QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
         QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],
         QueryIntent.VECTOR_TILES: ["os_maps.render"],
@@ -1282,7 +1303,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "for UPRNs/buildings/road/path links inside a boundary."
         ),
         QueryIntent.ROUTE_PLANNING: (
-            "Use the route planner widget to set start/end coordinates."
+            "Use os_route.get for the authoritative route result and "
+            "os_apps.render_route_planner to inspect the returned path on the map."
         ),
         QueryIntent.DATASET_DISCOVERY: (
             "Use ons_select.search for ranked ONS dataset discovery (with explanations), or "
@@ -1559,6 +1581,19 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         focus_raw = context.get("survey_focus")
         focus = focus_raw if isinstance(focus_raw, str) else None
         response["surveyPlan"] = _build_survey_plan(focus)
+    if intent == QueryIntent.ROUTE_PLANNING and isinstance(context.get("route_request"), dict):
+        route_request = context["route_request"]
+        extracted = route_request.get("extracted")
+        if isinstance(extracted, dict):
+            response["routeHints"] = extracted
+            unresolved_avoids = extracted.get("unresolvedAvoidTexts")
+            if isinstance(unresolved_avoids, list) and unresolved_avoids:
+                response["guidance"] = (
+                    f"{response['guidance']} Review routeHints.unresolvedAvoidTexts before "
+                    "calling os_route.get: those phrases were not normalized into route IDs "
+                    "or supported geometry."
+                )
+        response["interactive_companion_tool"] = "os_apps.render_route_planner"
     return 200, response
 
 

@@ -6,12 +6,17 @@
 - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy).
 - **Resources catalog**: expanded `/resources/*` with boundary manifest, latest report, cache status, and ONS cache index.
 - **Circuit breaker**: added upstream circuit breaker with jittered retries for OS/ONS calls.
+- **Route planning surface**: `os_route.get` and `os_route.descriptor` now provide a
+  first-class routing contract, and `os_apps.render_route_planner` delegates to the
+  solver instead of acting as a UI-only demo shell.
 
 ### High priority
 1. **CI pipeline**: add lint/type/test/coverage CI with badges.
 2. **MCP-Apps client compatibility**: validate UI initialization across Claude and Inspector; document required client steps.
 3. **Restore strict quality gates**: raise pytest coverage back to `>=90%` and
    clear current static-analysis debt (`ruff`/`mypy`) so release gating is enforceable.
+4. **Route graph operationalization**: automate OS MRN package ingestion,
+   pgRouting graph builds, and environment bootstrap in deployment workflows.
 
 ### Medium priority
 6. **Pagination for large tool results**: token-based paging for OS features and large datasets.
@@ -19,13 +24,13 @@
 8. **ONS dataset caching**: expand on-disk cache to cover query outputs, add TTL and invalidation.
 9. **Admin cache staleness policy**: configurable freshness thresholds with alerting.
 10. **Performance regression tests**: boundary cache and maps proxy latency baselines.
-11. **Operationalize static MCP-Apps widgets**: convert `feature_inspector`
-    and `route_planner` from static mock UIs to live data/map actions.
+11. **Route restriction depth**: promote turn restrictions and RAMI-derived hazards
+    from warnings/penalties to full route-cost enforcement where data supports it.
 
 ### Low priority
-11. **UI polish**: improve MCP-Apps widgets with real data bindings.
-12. **CLI/Playground UX**: expose UI session details and rendering hints.
-13. **Full documentation cross-links**: consolidate tutorial and evaluation docs.
+12. **UI polish**: improve MCP-Apps widgets with real data bindings.
+13. **CLI/Playground UX**: expose UI session details and rendering hints.
+14. **Full documentation cross-links**: consolidate tutorial and evaluation docs.
 
 ## Completion plan (phased)
 

@@ -1,0 +1,6 @@
+patient_id,address_text,synthetic_note
+PT-001,"50 Canal Road, Worksop, S80 2EH",Synthetic patient row anchored to a public address.
+PT-002,"Church Lane 1 The Close, Carlton in Lindrick, Worksop, S81 9EH",Synthetic patient row anchored to a public address.
+PT-003,"The Old Farm House, 1 Corner Farm Drive, Everton, DN10 5AN",Synthetic patient row anchored to a public address.
+PT-004,"Ragnall Stable, Main Street, Ragnall, NG22 0RU",Synthetic patient row anchored to a public address.
+PT-005,"81 Cobwell Road, Retford, DN22 7DD",Synthetic patient row anchored to a public address.

@@ -22,6 +22,8 @@
 - **Maps**: `os_maps.render` returns a static map proxy URL; `os_vector_tiles.descriptor`.
 - **Admin lookup**: cache-backed area geometry, containment, hierarchy.
 - **ONS**: dataset search, dimensions, codes, observations, filter output.
+- **Routing**: `os_route.descriptor` reports graph readiness and `os_route.get`
+  resolves stops, computes routes, and returns geometry/steps/warnings.
 - **MCP-Apps**: UI render tools that return a UI resource + structured payload.
 
 ## Boundary cache
@@ -29,6 +31,39 @@
 - PostGIS cache for admin boundaries; used by `admin_lookup.*` tools.
 - `BOUNDARY_CACHE_DSN` and related envs configure cache access.
 - Cache status tool: `admin_lookup.get_cache_status`.
+
+## Routing backend
+
+- `server/route_graph.py` encapsulates graph readiness checks, pgRouting execution,
+  and restriction warning assembly.
+- The intended network source is OS Multi-modal Routing Network data captured via the
+  OS Downloads API and loaded into a dedicated `routing` schema.
+- Graph metadata is versioned in-table and mirrored with raw download provenance in the
+  runtime directory so tool responses can report freshness.
+- Current route profiles are `drive`, `walk`, `cycle`, `emergency`, and `multimodal`.
+- Avoidance constraints support `avoidIds`, `avoidAreas`, and `softAvoid`.
+- Turn restrictions are surfaced as warnings today; hard turn-enforcement remains a
+  follow-up item.
+
+## Route stop resolution
+
+- `tools/os_route.py` resolves stops in this order:
+  1. Explicit coordinates.
+  2. UPRN via `os_places.by_uprn`.
+  3. Postcode-only input via `os_places.by_postcode`.
+  4. Address-like text via `os_places.search`.
+  5. Place-like fallback via `os_names.find`.
+- Ambiguous or unresolved stops return explicit route-specific errors such as
+  `AMBIGUOUS_STOP` and `STOP_NOT_FOUND`.
+
+## Route planner UI contract
+
+- `os_apps.render_route_planner` now mirrors the `os_route.get` contract:
+  `stops`, optional `via`, `profile`, `constraints`, and `delivery`.
+- The widget still accepts legacy coordinate-prefill fields and the benchmark runner's
+  `origin` / `destination` / `routeMode` payload for compatibility.
+- The browser widget normalizes MCP payloads from `structuredContent`, `result.data`,
+  and host notifications before calling `os_route.get`.
 
 ## Dataset caching (ONS codes)
 

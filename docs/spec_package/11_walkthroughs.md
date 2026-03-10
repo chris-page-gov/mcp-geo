@@ -37,7 +37,24 @@ Expected outcome:
 Expected outcome:
 - UI widget with properties and linked IDs.
 
-## 5) Boundary cache pipeline run
+## 5) Route planning workflow
+
+1. Call `os_mcp.route_query` with the user's natural-language request.
+2. Inspect `recommended_tool`; route requests should point to `os_route.get`.
+3. Optionally call `os_route.descriptor` to confirm graph readiness and supported
+   profiles before solving.
+4. Call `os_route.get` with canonical `stops`, optional `via`, `profile`, and
+   `constraints`.
+5. Optionally open `os_apps.render_route_planner` with the same routing payload
+   for an interactive review surface.
+
+Expected outcome:
+- Grounded route geometry, legs, steps, warnings, and graph provenance when the
+  graph is ready.
+- Explicit `ROUTE_GRAPH_NOT_READY`, `AMBIGUOUS_STOP`, or `NO_ROUTE` errors when
+  routing cannot complete.
+
+## 6) Boundary cache pipeline run
 
 1. Run `scripts/boundary_pipeline.py`.
 2. Use `scripts/boundary_status_ticker.py` during execution.
@@ -46,7 +63,7 @@ Expected outcome:
 Expected outcome:
 - Cache tables populated and validation OK.
 
-## 6) Optional sidecar profile smoke check
+## 7) Optional sidecar profile smoke check
 
 1. Start the sidecar compose profile:
    `docker compose -f scripts/sidecar/docker-compose.map-sidecar.yml up -d --wait`.
@@ -58,7 +75,7 @@ Expected outcome:
 - Martin and pg_tileserv endpoints respond.
 - MCP Geo map baseline remains available if sidecars are stopped.
 
-## 7) Offline pack + scenario-pack retrieval
+## 8) Offline pack + scenario-pack retrieval
 
 1. Call `os_offline.descriptor` to list offline packs.
 2. Call `os_offline.get` with `packId` to receive

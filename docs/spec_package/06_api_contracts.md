@@ -39,6 +39,96 @@ Response:
 { "isError": true, "code": "INVALID_INPUT", "message": "..." }
 ```
 
+Routing-specific errors extend the same envelope, notably:
+`ROUTE_GRAPH_NOT_READY`, `ROUTE_GRAPH_ERROR`, `NO_ROUTE`, `STOP_NOT_FOUND`,
+and `AMBIGUOUS_STOP`.
+
+## Route intent routing contract
+
+`os_mcp.route_query` should classify route-planning prompts before postcode or
+UPRN fast paths when the prompt includes route structure such as:
+
+- `from ... to ...`
+- labeled `origin:` / `destination:`
+- coordinates, UPRNs, or postcodes combined with route verbs or `route mode`
+
+For route questions, the canonical recommendation is:
+
+- `recommended_tool = "os_route.get"`
+- `workflow_steps = ["os_route.get", "os_apps.render_route_planner"]`
+
+The response may also include extracted `routeHints` for start, end, and via
+segments so hosts can prefill follow-on tool calls.
+
+## `os_route.descriptor`
+
+`os_route.descriptor` exposes the route solver contract without requiring the
+graph to be ready yet. Clients should use it to check:
+
+- supported profiles
+- constraint types
+- maximum stop count
+- graph readiness, version, build timestamp, and source provenance
+
+Representative fields:
+
+```json
+{
+  "status": "ready",
+  "supportedProfiles": ["drive", "walk", "cycle", "emergency", "multimodal"],
+  "constraintTypes": ["avoidAreas", "avoidIds", "softAvoid"],
+  "maxStops": 8,
+  "graph": {
+    "ready": true,
+    "graphVersion": "mrn-2026-03-01",
+    "sourceProduct": "OS MRN"
+  }
+}
+```
+
+## `os_route.get`
+
+`os_route.get` is the authoritative route solver. Inputs use a stop array where
+each stop is exactly one of:
+
+- `{ "query": "Retford Library, 17 Churchgate, Retford, DN22 6PE" }`
+- `{ "uprn": "100023336959" }`
+- `{ "coordinates": [-0.1278, 51.5074] }`
+
+Supported top-level fields:
+
+- `stops` (required, minimum 2)
+- `via` (optional list of stops)
+- `profile`
+- `constraints.avoidAreas`
+- `constraints.avoidIds`
+- `constraints.softAvoid`
+- `delivery`
+
+Representative success fields:
+
+```json
+{
+  "profile": "emergency",
+  "resolvedStops": [],
+  "distanceMeters": 2400.0,
+  "durationSeconds": 420.0,
+  "route": { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [] } },
+  "legs": [],
+  "steps": [],
+  "modeChanges": [],
+  "warnings": [],
+  "graph": { "ready": true, "graphVersion": "mrn-2026-03-01" }
+}
+```
+
+## Route planner UI launcher contract
+
+`os_apps.render_route_planner` now accepts the same canonical routing payload as
+`os_route.get` and remains backward-compatible with legacy launcher fields such
+as `startLat`, `startLng`, `endLat`, `endLng`, `origin`, `destination`, and
+`routeMode`.
+
 ## `os_features.query` reliability contract
 
 `os_features.query` now follows a bounded-response contract designed for

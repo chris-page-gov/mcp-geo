@@ -1,0 +1,64 @@
+{
+  "concise_answer": "Worksop and Retford are the highest-priority synthetic hotspots in the benchmark. Worksop is at least colocated with one resource anchor, but Retford and Tuxford still look coverage-sensitive when compared with the current resource pattern.",
+  "method_used": [
+    "Resolve the named hotspots and public police resource sites.",
+    "Use the supplied synthetic incident and vulnerability values to rank hotspots.",
+    "Describe coverage sensitivity without claiming a full patrol-optimisation result."
+  ],
+  "datasets_tools_used": [
+    "Synthetic policing hotspot benchmark file",
+    "Public police resource-site addresses",
+    "MCP-Geo tools: os_names.find, os_places.search, os_mcp.route_query"
+  ],
+  "confidence_caveats": [
+    "Place and resource resolution are grounded.",
+    "Patrol demand ranking is synthetic and MCP-Geo does not yet provide live patrol optimisation."
+  ],
+  "verification_steps": [
+    "Confirm the hotspot anchors and resource sites resolve to the intended Nottinghamshire context.",
+    "Use an operational policing platform for any real patrol-allocation decision."
+  ],
+  "structured_output": {
+    "priorityHotspots": [
+      "Worksop",
+      "Retford",
+      "Tuxford"
+    ],
+    "synthetic": true,
+    "suggestedExportFormat": "CSV hotspot priority table plus map-ready hotspot/resource overlay."
+  },
+  "concise_patrol_answer": "Worksop and Retford are the highest-priority synthetic patrol hotspots in the benchmark, with Tuxford next.",
+  "hotspot_priority_table": [
+    {
+      "place_name": "Worksop",
+      "synthetic_incidents": 52,
+      "synthetic_vulnerability_index": 73,
+      "priority": "high"
+    },
+    {
+      "place_name": "Retford",
+      "synthetic_incidents": 38,
+      "synthetic_vulnerability_index": 77,
+      "priority": "high"
+    },
+    {
+      "place_name": "Tuxford",
+      "synthetic_incidents": 17,
+      "synthetic_vulnerability_index": 64,
+      "priority": "medium"
+    }
+  ],
+  "resource_context_table": [
+    {
+      "resource_name": "Crown House",
+      "context": "Worksop-aligned public resource anchor"
+    },
+    {
+      "resource_name": "Newark Police Station",
+      "context": "Newark-aligned public resource anchor"
+    }
+  ],
+  "synthetic_data_note": "Synthetic scenario: hotspot demand and vulnerability values are benchmark-only values attached to real public places and resource sites.",
+  "capability_gap_note": "Blocked first-class workflow: MCP-Geo can ground places and resource sites, but it does not yet provide patrol optimisation, demand prediction, or live resource-allocation tooling.",
+  "map_recommended_description": "Map recommended: show hotspot places sized by synthetic demand and overlay the resolved police resource sites."
+}

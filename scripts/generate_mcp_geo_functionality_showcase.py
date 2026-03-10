@@ -491,6 +491,8 @@ def _write_report_markdown(
     stanley_highlights = "\n".join(f"- {point}" for point in stanley["highlights"])
     peninsula_highlights = "\n".join(f"- {point}" for point in peninsula["highlights"])
     wheelchair_highlights = "\n".join(f"- {point}" for point in wheelchair["highlights"])
+    wheelchair_summary_block = "\n".join(wheelchair_summary_lines)
+    town_map_block = "\n".join(town_map_lines)
 
     markdown = textwrap.dedent(
         f"""\
@@ -607,11 +609,11 @@ def _write_report_markdown(
         The comparative work is especially useful for evaluation because it does not stop at a single map.
         It applies one conservative route filter across three coastal towns and then makes the strengths and limits explicit.
 
-        {"\n".join(wheelchair_summary_lines)}
+        {wheelchair_summary_block}
 
         Interactive and static artefacts:
 
-        {"\n".join(town_map_lines)}
+        {town_map_block}
 
         Implementation note:
         the underlying map-production workflow is public in [scripts/generate_teignmouth_wheelchair_access_map.py]({source_urls['wheelchair_generator']}).

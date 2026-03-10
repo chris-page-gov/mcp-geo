@@ -1,0 +1,61 @@
+{
+  "concise_answer": "DN22 6PE resolves to a single authoritative premises record in the current OS Places result set: Nottinghamshire County Council, Retford Library, 17 Churchgate, Retford, DN22 6PE. MCP-Geo can return that live result, but the cache-freshness rule comes from GOV.UK's published service pattern rather than from MCP-Geo runtime telemetry.",
+  "method_used": [
+    "Call os_places.by_postcode for DN22 6PE to obtain the current authoritative result set.",
+    "Treat cache freshness as a separate service-operations concern and compare against GOV.UK's published locations-api rule set.",
+    "Do not claim MCP-Geo can inspect the downstream PostgreSQL cache unless such telemetry is explicitly exposed."
+  ],
+  "datasets_tools_used": [
+    "MCP-Geo tools: os_mcp.route_query, os_places.by_postcode",
+    "Published comparator: GOV.UK locations-api postcode cache and refresh documentation"
+  ],
+  "confidence_caveats": [
+    "High confidence on the live postcode result because it comes directly from OS Places.",
+    "Cache-freshness guidance is comparator-led: MCP-Geo does not expose live cache age, refresh-worker status, or cache hit ratios."
+  ],
+  "verification_steps": [
+    "Re-run os_places.by_postcode for DN22 6PE and confirm the premises count remains one.",
+    "If this pattern is implemented in a service, log cache age and last-refresh timestamps separately from the authoritative result payload.",
+    "Compare any local refresh schedule against GOV.UK's published 30-day refresh rule before treating it as aligned."
+  ],
+  "structured_output": {
+    "postcode": "DN22 6PE",
+    "resultCount": 1,
+    "addresses": [
+      {
+        "uprn": "100032031210",
+        "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, RETFORD LIBRARY, 17, CHURCHGATE, RETFORD, DN22 6PE",
+        "classification": "Library"
+      }
+    ],
+    "cachePolicyComparator": {
+      "publishedRule": "refresh cached postcode records after 30 days if not updated sooner",
+      "observedByMcpGeo": false
+    },
+    "suggestedExportFormat": "JSON response plus CSV postcode-address extract."
+  },
+  "concise_operational_answer": "DN22 6PE currently resolves to one authoritative record. A cache-backed service should keep the live result separate from the published 30-day refresh policy.",
+  "postcode_result_table": [
+    {
+      "postcode": "DN22 6PE",
+      "uprn": "100032031210",
+      "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, RETFORD LIBRARY, 17, CHURCHGATE, RETFORD, DN22 6PE",
+      "classification": "Library"
+    }
+  ],
+  "cache_freshness_plan": [
+    "Cache the postcode result after first lookup.",
+    "Record the cache timestamp separately from the authoritative OS payload.",
+    "Refresh cached postcode records when they have not been updated in the previous 30 days."
+  ],
+  "stale_risk_note": "MCP-Geo can show the current authoritative result, but it cannot prove whether a downstream service cache is stale unless explicit cache telemetry is added.",
+  "verification_note": "Confirm the postcode still resolves to one premises record and that any downstream cache refresh schedule matches the published GOV.UK rule.",
+  "structured_output_schema": [
+    "postcode",
+    "uprn",
+    "address",
+    "classification",
+    "cache_last_refreshed_at",
+    "cache_policy_reference"
+  ]
+}

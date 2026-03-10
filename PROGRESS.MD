@@ -3,7 +3,39 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-08
+Last updated: 2026-03-10
+
+## Host/devcontainer verification wrappers (2026-03-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| TOOLWRAP-1 Repo-local test/lint/type wrappers | done | none | Added `scripts/run-local-tool` plus `scripts/pytest-local`, `scripts/ruff-local`, and `scripts/mypy-local` so host-side Codex/CLI sessions automatically prefer the running repo devcontainer app container, then the repo `.venv`, then `uv run`. Updated `scripts/check_non_runtime_quality.sh` to use the wrappers and synced the main host-facing docs (`README.md`, `docs/getting_started.md`, `docs/troubleshooting.md`, `docs/Build.md`, `AGENTS.md`). |
+
+## OS MRN route planning and router repair (2026-03-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| ROUTE-GRAPH-1 pgRouting-backed routing surface | done | none | Added `tools/os_route.py`, `server/route_graph.py`, `server/route_planning.py`, and the MRN graph bootstrap assets `scripts/route_graph_schema.sql` + `scripts/route_graph_pipeline.py`. `os_route.descriptor` now reports graph readiness/provenance and `os_route.get` resolves stops, computes graph-backed routes, and returns explicit blockers such as `ROUTE_GRAPH_NOT_READY`. Follow-up local-env cleanup on 2026-03-10 switched devcontainer/host Docker defaults to the repo-built `.devcontainer/postgis.Dockerfile` image, named-volume storage, and idempotent boundary-cache + route-schema bootstrap; Claude Desktop now reuses the running repo devcontainer PostGIS container/network when present instead of spinning up a second database. Upstream `postgis/postgis:16-3.4` remains amd64-only, so Apple Silicon still runs that sidecar under emulation. |
+| ROUTE-UI-2 Route planner UI wiring | done | ROUTE-GRAPH-1 | Updated `tools/os_apps.py` and `ui/route_planner.html` so the route planner mirrors the canonical `os_route.get` contract, performs real MCP host/tool calls, renders returned geometry, and shows explicit graph/ambiguity errors instead of demo math. Follow-up PR-review fixes on 2026-03-10 widened avoid-id detection so plain IDs such as `1001` and `edge-1001` stay on the executable `avoidIds` path instead of being misclassified as geometry-only `avoidAreas`. |
+| ROUTE-ROUTER-3 SG03 intent repair and benchmark alignment | done | ROUTE-GRAPH-1 | Hardened `tools/os_mcp.py` and `server/route_planning.py` so SG03-style prompts route to `os_route.get` before postcode/UPRN fast paths fire. Rebuilt the stakeholder benchmark pack and reran the live report; SG03 now classifies correctly and the seeded benchmark graph returns a full route rather than the old UI-shell dispatch failure. Follow-up PR-review fixes on 2026-03-10 now preserve hard-avoid semantics whenever the prompt does not explicitly soften the request with language such as `if possible`, and route-query extraction now keeps unresolved free-text avoid phrases in `routeHints.unresolvedAvoidTexts` instead of emitting invalid `avoidAreas`. |
+| ROUTE-VAL-4 Regression and UI validation | done | ROUTE-UI-2, ROUTE-ROUTER-3 | Added route-tool/graph/parser coverage (`tests/test_os_route_tools.py`, `tests/test_route_graph.py`, `tests/test_route_graph_integration.py`, `tests/test_route_planning.py`) plus updated widget tests. Follow-up routing fix on 2026-03-10 escaped the JSON default in `server/route_graph.py` so `_run_leg()` no longer throws `IndexError`, and the authenticated stakeholder rerun now shows SG03 `full` with computed distance, duration, geometry, and steps on the seeded graph. A further 2026-03-10 review fix now rejects unparseable `avoidAreas` constraints instead of silently dropping them. |
+
+## Stakeholder evaluation benchmark pack (2026-03-09)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| SEB-SRC-1 Public examples and comparator capture | done | none | Converted the Phase 3 prompt bank into 10 concrete examples using public anchors from planning.data, HM Land Registry Price Paid, Rutland highways transparency, Bassetlaw assets, BDUK release guidance, and the North Yorkshire housing-fragmentation workflow; synthetic fixtures are used only where privacy or publication gaps block a real reusable input. |
+| SEB-HAR-2 Generator, fixtures, and scored reference outputs | done | SEB-SRC-1 | Added `scripts/stakeholder_benchmark_pack.py` to generate the machine-readable benchmark pack, local fixture files, 10 scenario reference outputs, a rendered benchmark report, and the scenario-1 workflow-validation note. |
+| SEB-VAL-3 Regression coverage and end-to-end validation | done | SEB-HAR-2 | Focused validation is green (`scripts/stakeholder_benchmark_pack.py build` / `validate` and `tests/test_stakeholder_benchmark_pack.py`), all 10 scenarios score `100/100`, and full repo regression passed on 2026-03-09 (`1029 passed`, `6 skipped`, coverage `90.63%`). |
+| SEB-GAP-4 Capability-gap analysis and score interpretation fix | done | SEB-VAL-3 | Added stakeholder gap analysis report `docs/reports/mcp_geo_stakeholder_gap_analysis_2026-03-09.md`, clarified in the generator/report that benchmark `Reference score` measures gold-answer completeness rather than current MCP-Geo feature completeness, rebuilt the benchmark pack, and re-ran full repo regression on 2026-03-09 (`1029 passed`, `6 skipped`, coverage `90.63%`). |
+| SEB-LIVE-5 Authenticated live rerun and second report | done | SEB-GAP-4 | Added `scripts/stakeholder_live_run.py` plus `tests/test_stakeholder_live_run.py` to rerun the 10 stakeholder scenarios against the live MCP-Geo surface with `OS_API_KEY_FILE` present, emitting machine-readable evidence `data/benchmarking/stakeholder_eval/live_run_2026-03-09.json` and the second report `docs/reports/mcp_geo_stakeholder_live_run_2026-03-09.md`. The refreshed live rerun still confirms `0` first-class-ready scenarios, `9 partial`, `1 blocked`, but SG03 is now blocked specifically by `ROUTE_GRAPH_NOT_READY` / `route_graph_disabled` after correct route classification and solver selection. |
+| SEB-EXT-6 Phase 1 extension, seeded route graph, and 20-scenario rerun | done | SEB-LIVE-5, ROUTE-GRAPH-1 | Added `scripts/stakeholder_phase1_extension.py` and `scripts/seed_benchmark_route_graph.py`, expanded the benchmark pack to 20 scenarios by adding the next 10 high-impact Phase 1 examples, regenerated the workflow note/report, and reran the full live pack on 2026-03-10. The latest live evidence artifacts are `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json` and `docs/reports/mcp_geo_stakeholder_live_run_2026-03-10.md`, with outcomes `1 full`, `17 partial`, `2 blocked`; SG03 now passes fully and SG12 is no longer blocked once the seeded route graph is available. |
 
 ## Minor release integration prep (2026-03-08)
 
@@ -25,7 +57,7 @@ Legend: pending, in_progress, done, blocked
 | HBM-TRACE-2 Host-aware trace metadata and reporting | done | HBM-OPS-1 | Extended `scripts/trace_session.py` to record `source`, `surface`, `hostProfile`, `clientVersion`, `model`, `scenarioPack`, and `scenarioId`. Extended `scripts/trace_report.py` to emit host-aware `summary.json` plus markdown report sections for discovery, tool search, resources, fallback, UI runtime, and latency. |
 | HBM-HARNESS-3 Scenario pack, scoring, and aggregation | done | HBM-TRACE-2 | Added prompt-first scenario pack `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` plus `scripts/host_benchmark.py` for scenario export, Codex CLI execution, per-session scoring (`benchmark-evidence.json`, `benchmark-score.json`), and side-by-side aggregate report generation under `docs/reports/`. |
 | HBM-SIM-4 Host simulation profiles and regression coverage | done | HBM-HARNESS-3 | Extended host-simulation fixtures with `codex_cli_stdio`, `codex_ide_ui`, and `claude_desktop_ui_partial`; updated map-delivery Playwright matrix to use Codex/Claude benchmark profiles; added pytest coverage for benchmark scoring, trace metadata, devcontainer registration, startup-scope probe, and host-profile fixtures. |
-| HBM-EVID-5 Captured benchmark evidence runs | in_progress | HBM-HARNESS-3, HBM-SIM-4 | Harness and runbooks are in place. Pending operator-run evidence capture for Codex IDE and Claude Desktop; Codex CLI scripted runs can now be executed via `scripts/host_benchmark.py run-codex-cli <scenario>`. |
+| HBM-EVID-5 Captured benchmark evidence runs | in_progress | HBM-HARNESS-3, HBM-SIM-4 | Harness and runbooks are in place. Pending operator-run evidence capture for Codex IDE and Claude Desktop; Codex CLI scripted runs can now be executed via `scripts/host_benchmark.py run-codex-cli <scenario>`. Follow-up startup hardening now defaults all Docker-backed clients to reuse the repo devcontainer PostGIS cache and adds `scripts/check_shared_benchmark_cache.sh` as the mandatory preflight before any cross-client comparison run. |
 
 ## Teignmouth wheelchair access map (2026-03-07)
 
@@ -571,7 +603,7 @@ Legend: Done, Partial, Not started
 | Stats routing diagnostics | Done | tools/os_mcp.py | Added stats routing explainer tool. |
 | Evaluation harness / coverage matrix | Done | tests/evaluation/*, docs/evaluation.md | Question suite + rubric + harness; live capture optional. |
 | Playground UI for developers | Partial | playground/, server/mcp/playground.py | New Svelte playground scaffold; still needs UI resource rendering + evaluation orchestration. |
-| MCP-Apps UI widgets | Partial | tools/os_apps.py, docs/mcp_apps_alignment.md | Geography selector, boundary explorer, and statistics dashboard are operational; `ui/feature_inspector.html` and `ui/route_planner.html` remain static mock UIs (layout + payload echo, no live map/data actions yet). |
+| MCP-Apps UI widgets | Partial | tools/os_apps.py, docs/mcp_apps_alignment.md | Geography selector, boundary explorer, statistics dashboard, and route planner are operational. `ui/route_planner.html` now delegates to `os_route.get`, renders geometry/state returned by the MCP surface, and exposes explicit graph blockers; `ui/feature_inspector.html` still needs deeper live drill-down work. |
 | Observability (logs/metrics) | Partial | server/main.py, server/logging.py | JSON log sink and upstream error logging added; metrics remain basic. |
 | Rate limiting + error model | Done | server/main.py, server/config.py | 429 handling + uniform error envelope. |
 | CI/CD pipeline | Not started | docs/build_initial_version.md | No GitHub Actions pipeline committed. |
@@ -723,16 +755,17 @@ Legend: pending, in_progress, done
 The Inspector covers tool discovery and execution, but it does not replace a
 purpose-built playground for UI widgets. The table below captures what is still
 missing if we want a dedicated playground experience.
-Current explicit status note (2026-02-21): `feature_inspector` and
-`route_planner` UI resources are present but remain presentation stubs (static
-mock shells) and are not yet wired for end-to-end interactive map workflows.
+Current explicit status note (2026-03-10): `route_planner` is now wired to the
+live routing surface and renders real route/graph-state responses; the
+remaining playground gap is dedicated embedding/orchestration rather than the
+widget contract itself. `feature_inspector` still remains a lighter-weight UI.
 
 | UI tool | What exists now | Playground gaps | Notes |
 | --- | --- | --- | --- |
 | os_apps.render_geography_selector | MCP-Apps widget resource and tool | Embed UI resource, capture selection context, and show how to pass selections into follow-on tool calls | Needs a state panel for selected areas. |
 | os_apps.render_statistics_dashboard | MCP-Apps widget resource and tool | Embed UI, allow user to wire dataset/filters, show resulting `ons_data.*` calls | Needs read/write sync between UI and tool calls. |
 | os_apps.render_feature_inspector | MCP-Apps widget resource and tool | Embed UI, show selected feature JSON and source tool calls | Current UI is a static mock shell; needs GeoJSON preview, live tool wiring, and result drill-down. |
-| os_apps.render_route_planner | MCP-Apps widget resource and tool | Embed UI, show chosen route geometry and parameters | Current UI is a static mock shell; needs map viewport, live routing/tool wiring, and geometry preview. |
+| os_apps.render_route_planner | MCP-Apps widget resource and tool | Embed UI, show chosen route geometry and parameters | Live MCP route wiring is now in place via `os_route.get`; remaining playground work is richer host-side state panels, audit correlation, and smoother scenario orchestration. |
 | os_apps.log_event | Logs UI events to file | Surface events in a live panel with correlation to tool calls | Would unify with evaluation audit logs. |
 
 Common playground capabilities still required:

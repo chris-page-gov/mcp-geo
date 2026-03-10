@@ -1,0 +1,84 @@
+{
+  "concise_answer": "The benchmark case list resolves cleanly enough to classify one prison, one care home, one residential dwelling, and one community facility. The safe workflow is identifier-first: resolve the UPRN, inspect the authoritative class, then translate only where the class is operationally clear.",
+  "method_used": [
+    "Resolve each address with os_places.search and capture the returned UPRN and classification description.",
+    "Translate 'HM Prison Service' to the prison setting and 'Care / Nursing Home' to the care-home setting.",
+    "Keep ambiguous civic or mixed-use records in explicit review or 'other setting' buckets instead of forcing them into UKHSA-style categories."
+  ],
+  "datasets_tools_used": [
+    "MCP-Geo tools: os_places.search, os_places.by_uprn",
+    "Published comparator: UKHSA AddressBase, UPRN, and BLPU settings workflow"
+  ],
+  "confidence_caveats": [
+    "High confidence for prison and care-home rows because their authoritative classes are explicit.",
+    "The benchmark setting labels are a controlled translation layer, not raw AddressBase outputs."
+  ],
+  "verification_steps": [
+    "Confirm each resolved UPRN before loading the row into a public-health settings pipeline.",
+    "Keep the raw classificationDescription alongside any operational setting label.",
+    "Route non-standard or mixed-use premises to manual review rather than auto-classifying them."
+  ],
+  "structured_output": {
+    "settingCounts": {
+      "prison": 1,
+      "care_home": 1,
+      "residential": 1,
+      "community_facility": 1
+    },
+    "suggestedExportFormat": "CSV case classification register with raw class and mapped setting columns."
+  },
+  "concise_classification_answer": "Resolve first, translate second: the benchmark sample contains one prison, one care home, one residential dwelling, and one community facility.",
+  "case_classification_table": [
+    {
+      "case_id": "CASE-001",
+      "uprn": "10013978351",
+      "authoritative_class": "HM Prison Service",
+      "setting_label": "prison"
+    },
+    {
+      "case_id": "CASE-002",
+      "uprn": "100031280110",
+      "authoritative_class": "Care / Nursing Home",
+      "setting_label": "care_home"
+    },
+    {
+      "case_id": "CASE-003",
+      "uprn": "100031272122",
+      "authoritative_class": "Terraced",
+      "setting_label": "residential"
+    },
+    {
+      "case_id": "CASE-004",
+      "uprn": "100032031210",
+      "authoritative_class": "Library",
+      "setting_label": "community_facility"
+    }
+  ],
+  "setting_summary_counts": [
+    {
+      "setting_label": "prison",
+      "cases": 1
+    },
+    {
+      "setting_label": "care_home",
+      "cases": 1
+    },
+    {
+      "setting_label": "residential",
+      "cases": 1
+    },
+    {
+      "setting_label": "community_facility",
+      "cases": 1
+    }
+  ],
+  "ambiguous_or_review_table": [],
+  "caveats": [
+    "The UKHSA-specific settings taxonomy is richer than the MCP-Geo tool output alone.",
+    "Keep raw premises classes and mapped settings side by side for auditability."
+  ],
+  "verification_steps_detail": [
+    "Re-check the UPRN and premises class for any record whose address resolves to multiple candidates.",
+    "Document the settings-translation rules used between raw classes and reporting categories."
+  ]
+}

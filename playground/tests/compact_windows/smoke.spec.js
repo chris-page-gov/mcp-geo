@@ -52,11 +52,28 @@ const PROXY_STYLE = {
 
 const MAPLIBRE_STUB = `
 (() => {
+  class FakeLngLatBounds {
+    constructor() {
+      this.points = [];
+    }
+
+    extend(point) {
+      this.points.push(point);
+      return this;
+    }
+
+    isEmpty() {
+      return this.points.length === 0;
+    }
+  }
+
   class FakeMap {
     constructor(options) {
       this.options = options;
       this.handlers = new Map();
       this.onceHandlers = new Map();
+      this.sources = new Map();
+      this.layers = new Map();
       this.center = { lng: options.center?.[0] ?? 0, lat: options.center?.[1] ?? 0 };
       this.zoom = options.zoom ?? 10;
       setTimeout(() => this.emit("load"), 0);
@@ -80,6 +97,29 @@ const MAPLIBRE_STUB = `
     }
 
     addControl() {}
+
+    addSource(id, spec) {
+      const source = {
+        ...spec,
+        data: spec.data,
+        setData(next) {
+          source.data = next;
+        },
+      };
+      this.sources.set(id, source);
+    }
+
+    getSource(id) {
+      return this.sources.get(id) || null;
+    }
+
+    addLayer(layer) {
+      this.layers.set(layer.id, layer);
+    }
+
+    getLayer(id) {
+      return this.layers.get(id) || null;
+    }
 
     setStyle(style) {
       this.style = style;
@@ -132,12 +172,17 @@ const MAPLIBRE_STUB = `
       return false;
     }
 
+    fitBounds() {}
+
+    resize() {}
+
     remove() {}
   }
 
   window.maplibregl = {
     workerUrl: "",
     addProtocol() {},
+    LngLatBounds: FakeLngLatBounds,
     NavigationControl: class {},
     Map: FakeMap,
   };
@@ -985,10 +1030,69 @@ test.describe("compact acceptance smoke (CW-7)", () => {
     const pageErrors = trackPageErrors(page);
     await page.setViewportSize({ width: 360, height: 500 });
 
+    await page.route("**/maplibre-gl@4.7.1/dist/maplibre-gl.css", async (route) => {
+      await route.fulfill({ status: 200, contentType: "text/css", body: "" });
+    });
+    await page.route("**/maplibre-gl@4.7.1/dist/maplibre-gl.js", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/javascript",
+        body: MAPLIBRE_STUB,
+      });
+    });
+
     await installMcpBridge(page, {
       hostContext: HOST_PROFILES.claude_inline_500,
-      toolRules: [],
-      strictToolMatching: false,
+      toolRules: [
+        {
+          name: "os_route.get",
+          aliases: ["os_route_get"],
+          result: {
+            profile: "emergency",
+            distanceMeters: 3200,
+            durationSeconds: 480,
+            resolvedStops: [
+              { label: "Retford Library", lat: 53.3221, lon: -0.9431 },
+              { label: "Goodwin Hall", lat: 53.3212, lon: -0.9394 },
+            ],
+            route: {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [-0.9431, 53.3221],
+                  [-0.9418, 53.3217],
+                  [-0.9394, 53.3212],
+                ],
+              },
+              properties: { profile: "emergency" },
+            },
+            legs: [{ distanceMeters: 3200, durationSeconds: 480, steps: [] }],
+            steps: [
+              {
+                instruction: "Follow Churchgate",
+                distanceMeters: 900,
+                durationSeconds: 120,
+                mode: "drive",
+              },
+              {
+                instruction: "Continue to Goodwin Hall",
+                distanceMeters: 2300,
+                durationSeconds: 360,
+                mode: "drive",
+              },
+            ],
+            modeChanges: [],
+            warnings: [{ message: "Flood-risk zone 167647/3 treated as soft avoid." }],
+            graph: {
+              ready: true,
+              graphVersion: "mrn-2026-03-01",
+              sourceReleaseDate: "2026-03-01",
+            },
+          },
+        },
+      ],
+      strictToolMatching: true,
     });
 
     await page.goto(uiFileUrl("route_planner.html"), { waitUntil: "domcontentloaded" });
@@ -1000,19 +1104,20 @@ test.describe("compact acceptance smoke (CW-7)", () => {
     });
     await assertKeyboardReachesTarget(page, "#calculateRoute");
 
-    await page.fill("#startInput", "invalid");
+    await page.fill("#startInput", "");
     await page.click("#calculateRoute");
-    await expect(page.locator("#flowStatus")).toContainText("lat,lon");
+    await expect(page.locator("#flowStatus")).toContainText("Enter valid start and end stops");
 
-    const modes = await getSelectOptionValues(page, "#routeMode");
-    for (const modeValue of modes) {
-      await page.fill("#startInput", "51.500,-0.120");
-      await page.fill("#endInput", "51.510,-0.100");
-      await page.selectOption("#routeMode", modeValue);
-      await page.click("#calculateRoute");
-      await expect(page.locator("#flowStatus")).toContainText("Route ready");
-      await expect(page.locator("#payload")).toContainText(`"mode": "${modeValue}"`);
-    }
+    await page.fill("#startInput", "Retford Library, 17 Churchgate, Retford, DN22 6PE");
+    await page.fill("#endInput", "Goodwin Hall, Chancery Lane, Retford, DN22 6DF");
+    await page.fill("#avoidInput", "167647/3");
+    await page.selectOption("#routeMode", "emergency");
+    await page.click("#calculateRoute");
+    await expect(page.locator("#flowStatus")).toContainText("Route ready");
+    await expect(page.locator("#payload")).toContainText('"graphVersion": "mrn-2026-03-01"');
+    await expect(page.locator("#routeSteps")).toContainText("Follow Churchgate");
+    await expect(page.locator("#warnings")).toContainText("167647/3");
+    await expect(page.locator("#map")).toHaveAttribute("data-route-rendered", "true");
 
     await expect(page.locator("#fullscreenToggle")).toHaveText("Maximise");
     await page.click("#fullscreenToggle");
@@ -1027,6 +1132,7 @@ test.describe("compact acceptance smoke (CW-7)", () => {
     await waitForCompactWidthAtMost(page, 320);
     await expect(page.locator("#fullscreenToggle")).toContainText("Try maximise");
 
+    await expectToolsCalled(page, ["os_route.get"]);
     await assertNoPageErrors(pageErrors, "route_planner");
   });
 });

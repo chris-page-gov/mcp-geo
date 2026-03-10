@@ -1,0 +1,66 @@
+{
+  "concise_answer": "Using the synthetic benchmark attributes, three street segments are bottlenecks: Digbeth High Street breaches the width threshold, Summer Lane breaches both thresholds, and Hockley Hill breaches the gradient threshold. The numbers are synthetic even though the streets are real.",
+  "method_used": [
+    "Resolve the named streets as real public streets in Birmingham.",
+    "Apply the width and gradient thresholds to the supplied synthetic segment attributes.",
+    "Rank segments breaching both thresholds ahead of single-threshold breaches."
+  ],
+  "datasets_tools_used": [
+    "Synthetic street segment benchmark file tied to real public streets",
+    "MCP-Geo tools: os_names.find, os_features.collections, os_features.query"
+  ],
+  "confidence_caveats": [
+    "Confidence is high for the thresholding inside the fixture.",
+    "There is no live MCP-Geo derivation of street width or gradient yet, so the output remains benchmark-only."
+  ],
+  "verification_steps": [
+    "Resolve every street name to the intended place context.",
+    "Replace the synthetic width and gradient fields with a live derivation source before operational use."
+  ],
+  "structured_output": {
+    "bottleneckCount": 3,
+    "synthetic": true,
+    "suggestedExportFormat": "CSV bottleneck ranking plus GeoJSON segment overlays when live geometry becomes available."
+  },
+  "concise_bottleneck_answer": "Three synthetic benchmark street segments are the main accessibility bottlenecks.",
+  "bottleneck_table": [
+    {
+      "segment_id": "SEG-003",
+      "street_name": "Summer Lane",
+      "width_m": 3.1,
+      "gradient_pct": 6.8,
+      "breach_type": "width_and_gradient"
+    },
+    {
+      "segment_id": "SEG-002",
+      "street_name": "Digbeth High Street",
+      "width_m": 2.9,
+      "gradient_pct": 3.4,
+      "breach_type": "width"
+    },
+    {
+      "segment_id": "SEG-005",
+      "street_name": "Hockley Hill",
+      "width_m": 3.8,
+      "gradient_pct": 7.4,
+      "breach_type": "gradient"
+    }
+  ],
+  "review_or_control_table": [
+    {
+      "segment_id": "SEG-001",
+      "street_name": "Corporation Street",
+      "status": "control"
+    },
+    {
+      "segment_id": "SEG-004",
+      "street_name": "Broad Street",
+      "status": "control"
+    }
+  ],
+  "synthetic_data_note": "Synthetic scenario: width and gradient values are benchmark-only derived attributes tied to real public streets.",
+  "caveats": [
+    "This is a blocked first-class workflow in MCP-Geo today because the derivation layer is not exposed."
+  ],
+  "map_recommended_description": "Map recommended: show Birmingham street segments coloured by width/gradient breach type."
+}

@@ -1,0 +1,4 @@
+source_ref,site_name,ward,polling_district,expected_units,geometry_type,status
+PERM-011,Abbey Quarter Phase 1,Selby West,SEL-A,40,point,permission
+PERM-012,Harbour Rise,Cayton,CAY-B,25,point,permission
+PERM-013,Ripon South Yard,Ripon South,RIP-C,25,point,permission

@@ -39,8 +39,13 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - Run tests:
 
   ```bash
-  pytest -q
+  ./scripts/pytest-local -q
   ```
+
+- For host-side Codex/CLI sessions, prefer `scripts/pytest-local`,
+  `scripts/ruff-local`, and `scripts/mypy-local`. They automatically prefer the
+  running repo devcontainer app container, then the repo `.venv`, then `uv run`
+  when the tool is not installed locally.
 
 ### Command timeout guidance for agents
 

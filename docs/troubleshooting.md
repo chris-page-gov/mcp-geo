@@ -373,6 +373,10 @@ Remediation:
   appropriate Python environment.
 - Local dev (macOS): ensure the repo venv exists and deps are installed (example: `python -m venv .venv && . .venv/bin/activate && pip install -e '.[dev]'`),
   then run `./scripts/os-mcp` from that activated venv.
+- For host-side verification commands, prefer `./scripts/pytest-local`,
+  `./scripts/ruff-local`, and `./scripts/mypy-local`; they automatically reuse
+  the running repo devcontainer when present and only fall back to host tools
+  when necessary.
 - Devcontainer: rebuild/reopen the devcontainer so `postCreateCommand` installs dependencies inside the container.
 
 ## Client context/window is exhausted after initialization

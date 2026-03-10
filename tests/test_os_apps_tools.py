@@ -99,6 +99,73 @@ def test_os_apps_render_boundary_explorer(monkeypatch):
     assert "result.data" in html
 
 
+def test_os_apps_render_route_planner_supports_benchmark_payload(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_apps.render_route_planner",
+            "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+            "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+            "routeMode": "EMERGENCY",
+            "constraints": {"avoidIds": ["167647/3"]},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["config"]["profile"] == "emergency"
+    assert body["config"]["stops"][0]["query"].startswith("Retford Library")
+    assert body["config"]["stops"][1]["query"].startswith("Goodwin Hall")
+    assert body["config"]["constraints"]["avoidIds"] == ["167647/3"]
+
+
+def test_os_apps_render_route_planner_supports_legacy_coordinate_payload(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_apps.render_route_planner",
+            "startLat": 52.4081,
+            "startLng": -1.5106,
+            "endLat": 51.5074,
+            "endLng": -0.1278,
+            "mode": "walk",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["config"]["profile"] == "walk"
+    assert body["config"]["stops"][0]["coordinates"] == [-1.5106, 52.4081]
+    assert body["config"]["stops"][1]["coordinates"] == [-0.1278, 51.5074]
+    resource_blocks = [
+        block
+        for block in body.get("content", [])
+        if isinstance(block, dict) and block.get("type") == "resource"
+    ]
+    assert resource_blocks
+    html = resource_blocks[0].get("resource", {}).get("text", "")
+    assert "extractToolPayload" in html
+    assert "os_route.get" in html
+    assert 'id="map"' in html
+
+
+def test_os_apps_render_route_planner_embedded_includes_plain_id_avoid_classification(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
+    resp = client.post("/tools/call", json={"tool": "os_apps.render_route_planner"})
+    assert resp.status_code == 200
+    body = resp.json()
+    resource_blocks = [
+        block
+        for block in body.get("content", [])
+        if isinstance(block, dict) and block.get("type") == "resource"
+    ]
+    assert resource_blocks
+    html = resource_blocks[0].get("resource", {}).get("text", "")
+    assert "function looksLikeAvoidId" in html
+    assert "const avoidIds = avoidItems.filter((value) => looksLikeAvoidId(value));" in html
+    assert "const avoidAreas = avoidItems.filter((value) => !looksLikeAvoidId(value));" in html
+
+
 def test_os_apps_render_ui_probe_embedded(monkeypatch):
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
     resp = client.post(

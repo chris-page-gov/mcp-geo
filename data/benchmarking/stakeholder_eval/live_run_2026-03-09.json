@@ -1,0 +1,2767 @@
+{
+  "generated": "2026-03-09",
+  "runtime": {
+    "osApiKeyPresent": true,
+    "osApiKeyFile": "/Users/crpage/.secrets/os_api_key",
+    "boundaryCacheEnabled": false
+  },
+  "overall": {
+    "scenarioCount": 10,
+    "firstClassProductReadyCount": 0,
+    "liveOutcomeCounts": {
+      "blocked": 1,
+      "partial": 9
+    },
+    "scenarioIdsWithLiveEvidence": [
+      "SG01",
+      "SG02",
+      "SG03",
+      "SG04",
+      "SG05",
+      "SG06",
+      "SG07",
+      "SG08",
+      "SG09",
+      "SG10"
+    ],
+    "liveToolNames": [
+      "admin_lookup.area_geometry",
+      "admin_lookup.containing_areas",
+      "admin_lookup.find_by_name",
+      "os_features.collections",
+      "os_features.query",
+      "os_places.by_uprn",
+      "os_places.search"
+    ]
+  },
+  "results": [
+    {
+      "scenarioId": "SG01",
+      "title": "Affected premises and vulnerable households in an incident area",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "Live OS Places resolved all 7 benchmark addresses, but only 2 records fall strictly inside the clipped benchmark polygon when the returned address points are used directly. That is materially lower than the benchmark reference answer, so the live rerun reinforces that MCP-Geo still lacks the native flood-geometry, building-footprint, and record-join workflow needed to treat the benchmark total as authoritative live truth.",
+      "evidence": {
+        "inputRecords": 7,
+        "resolvedRecords": 7,
+        "insidePolygonRecords": 2,
+        "insideUniquePremises": 2,
+        "duplicateInsideUprns": [],
+        "districtFromLiveLookup": "Bassetlaw",
+        "matchedRows": [
+          {
+            "recordId": "VH-001",
+            "uprn": "100031280113",
+            "matchType": "high_confidence",
+            "score": 1.0,
+            "insidePolygon": false
+          },
+          {
+            "recordId": "VH-002",
+            "uprn": "10023264877",
+            "matchType": "high_confidence",
+            "score": 1.0,
+            "insidePolygon": false
+          },
+          {
+            "recordId": "VH-003",
+            "uprn": "10023264877",
+            "matchType": "high_confidence",
+            "score": 1.0,
+            "insidePolygon": false
+          },
+          {
+            "recordId": "VH-004",
+            "uprn": "10023264881",
+            "matchType": "high_confidence",
+            "score": 1.0,
+            "insidePolygon": true
+          },
+          {
+            "recordId": "VH-005",
+            "uprn": "10023264984",
+            "matchType": "high_confidence",
+            "score": 1.0,
+            "insidePolygon": true
+          },
+          {
+            "recordId": "VH-006",
+            "uprn": "100031279587",
+            "matchType": "high_confidence",
+            "score": 1.0,
+            "insidePolygon": false
+          },
+          {
+            "recordId": "VH-007",
+            "uprn": "100031269830",
+            "matchType": "review",
+            "score": 0.65,
+            "insidePolygon": false
+          }
+        ]
+      },
+      "confirmedCapabilities": [
+        "Live OS Places address resolution works for the benchmark addresses.",
+        "Live containing-area lookup confirms the affected sample sits in Bassetlaw."
+      ],
+      "confirmedGaps": [
+        "The vulnerable-household data remains synthetic and external to MCP-Geo.",
+        "Point-in-polygon filtering and record dedupe still require external orchestration."
+      ],
+      "toolCallCount": 8,
+      "successfulToolCalls": 8,
+      "liveEvidenceCalls": 8,
+      "toolCalls": [
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Navigation Lodge, Wharf Road, Retford, DN22 6EN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 330.33,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031280113",
+                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "200002769091",
+                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10093191656",
+                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 910.6,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264877",
+                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264890",
+                "address": "61, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264891",
+                "address": "63, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6 Mill Bridge Cl, Retford DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 498.58,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264877",
+                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264890",
+                "address": "61, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264891",
+                "address": "63, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "18 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 824.72,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264881",
+                "address": "18, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10023264875",
+                "address": "1, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264878",
+                "address": "10, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "115 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 798.77,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264984",
+                "address": "115, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013972835",
+                "address": "11, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264910",
+                "address": "111, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "13 Welham Road, Retford, DN22 6TN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1535.02,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031279587",
+                "address": "13, WELHAM ROAD, RETFORD, DN22 6TN",
+                "classification": "Semi-Detached"
+              },
+              {
+                "uprn": "100031279577",
+                "address": "1, WELHAM ROAD, RETFORD, DN22 6TN",
+                "classification": "Semi-Detached"
+              },
+              {
+                "uprn": "100031279584",
+                "address": "10, WELHAM ROAD, RETFORD, DN22 6TN",
+                "classification": "Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "22A Chapelgate, Retford, DN22 6PJ"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 262.72,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031269830",
+                "address": "20, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "100032031406",
+                "address": "26, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100032031280",
+                "address": "12, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "admin_lookup.containing_areas",
+          "request": {
+            "lat": 53.3188671,
+            "lon": -0.9447751
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 4940.0,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 8,
+            "levels": [
+              "OA",
+              "LSOA",
+              "MSOA",
+              "WARD",
+              "DISTRICT",
+              "COUNTY",
+              "REGION",
+              "NATION"
+            ],
+            "district": "Bassetlaw",
+            "live": true
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "admin_lookup.containing_areas",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 0,
+          "sources": {
+            "Admin lookup live": 1
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "calls": 7,
+          "ok": 7,
+          "liveEvidenceCalls": 7,
+          "cached": 0,
+          "sources": {
+            "OS Places live": 7
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG02",
+      "title": "Batch match free-text addresses to UPRNs at scale",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "Live OS Places can now batch-resolve the benchmark address file record by record. The run produced candidate UPRNs for all 10 rows, but the conservative scorer only cleared 2 as high-confidence, pushed 6 into review, and left 2 unmatched. Native MCP-Geo support remains partial because the batch loop, confidence labelling, and review/export queue are still external orchestration.",
+      "evidence": {
+        "inputRecords": 10,
+        "highConfidenceMatches": 2,
+        "reviewMatches": 6,
+        "unmatched": 2,
+        "duplicateUprnInputs": [
+          "100031282954"
+        ],
+        "reviewQueue": [
+          {
+            "sourceId": "ADDR-003",
+            "uprn": "10023264877",
+            "reason": "manual_review"
+          },
+          {
+            "sourceId": "ADDR-004",
+            "uprn": "10093191764",
+            "reason": "manual_review"
+          },
+          {
+            "sourceId": "ADDR-005",
+            "uprn": "100032031280",
+            "reason": "low_similarity"
+          },
+          {
+            "sourceId": "ADDR-006",
+            "uprn": "100031284208",
+            "reason": "manual_review"
+          },
+          {
+            "sourceId": "ADDR-007",
+            "uprn": "100031282954",
+            "reason": "duplicate_input_same_uprn"
+          },
+          {
+            "sourceId": "ADDR-008",
+            "uprn": "100031282954",
+            "reason": "duplicate_input_same_uprn"
+          },
+          {
+            "sourceId": "ADDR-009",
+            "uprn": "10093190272",
+            "reason": "manual_review"
+          },
+          {
+            "sourceId": "ADDR-010",
+            "uprn": "10090590222",
+            "reason": "low_similarity"
+          }
+        ],
+        "matchedRows": [
+          {
+            "sourceId": "ADDR-001",
+            "uprn": "100031270361",
+            "matchType": "high_confidence",
+            "score": 1.0
+          },
+          {
+            "sourceId": "ADDR-002",
+            "uprn": "100031280113",
+            "matchType": "high_confidence",
+            "score": 1.0
+          },
+          {
+            "sourceId": "ADDR-003",
+            "uprn": "10023264877",
+            "matchType": "review",
+            "score": 0.65
+          },
+          {
+            "sourceId": "ADDR-004",
+            "uprn": "10093191764",
+            "matchType": "review",
+            "score": 0.75
+          },
+          {
+            "sourceId": "ADDR-005",
+            "uprn": "100032031280",
+            "matchType": "unmatched",
+            "score": 0.51
+          },
+          {
+            "sourceId": "ADDR-006",
+            "uprn": "100031284208",
+            "matchType": "review",
+            "score": 0.75
+          },
+          {
+            "sourceId": "ADDR-007",
+            "uprn": "100031282954",
+            "matchType": "review",
+            "score": 1.0
+          },
+          {
+            "sourceId": "ADDR-008",
+            "uprn": "100031282954",
+            "matchType": "review",
+            "score": 1.0
+          },
+          {
+            "sourceId": "ADDR-009",
+            "uprn": "10093190272",
+            "matchType": "review",
+            "score": 0.7083
+          },
+          {
+            "sourceId": "ADDR-010",
+            "uprn": "10090590222",
+            "matchType": "unmatched",
+            "score": 0.225
+          }
+        ]
+      },
+      "confirmedCapabilities": [
+        "Live OS Places matching works on the full 10-row benchmark input.",
+        "Duplicate input rows can be detected reliably once candidate UPRNs are resolved."
+      ],
+      "confirmedGaps": [
+        "MCP-Geo still lacks a first-class batch matcher with confidence buckets and review exports."
+      ],
+      "toolCallCount": 10,
+      "successfulToolCalls": 10,
+      "liveEvidenceCalls": 10,
+      "toolCalls": [
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "81 COBWELL RD, RETFORD DN22 7DD"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 256.18,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031270361",
+                "address": "81, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031270360",
+                "address": "80, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031270362",
+                "address": "82, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Navigation Lodge, Wharf Rd, Retford DN22 6EN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 305.23,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031280113",
+                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "200002769091",
+                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10093191656",
+                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6 Millbridge Close, Retford DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 810.01,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264877",
+                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013978163",
+                "address": "6, WILLOWBRIDGE CLOSE, RETFORD, DN22 6PG",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031274433",
+                "address": "6, MILLFIELD CLOSE, RETFORD, DN22 7TW",
+                "classification": "Semi-Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1755.29,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10093191764",
+                "address": "6 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10093191760",
+                "address": "1 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10093191501",
+                "address": "2 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "22A Chapel Gate, Retford, DN22 6PJ"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 296.51,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100032031280",
+                "address": "12, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Shop / Showroom"
+              },
+              {
+                "uprn": "100032275148",
+                "address": "4, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Property Shell"
+              },
+              {
+                "uprn": "100031269827",
+                "address": "8, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1299.35,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031284208",
+                "address": "1 THE CLOSE, CHURCH LANE, CARLTON-IN-LINDRICK, WORKSOP, S81 9EH",
+                "classification": "Semi-Detached"
+              },
+              {
+                "uprn": "100031284209",
+                "address": "2 THE CLOSE, CHURCH LANE, CARLTON-IN-LINDRICK, WORKSOP, S81 9EH",
+                "classification": "Semi-Detached"
+              },
+              {
+                "uprn": "10090590354",
+                "address": "CHURCH VIEW, CHURCH LANE, CARLTON-IN-LINDRICK, WORKSOP, S81 9EH",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "50 Canal Rd, Worksop S80 2EH"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 357.86,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031282954",
+                "address": "50, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282955",
+                "address": "52, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282956",
+                "address": "54, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "50 Canal Road, Worksop, S80 2EH"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1687.19,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031282954",
+                "address": "50, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282955",
+                "address": "52, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282956",
+                "address": "54, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 227.23,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10008521054",
+                "address": "THE OLD FARM HOUSE, KEDDINGTON CORNER, LOUTH, LN11 7DX",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10093190272",
+                "address": "1, CORNER FARM DRIVE, EVERTON, DONCASTER, DN10 5AN",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031263877",
+                "address": "THE OLD SCHOOL HOUSE, MILL LANE, EVERTON, DONCASTER, DN10 5DG",
+                "classification": "Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Ragnall Stable, Main Street, Ragnall NG22 ORU"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 821.05,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023271791",
+                "address": "RAGNALL STABLES, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10090590222",
+                "address": "RAGNALL HALL, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10013978958",
+                "address": "RAGNALL HOUSE, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
+                "classification": "Detached"
+              }
+            ]
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "os_places.search",
+          "calls": 10,
+          "ok": 10,
+          "liveEvidenceCalls": 10,
+          "cached": 0,
+          "sources": {
+            "OS Places live": 10
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG03",
+      "title": "Shortest route between two premises using authoritative road network constraints",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "blocked",
+      "firstClassProductReady": false,
+      "summary": "The live rerun confirms that MCP-Geo now has the right routing product shape for SG03, but this environment still lacks an active MRN graph, so the scenario remains blocked at graph readiness rather than prompt classification or missing tool surface.",
+      "evidence": {
+        "originUprn": "100032031210",
+        "destinationUprn": "100032031287",
+        "routeQueryIntent": "route_planning",
+        "routeQueryRecommendedTool": "os_route.get",
+        "routeQueryWorkflowSteps": [
+          "os_route.get",
+          "os_apps.render_route_planner"
+        ],
+        "graphReady": false,
+        "graphReason": "route_graph_disabled",
+        "graphVersion": null,
+        "graphSourceProduct": null,
+        "routeStatusCode": 503,
+        "routeCode": "ROUTE_GRAPH_NOT_READY",
+        "routeProfile": null,
+        "routeDistanceMeters": null,
+        "routeDurationSeconds": null,
+        "routeWarningsCount": 0,
+        "routePlannerResource": "ui://mcp-geo/route-planner",
+        "interactiveCompanionTool": "os_apps.render_route_planner",
+        "distanceReturned": false,
+        "turnByTurnReturned": false
+      },
+      "confirmedCapabilities": [
+        "Both benchmark premises can be resolved to authoritative locations.",
+        "The router now classifies the prompt as `route_planning` and recommends `os_route.get`.",
+        "The route planner remains available as an interactive companion."
+      ],
+      "confirmedGaps": [
+        "No active MRN route graph is ready in this environment.",
+        "Restriction-aware routing cannot execute until the graph build is provisioned and enabled."
+      ],
+      "toolCallCount": 6,
+      "successfulToolCalls": 5,
+      "liveEvidenceCalls": 2,
+      "toolCalls": [
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Retford Library, 17 Churchgate, Retford, DN22 6PE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 347.29,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031270169",
+                "address": "RETFORD MEMORIALS, 6, CHURCHGATE, RETFORD, DN22 6PQ",
+                "classification": "Shop / Showroom"
+              },
+              {
+                "uprn": "100032031400",
+                "address": "RETFORD ARTS HUB, 11, CHURCHGATE, RETFORD, DN22 6PA",
+                "classification": "Shop / Showroom"
+              },
+              {
+                "uprn": "100032031210",
+                "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, RETFORD LIBRARY, 17, CHURCHGATE, RETFORD, DN22 6PE",
+                "classification": "Library"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 752.52,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100032031287",
+                "address": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
+                "classification": "Public / Village Hall / Other Community Facility"
+              },
+              {
+                "uprn": "10023266359",
+                "address": "SHOPMOBILITY, CHANCERY LANE, RETFORD, DN22 6DF",
+                "classification": "Community Service Centre / Office"
+              },
+              {
+                "uprn": "100031269814",
+                "address": "35A, CHANCERY LANE, RETFORD, DN22 6EU",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_mcp.route_query",
+          "request": {
+            "query": "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE to Goodwin Hall, Chancery Lane, Retford, DN22 6DF avoiding flood restrictions if possible?"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 6.84,
+          "cached": false,
+          "source": "Router",
+          "liveEvidence": false,
+          "responseSummary": {
+            "intent": "route_planning",
+            "recommendedTool": "os_route.get",
+            "workflowSteps": [
+              "os_route.get",
+              "os_apps.render_route_planner"
+            ]
+          }
+        },
+        {
+          "tool": "os_route.descriptor",
+          "request": {},
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1.93,
+          "cached": false,
+          "source": "Routing engine",
+          "liveEvidence": false,
+          "responseSummary": {
+            "status": "not_ready",
+            "graphReady": false,
+            "graphReason": "route_graph_disabled",
+            "graphVersion": null
+          }
+        },
+        {
+          "tool": "os_route.get",
+          "request": {
+            "stops": [
+              {
+                "uprn": "100032031210"
+              },
+              {
+                "uprn": "100032031287"
+              }
+            ],
+            "profile": "emergency",
+            "constraints": {
+              "avoidAreas": [
+                "flood"
+              ],
+              "avoidIds": [],
+              "softAvoid": true
+            }
+          },
+          "statusCode": 503,
+          "ok": false,
+          "durationMs": 313.95,
+          "cached": false,
+          "source": "error",
+          "liveEvidence": false,
+          "responseSummary": {
+            "code": "ROUTE_GRAPH_NOT_READY",
+            "message": "Route graph is not ready."
+          }
+        },
+        {
+          "tool": "os_apps.render_route_planner",
+          "request": {
+            "stops": [
+              {
+                "uprn": "100032031210"
+              },
+              {
+                "uprn": "100032031287"
+              }
+            ],
+            "profile": "emergency",
+            "constraints": {
+              "avoidAreas": [
+                "flood"
+              ],
+              "avoidIds": [],
+              "softAvoid": true
+            }
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1.25,
+          "cached": false,
+          "source": "UI shell",
+          "liveEvidence": false,
+          "responseSummary": {
+            "resourceUri": "ui://mcp-geo/route-planner",
+            "status": "ready"
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "os_apps.render_route_planner",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 0,
+          "cached": 0,
+          "sources": {
+            "UI shell": 1
+          }
+        },
+        {
+          "tool": "os_mcp.route_query",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 0,
+          "cached": 0,
+          "sources": {
+            "Router": 1
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "calls": 2,
+          "ok": 2,
+          "liveEvidenceCalls": 2,
+          "cached": 0,
+          "sources": {
+            "OS Places live": 2
+          }
+        },
+        {
+          "tool": "os_route.descriptor",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 0,
+          "cached": 0,
+          "sources": {
+            "Routing engine": 1
+          }
+        },
+        {
+          "tool": "os_route.get",
+          "calls": 1,
+          "ok": 0,
+          "liveEvidenceCalls": 0,
+          "cached": 0,
+          "sources": {
+            "error": 1
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG04",
+      "title": "Maintainable road segments and total length by class",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The live rerun confirms that Rutland can be resolved to a live boundary and that live NGD road-link segments can be fetched. The scenario is still only partial because the current thin feature surface does not expose a ready-made maintainability/class aggregation workflow or statutory-quality totals by class.",
+      "evidence": {
+        "districtId": "E06000017",
+        "bbox": [
+          -0.8268286652905535,
+          52.52152179827406,
+          -0.4263419092637883,
+          52.76208348039028
+        ],
+        "roadLinkCollectionPresent": false,
+        "sampleSegmentCount": 5,
+        "samplePropertyKeys": [
+          "alternatename1_language",
+          "alternatename1_text",
+          "alternatename2_language",
+          "alternatename2_text",
+          "capturespecification",
+          "changetype",
+          "cyclefacility",
+          "cyclefacility_wholelink"
+        ],
+        "maintainabilityFieldObserved": false
+      },
+      "confirmedCapabilities": [
+        "Live Rutland boundary lookup works end to end.",
+        "Live NGD road-link collections and sample segments are available with the OS key."
+      ],
+      "confirmedGaps": [
+        "Maintainability and statutory reporting aggregation are not surfaced as a first-class MCP-Geo workflow.",
+        "Class-length totals still need external aggregation and quality review against published comparator numbers."
+      ],
+      "toolCallCount": 4,
+      "successfulToolCalls": 4,
+      "liveEvidenceCalls": 4,
+      "toolCalls": [
+        {
+          "tool": "admin_lookup.find_by_name",
+          "request": {
+            "text": "Rutland"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 5209.68,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 16,
+            "sample": [
+              {
+                "id": "E06000017",
+                "level": "DISTRICT",
+                "name": "Rutland"
+              },
+              {
+                "id": "E02002863",
+                "level": "MSOA",
+                "name": "Rutland 001"
+              },
+              {
+                "id": "E02002864",
+                "level": "MSOA",
+                "name": "Rutland 002"
+              },
+              {
+                "id": "E02002865",
+                "level": "MSOA",
+                "name": "Rutland 003"
+              },
+              {
+                "id": "E02002866",
+                "level": "MSOA",
+                "name": "Rutland 004"
+              }
+            ],
+            "live": true
+          }
+        },
+        {
+          "tool": "admin_lookup.area_geometry",
+          "request": {
+            "id": "E06000017"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 2068.79,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "id": "E06000017",
+            "bbox": [
+              -0.8268286652905535,
+              52.52152179827406,
+              -0.4263419092637883,
+              52.76208348039028
+            ],
+            "live": true
+          }
+        },
+        {
+          "tool": "os_features.collections",
+          "request": {},
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 402.5,
+          "cached": false,
+          "source": "OS NGD live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 91,
+            "hasRoadLink": false
+          }
+        },
+        {
+          "tool": "os_features.query",
+          "request": {
+            "collection": "trn-ntwk-roadlink",
+            "bbox": [
+              -0.8268286652905535,
+              52.52152179827406,
+              -0.4263419092637883,
+              52.76208348039028
+            ],
+            "limit": 5
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 18414.11,
+          "cached": false,
+          "source": "OS NGD live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "collection": "trn-ntwk-roadlink",
+            "count": 5,
+            "live": true,
+            "samplePropertyKeys": [
+              "alternatename1_language",
+              "alternatename1_text",
+              "alternatename2_language",
+              "alternatename2_text",
+              "capturespecification",
+              "changetype",
+              "cyclefacility",
+              "cyclefacility_wholelink"
+            ]
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "admin_lookup.area_geometry",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 0,
+          "sources": {
+            "Admin lookup live": 1
+          }
+        },
+        {
+          "tool": "admin_lookup.find_by_name",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 0,
+          "sources": {
+            "Admin lookup live": 1
+          }
+        },
+        {
+          "tool": "os_features.collections",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 0,
+          "sources": {
+            "OS NGD live": 1
+          }
+        },
+        {
+          "tool": "os_features.query",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 0,
+          "sources": {
+            "OS NGD live": 1
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG05",
+      "title": "Planning site constraints and evidence summary",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The site itself can be resolved live and placed in its containing administrative areas, but the constraint answer remains partial because MCP-Geo still does not expose planning.data or local-plan policy layers as first-class spatial evidence sources.",
+      "evidence": {
+        "siteUprn": "100032031287",
+        "district": "Bassetlaw",
+        "planningKeywordCollections": [],
+        "planningKeywordCollectionCount": 0
+      },
+      "confirmedCapabilities": [
+        "Live site resolution works for the benchmark planning site.",
+        "Administrative context can be recovered live from coordinates."
+      ],
+      "confirmedGaps": [
+        "Planning-constraint and local-plan policy layers are still missing from the MCP-Geo tool surface.",
+        "Any intersection evidence beyond OS base layers still has to be sourced externally."
+      ],
+      "toolCallCount": 3,
+      "successfulToolCalls": 3,
+      "liveEvidenceCalls": 3,
+      "toolCalls": [
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 752.52,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100032031287",
+                "address": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
+                "classification": "Public / Village Hall / Other Community Facility"
+              },
+              {
+                "uprn": "10023266359",
+                "address": "SHOPMOBILITY, CHANCERY LANE, RETFORD, DN22 6DF",
+                "classification": "Community Service Centre / Office"
+              },
+              {
+                "uprn": "100031269814",
+                "address": "35A, CHANCERY LANE, RETFORD, DN22 6EU",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "admin_lookup.containing_areas",
+          "request": {
+            "lat": 53.3219807,
+            "lon": -0.9451639
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 3943.5,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 8,
+            "levels": [
+              "OA",
+              "LSOA",
+              "MSOA",
+              "WARD",
+              "DISTRICT",
+              "COUNTY",
+              "REGION",
+              "NATION"
+            ],
+            "district": "Bassetlaw",
+            "live": true
+          }
+        },
+        {
+          "tool": "os_features.collections",
+          "request": {},
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 402.5,
+          "cached": true,
+          "source": "OS NGD live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 91,
+            "hasRoadLink": false
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "admin_lookup.containing_areas",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 0,
+          "sources": {
+            "Admin lookup live": 1
+          }
+        },
+        {
+          "tool": "os_features.collections",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 1,
+          "sources": {
+            "OS NGD live": 1
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 1,
+          "sources": {
+            "OS Places live": 1
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG06",
+      "title": "Council asset register linked to UPRNs and overlaid with flood risk",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The asset sample can now be checked live against authoritative OS premises identifiers, which is a real improvement over the keyless run. In this session 4 of 7 asset UPRNs resolved cleanly and 3 returned null results, so the scenario remains partial even before the missing flood-risk overlay is considered.",
+      "evidence": {
+        "assetRows": 7,
+        "resolvedUprns": 4,
+        "unresolvedUprns": [
+          "10023266361",
+          "10023269092",
+          "10023270715"
+        ],
+        "resolvedRows": [
+          {
+            "uprn": "100032031194",
+            "site": "Land",
+            "resolved": true,
+            "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, CHANCERY LANE, RETFORD, DN22 6DG",
+            "classification": "Local Government Service"
+          },
+          {
+            "uprn": "100032031210",
+            "site": "Library",
+            "resolved": true,
+            "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, RETFORD LIBRARY, 17, CHURCHGATE, RETFORD, DN22 6PE",
+            "classification": "Library"
+          },
+          {
+            "uprn": "100032031287",
+            "site": "Community Centre",
+            "resolved": true,
+            "address": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
+            "classification": "Public / Village Hall / Other Community Facility"
+          },
+          {
+            "uprn": "10023266359",
+            "site": "Shop",
+            "resolved": true,
+            "address": "SHOPMOBILITY, CHANCERY LANE, RETFORD, DN22 6DF",
+            "classification": "Community Service Centre / Office"
+          },
+          {
+            "uprn": "10023266361",
+            "site": "Car Park",
+            "resolved": false,
+            "address": null,
+            "classification": null
+          },
+          {
+            "uprn": "10023269092",
+            "site": "Car Park",
+            "resolved": false,
+            "address": null,
+            "classification": null
+          },
+          {
+            "uprn": "10023270715",
+            "site": "Pavillion",
+            "resolved": false,
+            "address": null,
+            "classification": null
+          }
+        ],
+        "floodOverlayNativeAvailable": false
+      },
+      "confirmedCapabilities": [
+        "Live UPRN verification works across the supplied asset sample."
+      ],
+      "confirmedGaps": [
+        "Flood-risk geometry is not yet available as a first-class MCP-Geo layer.",
+        "Matched/unmatched asset exports still require external orchestration."
+      ],
+      "toolCallCount": 7,
+      "successfulToolCalls": 7,
+      "liveEvidenceCalls": 7,
+      "toolCalls": [
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "100032031194"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 229.16,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": "100032031194",
+            "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, CHANCERY LANE, RETFORD, DN22 6DG",
+            "classification": "Local Government Service"
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "100032031210"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 176.93,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": "100032031210",
+            "address": "NOTTINGHAMSHIRE COUNTY COUNCIL, RETFORD LIBRARY, 17, CHURCHGATE, RETFORD, DN22 6PE",
+            "classification": "Library"
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "100032031287"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 233.28,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": "100032031287",
+            "address": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
+            "classification": "Public / Village Hall / Other Community Facility"
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "10023266359"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 167.53,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": "10023266359",
+            "address": "SHOPMOBILITY, CHANCERY LANE, RETFORD, DN22 6DF",
+            "classification": "Community Service Centre / Office"
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "10023266361"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 229.16,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": null,
+            "address": null,
+            "classification": null
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "10023269092"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 148.18,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": null,
+            "address": null,
+            "classification": null
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "10023270715"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 149.39,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": null,
+            "address": null,
+            "classification": null
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "os_places.by_uprn",
+          "calls": 7,
+          "ok": 7,
+          "liveEvidenceCalls": 7,
+          "cached": 0,
+          "sources": {
+            "OS Places live": 7
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG07",
+      "title": "Flood appraisal: count properties at risk and generate a verification plan",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The live rerun can now resolve the supplied property sample to authoritative premises and derive a provisional at-risk count against the benchmark\u2019s clipped flood polygon. It remains partial because the full flood layer, building-footprint overlay, and verification workflow are still not exposed as native live tools.",
+      "evidence": {
+        "propertyRows": 7,
+        "resolvedRows": 7,
+        "insideBenchmarkPolygon": 3,
+        "classificationSummary": {
+          "Self Contained Flat (Includes Maisonette / Apartment)": 2,
+          "Terraced": 1
+        },
+        "verificationPriorityRows": [
+          {
+            "propertyId": "PROP-001",
+            "uprn": "100031280113",
+            "classification": "Detached",
+            "priority": "outside_clipped_polygon"
+          },
+          {
+            "propertyId": "PROP-002",
+            "uprn": "10023264877",
+            "classification": "Self Contained Flat (Includes Maisonette / Apartment)",
+            "priority": "outside_clipped_polygon"
+          },
+          {
+            "propertyId": "PROP-003",
+            "uprn": "10023264881",
+            "classification": "Terraced",
+            "priority": "field_check_required"
+          },
+          {
+            "propertyId": "PROP-004",
+            "uprn": "10023264984",
+            "classification": "Self Contained Flat (Includes Maisonette / Apartment)",
+            "priority": "field_check_required"
+          },
+          {
+            "propertyId": "PROP-005",
+            "uprn": "10023264955",
+            "classification": "Self Contained Flat (Includes Maisonette / Apartment)",
+            "priority": "field_check_required"
+          },
+          {
+            "propertyId": "PROP-006",
+            "uprn": "100031279587",
+            "classification": "Semi-Detached",
+            "priority": "outside_clipped_polygon"
+          },
+          {
+            "propertyId": "PROP-007",
+            "uprn": "100031269830",
+            "classification": "Detached",
+            "priority": "outside_clipped_polygon"
+          }
+        ]
+      },
+      "confirmedCapabilities": [
+        "Live premises resolution works across the supplied property sample.",
+        "A provisional at-risk subset can be derived when an exercise polygon is supplied."
+      ],
+      "confirmedGaps": [
+        "The authoritative flood geometry is still external to MCP-Geo.",
+        "Verification prioritisation remains an external workflow rather than a native tool output."
+      ],
+      "toolCallCount": 7,
+      "successfulToolCalls": 7,
+      "liveEvidenceCalls": 7,
+      "toolCalls": [
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Navigation Lodge, Wharf Road, Retford, DN22 6EN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 330.33,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031280113",
+                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "200002769091",
+                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10093191656",
+                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 910.6,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264877",
+                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264890",
+                "address": "61, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264891",
+                "address": "63, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "18 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 824.72,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264881",
+                "address": "18, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10023264875",
+                "address": "1, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264878",
+                "address": "10, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "115 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 798.77,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264984",
+                "address": "115, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013972835",
+                "address": "11, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264910",
+                "address": "111, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "119 Mill Bridge Close, Retford, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 749.23,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264955",
+                "address": "119, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013972835",
+                "address": "11, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264910",
+                "address": "111, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "13 Welham Road, Retford, DN22 6TN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1535.02,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031279587",
+                "address": "13, WELHAM ROAD, RETFORD, DN22 6TN",
+                "classification": "Semi-Detached"
+              },
+              {
+                "uprn": "100031279577",
+                "address": "1, WELHAM ROAD, RETFORD, DN22 6TN",
+                "classification": "Semi-Detached"
+              },
+              {
+                "uprn": "100031279584",
+                "address": "10, WELHAM ROAD, RETFORD, DN22 6TN",
+                "classification": "Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "22A Chapelgate, Retford, DN22 6PJ"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 262.72,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031269830",
+                "address": "20, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "100032031406",
+                "address": "26, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100032031280",
+                "address": "12, CHAPELGATE, RETFORD, DN22 6PJ",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "os_places.search",
+          "calls": 7,
+          "ok": 7,
+          "liveEvidenceCalls": 7,
+          "cached": 6,
+          "sources": {
+            "OS Places live": 7
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG08",
+      "title": "Normalise fragmented housing development sources and summarise by polling district or ward",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The fragmented benchmark sources can be normalised and their ward labels can be checked live against the administrative lookup surface, but the scenario stays partial because the planning inputs are synthetic and MCP-Geo still lacks authoritative planning-register geometry connectors.",
+      "evidence": {
+        "inputRows": 9,
+        "uniqueWards": 4,
+        "wardResolutionResults": [
+          {
+            "ward": "Cayton",
+            "resultCount": 1
+          },
+          {
+            "ward": "Ripon South",
+            "resultCount": 0
+          },
+          {
+            "ward": "Scarborough North",
+            "resultCount": 0
+          },
+          {
+            "ward": "Selby West",
+            "resultCount": 1
+          }
+        ],
+        "duplicateCandidateGroups": {
+          "ABBEY QUARTER": [
+            "ALLOC-001",
+            "PERM-011",
+            "PROM-101"
+          ],
+          "CAYTON EAST": [
+            "ALLOC-002",
+            "PROM-103"
+          ],
+          "RIPON SOUTH YARD": [
+            "ALLOC-003",
+            "PERM-013"
+          ]
+        }
+      },
+      "confirmedCapabilities": [
+        "Ward-name lookups can be checked against the live admin-lookup surface.",
+        "Duplicate candidate development records can be surfaced through external reconciliation logic."
+      ],
+      "confirmedGaps": [
+        "The former-district planning sources remain synthetic benchmark fixtures.",
+        "No first-class planning-register geometry tool exists for direct assignment to polling districts or wards."
+      ],
+      "toolCallCount": 4,
+      "successfulToolCalls": 4,
+      "liveEvidenceCalls": 4,
+      "toolCalls": [
+        {
+          "tool": "admin_lookup.find_by_name",
+          "request": {
+            "text": "Cayton"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 3779.01,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 1,
+            "sample": [
+              {
+                "id": "E05012374",
+                "level": "WARD",
+                "name": "Cayton"
+              }
+            ],
+            "live": true
+          }
+        },
+        {
+          "tool": "admin_lookup.find_by_name",
+          "request": {
+            "text": "Ripon South"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 5750.86,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 0,
+            "sample": [],
+            "live": true
+          }
+        },
+        {
+          "tool": "admin_lookup.find_by_name",
+          "request": {
+            "text": "Scarborough North"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 515.0,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 0,
+            "sample": [],
+            "live": true
+          }
+        },
+        {
+          "tool": "admin_lookup.find_by_name",
+          "request": {
+            "text": "Selby West"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 4634.76,
+          "cached": false,
+          "source": "Admin lookup live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 1,
+            "sample": [
+              {
+                "id": "E05010057",
+                "level": "WARD",
+                "name": "Selby West"
+              }
+            ],
+            "live": true
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "admin_lookup.find_by_name",
+          "calls": 4,
+          "ok": 4,
+          "liveEvidenceCalls": 4,
+          "cached": 0,
+          "sources": {
+            "Admin lookup live": 4
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG09",
+      "title": "BDUK-style premises status lookup with explanation of missing/new-build/epoch issues",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The live rerun does not resolve the requested UPRN through OS Places, and the benchmark BDUK subset also does not contain that exact UPRN. That is useful live evidence for the scenario\u2019s missing/unclear branch rather than a crash condition. Exact and best-fit ONS geography lookups for the same UPRN are both `NOT_FOUND`, which strengthens the case for an evidence-ranked explanation instead of guesswork.",
+      "evidence": {
+        "requestedUprn": "10023266361",
+        "fixtureRecordPresent": false,
+        "fixtureStatus": null,
+        "samePostcodeFixtureUprns": [
+          "10023266359"
+        ],
+        "osPlacesResolved": false,
+        "onsGeoExactStatusCode": 404,
+        "onsGeoExactSummary": {
+          "code": "NOT_FOUND",
+          "message": "No geography mapping found for uprn 10023266361 in exact mode."
+        },
+        "onsGeoBestFitStatusCode": 404,
+        "onsGeoBestFitSummary": {
+          "code": "NOT_FOUND",
+          "message": "No geography mapping found for uprn 10023266361 in best_fit mode."
+        }
+      },
+      "confirmedCapabilities": [
+        "The run can distinguish the requested UPRN from neighbouring benchmark rows at the same postcode.",
+        "The live toolchain returns grounded `NOT_FOUND` outcomes instead of fabricating a premise status."
+      ],
+      "confirmedGaps": [
+        "BDUK remains an external supplied dataset rather than a native MCP-Geo tool family.",
+        "The requested premise is absent from the supplied BDUK subset, so final status still requires dataset-epoch validation.",
+        "ONS geography coverage for this UPRN is incomplete in the current cache."
+      ],
+      "toolCallCount": 3,
+      "successfulToolCalls": 1,
+      "liveEvidenceCalls": 1,
+      "toolCalls": [
+        {
+          "tool": "os_places.by_uprn",
+          "request": {
+            "uprn": "10023266361"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 229.16,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "uprn": null,
+            "address": null,
+            "classification": null
+          }
+        },
+        {
+          "tool": "ons_geo.by_uprn",
+          "request": {
+            "uprn": "10023266361"
+          },
+          "statusCode": 404,
+          "ok": false,
+          "durationMs": 3.67,
+          "cached": false,
+          "source": "error",
+          "liveEvidence": false,
+          "responseSummary": {
+            "code": "NOT_FOUND",
+            "message": "No geography mapping found for uprn 10023266361 in exact mode."
+          }
+        },
+        {
+          "tool": "ons_geo.by_uprn",
+          "request": {
+            "uprn": "10023266361",
+            "derivationMode": "best_fit"
+          },
+          "statusCode": 404,
+          "ok": false,
+          "durationMs": 1.56,
+          "cached": false,
+          "source": "error",
+          "liveEvidence": false,
+          "responseSummary": {
+            "code": "NOT_FOUND",
+            "message": "No geography mapping found for uprn 10023266361 in best_fit mode."
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "ons_geo.by_uprn",
+          "calls": 2,
+          "ok": 0,
+          "liveEvidenceCalls": 0,
+          "cached": 0,
+          "sources": {
+            "error": 2
+          }
+        },
+        {
+          "tool": "os_places.by_uprn",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
+          "cached": 1,
+          "sources": {
+            "OS Places live": 1
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "SG10",
+      "title": "Link council-tax-like and land-registry-like property datasets via UPRN and quantify unmatched records",
+      "benchmarkSupportLevel": "partial",
+      "liveOutcome": "partial",
+      "firstClassProductReady": false,
+      "summary": "The live rerun can now align most of the synthetic council-tax-like rows and the price-paid subset through authoritative UPRNs. That is a real improvement, but the scenario still is not first-class-ready because the batch address resolution, join logic, mismatch labelling, and export schema all remain external orchestration.",
+      "evidence": {
+        "datasetARows": 8,
+        "datasetBRows": 7,
+        "datasetAResolved": 7,
+        "datasetBResolved": 7,
+        "exactUprnMatches": [
+          "100031270361",
+          "100031280113",
+          "100031282954",
+          "10023264877",
+          "10023264955",
+          "10093191764"
+        ],
+        "exactUprnMatchCount": 6,
+        "unmatchedDatasetAUprns": [
+          "10093190272"
+        ],
+        "unmatchedDatasetBUprns": [
+          "100031275744"
+        ]
+      },
+      "confirmedCapabilities": [
+        "Live OS Places resolution supports UPRN-based joining across both benchmark datasets."
+      ],
+      "confirmedGaps": [
+        "MCP-Geo still lacks a native multi-file entity-resolution and join workflow.",
+        "Mismatch categorisation and export-ready join outputs still require external logic."
+      ],
+      "toolCallCount": 15,
+      "successfulToolCalls": 15,
+      "liveEvidenceCalls": 15,
+      "toolCalls": [
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "81 Cobwell Rd, Retford, DN22 7DD"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 298.18,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031270361",
+                "address": "81, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031270360",
+                "address": "80, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031270362",
+                "address": "82, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Navigation Lodge Wharf Road, Retford DN22 6EN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1613.13,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031280113",
+                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "200002769091",
+                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10093191656",
+                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6 Millbridge Close, Retford DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 810.01,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264877",
+                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013978163",
+                "address": "6, WILLOWBRIDGE CLOSE, RETFORD, DN22 6PG",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031274433",
+                "address": "6, MILLFIELD CLOSE, RETFORD, DN22 7TW",
+                "classification": "Semi-Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "119 Mill Bridge Close, Retford DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 795.75,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264955",
+                "address": "119, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013972835",
+                "address": "11, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264910",
+                "address": "111, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Canalside Wharf, Unit 6, Wharf Road, Retford DN22 6JL"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1554.19,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10093191764",
+                "address": "6 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10093191760",
+                "address": "1 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10093191501",
+                "address": "2 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "50 Canal Road, Worksop, S80 2EH"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1687.19,
+          "cached": true,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031282954",
+                "address": "50, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282955",
+                "address": "52, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282956",
+                "address": "54, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "The Old Farm House, 1 Corner Farm Drive, Everton, DN10 5AN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1154.84,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10093190272",
+                "address": "1, CORNER FARM DRIVE, EVERTON, DONCASTER, DN10 5AN",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10008521054",
+                "address": "THE OLD FARM HOUSE, KEDDINGTON CORNER, LOUTH, LN11 7DX",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10093190278",
+                "address": "2, CORNER FARM DRIVE, EVERTON, DONCASTER, DN10 5AN",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "Ragnall Stable, Main Street, Ragnall, NG22 0RU"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 889.76,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023271791",
+                "address": "RAGNALL STABLES, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10090590222",
+                "address": "RAGNALL HALL, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10013978958",
+                "address": "RAGNALL HOUSE, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
+                "classification": "Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "81, COBWELL ROAD, RETFORD, DN22 7DD"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1545.8,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031270361",
+                "address": "81, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031270360",
+                "address": "80, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031270362",
+                "address": "82, COBWELL ROAD, RETFORD, DN22 7DD",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1627.78,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031280113",
+                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "200002769091",
+                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10093191656",
+                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
+                "classification": "Shop / Showroom"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1021.24,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264877",
+                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264890",
+                "address": "61, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10023264891",
+                "address": "63, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "119, MILL BRIDGE CLOSE, RETFORD, DN22 6FE"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 817.23,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10023264955",
+                "address": "119, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013972835",
+                "address": "11, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              },
+              {
+                "uprn": "10013972844",
+                "address": "19, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
+                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "6, CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 317.28,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "10093191764",
+                "address": "6 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10093191760",
+                "address": "1 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "10093191501",
+                "address": "2 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "11, THE DRIVE, RETFORD, DN22 6SD"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 807.22,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031275744",
+                "address": "11, THE DRIVE, PARK LANE, RETFORD, DN22 6SD",
+                "classification": "Detached"
+              },
+              {
+                "uprn": "10095526796",
+                "address": "11, CUTLER DRIVE, RETFORD, DN22 6UQ",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031278146",
+                "address": "11, THE CROFT, RETFORD, DN22 6RQ",
+                "classification": "Semi-Detached"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "os_places.search",
+          "request": {
+            "text": "50, CANAL ROAD, WORKSOP, S80 2EH"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 1695.46,
+          "cached": false,
+          "source": "OS Places live",
+          "liveEvidence": true,
+          "responseSummary": {
+            "count": 25,
+            "sample": [
+              {
+                "uprn": "100031282954",
+                "address": "50, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282955",
+                "address": "52, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              },
+              {
+                "uprn": "100031282956",
+                "address": "54, CANAL ROAD, WORKSOP, S80 2EH",
+                "classification": "Terraced"
+              }
+            ]
+          }
+        }
+      ],
+      "toolCallAggregate": [
+        {
+          "tool": "os_places.search",
+          "calls": 15,
+          "ok": 15,
+          "liveEvidenceCalls": 15,
+          "cached": 2,
+          "sources": {
+            "OS Places live": 15
+          }
+        }
+      ]
+    }
+  ]
+}

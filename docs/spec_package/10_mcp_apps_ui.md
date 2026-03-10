@@ -25,6 +25,18 @@ Each render tool returns:
 - a UI resource URI
 - a structured payload for the host client
 
+For routing, the structured payload is no longer a demo-only shell. The route
+planner widget now:
+
+- accepts `stops`, optional `via`, `profile`, `constraints`, and `delivery`
+- normalizes payloads from `structuredContent`, legacy result shapes, and host
+  notifications
+- calls `os_route.get` for route computation
+- renders returned route geometry, steps, mode changes, warnings, and graph
+  freshness on the OS vector basemap
+- preserves compact-window behavior and shows inline errors for ambiguous stops
+  or graph-not-ready states
+
 UI content blocks are controlled by `MCP_APPS_CONTENT_MODE`:
 - `resource_link` emits a `resource_link` content block pointing at `ui://` resources.
 - `embedded` embeds UI HTML as a `resource` content block.
@@ -35,6 +47,10 @@ UI content blocks are controlled by `MCP_APPS_CONTENT_MODE`:
 - If the client does not advertise UI support, the stdio adapter injects a
   static map fallback payload for the geography selector.
 - Environment: `MCP_STDIO_UI_SUPPORTED=1` to force UI mode.
+
+The route planner does not silently fabricate a route when solver data is
+unavailable. Hosts should surface the returned `ROUTE_GRAPH_NOT_READY`,
+`AMBIGUOUS_STOP`, or `NO_ROUTE` errors directly.
 
 ## Known integration issues
 

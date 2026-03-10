@@ -1,0 +1,97 @@
+{
+  "concise_answer": "The benchmark pack is designed so the model must consolidate three fragmented sources into 3 confirmed ward totals plus 1 uncertain promoter-only ward total.",
+  "method_used": [
+    "Normalize site names across the three files.",
+    "Collapse Abbey Quarter duplicates into one development family with linked allocation and permission records.",
+    "Keep Scarborough North Infill as uncertain because it appears only in the promoter file."
+  ],
+  "datasets_tools_used": [
+    "Synthetic North Yorkshire-style housing-fragmentation fixtures",
+    "Published benchmark rationale from North Yorkshire Boundary Commission GIS methodology",
+    "MCP-Geo tools: admin_lookup.find_by_name, admin_lookup.containing_areas, ons_geo.by_postcode"
+  ],
+  "confidence_caveats": [
+    "All three input files are synthetic representations of a published workflow, not the raw North Yorkshire operational files.",
+    "Geography assignment is therefore a benchmark truth table rather than a live planning system result."
+  ],
+  "verification_steps": [
+    "Cross-check duplicate development families with planning-policy officers before publication.",
+    "Require a fresh geometry or planning reference for promoter-only records before they are counted as confirmed supply."
+  ],
+  "structured_output": {
+    "wardTotals": [
+      {
+        "ward": "Selby West",
+        "confirmedUnits": 120,
+        "linkedPermissionUnits": 40,
+        "uncertainUnits": 0
+      },
+      {
+        "ward": "Cayton",
+        "confirmedUnits": 48,
+        "linkedPermissionUnits": 25,
+        "uncertainUnits": 0
+      },
+      {
+        "ward": "Ripon South",
+        "confirmedUnits": 30,
+        "linkedPermissionUnits": 25,
+        "uncertainUnits": 0
+      },
+      {
+        "ward": "Scarborough North",
+        "confirmedUnits": 0,
+        "linkedPermissionUnits": 0,
+        "uncertainUnits": 30
+      }
+    ]
+  },
+  "consolidated_summary": "Abbey Quarter and Cayton East Extension appear in multiple files and need family-level consolidation; Scarborough North Infill remains promoter-only and uncertain.",
+  "geography_level_totals_table": [
+    {
+      "geography": "Selby West",
+      "confirmed_units": 120,
+      "linked_permission_units": 40,
+      "uncertain_units": 0
+    },
+    {
+      "geography": "Cayton",
+      "confirmed_units": 48,
+      "linked_permission_units": 25,
+      "uncertain_units": 0
+    },
+    {
+      "geography": "Ripon South",
+      "confirmed_units": 30,
+      "linked_permission_units": 25,
+      "uncertain_units": 0
+    },
+    {
+      "geography": "Scarborough North",
+      "confirmed_units": 0,
+      "linked_permission_units": 0,
+      "uncertain_units": 30
+    }
+  ],
+  "duplicate_uncertain_records_table": [
+    {
+      "site_name": "Abbey Quarter",
+      "issue": "duplicate family across allocation, permission, and promoter sources"
+    },
+    {
+      "site_name": "Scarborough North Infill",
+      "issue": "promoter-only / uncertain geometry"
+    }
+  ],
+  "method_note": "This benchmark follows the published North Yorkshire workflow: points and polygons are harmonized, then counted by polling district or ward using GIS logic.",
+  "confidence_statement": "Moderate: the reconciliation logic is realistic and source-backed, but the actual mini-pack is synthetic.",
+  "suggested_export_schema": [
+    "canonical_site_id",
+    "source_refs",
+    "ward",
+    "polling_district",
+    "confirmed_units",
+    "uncertain_units",
+    "confidence"
+  ]
+}

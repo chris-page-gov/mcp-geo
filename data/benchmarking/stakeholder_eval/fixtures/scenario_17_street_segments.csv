@@ -1,0 +1,6 @@
+segment_id,street_name,place_name,width_m,gradient_pct,synthetic_note
+SEG-001,Corporation Street,Birmingham,4.2,1.5,Synthetic street-width/gradient benchmark row attached to a real public street.
+SEG-002,Digbeth High Street,Birmingham,2.9,3.4,Synthetic street-width/gradient benchmark row attached to a real public street.
+SEG-003,Summer Lane,Birmingham,3.1,6.8,Synthetic street-width/gradient benchmark row attached to a real public street.
+SEG-004,Broad Street,Birmingham,5.6,1.2,Synthetic street-width/gradient benchmark row attached to a real public street.
+SEG-005,Hockley Hill,Birmingham,3.8,7.4,Synthetic street-width/gradient benchmark row attached to a real public street.

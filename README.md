@@ -140,6 +140,7 @@ Protocol negotiation behavior:
 - Tool annotations + defer-loading metadata for tool search integrations
 - Agent skills resource (`skills://mcp-geo/getting-started`)
 - MCP-Apps UI resources (`ui://mcp-geo/...`) with helper `os_apps.*` tools
+- pgRouting-backed route planning surface (`os_route.get`, `os_route.descriptor`)
 - Svelte playground UI for MCP tool calls, prompt capture, and auditing
 - Routing tool `os_mcp.route_query` for intent classification and workflow guidance
 - Structured logging & correlation IDs
@@ -239,8 +240,12 @@ Claude Desktop config example (STDIO transport):
 }
 ```
 
-The wrapper script starts PostGIS locally (Docker), builds the image if needed,
-and runs STDIO with the boundary cache enabled.
+The wrapper script builds and starts the repo's PostGIS+pgRouting sidecar
+image locally (Docker), bootstraps the boundary-cache and route-graph schemas
+idempotently, builds the app image if needed, and runs STDIO with the
+cache/routing DSNs pointed at that sidecar. When the repo devcontainer PostGIS
+service is already running, the Claude wrapper now prefers that existing
+container/network instead of starting a second database.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
@@ -250,6 +255,13 @@ Set `MCP_GEO_POSTGIS_STORAGE_MODE=bind` only if you explicitly want a host path
 mount (`MCP_GEO_POSTGIS_DATA_DIR`).
 Set `MCP_GEO_POSTGIS_VOLUME` differently per worktree if you want isolated
 local PostGIS state for each branch workspace.
+Override `MCP_GEO_POSTGIS_IMAGE` only if you need a different pgRouting-capable
+tag. The repo-local image currently builds on `postgis/postgis:16-3.4`, which
+is upstream-amd64-only for this tag, so Apple Silicon still runs the sidecar as
+`linux/amd64` under Docker emulation.
+For benchmark parity across clients, start the repo devcontainer PostGIS first
+and run `./scripts/check_shared_benchmark_cache.sh` before launching Codex or
+Claude so both wrappers are confirmed to reuse the same cache.
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
@@ -341,10 +353,12 @@ For clients that always request `tools/list` with empty params, set
 | nomis.query                         | Query NOMIS datasets (JSON-stat/SDMX)                                         |
 | os_mcp.descriptor                   | Server capabilities and tool search configuration                             |
 | os_mcp.route_query                  | Intent classification and tool/workflow recommendation                        |
+| os_route.descriptor                 | Route solver capabilities, supported profiles, and graph readiness            |
+| os_route.get                        | Resolve stops and compute a graph-backed route                                |
 | os_apps.render_geography_selector   | Open the MCP-Apps geography selector widget                                   |
 | os_apps.render_statistics_dashboard | Open the MCP-Apps statistics dashboard widget                                 |
 | os_apps.render_feature_inspector    | Open the MCP-Apps feature inspector widget                                    |
-| os_apps.render_route_planner        | Open the MCP-Apps route planner widget                                        |
+| os_apps.render_route_planner        | Open the MCP-Apps route planner widget backed by `os_route.get`               |
 | os_apps.render_ui_probe             | Probe MCP-Apps UI rendering support                                           |
 
 ## Resources, Filtering & Provenance
@@ -369,6 +383,21 @@ In addition to data resources, MCP Geo exposes:
 
 Use `GET /resources/read?uri=...` to fetch these resources. MCP-Apps widgets are
 HTML documents with `text/html;profile=mcp-app` MIME types.
+
+## Route Planning
+
+Route planning now has a deterministic tool path as well as a widget path.
+
+- Call `os_mcp.route_query` to classify free-text prompts and extract stop hints.
+- Call `os_route.descriptor` to check whether the active PostGIS/pgRouting graph is ready.
+- Call `os_route.get` to resolve stops and return distance, duration, geometry, legs,
+  steps, mode changes, warnings, and graph provenance.
+- Call `os_apps.render_route_planner` when the host can open MCP-Apps UI; the widget
+  mirrors the `os_route.get` contract and delegates calculation to that tool.
+
+The intended backend is an OS Multi-modal Routing Network build loaded into PostGIS,
+with pgRouting used for shortest-path execution and route warnings enriched from
+restriction tables when available.
 
 MCP-Apps support varies by client. If the client does not advertise UI support,
 the stdio adapter injects a `fallback` static map payload for
@@ -570,10 +599,17 @@ Note: The Svelte playground is served by Vite (`npm run dev`). The legacy
 Run tests with:
 
 ```bash
-pytest -q
+./scripts/pytest-local -q
 ```
 
 Coverage gate (configured) requires ≥90%. Add tests for both success and error branches (retry paths, validation failures, upstream errors). Avoid broad mocks that skip normalization logic.
+
+Host-side wrappers:
+- `./scripts/pytest-local`, `./scripts/ruff-local`, and
+  `./scripts/mypy-local` prefer the running repo devcontainer app container.
+- If no devcontainer is running, they fall back to the repo `.venv`.
+- If the tool is still unavailable, they fall back to `uv run`.
+- Override with `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
 
 ## Contributing
 

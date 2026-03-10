@@ -93,6 +93,18 @@ class Settings(BaseSettings):
     MCP_TOOLS_DEFAULT_TOOLSET: str = ""
     MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS: str = ""
     MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS: str = ""
+    ROUTE_GRAPH_ENABLED: bool = False
+    ROUTE_GRAPH_DSN: str = ""
+    ROUTE_GRAPH_SCHEMA: str = "routing"
+    ROUTE_GRAPH_EDGES_TABLE: str = "graph_edges"
+    ROUTE_GRAPH_NODES_TABLE: str = "graph_nodes"
+    ROUTE_GRAPH_METADATA_TABLE: str = "graph_metadata"
+    ROUTE_GRAPH_RESTRICTIONS_TABLE: str = "edge_restrictions"
+    ROUTE_GRAPH_TURN_RESTRICTIONS_TABLE: str = "turn_restrictions"
+    ROUTE_GRAPH_RUNTIME_DIR: str = "data/runtime/routing"
+    ROUTE_GRAPH_PROVENANCE_FILE: str = "os_mrn_downloads.json"
+    ROUTE_GRAPH_MAX_STOPS: int = 8
+    ROUTE_GRAPH_SOFT_AVOID_PENALTY_SECONDS: float = 180.0
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
     model_config = {

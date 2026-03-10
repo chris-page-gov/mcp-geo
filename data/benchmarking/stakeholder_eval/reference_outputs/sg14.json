@@ -1,0 +1,79 @@
+{
+  "concise_answer": "Using the synthetic benchmark attributes, four of the six candidate buildings exceed the 18 metres or seven floors threshold and one borderline record should remain in review. The heights and floors are synthetic, even though the building anchors are real public sites and every row keeps a building site reference for audit.",
+  "method_used": [
+    "Resolve each building anchor to confirm the location exists.",
+    "Use the supplied synthetic height_m and floors values because MCP-Geo does not yet expose native building-height filters.",
+    "Flag records above either threshold as positive and keep near-threshold rows in review."
+  ],
+  "datasets_tools_used": [
+    "Synthetic benchmark file with real public building anchors",
+    "MCP-Geo tools: os_places.search, os_features.collections, os_features.query"
+  ],
+  "confidence_caveats": [
+    "Confidence is high for the threshold logic inside the fixture.",
+    "Confidence is limited for any claim about live building heights because the underlying height attributes are synthetic."
+  ],
+  "verification_steps": [
+    "Confirm each building anchor resolves to the intended public site.",
+    "If a live building-height source becomes available, replace the synthetic attributes before operational use."
+  ],
+  "structured_output": {
+    "exceedanceCount": 4,
+    "reviewCount": 1,
+    "buildingSiteReferenceCount": 6,
+    "synthetic": true,
+    "suggestedExportFormat": "CSV exceedance list plus GeoJSON building points or polygons."
+  },
+  "concise_threshold_answer": "Four benchmark buildings exceed the 18 metres or seven floors question and one is a borderline review case.",
+  "exceedance_table": [
+    {
+      "building_id": "BLD-001",
+      "building_name": "York Minster",
+      "height_m": 23.0,
+      "floors": 5,
+      "trigger": "height"
+    },
+    {
+      "building_id": "BLD-002",
+      "building_name": "Hudson House",
+      "height_m": 22.0,
+      "floors": 7,
+      "trigger": "height_and_floors"
+    },
+    {
+      "building_id": "BLD-004",
+      "building_name": "The Grand Hotel York",
+      "height_m": 18.5,
+      "floors": 6,
+      "trigger": "height"
+    },
+    {
+      "building_id": "BLD-005",
+      "building_name": "York Hospital South Block",
+      "height_m": 21.0,
+      "floors": 8,
+      "trigger": "height_and_floors"
+    }
+  ],
+  "review_table": [
+    {
+      "building_id": "BLD-006",
+      "building_name": "Scarborough Town Hall",
+      "height_m": 14.0,
+      "floors": 3,
+      "reason": "location resolves but synthetic attributes show no exceedance"
+    },
+    {
+      "building_id": "BLD-003",
+      "building_name": "County Hall",
+      "height_m": 15.0,
+      "floors": 4,
+      "reason": "below threshold but keep as control row"
+    }
+  ],
+  "synthetic_data_note": "Synthetic scenario: the building heights and floor counts are validated benchmark values attached to real public building anchors because no reusable open tall-building list was found, so each building keeps a site reference and review note instead of pretending the height is live.",
+  "caveats": [
+    "This benchmark tests threshold logic and location grounding, not a live OS building-height feed."
+  ],
+  "map_recommended_description": "Map recommended: show the resolved building locations and symbolise exceedances versus control rows."
+}

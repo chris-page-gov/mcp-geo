@@ -55,3 +55,17 @@ the fallback simplified view when no local browser key is available.
 ## MCP Host Benchmarking
 
 - 2026-03-06: [Codex vs Claude host benchmark smoke report](codex_vs_claude_host_benchmark_2026-03-06_smoke.md)
+
+## Stakeholder Research and Briefing
+
+- 2026-03-08: [Phase 1 inventory of current UK public-sector OS-dependent questions](MCP-Geo%20Phase%201%20evidence-backed%20benchmark%20and%20positioning%20framework%20for%20answered%20OS%20Questions.md)
+- 2026-03-08: [Phase 2 benchmark and positioning framework for blocked or hard-to-answer questions](MCP-Geo%20Phase%202%20evidence-backed%20benchmark%20and%20positioning%20framework%20for%20blocked%20and%20hard-to-answer%20U.md)
+- 2026-03-08: [Stakeholder mapping and value propositions (DOCX)](MCP-Geo%20Stakeholder%20Mapping%20and%20Value%20Propositions.docx)
+- 2026-03-09: [Strategic briefing (PDF)](MCP-Geo_Strategic_Briefing.pdf)
+
+## Stakeholder Evaluation
+
+- 2026-03-09: [MCP-Geo stakeholder evaluation benchmark pack](MCP-Geo_evaluation_questions.md)
+- 2026-03-09: [Stakeholder benchmark workflow validation](mcp_geo_stakeholder_benchmark_workflow_2026-03-09.md)
+- 2026-03-09: [Stakeholder benchmark gap analysis](mcp_geo_stakeholder_gap_analysis_2026-03-09.md)
+- 2026-03-09: [Stakeholder live rerun report](mcp_geo_stakeholder_live_run_2026-03-09.md)

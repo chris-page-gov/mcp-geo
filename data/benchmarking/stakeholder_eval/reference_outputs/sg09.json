@@ -1,0 +1,55 @@
+{
+  "concise_answer": "UPRN 10023266361 is missing from the supplied BDUK release. The strongest explanation is that it is a non-target public car park rather than a dwelling or business premises in BDUK\u2019s recognised premises base.",
+  "method_used": [
+    "Resolve the UPRN against the supplied benchmark sources.",
+    "Check whether the UPRN appears in the East Midlands BDUK release.",
+    "Rank missing-case explanations using the BDUK guide and the public asset-register classification."
+  ],
+  "datasets_tools_used": [
+    "Bassetlaw asset register",
+    "BDUK East Midlands September 2024 release",
+    "BDUK user guide and technical note",
+    "MCP-Geo tools: os_places.by_uprn, ons_geo.by_uprn"
+  ],
+  "confidence_caveats": [
+    "The UPRN is real and the absence is real.",
+    "The reason is still inferential until the UPRN is checked against AddressBase class or a newer BDUK release."
+  ],
+  "verification_steps": [
+    "Confirm the UPRN\u2019s current AddressBase class or OS Places record.",
+    "Check the next BDUK release in case the premise treatment has changed."
+  ],
+  "structured_output": {
+    "premiseStatus": "missing",
+    "rankedExplanations": [
+      {
+        "reason": "non_target_or_non_postal_premises",
+        "confidence": "high"
+      },
+      {
+        "reason": "dataset_coverage_gap",
+        "confidence": "medium"
+      },
+      {
+        "reason": "new_build_epoch_lag",
+        "confidence": "low"
+      },
+      {
+        "reason": "demolished_or_derelict",
+        "confidence": "low"
+      }
+    ],
+    "suggestedExportFormat": "JSON status record for the premise plus CSV ranked-explanations table."
+  },
+  "short_user_facing_answer": "This UPRN is not in the supplied BDUK file. Treat it as a likely non-target premises until AddressBase classification proves otherwise.",
+  "structured_premise_status": {
+    "uprn": "10023266361",
+    "dataset_status": "not_found",
+    "best_supported_reason": "non_target_or_non_postal_premises"
+  },
+  "explanation_of_missing_uncertain_cases": [
+    "The public source labels the UPRN as a public car park, which is stronger evidence than a generic epoch-lag explanation.",
+    "The BDUK guide still requires the answer to mention other grounded possibilities such as new-build lag or demolished/derelict classifications."
+  ],
+  "next_verification_step": "Resolve the UPRN against the latest OS-backed premises classification and compare it with the next BDUK release."
+}

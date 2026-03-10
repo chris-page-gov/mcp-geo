@@ -737,17 +737,27 @@ INTERMEDIATE_QUESTIONS = [
         question="Plan a route from Coventry to London",
         intent=Intent.ROUTE_PLANNING,
         difficulty=Difficulty.INTERMEDIATE,
-        description="Route planner widget.",
+        description="Authoritative route tool with optional route-planner widget companion.",
         expected=ExpectedOutcome(
-            required_tools=["os_apps.render_route_planner"],
-            max_tool_calls=2,
-            required_keywords=["instructions"],
+            required_tools=["os_route.get"],
+            max_tool_calls=3,
+            required_keywords=["distance", "graph"],
         ),
         tool_calls=[
             ToolCallSpec(
+                "os_route.get",
+                {
+                    "stops": [{"query": "Coventry"}, {"query": "London"}],
+                    "profile": "drive",
+                },
+            ),
+            ToolCallSpec(
                 "os_apps.render_route_planner",
-                {"startLat": 52.4081, "startLng": -1.5106, "endLat": 51.5074, "endLng": -0.1278},
-            )
+                {
+                    "stops": [{"query": "Coventry"}, {"query": "London"}],
+                    "profile": "drive",
+                },
+            ),
         ],
         tags=["apps", "routing"],
     ),

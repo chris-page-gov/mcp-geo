@@ -1,0 +1,67 @@
+{
+  "concise_answer": "Small Heath and Sparkbrook are the clearest synthetic under-referral wards in the benchmark because they pair the highest need scores with the lowest referral counts. Small Heath Health Centre should review Small Heath first, and central Birmingham teams should review Sparkbrook next.",
+  "method_used": [
+    "Resolve the ward names and service site addresses.",
+    "Compare synthetic_referrals against synthetic_need_index to identify high-need / low-referral wards.",
+    "Assign review priority to the most relevant resolved service sites."
+  ],
+  "datasets_tools_used": [
+    "Synthetic ward referral benchmark file",
+    "Public BSMHFT service-site addresses",
+    "MCP-Geo tools: admin_lookup.find_by_name, os_places.search"
+  ],
+  "confidence_caveats": [
+    "Geography and service-site resolution are grounded.",
+    "Referral counts and need scores are synthetic and should not be treated as live NHS performance data."
+  ],
+  "verification_steps": [
+    "Confirm each ward resolves to the intended Birmingham context.",
+    "Replace synthetic counts with approved referral and need data before operational use."
+  ],
+  "structured_output": {
+    "priorityWardCount": 2,
+    "synthetic": true,
+    "suggestedExportFormat": "CSV ward inequity table plus map-ready service-site overlay."
+  },
+  "concise_inequity_answer": "Two synthetic benchmark wards stand out for review: Small Heath and Sparkbrook.",
+  "ward_inequity_table": [
+    {
+      "ward_name": "Small Heath",
+      "synthetic_referrals": 12,
+      "synthetic_need_index": 92,
+      "priority": "high"
+    },
+    {
+      "ward_name": "Sparkbrook",
+      "synthetic_referrals": 10,
+      "synthetic_need_index": 95,
+      "priority": "high"
+    },
+    {
+      "ward_name": "Ladywood",
+      "synthetic_referrals": 16,
+      "synthetic_need_index": 85,
+      "priority": "medium"
+    }
+  ],
+  "priority_review_sites": [
+    {
+      "site_name": "Small Heath Health Centre",
+      "focus_wards": [
+        "Small Heath",
+        "Sparkbrook"
+      ]
+    },
+    {
+      "site_name": "Northcroft Hospital",
+      "focus_wards": [
+        "Erdington"
+      ]
+    }
+  ],
+  "synthetic_data_note": "Synthetic scenario: referral counts and need indices are benchmark-only values attached to real wards and real service sites.",
+  "caveats": [
+    "Under-referral signals in this benchmark are illustrative rather than operational."
+  ],
+  "map_recommended_description": "Map recommended: show resolved wards shaded by synthetic need-versus-referral gap and overlay the trust service sites."
+}

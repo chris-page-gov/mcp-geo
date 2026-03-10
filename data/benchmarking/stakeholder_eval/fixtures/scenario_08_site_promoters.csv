@@ -1,0 +1,4 @@
+source_ref,site_name,ward,polling_district,expected_units,geometry_type,status
+PROM-101,Abbey Quarter,Selby West,SEL-A,120,point,promoter_submission
+PROM-102,Scarborough North Infill,Scarborough North,SCN-D,30,point,promoter_submission
+PROM-103,Cayton East Extension,Cayton,CAY-A,48,point,promoter_submission
