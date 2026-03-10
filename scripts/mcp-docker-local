@@ -16,7 +16,7 @@ POSTGIS_PLATFORM="${MCP_GEO_POSTGIS_PLATFORM:-linux/amd64}"
 POSTGIS_DOCKERFILE="${MCP_GEO_POSTGIS_DOCKERFILE:-$REPO_ROOT/.devcontainer/postgis.Dockerfile}"
 POSTGIS_BUILD_CONTEXT="${MCP_GEO_POSTGIS_BUILD_CONTEXT:-$REPO_ROOT}"
 POSTGIS_BUILD_MODE="${MCP_GEO_POSTGIS_BUILD:-missing}"
-POSTGIS_REUSE_DEVCONTAINER="${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-false}"
+POSTGIS_REUSE_DEVCONTAINER="${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-auto}"
 POSTGIS_REUSE_CONTAINER="${MCP_GEO_POSTGIS_REUSE_CONTAINER:-mcp-geo_devcontainer-postgis-1}"
 DOCKER_BIN="${MCP_GEO_DOCKER_BIN:-}"
 PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
@@ -27,6 +27,7 @@ ROUTE_GRAPH_ENABLED_VALUE="${ROUTE_GRAPH_ENABLED:-true}"
 POSTGIS_HOST="${MCP_GEO_POSTGIS_HOST:-postgis}"
 POSTGIS_TARGET_CONTAINER="$POSTGIS_CONTAINER"
 MANAGE_POSTGIS_CONTAINER=true
+PLAN_ONLY="${MCP_GEO_DOCKER_PLAN_ONLY:-0}"
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
@@ -160,21 +161,21 @@ detect_reusable_devcontainer_postgis() {
   if ! is_auto_or_truthy "$mode"; then
     return 1
   fi
-  if ! "$DOCKER_BIN" inspect "$POSTGIS_REUSE_CONTAINER" >/dev/null 2>&1; then
+  if ! "$DOCKER_BIN" container inspect "$POSTGIS_REUSE_CONTAINER" >/dev/null 2>&1; then
     if is_truthy "$mode"; then
       log "Configured PostGIS reuse container not found: $POSTGIS_REUSE_CONTAINER"
       exit 1
     fi
     return 1
   fi
-  if [[ "$("$DOCKER_BIN" inspect -f '{{.State.Running}}' "$POSTGIS_REUSE_CONTAINER" 2>/dev/null || true)" != "true" ]]; then
+  if [[ "$("$DOCKER_BIN" container inspect -f '{{.State.Running}}' "$POSTGIS_REUSE_CONTAINER" 2>/dev/null || true)" != "true" ]]; then
     if is_truthy "$mode"; then
       log "Configured PostGIS reuse container is not running: $POSTGIS_REUSE_CONTAINER"
       exit 1
     fi
     return 1
   fi
-  network_name="$("$DOCKER_BIN" inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' "$POSTGIS_REUSE_CONTAINER" 2>/dev/null | head -n 1 | tr -d '\r')"
+  network_name="$("$DOCKER_BIN" container inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' "$POSTGIS_REUSE_CONTAINER" 2>/dev/null | head -n 1 | tr -d '\r')"
   if [[ -z "$network_name" ]]; then
     if is_truthy "$mode"; then
       log "Unable to discover Docker network for $POSTGIS_REUSE_CONTAINER"
@@ -188,6 +189,18 @@ detect_reusable_devcontainer_postgis() {
   POSTGIS_HOST="${MCP_GEO_POSTGIS_HOST:-postgis}"
   log "reusing devcontainer PostGIS container: $POSTGIS_TARGET_CONTAINER on network $NETWORK"
   return 0
+}
+
+emit_plan() {
+  printf 'postgis_target_container=%s\n' "$POSTGIS_TARGET_CONTAINER"
+  printf 'postgis_host=%s\n' "$POSTGIS_HOST"
+  printf 'manage_postgis_container=%s\n' "$MANAGE_POSTGIS_CONTAINER"
+  printf 'network=%s\n' "$NETWORK"
+  printf 'postgis_container_name=%s\n' "$POSTGIS_CONTAINER"
+  printf 'postgis_image=%s\n' "$POSTGIS_IMAGE"
+  printf 'postgis_storage_mode=%s\n' "$POSTGIS_STORAGE_MODE"
+  printf 'postgis_volume=%s\n' "$POSTGIS_VOLUME"
+  printf 'postgis_reuse_devcontainer=%s\n' "$POSTGIS_REUSE_DEVCONTAINER"
 }
 
 ensure_postgis_image() {
@@ -266,6 +279,11 @@ mkdir -p "$LOG_DIR"
 
 detect_reusable_devcontainer_postgis || true
 
+if is_truthy "$PLAN_ONLY"; then
+  emit_plan
+  exit 0
+fi
+
 if [[ "$MANAGE_POSTGIS_CONTAINER" == "true" ]]; then
   ensure_postgis_image
 fi
@@ -275,10 +293,10 @@ if [[ "$MANAGE_POSTGIS_CONTAINER" == "true" ]] && ! "$DOCKER_BIN" network inspec
   "$DOCKER_BIN" network create "$NETWORK" >/dev/null
 fi
 
-if [[ "$MANAGE_POSTGIS_CONTAINER" == "true" ]] && "$DOCKER_BIN" inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
-  existing_storage="$("$DOCKER_BIN" inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Type}}|{{.Name}}|{{.Source}}{{end}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
-  existing_image="$("$DOCKER_BIN" inspect -f '{{.Config.Image}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
-  existing_pgdata="$("$DOCKER_BIN" inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null | awk -F= '/^PGDATA=/{print $2}')"
+if [[ "$MANAGE_POSTGIS_CONTAINER" == "true" ]] && "$DOCKER_BIN" container inspect "$POSTGIS_CONTAINER" >/dev/null 2>&1; then
+  existing_storage="$("$DOCKER_BIN" container inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Type}}|{{.Name}}|{{.Source}}{{end}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
+  existing_image="$("$DOCKER_BIN" container inspect -f '{{.Config.Image}}' "$POSTGIS_CONTAINER" 2>/dev/null || true)"
+  existing_pgdata="$("$DOCKER_BIN" container inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$POSTGIS_CONTAINER" 2>/dev/null | awk -F= '/^PGDATA=/{print $2}')"
   if [[ "$POSTGIS_STORAGE_MODE" == "volume" && "$existing_storage" == bind* ]]; then
     log "PostGIS container uses bind storage but volume mode is requested."
     log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
@@ -294,7 +312,7 @@ if [[ "$MANAGE_POSTGIS_CONTAINER" == "true" ]] && "$DOCKER_BIN" inspect "$POSTGI
     log "PostGIS container PGDATA is $existing_pgdata but desired PGDATA is $POSTGIS_PGDATA."
     log "Recreate with: docker rm -f $POSTGIS_CONTAINER"
   fi
-  if [[ "$("$DOCKER_BIN" inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
+  if [[ "$("$DOCKER_BIN" container inspect -f '{{.State.Running}}' "$POSTGIS_CONTAINER")" != "true" ]]; then
     log "starting existing PostGIS container: $POSTGIS_CONTAINER"
     "$DOCKER_BIN" start "$POSTGIS_CONTAINER" >/dev/null
   fi

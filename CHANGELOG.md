@@ -52,6 +52,10 @@ All notable changes to this project will be documented in this file.
 - Updated the Claude Desktop launcher to reuse the running repo devcontainer
   PostGIS container/network when available, falling back to its own sidecar
   only when the devcontainer database is absent.
+- Defaulted the shared Docker launcher to devcontainer-PostGIS reuse for all
+  host clients, added `scripts/check_shared_benchmark_cache.sh`, and documented
+  the exact benchmark startup order required to guarantee cross-client cache
+  parity before scoring Codex vs Claude or stakeholder live runs.
 - Replaced the Phase 3 evaluation-question note with a comprehensive benchmark
   pack that embeds populated prompts, comparator notes, capability gaps, and
   full expected-output JSON for all 10 scenarios.

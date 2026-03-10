@@ -3,6 +3,52 @@
 This runbook adds Codex as a first-class MCP host benchmark target for
 `mcp-geo` alongside Claude Desktop.
 
+## Shared Cache Requirement
+
+For any cross-client benchmark or comparison, all clients must hit the same
+PostGIS-backed cache and route-graph store. In this repo, the canonical shared
+cache is the repo devcontainer PostGIS service:
+
+- container: `mcp-geo_devcontainer-postgis-1`
+- Docker network: `mcp-geo_devcontainer_default`
+- service hostname inside that network: `postgis`
+
+Do not benchmark one client against `mcp-geo_devcontainer-postgis-1` and
+another against a fallback `mcp-geo-postgis` sidecar. That invalidates
+cache-comparison claims.
+
+## Exact Startup Procedure
+
+Use this order every time before benchmarking multiple clients:
+
+1. Start Docker Desktop.
+2. Start the repo devcontainer, or bring up its PostGIS service from the repo root:
+
+   ```bash
+   docker compose -f .devcontainer/docker-compose.yml up -d postgis
+   ```
+
+3. Wait until `mcp-geo_devcontainer-postgis-1` is running.
+4. Run the shared-cache preflight:
+
+   ```bash
+   ./scripts/check_shared_benchmark_cache.sh
+   ```
+
+5. Only proceed if the script prints `PASS: shared benchmark cache is ready`.
+6. Then start or benchmark clients through the standard wrappers:
+   - Codex host runs: `scripts/codex-mcp-local`
+   - Claude Desktop: `scripts/claude-mcp-local`
+
+The preflight verifies that:
+
+- the shared PostGIS container is running
+- `postgis` and `pgrouting` are installed
+- Claude and Codex wrappers both target the same devcontainer PostGIS container
+- neither wrapper would start a separate `mcp-geo-postgis` fallback container
+
+If the preflight fails, do not benchmark until the Docker state is corrected.
+
 ## Outputs
 
 Each scored session writes these artifacts into the session directory:
@@ -145,3 +191,6 @@ The markdown report includes:
   `scripts/claude-mcp-local` and retains Claude-only defaults. The Codex
   wrapper prefers Docker on host surfaces and falls back to `scripts/os-mcp`
   when Docker is unavailable or the session is already inside a container.
+- Docker-backed wrappers now default to
+  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=auto`, so when the repo devcontainer DB is
+  running both Codex and Claude reuse that shared cache by default.

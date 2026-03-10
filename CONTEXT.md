@@ -137,6 +137,9 @@ assumptions change.
 - Standardizing Claude Desktop on the same PostGIS instance as the repo
   devcontainer when it is already running, with Docker-sidecar fallback only
   when the devcontainer database is absent.
+- Standardizing benchmark startup on a single shared PostGIS cache across
+  clients, with `scripts/check_shared_benchmark_cache.sh` as the required
+  preflight before Codex-vs-Claude or stakeholder live comparison runs.
 
 ## Active Work
 

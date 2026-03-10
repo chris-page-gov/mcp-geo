@@ -509,12 +509,20 @@ Storage controls for the wrapper:
   `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
 - `MCP_GEO_POSTGIS_IMAGE` defaults to `mcp-geo-postgis-pgrouting:16-3.4`.
 - `MCP_GEO_POSTGIS_PLATFORM` defaults to `linux/amd64`.
+- `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER` defaults to `auto` for Docker-backed
+  wrappers, so host-side clients reuse the running repo devcontainer PostGIS
+  container by default.
 - `scripts/claude-mcp-local` now prefers the running repo devcontainer PostGIS
   container (`mcp-geo_devcontainer-postgis-1`) when available; otherwise it
   falls back to its own Docker sidecar.
 - The wrapper now sets `PGDATA=/var/lib/postgresql/data/pgdata` to match the
   devcontainer layout and bootstraps the boundary-cache/route-graph schema
   files after the PostGIS sidecar becomes ready.
+
+Benchmarking note:
+- Before comparing Codex, Claude, or other Docker-backed clients, run
+  `./scripts/check_shared_benchmark_cache.sh` and only continue if it reports
+  `PASS`. This ensures every client is pointed at the same PostGIS cache.
 
 If you need deterministic non-interactive routing, set
 `MCP_STDIO_ELICITATION_ENABLED=0` to disable STDIO form elicitation prompts

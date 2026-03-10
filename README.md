@@ -259,6 +259,9 @@ Override `MCP_GEO_POSTGIS_IMAGE` only if you need a different pgRouting-capable
 tag. The repo-local image currently builds on `postgis/postgis:16-3.4`, which
 is upstream-amd64-only for this tag, so Apple Silicon still runs the sidecar as
 `linux/amd64` under Docker emulation.
+For benchmark parity across clients, start the repo devcontainer PostGIS first
+and run `./scripts/check_shared_benchmark_cache.sh` before launching Codex or
+Claude so both wrappers are confirmed to reuse the same cache.
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
