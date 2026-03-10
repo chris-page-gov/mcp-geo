@@ -90,6 +90,20 @@ Storage recommendation:
   (`docker compose --env-file .devcontainer/.env ...`), or export the same env
   vars in your host shell before starting VS Code Dev Containers.
 
+Cross-platform build notes:
+- The repo now tracks line-ending policy in `.gitattributes` and `.editorconfig`
+  so shell, Docker, YAML, JSON, Markdown, and Python files stay on LF across
+  macOS and Windows checkouts.
+- For TLS-inspected or proxied networks, copy `.devcontainer/.env.example` to
+  `.devcontainer/.env`, set `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` as
+  needed, and rebuild the devcontainer.
+- If your corporate proxy uses a private root CA, place one or more `.crt`
+  files in `.devcontainer/certs/` before rebuilding. Both Dockerfiles now use
+  the system CA bundle path (`/etc/ssl/certs/ca-certificates.crt`) so custom
+  local roots are visible to `curl`, `pip`, and Python HTTP clients.
+- `INSTALL_NGROK` defaults to `false` in the devcontainer build. Set
+  `INSTALL_NGROK=true` only when you need the CLI inside the container.
+
 ## STDIO adapter (MCP clients)
 
 Installed entrypoint:
@@ -124,6 +138,17 @@ Build the image:
 
 ```bash
 docker build -t mcp-geo-server .
+```
+
+For proxied networks, pass the same build args explicitly if you are using the
+top-level Dockerfile outside the devcontainer flow:
+
+```bash
+docker build \
+  --build-arg HTTP_PROXY="$HTTP_PROXY" \
+  --build-arg HTTPS_PROXY="$HTTPS_PROXY" \
+  --build-arg NO_PROXY="$NO_PROXY" \
+  -t mcp-geo-server .
 ```
 
 Run HTTP transport:

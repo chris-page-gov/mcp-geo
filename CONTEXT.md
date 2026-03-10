@@ -462,6 +462,12 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-03-10: Standardized cross-platform repo/devcontainer behavior by
+  enforcing LF line endings via `.gitattributes`/`.editorconfig`, making
+  devcontainer `ngrok` installation opt-in, and routing devcontainer/Docker
+  TLS trust through the system CA bundle plus local `.devcontainer/certs/`
+  injection so Windows checkouts and corporate proxy environments no longer
+  require application-code changes.
 - 2026-03-04: Completed public-release `v0.5.0` publication: formal repository
   security review (`docs/reports/public_release_security_review_2026-03-04.md`),
   release notes (`RELEASE_NOTES/0.5.0.md`), version bump

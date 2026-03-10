@@ -76,6 +76,15 @@ Devcontainer note:
   `.devcontainer/.env` and pass `--env-file .devcontainer/.env`.
   For VS Code Dev Containers, export the same vars in the host shell before
   launching VS Code.
+- On Windows checkouts, LF is enforced repo-wide via `.gitattributes` and
+  `.editorconfig` so `bash` entrypoints keep working inside the Linux
+  devcontainer.
+- On proxied or TLS-inspected networks, add `HTTP_PROXY` / `HTTPS_PROXY` /
+  `NO_PROXY` to `.devcontainer/.env` and place any required corporate root CA
+  `.crt` files in `.devcontainer/certs/` before rebuilding.
+- `INSTALL_NGROK` defaults to `false` so inspected networks do not fail the
+  devcontainer build on the optional tunnel binary fetch. Enable it explicitly
+  in `.devcontainer/.env` only when you need `ngrok` inside the container.
 - The PostGIS *host* port is random by default; set `MCP_GEO_POSTGIS_HOST_PORT=5433`
   before starting the devcontainer if you want it pinned.
 - Default devcontainer-forwarded ports:

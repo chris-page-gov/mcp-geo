@@ -84,6 +84,39 @@ Remediation:
 - Do not rely on a shared workspace `.venv` across host+container; keep host
   and container Python environments separate.
 
+## Devcontainer build fails on Windows with shell-script errors
+If the devcontainer build or post-start hook fails with shell syntax errors on
+Windows, the checkout likely has CRLF line endings in repo scripts.
+
+Remediation:
+- Pull the latest repo policy files (`.gitattributes`, `.editorconfig`) and let
+  Git renormalize the checkout.
+- In an existing clone, run `git add --renormalize .` and re-checkout/rebuild if
+  line endings are still stale.
+- Keep shell/Docker/YAML/Python files on LF; only true Windows-native scripts
+  such as `.bat` and `.cmd` should use CRLF.
+
+## Devcontainer build fails behind a corporate proxy or TLS inspection
+If Docker/devcontainer builds fail during `apt-get`, `pip`, `curl`, or the
+optional `ngrok` download, the build likely cannot see your proxy settings or
+trust your corporate root CA.
+
+Remediation:
+- Copy `.devcontainer/.env.example` to `.devcontainer/.env`.
+- Set `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` there, plus lower-case
+  variants if your local tooling expects them.
+- If your network uses a private root CA, place the PEM/CRT file in
+  `.devcontainer/certs/` with a `.crt` extension, then rebuild.
+- Leave `INSTALL_NGROK=false` unless you need `ngrok` inside the devcontainer.
+
+Notes:
+- The devcontainer app image, repo Docker image, and repo-built PostGIS image
+  now use the system CA bundle path
+  `/etc/ssl/certs/ca-certificates.crt`, so injected local roots apply to
+  `curl`, `pip`, and Python HTTP clients.
+- The local CA directory is intentionally tracked as empty and the cert files
+  themselves stay out of git.
+
 ## Boundary cache unavailable / PostGIS restart loops
 If `admin_lookup.get_cache_status` shows `enabled=false`/`cache_unavailable`
 or Docker logs include checkpoint/panic startup errors, the PostGIS data
