@@ -405,6 +405,12 @@ class RouteGraph:
                     "restrictions": warnings,
                     "graph": metadata.as_dict(),
                 }
+        except ValueError as exc:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": str(exc),
+            }
         except Exception as exc:
             self._log_graph_error(str(exc))
             return 500, {
@@ -567,13 +573,21 @@ class RouteGraph:
                 )
 
         if isinstance(raw_areas, list):
+            invalid_areas: list[str] = []
             for area in raw_areas:
                 polygon_wkt = _polygon_wkt(area)
                 if not polygon_wkt:
+                    invalid_areas.append(_describe_avoid_area(area))
                     continue
                 literal = sql.Literal(polygon_wkt).as_string(conn)
                 predicates.append(
                     f"ST_Intersects(geom, ST_GeomFromText({literal}, 4326))"
+                )
+            if invalid_areas:
+                rendered = ", ".join(invalid_areas)
+                raise ValueError(
+                    "avoidAreas entries must use bounding-box arrays or GeoJSON Polygon/"
+                    f"MultiPolygon geometry. Unsupported entries: {rendered}"
                 )
 
         if not predicates:
@@ -844,3 +858,9 @@ def _as_int(value: Any) -> int | None:
         return int(value) if value is not None else None
     except (TypeError, ValueError):
         return None
+
+
+def _describe_avoid_area(value: Any) -> str:
+    if isinstance(value, str):
+        return repr(value.strip() or value)
+    return repr(value)

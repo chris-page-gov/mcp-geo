@@ -129,6 +129,19 @@ def test_route_query_sg03_style_prompt_prefers_os_route_tool():
     assert body["interactive_companion_tool"] == "os_apps.render_route_planner"
 
 
+def test_route_query_without_if_possible_preserves_hard_avoid():
+    body = _route(
+        "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "
+        "to Goodwin Hall, Chancery Lane, Retford, DN22 6DF and avoid flood-risk-zone reference "
+        "167647/3?"
+    )
+    assert body["intent"] == "route_planning"
+    assert body["recommended_tool"] == "os_route.get"
+    params = body["recommended_parameters"]
+    assert params["constraints"]["avoidIds"] == ["167647/3"]
+    assert params["constraints"]["softAvoid"] is False
+
+
 def test_route_query_extracts_coordinate_and_via_route_hints():
     body = _route(
         "Give me walking directions from 51.5034,-0.1276 to Westminster Abbey via Big Ben"

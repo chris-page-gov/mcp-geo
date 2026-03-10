@@ -69,6 +69,16 @@ def test_extract_route_request_parses_labeled_origin_destination():
     assert request["stops"] == [{"query": "Coventry rail station"}, {"query": "London Euston"}]
     assert request["profile"] == "multimodal"
     assert request["constraints"]["avoidAreas"] == ["central cordon"]
+    assert request["constraints"]["softAvoid"] is True
+
+
+def test_extract_route_request_without_soft_language_uses_hard_avoid():
+    request = route_planning.extract_route_request(
+        "Plan the best emergency route from Retford Library to Goodwin Hall and avoid flood-risk-zone 167647/3"
+    )
+    assert request is not None
+    assert request["constraints"]["avoidIds"] == ["167647/3"]
+    assert request["constraints"]["softAvoid"] is False
 
 
 def test_extract_route_request_parses_via_segments():

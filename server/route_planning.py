@@ -49,6 +49,15 @@ _TAIL_NOISE_REGEX = re.compile(
     r"[ \t,.;:!?]*$",
     re.IGNORECASE,
 )
+_SOFT_AVOID_HINTS = (
+    "if possible",
+    "where possible",
+    "when possible",
+    "if feasible",
+    "where feasible",
+    "when feasible",
+    "preferably",
+)
 
 
 def normalize_route_profile(value: Any) -> str:
@@ -209,7 +218,7 @@ def extract_route_constraints(query: str) -> dict[str, Any]:
     return {
         "avoidAreas": _dedupe_text(avoid_areas),
         "avoidIds": _dedupe_text(avoid_ids),
-        "softAvoid": True if "if possible" in query_lower else True,
+        "softAvoid": _has_soft_avoid_language(query_lower),
     }
 
 
@@ -285,6 +294,10 @@ def _dedupe_text(values: list[str]) -> list[str]:
         seen.add(key)
         out.append(value)
     return out
+
+
+def _has_soft_avoid_language(query_lower: str) -> bool:
+    return any(marker in query_lower for marker in _SOFT_AVOID_HINTS)
 
 
 def _normalize_query_text(query: str) -> str:

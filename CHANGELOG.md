@@ -42,6 +42,15 @@ All notable changes to this project will be documented in this file.
   `tests/test_stakeholder_benchmark_pack.py`.
 
 ### Changed
+- Preserved hard-avoid routing intent in `server/route_planning.py` so route
+  queries that omit softening language such as `if possible` now produce hard
+  exclusions instead of silent soft penalties.
+- Hardened `server/route_graph.py` to reject unparseable `avoidAreas`
+  constraints with `INVALID_INPUT` rather than silently dropping them and
+  returning an unconstrained route.
+- Fixed `scripts/generate_mcp_geo_functionality_showcase.py` so the report
+  generator no longer uses invalid f-string `"\n".join(...)` expressions that
+  break test collection.
 - Replaced the route planner's demo-shell behavior with a live MCP-Apps widget
   contract wired to `os_route.get`, including route geometry rendering,
   payload normalization, and explicit graph/ambiguity error states.

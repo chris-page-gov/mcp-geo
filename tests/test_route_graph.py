@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, timezone
 
+import pytest
+
 from server.config import settings
 from server.route_graph import (
     RouteGraph,
@@ -272,6 +274,66 @@ def test_route_graph_run_leg_handles_default_flags(monkeypatch, tmp_path):
     assert len(segments) == 1
     assert segments[0]["edgeId"] == 1001
     assert segments[0]["flags"] == {}
+
+
+def test_route_graph_avoid_predicates_rejects_unparseable_avoid_areas(tmp_path):
+    graph = _graph(tmp_path)
+    conn = FakeConn([])
+
+    with pytest.raises(ValueError, match="avoidAreas entries must use bounding-box arrays"):
+        graph._avoid_predicates(
+            conn,
+            {"avoidAreas": ["flood restrictions"], "avoidIds": [], "softAvoid": False},
+        )
+
+
+def test_route_graph_compute_route_returns_invalid_input_for_bad_avoid_areas(monkeypatch, tmp_path):
+    graph = _graph(tmp_path)
+    metadata = RouteGraphMetadata(
+        ready=True,
+        reason=None,
+        graph_version="mrn-2026-03-01",
+        built_at="2026-03-01T00:00:00+00:00",
+        source_product="OS MRN",
+        source_release_date="2026-03-01",
+        source_download_id="download-1",
+        source_download_name="os-mrn.zip",
+        source_license="OGLv3",
+        profiles=["drive", "walk", "cycle", "emergency", "multimodal"],
+        node_count=10,
+        edge_count=20,
+        provenance_path=None,
+        provenance=None,
+    )
+    monkeypatch.setattr(graph, "_descriptor_metadata", lambda: metadata)
+    monkeypatch.setattr(graph, "_connect", lambda: FakeConn([]))
+    monkeypatch.setattr(graph, "_load_metadata", lambda _conn: metadata)
+    node_ids = iter(
+        [
+            {"nodeId": 1, "distanceMeters": 10.0},
+            {"nodeId": 2, "distanceMeters": 12.0},
+        ]
+    )
+    monkeypatch.setattr(graph, "_nearest_node", lambda _conn, _lat, _lon: next(node_ids))
+
+    def fake_run_leg(_conn, **_kwargs):
+        raise ValueError(
+            "avoidAreas entries must use bounding-box arrays or GeoJSON Polygon/MultiPolygon geometry."
+        )
+
+    monkeypatch.setattr(graph, "_run_leg", fake_run_leg)
+
+    status, body = graph.compute_route(
+        [
+            {"label": "Start", "lat": 52.0, "lon": -1.0},
+            {"label": "End", "lat": 51.8, "lon": -0.8},
+        ],
+        profile="drive",
+        constraints={"avoidAreas": ["flood restrictions"], "avoidIds": [], "softAvoid": False},
+    )
+    assert status == 400
+    assert body["code"] == "INVALID_INPUT"
+    assert "avoidAreas entries must use bounding-box arrays" in body["message"]
 
 
 def test_route_graph_geometry_and_step_helpers():
