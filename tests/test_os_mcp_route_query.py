@@ -144,7 +144,8 @@ def test_route_query_without_if_possible_preserves_hard_avoid():
 
 def test_route_query_surfaces_unresolved_avoid_text_without_invalid_parameters():
     body = _route(
-        "Plan the best route from Coventry rail station to London Euston and avoid central cordon if possible"
+        "Plan the best route from Coventry rail station to London Euston and "
+        "avoid central cordon if possible"
     )
     assert body["intent"] == "route_planning"
     params = body["recommended_parameters"]
@@ -156,7 +157,8 @@ def test_route_query_surfaces_unresolved_avoid_text_without_invalid_parameters()
 
 def test_route_query_treats_plain_avoid_tokens_as_ids():
     body = _route(
-        "Plan the best route from Coventry rail station to London Euston and avoid edge-1001 if possible"
+        "Plan the best route from Coventry rail station to London Euston and "
+        "avoid edge-1001 if possible"
     )
     assert body["intent"] == "route_planning"
     params = body["recommended_parameters"]

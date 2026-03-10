@@ -183,7 +183,10 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 ## Gaps & Immediate Action Items
 
-1. CI pipeline not yet committed (lint, type, test, coverage badge, build image).
+1. CI pipeline is now committed via GitHub Actions (targeted Ruff/Mypy gates,
+   full Python tests with the 90% coverage gate, multi-arch Docker validation,
+   and GHCR publish on `main`/`v*` tags). Next improvement: add playground /
+   browser coverage and release automation.
 2. Observability: improve/extend metrics and add structured JSON log sink.
 3. Retry/backoff sophistication (currently simple exponential) – consider `tenacity` or custom jitter.
 4. Resource catalog still minimal (admin sample only) – add real code lists & full boundary sets.

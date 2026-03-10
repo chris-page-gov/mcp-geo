@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added GitHub Actions CI workflow `.github/workflows/ci.yml` with
+  repo-supported Ruff/Mypy gates, full Python regression coverage, multi-arch
+  Docker build validation, and GHCR image publication on `main` and `v*` tags.
 - Added governed DSAP design and implementation docs:
   `docs/decision_support_audit_pack.md`, `implement.md`, and
   `documentation.md`.
@@ -61,6 +64,10 @@ All notable changes to this project will be documented in this file.
   `tests/test_stakeholder_benchmark_pack.py`.
 
 ### Changed
+- Updated `README.md` and `docs/Build.md` to document the published GHCR image
+  path and to require absolute `--env-file` paths for GUI desktop clients such
+  as Claude Desktop, avoiding broken `.env` resolution outside the repo
+  directory.
 - Added repo-level LF line-ending policy via `.gitattributes` and
   `.editorconfig`, made devcontainer `ngrok` installation opt-in, and wired
   devcontainer/Docker proxy plus local CA handling through `.devcontainer/.env`
