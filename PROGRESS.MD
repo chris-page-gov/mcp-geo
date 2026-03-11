@@ -3,7 +3,18 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-10
+Last updated: 2026-03-11
+
+## AI Community analytical index replacement (2026-03-11)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| AIDX-SRC-1 Canonical markdown, source policy, and gap audit | done | none | Added standalone analytical index source `docs/reports/mcp_geo_analytical_index_2026-03-11.md`, appendix-ready derivative `docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md`, and gap-audit note `docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md`, all pinned to public commit `fe862910da246ca77f374cfbe484985f5df4d316` and explicitly excluding the external transcript from formal citation. |
+| AIDX-HAR-2 Manifest, validation, and bundle generation | done | AIDX-SRC-1 | Added manifest `data/report_inputs/mcp_geo_analytical_index_manifest.json` plus generator `scripts/generate_mcp_geo_analytical_index.py` to validate heading depth, summary presence, figure coverage, pinned GitHub links, and top-level repo coverage while emitting the appendix slice, gap audit, generated infographic assets, and Prism bundle sources under `docs/mcp_geo_prism_bundle/`. |
+| AIDX-PUB-3 Prism-ready package, figures, and report indexing | done | AIDX-HAR-2 | Regenerated `docs/mcp_geo_prism_bundle/` as a Prism-ready package with `README.md`, `main.md`, `main.tex`, `references.bib`, `sections/*.tex`, and eight new infographic PNGs. Updated report indexes so the analytical index, appendix replacement, and gap audit are discoverable from `docs/reports/README.md` and `docs/public_sector_ai_community/14_evidence_and_report_index.md`. |
+| AIDX-VAL-4 Focused regression coverage and publication validation | done | AIDX-PUB-3 | Added focused test coverage in `tests/test_generate_mcp_geo_analytical_index.py`. Final validation passed on 2026-03-11 via `./scripts/pytest-local -q --no-cov tests/test_generate_mcp_geo_analytical_index.py`, regeneration with `./.venv/bin/python scripts/generate_mcp_geo_analytical_index.py`, rendered-page inspection of the appendix pages in the draft PDF, and successful Prism-bundle compilation to `docs/mcp_geo_prism_bundle/main.pdf`. |
 
 ## GitHub Actions CI and GHCR publishing (2026-03-10)
 

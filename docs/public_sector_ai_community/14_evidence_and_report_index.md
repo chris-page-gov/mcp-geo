@@ -45,6 +45,14 @@ This index maps major claims in this documentation set to repository evidence ar
 - `docs/design/figma/mcp_figma_setup_and_capture_runbook.md`
 - `playground/tests/compact_windows/`
 
+## Analytical Index and Publication Artifacts
+
+- `docs/reports/mcp_geo_analytical_index_2026-03-11.md`
+- `docs/reports/mcp_geo_analytical_index_2026-03-11.pdf`
+- `docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md`
+- `docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md`
+- `docs/mcp_geo_prism_bundle/`
+
 ## Support Matrix and Specifications
 
 - `docs/spec_package/`

@@ -1,0 +1,268 @@
+{
+  "title": "MCP-Geo Analytical Index",
+  "subtitle": "Curated full-repository guide pinned to commit fe862910da246ca77f374cfbe484985f5df4d316",
+  "report_date": "2026-03-11",
+  "repo_url": "https://github.com/chris-page-gov/mcp-geo",
+  "git_ref": "fe862910da246ca77f374cfbe484985f5df4d316",
+  "canonical_markdown": "docs/reports/mcp_geo_analytical_index_2026-03-11.md",
+  "appendix_replacement_markdown": "docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md",
+  "gap_audit_markdown": "docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md",
+  "bundle_dir": "docs/mcp_geo_prism_bundle",
+  "report_pdf": "docs/reports/mcp_geo_analytical_index_2026-03-11.pdf",
+  "asset_dir": "docs/reports/assets/analytical_index",
+  "baseline_inputs": [
+    "docs/slides/20260225 - From_Apps_to_Answers.pdf",
+    "docs/reports/mcp_geo_ai_community_event_record.docx",
+    "docs/mcp_geo_prism_bundle/main.md"
+  ],
+  "context_only_sources": [
+    "/Users/crpage/Downloads/20260225-AI-Community-MCP-Talk.txt"
+  ],
+  "required_headings": [
+    "## 1. Reader Orientation",
+    "### 1.1 Reading lanes and audience fit",
+    "### 1.2 Citation baseline and source policy",
+    "### 1.3 What this index does differently",
+    "## 2. Root and Launch Surface",
+    "### 2.1 First-run orientation and launch files",
+    "### 2.2 Durable context, governance, and contributor controls",
+    "### 2.3 Repository shape at the pinned commit",
+    "## 3. Runtime and Protocol Implementation",
+    "### 3.1 HTTP server, config, and guardrails",
+    "### 3.2 STDIO transport and MCP protocol machinery",
+    "### 3.3 Audit, cache, and route-planning subsystems",
+    "## 4. Tools, Resources, and Interfaces",
+    "### 4.1 Tool registry and discovery surface",
+    "### 4.2 Domain tool families and supporting resources",
+    "### 4.3 UI surfaces, playground, and host-facing views",
+    "## 5. Documentation, Reports, Slides, and Publication Paths",
+    "### 5.1 Onboarding and specification material",
+    "### 5.2 Community narrative, reports, and slide assets",
+    "### 5.3 Prism and publication stack",
+    "## 6. Research, Testing, Evidence, and Release Operations",
+    "### 6.1 Research studies and option papers",
+    "### 6.2 Tests, evaluation harnesses, and benchmark packs",
+    "### 6.3 Release, CI, troubleshooting, and maturity signals",
+    "## 7. Appendix A. Infographic Prompts",
+    "### F01. Repository at a glance",
+    "### F02. Reader pathways and start-here matrix",
+    "### F03. Runtime request flow",
+    "### F04. Tool and resource ecosystem map",
+    "### F05. Documentation and publication stack",
+    "### F06. Evidence and assurance ladder",
+    "### F07. Release and iteration pipeline",
+    "### F08. Governed answer loop",
+    "## 8. Appendix B. Citation Method and Baseline Replacement Audit",
+    "### B1. Coverage and curation rules",
+    "### B2. Baseline replacement audit"
+  ],
+  "tracked_top_level_entries": [
+    ".coveragerc",
+    ".devcontainer",
+    ".dockerignore",
+    ".editorconfig",
+    ".env.example",
+    ".gitattributes",
+    ".github",
+    ".gitignore",
+    ".gitmodules",
+    ".markdownlint.json",
+    ".vscode",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTEXT.md",
+    "Dockerfile",
+    "PROGRESS.MD",
+    "README.md",
+    "RELEASE_NOTES",
+    "SKILL.md",
+    "codex-transfer.patch",
+    "commit-template.txt",
+    "data",
+    "docs",
+    "documentation.md",
+    "implement.md",
+    "mcp.json",
+    "output",
+    "package.json",
+    "playground",
+    "pyproject.toml",
+    "pytest.ini",
+    "research",
+    "resources",
+    "run.py",
+    "safe-by-design.json",
+    "scripts",
+    "server",
+    "skills",
+    "submodules",
+    "tests",
+    "tmp",
+    "tools",
+    "troubleshooting",
+    "tutorial.md",
+    "ui",
+    "update-wsl-certs.sh",
+    "xCOPILOT_INSTRUCTIONS.md"
+  ],
+  "summarized_clusters": [
+    "docs/reports",
+    "research",
+    "tests",
+    "submodules",
+    "docs/vendor",
+    "output",
+    "tmp"
+  ],
+  "figures": [
+    {
+      "id": "F01",
+      "title": "Repository at a glance",
+      "filename": "f01_repo_at_a_glance.png",
+      "placement_heading": "### 2.3 Repository shape at the pinned commit",
+      "purpose": "Show the visible weight of the repo by top-level area and make the root map legible in one glance.",
+      "source_basis": [
+        "README.md",
+        "docs/reports/README.md",
+        "docs/public_sector_ai_community/README.md",
+        "git ls-tree fe862910da246ca77f374cfbe484985f5df4d316"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "An infographic showing the top-level shape of the pinned MCP-Geo repository with the largest areas highlighted as docs, tests, research, scripts, server, tools, and UI.",
+      "prompt": "Create a clean editorial infographic titled 'MCP-Geo repository at a glance'. Use an off-white paper background, dark ink text, muted teal and amber accents, and a public-sector research tone. Show the repository root as a central frame, then group the tracked top-level areas into meaningful clusters: root launch files, runtime code, tools and UI, documentation, research, testing and evidence, release operations, and support data. Include relative scale cues so docs, tests, and research read as the largest visible surfaces. Add small labels for representative anchors such as README.md, server/, tools/, docs/, tests/, research/, scripts/, and RELEASE_NOTES/. Make the layout readable without surrounding text and suitable for a PDF report."
+    },
+    {
+      "id": "F02",
+      "title": "Reader pathways and start-here matrix",
+      "filename": "f02_reader_pathways.png",
+      "placement_heading": "### 1.1 Reading lanes and audience fit",
+      "purpose": "Help readers choose the fastest route through the repo based on goal rather than folder name.",
+      "source_basis": [
+        "README.md",
+        "docs/public_sector_ai_community/README.md",
+        "docs/spec_package/README.md",
+        "docs/reports/README.md"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A matrix infographic mapping four reader goals to recommended repo reading paths, with arrows from onboarding, runtime, evidence, and publication needs to the best starting documents.",
+      "prompt": "Create an infographic titled 'Reader pathways and start-here matrix' for the MCP-Geo repository. Use four audience lanes: first-time operator, technical reviewer, evidence seeker, and publication editor. For each lane, show a short route through named repo documents such as README.md, docs/public_sector_ai_community/README.md, docs/spec_package/README.md, docs/reports/README.md, server/main.py, and server/mcp/tools.py. Make the layout work as a quick decision aid, with arrows and concise labels rather than prose-heavy paragraphs. Keep the style calm, professional, and clearly navigational."
+    },
+    {
+      "id": "F03",
+      "title": "Runtime request flow",
+      "filename": "f03_runtime_request_flow.png",
+      "placement_heading": "## 3. Runtime and Protocol Implementation",
+      "purpose": "Explain how a host request moves through transport, MCP routing, tools, resources, and observability.",
+      "source_basis": [
+        "server/main.py",
+        "server/stdio_adapter.py",
+        "server/mcp/tools.py",
+        "server/mcp/resources.py",
+        "server/audit/"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A left-to-right runtime flow diagram showing host request entry, HTTP and STDIO transport, MCP routing, tool and resource dispatch, caches and audit, and response packaging.",
+      "prompt": "Create a systems infographic titled 'Runtime request flow'. Show a left-to-right governed request path for MCP-Geo: host or client, HTTP or STDIO transport, MCP router, tool and resource dispatch, caches and helper subsystems, audit and observability, then the returned answer. Include representative file anchors such as server/main.py, server/stdio_adapter.py, server/mcp/tools.py, server/mcp/resources.py, and server/audit/. Make the visual understandable to non-specialist readers while still feeling technically credible. Use clear arrows, a small legend, and restrained colors."
+    },
+    {
+      "id": "F04",
+      "title": "Tool and resource ecosystem map",
+      "filename": "f04_tool_resource_ecosystem.png",
+      "placement_heading": "### 4.2 Domain tool families and supporting resources",
+      "purpose": "Show the breadth of callable tool families without forcing readers through the full schema catalog first.",
+      "source_basis": [
+        "docs/tool_catalog.md",
+        "server/mcp/tools.py",
+        "resources/",
+        "ui/"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A hub-and-spoke diagram showing MCP-Geo tool families around a central registry, with related resources and UI surfaces connected as supporting layers.",
+      "prompt": "Create an infographic titled 'Tool and resource ecosystem map' for MCP-Geo. Put the tool registry at the center, then arrange the main tool families around it: OS Places and Names, OS features and maps, admin lookup, ONS and NOMIS, route planning, MCP meta tools, and MCP-Apps UI tools. Add a secondary ring for resources and UI assets, including resources/, docs/tool_catalog.md, ui/, and playground/. Use concise labels and category colors so a visual learner can grasp the breadth of the server without reading the full schema catalog. Keep the visual polished and publication-ready."
+    },
+    {
+      "id": "F05",
+      "title": "Documentation and publication stack",
+      "filename": "f05_documentation_publication_stack.png",
+      "placement_heading": "## 5. Documentation, Reports, Slides, and Publication Paths",
+      "purpose": "Show how onboarding notes, specs, reports, slides, and Prism outputs relate instead of competing with each other.",
+      "source_basis": [
+        "docs/getting_started.md",
+        "docs/spec_package/README.md",
+        "docs/public_sector_ai_community/README.md",
+        "docs/reports/README.md",
+        "docs/mcp_geo_prism_bundle/"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A stacked publication diagram showing onboarding docs, specifications, narrative documentation, reports, slides, and Prism bundle outputs as linked layers.",
+      "prompt": "Create an infographic titled 'Documentation and publication stack'. Show MCP-Geo's explanatory material as a layered stack: quick-start docs, specification package, community narrative set, report library, slide and event materials, then Prism-ready publication output. Use representative labels such as docs/getting_started.md, docs/spec_package/README.md, docs/public_sector_ai_community/README.md, docs/reports/README.md, docs/slides/20260225 - From_Apps_to_Answers.pdf, and docs/mcp_geo_prism_bundle/. Make the layout feel like a publishing pipeline rather than a generic folder chart."
+    },
+    {
+      "id": "F06",
+      "title": "Evidence and assurance ladder",
+      "filename": "f06_evidence_assurance_ladder.png",
+      "placement_heading": "### 6.2 Tests, evaluation harnesses, and benchmark packs",
+      "purpose": "Show how research, tests, evaluation, reports, and audit materials combine into a defensible evidence trail.",
+      "source_basis": [
+        "tests/",
+        "tests/evaluation/",
+        "docs/reports/",
+        "docs/decision_support_audit_pack.md",
+        "troubleshooting/"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A ladder diagram showing successive assurance layers from raw research and fixtures through tests, evaluation harnesses, reports, troubleshooting, and audit packaging.",
+      "prompt": "Create an infographic titled 'Evidence and assurance ladder'. Present MCP-Geo's assurance model as ascending steps: research inputs and option papers, fixtures and scripts, automated tests, evaluation harnesses and benchmark packs, human-readable reports, troubleshooting traces, and audit-ready packaging. Use repository anchors such as research/, tests/, tests/evaluation/, docs/reports/, troubleshooting/, and docs/decision_support_audit_pack.md. The visual should explain rigor and traceability to a reader who may never open the code."
+    },
+    {
+      "id": "F07",
+      "title": "Release and iteration pipeline",
+      "filename": "f07_release_iteration_pipeline.png",
+      "placement_heading": "### 6.3 Release, CI, troubleshooting, and maturity signals",
+      "purpose": "Show how work moves from implementation to verification to public release and then back into documentation.",
+      "source_basis": [
+        "CHANGELOG.md",
+        "RELEASE_NOTES/",
+        ".github/workflows/ci.yml",
+        "PROGRESS.MD",
+        "CONTEXT.md"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A pipeline diagram showing feature delivery, tests and CI, release packaging, documentation refresh, and feedback loops back into context and progress tracking.",
+      "prompt": "Create an infographic titled 'Release and iteration pipeline'. Show a clear loop: implementation work, scripts and tooling, automated tests and CI, release notes and changelog, public publication, then context and progress updates feeding the next iteration. Label repository anchors such as .github/workflows/ci.yml, CHANGELOG.md, RELEASE_NOTES/, PROGRESS.MD, and CONTEXT.md. Keep the flow explicit and governance-oriented, suitable for a UK public-sector AI discussion."
+    },
+    {
+      "id": "F08",
+      "title": "Governed answer loop",
+      "filename": "f08_governed_answer_loop.png",
+      "placement_heading": "### 5.3 Prism and publication stack",
+      "purpose": "Tie the talk thesis to the repo by showing how a question becomes an inspectable answer and then a publication artifact.",
+      "source_basis": [
+        "docs/slides/20260225 - From_Apps_to_Answers.pdf",
+        "docs/reports/mcp_geo_ai_community_event_record.docx",
+        "server/audit/",
+        "docs/mcp_geo_prism_bundle/"
+      ],
+      "aspect_ratio": "16:9",
+      "alt_text": "A circular flow diagram showing a question entering MCP-Geo, passing through tools and evidence, producing an answer and audit trail, and being turned into report and publication outputs.",
+      "prompt": "Create an infographic titled 'Governed answer loop'. Show a circular public-sector evidence workflow: question, MCP routing and tool choice, evidence retrieval, answer assembly, provenance and audit capture, human-readable report, Prism or PDF publication, then re-entry into future questions. Include light references to the talk material and event record without making the slide deck the whole story. The visual should make the repo feel like a governed answer system rather than a loose collection of files."
+    }
+  ],
+  "baseline_audit": {
+    "strengths": [
+      "The earlier Appendix A already identified the right broad reading domains: root orientation, runtime implementation, documentation, research, tests, and release material.",
+      "The tracked slide deck, event record, and rough Prism bundle already established the design intention that visuals should sit inside the index rather than outside it.",
+      "The previous appendix already linked representative repo locations and proved that a GitHub-first analytical index was viable."
+    ],
+    "gaps": [
+      "The earlier appendix stopped too early in the runtime and evidence surfaces, especially around resources, playground, release operations, and the dense report library.",
+      "The summaries were helpful but often too thin to guide different reader types toward the right reading path.",
+      "The visual layer was not yet strong enough to carry the story independently, and the prompt provenance for each infographic was not recorded."
+    ],
+    "changes": [
+      "The replacement turns the appendix into a standalone analytical index first, then derives an appendix-ready version from the same source.",
+      "The replacement adds a pinned commit source policy, a manifest-backed validation workflow, a full figure-prompt appendix, and a Prism-ready bundle with section files.",
+      "The replacement treats the public repo as a curated full surface: all top-level tracked areas are accounted for, but bulky zones are summarized analytically instead of catalogued file by file."
+    ]
+  }
+}

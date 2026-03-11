@@ -1,0 +1,336 @@
+\section{7. Appendix A. Infographic
+Prompts}\label{appendix-a.-infographic-prompts}
+
+This appendix records one prompt per infographic so the visual layer can
+be regenerated, refined, or re-styled without losing the design intent
+or repo provenance.
+
+\subsection{F01. Repository at a
+glance}\label{f01.-repository-at-a-glance}
+
+This prompt defines the root-map figure that lets a reader grasp the
+repo's shape without reading the whole index first.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f01\_repo\_at\_a\_glance.png}
+\item
+  Placement:
+  \texttt{\#\#\#\ 2.3\ Repository\ shape\ at\ the\ pinned\ commit}
+\item
+  Purpose: Show the visible weight of the repo by top-level area and
+  make the root map legible in one glance.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/README.md}{\texttt{README.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/README.md}{\texttt{docs/reports/README.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community/README.md}{\texttt{docs/public\_sector\_ai\_community/README.md}},
+  and the pinned commit root tree.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``An infographic showing the top-level shape of the
+  pinned MCP-Geo repository with the largest areas highlighted as docs,
+  tests, research, scripts, server, tools, and UI.''
+\item
+  Prompt: Create a clean editorial infographic titled ``MCP-Geo
+  repository at a glance''. Use an off-white paper background, dark ink
+  text, muted teal and amber accents, and a public-sector research tone.
+  Show the repository root as a central frame, then group the tracked
+  top-level areas into meaningful clusters: root launch files, runtime
+  code, tools and UI, documentation, research, testing and evidence,
+  release operations, and support data. Include relative scale cues so
+  docs, tests, and research read as the largest visible surfaces. Add
+  small labels for representative anchors such as README.md, server/,
+  tools/, docs/, tests/, research/, scripts/, and RELEASE\_NOTES/. Make
+  the layout readable without surrounding text and suitable for a PDF
+  report.
+\end{itemize}
+
+\subsection{F02. Reader pathways and start-here
+matrix}\label{f02.-reader-pathways-and-start-here-matrix}
+
+This prompt defines the decision aid that helps readers choose a route
+through the repo based on purpose instead of guessing from folder names.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f02\_reader\_pathways.png}
+\item
+  Placement: \texttt{\#\#\#\ 1.1\ Reading\ lanes\ and\ audience\ fit}
+\item
+  Purpose: Help readers choose the fastest route through the repo based
+  on goal rather than folder name.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/README.md}{\texttt{README.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community/README.md}{\texttt{docs/public\_sector\_ai\_community/README.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/spec_package/README.md}{\texttt{docs/spec\_package/README.md}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/README.md}{\texttt{docs/reports/README.md}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A matrix infographic mapping four reader goals to
+  recommended repo reading paths, with arrows from onboarding, runtime,
+  evidence, and publication needs to the best starting documents.''
+\item
+  Prompt: Create an infographic titled ``Reader pathways and start-here
+  matrix'' for the MCP-Geo repository. Use four audience lanes:
+  first-time operator, technical reviewer, evidence seeker, and
+  publication editor. For each lane, show a short route through named
+  repo documents such as README.md,
+  docs/public\_sector\_ai\_community/README.md,
+  docs/spec\_package/README.md, docs/reports/README.md, server/main.py,
+  and server/mcp/tools.py. Make the layout work as a quick decision aid,
+  with arrows and concise labels rather than prose-heavy paragraphs.
+  Keep the style calm, professional, and clearly navigational.
+\end{itemize}
+
+\subsection{F03. Runtime request flow}\label{f03.-runtime-request-flow}
+
+This prompt defines the transport-to-answer diagram that explains the
+runtime stack to readers who need the system shape fast.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f03\_runtime\_request\_flow.png}
+\item
+  Placement: \texttt{\#\#\ 3.\ Runtime\ and\ Protocol\ Implementation}
+\item
+  Purpose: Explain how a host request moves through transport, MCP
+  routing, tools, resources, and observability.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/main.py}{\texttt{server/main.py}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/stdio_adapter.py}{\texttt{server/stdio\_adapter.py}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/tools.py}{\texttt{server/mcp/tools.py}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/resources.py}{\texttt{server/mcp/resources.py}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/server/audit}{\texttt{server/audit/}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A left-to-right runtime flow diagram showing host
+  request entry, HTTP and STDIO transport, MCP routing, tool and
+  resource dispatch, caches and audit, and response packaging.''
+\item
+  Prompt: Create a systems infographic titled ``Runtime request flow''.
+  Show a left-to-right governed request path for MCP-Geo: host or
+  client, HTTP or STDIO transport, MCP router, tool and resource
+  dispatch, caches and helper subsystems, audit and observability, then
+  the returned answer. Include representative file anchors such as
+  server/main.py, server/stdio\_adapter.py, server/mcp/tools.py,
+  server/mcp/resources.py, and server/audit/. Make the visual
+  understandable to non-specialist readers while still feeling
+  technically credible. Use clear arrows, a small legend, and restrained
+  colors.
+\end{itemize}
+
+\subsection{F04. Tool and resource ecosystem
+map}\label{f04.-tool-and-resource-ecosystem-map}
+
+This prompt defines the capability map that lets readers understand the
+callable surface before opening the schema catalog.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f04\_tool\_resource\_ecosystem.png}
+\item
+  Placement:
+  \texttt{\#\#\#\ 4.2\ Domain\ tool\ families\ and\ supporting\ resources}
+\item
+  Purpose: Show the breadth of callable tool families without forcing
+  readers through the full schema catalog first.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/tool_catalog.md\#L1-L61}{\texttt{docs/tool\_catalog.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/tools.py}{\texttt{server/mcp/tools.py}},
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/resources}{\texttt{resources/}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/ui}{\texttt{ui/}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A hub-and-spoke diagram showing MCP-Geo tool
+  families around a central registry, with related resources and UI
+  surfaces connected as supporting layers.''
+\item
+  Prompt: Create an infographic titled ``Tool and resource ecosystem
+  map'' for MCP-Geo. Put the tool registry at the center, then arrange
+  the main tool families around it: OS Places and Names, OS features and
+  maps, admin lookup, ONS and NOMIS, route planning, MCP meta tools, and
+  MCP-Apps UI tools. Add a secondary ring for resources and UI assets,
+  including resources/, docs/tool\_catalog.md, ui/, and playground/. Use
+  concise labels and category colors so a visual learner can grasp the
+  breadth of the server without reading the full schema catalog. Keep
+  the visual polished and publication-ready.
+\end{itemize}
+
+\subsection{F05. Documentation and publication
+stack}\label{f05.-documentation-and-publication-stack}
+
+This prompt defines the document-stack visual that keeps the explanatory
+surfaces legible instead of burying them inside \texttt{docs/}.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f05\_documentation\_publication\_stack.png}
+\item
+  Placement:
+  \texttt{\#\#\ 5.\ Documentation,\ Reports,\ Slides,\ and\ Publication\ Paths}
+\item
+  Purpose: Show how onboarding notes, specs, reports, slides, and Prism
+  outputs relate instead of competing with each other.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/getting_started.md}{\texttt{docs/getting\_started.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/spec_package/README.md}{\texttt{docs/spec\_package/README.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community/README.md}{\texttt{docs/public\_sector\_ai\_community/README.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/README.md}{\texttt{docs/reports/README.md}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/mcp_geo_prism_bundle}{\texttt{docs/mcp\_geo\_prism\_bundle/}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A stacked publication diagram showing onboarding
+  docs, specifications, narrative documentation, reports, slides, and
+  Prism bundle outputs as linked layers.''
+\item
+  Prompt: Create an infographic titled ``Documentation and publication
+  stack''. Show MCP-Geo's explanatory material as a layered stack:
+  quick-start docs, specification package, community narrative set,
+  report library, slide and event materials, then Prism-ready
+  publication output. Use representative labels such as
+  docs/getting\_started.md, docs/spec\_package/README.md,
+  docs/public\_sector\_ai\_community/README.md, docs/reports/README.md,
+  docs/slides/20260225 - From\_Apps\_to\_Answers.pdf, and
+  docs/mcp\_geo\_prism\_bundle/. Make the layout feel like a publishing
+  pipeline rather than a generic folder chart.
+\end{itemize}
+
+\subsection{F06. Evidence and assurance
+ladder}\label{f06.-evidence-and-assurance-ladder}
+
+This prompt defines the ladder diagram that shows how MCP-Geo supports
+scrutiny instead of only feature discovery.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f06\_evidence\_assurance\_ladder.png}
+\item
+  Placement:
+  \texttt{\#\#\#\ 6.2\ Tests,\ evaluation\ harnesses,\ and\ benchmark\ packs}
+\item
+  Purpose: Show how research, tests, evaluation, reports, and audit
+  materials combine into a defensible evidence trail.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/tests}{\texttt{tests/}},
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/tests/evaluation}{\texttt{tests/evaluation/}},
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports}{\texttt{docs/reports/}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/decision_support_audit_pack.md}{\texttt{docs/decision\_support\_audit\_pack.md}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/troubleshooting}{\texttt{troubleshooting/}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A ladder diagram showing successive assurance layers
+  from raw research and fixtures through tests, evaluation harnesses,
+  reports, troubleshooting, and audit packaging.''
+\item
+  Prompt: Create an infographic titled ``Evidence and assurance
+  ladder''. Present MCP-Geo's assurance model as ascending steps:
+  research inputs and option papers, fixtures and scripts, automated
+  tests, evaluation harnesses and benchmark packs, human-readable
+  reports, troubleshooting traces, and audit-ready packaging. Use
+  repository anchors such as research/, tests/, tests/evaluation/,
+  docs/reports/, troubleshooting/, and
+  docs/decision\_support\_audit\_pack.md. The visual should explain
+  rigor and traceability to a reader who may never open the code.
+\end{itemize}
+
+\subsection{F07. Release and iteration
+pipeline}\label{f07.-release-and-iteration-pipeline}
+
+This prompt defines the publication-and-iteration loop that turns repo
+maintenance into a visible maturity signal.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f07\_release\_iteration\_pipeline.png}
+\item
+  Placement:
+  \texttt{\#\#\#\ 6.3\ Release,\ CI,\ troubleshooting,\ and\ maturity\ signals}
+\item
+  Purpose: Show how work moves from implementation to verification to
+  public release and then back into documentation.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/CHANGELOG.md}{\texttt{CHANGELOG.md}},
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/RELEASE_NOTES}{\texttt{RELEASE\_NOTES/}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/.github/workflows/ci.yml}{\texttt{.github/workflows/ci.yml}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/PROGRESS.MD}{\texttt{PROGRESS.MD}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/CONTEXT.md}{\texttt{CONTEXT.md}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A pipeline diagram showing feature delivery, tests
+  and CI, release packaging, documentation refresh, and feedback loops
+  back into context and progress tracking.''
+\item
+  Prompt: Create an infographic titled ``Release and iteration
+  pipeline''. Show a clear loop: implementation work, scripts and
+  tooling, automated tests and CI, release notes and changelog, public
+  publication, then context and progress updates feeding the next
+  iteration. Label repository anchors such as .github/workflows/ci.yml,
+  CHANGELOG.md, RELEASE\_NOTES/, PROGRESS.MD, and CONTEXT.md. Keep the
+  flow explicit and governance-oriented, suitable for a UK public-sector
+  AI discussion.
+\end{itemize}
+
+\subsection{F08. Governed answer loop}\label{f08.-governed-answer-loop}
+
+This prompt defines the concept figure that reconnects the repo
+structure to the original talk's core argument.
+
+\begin{itemize}
+\tightlist
+\item
+  Figure file: \texttt{f08\_governed\_answer\_loop.png}
+\item
+  Placement: \texttt{\#\#\#\ 5.3\ Prism\ and\ publication\ stack}
+\item
+  Purpose: Tie the talk thesis to the repo by showing how a question
+  becomes an inspectable answer and then a publication artifact.
+\item
+  Source basis:
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/slides/20260225\%20-\%20From_Apps_to_Answers.pdf}{\texttt{docs/slides/20260225\ -\ From\_Apps\_to\_Answers.pdf}},
+  \href{https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/mcp_geo_ai_community_event_record.docx}{\texttt{docs/reports/mcp\_geo\_ai\_community\_event\_record.docx}},
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/server/audit}{\texttt{server/audit/}},
+  and
+  \href{https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/mcp_geo_prism_bundle}{\texttt{docs/mcp\_geo\_prism\_bundle/}}.
+\item
+  Intended output: \texttt{16:9} PNG suitable for PDF embedding.
+\item
+  Alt text draft: ``A circular flow diagram showing a question entering
+  MCP-Geo, passing through tools and evidence, producing an answer and
+  audit trail, and being turned into report and publication outputs.''
+\item
+  Prompt: Create an infographic titled ``Governed answer loop''. Show a
+  circular public-sector evidence workflow: question, MCP routing and
+  tool choice, evidence retrieval, answer assembly, provenance and audit
+  capture, human-readable report, Prism or PDF publication, then
+  re-entry into future questions. Include light references to the talk
+  material and event record without making the slide deck the whole
+  story. The visual should make the repo feel like a governed answer
+  system rather than a loose collection of files.
+\end{itemize}

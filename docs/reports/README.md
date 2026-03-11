@@ -2,6 +2,13 @@
 
 This folder contains human-readable run reports and investigation summaries.
 
+## Analytical Index and Publication Support
+
+- 2026-03-11: [MCP-Geo Analytical Index](mcp_geo_analytical_index_2026-03-11.md)
+- 2026-03-11: [MCP-Geo Analytical Index (PDF)](mcp_geo_analytical_index_2026-03-11.pdf)
+- 2026-03-11: [AI Community Appendix A replacement slice](mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md)
+- 2026-03-11: [Analytical Index gap audit](mcp_geo_analytical_index_gap_audit_2026-03-11.md)
+
 ## ONS Catalog Live Validation
 
 - 2026-02-07: [ONS catalog live validation run](ons_catalog_live_run_2026-02-07.md)

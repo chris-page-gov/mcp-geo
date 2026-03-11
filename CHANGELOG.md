@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a standalone MCP-Geo analytical index publication set pinned to commit
+  `fe862910da246ca77f374cfbe484985f5df4d316`, including the canonical report
+  `docs/reports/mcp_geo_analytical_index_2026-03-11.md`, appendix-ready slice
+  `docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md`,
+  and gap-audit note
+  `docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md`.
+- Added analytical-index generation assets:
+  `data/report_inputs/mcp_geo_analytical_index_manifest.json`,
+  `scripts/generate_mcp_geo_analytical_index.py`, eight generated infographic
+  figures under `docs/reports/assets/analytical_index/`, and focused coverage
+  in `tests/test_generate_mcp_geo_analytical_index.py`.
+- Added a regenerated Prism-ready analytical-index bundle under
+  `docs/mcp_geo_prism_bundle/`, including `README.md`, `main.md`, `main.tex`,
+  `references.bib`, and section fragments under `sections/`.
 - Added GitHub Actions CI workflow `.github/workflows/ci.yml` with
   repo-supported Ruff/Mypy gates, full Python regression coverage, multi-arch
   Docker build validation, and GHCR image publication on `main` and `v*` tags.
@@ -64,6 +78,11 @@ All notable changes to this project will be documented in this file.
   `tests/test_stakeholder_benchmark_pack.py`.
 
 ### Changed
+- Updated `docs/reports/README.md`,
+  `docs/public_sector_ai_community/14_evidence_and_report_index.md`,
+  `CONTEXT.md`, and `PROGRESS.MD` so the analytical-index workflow, appendix
+  replacement, and pinned-commit source policy are discoverable in the repo's
+  existing documentation and tracker surfaces.
 - Updated `README.md` and `docs/Build.md` to document the published GHCR image
   path and to require absolute `--env-file` paths for GUI desktop clients such
   as Claude Desktop, avoiding broken `.env` resolution outside the repo

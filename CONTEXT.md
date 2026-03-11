@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-10
+Last updated: 2026-03-11
 Owner: @chris-page-gov
 
 ## Purpose
@@ -98,6 +98,10 @@ assumptions change.
 - Publishing and maintaining the UK Public Sector AI Community documentation
   set (`docs/public_sector_ai_community/`) with novice/apprentice pathways,
   timeline synthesis, and Prism-ready LaTeX outputs.
+- Publishing and maintaining the new MCP-Geo analytical index package under
+  `docs/reports/mcp_geo_analytical_index_2026-03-11.md` plus the regenerated
+  Prism bundle in `docs/mcp_geo_prism_bundle/`, pinned to commit
+  `fe862910da246ca77f374cfbe484985f5df4d316` for stable GitHub citations.
 - Benchmarking Codex GPT-5.4 as a first-class MCP host alongside Claude
   Desktop Opus 4.6, including launcher separation, trace/session scoring, and
   reproducible comparison reports.
@@ -238,6 +242,11 @@ assumptions change.
   `docs/reports/os_catalog_gap_implementation_plan_2026-02-13.md`.
 - Documentation pack and preparation for workshop/demo, now delivered as
   `docs/public_sector_ai_community/` with linked markdown and Prism outputs.
+- Maintain the analytical-index publication workflow under
+  `scripts/generate_mcp_geo_analytical_index.py`,
+  `data/report_inputs/mcp_geo_analytical_index_manifest.json`, and
+  `docs/mcp_geo_prism_bundle/`, including the appendix replacement slice and
+  pinned-commit citation policy for the AI Community materials.
 - Deliver map delivery research package with personas, autonomous trials, and
   evidence capture under `research/map_delivery_research_2026-02/`.
 - Track recommendation-delivery workstreams in

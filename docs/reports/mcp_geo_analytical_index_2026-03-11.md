@@ -1,3 +1,14 @@
+---
+title: "MCP-Geo Analytical Index"
+subtitle: "Curated full-repository guide pinned to commit fe862910da246ca77f374cfbe484985f5df4d316"
+date: "2026-03-11"
+toc: true
+geometry: margin=0.85in
+colorlinks: true
+urlcolor: blue
+papersize: a4
+---
+
 # MCP-Geo Analytical Index
 
 This standalone guide maps the public `mcp-geo` repository into a navigable reading system for people who need to move quickly from question to evidence, code, or publication material.
@@ -16,7 +27,7 @@ Start here: first-time operators should begin with [README.md](https://github.co
 
 Where to go: [community documentation set](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community), [specification package](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/spec_package), [reports index](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/README.md), and [tool catalog](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/tool_catalog.md#L1-L61).
 
-![Figure F02. Reader pathways and start-here matrix](figures/f02_reader_pathways.png){ width=96% }
+![Figure F02. Reader pathways and start-here matrix](assets/analytical_index/f02_reader_pathways.png){ width=96% }
 
 Figure F02 shows the fastest route for four reader types: operator, reviewer, evidence seeker, and publication editor.
 
@@ -64,7 +75,7 @@ At the pinned commit, the visible mass of the repository lives in [docs/](https:
 
 Where to go: [repo root at the pinned commit](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316), [docs/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs), [tests/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/tests), [research/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/research), [scripts/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/scripts), and [server/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/server).
 
-![Figure F01. Repository at a glance](figures/f01_repo_at_a_glance.png){ width=96% }
+![Figure F01. Repository at a glance](assets/analytical_index/f01_repo_at_a_glance.png){ width=96% }
 
 Figure F01 reduces the pinned commit into one visual: root launch files up front, runtime code in the middle, and evidence-heavy material surrounding it.
 
@@ -88,7 +99,7 @@ The transport and protocol layer is concentrated in [server/stdio_adapter.py](ht
 
 Where to go: [server/stdio_adapter.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/stdio_adapter.py#L1-L260), [server/protocol.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/protocol.py), [server/mcp/http_transport.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/http_transport.py), [server/mcp/resources.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/resources.py), [server/mcp/tool_search.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/tool_search.py), and [server/mcp/elicitation_forms.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/server/mcp/elicitation_forms.py).
 
-![Figure F03. Runtime request flow](figures/f03_runtime_request_flow.png){ width=96% }
+![Figure F03. Runtime request flow](assets/analytical_index/f03_runtime_request_flow.png){ width=96% }
 
 Figure F03 turns the transport story into a single governed path from host request to audited response.
 
@@ -120,7 +131,7 @@ The [tools/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f37
 
 Where to go: [tools/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/tools), [resources/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/resources), [tools/os_map.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/tools/os_map.py), [tools/os_apps.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/tools/os_apps.py), [tools/ons_data.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/tools/ons_data.py), and [tools/os_route.py](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/tools/os_route.py).
 
-![Figure F04. Tool and resource ecosystem map](figures/f04_tool_resource_ecosystem.png){ width=96% }
+![Figure F04. Tool and resource ecosystem map](assets/analytical_index/f04_tool_resource_ecosystem.png){ width=96% }
 
 Figure F04 gives the tool breadth in one picture, so the repo does not have to be learned from schemas alone.
 
@@ -152,7 +163,7 @@ The most approachable narrative path is the [community documentation set](https:
 
 Where to go: [docs/public_sector_ai_community/README.md](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community/README.md#L1-L60), [docs/reports/README.md](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/README.md#L1-L71), [slides directory](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/slides), and [event record DOCX](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/reports/mcp_geo_ai_community_event_record.docx).
 
-![Figure F05. Documentation and publication stack](figures/f05_documentation_publication_stack.png){ width=96% }
+![Figure F05. Documentation and publication stack](assets/analytical_index/f05_documentation_publication_stack.png){ width=96% }
 
 Figure F05 shows the publication ladder from setup docs to full publication bundles instead of treating every document as equal.
 
@@ -164,7 +175,7 @@ The earlier public-facing Prism precedent is the [community documentation Prism 
 
 Where to go: [community Prism package](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community/prism), [community Prism `main.tex`](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/public_sector_ai_community/prism/main.tex#L1-L35), [rough analytical-index baseline](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/mcp_geo_prism_bundle/main.md#L122-L292), and [current bundle directory](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/docs/mcp_geo_prism_bundle).
 
-![Figure F08. Governed answer loop](figures/f08_governed_answer_loop.png){ width=96% }
+![Figure F08. Governed answer loop](assets/analytical_index/f08_governed_answer_loop.png){ width=96% }
 
 Figure F08 ties the talk thesis back to the repo by showing how a question becomes an inspectable answer and then a publication artifact.
 
@@ -188,7 +199,7 @@ The [tests/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f37
 
 Where to go: [tests/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/tests), [tests/evaluation/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/tests/evaluation), [playground/tests/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/playground/tests), [data/benchmarking/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/data/benchmarking), and [docs/evaluation.md](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/evaluation.md).
 
-![Figure F06. Evidence and assurance ladder](figures/f06_evidence_assurance_ladder.png){ width=96% }
+![Figure F06. Evidence and assurance ladder](assets/analytical_index/f06_evidence_assurance_ladder.png){ width=96% }
 
 Figure F06 makes the assurance story visible: research feeds tests, tests feed evaluation, and evaluation feeds reports and audit material.
 
@@ -200,7 +211,7 @@ The repo's maturity signals are distributed across [`.github/workflows/ci.yml`](
 
 Where to go: [`.github/workflows/ci.yml`](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/.github/workflows/ci.yml), [CHANGELOG.md](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/CHANGELOG.md), [RELEASE_NOTES/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/RELEASE_NOTES), [docs/troubleshooting.md](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/docs/troubleshooting.md), [troubleshooting/](https://github.com/chris-page-gov/mcp-geo/tree/fe862910da246ca77f374cfbe484985f5df4d316/troubleshooting), [CONTEXT.md](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/CONTEXT.md), and [PROGRESS.MD](https://github.com/chris-page-gov/mcp-geo/blob/fe862910da246ca77f374cfbe484985f5df4d316/PROGRESS.MD).
 
-![Figure F07. Release and iteration pipeline](figures/f07_release_iteration_pipeline.png){ width=96% }
+![Figure F07. Release and iteration pipeline](assets/analytical_index/f07_release_iteration_pipeline.png){ width=96% }
 
 Figure F07 shows how implementation, verification, release packaging, and documentation updates loop back into each other.
 
