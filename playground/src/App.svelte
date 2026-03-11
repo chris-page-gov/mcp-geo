@@ -1,15 +1,51 @@
 <script>
-  import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-  import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
   import {
     CompatibilityCallToolResultSchema,
     ListResourcesResultSchema,
     ListResourceTemplatesResultSchema,
-    ListToolsResultSchema
+    ListToolsResultSchema,
   } from "@modelcontextprotocol/sdk/types.js";
   import { onMount } from "svelte";
   import { z } from "zod";
   import packageInfo from "../package.json";
+  import AuditWorkbench from "./components/AuditWorkbench.svelte";
+  import BenchmarkWorkbench from "./components/BenchmarkWorkbench.svelte";
+  import DebugWorkbench from "./components/DebugWorkbench.svelte";
+  import ExplorerWorkbench from "./components/ExplorerWorkbench.svelte";
+  import RoutingWorkbench from "./components/RoutingWorkbench.svelte";
+  import {
+    buildSecretAudit,
+    DEBUG_LOG_LIMIT,
+    formatTracePayload,
+    redactErrorMessage,
+    redactStringSecrets,
+    redactValue,
+    scrubSecretsValue,
+  } from "./lib/debug.js";
+  import {
+    buildAllow,
+    buildBridgeEnvelope,
+    buildHostCapabilities,
+    buildHostContext,
+    buildSandbox,
+    createUiPreviewSession,
+    getServerOrigin,
+    injectCsp,
+    injectPreviewBase,
+    normalizeBridgeMessage,
+    sanitizeBridgeName,
+    UI_PROTOCOL_VERSION,
+    UI_RESOURCE_MIME,
+    validateUiMessage,
+    wantsSameOrigin,
+  } from "./lib/uiBridge.js";
+  import {
+    createPlaygroundSession,
+    fetchAuditBlob,
+    fetchAuditJson,
+    recordPlaygroundEvent,
+    recordPlaygroundToolCall,
+  } from "./lib/playgroundApi.js";
 
   const AnySchema = z.object({}).passthrough();
 
@@ -17,12 +53,85 @@
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
       : "http://localhost:5173";
+
+  const PLAYGROUND_CLIENT_INFO = {
+    name: "mcp-geo-playground",
+    version: packageInfo?.version || "0.1.0",
+  };
+  const MCP_SDK_VERSION =
+    packageInfo?.dependencies?.["@modelcontextprotocol/sdk"] || "unknown";
+  const BUILD_INFO = {
+    mode: import.meta?.env?.MODE || "unknown",
+    dev: Boolean(import.meta?.env?.DEV),
+    prod: Boolean(import.meta?.env?.PROD),
+  };
+  const UI_BOOT_AT = new Date().toISOString();
+  const COMPACT_WIDTH_MIN = 280;
+  const COMPACT_WIDTH_MAX = 520;
+  const COMPACT_HEIGHT_MIN = 360;
+  const COMPACT_HEIGHT_MAX = 900;
+
+  const TAB_HELP = {
+    explorer: {
+      title: "Explorer",
+      text: "Connect to the MCP server, inspect tools/resources/prompts, and host MCP App widgets safely.",
+    },
+    routing: {
+      title: "Routing",
+      text: "Guided route-planner demonstrations for SG03 and SG12 with graph readiness and widget preview.",
+    },
+    audit: {
+      title: "Audit / FOI",
+      text: "Use the DSAP audit endpoints directly for normalise, pack build, verify, redact, and legal-hold workflows.",
+    },
+    benchmarks: {
+      title: "Benchmarks",
+      text: "Browse all 20 stakeholder scenarios with reference, live, and blocked-evidence views.",
+    },
+    debug: {
+      title: "Debug",
+      text: "Inspect host state, audit REST activity, redacted logs, and rejected widget-bridge events.",
+    },
+  };
+
+  const uiToolMap = [
+    {
+      match: "boundary-explorer",
+      tool: "os_apps.render_boundary_explorer",
+      args: { tool: "os_apps.render_boundary_explorer" },
+    },
+    {
+      match: "feature-inspector",
+      tool: "os_apps.render_feature_inspector",
+      args: { tool: "os_apps.render_feature_inspector" },
+    },
+    {
+      match: "geography-selector",
+      tool: "os_apps.render_geography_selector",
+      args: {
+        tool: "os_apps.render_geography_selector",
+        searchTerm: "Coventry",
+        level: "LSOA",
+      },
+    },
+    {
+      match: "route-planner",
+      tool: "os_apps.render_route_planner",
+      args: { tool: "os_apps.render_route_planner" },
+    },
+    {
+      match: "statistics-dashboard",
+      tool: "os_apps.render_statistics_dashboard",
+      args: { tool: "os_apps.render_statistics_dashboard" },
+    },
+  ];
+
   let serverUrl = `${defaultOrigin}/mcp`;
   let playgroundUrl = `${defaultOrigin}/playground`;
   let status = "disconnected";
   let error = "";
-  let client = null;
-  let transport = null;
+  let session = null;
+  let capabilities = null;
   let tools = [];
   let resources = [];
   let resourceTemplates = [];
@@ -39,12 +148,13 @@
   let descriptorRaw = null;
   let descriptorMeta = null;
   let history = [];
-  let activeTab = "setup";
-  let testSection = "tools";
+  let activeTab = "explorer";
   let selectedTool = null;
   let selectedResource = null;
   let selectedPrompt = null;
-  let capabilities = null;
+
+  let uiPreviewResource = null;
+  let uiPreviewSource = "explorer";
   let uiToolResult = "";
   let uiResourceText = "";
   let uiResourceMime = "";
@@ -66,6 +176,9 @@
   let uiIframeAllow = "";
   let uiAllowSameOrigin = false;
   let uiAppInitialized = false;
+  let uiPreviewSession = null;
+  let pendingUiConfig = null;
+
   let debugEnabled = false;
   let debugEntries = [];
   let traceRedact = true;
@@ -74,271 +187,59 @@
   let lastErrorAt = "";
   let lastErrorMessage = "";
   let lastErrorDetail = null;
-  let debugSnapshot = null;
   let debugSnapshotText = "";
   let hmrUpdateCount = 0;
   let hmrLastUpdate = "";
   let hmrStatus = "disabled";
-  let splitLeftWidth = 260;
-  let splitLeftWidthPx = 320;
-  let tabHelpTitle = "Setup";
-  let tabHelpText = "Connect to the server and confirm descriptor + protocol versions.";
+  let rejectedBridgeEvents = [];
+  let auditRestLog = [];
 
-  const UI_PROTOCOL_VERSION = "2026-01-26";
-  const UI_RESOURCE_MIME = "text/html;profile=mcp-app";
-  const UI_BOOT_AT = new Date().toISOString();
-  const PLAYGROUND_CLIENT_INFO = {
-    name: "mcp-geo-playground",
-    version: packageInfo?.version || "0.1.0"
+  let auditPacks = [];
+  let auditSelectedPack = null;
+  let auditResult = null;
+  let auditError = "";
+  let auditForm = {
+    sessionDir: "",
+    outputRoot: "",
+    scopeType: "conversation",
+    episodeId: "",
+    episodeTitle: "",
+    episodeStartSequence: "",
+    episodeEndSequence: "",
+    retentionClass: "default_operational",
+    legalHold: false,
   };
-  const MCP_SDK_VERSION =
-    packageInfo?.dependencies?.["@modelcontextprotocol/sdk"] || "unknown";
-  const BUILD_INFO = {
-    mode: import.meta?.env?.MODE || "unknown",
-    dev: Boolean(import.meta?.env?.DEV),
-    prod: Boolean(import.meta?.env?.PROD)
-  };
-  if (BUILD_INFO.dev) {
-    uiAllowSameOrigin = true;
+
+  let benchmarkPack = null;
+  let benchmarkScenarios = [];
+  let benchmarkLiveRun = null;
+  let benchmarkFilterId = "";
+  let benchmarkFilterSupport = "all";
+  let benchmarkFilterToolFamily = "all";
+  let selectedBenchmarkId = "";
+
+  let routeScenarioId = "SG03";
+  let routeDescriptorState = null;
+  let routingResult = null;
+
+  function normalizeDimension(value, fallback, min, max) {
+    const asNumber = Number(value);
+    if (!Number.isFinite(asNumber)) {
+      return fallback;
+    }
+    return Math.min(max, Math.max(min, Math.round(asNumber)));
   }
-  const DEBUG_LOG_LIMIT = 150;
-  const DEBUG_DEPTH_LIMIT = 5;
-  const SECRET_SCAN_LIMIT = 20;
-  const DEBUG_ARRAY_LIMIT = 20;
-  const DEBUG_STRING_LIMIT = 2000;
-  const COMPACT_WIDTH_MIN = 280;
-  const COMPACT_WIDTH_MAX = 520;
-  const COMPACT_HEIGHT_MIN = 360;
-  const COMPACT_HEIGHT_MAX = 900;
-  const SPLIT_LEFT_MIN = 220;
-  const SPLIT_LEFT_MAX = 520;
 
-  const uiToolMap = [
-    {
-      match: "geography-selector",
-      tool: "os_apps.render_geography_selector",
-      args: {
-        tool: "os_apps.render_geography_selector",
-        searchTerm: "Coventry",
-        level: "LSOA"
-      }
-    },
-    {
-      match: "statistics-dashboard",
-      tool: "os_apps.render_statistics_dashboard",
-      args: { tool: "os_apps.render_statistics_dashboard" }
-    },
-    {
-      match: "feature-inspector",
-      tool: "os_apps.render_feature_inspector",
-      args: { tool: "os_apps.render_feature_inspector" }
-    },
-    {
-      match: "route-planner",
-      tool: "os_apps.render_route_planner",
-      args: { tool: "os_apps.render_route_planner" }
-    }
-  ];
+  function recordHistory(entry) {
+    history = [scrubSecretsValue(entry), ...history].slice(0, 60);
+  }
 
-  const TAB_HELP = {
-    setup: {
-      title: "Setup",
-      text: "Connect to the server and confirm descriptor + protocol versions."
-    },
-    test: {
-      title: "Test",
-      text: "Use Host viewport mode in UI preview to force compact-window rendering tests."
-    },
-    trace: {
-      title: "Trace",
-      text: "Capture prompts and request/response history to diagnose flow behavior."
-    },
-    debug: {
-      title: "Debug",
-      text: "Inspect runtime state, diagnostics, and redacted debug snapshots."
-    }
-  };
-
-  const recordHistory = (entry) => {
-    history = [scrubSecretsValue(entry), ...history].slice(0, 50);
-  };
-
-  const shouldRedactKey = (key) => {
-    if (!key) {
-      return false;
-    }
-    const normalized = String(key).toLowerCase();
-    if (normalized === "authorization" || normalized === "proxy-authorization") {
-      return true;
-    }
-    if (
-      normalized === "api_key" ||
-      normalized === "apikey" ||
-      normalized === "x-api-key"
-    ) {
-      return true;
-    }
-    if (normalized.endsWith("_key") || normalized.endsWith("apikey")) {
-      return true;
-    }
-    return (
-      normalized.includes("token") ||
-      normalized.includes("secret") ||
-      normalized.includes("password") ||
-      normalized.includes("bearer")
-    );
-  };
-
-  const redactStringSecrets = (value) => {
-    if (value === null || value === undefined) {
-      return value;
-    }
-    let out = String(value);
-    out = out.replace(
-      /([?&](?:key|api_key|apikey|token|access_token|authorization)=)[^&#\s]+/gi,
-      "$1REDACTED"
-    );
-    out = out.replace(/\b(Bearer)\s+[A-Za-z0-9\-._~+/]+=*/gi, "$1 REDACTED");
-    out = out.replace(/\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
-    return out;
-  };
-
-  const SECRET_PATTERNS = [
-    /([?&](?:key|api_key|apikey|token|access_token|authorization)=)(?!REDACTED)[^&#\s]+/i,
-    /\b(Bearer)\s+(?!REDACTED)[A-Za-z0-9\-._~+/]+=*/i,
-    /\b(api_key|apikey|access_token|token|authorization|auth)\b\s*[:=]\s*(?!\[REDACTED\]|REDACTED)[^\s,;]+/i
-  ];
-
-  const containsSecretString = (value) => {
-    if (value === null || value === undefined) {
-      return false;
-    }
-    const text = String(value);
-    return SECRET_PATTERNS.some((pattern) => pattern.test(text));
-  };
-
-  const scanSecrets = (value, path, findings, depth = 0) => {
-    if (findings.length >= SECRET_SCAN_LIMIT) {
-      return;
-    }
-    if (value === null || value === undefined) {
-      return;
-    }
-    if (depth > DEBUG_DEPTH_LIMIT) {
-      return;
-    }
-    if (typeof value === "string") {
-      if (containsSecretString(value)) {
-        findings.push(path || "root");
-      }
-      return;
-    }
-    if (Array.isArray(value)) {
-      value.forEach((entry, index) => {
-        if (findings.length >= SECRET_SCAN_LIMIT) {
-          return;
-        }
-        scanSecrets(entry, `${path}[${index}]`, findings, depth + 1);
-      });
-      return;
-    }
-    if (typeof value === "object") {
-      Object.entries(value).forEach(([key, entry]) => {
-        if (findings.length >= SECRET_SCAN_LIMIT) {
-          return;
-        }
-        scanSecrets(entry, path ? `${path}.${key}` : key, findings, depth + 1);
-      });
-    }
-  };
-
-  const buildSecretAudit = () => {
-    const findings = [];
-    scanSecrets(debugEntries, "debugEntries", findings);
-    scanSecrets(history, "history", findings);
-    scanSecrets(lastErrorMessage, "lastErrorMessage", findings);
-    scanSecrets(lastErrorDetail, "lastErrorDetail", findings);
-    scanSecrets(error, "error", findings);
-    scanSecrets(uiResourceError, "uiResourceError", findings);
-    return {
-      count: findings.length,
-      paths: findings.slice(0, 6),
-      truncated: findings.length >= SECRET_SCAN_LIMIT
-    };
-  };
-
-  const redactErrorMessage = (message) => redactStringSecrets(message || "");
-
-  const scrubSecretsValue = (value, depth = 0) => {
-    if (depth > DEBUG_DEPTH_LIMIT) {
-      return "[Truncated]";
-    }
-    if (value === null || value === undefined) {
-      return value;
-    }
-    if (Array.isArray(value)) {
-      return value.map((entry) => scrubSecretsValue(entry, depth + 1));
-    }
-    if (typeof value === "object") {
-      const output = {};
-      Object.entries(value).forEach(([key, entry]) => {
-        if (shouldRedactKey(key)) {
-          output[key] = "[REDACTED]";
-        } else {
-          output[key] = scrubSecretsValue(entry, depth + 1);
-        }
-      });
-      return output;
-    }
-    if (typeof value === "string") {
-      return redactStringSecrets(value);
-    }
-    return value;
-  };
-
-  const redactValue = (value, depth = 0) => {
-    if (depth > DEBUG_DEPTH_LIMIT) {
-      return "[Truncated]";
-    }
-    if (value === null || value === undefined) {
-      return value;
-    }
-    if (Array.isArray(value)) {
-      const slice = value.slice(0, DEBUG_ARRAY_LIMIT).map((entry) =>
-        redactValue(entry, depth + 1)
-      );
-      if (value.length > DEBUG_ARRAY_LIMIT) {
-        slice.push(`[${value.length - DEBUG_ARRAY_LIMIT} more items]`);
-      }
-      return slice;
-    }
-    if (typeof value === "object") {
-      const output = {};
-      Object.entries(value).forEach(([key, entry]) => {
-        if (shouldRedactKey(key)) {
-          output[key] = "[REDACTED]";
-        } else {
-          output[key] = redactValue(entry, depth + 1);
-        }
-      });
-      return output;
-    }
-    if (typeof value === "string") {
-      const scrubbed = redactStringSecrets(value);
-      if (scrubbed.length > DEBUG_STRING_LIMIT) {
-        return `${scrubbed.slice(0, DEBUG_STRING_LIMIT)}…`;
-      }
-      return scrubbed;
-    }
-    return value;
-  };
-
-  const logDebug = (message, detail = null, level = "info") => {
+  function logDebug(message, detail = null, level = "info") {
     const entry = {
       at: new Date().toISOString(),
       level,
       message: redactStringSecrets(message),
-      detail: detail ? redactValue(detail) : null
+      detail: detail ? redactValue(detail) : null,
     };
     debugEntries = [entry, ...debugEntries].slice(0, DEBUG_LOG_LIMIT);
     if (debugEnabled && typeof console !== "undefined") {
@@ -351,387 +252,78 @@
         console.debug("[playground]", entry.message, payload);
       }
     }
-  };
+  }
 
-  const setLastError = (message, detail = null) => {
+  function setLastError(message, detail = null) {
     lastErrorAt = new Date().toISOString();
     lastErrorMessage = redactErrorMessage(message);
     lastErrorDetail = redactValue(detail ?? { error: message });
-  };
-
-  const formatTracePayload = (payload) => {
-    const safePayload = traceRedact ? redactValue(payload) : payload;
-    if (safePayload === undefined) {
-      return "undefined";
-    }
-    return JSON.stringify(safePayload, null, 2);
-  };
-
-  if (import.meta?.hot) {
-    hmrStatus = "listening";
-    import.meta.hot.on("vite:afterUpdate", (payload) => {
-      hmrUpdateCount += 1;
-      hmrLastUpdate = new Date().toISOString();
-      logDebug("HMR update applied", { updates: payload?.updates?.length || 0 });
-    });
-    import.meta.hot.on("vite:beforeFullReload", () => {
-      hmrUpdateCount += 1;
-      hmrLastUpdate = new Date().toISOString();
-      logDebug("HMR full reload triggered", null, "warn");
-    });
   }
 
-  const clearUiInstructionsTimer = () => {
+  function clearUiInstructionsTimer() {
     if (uiInstructionsTimer) {
       clearTimeout(uiInstructionsTimer);
       uiInstructionsTimer = null;
     }
-  };
+  }
 
-  const scheduleUiInstructions = () => {
+  function scheduleUiInstructions() {
     clearUiInstructionsTimer();
     uiInstructionsTimer = setTimeout(() => {
       if (!uiPreviewReady && uiResourceText) {
         uiInstructionsVisible = true;
       }
     }, 2000);
-  };
+  }
 
-  const normalizeDomains = (domains) => {
-    if (!Array.isArray(domains)) {
-      return [];
+  function resetUiPreviewState({ keepResource = true, keepPendingConfig = false } = {}) {
+    clearUiInstructionsTimer();
+    uiToolResult = "";
+    uiResourceText = "";
+    uiResourceMime = "";
+    uiResourceMeta = null;
+    uiResourceError = "";
+    uiResourceHtml = "";
+    uiPreviewReady = false;
+    uiInstructionsVisible = false;
+    uiAppInitialized = false;
+    if (!keepPendingConfig) {
+      pendingUiConfig = null;
     }
-    return domains
-      .map((domain) => (typeof domain === "string" ? domain.trim() : ""))
-      .filter(Boolean);
-  };
+    uiPreviewSession = keepResource && uiPreviewResource
+      ? createUiPreviewSession({
+          resourceUri: uiPreviewResource.uri,
+          uiAllowSameOrigin,
+          hostOrigin: window.location.origin,
+          tools,
+          resources,
+        })
+      : null;
+  }
 
-  const normalizeCspSource = (source) => {
-    if (source === "self" || source === "'self'") {
-      return "'self'";
-    }
-    return source;
-  };
+  function clearUiPreview() {
+    uiPreviewResource = null;
+    resetUiPreviewState({ keepResource: false });
+  }
 
-  const getServerOrigin = () => {
-    try {
-      return new URL(serverUrl).origin;
-    } catch (_err) {
-      return "";
-    }
-  };
+  function setUiPreviewResource(resource, source = "explorer") {
+    uiPreviewSource = source;
+    uiPreviewResource = resource;
+    resetUiPreviewState({ keepResource: Boolean(resource) });
+  }
 
-  const buildCsp = (meta) => {
-    const csp = meta?.ui?.csp;
-    if (!csp) {
-      return [
-        "default-src 'none'",
-        "script-src 'self' 'unsafe-inline'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data:",
-        "media-src 'self' data:",
-        "connect-src 'none'",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "frame-src 'none'"
-      ].join("; ");
-    }
-    const connectDomains = normalizeDomains(csp.connectDomains).map(normalizeCspSource);
-    const resourceDomains = normalizeDomains(csp.resourceDomains).map(normalizeCspSource);
-    const frameDomains = normalizeDomains(csp.frameDomains).map(normalizeCspSource);
-    const baseUriDomains = normalizeDomains(csp.baseUriDomains).map(normalizeCspSource);
-    const workerDomains = normalizeDomains(csp.workerDomains || csp.workerSrc).map(
-      normalizeCspSource
-    );
+  function rejectBridgeEvent(reason, code, detail) {
+    const entry = {
+      at: new Date().toISOString(),
+      code,
+      reason,
+      detail: redactValue(detail),
+    };
+    rejectedBridgeEvents = [entry, ...rejectedBridgeEvents].slice(0, 40);
+    logDebug("Widget bridge event rejected", entry, "warn");
+  }
 
-    const serverOrigin = getServerOrigin();
-    const connectSet = new Set(connectDomains);
-    if (serverOrigin) {
-      connectSet.add(serverOrigin);
-    }
-    const resourceSet = new Set(resourceDomains);
-    if (serverOrigin) {
-      resourceSet.add(serverOrigin);
-    }
-
-    const resourceList = Array.from(resourceSet);
-    const scriptSources = ["'unsafe-inline'", ...resourceList];
-    const styleSources = ["'unsafe-inline'", ...resourceList];
-    const imgSources = ["data:", ...resourceList];
-    const mediaSources = ["data:", ...resourceList];
-    const fontSources = [...resourceList];
-
-    const connectSrc = connectSet.size ? Array.from(connectSet).join(" ") : "'none'";
-    const frameSrc = frameDomains.length ? frameDomains.join(" ") : "'none'";
-    const baseSrc = baseUriDomains.length
-      ? baseUriDomains.join(" ")
-      : serverOrigin
-      ? `'self' ${serverOrigin}`
-      : "'self'";
-    const workerSrc = workerDomains.length ? `worker-src ${workerDomains.join(" ")}` : "";
-
-    return [
-      "default-src 'none'",
-      `script-src 'self' ${scriptSources.join(" ")}`.trim(),
-      `style-src 'self' ${styleSources.join(" ")}`.trim(),
-      `img-src 'self' ${imgSources.join(" ")}`.trim(),
-      `font-src 'self' ${fontSources.join(" ")}`.trim(),
-      `media-src 'self' ${mediaSources.join(" ")}`.trim(),
-      `connect-src ${connectSrc}`,
-      workerSrc,
-      `frame-src ${frameSrc}`,
-      `base-uri ${baseSrc}`,
-      "object-src 'none'"
-    ]
-      .filter((line) => line && line.trim().length)
-      .join("; ");
-  };
-
-  const injectPreviewBase = (html) => {
-    if (!html) {
-      return "";
-    }
-    if (/<base\b[^>]*data-mcp-preview-base=["']1["'][^>]*>/i.test(html)) {
-      return html;
-    }
-    const serverOrigin = getServerOrigin();
-    if (!serverOrigin) {
-      return html;
-    }
-    const baseTag = `<base href="${serverOrigin}/ui/" data-mcp-preview-base="1">`;
-    if (html.includes("</head>")) {
-      return html.replace("</head>", `${baseTag}</head>`);
-    }
-    const headMatch = html.match(/<head\b[^>]*>/i);
-    if (headMatch) {
-      return html.replace(headMatch[0], `${headMatch[0]}${baseTag}`);
-    }
-    return `${baseTag}${html}`;
-  };
-
-  const injectCsp = (html, meta) => {
-    if (!html) {
-      return "";
-    }
-    if (/<meta\b[^>]*(http-equiv\s*=\s*["']content-security-policy["']|content-security-policy)[^>]*>/i.test(html)) {
-      return html;
-    }
-    const csp = buildCsp(meta);
-    if (!csp) {
-      return html;
-    }
-    const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
-    if (html.includes("</head>")) {
-      return html.replace("</head>", `${metaTag}</head>`);
-    }
-    const headMatch = html.match(/<head\b[^>]*>/i);
-    if (headMatch) {
-      return html.replace(headMatch[0], `${headMatch[0]}${metaTag}`);
-    }
-    return `${metaTag}${html}`;
-  };
-
-  const wantsSameOrigin = (permissions) =>
-    Boolean(permissions?.sameOrigin || permissions?.allowSameOrigin);
-
-  const allowSameOrigin = (permissions, allowSameOriginFlag) =>
-    wantsSameOrigin(permissions) && Boolean(allowSameOriginFlag);
-
-  const sanitizeSandboxPermissions = (permissions, allowSameOriginFlag) => {
-    if (!permissions || typeof permissions !== "object") {
-      return {};
-    }
-    const next = { ...permissions };
-    if (!allowSameOrigin(permissions, allowSameOriginFlag)) {
-      delete next.sameOrigin;
-      delete next.allowSameOrigin;
-    }
-    return next;
-  };
-
-  const buildSandbox = (meta, allowSameOriginFlag) => {
-    const permissions = meta?.ui?.permissions || {};
-    const flags = ["allow-scripts"];
-    if (allowSameOrigin(permissions, allowSameOriginFlag)) {
-      flags.push("allow-same-origin");
-    }
-    return flags.join(" ");
-  };
-
-  const buildAllow = (meta) => {
-    const permissions = meta?.ui?.permissions || {};
-    const allowList = [];
-    if (permissions.camera) {
-      allowList.push("camera");
-    }
-    if (permissions.microphone) {
-      allowList.push("microphone");
-    }
-    if (permissions.geolocation) {
-      allowList.push("geolocation");
-    }
-    if (permissions.clipboardWrite) {
-      allowList.push("clipboard-write");
-    }
-    return allowList.join("; ");
-  };
-
-  const normalizeDimension = (value, fallback, min, max) => {
-    const asNumber = Number(value);
-    if (!Number.isFinite(asNumber)) {
-      return fallback;
-    }
-    return Math.min(max, Math.max(min, Math.round(asNumber)));
-  };
-
-  const sendRequest = async (request, schema) => {
-    if (!client) {
-      throw new Error("MCP client not connected");
-    }
-    lastRequestAt = new Date().toISOString();
-    logDebug("MCP request", { method: request?.method, params: request?.params });
-    try {
-      const response = await client.request(request, schema);
-      lastResponseAt = new Date().toISOString();
-      logDebug(
-        "MCP response",
-        {
-          method: request?.method,
-          status: response?.status,
-          ok: response?.ok,
-          isError: response?.isError
-        },
-        response?.isError ? "warn" : "info"
-      );
-      recordHistory({ request, response, at: new Date().toISOString() });
-      return response;
-    } catch (err) {
-      const detail =
-        err && typeof err === "object" && "message" in err
-          ? { message: err?.message, stack: err?.stack }
-          : err;
-      const message = redactErrorMessage(err?.message || String(err));
-      setLastError(message, detail);
-      logDebug(
-        "MCP request failed",
-        { method: request?.method, error: message },
-        "error"
-      );
-      throw err;
-    }
-  };
-
-  const sendRequestSafe = async (request, schema) => {
-    try {
-      return await sendRequest(request, schema);
-    } catch (err) {
-      return null;
-    }
-  };
-
-  const connect = async () => {
-    error = "";
-    if (status === "connected" && client) {
-      logDebug("Connect requested while already connected", null, "warn");
-      return;
-    }
-    status = "connecting";
-    try {
-      client = new Client(
-        PLAYGROUND_CLIENT_INFO,
-        {
-          capabilities: {
-            tools: {},
-            resources: {},
-            prompts: {},
-            extensions: {
-              "io.modelcontextprotocol/ui": { mimeTypes: [UI_RESOURCE_MIME] }
-            }
-          }
-        }
-      );
-      transport = new StreamableHTTPClientTransport(new URL(serverUrl), {});
-      await client.connect(transport);
-      status = "connected";
-      capabilities = client.getServerCapabilities?.() ?? null;
-      await refreshLists();
-      await fetchDescriptor();
-      activeTab = "setup";
-      logDebug("Connected to MCP server", { serverUrl });
-    } catch (err) {
-      status = "error";
-      error = redactErrorMessage(err?.message || String(err));
-      client = null;
-      transport = null;
-      setLastError(error, err);
-      logDebug("Failed to connect", { serverUrl, error }, "error");
-    }
-  };
-
-  const disconnect = async () => {
-    if (client) {
-      await client.close();
-    }
-    status = "disconnected";
-    client = null;
-    transport = null;
-    capabilities = null;
-    logDebug("Disconnected from MCP server");
-  };
-
-  const refreshLists = async () => {
-    if (!client) {
-      logDebug("Refresh requested without an active client", null, "warn");
-      return;
-    }
-    error = "";
-    try {
-      const toolsResponse = await sendRequest(
-        { method: "tools/list", params: {} },
-        ListToolsResultSchema
-      );
-      tools = toolsResponse.tools || [];
-
-      const resourcesResponse = await sendRequest(
-        { method: "resources/list", params: {} },
-        ListResourcesResultSchema
-      );
-      resources = resourcesResponse.resources || [];
-
-      const templatesResponse = await sendRequest(
-        { method: "resources/templates/list", params: {} },
-        ListResourceTemplatesResultSchema
-      );
-      resourceTemplates = templatesResponse.resourceTemplates || [];
-
-      const promptResponse = await sendRequestSafe(
-        { method: "prompts/list", params: {} },
-        AnySchema
-      );
-      if (promptResponse && Array.isArray(promptResponse.prompts)) {
-        prompts = promptResponse.prompts;
-        promptsError = "";
-      } else if (promptResponse) {
-        prompts = [];
-        promptsError = "Prompts response missing 'prompts'";
-      } else {
-        prompts = [];
-        promptsError = "Prompts not supported";
-      }
-      logDebug("Refreshed tools/resources/prompts", {
-        tools: tools.length,
-        resources: resources.length,
-        templates: resourceTemplates.length,
-        prompts: prompts.length
-      });
-    } catch (err) {
-      error = redactErrorMessage(err?.message || String(err));
-      setLastError(error, err);
-      logDebug("Failed to refresh lists", { error }, "error");
-    }
-  };
-
-  const extractToolPayload = (result) => {
+  function extractToolPayload(result) {
     if (!result || typeof result !== "object") {
       return result;
     }
@@ -757,43 +349,53 @@
               if (parsed && typeof parsed === "object") {
                 return parsed;
               }
-            } catch (_err) {
-              // Ignore unparseable text blocks and continue scanning.
+            } catch (_error) {
+              // Ignore invalid JSON text blocks.
             }
           }
         }
       }
     }
     return result;
-  };
+  }
 
-  const fetchDescriptor = async () => {
-    if (!client) {
-      return;
+  async function sendRequest(request, schema = AnySchema) {
+    if (!session) {
+      throw new Error("MCP client not connected");
     }
+    lastRequestAt = new Date().toISOString();
+    logDebug("MCP request", { method: request?.method, params: request?.params });
     try {
-      const response = await sendRequest(
+      const response = await session.request(request, schema);
+      lastResponseAt = new Date().toISOString();
+      recordHistory({ request, response, at: new Date().toISOString() });
+      logDebug(
+        "MCP response",
         {
-          method: "tools/call",
-          params: { name: "os_mcp_descriptor", arguments: { tool: "os_mcp.descriptor" } }
+          method: request?.method,
+          ok: response?.ok,
+          isError: response?.isError,
         },
-        CompatibilityCallToolResultSchema
+        response?.isError ? "warn" : "info"
       );
-      descriptorRaw = response;
-      const payload = extractToolPayload(response);
-      descriptorMeta = payload ?? null;
-      logDebug("Descriptor fetched", {
-        server: payload?.server,
-        version: payload?.version
-      });
+      return response;
     } catch (err) {
-      error = redactErrorMessage(err?.message || String(err));
-      setLastError(error, err);
-      logDebug("Failed to fetch descriptor", { error }, "error");
+      const message = redactErrorMessage(err?.message || String(err));
+      setLastError(message, err);
+      logDebug("MCP request failed", { method: request?.method, error: message }, "error");
+      throw err;
     }
-  };
+  }
 
-  const buildTemplateFromSchema = (schema) => {
+  async function sendRequestSafe(request, schema = AnySchema) {
+    try {
+      return await sendRequest(request, schema);
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function buildTemplateFromSchema(schema) {
     if (!schema || schema.type !== "object") {
       return {};
     }
@@ -838,144 +440,375 @@
           payload[key] = null;
       }
     });
+
     return payload;
-  };
+  }
 
-  const selectTool = (tool) => {
-    selectedTool = tool;
-    selectedResource = null;
-    selectedPrompt = null;
-    toolName = tool.name;
-    const template = buildTemplateFromSchema(tool.inputSchema || tool.input_schema);
-    toolArgs = JSON.stringify(template, null, 2);
-    toolResult = "";
-    logDebug("Tool selected", { tool: tool?.name });
-  };
-
-  const selectResource = (resource) => {
-    selectedResource = resource;
-    selectedTool = null;
-    selectedPrompt = null;
-    uiToolResult = "";
-    uiResourceText = "";
-    uiResourceMime = "";
-    uiResourceMeta = null;
-    uiResourceError = "";
-    uiPreviewExpanded = false;
-    uiPreviewReady = false;
-    uiInstructionsVisible = false;
-    uiAppInitialized = false;
-    logDebug("Resource selected", { uri: resource?.uri });
-  };
-
-  const selectPrompt = (prompt) => {
-    selectedPrompt = prompt;
-    selectedTool = null;
-    selectedResource = null;
-    logDebug("Prompt selected", { prompt: prompt?.name });
-  };
-
-  const callTool = async () => {
-    error = "";
-    let parsedArgs = {};
-    if (toolArgs) {
-      try {
-        parsedArgs = JSON.parse(toolArgs);
-      } catch (err) {
-        error = redactErrorMessage(err?.message || String(err));
-        setLastError(error, { error });
-        logDebug("Tool args JSON parse failed", { error }, "error");
-        return;
-      }
+  async function fetchDescriptor() {
+    if (!session) {
+      return;
     }
     try {
       const response = await sendRequest(
         {
           method: "tools/call",
-          params: { name: toolName, arguments: parsedArgs }
+          params: { name: "os_mcp_descriptor", arguments: { tool: "os_mcp.descriptor" } },
+        },
+        CompatibilityCallToolResultSchema
+      );
+      descriptorRaw = response;
+      descriptorMeta = extractToolPayload(response) ?? null;
+      logDebug("Descriptor fetched", {
+        server: descriptorMeta?.server,
+        version: descriptorMeta?.version,
+      });
+    } catch (err) {
+      error = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function refreshLists() {
+    if (!session) {
+      return;
+    }
+    try {
+      const toolsResponse = await sendRequest(
+        { method: "tools/list", params: {} },
+        ListToolsResultSchema
+      );
+      tools = toolsResponse.tools || [];
+      const resourcesResponse = await sendRequest(
+        { method: "resources/list", params: {} },
+        ListResourcesResultSchema
+      );
+      resources = resourcesResponse.resources || [];
+      const templatesResponse = await sendRequest(
+        { method: "resources/templates/list", params: {} },
+        ListResourceTemplatesResultSchema
+      );
+      resourceTemplates = templatesResponse.resourceTemplates || [];
+      const promptResponse = await sendRequestSafe(
+        { method: "prompts/list", params: {} },
+        AnySchema
+      );
+      if (promptResponse && Array.isArray(promptResponse.prompts)) {
+        prompts = promptResponse.prompts;
+        promptsError = "";
+      } else if (promptResponse) {
+        prompts = [];
+        promptsError = "Prompts response missing 'prompts'";
+      } else {
+        prompts = [];
+        promptsError = "Prompts not supported";
+      }
+      if (selectedTool) {
+        selectedTool = tools.find((entry) => entry.name === selectedTool.name) || selectedTool;
+      }
+      if (selectedResource) {
+        selectedResource =
+          resources.find((entry) => entry.uri === selectedResource.uri) || selectedResource;
+      }
+      if (uiPreviewResource) {
+        uiPreviewResource =
+          resources.find((entry) => entry.uri === uiPreviewResource.uri) || uiPreviewResource;
+        uiPreviewSession = createUiPreviewSession({
+          resourceUri: uiPreviewResource?.uri,
+          uiAllowSameOrigin,
+          hostOrigin: window.location.origin,
+          tools,
+          resources,
+        });
+      }
+      logDebug("Refreshed tools/resources/prompts", {
+        tools: tools.length,
+        resources: resources.length,
+        templates: resourceTemplates.length,
+        prompts: prompts.length,
+      });
+    } catch (err) {
+      error = redactErrorMessage(err?.message || String(err));
+      setLastError(error, err);
+    }
+  }
+
+  async function fetchResourceJson(uri) {
+    const response = await sendRequest({ method: "resources/read", params: { uri } }, AnySchema);
+    const contents = response?.contents || response?.content || [];
+    const first = contents[0] || {};
+    if (first.json && typeof first.json === "object") {
+      return first.json;
+    }
+    if (typeof first.text === "string") {
+      return JSON.parse(first.text);
+    }
+    return first;
+  }
+
+  async function loadBenchmarks() {
+    if (!session) {
+      return;
+    }
+    try {
+      benchmarkPack = await fetchResourceJson("resource://mcp-geo/stakeholder-benchmark-pack");
+      benchmarkScenarios = Array.isArray(benchmarkPack?.scenarios) ? benchmarkPack.scenarios : [];
+      benchmarkLiveRun = await fetchResourceJson(
+        "resource://mcp-geo/stakeholder-benchmark-live-run-latest"
+      );
+      if (!selectedBenchmarkId && benchmarkScenarios.length) {
+        selectedBenchmarkId = benchmarkScenarios[0].id;
+      }
+      if (!routeScenarioId && benchmarkScenarios.length) {
+        routeScenarioId = "SG03";
+      }
+      logDebug("Benchmark resources loaded", {
+        scenarios: benchmarkScenarios.length,
+        liveResults: benchmarkLiveRun?.results?.length || 0,
+      });
+    } catch (err) {
+      logDebug(
+        "Failed to load benchmark resources",
+        { error: err?.message || String(err) },
+        "warn"
+      );
+    }
+  }
+
+  async function connect() {
+    error = "";
+    if (status === "connected" && session) {
+      return;
+    }
+    status = "connecting";
+    try {
+      session = await createPlaygroundSession({
+        serverUrl,
+        clientInfo: PLAYGROUND_CLIENT_INFO,
+        uiResourceMime: UI_RESOURCE_MIME,
+      });
+      status = "connected";
+      capabilities = session.getServerCapabilities?.() ?? null;
+      await refreshLists();
+      await fetchDescriptor();
+      await loadBenchmarks();
+      await refreshAuditPacks();
+      activeTab = "explorer";
+      logDebug("Connected to MCP server", { serverUrl });
+    } catch (err) {
+      status = "error";
+      error = redactErrorMessage(err?.message || String(err));
+      session = null;
+      setLastError(error, err);
+      logDebug("Failed to connect", { serverUrl, error }, "error");
+    }
+  }
+
+  async function disconnect() {
+    if (session) {
+      await session.close();
+    }
+    session = null;
+    status = "disconnected";
+    capabilities = null;
+    tools = [];
+    resources = [];
+    resourceTemplates = [];
+    prompts = [];
+    descriptorRaw = null;
+    descriptorMeta = null;
+    clearUiPreview();
+    logDebug("Disconnected from MCP server");
+  }
+
+  function selectTool(tool) {
+    selectedTool = tool;
+    selectedResource = null;
+    selectedPrompt = null;
+    toolName = tool.name;
+    toolArgs = JSON.stringify(buildTemplateFromSchema(tool.inputSchema || tool.input_schema), null, 2);
+    toolResult = "";
+    activeTab = "explorer";
+  }
+
+  function selectResource(resource) {
+    selectedResource = resource;
+    selectedTool = null;
+    selectedPrompt = null;
+    if (resource?.uri?.startsWith("ui://")) {
+      setUiPreviewResource(resource, "explorer");
+    }
+    activeTab = "explorer";
+  }
+
+  function selectPrompt(prompt) {
+    selectedPrompt = prompt;
+    selectedTool = null;
+    selectedResource = null;
+    activeTab = "explorer";
+  }
+
+  async function callTool() {
+    let parsedArgs = {};
+    try {
+      parsedArgs = toolArgs ? JSON.parse(toolArgs) : {};
+    } catch (err) {
+      error = redactErrorMessage(err?.message || String(err));
+      setLastError(error, err);
+      return;
+    }
+    try {
+      const response = await sendRequest(
+        {
+          method: "tools/call",
+          params: { name: toolName, arguments: parsedArgs },
         },
         CompatibilityCallToolResultSchema
       );
       toolResult = JSON.stringify(response, null, 2);
-      try {
-        await fetch(`${playgroundUrl}/tool_call`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tool: toolName,
-            input: parsedArgs,
-            output: response
-          })
-        });
-      } catch (err) {
-        logDebug(
-          "Failed to record tool call event",
-          { error: err?.message || String(err) },
-          "warn"
-        );
-      }
+      await recordPlaygroundToolCall(playgroundUrl, {
+        tool: toolName,
+        input: parsedArgs,
+        output: response,
+      });
     } catch (err) {
       error = redactErrorMessage(err?.message || String(err));
       setLastError(error, err);
-      logDebug("Tool call failed", { tool: toolName, error }, "error");
     }
-  };
+  }
 
-  const logPrompt = async () => {
+  async function logPrompt() {
     if (!promptText.trim()) {
       return;
     }
     try {
-      await fetch(`${playgroundUrl}/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "prompt",
-          payload: {
-            text: promptText,
-            context: promptContext
-          }
-        })
+      await recordPlaygroundEvent(playgroundUrl, {
+        eventType: "prompt",
+        payload: { text: promptText, context: promptContext },
       });
-      logDebug("Prompt logged", { length: promptText.length });
       promptText = "";
       promptContext = "";
+      logDebug("Prompt logged", { playgroundUrl });
     } catch (err) {
       error = redactErrorMessage(err?.message || String(err));
       setLastError(error, err);
-      logDebug("Failed to log prompt", { error }, "error");
     }
-  };
+  }
 
-  const copyText = async (value) => {
+  async function copyText(value) {
     if (!value) {
       return;
     }
     if (navigator?.clipboard?.writeText) {
       await navigator.clipboard.writeText(value);
     }
-  };
+  }
 
-  const toggleUiPreview = () => {
+  function toggleUiPreview() {
     uiPreviewExpanded = !uiPreviewExpanded;
     notifyHostContextChange();
-  };
+  }
 
-  const runSuggestedUiTool = async () => {
+  function queueUiConfig(config) {
+    pendingUiConfig = config ? scrubSecretsValue(normalizeUiConfig(config, uiPreviewResource?.uri)) : null;
+  }
+
+  function normalizeRouteMode(mode) {
+    if (typeof mode !== "string") {
+      return null;
+    }
+    const normalized = mode.trim().toLowerCase();
+    if (!normalized) {
+      return null;
+    }
+    if (normalized === "emergency") {
+      return "emergency";
+    }
+    if (normalized === "drive" || normalized === "driving") {
+      return "drive";
+    }
+    if (normalized === "walk" || normalized === "walking") {
+      return "walk";
+    }
+    if (normalized === "cycle" || normalized === "cycling" || normalized === "bike") {
+      return "cycle";
+    }
+    return normalized;
+  }
+
+  function normalizeRouteStop(stop) {
+    if (!stop) {
+      return null;
+    }
+    if (typeof stop === "string") {
+      const trimmed = stop.trim();
+      return trimmed ? { query: trimmed } : null;
+    }
+    if (typeof stop !== "object") {
+      return null;
+    }
+    if (typeof stop.query === "string" && stop.query.trim()) {
+      return { query: stop.query.trim() };
+    }
+    if (typeof stop.uprn === "string" && stop.uprn.trim()) {
+      return { uprn: stop.uprn.trim() };
+    }
+    if (Array.isArray(stop.coordinates) && stop.coordinates.length === 2) {
+      return { coordinates: stop.coordinates };
+    }
+    return null;
+  }
+
+  function normalizeRouteWidgetConfig(config) {
+    if (!config || typeof config !== "object") {
+      return {};
+    }
+    const next = { ...config };
+    if (!Array.isArray(next.stops) || next.stops.length < 2) {
+      const originStop = normalizeRouteStop(next.origin);
+      const destinationStop = normalizeRouteStop(next.destination);
+      const viaStops = Array.isArray(next.via)
+        ? next.via.map(normalizeRouteStop).filter(Boolean)
+        : [];
+      if (originStop && destinationStop) {
+        next.stops = [originStop, ...viaStops, destinationStop];
+      }
+    }
+    if (typeof next.profile !== "string" || !next.profile.trim()) {
+      const routeMode = normalizeRouteMode(next.routeMode);
+      if (routeMode) {
+        next.profile = routeMode;
+      }
+    } else {
+      next.profile = normalizeRouteMode(next.profile) || next.profile;
+    }
+    return next;
+  }
+
+  function normalizeUiConfig(config, resourceUri) {
+    if (!config || typeof config !== "object") {
+      return config;
+    }
+    if (resourceUri && resourceUri.includes("route-planner")) {
+      return normalizeRouteWidgetConfig(config);
+    }
+    return config;
+  }
+
+  async function runSuggestedUiTool() {
     if (!uiGuidance?.tool) {
       return;
     }
-    error = "";
     try {
+      queueUiConfig(normalizeUiConfig(uiGuidance.args || {}, uiPreviewResource?.uri || selectedResource?.uri));
       if (uiAppInitialized) {
         sendUiNotification("ui/notifications/tool-input", {
-          arguments: uiGuidance.args || {}
+          arguments: pendingUiConfig || {},
+          config: pendingUiConfig || {},
         });
       }
       const response = await sendRequest(
         {
           method: "tools/call",
-          params: { name: uiToolName, arguments: uiGuidance.args }
+          params: { name: uiGuidance.tool, arguments: uiGuidance.args || {} },
         },
         CompatibilityCallToolResultSchema
       );
@@ -983,189 +816,122 @@
       if (uiAppInitialized) {
         sendUiNotification("ui/notifications/tool-result", response);
       }
-      logDebug("Suggested UI tool run", { tool: uiToolName });
     } catch (err) {
-      error = redactErrorMessage(err?.message || String(err));
       uiToolResult = "";
-      setLastError(error, err);
-      if (uiAppInitialized) {
-        sendUiNotification("ui/notifications/tool-cancelled", {
-          reason: err?.message || String(err)
-        });
-      }
-      logDebug("Suggested UI tool failed", { tool: uiToolName, error }, "error");
+      uiResourceError = redactErrorMessage(err?.message || String(err));
+      setLastError(uiResourceError, err);
     }
-  };
+  }
 
-  const loadUiResource = async () => {
-    if (!selectedResource?.uri) {
+  async function loadUiResource(
+    resource = uiPreviewResource || selectedResource,
+    { source = uiPreviewSource, keepPendingConfig = false } = {}
+  ) {
+    if (!resource?.uri) {
       return;
     }
-    uiResourceError = "";
-    uiPreviewReady = false;
-    uiInstructionsVisible = false;
-    clearUiInstructionsTimer();
-    uiAppInitialized = false;
+    uiPreviewSource = source;
+    uiPreviewResource = resource;
+    resetUiPreviewState({ keepResource: true, keepPendingConfig });
     try {
       const response = await sendRequest(
-        { method: "resources/read", params: { uri: selectedResource.uri } },
+        { method: "resources/read", params: { uri: resource.uri } },
         AnySchema
       );
       const contents = response?.contents || response?.content || [];
       const first = contents[0] || {};
       uiResourceText = first.text || "";
       uiResourceMime = first.mimeType || first.mime_type || "";
-      uiResourceMeta = first._meta || null;
+      uiResourceMeta = first._meta || resource._meta || null;
+      uiPreviewSession = createUiPreviewSession({
+        resourceUri: resource.uri,
+        uiAllowSameOrigin,
+        hostOrigin: window.location.origin,
+        tools,
+        resources,
+      });
       if (!uiResourceText) {
         uiResourceError = "No HTML payload returned for this UI resource.";
       } else {
         scheduleUiInstructions();
       }
-      logDebug("UI resource loaded", { uri: selectedResource.uri, mime: uiResourceMime });
+      logDebug("UI resource loaded", { uri: resource.uri, mime: uiResourceMime });
     } catch (err) {
       uiResourceError = redactErrorMessage(err?.message || String(err));
       setLastError(uiResourceError, err);
-      logDebug("Failed to load UI resource", { uri: selectedResource.uri, error: uiResourceError }, "error");
     }
-  };
+  }
 
-  const postToUi = (payload) => {
+  function postToUi(payload) {
     if (!uiIframe?.contentWindow) {
       return;
     }
-    uiIframe.contentWindow.postMessage(payload, "*");
-  };
+    uiIframe.contentWindow.postMessage(buildBridgeEnvelope(uiPreviewSession, payload), "*");
+  }
 
-  const sendUiNotification = (method, params) => {
+  function sendUiNotification(method, params) {
     postToUi({ jsonrpc: "2.0", method, params });
-  };
+  }
 
-  const respondToUi = (id, result, error) => {
-    if (error) {
-      postToUi({ jsonrpc: "2.0", id, error });
+  function respondToUi(id, result, errorPayload) {
+    if (errorPayload) {
+      postToUi({ jsonrpc: "2.0", id, error: errorPayload });
     } else {
       postToUi({ jsonrpc: "2.0", id, result });
     }
-  };
+  }
 
-  const buildHostContext = () => {
-    let proxyBase = "http://localhost:8000";
-    try {
-      proxyBase = new URL(serverUrl).origin;
-    } catch (err) {
-      // keep default
-    }
-    const displayMode = uiPreviewExpanded ? "fullscreen" : "inline";
-    let containerDimensions;
-    if (uiHostViewportMode === "compact") {
-      containerDimensions = {
-        maxWidth: uiCompactWidthPx,
-        maxHeight: uiCompactHeightPx,
-        width: uiCompactWidthPx,
-        height: uiCompactHeightPx
-      };
-    } else if (uiHostViewportMode === "regular") {
-      const regularWidth = Math.max(window.innerWidth || 1200, 1024);
-      const regularHeight = Math.max(window.innerHeight || 900, 700);
-      containerDimensions = {
-        maxWidth: regularWidth,
-        maxHeight: regularHeight,
-        width: regularWidth,
-        height: regularHeight
-      };
-    } else if (uiPreviewExpanded) {
-      containerDimensions = {
-        maxWidth: window.innerWidth || 1200,
-        maxHeight: window.innerHeight || 900,
-        width: window.innerWidth || 1200,
-        height: window.innerHeight || 900
-      };
-    } else {
-      containerDimensions = { maxWidth: 1200, maxHeight: 700, width: 1200, height: 700 };
-    }
-    return {
-      displayMode,
-      availableDisplayModes: ["inline", "fullscreen"],
-      platform: "web",
-      userAgent: PLAYGROUND_CLIENT_INFO.name,
-      containerDimensions,
-      mcpGeo: { proxyBase }
-    };
-  };
-
-  const buildHostCapabilities = () => {
-    const permissions = sanitizeSandboxPermissions(
-      uiResourceMeta?.ui?.permissions || {},
-      uiAllowSameOrigin
-    );
-    const csp = uiResourceMeta?.ui?.csp || {};
-    const sandbox = {};
-    if (Object.keys(permissions).length) {
-      sandbox.permissions = permissions;
-    }
-    if (Object.keys(csp).length) {
-      sandbox.csp = csp;
-    }
-    const capabilities = {
-      serverTools: {},
-      serverResources: {},
-      logging: {},
-      openLinks: {}
-    };
-    if (Object.keys(sandbox).length) {
-      capabilities.sandbox = sandbox;
-    }
-    return capabilities;
-  };
-
-  const handleUiRequest = async (message) => {
+  async function handleUiRequest(message) {
     const { id, method, params } = message;
-    if (id === undefined || id === null) {
-      return;
-    }
-    if (debugEnabled) {
-      logDebug("UI request received", { method });
-    }
     if (method === "ui/initialize") {
+      const hostContext = buildHostContext({
+        serverUrl,
+        uiPreviewExpanded,
+        uiHostViewportMode,
+        uiCompactWidthPx,
+        uiCompactHeightPx,
+      });
+      const previewMeta = {
+        previewId: uiPreviewSession?.id,
+        resourceUri: uiPreviewSession?.resourceUri,
+        sessionToken: uiPreviewSession?.token,
+      };
       respondToUi(id, {
         protocolVersion: UI_PROTOCOL_VERSION,
         hostInfo: PLAYGROUND_CLIENT_INFO,
-        hostCapabilities: buildHostCapabilities(),
-        hostContext: buildHostContext()
+        hostCapabilities: buildHostCapabilities({ uiResourceMeta, uiAllowSameOrigin }),
+        hostContext: { ...hostContext, mcpGeoPreview: previewMeta },
+        mcpGeoPreview: previewMeta,
       });
       return;
     }
-    if (method === "ui/request-display-mode") {
-      const requested = params?.mode;
-      const nextMode = requested === "fullscreen" ? "fullscreen" : "inline";
-      uiPreviewExpanded = nextMode === "fullscreen";
-      respondToUi(id, { mode: nextMode });
-      if (uiAppInitialized) {
-        sendUiNotification("ui/notifications/host-context-changed", buildHostContext());
-      }
+
+    if (message.id === undefined || message.id === null) {
       return;
     }
+
+    if (method === "ui/request-display-mode") {
+      uiPreviewExpanded = params?.mode === "fullscreen";
+      respondToUi(id, { mode: uiPreviewExpanded ? "fullscreen" : "inline" });
+      notifyHostContextChange();
+      return;
+    }
+
     if (method === "ui/open-link") {
       const url = params?.url || params?.href;
       if (url) {
         window.open(url, "_blank", "noopener,noreferrer");
       }
       respondToUi(id, {});
-      if (debugEnabled) {
-        logDebug("UI open-link handled", { url });
-      }
       return;
     }
-    if (method === "ui/message") {
+
+    if (method === "ui/message" || method === "ui/update-model-context") {
       recordHistory({ request: message, response: {}, at: new Date().toISOString() });
       respondToUi(id, {});
       return;
     }
-    if (method === "ui/update-model-context") {
-      recordHistory({ request: message, response: {}, at: new Date().toISOString() });
-      respondToUi(id, {});
-      return;
-    }
+
     if (method === "tools/call") {
       try {
         const response = await sendRequest(
@@ -1181,48 +947,418 @@
       }
       return;
     }
+
     if (method === "resources/read") {
       try {
         const response = await sendRequest({ method: "resources/read", params }, AnySchema);
         respondToUi(id, response);
-        if (debugEnabled) {
-          logDebug("UI resources/read bridged", { uri: params?.uri || params?.name });
-        }
       } catch (err) {
         respondToUi(id, null, { code: -32000, message: err?.message || String(err) });
       }
       return;
     }
+
     if (method === "ping") {
       respondToUi(id, {});
       return;
     }
-    respondToUi(id, null, { code: -32601, message: `Method not found: ${method}` });
-    logDebug("UI method not found", { method }, "warn");
-  };
 
-  const notifyHostContextChange = () => {
+    respondToUi(id, null, { code: -32601, message: `Method not found: ${method}` });
+  }
+
+  function notifyHostContextChange() {
     if (!uiAppInitialized) {
       return;
     }
-    sendUiNotification("ui/notifications/host-context-changed", buildHostContext());
-  };
+    sendUiNotification(
+      "ui/notifications/host-context-changed",
+      buildHostContext({
+        serverUrl,
+        uiPreviewExpanded,
+        uiHostViewportMode,
+        uiCompactWidthPx,
+        uiCompactHeightPx,
+      })
+    );
+  }
+
+  async function prefillToolFromScenario(scenario) {
+    if (!scenario?.demo?.primaryTool) {
+      return;
+    }
+    const requestedName = scenario.demo.primaryTool;
+    const tool = tools.find((entry) => {
+      const names = new Set(
+        [
+          entry?.name,
+          entry?.annotations?.originalName,
+          entry?.inputSchema?.properties?.tool?.const,
+          entry?.input_schema?.properties?.tool?.const,
+        ]
+          .filter((value) => typeof value === "string" && value.trim())
+          .flatMap((value) => [value, sanitizeBridgeName(value)])
+      );
+      return names.has(requestedName);
+    });
+    if (tool) {
+      selectTool(tool);
+    } else {
+      selectedTool = null;
+      toolName = requestedName;
+    }
+    toolArgs = JSON.stringify(
+      scenario.demo.presetArgs || { tool: scenario.demo.primaryTool },
+      null,
+      2
+    );
+    activeTab = "explorer";
+  }
+
+  async function openScenarioWidget(scenario, { switchTab = true } = {}) {
+    const widgetUri = scenario?.demo?.widget;
+    if (!widgetUri) {
+      return;
+    }
+    const resource = resources.find((entry) => entry.uri === widgetUri);
+    if (!resource) {
+      uiResourceError = `Widget resource not listed: ${widgetUri}`;
+      return;
+    }
+    queueUiConfig(normalizeUiConfig(scenario.demo.widgetArgs || scenario.demo.presetArgs || {}, widgetUri));
+    selectedResource = resource;
+    const source = widgetUri.includes("route-planner") ? "routing" : "benchmark";
+    if (switchTab) {
+      activeTab = widgetUri.includes("route-planner") ? "routing" : "explorer";
+    }
+    await loadUiResource(resource, { source, keepPendingConfig: true });
+  }
+
+  async function runRouteDemo() {
+    const scenario = routeScenarios.find((entry) => entry.id === routeScenarioId);
+    if (!scenario) {
+      return;
+    }
+    routeDescriptorState = null;
+    routingResult = null;
+    if (scenario.demo?.widget) {
+      await openScenarioWidget(scenario, { switchTab: false });
+    }
+    try {
+      const descriptor = await sendRequest(
+        {
+          method: "tools/call",
+          params: { name: "os_route.descriptor", arguments: { tool: "os_route.descriptor" } },
+        },
+        CompatibilityCallToolResultSchema
+      );
+      routeDescriptorState = extractToolPayload(descriptor);
+    } catch (err) {
+      routeDescriptorState = { isError: true, message: err?.message || String(err) };
+    }
+    try {
+      const result = await sendRequest(
+        {
+          method: "tools/call",
+          params: {
+            name: scenario.demo.primaryTool,
+            arguments: scenario.demo.presetArgs || {},
+          },
+        },
+        CompatibilityCallToolResultSchema
+      );
+      routingResult = extractToolPayload(result);
+      uiToolResult = JSON.stringify(result, null, 2);
+    } catch (err) {
+      routingResult = { isError: true, message: err?.message || String(err) };
+    }
+  }
+
+  async function auditJsonRequest(method, path, payload = null) {
+    try {
+      const result = await fetchAuditJson(path, {
+        method,
+        body: payload ? JSON.stringify(payload) : undefined,
+      });
+      auditRestLog = [
+        {
+          at: new Date().toISOString(),
+          method,
+          path,
+          status: "ok",
+          payload: scrubSecretsValue(result),
+        },
+        ...auditRestLog,
+      ].slice(0, 40);
+      return result;
+    } catch (err) {
+      auditRestLog = [
+        {
+          at: new Date().toISOString(),
+          method,
+          path,
+          status: "error",
+          payload: scrubSecretsValue({
+            request: payload,
+            error: err?.message || String(err),
+          }),
+        },
+        ...auditRestLog,
+      ].slice(0, 40);
+      throw err;
+    }
+  }
+
+  async function refreshAuditPacks() {
+    try {
+      const result = await auditJsonRequest("GET", "/audit/packs?limit=50");
+      auditPacks = result.packs || [];
+      if (!auditSelectedPack && auditPacks.length) {
+        await selectAuditPack(auditPacks[0].packId);
+      }
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function selectAuditPack(packId) {
+    try {
+      auditSelectedPack = await auditJsonRequest("GET", `/audit/packs/${packId}`);
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function normaliseAuditSession() {
+    auditError = "";
+    try {
+      auditResult = await auditJsonRequest("POST", "/audit/normalise", {
+        sessionDir: auditForm.sessionDir,
+      });
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function createAuditPack() {
+    auditError = "";
+    const payload = {
+      sessionDir: auditForm.sessionDir,
+      outputRoot: auditForm.outputRoot || undefined,
+      scopeType: auditForm.scopeType,
+      episodeId: auditForm.episodeId || undefined,
+      episodeTitle: auditForm.episodeTitle || undefined,
+      episodeStartSequence: auditForm.episodeStartSequence
+        ? Number(auditForm.episodeStartSequence)
+        : undefined,
+      episodeEndSequence: auditForm.episodeEndSequence
+        ? Number(auditForm.episodeEndSequence)
+        : undefined,
+      retentionClass: auditForm.retentionClass,
+      legalHold: Boolean(auditForm.legalHold),
+    };
+    try {
+      auditResult = await auditJsonRequest("POST", "/audit/packs", payload);
+      await refreshAuditPacks();
+      if (auditResult?.packId) {
+        await selectAuditPack(auditResult.packId);
+      }
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function verifyAuditPack() {
+    if (!auditSelectedPack?.packId) {
+      return;
+    }
+    try {
+      auditResult = await auditJsonRequest(
+        "POST",
+        `/audit/packs/${auditSelectedPack.packId}/verify`
+      );
+      await selectAuditPack(auditSelectedPack.packId);
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function redactAuditPack(disclosureProfile = "foi_redacted") {
+    if (!auditSelectedPack?.packId) {
+      return;
+    }
+    try {
+      auditResult = await auditJsonRequest(
+        "POST",
+        `/audit/packs/${auditSelectedPack.packId}/redact`,
+        { disclosureProfile }
+      );
+      await selectAuditPack(auditSelectedPack.packId);
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function toggleAuditLegalHold() {
+    if (!auditSelectedPack?.packId) {
+      return;
+    }
+    try {
+      auditResult = await auditJsonRequest(
+        "POST",
+        `/audit/packs/${auditSelectedPack.packId}/legal-hold`,
+        {
+          legalHold: !auditSelectedPack.legalHold,
+          retentionClass: auditSelectedPack.retentionClass,
+          reason: auditSelectedPack.legalHold ? "Released from playground" : "Applied from playground",
+        }
+      );
+      await selectAuditPack(auditSelectedPack.packId);
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  function downloadBlob(filename, blob) {
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(href);
+  }
+
+  async function downloadAuditBundle() {
+    if (!auditSelectedPack?.packId) {
+      return;
+    }
+    try {
+      const blob = await fetchAuditBlob(`/audit/packs/${auditSelectedPack.packId}/bundle`);
+      downloadBlob(`DSAP-${auditSelectedPack.packId}.zip`, blob);
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  async function downloadAuditHash() {
+    if (!auditSelectedPack?.packId) {
+      return;
+    }
+    try {
+      const payload = await auditJsonRequest(
+        "GET",
+        `/audit/packs/${auditSelectedPack.packId}/bundle/hash`
+      );
+      downloadBlob(
+        `DSAP-${auditSelectedPack.packId}.zip.sha256.json`,
+        new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })
+      );
+    } catch (err) {
+      auditError = redactErrorMessage(err?.message || String(err));
+    }
+  }
+
+  function scenarioToolFamily(scenario) {
+    const toolsForScenario = scenario?.mcpGeoTools || [];
+    if (toolsForScenario.some((name) => name.startsWith("os_route") || name.includes(".route"))) {
+      return "routing";
+    }
+    if (toolsForScenario.some((name) => name.startsWith("os_apps"))) {
+      return "apps";
+    }
+    if (toolsForScenario.some((name) => name.startsWith("os_places"))) {
+      return "places";
+    }
+    if (toolsForScenario.some((name) => name.startsWith("os_features"))) {
+      return "features";
+    }
+    if (toolsForScenario.some((name) => name.startsWith("admin_"))) {
+      return "admin";
+    }
+    return "other";
+  }
+
+  function selectBenchmarkScenario(id) {
+    selectedBenchmarkId = id;
+    if (id === "SG03" || id === "SG12") {
+      routeScenarioId = id;
+    }
+  }
+
+  function viewLatestEvidence() {
+    if (selectedBenchmark?.demo?.widget) {
+      openScenarioWidget(selectedBenchmark);
+    }
+  }
+
+  function dismissUiInstructions() {
+    uiInstructionsVisible = false;
+  }
+
+  function handleSameOriginToggle() {
+    uiAllowSameOrigin = !uiAllowSameOrigin;
+    if (uiPreviewResource) {
+      void loadUiResource(uiPreviewResource);
+    }
+  }
+
+  function handleViewportModeChange() {
+    notifyHostContextChange();
+  }
+
+  function handleCompactWidthInput() {
+    notifyHostContextChange();
+  }
+
+  function handleCompactHeightInput() {
+    notifyHostContextChange();
+  }
+
+  if (import.meta?.hot) {
+    hmrStatus = "listening";
+    import.meta.hot.on("vite:afterUpdate", (payload) => {
+      hmrUpdateCount += 1;
+      hmrLastUpdate = new Date().toISOString();
+      logDebug("HMR update applied", { updates: payload?.updates?.length || 0 });
+    });
+    import.meta.hot.on("vite:beforeFullReload", () => {
+      hmrUpdateCount += 1;
+      hmrLastUpdate = new Date().toISOString();
+      logDebug("HMR full reload triggered", null, "warn");
+    });
+  }
 
   onMount(() => {
     const handler = async (event) => {
       if (!uiIframe?.contentWindow || event.source !== uiIframe.contentWindow) {
         return;
       }
-      const message = event.data;
-      if (!message || typeof message !== "object" || message.jsonrpc !== "2.0") {
+      const message = normalizeBridgeMessage(event.data);
+      if (!message) {
         return;
       }
+      const validation = validateUiMessage({
+        event,
+        message,
+        previewSession: uiPreviewSession,
+      });
+      if (!validation.ok) {
+        rejectBridgeEvent(validation.reason, validation.code, message);
+        return;
+      }
+
       if (message.method && message.id === undefined) {
         if (message.method === "ui/notifications/initialized") {
           uiAppInitialized = true;
           uiPreviewReady = true;
           uiInstructionsVisible = false;
           clearUiInstructionsTimer();
+          recordHistory({ request: message, response: null, at: new Date().toISOString() });
+          if (pendingUiConfig) {
+            sendUiNotification("ui/notifications/tool-input", {
+              arguments: pendingUiConfig,
+              config: pendingUiConfig,
+            });
+          }
           return;
         }
         if (message.method === "ui/notifications/size-changed") {
@@ -1237,15 +1373,20 @@
           return;
         }
       }
+
       if (message.method) {
         await handleUiRequest(message);
       }
     };
+
     window.addEventListener("message", handler);
     requestAnimationFrame(() => {
       window.dispatchEvent(new CustomEvent("mcp-playground-ready"));
     });
-    return () => window.removeEventListener("message", handler);
+    return () => {
+      clearUiInstructionsTimer();
+      window.removeEventListener("message", handler);
+    };
   });
 
   $: if (typeof document !== "undefined") {
@@ -1268,14 +1409,9 @@
     uiHostViewportMode === "compact"
       ? `--preview-inline-width:${uiCompactWidthPx}px; --preview-inline-height:${uiCompactHeightPx}px;`
       : "";
-  $: splitLeftWidthPx = normalizeDimension(
-    splitLeftWidth,
-    320,
-    SPLIT_LEFT_MIN,
-    SPLIT_LEFT_MAX
-  );
-
-  $: uiResourceHtml = uiResourceText ? injectPreviewBase(injectCsp(uiResourceText, uiResourceMeta)) : "";
+  $: uiResourceHtml = uiResourceText
+    ? injectPreviewBase(injectCsp(uiResourceText, uiResourceMeta, serverUrl), serverUrl)
+    : "";
   $: uiIframeSandbox = buildSandbox(uiResourceMeta, uiAllowSameOrigin);
   $: uiIframeAllow = buildAllow(uiResourceMeta);
   $: uiSameOriginRequested = wantsSameOrigin(uiResourceMeta?.ui?.permissions || {});
@@ -1284,23 +1420,14 @@
   $: descriptorSizeBytes = descriptorRaw
     ? new TextEncoder().encode(JSON.stringify(descriptorRaw)).length
     : 0;
-  $: descriptorSizeLabel = descriptorSizeBytes
-    ? `${(descriptorSizeBytes / 1024).toFixed(1)} KB`
-    : "0 KB";
+  $: descriptorSizeLabel = descriptorSizeBytes ? `${(descriptorSizeBytes / 1024).toFixed(1)} KB` : "0 KB";
   $: descriptorWarn = descriptorSizeBytes > 50 * 1024;
   $: serverVersion = descriptorMeta?.version || "n/a";
   $: coreProtocolVersion = descriptorMeta?.protocolVersion || "n/a";
-  $: supportedProtocolVersions = Array.isArray(
-    descriptorMeta?.supportedProtocolVersions
-  )
+  $: supportedProtocolVersions = Array.isArray(descriptorMeta?.supportedProtocolVersions)
     ? descriptorMeta.supportedProtocolVersions.join(", ")
     : "n/a";
   $: mcpAppsProtocolVersion = descriptorMeta?.mcpAppsProtocolVersion || "n/a";
-
-  $: toolCounts = descriptorMeta?.toolSearch?.counts || {};
-  $: toolsTotal = toolCounts.total || tools.length;
-  $: toolsLoaded = toolCounts.always_loaded || Math.min(tools.length, toolsTotal);
-
   $: filteredTools = tools.filter((tool) =>
     tool.name.toLowerCase().includes(toolFilter.toLowerCase())
   );
@@ -1310,54 +1437,82 @@
   $: filteredPrompts = prompts.filter((prompt) =>
     (prompt.name || "").toLowerCase().includes(promptFilter.toLowerCase())
   );
-
+  $: toolsTotal = descriptorMeta?.toolSearch?.counts?.total || tools.length;
+  $: toolsLoaded =
+    descriptorMeta?.toolSearch?.counts?.always_loaded || Math.min(tools.length, toolsTotal);
   $: uiGuidance = (() => {
     if (!selectedResource?.uri?.startsWith("ui://")) {
       return null;
     }
-    const match = uiToolMap.find((entry) => selectedResource.uri.includes(entry.match));
-    if (!match) {
-      return { tool: null, args: null };
-    }
-    return match;
+    return uiToolMap.find((entry) => selectedResource.uri.includes(entry.match)) || null;
   })();
-
-  $: uiToolName = uiGuidance?.tool ? uiGuidance.tool.replace(/\./g, "_") : "";
-  $: uiExampleCall = uiGuidance?.tool
-    ? JSON.stringify({ name: uiToolName, arguments: uiGuidance.args }, null, 2)
+  $: uiExampleCall = uiGuidance
+    ? JSON.stringify({ name: uiGuidance.tool, arguments: uiGuidance.args }, null, 2)
     : "";
-  $: debugSnapshot = redactValue({
-    status,
-    serverUrl,
-    playgroundUrl,
-    capabilities,
-    selectedTool: selectedTool?.name,
-    selectedResource: selectedResource?.uri,
-    selectedPrompt: selectedPrompt?.name,
-    lastRequestAt,
-    lastResponseAt,
-    lastErrorAt,
-    lastErrorMessage,
-    ui: {
-      previewExpanded: uiPreviewExpanded,
-      previewReady: uiPreviewReady,
-      resourceMime: uiResourceMime
-    },
-    hmr: {
-      status: hmrStatus,
-      updates: hmrUpdateCount,
-      lastUpdate: hmrLastUpdate
-    },
-    build: BUILD_INFO,
-    bootedAt: UI_BOOT_AT
+  $: currentHelp = TAB_HELP[activeTab] || TAB_HELP.explorer;
+  $: selectedBenchmark =
+    benchmarkScenarios.find((scenario) => scenario.id === selectedBenchmarkId) || null;
+  $: benchmarkReferenceView = selectedBenchmark?.referenceOutput || null;
+  $: benchmarkLiveView =
+    benchmarkLiveRun?.results?.find((entry) => entry.scenarioId === selectedBenchmark?.id) || null;
+  $: filteredBenchmarks = benchmarkScenarios.filter((scenario) => {
+    const idMatch = !benchmarkFilterId
+      || scenario.id.toLowerCase().includes(benchmarkFilterId.toLowerCase())
+      || scenario.title.toLowerCase().includes(benchmarkFilterId.toLowerCase());
+    const supportMatch =
+      benchmarkFilterSupport === "all" || scenario.supportLevel === benchmarkFilterSupport;
+    const familyMatch =
+      benchmarkFilterToolFamily === "all"
+      || scenarioToolFamily(scenario) === benchmarkFilterToolFamily;
+    return idMatch && supportMatch && familyMatch;
   });
-  $: debugSnapshotText = debugSnapshot ? JSON.stringify(debugSnapshot, null, 2) : "";
-  $: secretAudit = buildSecretAudit();
-  $: {
-    const help = TAB_HELP[activeTab] || TAB_HELP.setup;
-    tabHelpTitle = help.title;
-    tabHelpText = help.text;
+  $: routeScenarios = benchmarkScenarios.filter((scenario) => ["SG03", "SG12"].includes(scenario.id));
+  $: if (!routeScenarios.find((entry) => entry.id === routeScenarioId) && routeScenarios.length) {
+    routeScenarioId = routeScenarios[0].id;
   }
+  $: debugSnapshotText = JSON.stringify(
+    redactValue({
+      status,
+      serverUrl,
+      playgroundUrl,
+      capabilities,
+      selectedTool: selectedTool?.name,
+      selectedResource: selectedResource?.uri,
+      selectedPrompt: selectedPrompt?.name,
+      selectedBenchmark: selectedBenchmark?.id,
+      lastRequestAt,
+      lastResponseAt,
+      lastErrorAt,
+      ui: {
+        previewResource: uiPreviewResource?.uri,
+        previewReady: uiPreviewReady,
+        sandbox: uiIframeSandbox,
+        sessionId: uiPreviewSession?.id,
+      },
+      audit: {
+        selectedPack: auditSelectedPack?.packId,
+        packs: auditPacks.length,
+      },
+      hmr: {
+        status: hmrStatus,
+        updates: hmrUpdateCount,
+        lastUpdate: hmrLastUpdate,
+      },
+      build: BUILD_INFO,
+    }),
+    null,
+    2
+  );
+  $: secretAudit = buildSecretAudit({
+    debugEntries,
+    history,
+    lastErrorMessage,
+    lastErrorDetail,
+    error,
+    uiResourceError,
+    auditRestLog,
+    rejectedBridgeEvents,
+  });
 </script>
 
 <svelte:head>
@@ -1370,9 +1525,13 @@
   <header class="hero">
     <div>
       <p class="eyebrow">MCP Geo Playground</p>
-      <h1>MCP Geo Playground: tools + compact UI harness</h1>
+      <h1>Playground security hardening and demo workbench</h1>
+      <p class="sub">
+        Explore MCP tools, route workflows, DSAP audit packs, and benchmark evidence from one
+        host shell.
+      </p>
     </div>
-    <div class="status">
+    <div class="status-card">
       <span class={`dot ${status}`}></span>
       <div>
         <div class="label">Status</div>
@@ -1383,664 +1542,219 @@
 
   <div class="tabs-toolbar">
     <nav class="tabs">
-      <button class:active={activeTab === "setup"} on:click={() => (activeTab = "setup")}>Setup</button>
-      <button class:active={activeTab === "test"} on:click={() => (activeTab = "test")}>Test</button>
-      <button class:active={activeTab === "trace"} on:click={() => (activeTab = "trace")}>Trace</button>
-      <button class:active={activeTab === "debug"} on:click={() => (activeTab = "debug")}>Debug</button>
+      <button class:active={activeTab === "explorer"} on:click={() => (activeTab = "explorer")}>
+        Explorer
+      </button>
+      <button class:active={activeTab === "routing"} on:click={() => (activeTab = "routing")}>
+        Routing
+      </button>
+      <button class:active={activeTab === "audit"} on:click={() => (activeTab = "audit")}>
+        Audit / FOI
+      </button>
+      <button class:active={activeTab === "benchmarks"} on:click={() => (activeTab = "benchmarks")}>
+        Benchmarks
+      </button>
+      <button class:active={activeTab === "debug"} on:click={() => (activeTab = "debug")}>
+        Debug
+      </button>
     </nav>
     <div class="tab-help" data-testid="tab-help">
-      <strong>{tabHelpTitle}</strong>
-      <span>{tabHelpText}</span>
+      <strong>{currentHelp.title}</strong>
+      <span>{currentHelp.text}</span>
     </div>
   </div>
 
-  {#if activeTab === "setup"}
-    <section class="grid">
-      <div class="card">
-        <h2>Connection</h2>
-        <label>
-          Server URL
-          <input type="url" bind:value={serverUrl} />
-        </label>
-        <label>
-          Playground API
-          <input type="url" bind:value={playgroundUrl} />
-        </label>
-        <div class="actions">
-          <button class="primary" on:click={connect} disabled={status === "connecting" || status === "connected"}>
-            Connect
-          </button>
-          <button class="ghost" on:click={disconnect} disabled={status !== "connected"}>
-            Disconnect
-          </button>
-          <button class="ghost" on:click={refreshLists} disabled={status !== "connected"}>
-            Refresh
-          </button>
-        </div>
-        {#if error}
-          <div class="error">{error}</div>
-        {/if}
-      </div>
-
-      <div class="card">
-        <h2>Descriptor (initial view)</h2>
-        <div class="version-matrix">
-          <h3>Version matrix</h3>
-          <div class="version-grid">
-            <div class="version-item">
-              <div class="label">Server package</div>
-              <div class="value">{serverVersion}</div>
-            </div>
-            <div class="version-item">
-              <div class="label">MCP core (active)</div>
-              <div class="value">{coreProtocolVersion}</div>
-            </div>
-            <div class="version-item">
-              <div class="label">MCP core (supported)</div>
-              <div class="value">{supportedProtocolVersions}</div>
-            </div>
-            <div class="version-item">
-              <div class="label">MCP Apps protocol (server)</div>
-              <div class="value">{mcpAppsProtocolVersion}</div>
-            </div>
-            <div class="version-item">
-              <div class="label">MCP Apps protocol (playground host)</div>
-              <div class="value">{UI_PROTOCOL_VERSION}</div>
-            </div>
-            <div class="version-item">
-              <div class="label">Playground client</div>
-              <div class="value">{PLAYGROUND_CLIENT_INFO.version}</div>
-            </div>
-            <div class="version-item">
-              <div class="label">MCP SDK dependency</div>
-              <div class="value">{MCP_SDK_VERSION}</div>
-            </div>
-          </div>
-        </div>
-        {#if descriptorMeta}
-          <div class="descriptor-meta">
-            <div>
-              <div class="label">Server</div>
-              <div class="value">{descriptorMeta.server} · v{descriptorMeta.version}</div>
-            </div>
-            <div>
-              <div class="label">Protocol</div>
-              <div class="value">{descriptorMeta.protocolVersion || "n/a"}</div>
-            </div>
-            <div>
-              <div class="label">Transport</div>
-              <div class="value">{descriptorMeta.transport || "http"}</div>
-            </div>
-            <div>
-              <div class="label">Descriptor size</div>
-              <div class={`value ${descriptorWarn ? "warn" : ""}`}>{descriptorSizeLabel}</div>
-            </div>
-          </div>
-          <div class="caps">
-            <h3>Capabilities</h3>
-            <div class="cap-grid">
-              {#if descriptorMeta.capabilities}
-                {#each Object.entries(descriptorMeta.capabilities) as [key, value]}
-                  <div class="cap">
-                    <strong>{key}</strong>
-                    <span>{JSON.stringify(value)}</span>
-                  </div>
-                {/each}
-              {:else}
-                <p class="muted">No capability metadata yet.</p>
-              {/if}
-            </div>
-          </div>
-          <details class="details-block">
-            <summary>Full descriptor payload</summary>
-            <pre>{descriptorJson}</pre>
-          </details>
-        {:else}
-          <p class="muted">Connect to fetch server metadata.</p>
-        {/if}
-      </div>
-    </section>
+  {#if activeTab === "explorer"}
+    <ExplorerWorkbench
+      bind:playgroundUrl
+      bind:promptContext
+      bind:promptFilter
+      bind:promptText
+      bind:resourceFilter
+      bind:serverUrl
+      bind:toolArgs
+      bind:toolFilter
+      bind:traceRedact
+      bind:uiAllowSameOrigin
+      bind:uiCompactHeight
+      bind:uiCompactWidth
+      bind:uiHostViewportMode
+      bind:uiIframe
+      {BUILD_INFO}
+      {capabilities}
+      connect={connect}
+      {COMPACT_HEIGHT_MAX}
+      {COMPACT_HEIGHT_MIN}
+      {COMPACT_WIDTH_MAX}
+      {COMPACT_WIDTH_MIN}
+      copyText={copyText}
+      {coreProtocolVersion}
+      {descriptorJson}
+      {descriptorMeta}
+      {descriptorSizeLabel}
+      {descriptorWarn}
+      disconnect={disconnect}
+      {error}
+      fetchDescriptor={fetchDescriptor}
+      {filteredPrompts}
+      {filteredResources}
+      {filteredTools}
+      formatTracePayload={(payload) => formatTracePayload(payload, traceRedact)}
+      {history}
+      loadUiResource={() => loadUiResource(selectedResource)}
+      logPrompt={logPrompt}
+      {MCP_SDK_VERSION}
+      {mcpAppsProtocolVersion}
+      onCompactHeightInput={handleCompactHeightInput}
+      onCompactWidthInput={handleCompactWidthInput}
+      onDismissUiInstructions={dismissUiInstructions}
+      onPlaygroundUrlInput={() => {}}
+      onServerUrlInput={() => {}}
+      onToggleSameOrigin={handleSameOriginToggle}
+      onViewportModeChange={handleViewportModeChange}
+      {PLAYGROUND_CLIENT_INFO}
+      {prompts}
+      {promptsError}
+      refreshLists={refreshLists}
+      runSuggestedUiTool={runSuggestedUiTool}
+      {selectedPrompt}
+      {selectedResource}
+      {selectedTool}
+      selectPrompt={selectPrompt}
+      selectResource={selectResource}
+      selectTool={selectTool}
+      {serverVersion}
+      {status}
+      {supportedProtocolVersions}
+      toggleUiPreview={toggleUiPreview}
+      {toolResult}
+      callTool={callTool}
+      {tools}
+      {toolsLoaded}
+      {toolsTotal}
+      {uiExampleCall}
+      {uiGuidance}
+      {uiIframeAllow}
+      {uiIframeSandbox}
+      {uiInstructionsVisible}
+      {uiPreviewExpanded}
+      {uiPreviewInlineStyle}
+      {uiPreviewReady}
+      {uiResourceError}
+      {uiResourceHtml}
+      {uiResourceMime}
+      {uiResourceText}
+      {uiSameOriginRequested}
+      {uiToolResult}
+      {uiCompactHeightPx}
+      {uiCompactWidthPx}
+      {resourceTemplates}
+    />
   {/if}
 
-  {#if activeTab === "test"}
-    <section class="split" style={`--split-left-width:${splitLeftWidthPx}px`}>
-      <div class="pane">
-        <div class="pane-header">
-          <div class="pane-tabs">
-            <button class:active={testSection === "tools"} on:click={() => (testSection = "tools")}>
-              Tools ({toolsLoaded}/{toolsTotal})
-            </button>
-            <button class:active={testSection === "resources"} on:click={() => (testSection = "resources")}>
-              Resources ({resources.length})
-            </button>
-            <button class:active={testSection === "prompts"} on:click={() => (testSection = "prompts")}>
-              Prompts ({prompts.length})
-            </button>
-            <button class:active={testSection === "templates"} on:click={() => (testSection = "templates")}>
-              Templates ({resourceTemplates.length})
-            </button>
-          </div>
-          <div class="pane-filters">
-            {#if testSection === "tools"}
-              <input type="text" placeholder="Filter tools" bind:value={toolFilter} />
-            {:else if testSection === "resources"}
-              <input type="text" placeholder="Filter resources" bind:value={resourceFilter} />
-            {:else if testSection === "prompts"}
-              <input type="text" placeholder="Filter prompts" bind:value={promptFilter} />
-            {/if}
-          </div>
-          <label class="split-size">
-            <span>List width</span>
-            <input
-              type="range"
-              min={SPLIT_LEFT_MIN}
-              max={SPLIT_LEFT_MAX}
-              step="10"
-              bind:value={splitLeftWidth}
-            />
-          </label>
-        </div>
-
-        <div class="pane-body">
-          {#if testSection === "tools"}
-            {#each filteredTools as tool}
-              <button
-                class:selected={selectedTool?.name === tool.name}
-                class="list-item"
-                title={tool.annotations ? JSON.stringify(tool.annotations, null, 2) : "No annotations"}
-                on:click={() => selectTool(tool)}
-              >
-                <div class="list-title">{tool.name}</div>
-                <div class="list-sub">{tool.description}</div>
-                <div class="list-badges">
-                  {#if tool.defer_loading || tool.deferLoading}
-                    <span class="badge">deferred</span>
-                  {/if}
-                  {#if tool.category}
-                    <span class="badge badge-ghost">{tool.category}</span>
-                  {/if}
-                  {#if tool.version}
-                    <span class="badge badge-ghost">v{tool.version}</span>
-                  {/if}
-                </div>
-              </button>
-            {/each}
-          {:else if testSection === "resources"}
-            {#each filteredResources as resource}
-              <button
-                class:selected={selectedResource?.uri === resource.uri}
-                class="list-item"
-                on:click={() => selectResource(resource)}
-              >
-                <div class="list-title">{resource.name}</div>
-                <div class="list-sub">{resource.uri}</div>
-                <div class="list-badges">
-                  <span class="badge badge-ghost">{resource.type || resource.mimeType}</span>
-                </div>
-              </button>
-            {/each}
-          {:else if testSection === "templates"}
-            {#if resourceTemplates.length === 0}
-              <p class="muted">No templates advertised.</p>
-            {:else}
-              {#each resourceTemplates as template}
-                <div class="list-item static">
-                  <div class="list-title">{template.name}</div>
-                  <div class="list-sub">{template.uriTemplate}</div>
-                </div>
-              {/each}
-            {/if}
-          {:else}
-            {#if promptsError}
-              <p class="muted">{promptsError}</p>
-            {:else}
-              {#each filteredPrompts as prompt}
-                <button
-                  class:selected={selectedPrompt?.name === prompt.name}
-                  class="list-item"
-                  on:click={() => selectPrompt(prompt)}
-                >
-                  <div class="list-title">{prompt.name}</div>
-                  <div class="list-sub">{prompt.description || ""}</div>
-                </button>
-              {/each}
-            {/if}
-          {/if}
-        </div>
-      </div>
-
-      <div class="pane">
-        <div class="pane-header alt">
-          <div class="pane-title">Details</div>
-          <div class="pane-actions">
-            <button class="ghost" on:click={refreshLists} disabled={status !== "connected"}>
-              Refresh
-            </button>
-          </div>
-        </div>
-        <div class="pane-body">
-          {#if selectedTool}
-            <div class="detail-block">
-              <h3>{selectedTool.name}</h3>
-              <p class="muted">{selectedTool.description}</p>
-              <div class="meta-grid">
-                <div>
-                  <div class="label">Category</div>
-                  <div class="value">{selectedTool.category || "n/a"}</div>
-                </div>
-                <div>
-                  <div class="label">Version</div>
-                  <div class="value">{selectedTool.version || "n/a"}</div>
-                </div>
-                <div>
-                  <div class="label">Deferred</div>
-                  <div class="value">{(selectedTool.defer_loading || selectedTool.deferLoading) ? "yes" : "no"}</div>
-                </div>
-              </div>
-              <details class="details-block" open>
-                <summary>Input schema</summary>
-                <pre>{JSON.stringify(selectedTool.inputSchema || selectedTool.input_schema, null, 2)}</pre>
-              </details>
-              <details class="details-block">
-                <summary>Output schema</summary>
-                <pre>{JSON.stringify(selectedTool.outputSchema || selectedTool.output_schema, null, 2)}</pre>
-              </details>
-              <details class="details-block">
-                <summary>Annotations</summary>
-                <pre>{JSON.stringify(selectedTool.annotations || {}, null, 2)}</pre>
-              </details>
-              <div class="detail-block">
-                <h4>Example call</h4>
-                <textarea rows="10" bind:value={toolArgs}></textarea>
-                <div class="actions">
-                  <button class="primary" on:click={callTool} disabled={status !== "connected"}>
-                    Run Tool
-                  </button>
-                </div>
-              </div>
-              {#if toolResult}
-                <details class="details-block" open>
-                  <summary>Tool output</summary>
-                  <pre>{toolResult}</pre>
-                </details>
-              {/if}
-            </div>
-          {:else if selectedResource}
-            <div class="detail-block">
-              <h3>{selectedResource.name}</h3>
-              <p class="muted">{selectedResource.description || ""}</p>
-              {#if selectedResource.uri?.startsWith("ui://")}
-                <div class="info-card">
-                  <h4>UI resource (MCP Apps)</h4>
-                  <ul>
-                    <li>ui:// is an MCP Apps scheme, not HTTP/HTTPS.</li>
-                    <li>Rendered by the client UI; no response payload or API body.</li>
-                    <li>Meaning comes from UI events that trigger tool calls or state updates.</li>
-                  </ul>
-                  {#if uiGuidance?.tool}
-                    <div class="example-block">
-                      <div class="label">Suggested tool call</div>
-                      <pre>{uiExampleCall}</pre>
-                      <div class="actions">
-                        <button class="ghost" on:click={() => copyText(uiExampleCall)}>
-                          Copy example
-                        </button>
-                        <button class="primary" on:click={runSuggestedUiTool}>
-                          Run suggested tool
-                        </button>
-                      </div>
-                    </div>
-                  {:else}
-                    <p class="muted">No tool mapping available for this UI resource yet.</p>
-                  {/if}
-                </div>
-                {#if uiSameOriginRequested}
-                  <div class="info-card">
-                    <h4>Sandbox warning</h4>
-                    <p>
-                      Allowing <code>allow-same-origin</code> lets the UI access the host origin and
-                      weakens iframe isolation. Enable only for trusted widgets.
-                    </p>
-                    <label class="toggle">
-                      <input type="checkbox" bind:checked={uiAllowSameOrigin} />
-                      <span>Allow same-origin for this UI (unsafe)</span>
-                    </label>
-                    {#if BUILD_INFO.dev}
-                      <p class="muted">Dev mode defaults this on; disable it to test prod behavior.</p>
-                    {/if}
-                  </div>
-                {/if}
-                <div class="detail-block">
-                  <h4>UI content preview</h4>
-                  <div class="actions">
-                    <button class="ghost" on:click={loadUiResource}>Load UI HTML</button>
-                  </div>
-                  <div class="preview-controls">
-                    <div class="preview-control-grid">
-                      <label>
-                        Host viewport mode
-                        <select
-                          bind:value={uiHostViewportMode}
-                          on:change={notifyHostContextChange}
-                          data-testid="host-viewport-mode"
-                        >
-                          <option value="auto">Auto (host default)</option>
-                          <option value="compact">Force compact window</option>
-                          <option value="regular">Force regular window</option>
-                        </select>
-                      </label>
-                      {#if uiHostViewportMode === "compact"}
-                        <label>
-                          Compact width (px)
-                          <input
-                            type="number"
-                            min={COMPACT_WIDTH_MIN}
-                            max={COMPACT_WIDTH_MAX}
-                            step="10"
-                            bind:value={uiCompactWidth}
-                            on:input={notifyHostContextChange}
-                            data-testid="host-compact-width"
-                          />
-                        </label>
-                        <label>
-                          Compact height (px)
-                          <input
-                            type="number"
-                            min={COMPACT_HEIGHT_MIN}
-                            max={COMPACT_HEIGHT_MAX}
-                            step="10"
-                            bind:value={uiCompactHeight}
-                            on:input={notifyHostContextChange}
-                            data-testid="host-compact-height"
-                          />
-                        </label>
-                      {/if}
-                    </div>
-                    <p class="muted">
-                      Updates <code>hostContext.containerDimensions</code> used by the widget.
-                    </p>
-                  </div>
-                  {#if uiResourceError}
-                    <div class="error">{uiResourceError}</div>
-                  {/if}
-                  {#if uiResourceText}
-                    {#if uiResourceMime.includes("text/html")}
-                      <div
-                        class={`preview-frame ${uiPreviewExpanded ? "expanded" : ""} ${uiHostViewportMode === "compact" ? "compact-inline" : ""}`}
-                        style={uiPreviewInlineStyle}
-                      >
-                        <div class="preview-toolbar">
-                          <span>UI preview</span>
-                          <button
-                            class="icon-button"
-                            on:click={toggleUiPreview}
-                            aria-label={uiPreviewExpanded ? "Minimize preview" : "Maximize preview"}
-                          >
-                            {uiPreviewExpanded ? "Minimize" : "Maximize"}
-                          </button>
-                        </div>
-                        {#if uiInstructionsVisible}
-                          <div class="preview-overlay">
-                            <div class="overlay-card">
-                              <h4>Loading MCP App UI</h4>
-                              <p>This UI is served by the MCP server and can take time to initialize.</p>
-                              <p>It lets you explore workflows and trigger tool calls from the interface.</p>
-                              <p class="muted">Close this once the UI appears.</p>
-                              <button class="primary" on:click={() => (uiInstructionsVisible = false)}>
-                                {uiPreviewReady ? "Close instructions" : "Dismiss while loading"}
-                              </button>
-                            </div>
-                          </div>
-                        {/if}
-                        <div class="preview-content">
-                          <iframe
-                            bind:this={uiIframe}
-                            title="UI preview"
-                            sandbox={uiIframeSandbox}
-                            allow={uiIframeAllow}
-                            srcdoc={uiResourceHtml}
-                          ></iframe>
-                          {#if uiPreviewExpanded && uiHostViewportMode === "compact"}
-                            <aside class="compact-preview-info">
-                              <h4>Compact focus</h4>
-                              <p>
-                                Compact viewport is preserved while maximised so you can compare
-                                host-side context and workflow notes side-by-side.
-                              </p>
-                              <div class="meta-grid">
-                                <div>
-                                  <div class="label">Mode</div>
-                                  <div class="value">{uiHostViewportMode}</div>
-                                </div>
-                                <div>
-                                  <div class="label">Size</div>
-                                  <div class="value">{uiCompactWidthPx}x{uiCompactHeightPx}</div>
-                                </div>
-                                <div>
-                                  <div class="label">Resource</div>
-                                  <div class="value">{selectedResource?.uri || "n/a"}</div>
-                                </div>
-                              </div>
-                              <p class="muted">
-                                Use the widget's own tabs/controls for map workflow, then return to
-                                Debug tab for host diagnostics.
-                              </p>
-                            </aside>
-                          {/if}
-                        </div>
-                      </div>
-                    {/if}
-                  {/if}
-                </div>
-              {/if}
-              <div class="meta-grid">
-                <div>
-                  <div class="label">URI</div>
-                  <div class="value">{selectedResource.uri}</div>
-                </div>
-                <div>
-                  <div class="label">Type</div>
-                  <div class="value">{selectedResource.type || selectedResource.mimeType}</div>
-                </div>
-              </div>
-              <div class="actions">
-                <button class="ghost" on:click={() => copyText(selectedResource.uri)}>Copy URI</button>
-              </div>
-              <details class="details-block" open>
-                <summary>Resource metadata</summary>
-                <pre>{JSON.stringify(selectedResource, null, 2)}</pre>
-              </details>
-            </div>
-          {:else if selectedPrompt}
-            <div class="detail-block">
-              <h3>{selectedPrompt.name}</h3>
-              <p class="muted">{selectedPrompt.description || ""}</p>
-              <details class="details-block" open>
-                <summary>Prompt metadata</summary>
-                <pre>{JSON.stringify(selectedPrompt, null, 2)}</pre>
-              </details>
-            </div>
-          {:else}
-            <p class="muted">Select a tool, resource, or prompt to view details.</p>
-          {/if}
-        </div>
-      </div>
-    </section>
+  {#if activeTab === "routing"}
+    <RoutingWorkbench
+      bind:routeScenarioId
+      bind:uiCompactHeight
+      bind:uiCompactWidth
+      bind:uiHostViewportMode
+      bind:uiIframe
+      compactHeightMax={COMPACT_HEIGHT_MAX}
+      compactHeightMin={COMPACT_HEIGHT_MIN}
+      compactWidthMax={COMPACT_WIDTH_MAX}
+      compactWidthMin={COMPACT_WIDTH_MIN}
+      descriptorState={routeDescriptorState}
+      onCompactHeightInput={handleCompactHeightInput}
+      onCompactWidthInput={handleCompactWidthInput}
+      onDismissUiInstructions={dismissUiInstructions}
+      onLoadPreview={() => openScenarioWidget(routeScenarios.find((entry) => entry.id === routeScenarioId), { switchTab: false })}
+      onOpenWidget={() => openScenarioWidget(routeScenarios.find((entry) => entry.id === routeScenarioId), { switchTab: false })}
+      onPrefillTool={() => prefillToolFromScenario(routeScenarios.find((entry) => entry.id === routeScenarioId))}
+      onRunDemo={runRouteDemo}
+      onSelectScenario={(id) => (routeScenarioId = id)}
+      onTogglePreview={toggleUiPreview}
+      onViewportModeChange={handleViewportModeChange}
+      {routingResult}
+      {routeScenarios}
+      {status}
+      {uiCompactHeightPx}
+      {uiCompactWidthPx}
+      {uiIframeAllow}
+      {uiIframeSandbox}
+      {uiInstructionsVisible}
+      {uiPreviewExpanded}
+      {uiPreviewInlineStyle}
+      {uiPreviewReady}
+      {uiResourceError}
+      {uiResourceHtml}
+      {uiResourceMime}
+      {uiResourceText}
+    />
   {/if}
 
-  {#if activeTab === "trace"}
-    <section class="split">
-      <div class="pane">
-        <div class="pane-header">
-          <div class="pane-title">Prompt capture</div>
-        </div>
-        <div class="pane-body">
-          <label class="toggle">
-            <input type="checkbox" bind:checked={traceRedact} />
-            <span>Redact trace payloads</span>
-          </label>
-          <label>
-            Prompt
-            <textarea rows="6" bind:value={promptText}></textarea>
-          </label>
-          <label>
-            Context (optional)
-            <input type="text" bind:value={promptContext} />
-          </label>
-          <div class="actions">
-            <button class="primary" on:click={logPrompt}>Log Prompt</button>
-          </div>
-          <p class="muted">Capture user prompts before tool runs to track intent + context.</p>
-        </div>
-      </div>
+  {#if activeTab === "audit"}
+    <AuditWorkbench
+      {auditError}
+      {auditForm}
+      {auditPacks}
+      {auditResult}
+      {auditSelectedPack}
+      onCreatePack={createAuditPack}
+      onDownloadBundle={downloadAuditBundle}
+      onDownloadHash={downloadAuditHash}
+      onNormaliseSession={normaliseAuditSession}
+      onRedactPack={redactAuditPack}
+      onRefreshPacks={refreshAuditPacks}
+      onSelectPack={selectAuditPack}
+      onToggleLegalHold={toggleAuditLegalHold}
+      onVerifyPack={verifyAuditPack}
+      {status}
+    />
+  {/if}
 
-      <div class="pane">
-        <div class="pane-header alt">
-          <div class="pane-title">Request history</div>
-        </div>
-        <div class="pane-body">
-          {#each history as entry}
-            <div class="history">
-              <strong>{entry.at}</strong>
-              <pre>{formatTracePayload(entry.request)}</pre>
-              <pre>{formatTracePayload(entry.response)}</pre>
-            </div>
-          {/each}
-        </div>
-      </div>
-    </section>
+  {#if activeTab === "benchmarks"}
+    <BenchmarkWorkbench
+      bind:benchmarkFilterId
+      bind:benchmarkFilterSupport
+      bind:benchmarkFilterToolFamily
+      {benchmarkLiveView}
+      {benchmarkReferenceView}
+      {filteredBenchmarks}
+      onOpenWidget={() => openScenarioWidget(selectedBenchmark)}
+      onPrefillTool={() => prefillToolFromScenario(selectedBenchmark)}
+      onSelectScenario={selectBenchmarkScenario}
+      onViewLatestEvidence={viewLatestEvidence}
+      {selectedBenchmark}
+      {status}
+    />
   {/if}
 
   {#if activeTab === "debug"}
-    <section class="grid">
-      <div class="card">
-        <h2>Runtime</h2>
-        <div class="meta-grid debug-meta">
-          <div>
-            <div class="label">Booted at</div>
-            <div class="value">{UI_BOOT_AT}</div>
-          </div>
-          <div>
-            <div class="label">Build mode</div>
-            <div class="value">{BUILD_INFO.mode}</div>
-          </div>
-          <div>
-            <div class="label">HMR status</div>
-            <div class="value">{hmrStatus}</div>
-          </div>
-          <div>
-            <div class="label">HMR updates</div>
-            <div class="value">{hmrUpdateCount}</div>
-          </div>
-          <div>
-            <div class="label">Last HMR update</div>
-            <div class="value">{hmrLastUpdate || "n/a"}</div>
-          </div>
-          <div>
-            <div class="label">Last request</div>
-            <div class="value">{lastRequestAt || "n/a"}</div>
-          </div>
-          <div>
-            <div class="label">Last response</div>
-            <div class="value">{lastResponseAt || "n/a"}</div>
-          </div>
-          <div>
-            <div class="label">Last error</div>
-            <div class="value">{lastErrorAt || "n/a"}</div>
-          </div>
-        </div>
-        <div class="actions">
-          <label class="toggle">
-            <input type="checkbox" bind:checked={debugEnabled} />
-            <span>Enable console debug</span>
-          </label>
-          <button class="ghost" on:click={() => (debugEntries = [])}>Clear debug log</button>
-          <button class="ghost" on:click={() => (history = [])}>Clear request history</button>
-        </div>
-        {#if lastErrorMessage}
-          <div class="error">Last error: {lastErrorMessage}</div>
-        {/if}
-      </div>
-
-      <div class="card">
-        <h2>Secret audit</h2>
-        <p class="muted">Scans debug output and request history for unredacted keys or tokens.</p>
-        <div class="list-badges">
-          {#if secretAudit.count === 0}
-            <span class="badge badge-ok">No secrets detected</span>
-          {:else}
-            <span class="badge badge-warn">{secretAudit.count} potential secrets</span>
-          {/if}
-          <span class="badge badge-ghost">Trace redaction: {traceRedact ? "on" : "off"}</span>
-        </div>
-        {#if secretAudit.count > 0}
-          <pre>{JSON.stringify(secretAudit.paths, null, 2)}{secretAudit.truncated ? "\n…truncated" : ""}</pre>
-        {/if}
-      </div>
-
-      <div class="card">
-        <h2>Connection snapshot</h2>
-        <p class="muted">Redacted view of live state for debugging connection issues.</p>
-        <pre>{debugSnapshotText}</pre>
-        {#if lastErrorDetail}
-          <details class="details-block">
-            <summary>Last error detail (redacted)</summary>
-            <pre>{JSON.stringify(lastErrorDetail, null, 2)}</pre>
-          </details>
-        {/if}
-      </div>
-
-      <div class="card">
-        <h2>Debug log</h2>
-        {#if debugEntries.length === 0}
-          <p class="muted">No debug entries yet.</p>
-        {:else}
-          {#each debugEntries as entry}
-            <div class="history">
-              <strong>{entry.at} · {entry.level}</strong>
-              <div class="list-sub">{entry.message}</div>
-              {#if entry.detail}
-                <pre>{JSON.stringify(entry.detail, null, 2)}</pre>
-              {/if}
-            </div>
-          {/each}
-        {/if}
-      </div>
-
-      <div class="card">
-        <h2>UI preview diagnostics</h2>
-        <p class="muted">Consolidated host/widget debug details for UI preview sessions.</p>
-        <div class="meta-grid debug-meta">
-          <div>
-            <div class="label">Selected UI</div>
-            <div class="value">{selectedResource?.uri || "n/a"}</div>
-          </div>
-          <div>
-            <div class="label">Preview mode</div>
-            <div class="value">{uiHostViewportMode}</div>
-          </div>
-          <div>
-            <div class="label">Preview ready</div>
-            <div class="value">{uiPreviewReady ? "yes" : "no"}</div>
-          </div>
-          <div>
-            <div class="label">Sandbox</div>
-            <div class="value">{uiIframeSandbox}</div>
-          </div>
-        </div>
-        {#if uiResourceError}
-          <div class="error">{uiResourceError}</div>
-        {/if}
-        <details class="details-block">
-          <summary>UI tool output</summary>
-          <pre>{uiToolResult || "No UI tool call output captured yet."}</pre>
-        </details>
-        <details class="details-block">
-          <summary>Raw UI HTML</summary>
-          <pre>{uiResourceText || "No UI HTML loaded yet."}</pre>
-        </details>
-      </div>
-    </section>
+    <DebugWorkbench
+      {auditRestLog}
+      bootedAt={UI_BOOT_AT}
+      {BUILD_INFO}
+      clearDebugLog={() => (debugEntries = [])}
+      clearHistory={() => (history = [])}
+      bind:debugEnabled
+      {debugEntries}
+      {debugSnapshotText}
+      {hmrLastUpdate}
+      {hmrStatus}
+      {hmrUpdateCount}
+      {lastErrorAt}
+      {lastErrorDetail}
+      {lastErrorMessage}
+      {lastRequestAt}
+      {lastResponseAt}
+      {rejectedBridgeEvents}
+      {secretAudit}
+      selectedResourceUri={uiPreviewResource?.uri || selectedResource?.uri || ""}
+      {uiIframeSandbox}
+      {uiPreviewReady}
+      {uiResourceError}
+      {uiResourceText}
+    />
   {/if}
 </div>
 
@@ -2066,14 +1780,14 @@
     gap: 24px;
     background: #0b1f21;
     color: #f7f4ef;
-    padding: 14px 18px;
+    padding: 16px 20px;
     border-radius: 20px;
     box-shadow: 0 12px 30px rgba(11, 31, 33, 0.2);
   }
 
   .hero h1 {
-    margin: 4px 0 2px;
-    font-size: 1.3rem;
+    margin: 4px 0;
+    font-size: 1.4rem;
     line-height: 1.25;
   }
 
@@ -2085,13 +1799,13 @@
   }
 
   .sub {
-    font-family: "Spectral", serif;
-    max-width: 560px;
     margin: 0;
-    font-size: 0.92rem;
+    font-family: "Spectral", serif;
+    max-width: 640px;
+    font-size: 0.94rem;
   }
 
-  .status {
+  .status-card {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -2119,27 +1833,6 @@
     background: #ef6b6b;
   }
 
-  .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .value {
-    font-size: 1.05rem;
-    font-weight: 600;
-  }
-
-  .value.warn {
-    color: #f4c95d;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 12px;
-  }
-
   .tabs-toolbar {
     display: flex;
     align-items: center;
@@ -2147,27 +1840,10 @@
     gap: 12px;
   }
 
-  .tab-help {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    background: #fffaf2;
-    border: 1px solid #d7d0c5;
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-size: 0.82rem;
-    color: #4b3b2d;
-    max-width: min(860px, 70vw);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .tab-help strong {
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.68rem;
-    color: #2e7d6b;
+  .tabs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
   .tabs button {
@@ -2184,20 +1860,40 @@
     color: #f7f4ef;
   }
 
-  .grid {
+  .tab-help {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    background: #fffaf2;
+    border: 1px solid #d7d0c5;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    color: #4b3b2d;
+    max-width: min(860px, 70vw);
+  }
+
+  .tab-help strong {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    color: #2e7d6b;
+  }
+
+  :global(.grid) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
   }
 
-  .split {
+  :global(.split) {
     display: grid;
-    grid-template-columns: minmax(220px, var(--split-left-width, 320px)) minmax(0, 1fr);
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     gap: 20px;
   }
 
-  .card,
-  .pane {
+  :global(.card),
+  :global(.pane) {
     background: #fdfbf7;
     border-radius: 16px;
     box-shadow: 0 8px 20px rgba(15, 42, 45, 0.08);
@@ -2206,15 +1902,12 @@
     overflow: hidden;
   }
 
-  .card {
+  :global(.card) {
     padding: 20px;
     gap: 12px;
   }
 
-  .pane-header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+  :global(.pane-header) {
     background: #f2e9dd;
     padding: 12px 16px;
     border-bottom: 1px solid #e0d3c5;
@@ -2224,72 +1917,24 @@
     gap: 12px;
   }
 
-  .pane-header.alt {
+  :global(.pane-header.alt) {
     background: #efe3d4;
   }
 
-  .pane-title {
+  :global(.pane-title) {
     font-weight: 700;
   }
 
-  .pane-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .pane-tabs button {
-    border: none;
-    background: #fffaf2;
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .pane-tabs button.active {
-    background: #0b1f21;
-    color: #f7f4ef;
-  }
-
-  .pane-filters input {
-    border-radius: 999px;
-    padding: 6px 12px;
-    border: 1px solid #d7d0c5;
-    background: #fffaf2;
-  }
-
-  .split-size {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #4b3b2d;
-  }
-
-  .split-size input[type="range"] {
-    width: 130px;
-    padding: 0;
-  }
-
-  .pane-body {
+  :global(.pane-body) {
     padding: 16px;
     overflow: auto;
-    max-height: 65vh;
+    max-height: 70vh;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
 
-  .card h2 {
-    margin: 0;
-    font-size: 1.1rem;
-  }
-
-  label {
+  :global(label) {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -2297,39 +1942,22 @@
     color: #34424a;
   }
 
-  .toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #34424a;
-  }
-
-  .toggle input {
-    accent-color: #2e7d6b;
-  }
-
-  input,
-  textarea,
-  select {
+  :global(input),
+  :global(textarea),
+  :global(select) {
     border: 1px solid #d7d0c5;
     border-radius: 10px;
     padding: 10px 12px;
     font-size: 0.9rem;
     background: #fffaf2;
+    font-family: inherit;
   }
 
-  textarea {
-    font-family: "Space Grotesk", sans-serif;
+  :global(textarea) {
+    min-height: 96px;
   }
 
-  .actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  button {
+  :global(button) {
     border: none;
     padding: 10px 16px;
     border-radius: 999px;
@@ -2337,132 +1965,57 @@
     cursor: pointer;
   }
 
-  button.primary {
+  :global(button.primary) {
     background: #2e7d6b;
     color: #fff;
   }
 
-  button.ghost {
+  :global(button.ghost) {
     background: transparent;
     border: 1px solid #2e7d6b;
     color: #2e7d6b;
   }
 
-  button:disabled {
+  :global(button:disabled) {
     opacity: 0.6;
     cursor: not-allowed;
   }
 
-  .descriptor-meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    background: #efe3d4;
-    padding: 12px;
-    border-radius: 12px;
-  }
-
-  .descriptor-meta .label {
-    color: #4b3b2d;
-  }
-
-  .version-matrix {
-    margin-top: 12px;
-    background: #fffaf2;
-    border: 1px solid #e2d8cc;
-    border-radius: 12px;
-    padding: 12px;
-  }
-
-  .version-matrix h3 {
-    margin: 0 0 10px;
-    font-size: 0.95rem;
-  }
-
-  .version-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 10px;
-  }
-
-  .version-item {
-    background: #f4ecdf;
-    border-radius: 10px;
-    padding: 10px;
-  }
-
-  .version-item .label {
-    color: #5a4a3a;
-  }
-
-  .version-item .value {
-    color: #1f1f1f;
-    font-size: 0.95rem;
-  }
-
-  .caps {
-    margin-top: 12px;
-  }
-
-  .cap-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 8px;
-  }
-
-  .cap {
-    background: #fffaf2;
-    border-radius: 10px;
-    padding: 8px;
-  }
-
-  .details-block {
-    margin-top: 12px;
-    background: #fffaf2;
-    border-radius: 10px;
-    padding: 10px;
-  }
-
-  .details-block summary {
-    cursor: pointer;
-    font-weight: 600;
-  }
-
-  .list-item {
-    text-align: left;
-    border: 1px solid #e0d3c5;
-    border-radius: 12px;
-    padding: 12px;
-    background: #fffaf2;
-  }
-
-  .list-item.selected {
-    border-color: #2e7d6b;
-    background: #e6f3ee;
-  }
-
-  .list-item.static {
-    border-style: dashed;
-  }
-
-  .list-title {
-    font-weight: 600;
-  }
-
-  .list-sub {
-    color: #567;
-    font-size: 0.85rem;
-    margin-top: 4px;
-  }
-
-  .list-badges {
+  :global(.actions) {
     display: flex;
-    gap: 6px;
-    margin-top: 8px;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
-  .badge {
+  :global(.label) {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #5a4a3a;
+  }
+
+  :global(.value) {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  :global(.value.warn) {
+    color: #b46a1f;
+  }
+
+  :global(.muted) {
+    color: #7a7a7a;
+    font-size: 0.85rem;
+  }
+
+  :global(.error) {
+    background: #fce4e4;
+    color: #9a1f1f;
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  :global(.badge) {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -2472,36 +2025,70 @@
     border-radius: 999px;
   }
 
-  .badge-ok {
+  :global(.badge-ok) {
     background: #1f7a4f;
   }
 
-  .badge-warn {
+  :global(.badge-warn) {
     background: #b84b4b;
   }
 
-  .badge-ghost {
+  :global(.badge-ghost) {
     background: transparent;
     color: #0b1f21;
     border: 1px solid #0b1f21;
   }
 
-  .meta-grid {
+  :global(.list-item) {
+    text-align: left;
+    border: 1px solid #e0d3c5;
+    border-radius: 12px;
+    padding: 12px;
+    background: #fffaf2;
+  }
+
+  :global(.list-item.selected) {
+    border-color: #2e7d6b;
+    background: #e6f3ee;
+  }
+
+  :global(.list-title) {
+    font-weight: 600;
+  }
+
+  :global(.list-sub) {
+    color: #567;
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+
+  :global(.list-badges) {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  :global(.meta-grid) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
     margin: 12px 0;
   }
 
-  .debug-meta .label {
-    color: #4b3b2d;
+  :global(.details-block) {
+    margin-top: 12px;
+    background: #fffaf2;
+    border-radius: 10px;
+    padding: 10px;
   }
 
-  .debug-meta .value {
-    font-size: 0.95rem;
+  :global(.details-block summary) {
+    cursor: pointer;
+    font-weight: 600;
   }
 
-  pre {
+  :global(pre) {
     background: #0d1a1c;
     color: #e0efe8;
     padding: 12px;
@@ -2510,19 +2097,7 @@
     font-size: 0.75rem;
   }
 
-  .muted {
-    color: #7a7a7a;
-    font-size: 0.85rem;
-  }
-
-  .error {
-    background: #fce4e4;
-    color: #9a1f1f;
-    padding: 10px 12px;
-    border-radius: 10px;
-  }
-
-  .history {
+  :global(.history) {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -2532,7 +2107,7 @@
     background: #fff;
   }
 
-  .info-card {
+  :global(.info-card) {
     background: #fffaf2;
     border: 1px solid #e0d3c5;
     border-radius: 12px;
@@ -2540,27 +2115,15 @@
     margin: 12px 0;
   }
 
-  .info-card h4 {
-    margin: 0 0 8px;
-  }
-
-  .info-card ul {
-    margin: 0 0 10px;
-    padding-left: 18px;
-    color: #4b3b2d;
-  }
-
-  .example-block {
-    display: flex;
-    flex-direction: column;
+  :global(.toggle) {
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
+    font-size: 0.85rem;
+    color: #34424a;
   }
 
-  .pane .label {
-    color: #5a4a3a;
-  }
-
-  .preview-frame {
+  :global(.preview-frame) {
     border: 1px solid #e2d8cc;
     border-radius: 12px;
     overflow: hidden;
@@ -2570,42 +2133,11 @@
     position: relative;
   }
 
-  .preview-frame.compact-inline {
+  :global(.preview-frame.compact-inline) {
     max-width: var(--preview-inline-width, 320px);
   }
 
-  .preview-overlay {
-    position: absolute;
-    inset: 50px;
-    z-index: 6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto;
-  }
-
-  .overlay-card {
-    background: rgba(255, 250, 242, 0.98);
-    border: 1px solid #e2d8cc;
-    border-radius: 16px;
-    padding: 20px;
-    max-width: 420px;
-    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.15);
-    text-align: left;
-  }
-
-  .overlay-card h4 {
-    margin: 0 0 8px;
-  }
-
-  .preview-frame.expanded {
-    position: fixed;
-    inset: 20px;
-    z-index: 50;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  }
-
-  .preview-toolbar {
+  :global(.preview-toolbar) {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2615,7 +2147,7 @@
     font-weight: 600;
   }
 
-  .icon-button {
+  :global(.icon-button) {
     background: transparent;
     border: 1px solid #2e7d6b;
     color: #2e7d6b;
@@ -2624,46 +2156,59 @@
     font-weight: 600;
   }
 
-  .preview-frame iframe {
+  :global(.preview-overlay) {
+    position: absolute;
+    inset: 50px;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.overlay-card) {
+    background: rgba(255, 250, 242, 0.98);
+    border: 1px solid #e2d8cc;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 420px;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.preview-content) {
+    display: block;
+  }
+
+  :global(.preview-frame iframe) {
     width: 100%;
     height: var(--preview-inline-height, 360px);
     border: none;
   }
 
-  .preview-content {
-    display: block;
+  :global(.preview-frame.expanded) {
+    position: fixed;
+    inset: 20px;
+    z-index: 50;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   }
 
-  .preview-frame.expanded iframe {
+  :global(.preview-frame.expanded iframe) {
     height: calc(100vh - 96px);
   }
 
-  .preview-frame.expanded.compact-inline .preview-content {
+  :global(.preview-frame.expanded.compact-inline .preview-content) {
     display: grid;
     grid-template-columns: minmax(280px, var(--preview-inline-width, 320px)) minmax(0, 1fr);
     height: calc(100vh - 96px);
   }
 
-  .preview-frame.expanded.compact-inline iframe {
-    height: calc(100vh - 96px);
-  }
-
-  .compact-preview-info {
+  :global(.compact-preview-info) {
     border-left: 1px solid #e2d8cc;
     padding: 14px;
     background: #fffaf2;
     overflow: auto;
   }
 
-  .compact-preview-info h4 {
-    margin: 0 0 10px;
-  }
-
-  .compact-preview-info p {
-    margin: 0 0 10px;
-  }
-
-  .preview-controls {
+  :global(.preview-controls) {
     margin-top: 10px;
     padding: 10px;
     border: 1px dashed #d2c4b4;
@@ -2671,26 +2216,27 @@
     background: #fffaf2;
   }
 
-  .preview-control-grid {
+  :global(.preview-control-grid) {
     display: grid;
     gap: 8px;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 960px) {
     .tabs-toolbar {
       flex-direction: column;
       align-items: stretch;
     }
+
     .tab-help {
       max-width: 100%;
-      border-radius: 12px;
-      white-space: normal;
     }
-    .split {
+
+    :global(.split) {
       grid-template-columns: 1fr;
     }
-    .pane-body {
+
+    :global(.pane-body) {
       max-height: none;
     }
   }

@@ -164,7 +164,7 @@ def test_build_ui_meta_includes_widget_domain(monkeypatch: MonkeyPatch) -> None:
     assert meta["openai/widgetCSP"]["connect_domains"] == ["self"]
 
 
-def test_ui_resources_include_maplibre_fallback_csp_domains() -> None:
+def test_ui_resources_use_local_vendor_assets_under_widget_csp() -> None:
     ui_resources = resource_catalog.list_ui_resources()
     by_uri = {entry["uri"]: entry for entry in ui_resources}
     for uri in (
@@ -176,11 +176,14 @@ def test_ui_resources_include_maplibre_fallback_csp_domains() -> None:
         csp = meta.get("csp", {})
         connect_domains = set(csp.get("connectDomains", []))
         resource_domains = set(csp.get("resourceDomains", []))
-        assert "https://unpkg.com" in connect_domains
-        assert "https://cdn.jsdelivr.net" in connect_domains
+        assert "self" in connect_domains
         assert "https://tile.openstreetmap.org" in connect_domains
-        assert "https://unpkg.com" in resource_domains
-        assert "https://cdn.jsdelivr.net" in resource_domains
+        assert "self" in resource_domains
+        assert "https://tile.openstreetmap.org" in resource_domains
+        assert "https://unpkg.com" not in connect_domains
+        assert "https://cdn.jsdelivr.net" not in connect_domains
+        assert "https://unpkg.com" not in resource_domains
+        assert "https://cdn.jsdelivr.net" not in resource_domains
 
 
 def test_latest_run_report_path_missing_dir(monkeypatch: MonkeyPatch, tmp_path) -> None:
@@ -705,6 +708,54 @@ def test_load_data_content_present_catalog_branches(monkeypatch: MonkeyPatch, tm
         assert json.loads(content)["ok"] is True
         assert etag
         assert meta is None
+
+
+def test_benchmark_resources_resolve_and_load(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    benchmark_pack = tmp_path / "benchmark_pack_v1.json"
+    benchmark_pack.write_text("{\"title\":\"demo pack\",\"scenarios\":[]}", encoding="utf-8")
+    live_alias = tmp_path / "live_run_latest.json"
+    live_alias.write_text(
+        json.dumps(
+            {
+                "aliasOf": "live_run_2026-03-10.json",
+                "aliasUpdated": "2026-03-10",
+                "note": "demo alias",
+            }
+        ),
+        encoding="utf-8",
+    )
+    live_target = tmp_path / "live_run_2026-03-10.json"
+    live_target.write_text(
+        json.dumps({"generated": "2026-03-10T00:00:00Z", "results": [{"scenarioId": "SG03"}]}),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(resource_catalog, "STAKEHOLDER_BENCHMARK_PACK_PATH", benchmark_pack)
+    monkeypatch.setattr(resource_catalog, "STAKEHOLDER_BENCHMARK_LIVE_ALIAS_PATH", live_alias)
+
+    pack_entry = resource_catalog.resolve_data_resource("resource://mcp-geo/stakeholder-benchmark-pack")
+    assert pack_entry is not None and pack_entry["slug"] == "stakeholder-benchmark-pack"
+    live_entry = resource_catalog.resolve_data_resource(
+        "resource://mcp-geo/stakeholder-benchmark-live-run-latest"
+    )
+    assert live_entry is not None and live_entry["slug"] == "stakeholder-benchmark-live-run-latest"
+
+    resources = resource_catalog.list_data_resources()
+    uris = {entry["uri"] for entry in resources}
+    assert "resource://mcp-geo/stakeholder-benchmark-pack" in uris
+    assert "resource://mcp-geo/stakeholder-benchmark-live-run-latest" in uris
+
+    pack_content, pack_etag, pack_meta = resource_catalog.load_data_content(pack_entry)
+    assert json.loads(pack_content)["title"] == "demo pack"
+    assert pack_etag
+    assert pack_meta is None
+
+    live_content, live_etag, live_meta = resource_catalog.load_data_content(live_entry)
+    payload = json.loads(live_content)
+    assert payload["results"][0]["scenarioId"] == "SG03"
+    assert payload["latestAlias"]["targetFile"] == "live_run_2026-03-10.json"
+    assert live_etag
+    assert live_meta is not None
 
 
 def test_load_data_content_boundary_cache_status_enabled_branch(monkeypatch: MonkeyPatch) -> None:

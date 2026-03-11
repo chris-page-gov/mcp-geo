@@ -10,11 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
-      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
-    />
+    <link rel="stylesheet" href="vendor/maplibre-gl.css" />
     <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
@@ -1464,11 +1460,7 @@
       </section>
     </div>
 
-    <script
-      src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
-      onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
-    ></script>
-    <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.min.js"></script>
+    <script src="vendor/maplibre-gl.js"></script>
     <script src="shared/compact_contract.js"></script>
     <script>
       const hostStatusEl = document.getElementById("hostStatus");
@@ -1574,6 +1566,7 @@
 
       const pendingCalls = new Map();
       let rpcId = 0;
+      const bridgeState = { sessionToken: null };
 
       const state = {
         hostReady: false,
@@ -2285,8 +2278,34 @@
 
       function postToHost(message) {
         if (window.parent) {
-          window.parent.postMessage(message, "*");
+          const payload =
+            bridgeState.sessionToken
+              ? {
+                  ...message,
+                  __mcpGeoHost: {
+                    ...(message.__mcpGeoHost || {}),
+                    sessionToken: bridgeState.sessionToken,
+                  },
+                }
+              : message;
+          window.parent.postMessage(payload, "*");
         }
+      }
+
+      function capturePreviewToken(result) {
+        const token =
+          result &&
+          (result.mcpGeoPreview?.sessionToken || result.hostContext?.mcpGeoPreview?.sessionToken);
+        if (typeof token === "string" && token) {
+          bridgeState.sessionToken = token;
+        }
+      }
+
+      function hasValidPreviewToken(message) {
+        if (!bridgeState.sessionToken) {
+          return true;
+        }
+        return message?.__mcpGeoHost?.sessionToken === bridgeState.sessionToken;
       }
 
       function rpcCall(method, params) {
@@ -4890,6 +4909,9 @@
         if (message.jsonrpc !== "2.0") {
           return;
         }
+        if (!hasValidPreviewToken(message)) {
+          return;
+        }
         if (message.id !== undefined && (message.result !== undefined || message.error)) {
           const pending = pendingCalls.get(message.id);
           if (pending) {
@@ -4938,6 +4960,7 @@
           const result = await rpcCall("ui/initialize", {
             appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] },
           });
+          capturePreviewToken(result);
           state.hostReady = true;
           hostStatusEl.textContent = "Host connected";
           hostStatusEl.classList.remove("warn");

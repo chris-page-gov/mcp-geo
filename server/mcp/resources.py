@@ -23,6 +23,7 @@ from server.mcp.resource_catalog import (
 router = APIRouter()
 
 _UI_SHARED_DIR = (UI_DIR / "shared").resolve()
+_UI_VENDOR_DIR = (UI_DIR / "vendor").resolve()
 
 
 def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
@@ -32,12 +33,15 @@ def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
     return etag in candidates or "*" in candidates
 
 
-def _shared_asset_media_type(path: Path) -> str:
+def _ui_asset_media_type(path: Path) -> str:
     if path.suffix == ".js":
         return "application/javascript"
     if path.suffix == ".css":
         return "text/css"
+    if path.suffix == ".json":
+        return "application/json"
     return "application/octet-stream"
+
 
 def _build_resource_list() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
@@ -252,7 +256,33 @@ def render_ui_shared_asset(
 
     return FileResponse(
         path=str(asset_path),
-        media_type=_shared_asset_media_type(asset_path),
+        media_type=_ui_asset_media_type(asset_path),
+        headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
+    )
+
+
+@router.get("/ui/vendor/{asset_name}")
+def render_ui_vendor_asset(
+    asset_name: str,
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    asset_path = (_UI_VENDOR_DIR / asset_name).resolve()
+    if asset_path.parent != _UI_VENDOR_DIR or not asset_path.exists() or not asset_path.is_file():
+        raise HTTPException(status_code=404, detail="UI vendor asset not found")
+
+    stat = asset_path.stat()
+    etag = f'W/"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+    if _etag_match(if_none_match, etag):
+        response.status_code = 304
+        response.headers["ETag"] = etag
+        return response
+
+    return FileResponse(
+        path=str(asset_path),
+        media_type=_ui_asset_media_type(asset_path),
         headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
     )
 

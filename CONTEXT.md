@@ -138,6 +138,14 @@ assumptions change.
   The current seeded-graph live baseline is `1 full`, `17 partial`, `2 blocked`;
   SG03 now returns a full routed answer, while SG17 and SG20 remain the only
   blocked scenarios.
+- Maintaining the new playground hardening branch work under
+  `playground/src/`, `playground/tests/`, `server/mcp/resource_catalog.py`,
+  and `scripts/stakeholder_benchmark_pack.py`, including the Svelte 5/Vite 7
+  dependency baseline, strict iframe-bridge token validation, DSAP audit/FOI
+  workbench, routing demos for SG03/SG12, benchmark-pack/live-run resources,
+  and the new deterministic fixture-backed frontend Playwright acceptance suite
+  plus env-gated live smoke coverage that supersede the earlier
+  dependency-only PRs `#24` and `#29`.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -210,6 +218,15 @@ assumptions change.
   stricter `firstClassProductReady` interpretation for live OS-backed runs, the
   seeded route-graph preflight from `scripts/seed_benchmark_route_graph.py`,
   and the updated SG03 full-pass evidence.
+- Maintain the playground hardening and demo workbench implementation on
+  `codex/playground-hardening-demo-workbench`, including the consolidated
+  Dependabot remediation in `playground/package.json` / `package-lock.json`,
+  the new benchmark resource aliases in `server/mcp/resource_catalog.py`,
+  regenerated benchmark pack demo metadata under
+  `data/benchmarking/stakeholder_eval/`, the refactored Svelte workbench shell,
+  the fixture-backed full UI acceptance suite under `playground/tests/full/`,
+  the live smoke suite under `playground/tests/live/`, and the updated
+  frontend CI + manual live-smoke workflow support in `.github/workflows/ci.yml`.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

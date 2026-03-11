@@ -32,6 +32,12 @@ EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 OFFLINE_PACKS_DIR = ROOT / "data" / "offline_packs"
 MAP_SCENARIO_PACKS_DIR = ROOT / "data" / "map_scenario_packs"
+STAKEHOLDER_BENCHMARK_PACK_PATH = (
+    ROOT / "data" / "benchmarking" / "stakeholder_eval" / "benchmark_pack_v1.json"
+)
+STAKEHOLDER_BENCHMARK_LIVE_ALIAS_PATH = (
+    ROOT / "data" / "benchmarking" / "stakeholder_eval" / "live_run_latest.json"
+)
 
 
 def _resolve_data_path(raw: str | None, default: str) -> Path:
@@ -77,8 +83,6 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
             "connectDomains": [
                 "self",
                 "https://api.os.uk",
-                "https://unpkg.com",
-                "https://cdn.jsdelivr.net",
                 "https://tile.openstreetmap.org",
                 "http://localhost:8000",
                 "http://127.0.0.1:8000",
@@ -88,8 +92,7 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "https://api.os.uk",
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
-                "https://unpkg.com",
-                "https://cdn.jsdelivr.net",
+                "https://tile.openstreetmap.org",
             ],
             "workerDomains": ["self", "blob:"],
         },
@@ -122,8 +125,6 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
             "connectDomains": [
                 "self",
                 "https://api.os.uk",
-                "https://unpkg.com",
-                "https://cdn.jsdelivr.net",
                 "https://tile.openstreetmap.org",
                 "http://localhost:8000",
                 "http://127.0.0.1:8000",
@@ -133,8 +134,7 @@ _UI_RESOURCE_BASES: list[dict[str, Any]] = [
                 "https://api.os.uk",
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
-                "https://unpkg.com",
-                "https://cdn.jsdelivr.net",
+                "https://tile.openstreetmap.org",
             ],
             "workerDomains": ["self", "blob:"],
         },
@@ -348,6 +348,24 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": CODE_LIST_PACKS_INDEX_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "codes"},
+    },
+    {
+        "slug": "stakeholder-benchmark-pack",
+        "name": "data_stakeholder_benchmark_pack",
+        "title": "Stakeholder Benchmark Pack",
+        "description": "Scenario pack used by the playground benchmarks workbench and live-run harness.",
+        "path": STAKEHOLDER_BENCHMARK_PACK_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "benchmark", "domain": "evaluation"},
+    },
+    {
+        "slug": "stakeholder-benchmark-live-run-latest",
+        "name": "data_stakeholder_benchmark_live_run_latest",
+        "title": "Stakeholder Benchmark Live Run (Latest)",
+        "description": "Stable alias to the latest reviewed stakeholder benchmark live-run artifact.",
+        "path": STAKEHOLDER_BENCHMARK_LIVE_ALIAS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "benchmark-live", "domain": "evaluation"},
     },
 ]
 
@@ -816,6 +834,52 @@ def _load_json_file(path: Path) -> tuple[str, str]:
     return content, etag
 
 
+def _load_benchmark_live_alias(path: Path) -> tuple[str, str, dict[str, Any] | None]:
+    if not path.exists():
+        content = json.dumps(
+            {"isError": True, "code": "NOT_FOUND", "message": "Benchmark live-run alias not found."}
+        )
+        return content, _etag_from_bytes(b"missing", "stakeholder-benchmark-live-run-latest"), None
+
+    alias_payload = json.loads(path.read_text(encoding="utf-8"))
+    target_name = alias_payload.get("aliasOf")
+    if not isinstance(target_name, str) or not target_name.strip():
+        content = json.dumps(
+            {
+                "isError": True,
+                "code": "INVALID_CONFIGURATION",
+                "message": "Benchmark live-run alias is missing aliasOf.",
+            }
+        )
+        return content, _etag_from_bytes(content.encode("utf-8"), str(path)), None
+
+    target_path = _resolve_scoped_path(path.parent, target_name.strip())
+    if target_path is None or not target_path.exists() or not target_path.is_file():
+        content = json.dumps(
+            {
+                "isError": True,
+                "code": "NOT_FOUND",
+                "message": "Benchmark live-run target not found.",
+            }
+        )
+        return content, _etag_from_bytes(content.encode("utf-8"), str(path)), None
+
+    payload = json.loads(target_path.read_text(encoding="utf-8"))
+    if isinstance(payload, dict):
+        payload["latestAlias"] = {
+            "aliasFile": path.name,
+            "targetFile": target_path.name,
+            "aliasUpdated": alias_payload.get("aliasUpdated"),
+            "note": alias_payload.get("note"),
+        }
+    content = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
+    return content, _etag_from_bytes(content.encode("utf-8"), str(target_path)), {
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "path": str(target_path),
+        "aliasPath": str(path),
+    }
+
+
 def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] | None]:
     slug = entry.get("slug")
     if slug == "boundary-manifest":
@@ -918,6 +982,19 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "code-list-packs-index"), None
         return (*_load_json_file(CODE_LIST_PACKS_INDEX_PATH), None)
+    if slug == "stakeholder-benchmark-pack":
+        if not STAKEHOLDER_BENCHMARK_PACK_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "Stakeholder benchmark pack not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "stakeholder-benchmark-pack"), None
+        return (*_load_json_file(STAKEHOLDER_BENCHMARK_PACK_PATH), None)
+    if slug == "stakeholder-benchmark-live-run-latest":
+        return _load_benchmark_live_alias(STAKEHOLDER_BENCHMARK_LIVE_ALIAS_PATH)
     if slug == "boundary-latest-report":
         latest = _latest_run_report_path()
         if not latest:

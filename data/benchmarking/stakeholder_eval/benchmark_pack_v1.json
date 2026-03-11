@@ -284,6 +284,19 @@
           }
         ],
         "suggested_export_format": "CSV for the premises list plus GeoJSON if point coordinates are resolved during the live MCP-Geo run."
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG01"
       }
     },
     {
@@ -440,6 +453,18 @@
           "Retain PAON and SAON in separate fields instead of concatenating them.",
           "Flag exact duplicate raw rows upstream before UPRN matching."
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG02"
       }
     },
     {
@@ -534,6 +559,36 @@
           "When a route is returned, review key restrictions and any soft-avoid penalties before operational use."
         ],
         "map_recommended_description": "Map recommended: show both premises, the flood-risk-zone 167647/3 polygon, and the solved route if the graph is ready; otherwise show the endpoints plus the graph-readiness blocker."
+      },
+      "demo": {
+        "mode": "routing",
+        "primaryTool": "os_apps.render_route_planner",
+        "presetArgs": {
+          "tool": "os_apps.render_route_planner",
+          "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+          "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+          "routeMode": "EMERGENCY",
+          "constraints": {
+            "avoidIds": [
+              "167647/3"
+            ]
+          }
+        },
+        "fixtureRefs": [],
+        "widget": "ui://mcp-geo/route-planner",
+        "widgetArgs": {
+          "tool": "os_apps.render_route_planner",
+          "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+          "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+          "routeMode": "EMERGENCY",
+          "constraints": {
+            "avoidIds": [
+              "167647/3"
+            ]
+          }
+        },
+        "supportLevel": "partial",
+        "scenarioId": "SG03"
       }
     },
     {
@@ -656,6 +711,16 @@
           "Confirm whether the authority publication date matches the benchmark year being tested.",
           "Sample-test a handful of segments for class and maintainability coding if a live NGD run becomes available."
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "admin_lookup.find_by_name",
+        "presetArgs": {
+          "tool": "admin_lookup.find_by_name"
+        },
+        "fixtureRefs": [],
+        "supportLevel": "partial",
+        "scenarioId": "SG04"
       }
     },
     {
@@ -780,6 +845,16 @@
         "missing_data_note": "Local plan policies, setting analysis, land-charges constraints, and any local flood-mitigation evidence are not in the supplied benchmark pack.",
         "confidence_statement": "Moderate to high: direct open-layer intersections are strong, but the site polygon is still a proxy from the asset register rather than a planning-application boundary.",
         "map_recommended_description": "Map recommended: show Goodwin Hall, both flood-risk-zone polygons, and the Retford conservation-area outline on the same view."
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [],
+        "supportLevel": "partial",
+        "scenarioId": "SG05"
       }
     },
     {
@@ -914,6 +989,18 @@
           "CSV asset risk register",
           "GeoJSON or map layer if coordinates are included in the live run"
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.by_uprn",
+        "presetArgs": {
+          "tool": "os_places.by_uprn"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG06"
       }
     },
     {
@@ -1030,6 +1117,18 @@
         ],
         "uncertainty_explanation": "The benchmark uses a sampled property list and postcode-derived checks, so it is deliberately designed to reward honest uncertainty handling instead of false precision.",
         "map_recommended_description": "Map recommended: show the sampled addresses, flood-zone 2/3 polygons, and a symbol distinction between high-confidence properties and negative controls."
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG07"
       }
     },
     {
@@ -1173,6 +1272,20 @@
           "uncertain_units",
           "confidence"
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "admin_lookup.find_by_name",
+        "presetArgs": {
+          "tool": "admin_lookup.find_by_name"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG08"
       }
     },
     {
@@ -1279,6 +1392,18 @@
           "The BDUK guide still requires the answer to mention other grounded possibilities such as new-build lag or demolished/derelict classifications."
         ],
         "next_verification_step": "Resolve the UPRN against the latest OS-backed premises classification and compare it with the next BDUK release."
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.by_uprn",
+        "presetArgs": {
+          "tool": "os_places.by_uprn"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG09"
       }
     },
     {
@@ -1390,6 +1515,19 @@
           "review_reason",
           "source_dataset"
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG10"
       }
     },
     {
@@ -1499,6 +1637,18 @@
           "cache_last_refreshed_at",
           "cache_policy_reference"
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_mcp.route_query",
+        "presetArgs": {
+          "tool": "os_mcp.route_query"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG11"
       }
     },
     {
@@ -1606,6 +1756,27 @@
           "Review any loaded route warnings or restriction rows on the active benchmark graph."
         ],
         "map_recommended_description": "Map recommended: show the incident point at Goodwin Hall plus both responder sites and their compared routes."
+      },
+      "demo": {
+        "mode": "routing",
+        "primaryTool": "os_places.nearest",
+        "presetArgs": {
+          "tool": "os_places.nearest",
+          "lat": 53.3219807,
+          "lon": -0.9451639
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv"
+        ],
+        "widget": "ui://mcp-geo/route-planner",
+        "widgetArgs": {
+          "tool": "os_apps.render_route_planner",
+          "origin": "Nottinghamshire Fire & Rescue Service, Fire Station, Wharf Road, Retford, DN22 6EN",
+          "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+          "routeMode": "EMERGENCY"
+        },
+        "supportLevel": "partial",
+        "scenarioId": "SG12"
       }
     },
     {
@@ -1738,6 +1909,18 @@
           "Re-check the UPRN and premises class for any record whose address resolves to multiple candidates.",
           "Document the settings-translation rules used between raw classes and reporting categories."
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG13"
       }
     },
     {
@@ -1861,6 +2044,18 @@
           "This benchmark tests threshold logic and location grounding, not a live OS building-height feed."
         ],
         "map_recommended_description": "Map recommended: show the resolved building locations and symbolise exceedances versus control rows."
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG14"
       }
     },
     {
@@ -1968,6 +2163,18 @@
           "Always compare exact and best-fit results before aggregating public-sector metrics by geography.",
           "Treat unexpected LAD differences as a signal to inspect the underlying ONS reference product."
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.by_uprn",
+        "presetArgs": {
+          "tool": "os_places.by_uprn"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG15"
       }
     },
     {
@@ -2097,6 +2304,19 @@
           "Confirm the nearest pharmacy list covers the operational area before using the threshold output.",
           "Keep the synthetic patient flag in any downstream export or scorecard."
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_places.search",
+        "presetArgs": {
+          "tool": "os_places.search"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG16"
       }
     },
     {
@@ -2207,6 +2427,18 @@
           "This is a blocked first-class workflow in MCP-Geo today because the derivation layer is not exposed."
         ],
         "map_recommended_description": "Map recommended: show Birmingham street segments coloured by width/gradient breach type."
+      },
+      "demo": {
+        "mode": "blocked",
+        "primaryTool": "os_features.query",
+        "presetArgs": {
+          "tool": "os_features.query"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv"
+        ],
+        "supportLevel": "blocked",
+        "scenarioId": "SG17"
       }
     },
     {
@@ -2318,6 +2550,19 @@
           "Under-referral signals in this benchmark are illustrative rather than operational."
         ],
         "map_recommended_description": "Map recommended: show resolved wards shaded by synthetic need-versus-referral gap and overlay the trust service sites."
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "admin_lookup.find_by_name",
+        "presetArgs": {
+          "tool": "admin_lookup.find_by_name"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG18"
       }
     },
     {
@@ -2424,6 +2669,19 @@
         "verification_notes_detail": [
           "Validate cluster-to-site travel times before acting on a service-coverage recommendation."
         ]
+      },
+      "demo": {
+        "mode": "guided",
+        "primaryTool": "os_names.find",
+        "presetArgs": {
+          "tool": "os_names.find"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv"
+        ],
+        "supportLevel": "partial",
+        "scenarioId": "SG19"
       }
     },
     {
@@ -2533,6 +2791,19 @@
         "synthetic_data_note": "Synthetic scenario: hotspot demand and vulnerability values are benchmark-only values attached to real public places and resource sites.",
         "capability_gap_note": "Blocked first-class workflow: MCP-Geo can ground places and resource sites, but it does not yet provide patrol optimisation, demand prediction, or live resource-allocation tooling.",
         "map_recommended_description": "Map recommended: show hotspot places sized by synthetic demand and overlay the resolved police resource sites."
+      },
+      "demo": {
+        "mode": "blocked",
+        "primaryTool": "os_mcp.route_query",
+        "presetArgs": {
+          "tool": "os_mcp.route_query"
+        },
+        "fixtureRefs": [
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv",
+          "data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv"
+        ],
+        "supportLevel": "blocked",
+        "scenarioId": "SG20"
       }
     }
   ]

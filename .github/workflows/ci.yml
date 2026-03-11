@@ -10,6 +10,12 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      run_live_smoke:
+        description: Run the playground live-smoke suite against the real backend
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -62,8 +68,89 @@ jobs:
       - name: Pytest
         run: pytest -q -m "not integration"
 
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Install playground dependencies
+        run: npm --prefix playground ci
+
+      - name: Build playground
+        run: npm --prefix playground run build
+
+      - name: Install Playwright Chromium
+        run: npx --prefix playground playwright install --with-deps chromium
+
+      - name: Playwright playground full suite
+        run: npm --prefix playground run test:full
+
+      - name: Upload playground full-suite artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-full-suite-artifacts
+          path: playground/test-results/full
+          if-no-files-found: ignore
+
+  frontend-live-smoke:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_live_smoke }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install backend dependencies
+        run: pip install -e ".[dev,boundaries]"
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Install playground dependencies
+        run: npm --prefix playground ci
+
+      - name: Install Playwright Chromium
+        run: npx --prefix playground playwright install --with-deps chromium
+
+      - name: Playwright playground live smoke
+        run: npm --prefix playground run test:live
+        env:
+          OS_API_KEY: ${{ secrets.OS_API_KEY }}
+          ONS_API_KEY: ${{ secrets.ONS_API_KEY }}
+
+      - name: Upload playground live-smoke artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-live-smoke-artifacts
+          path: playground/test-results/live
+          if-no-files-found: ignore
+
   docker-validate:
-    needs: test
+    needs:
+      - test
+      - frontend
     runs-on: ubuntu-latest
 
     steps:

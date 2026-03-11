@@ -63,6 +63,7 @@ Scoring thresholds:
 - Example mode: `mixed`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 Public benchmark base: Retford flood-risk-zone references 402042/2 and 167647/3 from planning.data.gov.uk plus real Retford residential addresses from HM Land Registry Price Paid Data. Synthetic component: vulnerability categories layered onto those real addresses because public vulnerable-household datasets are not openly published at household level.
 
@@ -299,6 +300,7 @@ Return:
 - Example mode: `mixed`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 The input file is synthetic but derived from real HM Land Registry 2025 Bassetlaw transactions so the benchmark can test messy-address handling without inventing the underlying real-world addresses.
 
@@ -507,6 +509,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `routing` via `os_apps.render_route_planner`
 
 Real public sites in Retford are used for the route endpoints. The benchmark checks whether MCP-Geo uses the first-class routing surface (`os_route.get`) and either returns a grounded route or an explicit graph-readiness blocker without inventing distance or turn-by-turn details.
 
@@ -651,6 +654,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `admin_lookup.find_by_name`
 
 Rutland County Council publishes a current road-length transparency page with class totals, and Phase 2 evidence shows GeoPlace positioning this workload as a replacement for manual returns.
 
@@ -815,6 +819,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 Goodwin Hall is a real public site from the Bassetlaw asset register, and open planning.data layers show it intersects both flood-risk zones and the Retford conservation area.
 
@@ -982,6 +987,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.by_uprn`
 
 This uses a real Bassetlaw asset-register subset with published UPRNs, coordinates, and tenure fields, overlaid against published planning.data flood-risk-zone geometry.
 
@@ -1166,6 +1172,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 The flood extent is public and real; the property list is a curated sample of real Retford price-paid addresses plus explicit negative controls. This lets the benchmark score uncertainty handling and verification planning.
 
@@ -1329,6 +1336,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `admin_lookup.find_by_name`
 
 North Yorkshire’s 2024 Boundary Commission review explicitly states that there is no single source for housing development data and that the GIS team had to reconcile points, polygons, planning inputs, and local plan allocations. The benchmark pack uses a validated synthetic mini-pack modelled on that workflow.
 
@@ -1523,6 +1531,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.by_uprn`
 
 The benchmark premise is a real UPRN from the Bassetlaw asset register that is absent from the September 2024 East Midlands BDUK release. That makes it a strong test of evidence-ranked missing-premise reasoning.
 
@@ -1673,6 +1682,7 @@ Return:
 - Example mode: `mixed`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 The council-tax-like file is synthetic but derived from real Bassetlaw address strings, and the land-registry-like file is a direct Price Paid extract. This mirrors the public sector property-platform problem without inventing the underlying land-registry rows.
 
@@ -1832,6 +1842,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_mcp.route_query`
 
 Phase 1 evidence showed GOV.UK's `locations-api` as a mature OS Places pattern: it answers postcode lookups with cached PostgreSQL records and explicit refresh rules. This benchmark turns that architecture into a concrete prompt using a public postcode.
 
@@ -1984,6 +1995,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `routing` via `os_places.nearest`
 
 Phase 1 highlighted North West Fire Control using AddressBase Premium and the road network to turn coordinates into addresses and mobilise the quickest resource. This benchmark uses public responder sites and a public incident coordinate in Retford.
 
@@ -2134,6 +2146,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 Phase 1 cited UKHSA using AddressBase with UPRN and BLPU to classify case records into settings such as care homes and prisons. This benchmark uses public addresses covering prison, care-home, residential, and civic cases.
 
@@ -2309,6 +2322,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 Phase 1 cited North Yorkshire Fire and Rescue using OS Select+Build and OS Building Features to identify buildings over 18 metres or seven floors. Public building-height lists are not open, so this benchmark uses a validated synthetic candidate pack tied to real public buildings.
 
@@ -2478,6 +2492,7 @@ Return:
 - Example mode: `public`
 - MCP-Geo support level: `partial`
 - Reference score: `93/100 (excellent)`
+- Demo mode: `guided` via `os_places.by_uprn`
 
 Phase 1 highlighted ONS using AddressBase-maintained UPRNs to allocate addresses to geographies. This benchmark probes exact and best-fit UPRN geography lookup using a mix of cache-covered and uncached public UPRNs.
 
@@ -2627,6 +2642,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `partial`
 - Reference score: `93/100 (excellent)`
+- Demo mode: `guided` via `os_places.search`
 
 Phase 1 cited NHS South, Central and West using AddressBase and Code-Point to identify people beyond 1.6 kilometres from a pharmacy. Patient-level addresses are not public, so this benchmark uses synthetic patient rows anchored to public addresses and real public pharmacy sites.
 
@@ -2806,6 +2822,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `blocked`
 - Reference score: `93/100 (excellent)`
+- Demo mode: `blocked` via `os_features.query`
 
 Phase 1 described Transport for West Midlands deriving street width and gradient insights at fine spatial granularity. Public segment-level width and gradient outputs were not available, so this benchmark uses a synthetic segment pack tied to real public streets.
 
@@ -2962,6 +2979,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `partial`
 - Reference score: `100/100 (excellent)`
+- Demo mode: `guided` via `admin_lookup.find_by_name`
 
 Phase 1 cited Birmingham and Solihull Mental Health NHS Foundation Trust using OS boundaries and basemaps to visualise referral patterns and inequities. The referral counts in this benchmark are synthetic, but the wards and service sites are real.
 
@@ -3122,6 +3140,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `partial`
 - Reference score: `93/100 (excellent)`
+- Demo mode: `guided` via `os_names.find`
 
 Phase 1 cited Cheshire and Wirral Partnership NHS Foundation Trust using OS mapping to compare client distribution with service locations. The client counts here are synthetic, while the towns and trust sites are real public references.
 
@@ -3277,6 +3296,7 @@ Return:
 - Example mode: `synthetic`
 - MCP-Geo support level: `blocked`
 - Reference score: `93/100 (excellent)`
+- Demo mode: `blocked` via `os_mcp.route_query`
 
 Phase 1 included a policing procurement that described map-driven analysis, demand prediction, patrol planning, and live resource location using Ordnance Survey and AddressBase data. Incident demand is private, so this benchmark uses synthetic hotspots anchored to real public places and police resource sites.
 
