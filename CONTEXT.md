@@ -171,6 +171,10 @@ assumptions change.
   `/ui/...` asset URLs for browser hosts, while STDIO and embedded widget
   payloads keep resource-local paths so MCP clients without HTTP side channels
   can still load map widget assets.
+- Clearing the remaining GitHub Advanced Security PR `#36` review noise by
+  changing `/ui` static asset delivery to an internal allowlist in
+  `server/mcp/resources.py` and sanitizing deterministic fixture-server JSON
+  responses to drop stack-like fields before serialization.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

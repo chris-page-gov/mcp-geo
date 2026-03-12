@@ -233,11 +233,25 @@ const STATE = {
 };
 
 function sendJson(response, statusCode, payload, headers = {}) {
+  const sanitizedPayload = sanitizeJsonPayload(payload);
   response.writeHead(statusCode, {
     "content-type": "application/json",
     ...headers,
   });
-  response.end(JSON.stringify(payload));
+  response.end(JSON.stringify(sanitizedPayload));
+}
+
+function sanitizeJsonPayload(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeJsonPayload(item));
+  }
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+  const sanitizedEntries = Object.entries(value)
+    .filter(([key]) => key !== "stack" && key !== "traceback")
+    .map(([key, nested]) => [key, sanitizeJsonPayload(nested)]);
+  return Object.fromEntries(sanitizedEntries);
 }
 
 function sendBuffer(response, statusCode, body, contentType) {

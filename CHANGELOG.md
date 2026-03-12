@@ -113,6 +113,10 @@ All notable changes to this project will be documented in this file.
   keeps absolute `/ui/...` asset URLs while STDIO and embedded MCP-App payloads
   retain resource-local asset paths that remain fetchable without an HTTP side
   channel.
+- Tightened the remaining PR review cleanup by switching `/ui` static asset
+  serving to an internal allowlist in `server/mcp/resources.py` and stripping
+  stack-like keys from deterministic fixture-server JSON responses in
+  `playground/tests/support/fixture_server.mjs`.
 
 ### Changed
 - Updated `docs/reports/README.md`,
