@@ -162,6 +162,10 @@ assumptions change.
   across catalog refreshes, hardening benchmark live-alias resource loading
   against malformed JSON, and making the analytical-index validator tolerate
   CI shallow clones when the pinned citation commit is not present locally.
+- Clearing the remaining PR `#36` Python follow-up by normalizing published UI
+  resource HTML to absolute `/ui/shared/*` and `/ui/vendor/*` asset URLs and
+  treating non-object benchmark live-alias JSON as structured
+  `INVALID_CONFIGURATION` data instead of a 500.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

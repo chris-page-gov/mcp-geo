@@ -795,6 +795,23 @@ def test_benchmark_live_target_invalid_json_returns_structured_error(
     assert meta is None
 
 
+def test_benchmark_live_alias_non_object_returns_structured_error(
+    monkeypatch: MonkeyPatch, tmp_path
+) -> None:
+    live_alias = tmp_path / "live_run_latest.json"
+    live_alias.write_text(json.dumps(["live_run_2026-03-10.json"]), encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "STAKEHOLDER_BENCHMARK_LIVE_ALIAS_PATH", live_alias)
+
+    content, etag, meta = resource_catalog.load_data_content(
+        {"slug": "stakeholder-benchmark-live-run-latest"}
+    )
+    payload = json.loads(content)
+    assert payload["code"] == "INVALID_CONFIGURATION"
+    assert "must be an object" in payload["message"]
+    assert etag
+    assert meta is None
+
+
 def test_load_data_content_boundary_cache_status_enabled_branch(monkeypatch: MonkeyPatch) -> None:
     import server.boundary_cache as boundary_cache
 

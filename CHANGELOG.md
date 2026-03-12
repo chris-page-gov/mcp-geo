@@ -105,6 +105,10 @@ All notable changes to this project will be documented in this file.
 - Added `/ui/vendor/*` resource serving in `server/mcp/resources.py` and
   focused HTTP/resource regressions in `tests/test_resources_data_catalog.py`
   for locally hosted widget vendor assets.
+- Added focused regression coverage so published UI resources now normalize
+  widget asset URLs to absolute `/ui/shared/*` and `/ui/vendor/*` paths and
+  benchmark live-alias resources return structured `INVALID_CONFIGURATION`
+  payloads when the alias JSON is valid but not an object.
 
 ### Changed
 - Updated `docs/reports/README.md`,

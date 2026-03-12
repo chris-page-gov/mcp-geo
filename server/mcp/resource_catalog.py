@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -61,6 +62,26 @@ OFFLINE_PACKS_PREFIX = f"{DATA_RESOURCE_PREFIX}offline-packs/"
 MAP_SCENARIO_PACKS_PREFIX = f"{DATA_RESOURCE_PREFIX}map-scenario-packs/"
 MCP_APPS_MIME = "text/html;profile=mcp-app"
 OFFLINE_PACK_INLINE_MAX_BYTES = 512 * 1024
+
+_UI_ASSET_PATHS = {
+    "vendor/maplibre-gl.css": "/ui/vendor/maplibre-gl.css",
+    "vendor/maplibre-gl.js": "/ui/vendor/maplibre-gl.js",
+    "vendor/maplibre-gl-csp-worker.js": "/ui/vendor/maplibre-gl-csp-worker.js",
+    "vendor/shp.min.js": "/ui/vendor/shp.min.js",
+    "shared/compact_contract.css": "/ui/shared/compact_contract.css",
+    "shared/compact_contract.js": "/ui/shared/compact_contract.js",
+}
+_UI_ASSET_REF_PATTERN = re.compile(
+    r'(?P<attr>\b(?:src|href)=)(?P<quote>["\'])'
+    r'(?P<path>'
+    r'vendor/maplibre-gl\.css|'
+    r'vendor/maplibre-gl\.js|'
+    r'vendor/maplibre-gl-csp-worker\.js|'
+    r'vendor/shp\.min\.js|'
+    r'shared/compact_contract\.css|'
+    r'shared/compact_contract\.js'
+    r')(?P=quote)'
+)
 
 
 def data_resource_uri(name: str) -> str:
@@ -760,6 +781,15 @@ def _etag_from_bytes(content: bytes, variant: str = "") -> str:
     return f'W/"{h}"'
 
 
+def _normalize_ui_asset_paths(content: str) -> str:
+    def _replace(match: re.Match[str]) -> str:
+        path = match.group("path")
+        normalized = _UI_ASSET_PATHS.get(path, path)
+        return f'{match.group("attr")}{match.group("quote")}{normalized}{match.group("quote")}'
+
+    return _UI_ASSET_REF_PATTERN.sub(_replace, content)
+
+
 def resolve_ui_resource(identifier: str) -> Optional[dict[str, Any]]:
     for entry in _UI_RESOURCE_DEFS:
         if identifier in (entry["uri"], entry["name"]):
@@ -818,6 +848,8 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
 def load_ui_content(entry: dict[str, Any]) -> tuple[str, str]:
     path = UI_DIR / entry["file"]
     content = path.read_text(encoding="utf-8")
+    if path.suffix.lower() == ".html":
+        content = _normalize_ui_asset_paths(content)
     etag = _etag_from_bytes(content.encode("utf-8"), entry["uri"])
     return content, etag
 
@@ -850,6 +882,15 @@ def _load_benchmark_live_alias(path: Path) -> tuple[str, str, dict[str, Any] | N
                 "isError": True,
                 "code": "INVALID_CONFIGURATION",
                 "message": "Benchmark live-run alias JSON is invalid.",
+            }
+        )
+        return content, _etag_from_bytes(alias_raw.encode("utf-8"), str(path)), None
+    if not isinstance(alias_payload, dict):
+        content = json.dumps(
+            {
+                "isError": True,
+                "code": "INVALID_CONFIGURATION",
+                "message": "Benchmark live-run alias JSON must be an object.",
             }
         )
         return content, _etag_from_bytes(alias_raw.encode("utf-8"), str(path)), None

@@ -296,6 +296,8 @@
           uiAllowSameOrigin,
           uiResourceMeta: uiPreviewResource._meta || null,
           hostOrigin: window.location.origin,
+          existingPreviewSession:
+            uiPreviewSession?.resourceUri === uiPreviewResource.uri ? uiPreviewSession : null,
           tools,
           resources,
         })

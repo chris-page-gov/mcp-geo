@@ -43,12 +43,16 @@ def test_map_widgets_use_absolute_maplibre_assets():
         assert resp.status_code == 200
         contents = resource_contents(resp)
         html = contents[0]["text"]
-        assert "vendor/maplibre-gl.js" not in html
-        assert "vendor/maplibre-gl.css" not in html
-        assert "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" in html
-        assert "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" in html
-        assert "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js" in html
-        assert "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" in html
+        assert 'src="vendor/maplibre-gl.js"' not in html
+        assert 'href="vendor/maplibre-gl.css"' not in html
+        assert 'src="shared/compact_contract.js"' not in html
+        assert 'href="shared/compact_contract.css"' not in html
+        assert 'src="/ui/vendor/maplibre-gl.js"' in html
+        assert 'href="/ui/vendor/maplibre-gl.css"' in html
+        assert 'src="/ui/shared/compact_contract.js"' in html
+        assert 'href="/ui/shared/compact_contract.css"' in html
+        assert "https://unpkg.com/maplibre-gl" not in html
+        assert "https://cdn.jsdelivr.net/npm/maplibre-gl" not in html
 
 def test_resources_list_pagination():
     resp = client.get("/resources/list", params={"limit": 1, "page": 1})
