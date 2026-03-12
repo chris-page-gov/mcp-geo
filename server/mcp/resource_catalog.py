@@ -845,10 +845,12 @@ def resolve_data_resource(identifier: str) -> Optional[dict[str, Any]]:
     return None
 
 
-def load_ui_content(entry: dict[str, Any]) -> tuple[str, str]:
+def load_ui_content(
+    entry: dict[str, Any], *, asset_mode: str = "relative"
+) -> tuple[str, str]:
     path = UI_DIR / entry["file"]
     content = path.read_text(encoding="utf-8")
-    if path.suffix.lower() == ".html":
+    if path.suffix.lower() == ".html" and asset_mode == "absolute":
         content = _normalize_ui_asset_paths(content)
     etag = _etag_from_bytes(content.encode("utf-8"), entry["uri"])
     return content, etag

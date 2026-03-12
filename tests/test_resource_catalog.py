@@ -666,7 +666,13 @@ def test_resolve_helpers_and_content_loaders() -> None:
     assert resource_catalog.resolve_skill_resource("skills://mcp-geo/unknown") is None
     ui_content, ui_etag = resource_catalog.load_ui_content(ui_entry)
     assert "html" in ui_content.lower()
+    assert 'src="vendor/maplibre-gl.js"' in ui_content
+    ui_content_absolute, ui_etag_absolute = resource_catalog.load_ui_content(
+        ui_entry, asset_mode="absolute"
+    )
+    assert 'src="/ui/vendor/maplibre-gl.js"' in ui_content_absolute
     assert ui_etag.startswith('W/"')
+    assert ui_etag_absolute.startswith('W/"')
     skill_content, skill_etag = resource_catalog.load_skill_content()
     assert "MCP Geo Skills" in skill_content
     assert skill_etag.startswith('W/"')

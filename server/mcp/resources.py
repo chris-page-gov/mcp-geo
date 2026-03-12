@@ -164,7 +164,7 @@ def read_resource(
         else:
             ui_entry = resolve_ui_resource(uri)
             if ui_entry:
-                content, etag = load_ui_content(ui_entry)
+                content, etag = load_ui_content(ui_entry, asset_mode="absolute")
                 if _match_etag(etag):
                     response.status_code = 304
                     response.headers["ETag"] = etag
@@ -192,7 +192,7 @@ def read_resource(
     if name:
         ui_entry = resolve_ui_resource(name)
         if ui_entry:
-            content, etag = load_ui_content(ui_entry)
+            content, etag = load_ui_content(ui_entry, asset_mode="absolute")
             if _match_etag(etag):
                 response.status_code = 304
                 response.headers["ETag"] = etag
@@ -243,7 +243,7 @@ def render_ui_resource(
     ui_entry = resolve_ui_resource(uri)
     if not ui_entry:
         raise HTTPException(status_code=404, detail="UI resource not found")
-    content, etag = load_ui_content(ui_entry)
+    content, etag = load_ui_content(ui_entry, asset_mode="absolute")
     if if_none_match:
         candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
         if etag in candidates or "*" in candidates:

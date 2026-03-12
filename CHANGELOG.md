@@ -109,6 +109,10 @@ All notable changes to this project will be documented in this file.
   widget asset URLs to absolute `/ui/shared/*` and `/ui/vendor/*` paths and
   benchmark live-alias resources return structured `INVALID_CONFIGURATION`
   payloads when the alias JSON is valid but not an object.
+- Split UI-resource asset publication by transport so HTTP-served widget HTML
+  keeps absolute `/ui/...` asset URLs while STDIO and embedded MCP-App payloads
+  retain resource-local asset paths that remain fetchable without an HTTP side
+  channel.
 
 ### Changed
 - Updated `docs/reports/README.md`,
