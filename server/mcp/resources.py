@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -24,6 +25,7 @@ router = APIRouter()
 
 _UI_SHARED_DIR = (UI_DIR / "shared").resolve()
 _UI_VENDOR_DIR = (UI_DIR / "vendor").resolve()
+_STATIC_ASSET_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
@@ -41,6 +43,15 @@ def _ui_asset_media_type(path: Path) -> str:
     if path.suffix == ".json":
         return "application/json"
     return "application/octet-stream"
+
+
+def _resolve_static_asset(base_dir: Path, asset_name: str, detail: str) -> Path:
+    if not _STATIC_ASSET_RE.fullmatch(asset_name):
+        raise HTTPException(status_code=404, detail=detail)
+    asset_path = base_dir / asset_name
+    if not asset_path.exists() or not asset_path.is_file():
+        raise HTTPException(status_code=404, detail=detail)
+    return asset_path
 
 
 def _build_resource_list() -> list[dict[str, Any]]:
@@ -243,9 +254,9 @@ def render_ui_shared_asset(
     ),
 ) -> Response:
     # Serve compact contract assets for hosted UI widgets and iframe/srcdoc fallbacks.
-    asset_path = (_UI_SHARED_DIR / asset_name).resolve()
-    if asset_path.parent != _UI_SHARED_DIR or not asset_path.exists() or not asset_path.is_file():
-        raise HTTPException(status_code=404, detail="UI shared asset not found")
+    asset_path = _resolve_static_asset(
+        _UI_SHARED_DIR, asset_name, "UI shared asset not found"
+    )
 
     stat = asset_path.stat()
     etag = f'W/"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
@@ -269,9 +280,9 @@ def render_ui_vendor_asset(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
-    asset_path = (_UI_VENDOR_DIR / asset_name).resolve()
-    if asset_path.parent != _UI_VENDOR_DIR or not asset_path.exists() or not asset_path.is_file():
-        raise HTTPException(status_code=404, detail="UI vendor asset not found")
+    asset_path = _resolve_static_asset(
+        _UI_VENDOR_DIR, asset_name, "UI vendor asset not found"
+    )
 
     stat = asset_path.stat()
     etag = f'W/"{stat.st_mtime_ns:x}-{stat.st_size:x}"'

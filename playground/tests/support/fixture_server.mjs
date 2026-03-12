@@ -1008,10 +1008,11 @@ const server = http.createServer(async (request, response) => {
     }
 
     sendJson(response, 404, { isError: true, message: "Not found" });
-  } catch (error) {
+  } catch {
+    console.error("[fixture-server] unhandled request error");
     sendJson(response, 500, {
       isError: true,
-      message: error instanceof Error ? error.message : String(error),
+      message: "Internal server error",
     });
   }
 });

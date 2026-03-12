@@ -337,7 +337,7 @@
               {onViewportModeChange}
               resourceLabel="UI content preview"
               selectedResourceUri={selectedResource.uri}
-              {toggleUiPreview}
+              onTogglePreview={toggleUiPreview}
               bind:uiCompactHeight
               {uiCompactHeightPx}
               bind:uiCompactWidth
