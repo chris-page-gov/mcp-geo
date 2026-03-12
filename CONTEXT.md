@@ -155,6 +155,9 @@ assumptions change.
   mirroring the fixed-asset pattern in the deterministic fixture server so the
   frontend acceptance harness no longer performs request-driven asset path
   joins.
+- Clearing the subsequent PR `#36` CSP follow-up by skipping preview CSP
+  injection when a widget publishes no `ui.csp` metadata, preserving route and
+  map widget fetch behavior unless the resource explicitly declares a CSP.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

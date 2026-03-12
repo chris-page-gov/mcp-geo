@@ -84,17 +84,7 @@ export function getServerOrigin(serverUrl) {
 export function buildCsp(meta, serverUrl) {
   const csp = meta?.ui?.csp;
   if (!csp) {
-    return [
-      "default-src 'none'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
-      "media-src 'self' data:",
-      "connect-src 'none'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "frame-src 'none'",
-    ].join("; ");
+    return "";
   }
 
   const connectDomains = normalizeDomains(csp.connectDomains).map(normalizeCspSource);

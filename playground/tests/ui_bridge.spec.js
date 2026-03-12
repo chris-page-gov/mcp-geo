@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createUiPreviewSession } from "../src/lib/uiBridge.js";
+import { buildCsp, createUiPreviewSession, injectCsp } from "../src/lib/uiBridge.js";
 
 test("preview session only expects host origin when same-origin is effectively enabled", () => {
   const base = {
@@ -24,4 +24,12 @@ test("preview session only expects host origin when same-origin is effectively e
   });
   expect(sameOriginSession.allowSameOrigin).toBe(true);
   expect(sameOriginSession.expectedOrigin).toBe(base.hostOrigin);
+});
+
+test("missing widget CSP metadata does not inject a deny-all preview CSP", () => {
+  const html = "<!DOCTYPE html><html><head></head><body><main>Map widget</main></body></html>";
+  const serverUrl = "http://127.0.0.1:8000";
+
+  expect(buildCsp({ ui: {} }, serverUrl)).toBe("");
+  expect(injectCsp(html, { ui: {} }, serverUrl)).toBe(html);
 });

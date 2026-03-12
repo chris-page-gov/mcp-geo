@@ -221,6 +221,10 @@ All notable changes to this project will be documented in this file.
   the fixed-asset serving pattern in
   `playground/tests/support/fixture_server.mjs` so the deterministic fixture
   harness no longer performs request-driven UI asset path joins.
+- Stopped injecting a synthetic deny-all CSP into widget previews when a UI
+  resource publishes no `ui.csp` metadata, preserving existing map-widget
+  network behavior while keeping explicit CSP injection for widgets that do
+  declare allowed domains.
 - Tightened `os_route.get` schema publication for strict MCP clients by adding
   explicit `items` definitions to array-typed route constraints and outputs, so
   VS Code no longer rejects the tool during post-initialize validation.
