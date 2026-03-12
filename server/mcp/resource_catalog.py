@@ -841,7 +841,18 @@ def _load_benchmark_live_alias(path: Path) -> tuple[str, str, dict[str, Any] | N
         )
         return content, _etag_from_bytes(b"missing", "stakeholder-benchmark-live-run-latest"), None
 
-    alias_payload = json.loads(path.read_text(encoding="utf-8"))
+    alias_raw = path.read_text(encoding="utf-8")
+    try:
+        alias_payload = json.loads(alias_raw)
+    except json.JSONDecodeError:
+        content = json.dumps(
+            {
+                "isError": True,
+                "code": "INVALID_CONFIGURATION",
+                "message": "Benchmark live-run alias JSON is invalid.",
+            }
+        )
+        return content, _etag_from_bytes(alias_raw.encode("utf-8"), str(path)), None
     target_name = alias_payload.get("aliasOf")
     if not isinstance(target_name, str) or not target_name.strip():
         content = json.dumps(
@@ -864,7 +875,18 @@ def _load_benchmark_live_alias(path: Path) -> tuple[str, str, dict[str, Any] | N
         )
         return content, _etag_from_bytes(content.encode("utf-8"), str(path)), None
 
-    payload = json.loads(target_path.read_text(encoding="utf-8"))
+    target_raw = target_path.read_text(encoding="utf-8")
+    try:
+        payload = json.loads(target_raw)
+    except json.JSONDecodeError:
+        content = json.dumps(
+            {
+                "isError": True,
+                "code": "INVALID_CONFIGURATION",
+                "message": "Benchmark live-run target JSON is invalid.",
+            }
+        )
+        return content, _etag_from_bytes(target_raw.encode("utf-8"), str(target_path)), None
     if isinstance(payload, dict):
         payload["latestAlias"] = {
             "aliasFile": path.name,

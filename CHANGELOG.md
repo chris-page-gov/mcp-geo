@@ -225,6 +225,11 @@ All notable changes to this project will be documented in this file.
   resource publishes no `ui.csp` metadata, preserving existing map-widget
   network behavior while keeping explicit CSP injection for widgets that do
   declare allowed domains.
+- Preserved active widget preview tokens across catalog refreshes, hardened the
+  stakeholder benchmark live-alias loader to return structured
+  `INVALID_CONFIGURATION` payloads for malformed JSON, and made the
+  analytical-index top-level validator fall back to `HEAD` when CI's shallow
+  checkout does not contain the pinned citation commit object locally.
 - Tightened `os_route.get` schema publication for strict MCP clients by adding
   explicit `items` definitions to array-typed route constraints and outputs, so
   VS Code no longer rejects the tool during post-initialize validation.

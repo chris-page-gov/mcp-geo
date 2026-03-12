@@ -517,6 +517,7 @@
           uiAllowSameOrigin,
           uiResourceMeta: uiResourceMeta || uiPreviewResource?._meta || null,
           hostOrigin: window.location.origin,
+          existingPreviewSession: uiPreviewSession,
           tools,
           resources,
         });

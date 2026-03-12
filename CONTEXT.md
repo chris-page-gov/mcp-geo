@@ -158,6 +158,10 @@ assumptions change.
 - Clearing the subsequent PR `#36` CSP follow-up by skipping preview CSP
   injection when a widget publishes no `ui.csp` metadata, preserving route and
   map widget fetch behavior unless the resource explicitly declares a CSP.
+- Clearing the latest PR `#36` follow-up by preserving preview session tokens
+  across catalog refreshes, hardening benchmark live-alias resource loading
+  against malformed JSON, and making the analytical-index validator tolerate
+  CI shallow clones when the pinned citation commit is not present locally.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

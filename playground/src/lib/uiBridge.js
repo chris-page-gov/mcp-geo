@@ -306,16 +306,17 @@ export function createUiPreviewSession({
   uiAllowSameOrigin,
   uiResourceMeta,
   hostOrigin,
+  existingPreviewSession,
   tools = [],
   resources = [],
 }) {
-  const token = createSessionToken();
+  const token = existingPreviewSession?.token || createSessionToken();
   const sameOrigin = allowSameOrigin(uiResourceMeta?.ui?.permissions || {}, uiAllowSameOrigin);
   return {
-    id: `preview-${token}`,
+    id: existingPreviewSession?.id || `preview-${token}`,
     token,
     resourceUri: resourceUri || "",
-    createdAt: new Date().toISOString(),
+    createdAt: existingPreviewSession?.createdAt || new Date().toISOString(),
     allowSameOrigin: sameOrigin,
     expectedOrigin: sameOrigin ? hostOrigin : "null",
     allowedToolNames: buildToolAliasSet(tools),

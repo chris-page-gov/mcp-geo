@@ -33,3 +33,32 @@ test("missing widget CSP metadata does not inject a deny-all preview CSP", () =>
   expect(buildCsp({ ui: {} }, serverUrl)).toBe("");
   expect(injectCsp(html, { ui: {} }, serverUrl)).toBe(html);
 });
+
+test("refreshing an active preview can preserve the existing bridge session token", () => {
+  const initialSession = createUiPreviewSession({
+    resourceUri: "ui://mcp-geo/route-planner",
+    uiAllowSameOrigin: false,
+    uiResourceMeta: { ui: {} },
+    hostOrigin: "http://127.0.0.1:4173",
+    tools: [{ name: "os_route.get" }],
+    resources: [{ uri: "ui://mcp-geo/route-planner" }],
+  });
+
+  const refreshedSession = createUiPreviewSession({
+    resourceUri: "ui://mcp-geo/route-planner",
+    uiAllowSameOrigin: false,
+    uiResourceMeta: { ui: {} },
+    hostOrigin: "http://127.0.0.1:4173",
+    existingPreviewSession: initialSession,
+    tools: [{ name: "os_route.get" }, { name: "os_route.descriptor" }],
+    resources: [
+      { uri: "ui://mcp-geo/route-planner" },
+      { uri: "resource://mcp-geo/stakeholder-benchmark-pack" },
+    ],
+  });
+
+  expect(refreshedSession.id).toBe(initialSession.id);
+  expect(refreshedSession.token).toBe(initialSession.token);
+  expect(refreshedSession.createdAt).toBe(initialSession.createdAt);
+  expect(Array.from(refreshedSession.allowedToolNames)).toContain("os_route.descriptor");
+});
