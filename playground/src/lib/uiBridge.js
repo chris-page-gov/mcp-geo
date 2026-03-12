@@ -314,18 +314,20 @@ export function buildHostCapabilities({ uiResourceMeta, uiAllowSameOrigin }) {
 export function createUiPreviewSession({
   resourceUri,
   uiAllowSameOrigin,
+  uiResourceMeta,
   hostOrigin,
   tools = [],
   resources = [],
 }) {
   const token = createSessionToken();
+  const sameOrigin = allowSameOrigin(uiResourceMeta?.ui?.permissions || {}, uiAllowSameOrigin);
   return {
     id: `preview-${token}`,
     token,
     resourceUri: resourceUri || "",
     createdAt: new Date().toISOString(),
-    allowSameOrigin: Boolean(uiAllowSameOrigin),
-    expectedOrigin: uiAllowSameOrigin ? hostOrigin : "null",
+    allowSameOrigin: sameOrigin,
+    expectedOrigin: sameOrigin ? hostOrigin : "null",
     allowedToolNames: buildToolAliasSet(tools),
     allowedResourceUris: Array.from(
       new Set([...resources.map((entry) => entry?.uri).filter(Boolean), resourceUri].filter(Boolean))

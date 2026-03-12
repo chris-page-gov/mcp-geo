@@ -215,6 +215,12 @@ All notable changes to this project will be documented in this file.
   static endpoints in `server/mcp/resources.py`, and simplifying CSP-domain
   regression assertions so CodeQL sees exact allowlists instead of parsed URL
   host filtering.
+- Aligned `playground/src/lib/uiBridge.js` with the effective iframe sandbox by
+  deriving preview-session origin expectations from the actual widget
+  `sameOrigin` permission rather than the raw unsafe-toggle state, and mirrored
+  the fixed-asset serving pattern in
+  `playground/tests/support/fixture_server.mjs` so the deterministic fixture
+  harness no longer performs request-driven UI asset path joins.
 - Tightened `os_route.get` schema publication for strict MCP clients by adding
   explicit `items` definitions to array-typed route constraints and outputs, so
   VS Code no longer rejects the tool during post-initialize validation.

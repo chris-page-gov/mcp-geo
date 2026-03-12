@@ -150,6 +150,11 @@ assumptions change.
   Playwright config port override honest, restoring the devcontainer's system
   CA/custom-cert policy, and replacing parameterized widget asset routes with
   fixed static endpoints that satisfy CodeQL's path-handling rules.
+- Clearing the latest PR `#36` review thread on `playground/src/lib/uiBridge.js`
+  by deriving `expectedOrigin` from the effective sandbox permission set, and
+  mirroring the fixed-asset pattern in the deterministic fixture server so the
+  frontend acceptance harness no longer performs request-driven asset path
+  joins.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

@@ -62,8 +62,8 @@ def _static_asset_response(
         response.headers["ETag"] = etag
         return response
 
-    return FileResponse(
-        path=str(asset_path),
+    return Response(
+        content=asset_path.read_bytes(),
         media_type=_ui_asset_media_type(asset_path),
         headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
     )

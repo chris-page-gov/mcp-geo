@@ -294,6 +294,7 @@
       ? createUiPreviewSession({
           resourceUri: uiPreviewResource.uri,
           uiAllowSameOrigin,
+          uiResourceMeta: uiPreviewResource._meta || null,
           hostOrigin: window.location.origin,
           tools,
           resources,
@@ -514,6 +515,7 @@
         uiPreviewSession = createUiPreviewSession({
           resourceUri: uiPreviewResource?.uri,
           uiAllowSameOrigin,
+          uiResourceMeta: uiResourceMeta || uiPreviewResource?._meta || null,
           hostOrigin: window.location.origin,
           tools,
           resources,
@@ -846,6 +848,7 @@
       uiPreviewSession = createUiPreviewSession({
         resourceUri: resource.uri,
         uiAllowSameOrigin,
+        uiResourceMeta: first._meta || resource._meta || null,
         hostOrigin: window.location.origin,
         tools,
         resources,

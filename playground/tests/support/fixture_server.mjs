@@ -116,6 +116,12 @@ const BENCHMARK_LIVE_ALIAS = readJson(BENCHMARK_LIVE_ALIAS_PATH);
 const BENCHMARK_LIVE = readJson(
   path.join(path.dirname(BENCHMARK_LIVE_ALIAS_PATH), BENCHMARK_LIVE_ALIAS.aliasOf)
 );
+const UI_SHARED_COMPACT_CSS = readUiAsset(SHARED_DIR, "compact_contract.css");
+const UI_SHARED_COMPACT_JS = readUiAsset(SHARED_DIR, "compact_contract.js");
+const UI_VENDOR_MAPLIBRE_CSS = readUiAsset(VENDOR_DIR, "maplibre-gl.css");
+const UI_VENDOR_MAPLIBRE_JS = readUiAsset(VENDOR_DIR, "maplibre-gl.js");
+const UI_VENDOR_MAPLIBRE_WORKER_JS = readUiAsset(VENDOR_DIR, "maplibre-gl-csp-worker.js");
+const UI_VENDOR_SHP_JS = readUiAsset(VENDOR_DIR, "shp.min.js");
 
 const DATA_RESOURCES = [
   {
@@ -912,27 +918,28 @@ async function handlePlayground(request, response, pathname) {
 }
 
 function handleUiAsset(response, pathname) {
-  if (pathname.startsWith("/ui/shared/")) {
-    const assetName = pathname.slice("/ui/shared/".length);
-    const assetPath = path.join(SHARED_DIR, assetName);
-    const body = readUiAsset(SHARED_DIR, assetName);
-    const contentType = assetName.endsWith(".css")
-      ? "text/css"
-      : assetName.endsWith(".js")
-        ? "application/javascript"
-        : "application/octet-stream";
-    sendBuffer(response, 200, body, contentType);
+  if (pathname === "/ui/shared/compact_contract.css") {
+    sendBuffer(response, 200, UI_SHARED_COMPACT_CSS, "text/css");
     return true;
   }
-  if (pathname.startsWith("/ui/vendor/")) {
-    const assetName = pathname.slice("/ui/vendor/".length);
-    const body = readUiAsset(VENDOR_DIR, assetName);
-    const contentType = assetName.endsWith(".css")
-      ? "text/css"
-      : assetName.endsWith(".js")
-        ? "application/javascript"
-        : "application/octet-stream";
-    sendBuffer(response, 200, body, contentType);
+  if (pathname === "/ui/shared/compact_contract.js") {
+    sendBuffer(response, 200, UI_SHARED_COMPACT_JS, "application/javascript");
+    return true;
+  }
+  if (pathname === "/ui/vendor/maplibre-gl.css") {
+    sendBuffer(response, 200, UI_VENDOR_MAPLIBRE_CSS, "text/css");
+    return true;
+  }
+  if (pathname === "/ui/vendor/maplibre-gl.js") {
+    sendBuffer(response, 200, UI_VENDOR_MAPLIBRE_JS, "application/javascript");
+    return true;
+  }
+  if (pathname === "/ui/vendor/maplibre-gl-csp-worker.js") {
+    sendBuffer(response, 200, UI_VENDOR_MAPLIBRE_WORKER_JS, "application/javascript");
+    return true;
+  }
+  if (pathname === "/ui/vendor/shp.min.js") {
+    sendBuffer(response, 200, UI_VENDOR_SHP_JS, "application/javascript");
     return true;
   }
   if (pathname.startsWith("/ui/")) {
@@ -948,12 +955,7 @@ function handleUiAsset(response, pathname) {
 
 function handleMaps(response, pathname, searchParams) {
   if (pathname === "/maps/worker/maplibre-gl-csp-worker.js") {
-    sendBuffer(
-      response,
-      200,
-      readUiAsset(VENDOR_DIR, "maplibre-gl-csp-worker.js"),
-      "application/javascript"
-    );
+    sendBuffer(response, 200, UI_VENDOR_MAPLIBRE_WORKER_JS, "application/javascript");
     return true;
   }
   if (pathname === "/maps/vector/vts/resources/styles") {
