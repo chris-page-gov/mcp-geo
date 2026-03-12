@@ -207,6 +207,14 @@ All notable changes to this project will be documented in this file.
   route config before `ui/notifications/tool-input`, proxying `/ui` through
   Vite, and switching hosted widgets to local `/ui/vendor/` MapLibre assets
   instead of CDN-loaded scripts/styles.
+- Tightened the follow-up playground review fixes by honoring
+  `PLAYGROUND_FULL_FRONTEND_PORT` throughout
+  `playground/playwright.full.config.js`, restoring the devcontainer's system
+  CA / custom-cert contract in `.devcontainer/Dockerfile`, replacing
+  parameterized `/ui/shared/*` and `/ui/vendor/*` asset handling with fixed
+  static endpoints in `server/mcp/resources.py`, and simplifying CSP-domain
+  regression assertions so CodeQL sees exact allowlists instead of parsed URL
+  host filtering.
 - Tightened `os_route.get` schema publication for strict MCP clients by adding
   explicit `items` definitions to array-typed route constraints and outputs, so
   VS Code no longer rejects the tool during post-initialize validation.

@@ -32,7 +32,7 @@ export default defineConfig({
       },
     },
     {
-      command: "npm run dev -- --host 127.0.0.1 --port 4173 --strictPort",
+      command: `npm run dev -- --host 127.0.0.1 --port ${frontendPort} --strictPort`,
       port: frontendPort,
       reuseExistingServer: true,
       timeout: 60_000,

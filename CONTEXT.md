@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-11
+Last updated: 2026-03-12
 Owner: @chris-page-gov
 
 ## Purpose
@@ -146,6 +146,10 @@ assumptions change.
   and the new deterministic fixture-backed frontend Playwright acceptance suite
   plus env-gated live smoke coverage that supersede the earlier
   dependency-only PRs `#24` and `#29`.
+- Clearing the remaining PR `#36` follow-up blockers by keeping the full
+  Playwright config port override honest, restoring the devcontainer's system
+  CA/custom-cert policy, and replacing parameterized widget asset routes with
+  fixed static endpoints that satisfy CodeQL's path-handling rules.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

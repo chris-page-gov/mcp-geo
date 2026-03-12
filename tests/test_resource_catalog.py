@@ -3,20 +3,13 @@ from __future__ import annotations
 import base64
 import json
 from pathlib import Path
-from urllib.parse import urlparse
 
 from _pytest.monkeypatch import MonkeyPatch
 
 from server.mcp import resource_catalog
 
-
-def _csp_hosts(domains: set[str]) -> set[str]:
-    hosts: set[str] = set()
-    for domain in domains:
-        parsed = urlparse(domain)
-        if parsed.scheme and parsed.netloc:
-            hosts.add(parsed.netloc)
-    return hosts
+EXPECTED_TILE_DOMAINS = frozenset({"https://tile.openstreetmap.org"})
+LEGACY_CDN_DOMAINS = frozenset({"https://unpkg.com", "https://cdn.jsdelivr.net"})
 
 
 def test_boundary_latest_report_missing(monkeypatch: MonkeyPatch, tmp_path) -> None:
@@ -186,16 +179,12 @@ def test_ui_resources_use_local_vendor_assets_under_widget_csp() -> None:
         csp = meta.get("csp", {})
         connect_domains = set(csp.get("connectDomains", []))
         resource_domains = set(csp.get("resourceDomains", []))
-        connect_hosts = _csp_hosts(connect_domains)
-        resource_hosts = _csp_hosts(resource_domains)
         assert "self" in connect_domains
-        assert "tile.openstreetmap.org" in connect_hosts
+        assert EXPECTED_TILE_DOMAINS <= connect_domains
         assert "self" in resource_domains
-        assert "tile.openstreetmap.org" in resource_hosts
-        assert "unpkg.com" not in connect_hosts
-        assert "cdn.jsdelivr.net" not in connect_hosts
-        assert "unpkg.com" not in resource_hosts
-        assert "cdn.jsdelivr.net" not in resource_hosts
+        assert EXPECTED_TILE_DOMAINS <= resource_domains
+        assert connect_domains.isdisjoint(LEGACY_CDN_DOMAINS)
+        assert resource_domains.isdisjoint(LEGACY_CDN_DOMAINS)
 
 
 def test_latest_run_report_path_missing_dir(monkeypatch: MonkeyPatch, tmp_path) -> None:
