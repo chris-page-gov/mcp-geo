@@ -1,0 +1,22 @@
+{
+  "artifact_hashes": {
+    "ops/monitoring/README.md": "841677dd30c962454fa3c57d28257cd82d56077991168a6c9dc65359fe64026d",
+    "ops/monitoring/prometheus-alert-rules.yml": "4c86c3314e858044ef08c304ea5143d3b1972f676b618154694303eed53c9e74",
+    "ops/monitoring/prometheus.yml": "f70a747e1eee4474e2277192b91cdebce7b824d33a61a7682d2ac4007e517e62",
+    "ops/monitoring/vector.toml": "b9f6c8c7c33d27b3640eccf1637dc2cb924802e03d2fe87922768e2c23022370",
+    "security/owasp_mcp/evidence/monitoring_and_alerting_2026-03-13.md": "100946ad808bc49b4c3a624f024585d0429c35f112c081dcfe9b5c23fb2ea16b",
+    "server/main.py": "d542231395c26af03e0ef00b56e7db8e1b7c9eb45d034ce61811539e66d02a0e",
+    "server/mcp/http_transport.py": "d493a3671d43cb4c89b67d05678fa11c7120e823b305097334c2f0dffffdb789"
+  },
+  "attestation_id": "owasp-mcp-monitoring-and-alerting-2026-03-13",
+  "control_ids": [
+    "OMCP-GOV-003"
+  ],
+  "environment": "prod-strict",
+  "evidence_uri": "security/owasp_mcp/evidence/monitoring_and_alerting_2026-03-13.md",
+  "expires_at": "2026-06-11T00:00:00Z",
+  "notes": "Prometheus scrapes private metrics, alert rules cover abuse and regression signals, and Vector forwards structured logs and runtime audit files to a SIEM sink.",
+  "title": "Monitoring, alerting, and SIEM log routing are defined for production",
+  "verified_at": "2026-03-13T11:34:23Z",
+  "verifier": "Codex with repository-owner evidence capture"
+}

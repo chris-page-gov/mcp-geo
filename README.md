@@ -519,6 +519,10 @@ Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`):
 - `app_requests_total` counter
 - `app_rate_limited_total` counter
 - `app_request_latency_ms_bucket` / `_count` histogram (client-observed wall time per request)
+- `mcp_http_auth_failures_total` counter by auth failure reason
+- `mcp_http_session_quota_rejections_total` counter
+- `mcp_http_sessions_active` gauge
+- `mcp_tool_errors_total` counter by tool and transport
 
 Example scrape output snippet:
 
@@ -665,6 +669,22 @@ Strict OWASP MCP validation:
 This writes JSON/Markdown report artifacts plus a remediation backlog under
 `output/owasp-mcp-validation/` and fails when any `minimum_bar` or `required`
 control is unmet.
+
+## MCP HTTP Hardening
+
+Remote `/mcp` deployments should enable authenticated access and bounded session
+state.
+
+- `MCP_HTTP_AUTH_MODE=hs256_jwt` enables bearer JWT enforcement.
+- `MCP_HTTP_JWT_HS256_SECRET_FILE` loads the signing secret from a mounted file.
+- `MCP_HTTP_JWT_ISSUER`, `MCP_HTTP_JWT_AUDIENCE`, and
+  `MCP_HTTP_JWT_REQUIRED_SCOPES` constrain accepted tokens.
+- `MCP_HTTP_SESSION_TTL` and `MCP_HTTP_SESSION_TOOL_CALL_LIMIT` bound session
+  lifetime and tool-call volume.
+- `OS_API_KEY_FILE`, `NOMIS_UID_FILE`, and `NOMIS_SIGNATURE_FILE` support
+  secret-file delivery without committing live secrets.
+- `ops/deployment/docker-compose.prod.yml` is the hardened reference deployment
+  used by the OWASP MCP strict evidence set.
 
 ## Contributing
 

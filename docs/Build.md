@@ -67,6 +67,9 @@ This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
 
 - `OS_API_KEY`: required for Ordnance Survey tools (Places, Names, NGD Features).
   Missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
+- `OS_API_KEY_FILE`: file-based alternative to `OS_API_KEY` for secret injection.
+- `NOMIS_UID_FILE`: file-based alternative to `NOMIS_UID`.
+- `NOMIS_SIGNATURE_FILE`: file-based alternative to `NOMIS_SIGNATURE`.
 - `ONS_LIVE_ENABLED`: enables live ONS API access for `ons_data.*` (default true).
 - `UI_EVENT_LOG_PATH`: path for MCP-Apps UI event log output
   (default: `logs/ui-events.jsonl`).
@@ -82,6 +85,15 @@ This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
 - `RATE_LIMIT_EXEMPT_PATH_PREFIXES`: comma-separated path prefixes excluded from rate limiting (default `/maps/vector/vts/tile,/maps/raster/osm,/maps/static/osm`).
 - `METRICS_ENABLED`: enable `/metrics` (default true).
 - `LOG_JSON`: loguru JSON output (default false).
+- `MCP_HTTP_AUTH_MODE`: `off`, `static_bearer`, or `hs256_jwt` for `POST /mcp`.
+- `MCP_HTTP_AUTH_TOKEN`: static bearer token when `MCP_HTTP_AUTH_MODE=static_bearer`.
+- `MCP_HTTP_AUTH_TOKEN_FILE`: file-based alternative to `MCP_HTTP_AUTH_TOKEN`.
+- `MCP_HTTP_JWT_HS256_SECRET_FILE`: file-based JWT signing secret for `/mcp`.
+- `MCP_HTTP_JWT_ISSUER`: required issuer claim for JWT-backed `/mcp` access.
+- `MCP_HTTP_JWT_AUDIENCE`: required audience claim for JWT-backed `/mcp` access.
+- `MCP_HTTP_JWT_REQUIRED_SCOPES`: comma-separated scopes required on `/mcp` tokens.
+- `MCP_HTTP_SESSION_TTL`: session expiry window in seconds (default 900).
+- `MCP_HTTP_SESSION_TOOL_CALL_LIMIT`: per-session `tools/call` quota (default 100).
 - `CORS_ALLOWED_ORIGINS`: comma-separated origins for browser clients (default `http://localhost:5173,http://127.0.0.1:5173`).
 - `MCP_TOOLS_DEFAULT_TOOLSET`: default toolset for `tools/list`/`tools/describe` when client passes no filters (for example `starter`).
 - `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS`: default CSV include filters when no per-request filters are provided.
@@ -217,6 +229,16 @@ absolute path because GUI apps do not start from the repo directory. Example:
 When to use STDIO:
 - Use STDIO for desktop MCP clients that require it (Claude Desktop / Claude Code).
 - Use HTTP `/mcp` for Inspector, ChatGPT connectors, and web clients.
+
+Hardened HTTP deployment profile:
+
+```bash
+docker compose -f ops/deployment/docker-compose.prod.yml up -d
+```
+
+That profile keeps the app container off the public edge, enables JWT-backed
+`/mcp`, mounts secrets via `*_FILE`, and exposes `/metrics` only on the private
+monitoring plane.
 
 To rebuild the STDIO image:
 

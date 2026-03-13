@@ -1,0 +1,50 @@
+[sources.mcp_geo_container]
+type = "docker_logs"
+include_containers = ["mcp-geo"]
+
+[sources.mcp_geo_runtime_files]
+type = "file"
+include = [
+  "/var/lib/mcp-geo/logs/*.jsonl",
+  "/var/lib/mcp-geo/audit-packs/**/*.jsonl",
+  "/var/lib/mcp-geo/audit-packs/**/*.json",
+]
+read_from = "beginning"
+
+[transforms.mcp_geo_container_json]
+type = "remap"
+inputs = ["mcp_geo_container"]
+source = '''
+parsed, err = parse_json(.message)
+if err == null {
+  . = parsed
+} else {
+  .message = string!(.message)
+}
+.service = "mcp-geo"
+.log_channel = "container"
+'''
+
+[transforms.mcp_geo_runtime_json]
+type = "remap"
+inputs = ["mcp_geo_runtime_files"]
+source = '''
+.service = "mcp-geo"
+.log_channel = "runtime-file"
+.path = string!(.file)
+'''
+
+[sinks.mcp_geo_siem]
+type = "http"
+inputs = ["mcp_geo_container_json", "mcp_geo_runtime_json"]
+uri = "${SIEM_HTTP_ENDPOINT}"
+method = "post"
+encoding.codec = "json"
+compression = "gzip"
+healthcheck.enabled = true
+request.retry_max_duration_secs = 300
+batch.max_bytes = 1048576
+
+[sinks.mcp_geo_siem.auth]
+strategy = "bearer"
+token = "${SIEM_HTTP_TOKEN}"

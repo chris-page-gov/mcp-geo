@@ -23,9 +23,12 @@ fails when any `minimum_bar` or `required` control fails.
 - `tool_manifest.lock.json.sig`: detached signature for the tool manifest.
 - `tool_manifest.pub.pem`: public key used to verify the detached signature.
 - `attestations/`: machine-readable deployment/runtime/governance evidence.
+- `evidence/`: human-readable supporting evidence and captured GitHub policy state.
 - `baseline/`: committed baseline validator outputs for the current repo snapshot.
 
 ## Strict evidence model
 
 Controls backed by attestations fail when evidence is missing, invalid, or stale.
 That is intentional for the `prod-strict` profile.
+
+Refresh the committed baseline after control changes with `./scripts/validate-owasp-mcp-local` and copy the resulting artifacts into `security/owasp_mcp/baseline/`.

@@ -1,0 +1,13 @@
+# Security-sensitive runtime, tool, and governance surfaces.
+* @chris-page-gov
+
+/.github/workflows/ @chris-page-gov
+/.github/CODEOWNERS @chris-page-gov
+/Dockerfile @chris-page-gov
+/ops/ @chris-page-gov
+/security/owasp_mcp/ @chris-page-gov
+/server/config.py @chris-page-gov
+/server/main.py @chris-page-gov
+/server/maps_proxy.py @chris-page-gov
+/server/mcp/ @chris-page-gov
+/tools/ @chris-page-gov

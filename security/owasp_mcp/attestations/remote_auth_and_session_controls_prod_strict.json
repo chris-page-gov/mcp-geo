@@ -1,0 +1,25 @@
+{
+  "artifact_hashes": {
+    "README.md": "5038048ae1eef6ee6702253c3e30f9d9c5e1e944b19dc8fe062c17101e624f2b",
+    "docs/Build.md": "44795f2cf346b9cc6f70c3ddd5efa4bf0b6a5612f764ab2a0dd146cbb003b6df",
+    "ops/deployment/docker-compose.prod.yml": "b71ba65937b8a5cc2415977db274f3279b9ebcf100943d4e0730b35bbe5bf6ab",
+    "security/owasp_mcp/evidence/mcp_remote_auth_and_session_controls_2026-03-13.md": "83dc89ea49051fc8ca602c6093552d61cdd5afff50cfd8ea26cc90d44010c871",
+    "server/config.py": "209c892f6440c9aa32d5dfaf289692ef6a69814d1836dbcc35318b26b2864e1d",
+    "server/mcp/http_transport.py": "d493a3671d43cb4c89b67d05678fa11c7120e823b305097334c2f0dffffdb789"
+  },
+  "attestation_id": "owasp-mcp-remote-auth-and-session-controls-2026-03-13",
+  "control_ids": [
+    "OMCP-ARCH-002",
+    "OMCP-ARCH-005",
+    "OMCP-PI-002",
+    "OMCP-AUTH-001",
+    "OMCP-AUTH-003"
+  ],
+  "environment": "prod-strict",
+  "evidence_uri": "security/owasp_mcp/evidence/mcp_remote_auth_and_session_controls_2026-03-13.md",
+  "expires_at": "2026-06-11T00:00:00Z",
+  "notes": "HS256 JWT enforcement, issuer/audience/scope checks, session subject binding, TTL cleanup, and per-session tool call quotas are active in the hardened deployment profile.",
+  "title": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+  "verified_at": "2026-03-13T11:34:23Z",
+  "verifier": "Codex with repository-owner evidence capture"
+}

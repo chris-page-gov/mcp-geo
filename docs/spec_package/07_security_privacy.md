@@ -2,7 +2,8 @@
 
 ## Secrets handling
 
-- OS and ONS API keys are environment variables.
+- OS and ONS credentials can be injected via `*_FILE` environment variables.
+- Remote `/mcp` can require HS256 JWT bearer tokens with issuer, audience, scope, and subject checks.
 - Logs redact sensitive tokens via `server/security.py`.
 
 ## Input validation
@@ -13,6 +14,7 @@
 ## Transport
 
 - HTTPS expected for live OS/ONS calls.
+- Remote `/mcp` sessions support TTL-based cleanup and per-session tool quotas.
 - STDIO adapter used for local client integrations.
 
 ## Risk areas

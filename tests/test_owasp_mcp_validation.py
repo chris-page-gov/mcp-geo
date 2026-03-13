@@ -356,12 +356,37 @@ def test_backlog_generation_is_stable(tmp_path: Path):
     assert any(item["control_id"] == "OMCP-AUTH-002" for item in backlog_one["items"])
 
 
-def test_current_repo_snapshot_fails_with_explicit_backlog():
-    report, backlog = validate_repo(_repo_root())
-    assert report["summary"]["verdict"] == "non_compliant"
-    failing_ids = {item["control_id"] for item in backlog["items"]}
-    assert "OMCP-AUTH-002" in failing_ids
-    assert "OMCP-AUTH-001" in report["summary"]["required_failures"]
+def test_current_repo_snapshot_matches_committed_compliant_baseline(tmp_path: Path):
+    output_dir = tmp_path / "owasp-current-repo"
+    completed = subprocess.run(
+        [
+            "python3",
+            "scripts/validate_owasp_mcp_server.py",
+            "--profile",
+            "prod-strict",
+            "--format",
+            "both",
+            "--output-dir",
+            str(output_dir),
+            "--fail-on",
+            "none",
+        ],
+        check=True,
+        cwd=_repo_root(),
+        capture_output=True,
+        text=True,
+    )
+    assert "OWASP MCP verdict: compliant" in completed.stdout
+    report = json.loads(
+        (output_dir / "owasp_mcp_server_validation.json").read_text(encoding="utf-8")
+    )
+    backlog = json.loads(
+        (output_dir / "owasp_mcp_server_backlog.json").read_text(encoding="utf-8")
+    )
+    assert report["summary"]["verdict"] == "compliant"
+    assert report["summary"]["score"] == 100.0
+    assert report["summary"]["required_failures"] == []
+    assert backlog["items"] == []
 
 
 def test_helper_functions_and_safe_by_design_loading(tmp_path: Path):
