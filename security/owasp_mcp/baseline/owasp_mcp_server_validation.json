@@ -28,16 +28,21 @@
       },
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
       "id": "OMCP-ARCH-002",
       "pass_criteria": "Machine-readable evidence proves authenticated ingress is enforced for remote /mcp.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add an attestation covering the deployed ingress auth layer for remote /mcp.",
       "requirement_level": "minimum_bar",
       "section": "secure architecture",
       "severity": "critical",
       "source_quote": "Remote access should be authenticated and policy-bound.",
-      "status": "fail",
+      "status": "pass",
       "title": "Remote /mcp requires authenticated ingress policy"
     },
     {
@@ -90,16 +95,21 @@
       },
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
       "id": "OMCP-ARCH-005",
       "pass_criteria": "Evidence shows the deployed service enforces per-session quotas or equivalent controls.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add attested evidence for per-session quotas or implement them directly.",
       "requirement_level": "required",
       "section": "secure architecture",
       "severity": "high",
       "source_quote": "Resource limits should be scoped to sessions.",
-      "status": "fail",
+      "status": "pass",
       "title": "Per-session quotas are evidenced"
     },
     {
@@ -150,16 +160,21 @@
       "applies_when": {},
       "attestation_max_age_days": 180,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Security-sensitive tool changes require protected-branch review",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json"
+        }
+      ],
       "id": "OMCP-TOOL-003",
       "pass_criteria": "Machine-readable evidence exists for tool-change approval and review policy.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add an attestation for the tool approval workflow or wire the workflow into CI evidence.",
       "requirement_level": "required",
       "section": "safe tool design",
       "severity": "high",
       "source_quote": "Tool changes should follow explicit approval paths.",
-      "status": "fail",
+      "status": "pass",
       "title": "Tool additions and changes have approval evidence"
     },
     {
@@ -274,16 +289,21 @@
       },
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
       "id": "OMCP-PI-002",
       "pass_criteria": "Evidence shows long-lived sessions are compartmentalized against prompt carry-over risk.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add deployment or runtime evidence for session/task compartmentalization.",
       "requirement_level": "required",
       "section": "prompt injection controls",
       "severity": "high",
       "source_quote": "Long-lived sessions need compartmentalized task boundaries.",
-      "status": "fail",
+      "status": "pass",
       "title": "Long-lived sessions have compartmentalization evidence"
     },
     {
@@ -292,16 +312,21 @@
       },
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
       "id": "OMCP-AUTH-001",
       "pass_criteria": "Machine-readable evidence proves OAuth/OIDC or equivalent remote auth is deployed.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add an attestation for OAuth/OIDC or equivalent remote auth on /mcp.",
       "requirement_level": "minimum_bar",
       "section": "authentication and authorization",
       "severity": "critical",
       "source_quote": "Remote MCP should sit behind modern auth.",
-      "status": "fail",
+      "status": "pass",
       "title": "OAuth 2.1/OIDC or equivalent protects remote /mcp"
     },
     {
@@ -317,13 +342,13 @@
       ],
       "id": "OMCP-AUTH-002",
       "pass_criteria": "Checked transport code does not forward client bearer tokens to upstream services.",
-      "rationale": "Bearer tokens are forwarded upstream by the map proxy.",
+      "rationale": "No token passthrough surface was detected in the checked transport code.",
       "remediation_template": "Remove token passthrough and use server-held or brokered credentials instead.",
       "requirement_level": "required",
       "section": "authentication and authorization",
       "severity": "high",
       "source_quote": "Do not pass client tokens through server tool chains.",
-      "status": "fail",
+      "status": "pass",
       "title": "Token passthrough is prohibited"
     },
     {
@@ -332,16 +357,21 @@
       },
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
       "id": "OMCP-AUTH-003",
       "pass_criteria": "Evidence shows tokens are short-lived, scoped, and bound to user or client identity.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add attestation evidence for token TTL, scopes, and subject binding.",
       "requirement_level": "required",
       "section": "authentication and authorization",
       "severity": "high",
       "source_quote": "Tokens should be short-lived, scoped, and bound.",
-      "status": "fail",
+      "status": "pass",
       "title": "Short-lived scoped tokens are evidenced"
     },
     {
@@ -366,16 +396,21 @@
       "applies_when": {},
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Runtime hardening and secret-file delivery are configured for production",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json"
+        }
+      ],
       "id": "OMCP-DEPLOY-001",
       "pass_criteria": "Evidence covers non-root execution, isolation, and network restriction posture.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add attestation evidence for hardened runtime and network segmentation controls.",
       "requirement_level": "minimum_bar",
       "section": "secure deployment and updates",
       "severity": "critical",
       "source_quote": "Deploy hardened runtimes with network boundaries.",
-      "status": "fail",
+      "status": "pass",
       "title": "Runtime hardening and network restrictions are evidenced"
     },
     {
@@ -384,16 +419,21 @@
       },
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Runtime hardening and secret-file delivery are configured for production",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json"
+        }
+      ],
       "id": "OMCP-DEPLOY-002",
       "pass_criteria": "Evidence shows secret injection or equivalent controls prevent plain env-var-only exposure.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add attestation evidence for vault or secret-injection controls, or remove raw env-secret dependency.",
       "requirement_level": "required",
       "section": "secure deployment and updates",
       "severity": "high",
       "source_quote": "Secrets handling should not rely on raw environment exposure alone.",
-      "status": "fail",
+      "status": "pass",
       "title": "Secrets delivery is controlled beyond plain env vars"
     },
     {
@@ -448,32 +488,42 @@
       "applies_when": {},
       "attestation_max_age_days": 180,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Security-sensitive tool changes require protected-branch review",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json"
+        }
+      ],
       "id": "OMCP-GOV-002",
       "pass_criteria": "Machine-readable evidence exists for peer review of security-sensitive changes.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add attestation evidence for branch protection or required review policy.",
       "requirement_level": "required",
       "section": "governance",
       "severity": "medium",
       "source_quote": "Security-sensitive changes should carry review evidence.",
-      "status": "fail",
+      "status": "pass",
       "title": "Security-sensitive change review is evidenced"
     },
     {
       "applies_when": {},
       "attestation_max_age_days": 90,
       "check_type": "attestation",
-      "evidence": [],
+      "evidence": [
+        {
+          "detail": "Monitoring, alerting, and SIEM log routing are defined for production",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/monitoring_and_alerting_prod_strict.json"
+        }
+      ],
       "id": "OMCP-GOV-003",
       "pass_criteria": "Attested evidence exists for monitoring, alerting, and log routing.",
-      "rationale": "Missing required attestation evidence.",
+      "rationale": "Valid attestation evidence present.",
       "remediation_template": "Add attestation evidence for monitoring, SIEM ingestion, and alerting policy.",
       "requirement_level": "required",
       "section": "governance",
       "severity": "medium",
       "source_quote": "Continuous monitoring should back deployed controls.",
-      "status": "fail",
+      "status": "pass",
       "title": "Monitoring and alerting evidence exists"
     },
     {
@@ -540,13 +590,13 @@
       ],
       "id": "OMCP-MIN-001",
       "pass_criteria": "All minimum-bar controls pass in the strict profile.",
-      "rationale": "Minimum-bar checklist failed due to: OMCP-ARCH-002, OMCP-AUTH-001, OMCP-DEPLOY-001",
+      "rationale": "All minimum-bar controls passed.",
       "remediation_template": "Close every failing minimum-bar control before claiming OWASP MCP baseline compliance.",
       "requirement_level": "minimum_bar",
       "section": "minimum-bar checklist",
       "severity": "critical",
       "source_quote": "The minimum bar is only met when the core controls hold together.",
-      "status": "fail",
+      "status": "pass",
       "title": "OWASP MCP minimum bar checklist passes"
     }
   ],
@@ -560,7 +610,7 @@
     "attestation_issues": [],
     "profile": "prod-strict",
     "project": "mcp-geo",
-    "run_at": "2026-03-13T10:53:51Z",
+    "run_at": "2026-03-13T11:40:12Z",
     "source": {
       "accessed": "2026-03-13",
       "pdf_download_url": "https://genai.owasp.org/download/52676/?tmstv=1771286427",
@@ -575,25 +625,12 @@
   "summary": {
     "applicable_controls": 25,
     "counts": {
-      "fail": 12,
+      "fail": 0,
       "not_applicable": 2,
-      "pass": 13
+      "pass": 25
     },
-    "required_failures": [
-      "OMCP-ARCH-002",
-      "OMCP-ARCH-005",
-      "OMCP-TOOL-003",
-      "OMCP-PI-002",
-      "OMCP-AUTH-001",
-      "OMCP-AUTH-002",
-      "OMCP-AUTH-003",
-      "OMCP-DEPLOY-001",
-      "OMCP-DEPLOY-002",
-      "OMCP-GOV-002",
-      "OMCP-GOV-003",
-      "OMCP-MIN-001"
-    ],
-    "score": 51.65,
-    "verdict": "non_compliant"
+    "required_failures": [],
+    "score": 100.0,
+    "verdict": "compliant"
   }
 }

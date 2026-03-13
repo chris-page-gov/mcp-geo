@@ -2,8 +2,8 @@
 
 - Project: `mcp-geo`
 - Profile: `prod-strict`
-- Verdict: `non_compliant`
-- Score: `51.65`
+- Verdict: `compliant`
+- Score: `100.0`
 - Source baseline: `A Practical Guide for Secure MCP Server Development` `1.0`
 - Source URL: https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/
 - Source PDF SHA-256: `e0681dc7f64074f9dfceedda90533cf6db1cc3566508d28f77c69cc3cc2307b0`
@@ -12,39 +12,17 @@
 
 | Status | Count |
 | --- | ---: |
-| `pass` | 13 |
-| `fail` | 12 |
+| `pass` | 25 |
+| `fail` | 0 |
 | `not_applicable` | 2 |
 
 ## Required / Minimum-Bar Failures
 
-- `OMCP-ARCH-002` `critical` `secure architecture`: Missing required attestation evidence.
-- `OMCP-ARCH-005` `high` `secure architecture`: Missing required attestation evidence.
-- `OMCP-TOOL-003` `high` `safe tool design`: Missing required attestation evidence.
-- `OMCP-PI-002` `high` `prompt injection controls`: Missing required attestation evidence.
-- `OMCP-AUTH-001` `critical` `authentication and authorization`: Missing required attestation evidence.
-- `OMCP-AUTH-002` `high` `authentication and authorization`: Bearer tokens are forwarded upstream by the map proxy.
-- `OMCP-AUTH-003` `high` `authentication and authorization`: Missing required attestation evidence.
-- `OMCP-DEPLOY-001` `critical` `secure deployment and updates`: Missing required attestation evidence.
-- `OMCP-DEPLOY-002` `high` `secure deployment and updates`: Missing required attestation evidence.
-- `OMCP-GOV-002` `medium` `governance`: Missing required attestation evidence.
-- `OMCP-GOV-003` `medium` `governance`: Missing required attestation evidence.
-- `OMCP-MIN-001` `critical` `minimum-bar checklist`: Minimum-bar checklist failed due to: OMCP-ARCH-002, OMCP-AUTH-001, OMCP-DEPLOY-001
+- None
 
 ## Remediation Backlog
 
-- `OWASP-MCP-REMED-OMCP-ARCH-002` -> `OMCP-ARCH-002` `critical`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-AUTH-001` -> `OMCP-AUTH-001` `critical`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-DEPLOY-001` -> `OMCP-DEPLOY-001` `critical`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-MIN-001` -> `OMCP-MIN-001` `critical`: Minimum-bar checklist failed due to: OMCP-ARCH-002, OMCP-AUTH-001, OMCP-DEPLOY-001
-- `OWASP-MCP-REMED-OMCP-ARCH-005` -> `OMCP-ARCH-005` `high`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-AUTH-002` -> `OMCP-AUTH-002` `high`: Bearer tokens are forwarded upstream by the map proxy.
-- `OWASP-MCP-REMED-OMCP-AUTH-003` -> `OMCP-AUTH-003` `high`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-DEPLOY-002` -> `OMCP-DEPLOY-002` `high`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-PI-002` -> `OMCP-PI-002` `high`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-TOOL-003` -> `OMCP-TOOL-003` `high`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-GOV-002` -> `OMCP-GOV-002` `medium`: Missing required attestation evidence.
-- `OWASP-MCP-REMED-OMCP-GOV-003` -> `OMCP-GOV-003` `medium`: Missing required attestation evidence.
+- No open remediation items.
 
 ## Control Results
 
@@ -58,13 +36,15 @@
 - Evidence:
   - `server/mcp/http_transport.py`: FastAPI route declaration for /mcp
 
-### `OMCP-ARCH-002` Remote /mcp requires authenticated ingress policy `fail`
+### `OMCP-ARCH-002` Remote /mcp requires authenticated ingress policy `pass`
 
 - Section: `secure architecture`
 - Requirement: `minimum_bar`
 - Severity: `critical`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-ARCH-003` JSON-RPC messages are validated before dispatch `pass`
 
@@ -86,13 +66,15 @@
 - Evidence:
   - `server/mcp/http_transport.py`: Session map, TTL, and cleanup logic
 
-### `OMCP-ARCH-005` Per-session quotas are evidenced `fail`
+### `OMCP-ARCH-005` Per-session quotas are evidenced `pass`
 
 - Section: `secure architecture`
 - Requirement: `required`
 - Severity: `high`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-TOOL-001` Explicit tool risk inventory covers every tool `pass`
 
@@ -115,13 +97,15 @@
   - `security/owasp_mcp/tool_manifest.lock.json`: Committed tool manifest lockfile
   - `security/owasp_mcp/tool_manifest.lock.json.sig`: Verified OK
 
-### `OMCP-TOOL-003` Tool additions and changes have approval evidence `fail`
+### `OMCP-TOOL-003` Tool additions and changes have approval evidence `pass`
 
 - Section: `safe tool design`
 - Requirement: `required`
 - Severity: `high`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json`: Security-sensitive tool changes require protected-branch review
 
 ### `OMCP-TOOL-004` Tool metadata exposure is minimized `pass`
 
@@ -173,39 +157,45 @@
 - Check type: `attestation`
 - Rationale: Control does not apply for the current profile/tool inventory.
 
-### `OMCP-PI-002` Long-lived sessions have compartmentalization evidence `fail`
+### `OMCP-PI-002` Long-lived sessions have compartmentalization evidence `pass`
 
 - Section: `prompt injection controls`
 - Requirement: `required`
 - Severity: `high`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
-### `OMCP-AUTH-001` OAuth 2.1/OIDC or equivalent protects remote /mcp `fail`
+### `OMCP-AUTH-001` OAuth 2.1/OIDC or equivalent protects remote /mcp `pass`
 
 - Section: `authentication and authorization`
 - Requirement: `minimum_bar`
 - Severity: `critical`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
-### `OMCP-AUTH-002` Token passthrough is prohibited `fail`
+### `OMCP-AUTH-002` Token passthrough is prohibited `pass`
 
 - Section: `authentication and authorization`
 - Requirement: `required`
 - Severity: `high`
 - Check type: `static_repo`
-- Rationale: Bearer tokens are forwarded upstream by the map proxy.
+- Rationale: No token passthrough surface was detected in the checked transport code.
 - Evidence:
   - `server/maps_proxy.py`: Authorization bearer forwarding logic
 
-### `OMCP-AUTH-003` Short-lived scoped tokens are evidenced `fail`
+### `OMCP-AUTH-003` Short-lived scoped tokens are evidenced `pass`
 
 - Section: `authentication and authorization`
 - Requirement: `required`
 - Severity: `high`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-AUTH-004` Restricted data uses centralized policy enforcement `not_applicable`
 
@@ -215,21 +205,25 @@
 - Check type: `attestation`
 - Rationale: Control does not apply for the current profile/tool inventory.
 
-### `OMCP-DEPLOY-001` Runtime hardening and network restrictions are evidenced `fail`
+### `OMCP-DEPLOY-001` Runtime hardening and network restrictions are evidenced `pass`
 
 - Section: `secure deployment and updates`
 - Requirement: `minimum_bar`
 - Severity: `critical`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json`: Runtime hardening and secret-file delivery are configured for production
 
-### `OMCP-DEPLOY-002` Secrets delivery is controlled beyond plain env vars `fail`
+### `OMCP-DEPLOY-002` Secrets delivery is controlled beyond plain env vars `pass`
 
 - Section: `secure deployment and updates`
 - Requirement: `required`
 - Severity: `high`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json`: Runtime hardening and secret-file delivery are configured for production
 
 ### `OMCP-DEPLOY-003` CI includes security gates `pass`
 
@@ -253,21 +247,25 @@
   - `server/audit/redaction.py`: Disclosure/redaction derivatives
   - `server/audit/integrity.py`: SHA-256 integrity verification
 
-### `OMCP-GOV-002` Security-sensitive change review is evidenced `fail`
+### `OMCP-GOV-002` Security-sensitive change review is evidenced `pass`
 
 - Section: `governance`
 - Requirement: `required`
 - Severity: `medium`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json`: Security-sensitive tool changes require protected-branch review
 
-### `OMCP-GOV-003` Monitoring and alerting evidence exists `fail`
+### `OMCP-GOV-003` Monitoring and alerting evidence exists `pass`
 
 - Section: `governance`
 - Requirement: `required`
 - Severity: `medium`
 - Check type: `attestation`
-- Rationale: Missing required attestation evidence.
+- Rationale: Valid attestation evidence present.
+- Evidence:
+  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/monitoring_and_alerting_prod_strict.json`: Monitoring, alerting, and SIEM log routing are defined for production
 
 ### `OMCP-CONT-001` OWASP validator runs in CI and publishes artifacts `pass`
 
@@ -290,12 +288,12 @@
 - Evidence:
   - `.github/workflows/ci.yml`: Supply-chain posture checks
 
-### `OMCP-MIN-001` OWASP MCP minimum bar checklist passes `fail`
+### `OMCP-MIN-001` OWASP MCP minimum bar checklist passes `pass`
 
 - Section: `minimum-bar checklist`
 - Requirement: `minimum_bar`
 - Severity: `critical`
 - Check type: `static_repo`
-- Rationale: Minimum-bar checklist failed due to: OMCP-ARCH-002, OMCP-AUTH-001, OMCP-DEPLOY-001
+- Rationale: All minimum-bar controls passed.
 - Evidence:
   - `security/owasp_mcp/control_catalog.json`: Minimum-bar control dependencies

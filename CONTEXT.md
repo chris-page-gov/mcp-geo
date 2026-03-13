@@ -68,7 +68,7 @@ assumptions change.
 - Maintaining post-remediation safe-by-design/governance compliance against UK
   standards (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM
   guidance, W3C provenance/catalog standards, and MCP `2025-11-25`.
-- Maintaining the new rerunnable OWASP MCP validation pack under `security/owasp_mcp/`, including the strict baseline report `docs/reports/owasp_mcp_server_validation_2026-03-13.md`, signed tool manifest verification, CI artifact publication, and attestation-backed control evaluation. The current strict score is `51.65` with verdict `non_compliant`; the remaining blockers are mainly missing deployment/auth/governance attestations plus live token passthrough in `server/maps_proxy.py`.
+- Maintaining the new rerunnable OWASP MCP validation pack under `security/owasp_mcp/`, including the strict baseline report `docs/reports/owasp_mcp_server_validation_2026-03-13.md`, signed tool manifest verification, CI artifact publication, and attestation-backed control evaluation. The current strict score is `100.0` with verdict `compliant`; the repo now has committed deployment/auth/governance attestations, hardened `/mcp` auth and session controls, private monitoring assets, and no live token passthrough in `server/maps_proxy.py`.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery
@@ -172,7 +172,7 @@ assumptions change.
 
 ## Active Work
 
-- Maintain and iterate the OWASP MCP strict validation pack (`server/owasp_mcp_validation.py`, `security/owasp_mcp/`, `.github/workflows/ci.yml`) until the current baseline failures are closed, with the current strict blockers concentrated in remote auth, per-session quota evidence, deployment/runtime attestations, governance attestations, and token passthrough in `server/maps_proxy.py`.
+- Maintain and iterate the OWASP MCP strict validation pack (`server/owasp_mcp_validation.py`, `security/owasp_mcp/`, `.github/workflows/ci.yml`) from the current `compliant` strict baseline, keeping the attestation set fresh and preserving the hardened `/mcp` auth, session, deployment, and governance controls.
 - Prepare the minor-release integration branch `codex/release-0.6.0-integration`
   by landing `codex/validate-maps` plus the boundary harness follow-up while
   explicitly deferring PRs `#24`, `#29`, and `codex/reporting-2026-03-01`.
@@ -457,9 +457,9 @@ assumptions change.
 
 ## Verification Status
 
-- Latest OWASP MCP strict validator run: `./.venv/bin/python scripts/validate_owasp_mcp_server.py --profile prod-strict --format both --output-dir security/owasp_mcp/baseline --fail-on none` on 2026-03-13 (`non_compliant`, score `51.65`, `12` required/minimum-bar failures, baseline outputs committed under `security/owasp_mcp/baseline/`).
-- Latest strict test run: `uv run --extra test pytest -q` on 2026-03-04
-  (`994 passed`, `6 skipped`, coverage `91.53%`, gate passed).
+- Latest OWASP MCP strict validator run: `./scripts/validate-owasp-mcp-local` on 2026-03-13 (`compliant`, score `100.0`, `0` required/minimum-bar failures, empty remediation backlog, baseline outputs committed under `security/owasp_mcp/baseline/`).
+- Latest strict test run: `./scripts/pytest-local -q -m "not integration"` on 2026-03-13
+  (`1126 passed`, `6 skipped`, `1 deselected`, coverage `90.00%`, gate passed).
 - Latest live harness run: `RUN_LIVE_API_TESTS=1 ./.venv/bin/python -m tests.evaluation.harness --include-os-api --include-ons-live`
   on 2026-02-22 (`6900/6900`, `100%`, `69/69` passed, `rate_limit_429_total=0`).
 - Latest full tool operability aggregation:
@@ -476,7 +476,7 @@ assumptions change.
 
 ## Decisions Log
 
-- 2026-03-13: Added a repo-pinned OWASP MCP validation pack (`security/owasp_mcp/`, `server/owasp_mcp_validation.py`, `scripts/validate_owasp_mcp_server.py`) locked to OWASP GenAI Security Project _A Practical Guide for Secure MCP Server Development_ Version 1.0 (February 2026). The strict baseline currently scores `51.65` and is intentionally `non_compliant` until missing deployment/auth/governance attestations are supplied and bearer-token passthrough in `server/maps_proxy.py` is removed.
+- 2026-03-13: Added and remediated the repo-pinned OWASP MCP validation pack (`security/owasp_mcp/`, `server/owasp_mcp_validation.py`, `scripts/validate_owasp_mcp_server.py`) locked to OWASP GenAI Security Project _A Practical Guide for Secure MCP Server Development_ Version 1.0 (February 2026). The strict baseline now scores `100.0` and is `compliant`, backed by committed attestations, hardened `/mcp` auth/session controls, deployment assets, monitoring assets, and protected-branch review evidence.
 - 2026-03-10: Standardized cross-platform repo/devcontainer behavior by
   enforcing LF line endings via `.gitattributes`/`.editorconfig`, making
   devcontainer `ngrok` installation opt-in, and routing devcontainer/Docker
