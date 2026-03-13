@@ -21,6 +21,7 @@ def authorize_http_route(
         if quota_method:
             http_transport._enforce_session_quota(quota_method, session_state, claims)
     except http_transport.AuthenticationError:
+        http_transport._record_auth_failure("authentication")
         return headers, JSONResponse(
             status_code=401,
             content={
@@ -31,6 +32,7 @@ def authorize_http_route(
             headers=headers,
         )
     except http_transport.AuthorizationError:
+        http_transport._record_auth_failure("authorization")
         return headers, JSONResponse(
             status_code=403,
             content={
@@ -41,6 +43,7 @@ def authorize_http_route(
             headers=headers,
         )
     except http_transport.SessionQuotaExceeded:
+        http_transport._record_session_quota_rejection()
         return headers, JSONResponse(
             status_code=429,
             content={

@@ -44,7 +44,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-ARCH-003` JSON-RPC messages are validated before dispatch `pass`
 
@@ -74,7 +74,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-TOOL-001` Explicit tool risk inventory covers every tool `pass`
 
@@ -105,7 +105,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json`: Security-sensitive tool changes require protected-branch review
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json`: Security-sensitive tool changes require protected-branch review
 
 ### `OMCP-TOOL-004` Tool metadata exposure is minimized `pass`
 
@@ -165,7 +165,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-AUTH-001` OAuth 2.1/OIDC or equivalent protects remote /mcp `pass`
 
@@ -175,7 +175,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-AUTH-002` Token passthrough is prohibited `pass`
 
@@ -195,7 +195,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json`: Remote /mcp authentication, token binding, and session safeguards are deployed
 
 ### `OMCP-AUTH-004` Restricted data uses centralized policy enforcement `not_applicable`
 
@@ -213,7 +213,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json`: Runtime hardening and secret-file delivery are configured for production
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json`: Runtime hardening and secret-file delivery are configured for production
 
 ### `OMCP-DEPLOY-002` Secrets delivery is controlled beyond plain env vars `pass`
 
@@ -223,7 +223,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json`: Runtime hardening and secret-file delivery are configured for production
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json`: Runtime hardening and secret-file delivery are configured for production
 
 ### `OMCP-DEPLOY-003` CI includes security gates `pass`
 
@@ -255,7 +255,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json`: Security-sensitive tool changes require protected-branch review
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json`: Security-sensitive tool changes require protected-branch review
 
 ### `OMCP-GOV-003` Monitoring and alerting evidence exists `pass`
 
@@ -265,7 +265,7 @@
 - Check type: `attestation`
 - Rationale: Valid attestation evidence present.
 - Evidence:
-  - `/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/monitoring_and_alerting_prod_strict.json`: Monitoring, alerting, and SIEM log routing are defined for production
+  - `/Users/crpage/repos/mcp-geo/security/owasp_mcp/attestations/monitoring_and_alerting_prod_strict.json`: Monitoring, alerting, and SIEM log routing are defined for production
 
 ### `OMCP-CONT-001` OWASP validator runs in CI and publishes artifacts `pass`
 

@@ -143,6 +143,20 @@ def _try_import_for_tool(tool_name: str) -> list[str]:
 router = APIRouter()
 
 
+def _http_error_response(
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    headers: dict[str, str] | None = None,
+    details: Any | None = None,
+) -> JSONResponse:
+    content: dict[str, Any] = {"isError": True, "code": code, "message": message}
+    if details is not None:
+        content["details"] = details
+    return JSONResponse(status_code=status_code, content=content, headers=headers or None)
+
+
 @router.get("/tools/list")
 def list_tools_endpoint(
     limit: int = 10,
@@ -191,32 +205,26 @@ async def call_tool(request: Request):
     try:
         data = await request.json()
     except (json.JSONDecodeError, ValueError):
-        return JSONResponse(
+        return _http_error_response(
             status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Malformed JSON request body",
-            },
+            code="INVALID_INPUT",
+            message="Malformed JSON request body",
+            headers=auth_headers,
         )
     if not isinstance(data, dict):
-        return JSONResponse(
+        return _http_error_response(
             status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Request body must be a JSON object",
-            },
+            code="INVALID_INPUT",
+            message="Request body must be a JSON object",
+            headers=auth_headers,
         )
     tool_name = data.get("tool")
     if not isinstance(tool_name, str) or not tool_name.strip():
-        return JSONResponse(
+        return _http_error_response(
             status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Missing 'tool' field",
-            },
+            code="INVALID_INPUT",
+            message="Missing 'tool' field",
+            headers=auth_headers,
         )
     tool_name = tool_name.strip()
     resolved_name = resolve_tool_name(tool_name, list_tools())
@@ -235,22 +243,18 @@ async def call_tool(request: Request):
                 if errors
                 else "Tool module imported but tool not registered"
             )
-            return JSONResponse(
+            return _http_error_response(
                 status_code=501,
-                content={
-                    "isError": True,
-                    "code": code,
-                    "message": message,
-                    "details": errors,
-                },
+                code=code,
+                message=message,
+                headers=auth_headers,
+                details=errors,
             )
-        return JSONResponse(
+        return _http_error_response(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "isError": True,
-                "code": "UNKNOWN_TOOL",
-                "message": f"Tool '{tool_name}' not found",
-            },
+            code="UNKNOWN_TOOL",
+            message=f"Tool '{tool_name}' not found",
+            headers=auth_headers,
         )
     started = time.perf_counter()
     status_code, payload = tool.call(data)

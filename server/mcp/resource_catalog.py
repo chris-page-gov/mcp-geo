@@ -597,20 +597,46 @@ def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], str]
     return payload, sha256
 
 
+def _offline_pack_path_by_uri() -> dict[str, Path]:
+    if not OFFLINE_MAP_CATALOG_PATH.exists():
+        return {}
+    try:
+        catalog = json.loads(OFFLINE_MAP_CATALOG_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    packs = catalog.get("packs")
+    if not isinstance(packs, list):
+        return {}
+    available = {pack_path.name: pack_path.resolve() for pack_path in _offline_pack_files()}
+    resolved: dict[str, Path] = {}
+    for pack in packs:
+        if not isinstance(pack, dict):
+            continue
+        resource_uri = pack.get("resourceUri")
+        if not isinstance(resource_uri, str) or not resource_uri.startswith(OFFLINE_PACKS_PREFIX):
+            continue
+        filename = Path(resource_uri[len(OFFLINE_PACKS_PREFIX) :]).name
+        if not filename:
+            continue
+        path = available.get(filename)
+        if path is not None:
+            resolved[resource_uri] = path
+    return resolved
+
+
 def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
-    slug = uri
-    if uri.startswith(OFFLINE_PACKS_PREFIX):
-        slug = f"offline-packs/{uri[len(OFFLINE_PACKS_PREFIX):]}"
-    if not slug.startswith("offline-packs/"):
+    trusted_paths = _offline_pack_path_by_uri()
+    path = trusted_paths.get(uri)
+    if path is not None:
+        return path, _offline_pack_media_type(path)
+    if not uri.startswith(OFFLINE_PACKS_PREFIX):
         return None
-    filename = slug.split("/", 1)[1] if "/" in slug else ""
+    filename = Path(uri[len(OFFLINE_PACKS_PREFIX) :]).name
     if not filename:
         return None
-    if Path(filename).name != filename:
-        return None
-    for pack_path in _offline_pack_files():
-        if pack_path.name == filename:
-            return pack_path.resolve(), _offline_pack_media_type(pack_path)
+    path = trusted_paths.get(f"{OFFLINE_PACKS_PREFIX}{filename}")
+    if path is not None:
+        return path, _offline_pack_media_type(path)
     return None
 
 
