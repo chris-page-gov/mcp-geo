@@ -606,12 +606,12 @@ def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
     filename = slug.split("/", 1)[1] if "/" in slug else ""
     if not filename:
         return None
-    path = _resolve_scoped_path(OFFLINE_PACKS_DIR, filename)
-    if path is None:
+    if Path(filename).name != filename:
         return None
-    if not path.exists() or not path.is_file():
-        return None
-    return path, _offline_pack_media_type(path)
+    for pack_path in _offline_pack_files():
+        if pack_path.name == filename:
+            return pack_path.resolve(), _offline_pack_media_type(pack_path)
+    return None
 
 
 def _offline_pack_files() -> list[Path]:
