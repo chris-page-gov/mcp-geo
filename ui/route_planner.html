@@ -4,11 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Geo - Route Planner</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
-      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'"
-    />
+    <link rel="stylesheet" href="vendor/maplibre-gl.css" />
     <link rel="stylesheet" href="shared/compact_contract.css" />
     <style>
       :root {
@@ -429,10 +425,7 @@
       </section>
     </div>
 
-    <script
-      src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
-      onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js'"
-    ></script>
+    <script src="vendor/maplibre-gl.js"></script>
     <script src="shared/compact_contract.js"></script>
     <script>
       const pendingCalls = new Map();
@@ -468,6 +461,7 @@
         map: null,
         graph: null,
       };
+      const bridgeState = { sessionToken: null };
 
       const compactContract = window.MCP_GEO_COMPACT
         ? window.MCP_GEO_COMPACT.init({
@@ -479,8 +473,34 @@
 
       function postToHost(message) {
         if (window.parent) {
-          window.parent.postMessage(message, "*");
+          const payload =
+            bridgeState.sessionToken
+              ? {
+                  ...message,
+                  __mcpGeoHost: {
+                    ...(message.__mcpGeoHost || {}),
+                    sessionToken: bridgeState.sessionToken,
+                  },
+                }
+              : message;
+          window.parent.postMessage(payload, "*");
         }
+      }
+
+      function capturePreviewToken(result) {
+        const token =
+          result &&
+          (result.mcpGeoPreview?.sessionToken || result.hostContext?.mcpGeoPreview?.sessionToken);
+        if (typeof token === "string" && token) {
+          bridgeState.sessionToken = token;
+        }
+      }
+
+      function hasValidPreviewToken(message) {
+        if (!bridgeState.sessionToken) {
+          return true;
+        }
+        return message?.__mcpGeoHost?.sessionToken === bridgeState.sessionToken;
       }
 
       function rpcCall(method, params) {
@@ -1025,7 +1045,20 @@
         if (config.proxyBase && typeof config.proxyBase === "string") {
           state.proxyBase = config.proxyBase.replace(/\/+$/, "");
         }
-        const stops = Array.isArray(config.stops) ? config.stops : [];
+        let stops = Array.isArray(config.stops) ? config.stops : [];
+        if (!stops.length && (config.origin || config.destination)) {
+          stops = [config.origin, config.destination]
+            .map((value) => {
+              if (typeof value === "string" && value.trim()) {
+                return { query: value.trim() };
+              }
+              if (value && typeof value === "object") {
+                return value;
+              }
+              return null;
+            })
+            .filter(Boolean);
+        }
         if (stops[0]) {
           elements.startInput.value = stopToText(stops[0]);
         }
@@ -1039,8 +1072,14 @@
         const avoidIds = Array.isArray(constraints.avoidIds) ? constraints.avoidIds : [];
         const avoidAreas = Array.isArray(constraints.avoidAreas) ? constraints.avoidAreas : [];
         elements.avoidInput.value = [...avoidIds, ...avoidAreas].join(", ");
-        if (typeof config.profile === "string") {
-          elements.routeMode.value = config.profile;
+        const profile =
+          typeof config.profile === "string"
+            ? config.profile
+            : typeof config.routeMode === "string"
+              ? config.routeMode
+              : "";
+        if (profile) {
+          elements.routeMode.value = String(profile).trim().toLowerCase();
         }
       }
 
@@ -1072,6 +1111,9 @@
         }
         const message = event.data;
         if (message.jsonrpc !== "2.0") {
+          return;
+        }
+        if (!hasValidPreviewToken(message)) {
           return;
         }
         if (message.id !== undefined && (message.result !== undefined || message.error)) {
@@ -1111,6 +1153,7 @@
           const result = await rpcCall("ui/initialize", {
             appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] },
           });
+          capturePreviewToken(result);
           state.hostReady = true;
           applyHostContext(result?.hostContext || {});
           setStatus("Host connected");

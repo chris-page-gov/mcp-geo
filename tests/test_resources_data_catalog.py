@@ -87,9 +87,44 @@ def test_ui_shared_route_serves_compact_contract_assets() -> None:
     assert "etag" in js_resp.headers
 
 
+def test_ui_vendor_route_serves_local_maplibre_assets() -> None:
+    css_resp = client.get("/ui/vendor/maplibre-gl.css")
+    assert css_resp.status_code == 200
+    assert css_resp.headers["content-type"].startswith("text/css")
+    assert ".maplibregl-map" in css_resp.text
+    assert "cache-control" in css_resp.headers
+    assert "etag" in css_resp.headers
+
+    js_resp = client.get("/ui/vendor/maplibre-gl.js")
+    assert js_resp.status_code == 200
+    assert js_resp.headers["content-type"].startswith("application/javascript")
+    assert "maplibregl" in js_resp.text
+    assert "cache-control" in js_resp.headers
+    assert "etag" in js_resp.headers
+
+    shp_resp = client.get("/ui/vendor/shp.min.js")
+    assert shp_resp.status_code == 200
+    assert shp_resp.headers["content-type"].startswith("application/javascript")
+    assert "shp" in shp_resp.text
+    assert "cache-control" in shp_resp.headers
+    assert "etag" in shp_resp.headers
+
+
 def test_ui_shared_route_missing_asset_returns_404() -> None:
     resp = client.get("/ui/shared/does-not-exist.js")
     assert resp.status_code == 404
+
+
+def test_ui_vendor_route_missing_asset_returns_404() -> None:
+    resp = client.get("/ui/vendor/does-not-exist.js")
+    assert resp.status_code == 404
+
+
+def test_ui_asset_routes_reject_invalid_asset_names() -> None:
+    shared_resp = client.get("/ui/shared/..%2Fcompact_contract.js")
+    vendor_resp = client.get("/ui/vendor/..%2Fmaplibre-gl.js")
+    assert shared_resp.status_code == 404
+    assert vendor_resp.status_code == 404
 
 
 def test_simple_map_lab_short_route_redirects() -> None:

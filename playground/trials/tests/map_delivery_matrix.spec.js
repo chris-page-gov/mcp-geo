@@ -357,34 +357,35 @@ test("trial-4 boundary explorer imports local layers and highlights matches", as
     });
   });
 
-  await page.route("**/shpjs@4.0.4/**/shp.min.js*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/javascript",
-      body: `
-window.shp = async function () {
-  return {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        properties: { source: "zip-layer" },
-        geometry: {
-          type: "Polygon",
-          coordinates: [[[-0.121,51.5045],[-0.119,51.5045],[-0.119,51.5062],[-0.121,51.5062],[-0.121,51.5045]]]
-        }
-      }
-    ]
-  };
-};
-      `,
-    });
-  });
-
   const fileUrl = pathToFileURL(path.resolve(repoRoot, "ui/boundary_explorer.html")).href;
   await page.goto(fileUrl);
 
   await expect(page.locator("#hostStatus")).toContainText("Host connected");
+  await page.evaluate(() => {
+    window.shp = async function () {
+      return {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: { source: "zip-layer" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-0.121, 51.5045],
+                  [-0.119, 51.5045],
+                  [-0.119, 51.5062],
+                  [-0.121, 51.5062],
+                  [-0.121, 51.5045],
+                ],
+              ],
+            },
+          },
+        ],
+      };
+    };
+  });
   await page.click("#refreshInventory");
   await page.waitForFunction(() => {
     const el = document.getElementById("highlightCount");

@@ -281,6 +281,7 @@
     <script>
       const pendingCalls = new Map();
       let rpcId = 0;
+      const bridgeState = { sessionToken: null };
 
       const statusBadge = document.getElementById("statusBadge");
       const fullscreenToggle = document.getElementById("fullscreenToggle");
@@ -318,8 +319,34 @@
 
       function postToHost(message) {
         if (window.parent) {
-          window.parent.postMessage(message, "*");
+          const payload =
+            bridgeState.sessionToken
+              ? {
+                  ...message,
+                  __mcpGeoHost: {
+                    ...(message.__mcpGeoHost || {}),
+                    sessionToken: bridgeState.sessionToken,
+                  },
+                }
+              : message;
+          window.parent.postMessage(payload, "*");
         }
+      }
+
+      function capturePreviewToken(result) {
+        const token =
+          result &&
+          (result.mcpGeoPreview?.sessionToken || result.hostContext?.mcpGeoPreview?.sessionToken);
+        if (typeof token === "string" && token) {
+          bridgeState.sessionToken = token;
+        }
+      }
+
+      function hasValidPreviewToken(message) {
+        if (!bridgeState.sessionToken) {
+          return true;
+        }
+        return message?.__mcpGeoHost?.sessionToken === bridgeState.sessionToken;
       }
 
       function rpcCall(method, params) {
@@ -537,6 +564,9 @@
         if (message.jsonrpc !== "2.0") {
           return;
         }
+        if (!hasValidPreviewToken(message)) {
+          return;
+        }
         if (message.id !== undefined && (message.result !== undefined || message.error)) {
           const pending = pendingCalls.get(message.id);
           if (pending) {
@@ -570,6 +600,7 @@
           const result = await rpcCall("ui/initialize", {
             appCapabilities: { availableDisplayModes: ["inline", "fullscreen"] },
           });
+          capturePreviewToken(result);
           state.hostReady = true;
           applyHostContext(result?.hostContext || {});
           setStatus("Host connected");

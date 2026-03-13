@@ -23,6 +23,21 @@ from server.mcp.resource_catalog import (
 router = APIRouter()
 
 _UI_SHARED_DIR = (UI_DIR / "shared").resolve()
+_UI_VENDOR_DIR = (UI_DIR / "vendor").resolve()
+_UI_SHARED_COMPACT_CONTRACT_CSS = _UI_SHARED_DIR / "compact_contract.css"
+_UI_SHARED_COMPACT_CONTRACT_JS = _UI_SHARED_DIR / "compact_contract.js"
+_UI_VENDOR_MAPLIBRE_CSS = _UI_VENDOR_DIR / "maplibre-gl.css"
+_UI_VENDOR_MAPLIBRE_JS = _UI_VENDOR_DIR / "maplibre-gl.js"
+_UI_VENDOR_MAPLIBRE_WORKER_JS = _UI_VENDOR_DIR / "maplibre-gl-csp-worker.js"
+_UI_VENDOR_SHP_JS = _UI_VENDOR_DIR / "shp.min.js"
+_UI_STATIC_ASSETS: dict[str, Path] = {
+    "shared/compact_contract.css": _UI_SHARED_COMPACT_CONTRACT_CSS,
+    "shared/compact_contract.js": _UI_SHARED_COMPACT_CONTRACT_JS,
+    "vendor/maplibre-gl.css": _UI_VENDOR_MAPLIBRE_CSS,
+    "vendor/maplibre-gl.js": _UI_VENDOR_MAPLIBRE_JS,
+    "vendor/maplibre-gl-csp-worker.js": _UI_VENDOR_MAPLIBRE_WORKER_JS,
+    "vendor/shp.min.js": _UI_VENDOR_SHP_JS,
+}
 
 
 def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
@@ -32,12 +47,38 @@ def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
     return etag in candidates or "*" in candidates
 
 
-def _shared_asset_media_type(path: Path) -> str:
+def _ui_asset_media_type(path: Path) -> str:
     if path.suffix == ".js":
         return "application/javascript"
     if path.suffix == ".css":
         return "text/css"
+    if path.suffix == ".json":
+        return "application/json"
     return "application/octet-stream"
+
+
+def _static_asset_response(
+    asset_name: str, response: Response, if_none_match: Optional[str]
+) -> Response:
+    asset_path = _UI_STATIC_ASSETS.get(asset_name)
+    if asset_path is None:
+        raise HTTPException(status_code=404, detail="UI asset not found")
+    if not asset_path.exists() or not asset_path.is_file():
+        raise HTTPException(status_code=404, detail="UI asset not found")
+
+    stat = asset_path.stat()
+    etag = f'W/"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+    if _etag_match(if_none_match, etag):
+        response.status_code = 304
+        response.headers["ETag"] = etag
+        return response
+
+    return Response(
+        content=asset_path.read_bytes(),
+        media_type=_ui_asset_media_type(asset_path),
+        headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
+    )
+
 
 def _build_resource_list() -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
@@ -134,7 +175,7 @@ def read_resource(
         else:
             ui_entry = resolve_ui_resource(uri)
             if ui_entry:
-                content, etag = load_ui_content(ui_entry)
+                content, etag = load_ui_content(ui_entry, asset_mode="absolute")
                 if _match_etag(etag):
                     response.status_code = 304
                     response.headers["ETag"] = etag
@@ -162,7 +203,7 @@ def read_resource(
     if name:
         ui_entry = resolve_ui_resource(name)
         if ui_entry:
-            content, etag = load_ui_content(ui_entry)
+            content, etag = load_ui_content(ui_entry, asset_mode="absolute")
             if _match_etag(etag):
                 response.status_code = 304
                 response.headers["ETag"] = etag
@@ -213,7 +254,7 @@ def render_ui_resource(
     ui_entry = resolve_ui_resource(uri)
     if not ui_entry:
         raise HTTPException(status_code=404, detail="UI resource not found")
-    content, etag = load_ui_content(ui_entry)
+    content, etag = load_ui_content(ui_entry, asset_mode="absolute")
     if if_none_match:
         candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
         if etag in candidates or "*" in candidates:
@@ -230,31 +271,70 @@ def render_ui_resource(
     )
 
 
-@router.get("/ui/shared/{asset_name}")
-def render_ui_shared_asset(
-    asset_name: str,
+@router.get("/ui/shared/compact_contract.css")
+def render_ui_shared_compact_contract_css(
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
-    # Serve compact contract assets for hosted UI widgets and iframe/srcdoc fallbacks.
-    asset_path = (_UI_SHARED_DIR / asset_name).resolve()
-    if asset_path.parent != _UI_SHARED_DIR or not asset_path.exists() or not asset_path.is_file():
-        raise HTTPException(status_code=404, detail="UI shared asset not found")
-
-    stat = asset_path.stat()
-    etag = f'W/"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
-    if _etag_match(if_none_match, etag):
-        response.status_code = 304
-        response.headers["ETag"] = etag
-        return response
-
-    return FileResponse(
-        path=str(asset_path),
-        media_type=_shared_asset_media_type(asset_path),
-        headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
+    return _static_asset_response(
+        "shared/compact_contract.css", response, if_none_match
     )
+
+
+@router.get("/ui/shared/compact_contract.js")
+def render_ui_shared_compact_contract_js(
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    return _static_asset_response(
+        "shared/compact_contract.js", response, if_none_match
+    )
+
+
+@router.get("/ui/vendor/maplibre-gl.css")
+def render_ui_vendor_maplibre_css(
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    return _static_asset_response("vendor/maplibre-gl.css", response, if_none_match)
+
+
+@router.get("/ui/vendor/maplibre-gl.js")
+def render_ui_vendor_maplibre_js(
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    return _static_asset_response("vendor/maplibre-gl.js", response, if_none_match)
+
+
+@router.get("/ui/vendor/maplibre-gl-csp-worker.js")
+def render_ui_vendor_maplibre_worker_js(
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    return _static_asset_response(
+        "vendor/maplibre-gl-csp-worker.js", response, if_none_match
+    )
+
+
+@router.get("/ui/vendor/shp.min.js")
+def render_ui_vendor_shp_js(
+    response: Response,
+    if_none_match: Optional[str] = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    return _static_asset_response("vendor/shp.min.js", response, if_none_match)
 
 
 @router.get("/simple-map-lab", include_in_schema=False)

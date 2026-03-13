@@ -139,6 +139,68 @@ assumptions change.
   The current seeded-graph live baseline is `1 full`, `17 partial`, `2 blocked`;
   SG03 now returns a full routed answer, while SG17 and SG20 remain the only
   blocked scenarios.
+- Maintaining the new playground hardening branch work under
+  `playground/src/`, `playground/tests/`, `server/mcp/resource_catalog.py`,
+  and `scripts/stakeholder_benchmark_pack.py`, including the Svelte 5/Vite 7
+  dependency baseline, strict iframe-bridge token validation, DSAP audit/FOI
+  workbench, routing demos for SG03/SG12, benchmark-pack/live-run resources,
+  and the new deterministic fixture-backed frontend Playwright acceptance suite
+  plus env-gated live smoke coverage that supersede the earlier
+  dependency-only PRs `#24` and `#29`.
+- Clearing the remaining PR `#36` follow-up blockers by keeping the full
+  Playwright config port override honest, restoring the devcontainer's system
+  CA/custom-cert policy, and replacing parameterized widget asset routes with
+  fixed static endpoints that satisfy CodeQL's path-handling rules.
+- Clearing the latest PR `#36` review thread on `playground/src/lib/uiBridge.js`
+  by deriving `expectedOrigin` from the effective sandbox permission set, and
+  mirroring the fixed-asset pattern in the deterministic fixture server so the
+  frontend acceptance harness no longer performs request-driven asset path
+  joins.
+- Clearing the subsequent PR `#36` CSP follow-up by skipping preview CSP
+  injection when a widget publishes no `ui.csp` metadata, preserving route and
+  map widget fetch behavior unless the resource explicitly declares a CSP.
+- Clearing the latest PR `#36` follow-up by preserving preview session tokens
+  across catalog refreshes, hardening benchmark live-alias resource loading
+  against malformed JSON, and making the analytical-index validator tolerate
+  CI shallow clones when the pinned citation commit is not present locally.
+- Clearing the remaining PR `#36` Python follow-up by normalizing published UI
+  resource HTML to absolute `/ui/shared/*` and `/ui/vendor/*` asset URLs and
+  treating non-object benchmark live-alias JSON as structured
+  `INVALID_CONFIGURATION` data instead of a 500.
+- Clearing the last transport-specific PR `#36` follow-up by splitting UI
+  asset-path publication by transport: HTTP resource reads keep absolute
+  `/ui/...` asset URLs for browser hosts, while STDIO and embedded widget
+  payloads keep resource-local paths so MCP clients without HTTP side channels
+  can still load map widget assets.
+- Clearing the remaining GitHub Advanced Security PR `#36` review noise by
+  changing `/ui` static asset delivery to an internal allowlist in
+  `server/mcp/resources.py` and sanitizing deterministic fixture-server JSON
+  responses to drop stack-like fields before serialization.
+- Clearing the remaining PR `#36` frontend timeout by stabilizing the routing
+  full-suite selectors in `playground/tests/support/full_playground.js` and
+  `playground/tests/full/routing_full.spec.js`, so the SG03/SG12 seeded demos
+  are selected only after the routing workbench renders its list items.
+- Clearing the last actionable PR `#36` review thread by extending the iframe
+  bridge preview-session allowlist to accept `resources/read` requests by
+  resource name as well as URI, matching the MCP contract returned by
+  `resources/list`.
+- Capturing the durable PR `#36` lessons in `AGENTS.md`: bridge allowlists
+  must treat `resources/read` names and URIs as equivalent valid shapes,
+  deterministic frontend Playwright fixes should be rerun through the exact CI
+  entrypoint with an override port to catch hard-coded assumptions, routing/UI
+  full-suite specs should wait for stable rendered state before selecting
+  controls, and GitHub Advanced Security discussion markers cannot be resolved
+  through the normal review-thread API.
+- Clearing the newest PR `#36` `frontend` failure by making `connect()` keep
+  the playground in `connecting` state until the descriptor, benchmark, and
+  audit bootstrap loads complete, and by removing the end-of-connect tab reset
+  that could switch Benchmarks or Routing back to Explorer while the full
+  Playwright suite was waiting on seeded demo content.
+- Validating preservation of the original Explorer resource flows by adding
+  `playground/tests/full/explorer_resources_full.spec.js`, which iterates over
+  every baseline fixture resource, confirms each one remains selectable from
+  the hardened Explorer list, verifies every MCP-App resource still opens in
+  the host preview, and keeps data resources visible through the detail pane.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
@@ -212,6 +274,15 @@ assumptions change.
   stricter `firstClassProductReady` interpretation for live OS-backed runs, the
   seeded route-graph preflight from `scripts/seed_benchmark_route_graph.py`,
   and the updated SG03 full-pass evidence.
+- Maintain the playground hardening and demo workbench implementation on
+  `codex/playground-hardening-demo-workbench`, including the consolidated
+  Dependabot remediation in `playground/package.json` / `package-lock.json`,
+  the new benchmark resource aliases in `server/mcp/resource_catalog.py`,
+  regenerated benchmark pack demo metadata under
+  `data/benchmarking/stakeholder_eval/`, the refactored Svelte workbench shell,
+  the fixture-backed full UI acceptance suite under `playground/tests/full/`,
+  the live smoke suite under `playground/tests/live/`, and the updated
+  frontend CI + manual live-smoke workflow support in `.github/workflows/ci.yml`.
 - Maintain and monitor the completed layered-map reliability workstreams
   (`LMR-BASE-0`, `LMR-ALL-1`, `LMR-INT-2`, `LMR-FBK-3`, `LMR-GATE-5`) and keep
   the remaining external host-runtime blocker

@@ -170,6 +170,10 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - Claude uses `tools/call` with `params.name` + `params.arguments` (not `args`); support both.
 - Claude expects tool names matching `^[a-zA-Z0-9_-]{1,64}$`; normalize dotted names for stdio list/search and accept both sanitized + original names for calls. UI widgets should tolerate sanitized names (retry with dot→underscore).
+- `resources/read` should accept both `params.uri` and `params.name` end to end.
+  If a bridge or host-side allowlist validates only URIs, widgets that reuse
+  `resources/list` names will fail valid MCP calls with false
+  `RESOURCE_NOT_ALLOWED` errors.
 - STDIO framing can be JSON lines or Content-Length; auto-detect and allow `MCP_STDIO_FRAMING=line` to force.
 - Do not respond to JSON-RPC notifications (no `id`) to avoid client disconnects.
 - Some clients do not advertise MCP-Apps UI support; stdio adds `data.fallback` static map metadata for `os_apps.render_geography_selector` unless `MCP_STDIO_UI_SUPPORTED=1`. Use `MCP_STDIO_FALLBACK_BBOX_DEG` to control fallback span.
@@ -180,6 +184,18 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - When creating PRs/comments with markdown that includes backticks, never inline the body directly in a shell command. Write body text to a temp file and use `gh pr create --body-file` / `gh pr edit --body-file` / `gh pr comment --body-file` to avoid shell interpolation and command substitution.
 - In this repo, Codex review is triggered by PR comment (`@codex review`), not by reviewer assignment. If a Codex review is requested, post the trigger comment on the PR and confirm the comment URL.
+- GitHub Advanced Security discussion markers are not normal review
+  conversations. They may remain visible on a PR even after the underlying
+  CodeQL alert is fixed, and `resolveReviewThread` will fail with
+  `The thread is not a conversation and cannot be resolved`.
+- When fixing PR comments on deterministic Playwright suites, prefer targeted
+  reruns of the exact CI entrypoint and a non-default port smoke such as
+  `PLAYGROUND_FULL_FRONTEND_PORT=<port> npm --prefix playground run test:full`
+  to catch hard-coded port assumptions.
+- In full UI Playwright tests, prefer component-scoped selectors plus an
+  explicit rendered-ready indicator over page-wide accessible-name matches.
+  Waiting for stable state such as the seeded-demo count is more reliable than
+  clicking immediately after a tab switch.
 
 ## Gaps & Immediate Action Items
 

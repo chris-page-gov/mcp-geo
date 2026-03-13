@@ -427,7 +427,58 @@ register(
                 "constraints": {
                     "type": "object",
                     "properties": {
-                        "avoidAreas": {"type": "array"},
+                        "avoidAreas": {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {"type": "number"},
+                                        "minItems": 4,
+                                        "maxItems": 4,
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {"type": "string", "const": "Polygon"},
+                                            "coordinates": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {"type": "number"},
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        "required": ["type", "coordinates"],
+                                        "additionalProperties": False,
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {"type": "string", "const": "MultiPolygon"},
+                                            "coordinates": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "array",
+                                                            "items": {"type": "number"},
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        "required": ["type", "coordinates"],
+                                        "additionalProperties": False,
+                                    },
+                                ]
+                            },
+                        },
                         "avoidIds": {"type": "array", "items": {"type": "string"}},
                         "softAvoid": {"type": "boolean"},
                     },
@@ -443,15 +494,15 @@ register(
             "type": "object",
             "properties": {
                 "profile": {"type": "string"},
-                "resolvedStops": {"type": "array"},
+                "resolvedStops": {"type": "array", "items": {"type": "object"}},
                 "distanceMeters": {"type": "number"},
                 "durationSeconds": {"type": "number"},
                 "route": {"type": "object"},
-                "legs": {"type": "array"},
-                "steps": {"type": "array"},
-                "modeChanges": {"type": "array"},
-                "warnings": {"type": "array"},
-                "restrictions": {"type": "array"},
+                "legs": {"type": "array", "items": {"type": "object"}},
+                "steps": {"type": "array", "items": {"type": "object"}},
+                "modeChanges": {"type": "array", "items": {"type": "object"}},
+                "warnings": {"type": "array", "items": {"type": "object"}},
+                "restrictions": {"type": "array", "items": {"type": "object"}},
                 "graph": {"type": "object"},
                 "delivery": {"type": "string"},
                 "resourceUri": {"type": "string"},

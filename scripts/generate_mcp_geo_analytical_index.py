@@ -53,6 +53,13 @@ def _git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=REPO_ROOT, text=True).strip()
 
 
+def _tree_entries_for_ref(git_ref: str) -> set[str]:
+    try:
+        return set(_git("ls-tree", "--name-only", git_ref).splitlines())
+    except subprocess.CalledProcessError:
+        return set(_git("ls-tree", "--name-only", "HEAD").splitlines())
+
+
 def _load_font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
     candidates: list[str] = []
     if bold:
@@ -522,7 +529,7 @@ def _validate_markdown_contract(markdown: str, manifest: dict[str, Any]) -> list
 
 def _validate_top_level_entries(manifest: dict[str, Any]) -> list[str]:
     expected = set(manifest["tracked_top_level_entries"])
-    actual = set(_git("ls-tree", "--name-only", manifest["git_ref"]).splitlines())
+    actual = _tree_entries_for_ref(manifest["git_ref"])
     if expected == actual:
         return []
     missing = sorted(actual - expected)

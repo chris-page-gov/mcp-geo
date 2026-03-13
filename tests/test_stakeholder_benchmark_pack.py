@@ -98,3 +98,28 @@ def test_pack_includes_phase1_extension_scenarios() -> None:
     assert sg15["exampleMode"] == "public"
     assert "exact and best-fit" in sg15["benchmarkRationale"].lower()
     assert sg15["referenceOutput"]["missing_rows_table"][0]["uprn"] == "100032031210"
+
+
+def test_pack_adds_demo_metadata_for_all_scenarios() -> None:
+    pack = stakeholder_pack.build_pack()
+
+    assert len(pack["scenarios"]) == 20
+    for scenario in pack["scenarios"]:
+        demo = scenario["demo"]
+        assert demo["scenarioId"] == scenario["id"]
+        assert demo["supportLevel"] == scenario["supportLevel"]
+        assert demo["primaryTool"]
+        assert isinstance(demo["presetArgs"], dict)
+        assert isinstance(demo["fixtureRefs"], list)
+
+    sg03 = next(item for item in pack["scenarios"] if item["id"] == "SG03")
+    assert sg03["demo"]["mode"] == "routing"
+    assert sg03["demo"]["widget"] == "ui://mcp-geo/route-planner"
+    assert sg03["demo"]["presetArgs"]["routeMode"] == "EMERGENCY"
+    assert sg03["demo"]["presetArgs"]["constraints"]["avoidIds"] == ["167647/3"]
+
+    sg17 = next(item for item in pack["scenarios"] if item["id"] == "SG17")
+    assert sg17["demo"]["mode"] == "blocked"
+    assert sg17["demo"]["fixtureRefs"] == [
+        "data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv"
+    ]

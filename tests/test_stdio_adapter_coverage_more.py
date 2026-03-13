@@ -336,6 +336,11 @@ def test_main_elicitation_eof_cancels_prompt(monkeypatch):
 def test_handle_get_resource_success_paths():
     ui = stdio_adapter.handle_get_resource({"uri": "ui://mcp-geo/geography-selector"})
     assert ui.get("contents") and ui["contents"][0]["mimeType"].startswith("text/html")
+    ui_html = ui["contents"][0]["text"]
+    assert 'src="vendor/maplibre-gl.js"' in ui_html
+    assert 'href="vendor/maplibre-gl.css"' in ui_html
+    assert 'src="/ui/vendor/maplibre-gl.js"' not in ui_html
+    assert 'href="/ui/vendor/maplibre-gl.css"' not in ui_html
     skills = stdio_adapter.handle_get_resource({"uri": "skills://mcp-geo/getting-started"})
     assert skills.get("contents") and skills["contents"][0]["mimeType"] == "text/markdown"
     data = stdio_adapter.handle_get_resource({"uri": "resource://mcp-geo/os-exports-index"})
