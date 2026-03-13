@@ -89,5 +89,10 @@ export async function loadHostedWidget(page, resourceName) {
 }
 
 export async function selectScenario(page, id) {
-  await page.getByRole("button", { name: new RegExp(id) }).click();
+  const scenarioButton = page
+    .locator("button.list-item")
+    .filter({ hasText: new RegExp(`\\b${id}\\b`) })
+    .first();
+  await expect(scenarioButton).toBeVisible();
+  await scenarioButton.click();
 }

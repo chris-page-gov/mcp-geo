@@ -124,6 +124,11 @@ All notable changes to this project will be documented in this file.
   `CONTEXT.md`, and `PROGRESS.MD` so the analytical-index workflow, appendix
   replacement, and pinned-commit source policy are discoverable in the repo's
   existing documentation and tracker surfaces.
+- Stabilized the deterministic playground routing acceptance test by waiting
+  for the seeded-demo list to render before selection and by targeting the
+  SG03/SG12 scenario buttons through the routing workbench's list-item UI
+  instead of a page-wide accessible-name match, eliminating the flaky
+  `frontend` CI timeout on PR `#36`.
 - Updated `README.md` and `docs/Build.md` to document the published GHCR image
   path and to require absolute `--env-file` paths for GUI desktop clients such
   as Claude Desktop, avoiding broken `.env` resolution outside the repo

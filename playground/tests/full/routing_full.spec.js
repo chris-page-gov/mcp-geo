@@ -5,6 +5,7 @@ test("covers SG03 and SG12 routing demos and surfaces explicit backend blockers 
 }) => {
   await connectPlayground(page);
   await openWorkbenchTab(page, "Routing");
+  await expect(page.getByText("2 seeded demos")).toBeVisible();
 
   await selectScenario(page, "SG03");
   await page.getByRole("button", { name: "Load demo guidance" }).click();

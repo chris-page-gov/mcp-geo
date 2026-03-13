@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-12
+Last updated: 2026-03-13
 Owner: @chris-page-gov
 
 ## Purpose
@@ -175,6 +175,10 @@ assumptions change.
   changing `/ui` static asset delivery to an internal allowlist in
   `server/mcp/resources.py` and sanitizing deterministic fixture-server JSON
   responses to drop stack-like fields before serialization.
+- Clearing the remaining PR `#36` frontend timeout by stabilizing the routing
+  full-suite selectors in `playground/tests/support/full_playground.js` and
+  `playground/tests/full/routing_full.spec.js`, so the SG03/SG12 seeded demos
+  are selected only after the routing workbench renders its list items.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
