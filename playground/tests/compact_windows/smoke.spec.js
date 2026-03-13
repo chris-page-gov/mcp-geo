@@ -244,29 +244,31 @@ async function routeCommonMapAssets(page) {
   });
 }
 
-async function routeShapefileStub(page) {
-  await page.route("**/shpjs@4.0.4/**/shp.min.js*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/javascript",
-      body: `
-window.shp = async function () {
-  return {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        properties: { source: "zip-layer" },
-        geometry: {
-          type: "Polygon",
-          coordinates: [[[-0.121,51.5045],[-0.119,51.5045],[-0.119,51.5062],[-0.121,51.5062],[-0.121,51.5045]]]
-        }
-      }
-    ]
-  };
-};
-      `,
-    });
+async function installShapefileStub(page) {
+  await page.evaluate(() => {
+    window.shp = async function () {
+      return {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: { source: "zip-layer" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-0.121, 51.5045],
+                  [-0.119, 51.5045],
+                  [-0.119, 51.5062],
+                  [-0.121, 51.5062],
+                  [-0.121, 51.5045],
+                ],
+              ],
+            },
+          },
+        ],
+      };
+    };
   });
 }
 
@@ -497,11 +499,11 @@ test.describe("compact acceptance smoke (CW-7)", () => {
     });
 
     await routeCommonMapAssets(page);
-    await routeShapefileStub(page);
 
     await page.goto(uiFileUrl("boundary_explorer.html"), { waitUntil: "domcontentloaded" });
 
     await expect(page.locator("#hostStatus")).toContainText("Host connected");
+    await installShapefileStub(page);
     await assertCompactGlobalContract(page, {
       ctaSelector: "#searchButton",
       statusSelector: "#hostStatus",

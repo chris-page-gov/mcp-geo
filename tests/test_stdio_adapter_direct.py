@@ -244,6 +244,28 @@ def test_tool_schema_const_is_sanitized():
     assert const == "os_places_by_postcode"
 
 
+def _collect_array_paths_missing_items(schema, prefix="root"):
+    missing = []
+    if isinstance(schema, dict):
+        if schema.get("type") == "array" and "items" not in schema:
+            missing.append(prefix)
+        for key, value in schema.items():
+            missing.extend(_collect_array_paths_missing_items(value, f"{prefix}.{key}"))
+    elif isinstance(schema, list):
+        for index, value in enumerate(schema):
+            missing.extend(_collect_array_paths_missing_items(value, f"{prefix}[{index}]"))
+    return missing
+
+
+def test_os_route_get_schema_declares_array_items_for_strict_clients():
+    result = stdio_adapter.handle_list_tools({})
+    tool = next(t for t in result["tools"] if t["name"] == "os_route_get")
+    input_missing = _collect_array_paths_missing_items(tool.get("inputSchema", {}), "inputSchema")
+    output_missing = _collect_array_paths_missing_items(tool.get("outputSchema", {}), "outputSchema")
+    assert input_missing == []
+    assert output_missing == []
+
+
 def test_tools_list_uses_default_toolset_from_env(monkeypatch):
     monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "maps_tiles")
     result = stdio_adapter.handle_list_tools({})

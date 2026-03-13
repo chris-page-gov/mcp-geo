@@ -1,18 +1,22 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { defineConfig } from "vite";
 
 const hmrHost = process.env.VITE_HMR_HOST || "localhost";
 const hmrClientPort = Number(process.env.VITE_HMR_CLIENT_PORT || 5173);
+const proxyTarget = process.env.VITE_PROXY_TARGET || "http://127.0.0.1:8000";
 
-export default {
+export default defineConfig({
   plugins: [svelte()],
   server: {
     host: true,
     port: 5173,
     proxy: {
-      "/mcp": "http://127.0.0.1:8000",
-      "/playground": "http://127.0.0.1:8000",
-      "/maps": "http://127.0.0.1:8000",
-      "/resources": "http://127.0.0.1:8000"
+      "/audit": proxyTarget,
+      "/mcp": proxyTarget,
+      "/playground": proxyTarget,
+      "/maps": proxyTarget,
+      "/resources": proxyTarget,
+      "/ui": proxyTarget,
     },
     hmr: {
       protocol: "ws",
@@ -20,4 +24,4 @@ export default {
       clientPort: hmrClientPort
     }
   }
-};
+});

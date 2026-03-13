@@ -76,6 +76,47 @@ All notable changes to this project will be documented in this file.
   regression coverage in `tests/test_stakeholder_live_run.py`.
 - Added focused regression coverage in
   `tests/test_stakeholder_benchmark_pack.py`.
+- Added a hardened multi-workbench playground shell under `playground/src/`
+  with extracted Explorer, Routing, Audit / FOI, Benchmarks, Debug, and shared
+  UI preview components, plus browser-side MCP transport and bridge-policy
+  helpers.
+- Added stakeholder benchmark demo metadata for all 20 scenarios plus stable
+  benchmark resources
+  `resource://mcp-geo/stakeholder-benchmark-pack` and
+  `resource://mcp-geo/stakeholder-benchmark-live-run-latest`, backed by the
+  checked-in alias file `data/benchmarking/stakeholder_eval/live_run_latest.json`.
+- Added bounded frontend regression coverage for the new playground shell in
+  `playground/tests/playground.spec.js`,
+  `playground/tests/bridge_security.spec.js`,
+  `playground/tests/routing_workbench.spec.js`,
+  `playground/tests/audit_workbench.spec.js`, and
+  `playground/tests/benchmark_workbench.spec.js`.
+- Added a deterministic fixture-backed full Playwright acceptance suite for
+  the playground under `playground/tests/full/`, backed by
+  `playground/playwright.full.config.js`, shared helpers in
+  `playground/tests/support/full_playground.js`, and a real MCP/DSAP/widget
+  fixture server in `playground/tests/support/fixture_server.mjs`.
+- Added an env-gated live playground smoke suite under
+  `playground/tests/live/live_smoke.spec.js` with
+  `playground/playwright.live.config.js` so the real backend can be exercised
+  separately from the deterministic fixture suite.
+- Added `playground/package.json` scripts `test:full` and `test:live`, plus
+  frontend CI failure-artifact upload for the new full and live-smoke suites.
+- Added `/ui/vendor/*` resource serving in `server/mcp/resources.py` and
+  focused HTTP/resource regressions in `tests/test_resources_data_catalog.py`
+  for locally hosted widget vendor assets.
+- Added focused regression coverage so published UI resources now normalize
+  widget asset URLs to absolute `/ui/shared/*` and `/ui/vendor/*` paths and
+  benchmark live-alias resources return structured `INVALID_CONFIGURATION`
+  payloads when the alias JSON is valid but not an object.
+- Split UI-resource asset publication by transport so HTTP-served widget HTML
+  keeps absolute `/ui/...` asset URLs while STDIO and embedded MCP-App payloads
+  retain resource-local asset paths that remain fetchable without an HTTP side
+  channel.
+- Tightened the remaining PR review cleanup by switching `/ui` static asset
+  serving to an internal allowlist in `server/mcp/resources.py` and stripping
+  stack-like keys from deterministic fixture-server JSON responses in
+  `playground/tests/support/fixture_server.mjs`.
 
 ### Changed
 - Updated `docs/reports/README.md`,
@@ -83,6 +124,26 @@ All notable changes to this project will be documented in this file.
   `CONTEXT.md`, and `PROGRESS.MD` so the analytical-index workflow, appendix
   replacement, and pinned-commit source policy are discoverable in the repo's
   existing documentation and tracker surfaces.
+- Stabilized the deterministic playground routing acceptance test by waiting
+  for the seeded-demo list to render before selection and by targeting the
+  SG03/SG12 scenario buttons through the routing workbench's list-item UI
+  instead of a page-wide accessible-name match, eliminating the flaky
+  `frontend` CI timeout on PR `#36`.
+- Updated the playground bridge resource allowlist so iframe widgets may call
+  `resources/read` by either resource URI or resource name, matching the
+  accepted MCP request shape and clearing the remaining actionable PR `#36`
+  review comment on `playground/src/lib/uiBridge.js`.
+- Fixed the remaining deterministic playground CI race by keeping the host in
+  `connecting` state until `refreshLists()`, descriptor load, benchmark load,
+  and audit-pack refresh complete, and by no longer forcing the active tab
+  back to Explorer at the end of `connect()`. This stops the full-suite
+  Benchmarks and Routing specs from being switched away mid-wait on slower
+  GitHub runners.
+- Added full-UI Explorer resource validation in
+  `playground/tests/full/explorer_resources_full.spec.js`, proving that the
+  hardened playground still lets users select every baseline fixture resource
+  from the Explorer resource list and open each MCP-App resource through the
+  host preview flow while keeping data resources viewable in the detail pane.
 - Updated `README.md` and `docs/Build.md` to document the published GHCR image
   path and to require absolute `--env-file` paths for GUI desktop clients such
   as Claude Desktop, avoiding broken `.env` resolution outside the repo
@@ -160,6 +221,50 @@ All notable changes to this project will be documented in this file.
   with live OS-backed evidence proven in-session via `OS_API_KEY_FILE`. SG03
   now returns a full routed answer on the seeded graph and SG12 moves from
   blocked to partial; SG17 and SG20 remain blocked for capability reasons.
+- Upgraded the playground dependency/runtime baseline to
+  `@modelcontextprotocol/sdk 1.27.1`, `svelte 5.53.10`,
+  `@sveltejs/vite-plugin-svelte 6.2.4`, and `vite 7.3.1`, added npm overrides
+  to clear the Hono / Svelte / Rollup / esbuild / AJV / express-rate-limit
+  Dependabot chain, and pinned the Node baseline to `20.19.0` in the
+  devcontainer and frontend CI.
+- Hardened the MCP-Apps iframe bridge so same-origin is no longer auto-enabled
+  in dev, each preview issues a session token, host-side message handling now
+  validates origin/method/tool/resource allowlists, and rejected widget
+  requests are surfaced in the Debug workbench.
+- Replaced the playground's bounded mock-first CI browser run with a
+  deterministic full UI Playwright suite and added a separate manual live-smoke
+  job in `.github/workflows/ci.yml`.
+- Fixed hosted widget route-demo regressions by accepting dotted and sanitized
+  tool aliases through `playground/src/lib/uiBridge.js`, normalizing SG03/SG12
+  route config before `ui/notifications/tool-input`, proxying `/ui` through
+  Vite, and switching hosted widgets to local `/ui/vendor/` MapLibre assets
+  instead of CDN-loaded scripts/styles.
+- Tightened the follow-up playground review fixes by honoring
+  `PLAYGROUND_FULL_FRONTEND_PORT` throughout
+  `playground/playwright.full.config.js`, restoring the devcontainer's system
+  CA / custom-cert contract in `.devcontainer/Dockerfile`, replacing
+  parameterized `/ui/shared/*` and `/ui/vendor/*` asset handling with fixed
+  static endpoints in `server/mcp/resources.py`, and simplifying CSP-domain
+  regression assertions so CodeQL sees exact allowlists instead of parsed URL
+  host filtering.
+- Aligned `playground/src/lib/uiBridge.js` with the effective iframe sandbox by
+  deriving preview-session origin expectations from the actual widget
+  `sameOrigin` permission rather than the raw unsafe-toggle state, and mirrored
+  the fixed-asset serving pattern in
+  `playground/tests/support/fixture_server.mjs` so the deterministic fixture
+  harness no longer performs request-driven UI asset path joins.
+- Stopped injecting a synthetic deny-all CSP into widget previews when a UI
+  resource publishes no `ui.csp` metadata, preserving existing map-widget
+  network behavior while keeping explicit CSP injection for widgets that do
+  declare allowed domains.
+- Preserved active widget preview tokens across catalog refreshes, hardened the
+  stakeholder benchmark live-alias loader to return structured
+  `INVALID_CONFIGURATION` payloads for malformed JSON, and made the
+  analytical-index top-level validator fall back to `HEAD` when CI's shallow
+  checkout does not contain the pinned citation commit object locally.
+- Tightened `os_route.get` schema publication for strict MCP clients by adding
+  explicit `items` definitions to array-typed route constraints and outputs, so
+  VS Code no longer rejects the tool during post-initialize validation.
 
 ## [0.6.0] - 2026-03-08
 

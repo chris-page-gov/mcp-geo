@@ -1683,6 +1683,102 @@ Return:
 
 SCENARIOS = _build_scenarios() + phase1_extension.build_phase1_extension_scenarios(COMMON_HEADER)
 
+_WIDGET_BY_TOOL: dict[str, str] = {
+    "os_apps.render_boundary_explorer": "ui://mcp-geo/boundary-explorer",
+    "os_apps.render_feature_inspector": "ui://mcp-geo/feature-inspector",
+    "os_apps.render_geography_selector": "ui://mcp-geo/geography-selector",
+    "os_apps.render_route_planner": "ui://mcp-geo/route-planner",
+    "os_apps.render_statistics_dashboard": "ui://mcp-geo/statistics-dashboard",
+}
+
+_SCENARIO_DEMO_OVERRIDES: dict[str, dict[str, Any]] = {
+    "SG03": {
+        "mode": "routing",
+        "primaryTool": "os_apps.render_route_planner",
+        "widget": "ui://mcp-geo/route-planner",
+        "presetArgs": {
+            "tool": "os_apps.render_route_planner",
+            "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+            "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+            "routeMode": "EMERGENCY",
+            "constraints": {"avoidIds": ["167647/3"]},
+        },
+        "widgetArgs": {
+            "tool": "os_apps.render_route_planner",
+            "origin": "Retford Library, 17 Churchgate, Retford, DN22 6PE",
+            "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+            "routeMode": "EMERGENCY",
+            "constraints": {"avoidIds": ["167647/3"]},
+        },
+        "fixtureRefs": [],
+    },
+    "SG12": {
+        "mode": "routing",
+        "primaryTool": "os_places.nearest",
+        "widget": "ui://mcp-geo/route-planner",
+        "presetArgs": {
+            "tool": "os_places.nearest",
+            "lat": 53.3219807,
+            "lon": -0.9451639,
+        },
+        "widgetArgs": {
+            "tool": "os_apps.render_route_planner",
+            "origin": "Nottinghamshire Fire & Rescue Service, Fire Station, Wharf Road, Retford, DN22 6EN",
+            "destination": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+            "routeMode": "EMERGENCY",
+        },
+        "fixtureRefs": ["data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv"],
+    },
+    "SG17": {
+        "mode": "blocked",
+        "primaryTool": "os_features.query",
+        "presetArgs": {"tool": "os_features.query"},
+        "fixtureRefs": ["data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv"],
+    },
+    "SG20": {
+        "mode": "blocked",
+        "primaryTool": "os_mcp.route_query",
+        "presetArgs": {"tool": "os_mcp.route_query"},
+        "fixtureRefs": [
+            "data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv",
+            "data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv",
+        ],
+    },
+}
+
+
+def _default_demo_for_scenario(scenario: dict[str, Any]) -> dict[str, Any]:
+    tools = list(scenario.get("mcpGeoTools") or [])
+    widget_tool = next((tool for tool in tools if tool in _WIDGET_BY_TOOL), None)
+    primary_tool = widget_tool or (tools[0] if tools else "")
+    demo: dict[str, Any] = {
+        "mode": "blocked" if scenario.get("supportLevel") == "blocked" else "guided",
+        "primaryTool": primary_tool,
+        "presetArgs": {"tool": primary_tool} if primary_tool else {},
+        "fixtureRefs": list(scenario.get("fixtureFiles") or []),
+    }
+    widget_uri = _WIDGET_BY_TOOL.get(widget_tool or "")
+    if widget_uri:
+        demo["widget"] = widget_uri
+        demo["widgetArgs"] = {"tool": widget_tool}
+    return demo
+
+
+def _apply_demo_metadata(scenarios: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    enriched: list[dict[str, Any]] = []
+    for scenario in scenarios:
+        demo = _default_demo_for_scenario(scenario)
+        override = deepcopy(_SCENARIO_DEMO_OVERRIDES.get(scenario["id"], {}))
+        if override:
+            demo.update(override)
+        demo.setdefault("fixtureRefs", list(scenario.get("fixtureFiles") or []))
+        demo["supportLevel"] = scenario.get("supportLevel")
+        demo["scenarioId"] = scenario.get("id")
+        scenario_with_demo = deepcopy(scenario)
+        scenario_with_demo["demo"] = demo
+        enriched.append(scenario_with_demo)
+    return enriched
+
 
 def _reference_outputs_by_id() -> dict[str, dict[str, Any]]:
     return {scenario["id"]: deepcopy(scenario["referenceOutput"]) for scenario in SCENARIOS}
@@ -1741,7 +1837,7 @@ def build_pack() -> dict[str, Any]:
         "commonHeader": COMMON_HEADER,
         "commonReturnFields": COMMON_RETURN_FIELDS,
         "rubric": RUBRIC,
-        "scenarios": deepcopy(SCENARIOS),
+        "scenarios": _apply_demo_metadata(deepcopy(SCENARIOS)),
     }
 
 
@@ -1865,6 +1961,13 @@ def validate_pack(pack: dict[str, Any]) -> dict[str, Any]:
             errors.append(f"{scenario['id']} missing common fields: {', '.join(missing_common)}")
         if missing_specific:
             errors.append(f"{scenario['id']} missing scenario fields: {', '.join(missing_specific)}")
+        demo = scenario.get("demo")
+        if not isinstance(demo, dict):
+            errors.append(f"{scenario['id']} missing demo metadata")
+        else:
+            for field in ("mode", "primaryTool", "presetArgs", "fixtureRefs"):
+                if field not in demo:
+                    errors.append(f"{scenario['id']} demo missing field: {field}")
         scores.append(_score_output(scenario, output))
 
     all_pass = not errors and all(score["score"] >= 90 for score in scores)
@@ -1944,6 +2047,7 @@ def render_markdown(pack: dict[str, Any], validation: dict[str, Any]) -> str:
                 f"- Example mode: `{scenario['exampleMode']}`",
                 f"- MCP-Geo support level: `{scenario['supportLevel']}`",
                 f"- Reference score: `{score['score']}/100 ({score['status']})`",
+                f"- Demo mode: `{scenario['demo']['mode']}` via `{scenario['demo']['primaryTool']}`",
                 "",
                 scenario["benchmarkRationale"],
                 "",

@@ -11,3 +11,9 @@ Files:
 - maplibre-gl.js
 - maplibre-gl.css
 - maplibre-gl-csp-worker.js
+- shp.min.js
+
+Additional vendored asset:
+- Source project: shpjs
+- Version: 4.0.4
+- License: MIT

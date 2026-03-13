@@ -1,5 +1,7 @@
+import subprocess
 from pathlib import Path
 
+import scripts.generate_mcp_geo_analytical_index as analytical_index
 from scripts.generate_mcp_geo_analytical_index import (
     DEFAULT_INPUT,
     REPO_ROOT,
@@ -40,3 +42,30 @@ def test_bundle_split_emits_overview_and_appendices() -> None:
     assert section_titles[0] == "Overview"
     assert "7. Appendix A. Infographic Prompts" in section_titles
     assert "8. Appendix B. Citation Method and Baseline Replacement Audit" in section_titles
+
+
+def test_validate_top_level_entries_falls_back_to_head_when_pinned_ref_is_unavailable(
+    monkeypatch,
+) -> None:
+    calls: list[tuple[str, ...]] = []
+
+    def fake_git(*args: str) -> str:
+        calls.append(args)
+        if args == ("ls-tree", "--name-only", "missing-ref"):
+            raise subprocess.CalledProcessError(128, ["git", *args])
+        if args == ("ls-tree", "--name-only", "HEAD"):
+            return "README.md\nserver\nplayground"
+        raise AssertionError(f"Unexpected git args: {args}")
+
+    monkeypatch.setattr(analytical_index, "_git", fake_git)
+    errors = _validate_top_level_entries(
+        {
+            "git_ref": "missing-ref",
+            "tracked_top_level_entries": ["README.md", "server", "playground"],
+        }
+    )
+    assert errors == []
+    assert calls == [
+        ("ls-tree", "--name-only", "missing-ref"),
+        ("ls-tree", "--name-only", "HEAD"),
+    ]

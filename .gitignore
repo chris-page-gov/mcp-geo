@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -54,7 +54,12 @@ cover/
 # Local logs
 logs/
 # Local data capture (DB volumes, live API dumps)
-data/
+data/*
+!data/benchmarking/
+data/benchmarking/*
+!data/benchmarking/stakeholder_eval/
+data/benchmarking/stakeholder_eval/*
+!data/benchmarking/stakeholder_eval/live_run_latest.json
 
 # Playground build artifacts
 playground/node_modules/
