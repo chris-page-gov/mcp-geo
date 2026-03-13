@@ -639,9 +639,9 @@
     {
       "description": "Resolve route stops and compute a pgRouting-backed route.",
       "description_sha256": "c4daec923a077542d385c9f7888c3ed441140f5750a4a00e7ab16f69718d4769",
-      "input_schema_sha256": "1138275f44a6571be566f5058e54caa2085851bc10323e85460bb33c80d81d3c",
+      "input_schema_sha256": "a57d3f293eae714aea0764d76f369b37d2f5c2cc1251bb23965c953fbdf3fac8",
       "name": "os_route.get",
-      "output_schema_sha256": "2e7bac3d9e91bf0fcd814ac2f5e04f9858dd0af4efe2ac392d66d6e7fdbbb96f",
+      "output_schema_sha256": "0d5c8b54048a14c9f0ce5a356d20d264022c4fc0361ae0acd9c4c3bd286c226e",
       "version": "0.1.0"
     },
     {
