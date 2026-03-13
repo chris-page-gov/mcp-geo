@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import hmac
 import importlib
 import json
 import queue
@@ -18,6 +21,19 @@ def _initialize_payload():
 
 def _call_payload(msg_id: str, method: str, params: dict):
     return {"jsonrpc": "2.0", "id": msg_id, "method": method, "params": params}
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _mint_hs256_jwt(secret: str, claims: dict[str, object]) -> str:
+    header = {"alg": "HS256", "typ": "JWT"}
+    encoded_header = _b64url(json.dumps(header, separators=(",", ":")).encode("utf-8"))
+    encoded_claims = _b64url(json.dumps(claims, separators=(",", ":")).encode("utf-8"))
+    signing_input = f"{encoded_header}.{encoded_claims}".encode("ascii")
+    signature = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
+    return f"{encoded_header}.{encoded_claims}.{_b64url(signature)}"
 
 
 def test_mcp_http_initialize_sets_session_header(client):
@@ -134,7 +150,11 @@ def test_mcp_http_search_tools_toolset_filters(client):
     original_names = [tool.get("annotations", {}).get("originalName") for tool in tools]
     assert all(
         isinstance(name, str)
-        and (name.startswith("ons_select.") or name.startswith("ons_search.") or name.startswith("ons_codes."))
+        and (
+            name.startswith("ons_select.")
+            or name.startswith("ons_search.")
+            or name.startswith("ons_codes.")
+        )
         for name in original_names
     )
 
@@ -233,6 +253,151 @@ def test_mcp_http_invalid_json_returns_parse_error(client):
     resp = client.post("/mcp", data=b"{bad", headers={"content-type": "application/json"})
     assert resp.status_code == 400
     assert resp.json()["error"]["code"] == -32700
+
+
+def test_mcp_http_static_bearer_auth_required(client, monkeypatch):
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "test-auth-token")
+
+    unauthorized = client.post("/mcp", json=_initialize_payload())
+    assert unauthorized.status_code == 401
+    assert unauthorized.json()["error"]["code"] == 1004
+
+    authorized = client.post(
+        "/mcp",
+        headers={"Authorization": "Bearer test-auth-token"},
+        json=_initialize_payload(),
+    )
+    assert authorized.status_code == 200
+    session_id = authorized.headers.get("mcp-session-id")
+    assert session_id
+    assert http_transport._SESSION_STATE[session_id]["auth_subject"] == "static-bearer-client"
+
+
+def test_mcp_http_hs256_jwt_enforces_subject_audience_and_scope(client, monkeypatch):
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    secret = "jwt-secret-value"
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "hs256_jwt")
+    monkeypatch.setenv("MCP_HTTP_JWT_HS256_SECRET", secret)
+    monkeypatch.setenv("MCP_HTTP_JWT_AUDIENCE", "mcp-geo")
+    monkeypatch.setenv("MCP_HTTP_JWT_REQUIRED_SCOPES", "mcp:invoke")
+
+    now = int(time.time())
+    token = _mint_hs256_jwt(
+        secret,
+        {
+            "sub": "user-123",
+            "aud": "mcp-geo",
+            "scope": "mcp:invoke other",
+            "exp": now + 300,
+        },
+    )
+    init_resp = client.post(
+        "/mcp",
+        headers={"Authorization": f"Bearer {token}"},
+        json=_initialize_payload(),
+    )
+    assert init_resp.status_code == 200
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    second_token = _mint_hs256_jwt(
+        secret,
+        {
+            "sub": "user-999",
+            "aud": "mcp-geo",
+            "scope": "mcp:invoke",
+            "exp": now + 300,
+        },
+    )
+    forbidden = client.post(
+        "/mcp",
+        headers={
+            "Authorization": f"Bearer {second_token}",
+            "mcp-session-id": session_id,
+        },
+        json=_call_payload("list-1", "tools/list", {}),
+    )
+    assert forbidden.status_code == 403
+    assert forbidden.json()["error"]["code"] == 1005
+
+
+def test_mcp_http_hs256_jwt_rejects_non_ascii_tokens_as_auth_failures(monkeypatch):
+    from server.mcp import http_transport
+
+    monkeypatch.setenv("MCP_HTTP_JWT_HS256_SECRET", "jwt-secret-value")
+
+    try:
+        http_transport._verify_hs256_jwt("a\xe9.b.c")
+    except http_transport.AuthenticationError:
+        pass
+    else:
+        raise AssertionError("Expected AuthenticationError for non-ASCII bearer token")
+
+
+def test_mcp_http_session_tool_call_quota(client, monkeypatch):
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "quota-token")
+    monkeypatch.setenv("MCP_HTTP_SESSION_TOOL_CALL_LIMIT", "1")
+    monkeypatch.setattr(http_transport, "_SESSION_TOOL_CALL_LIMIT", 1)
+
+    init_resp = client.post(
+        "/mcp",
+        headers={"Authorization": "Bearer quota-token"},
+        json=_initialize_payload(),
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    first = client.post(
+        "/mcp",
+        headers={
+            "Authorization": "Bearer quota-token",
+            "mcp-session-id": session_id,
+        },
+        json=_call_payload("call-1", "tools/call", {"name": "os_mcp_descriptor", "arguments": {}}),
+    )
+    assert first.status_code == 200
+
+    second = client.post(
+        "/mcp",
+        headers={
+            "Authorization": "Bearer quota-token",
+            "mcp-session-id": session_id,
+        },
+        json=_call_payload("call-2", "tools/call", {"name": "os_mcp_descriptor", "arguments": {}}),
+    )
+    assert second.status_code == 429
+    assert second.json()["error"]["code"] == 1006
+
+
+def test_mcp_http_result_messages_require_authentication(client, monkeypatch):
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "result-token")
+
+    init_resp = client.post(
+        "/mcp",
+        headers={"Authorization": "Bearer result-token"},
+        json=_initialize_payload(),
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    unauthenticated = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json={"jsonrpc": "2.0", "id": "elicitation-1", "result": {"action": "accept"}},
+    )
+    assert unauthenticated.status_code == 401
+    assert unauthenticated.json()["error"]["code"] == 1004
 
 
 def test_mcp_http_invalid_request_shapes(client):

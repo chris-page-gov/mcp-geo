@@ -1,0 +1,396 @@
+{
+  "controls": [
+    {
+      "applies_when": {
+        "requires_remote_mcp": false
+      },
+      "check_type": "static_repo",
+      "id": "OMCP-ARCH-001",
+      "pass_criteria": "The repo exposes and classifies remote /mcp transport explicitly.",
+      "remediation_template": "Keep the remote /mcp surface explicit in code and validation scope.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "medium",
+      "source_quote": "Remote MCP servers need explicit transport inventory.",
+      "title": "Remote transport is inventoried"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-ARCH-002",
+      "pass_criteria": "Machine-readable evidence proves authenticated ingress is enforced for remote /mcp.",
+      "remediation_template": "Add an attestation covering the deployed ingress auth layer for remote /mcp.",
+      "requirement_level": "minimum_bar",
+      "section": "secure architecture",
+      "severity": "critical",
+      "source_quote": "Remote access should be authenticated and policy-bound.",
+      "title": "Remote /mcp requires authenticated ingress policy"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "check_type": "static_repo",
+      "id": "OMCP-ARCH-003",
+      "pass_criteria": "Remote MCP handlers reject malformed JSON-RPC envelopes and invalid params.",
+      "remediation_template": "Reject malformed JSON-RPC messages before reaching tool dispatch.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "high",
+      "source_quote": "Validate protocol envelopes before execution.",
+      "title": "JSON-RPC messages are validated before dispatch"
+    },
+    {
+      "applies_when": {
+        "requires_sessions": true
+      },
+      "check_type": "static_repo",
+      "id": "OMCP-ARCH-004",
+      "pass_criteria": "Session state is keyed per session and stale state is cleaned up deterministically.",
+      "remediation_template": "Keep session state isolated and expire stale session state deterministically.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "medium",
+      "source_quote": "Sessions should be isolated and cleaned up deterministically.",
+      "title": "Session isolation and cleanup exist"
+    },
+    {
+      "applies_when": {
+        "requires_sessions": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-ARCH-005",
+      "pass_criteria": "Evidence shows the deployed service enforces per-session quotas or equivalent controls.",
+      "remediation_template": "Add attested evidence for per-session quotas or implement them directly.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "high",
+      "source_quote": "Resource limits should be scoped to sessions.",
+      "title": "Per-session quotas are evidenced"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-TOOL-001",
+      "pass_criteria": "The tool risk inventory lists every registered tool with explicit risk fields.",
+      "remediation_template": "Synchronize the tool risk inventory with the registered tool set.",
+      "requirement_level": "required",
+      "section": "safe tool design",
+      "severity": "medium",
+      "source_quote": "Every tool should have explicit risk metadata.",
+      "title": "Explicit tool risk inventory covers every tool"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-TOOL-002",
+      "pass_criteria": "A signed manifest lockfile matches the current registered tool contracts.",
+      "remediation_template": "Regenerate and sign the tool manifest lockfile whenever tool contracts change.",
+      "requirement_level": "minimum_bar",
+      "section": "safe tool design",
+      "severity": "critical",
+      "source_quote": "Tool catalogs should be locked and integrity-protected.",
+      "title": "Signed tool manifest matches the registry"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 180,
+      "check_type": "attestation",
+      "id": "OMCP-TOOL-003",
+      "pass_criteria": "Machine-readable evidence exists for tool-change approval and review policy.",
+      "remediation_template": "Add an attestation for the tool approval workflow or wire the workflow into CI evidence.",
+      "requirement_level": "required",
+      "section": "safe tool design",
+      "severity": "high",
+      "source_quote": "Tool changes should follow explicit approval paths.",
+      "title": "Tool additions and changes have approval evidence"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-TOOL-004",
+      "pass_criteria": "List surfaces stay compact and richer tool schemas are only exposed through describe flows.",
+      "remediation_template": "Keep list/describe surfaces separated and avoid over-broad schema disclosure.",
+      "requirement_level": "required",
+      "section": "safe tool design",
+      "severity": "medium",
+      "source_quote": "Expose only the metadata needed for the current step.",
+      "title": "Tool metadata exposure is minimized"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-DATA-001",
+      "pass_criteria": "Every registered tool exposes input and output schemas.",
+      "remediation_template": "Add explicit input/output schemas for every tool contract.",
+      "requirement_level": "minimum_bar",
+      "section": "data validation and resource management",
+      "severity": "high",
+      "source_quote": "Use schemas to define and constrain tool contracts.",
+      "title": "Tool contracts remain schema-bound"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-DATA-002",
+      "pass_criteria": "Redaction helpers and size-limit settings exist for tool outputs or artifacts.",
+      "remediation_template": "Add output redaction and hard byte or item limits before returning payloads.",
+      "requirement_level": "required",
+      "section": "data validation and resource management",
+      "severity": "medium",
+      "source_quote": "Bound outputs and sanitize sensitive content.",
+      "title": "Outputs are redacted and size-bounded"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-DATA-003",
+      "pass_criteria": "HTTP and JSON-RPC tool invocation surfaces require structured JSON objects.",
+      "remediation_template": "Reject non-JSON or freeform execution paths for tool calls.",
+      "requirement_level": "minimum_bar",
+      "section": "data validation and resource management",
+      "severity": "high",
+      "source_quote": "Avoid freeform execution channels for tools.",
+      "title": "Tool invocation stays structured JSON"
+    },
+    {
+      "applies_when": {
+        "requires_high_risk_tools": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-PI-001",
+      "pass_criteria": "High-risk tools are bound to HITL or equivalent approval evidence.",
+      "remediation_template": "Add HITL or equivalent approval evidence for any high-risk tool.",
+      "requirement_level": "required",
+      "section": "prompt injection controls",
+      "severity": "high",
+      "source_quote": "High-risk actions should require human approval.",
+      "title": "High-risk tools have HITL or equivalent approval"
+    },
+    {
+      "applies_when": {
+        "requires_sessions": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-PI-002",
+      "pass_criteria": "Evidence shows long-lived sessions are compartmentalized against prompt carry-over risk.",
+      "remediation_template": "Add deployment or runtime evidence for session/task compartmentalization.",
+      "requirement_level": "required",
+      "section": "prompt injection controls",
+      "severity": "high",
+      "source_quote": "Long-lived sessions need compartmentalized task boundaries.",
+      "title": "Long-lived sessions have compartmentalization evidence"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-AUTH-001",
+      "pass_criteria": "Machine-readable evidence proves OAuth/OIDC or equivalent remote auth is deployed.",
+      "remediation_template": "Add an attestation for OAuth/OIDC or equivalent remote auth on /mcp.",
+      "requirement_level": "minimum_bar",
+      "section": "authentication and authorization",
+      "severity": "critical",
+      "source_quote": "Remote MCP should sit behind modern auth.",
+      "title": "OAuth 2.1/OIDC or equivalent protects remote /mcp"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "check_type": "static_repo",
+      "id": "OMCP-AUTH-002",
+      "pass_criteria": "Checked transport code does not forward client bearer tokens to upstream services.",
+      "remediation_template": "Remove token passthrough and use server-held or brokered credentials instead.",
+      "requirement_level": "required",
+      "section": "authentication and authorization",
+      "severity": "high",
+      "source_quote": "Do not pass client tokens through server tool chains.",
+      "title": "Token passthrough is prohibited"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-AUTH-003",
+      "pass_criteria": "Evidence shows tokens are short-lived, scoped, and bound to user or client identity.",
+      "remediation_template": "Add attestation evidence for token TTL, scopes, and subject binding.",
+      "requirement_level": "required",
+      "section": "authentication and authorization",
+      "severity": "high",
+      "source_quote": "Tokens should be short-lived, scoped, and bound.",
+      "title": "Short-lived scoped tokens are evidenced"
+    },
+    {
+      "applies_when": {
+        "requires_restricted_tools": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-AUTH-004",
+      "pass_criteria": "Restricted data or sensitive actions are controlled by centralized policy enforcement.",
+      "remediation_template": "Add policy-engine evidence for restricted tools or mark them out of scope explicitly.",
+      "requirement_level": "required",
+      "section": "authentication and authorization",
+      "severity": "high",
+      "source_quote": "Sensitive actions should be mediated by centralized policy.",
+      "title": "Restricted data uses centralized policy enforcement"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-DEPLOY-001",
+      "pass_criteria": "Evidence covers non-root execution, isolation, and network restriction posture.",
+      "remediation_template": "Add attestation evidence for hardened runtime and network segmentation controls.",
+      "requirement_level": "minimum_bar",
+      "section": "secure deployment and updates",
+      "severity": "critical",
+      "source_quote": "Deploy hardened runtimes with network boundaries.",
+      "title": "Runtime hardening and network restrictions are evidenced"
+    },
+    {
+      "applies_when": {
+        "requires_secret_delivery": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-DEPLOY-002",
+      "pass_criteria": "Evidence shows secret injection or equivalent controls prevent plain env-var-only exposure.",
+      "remediation_template": "Add attestation evidence for vault or secret-injection controls, or remove raw env-secret dependency.",
+      "requirement_level": "required",
+      "section": "secure deployment and updates",
+      "severity": "high",
+      "source_quote": "Secrets handling should not rely on raw environment exposure alone.",
+      "title": "Secrets delivery is controlled beyond plain env vars"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-DEPLOY-003",
+      "pass_criteria": "CI contains static analysis, dependency auditing, and secret scanning gates.",
+      "remediation_template": "Add or expand CI gates to cover SAST, SCA, and secret scanning.",
+      "requirement_level": "minimum_bar",
+      "section": "secure deployment and updates",
+      "severity": "critical",
+      "source_quote": "Continuous validation should include secret and dependency scanning.",
+      "title": "CI includes security gates"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-GOV-001",
+      "pass_criteria": "The repo contains audit, integrity, and redaction support for sealed evidence packs.",
+      "remediation_template": "Add integrity and redaction support to audit artifacts.",
+      "requirement_level": "required",
+      "section": "governance",
+      "severity": "medium",
+      "source_quote": "Keep auditable evidence that can be verified and disclosed safely.",
+      "title": "Audit trails are immutable enough to verify and redact"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 180,
+      "check_type": "attestation",
+      "id": "OMCP-GOV-002",
+      "pass_criteria": "Machine-readable evidence exists for peer review of security-sensitive changes.",
+      "remediation_template": "Add attestation evidence for branch protection or required review policy.",
+      "requirement_level": "required",
+      "section": "governance",
+      "severity": "medium",
+      "source_quote": "Security-sensitive changes should carry review evidence.",
+      "title": "Security-sensitive change review is evidenced"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "id": "OMCP-GOV-003",
+      "pass_criteria": "Attested evidence exists for monitoring, alerting, and log routing.",
+      "remediation_template": "Add attestation evidence for monitoring, SIEM ingestion, and alerting policy.",
+      "requirement_level": "required",
+      "section": "governance",
+      "severity": "medium",
+      "source_quote": "Continuous monitoring should back deployed controls.",
+      "title": "Monitoring and alerting evidence exists"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-CONT-001",
+      "pass_criteria": "CI runs the OWASP validator and uploads the generated report/backlog artifacts.",
+      "remediation_template": "Add a dedicated CI job for the OWASP validator with artifact publication.",
+      "requirement_level": "required",
+      "section": "tools and continuous validation",
+      "severity": "medium",
+      "source_quote": "Validation should be repeatable locally and in CI.",
+      "title": "OWASP validator runs in CI and publishes artifacts"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "id": "OMCP-CONT-002",
+      "pass_criteria": "CI includes OpenSSF Scorecard or an equivalent supply-chain posture check.",
+      "remediation_template": "Add OpenSSF Scorecard or an equivalent supply-chain posture check to CI.",
+      "requirement_level": "required",
+      "section": "tools and continuous validation",
+      "severity": "medium",
+      "source_quote": "Supply-chain posture should be validated continuously.",
+      "title": "Supply-chain posture checks exist"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "depends_on_controls": [
+        "OMCP-ARCH-002",
+        "OMCP-TOOL-002",
+        "OMCP-DATA-001",
+        "OMCP-DATA-003",
+        "OMCP-AUTH-001",
+        "OMCP-DEPLOY-001",
+        "OMCP-DEPLOY-003"
+      ],
+      "id": "OMCP-MIN-001",
+      "pass_criteria": "All minimum-bar controls pass in the strict profile.",
+      "remediation_template": "Close every failing minimum-bar control before claiming OWASP MCP baseline compliance.",
+      "requirement_level": "minimum_bar",
+      "section": "minimum-bar checklist",
+      "severity": "critical",
+      "source_quote": "The minimum bar is only met when the core controls hold together.",
+      "title": "OWASP MCP minimum bar checklist passes"
+    }
+  ],
+  "meta": {
+    "project": "mcp-geo",
+    "sections": [
+      "secure architecture",
+      "safe tool design",
+      "data validation and resource management",
+      "prompt injection controls",
+      "authentication and authorization",
+      "secure deployment and updates",
+      "governance",
+      "tools and continuous validation",
+      "minimum-bar checklist"
+    ],
+    "source": {
+      "accessed": "2026-03-13",
+      "pdf_download_url": "https://genai.owasp.org/download/52676/?tmstv=1771286427",
+      "pdf_sha256": "e0681dc7f64074f9dfceedda90533cf6db1cc3566508d28f77c69cc3cc2307b0",
+      "publication_date": "2026-02",
+      "title": "A Practical Guide for Secure MCP Server Development",
+      "url": "https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/",
+      "version": "1.0"
+    }
+  }
+}

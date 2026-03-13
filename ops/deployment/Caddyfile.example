@@ -1,0 +1,18 @@
+{$MCP_GEO_PUBLIC_HOST:localhost} {
+    tls /run/secrets/tls_cert /run/secrets/tls_key
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer"
+        Permissions-Policy "geolocation=(),camera=(),microphone=()"
+    }
+
+    @blocked path /metrics
+    respond @blocked 403
+
+    reverse_proxy /health mcp-geo:8000
+    reverse_proxy /mcp mcp-geo:8000
+}

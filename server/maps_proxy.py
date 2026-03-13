@@ -1,23 +1,23 @@
 from __future__ import annotations
 
-import json
 import hashlib
 import io
+import json
 import math
+import re
 import threading
 import time
-import re
 from collections import OrderedDict
 from pathlib import Path
+from typing import Any, cast
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
-from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 
-from server.config import settings
 from server.circuit_breaker import get_circuit_breaker
+from server.config import settings
 from server.security import mask_in_text
 from tools.os_common import DEFAULT_TIMEOUT, OSClient, classify_os_api_key_error, req_exc, requests
 
@@ -31,7 +31,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 _LOCAL_STYLE_DIR = _REPO_ROOT / "submodules" / "os-vector-tile-api-stylesheets"
 _MAPLIBRE_WORKER_PATH = _REPO_ROOT / "ui" / "vendor" / "maplibre-gl-csp-worker.js"
 _OSM_CACHE_LOCK = threading.Lock()
-_OSM_CACHE: "OrderedDict[str, dict[str, Any]]" = OrderedDict()
+_OSM_CACHE: OrderedDict[str, dict[str, Any]] = OrderedDict()
 _OSM_CACHE_KEY_SEP = "/"
 _TILE_SIZE = 256
 _MAX_LAT = 85.05112878
@@ -108,7 +108,7 @@ def _store_osm_tile(key: str, content: bytes, content_type: str) -> str | None:
         _OSM_CACHE.move_to_end(key)
         while len(_OSM_CACHE) > _osm_cache_size():
             _OSM_CACHE.popitem(last=False)
-    return entry["etag"]
+    return cast(str, entry["etag"])
 
 
 def _osm_user_agent() -> str:
@@ -162,7 +162,7 @@ def _tile_for_lonlat(lon: float, lat: float, zoom: int) -> tuple[int, int]:
 
 
 def _tile_matrix_size(zoom: int) -> int:
-    return 2 ** zoom
+    return 1 << zoom
 
 
 def _normalize_tile_x(x: int, zoom: int) -> int:
@@ -204,17 +204,6 @@ def _get_osm_tile_bytes(z: int, x: int, y: int) -> tuple[bytes, str, str]:
 
 
 def _resolve_upstream_auth(request: Request) -> tuple[dict[str, str], dict[str, str], list[str]]:
-    auth_header = (request.headers.get("authorization") or "").strip()
-    if auth_header.lower().startswith("bearer "):
-        token = auth_header[7:].strip()
-        if token:
-            bearer_value = f"Bearer {token}"
-            return (
-                {"Authorization": bearer_value},
-                {},
-                [token, bearer_value],
-            )
-
     key = request.query_params.get("key")
     if key in ("OS_API_KEY", "{API_KEY}", _OS_KEY_PLACEHOLDER):
         key = None
@@ -226,8 +215,8 @@ def _resolve_upstream_auth(request: Request) -> tuple[dict[str, str], dict[str, 
         raise HTTPException(
             status_code=401,
             detail=(
-                "OS authentication required. Provide Authorization: Bearer <token>, "
-                "a key query/header, or OS_API_KEY in the server environment."
+                "OS authentication required. Provide a key query/header, "
+                "OS_API_KEY_FILE, or OS_API_KEY in the server environment."
             ),
         )
     return {}, {"key": key}, [key]
@@ -246,8 +235,8 @@ def _rewrite_style_urls(
     def rewrite(url: str) -> str:
         if _OS_BASE in url:
             url = url.replace(_OS_BASE, "/maps/vector")
-        # Never embed the real key in returned styles/tiles (local-first hosts should provide OS_API_KEY
-        # server-side). Keep a stable placeholder so clients don't accidentally copy/paste a secret.
+        # Never embed the real key in returned styles/tiles.
+        # Local-first hosts should provide OS_API_KEY server-side and keep a stable placeholder.
         url = url.replace("{API_KEY}", _OS_KEY_PLACEHOLDER)
         url = url.replace("OS_API_KEY", _OS_KEY_PLACEHOLDER)
         if key:
@@ -327,7 +316,10 @@ def _load_local_style(style_name: str | None) -> dict[str, Any] | None:
     if not path.is_file():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise HTTPException(status_code=500, detail=f"Invalid style JSON: {name}")
+        return payload
     except json.JSONDecodeError as exc:
         raise HTTPException(status_code=500, detail=f"Invalid style JSON: {name}") from exc
 
@@ -695,9 +687,12 @@ def render_static_osm(
             try:
                 tile_image = Image.open(io.BytesIO(tile_bytes)).convert("RGBA")
             except (UnidentifiedImageError, OSError) as exc:
-                raise HTTPException(status_code=502, detail=f"Invalid OSM tile image: {exc}") from exc
-            paste_x = int(round(tx * _TILE_SIZE - min_px_x))
-            paste_y = int(round(ty * _TILE_SIZE - min_px_y))
+                raise HTTPException(
+                    status_code=502,
+                    detail=f"Invalid OSM tile image: {exc}",
+                ) from exc
+            paste_x = round(tx * _TILE_SIZE - min_px_x)
+            paste_y = round(ty * _TILE_SIZE - min_px_y)
             canvas.alpha_composite(tile_image, (paste_x, paste_y))
             tiles_used += 1
 

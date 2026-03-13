@@ -54,7 +54,8 @@
         "ms-azuretools.vscode-docker",
         "docker.docker",
         "openai.chatgpt",
-        "ms-vscode.live-server"
+        "ms-vscode.live-server",
+        "charliermarsh.ruff"
       ]
     }
   },

@@ -1,6 +1,7 @@
 import os
 from collections.abc import MutableMapping
 from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar
 
 try:
     from dotenv import load_dotenv
@@ -8,16 +9,19 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     def load_dotenv() -> None:
         return None
 
-try:
-    from pydantic_settings import BaseSettings
-except ImportError:  # pragma: no cover - optional dependency fallback
-    class BaseSettings:  # minimal shim for tests without pydantic-settings
-        def __init__(self, **kwargs):
-            for key, value in kwargs.items():
-                setattr(self, key, value)
+if TYPE_CHECKING:
+    from pydantic_settings import BaseSettings as _PydanticBaseSettings
+else:
+    try:
+        from pydantic_settings import BaseSettings as _PydanticBaseSettings
+    except ImportError:  # pragma: no cover - optional dependency fallback
+        class _PydanticBaseSettings:  # minimal shim for tests without pydantic-settings
+            def __init__(self, **kwargs):
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
 
 
-class Settings(BaseSettings):
+class Settings(_PydanticBaseSettings):
     OS_API_KEY: str = ""
     AUDIT_PACK_ROOT: str = "logs/audit-packs"
     DEBUG_ERRORS: bool = False
@@ -108,7 +112,7 @@ class Settings(BaseSettings):
     ROUTE_GRAPH_SOFT_AVOID_PENALTY_SECONDS: float = 180.0
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
-    model_config = {
+    model_config: ClassVar[dict[str, object]] = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         # VS Code MCP config often supplies empty strings for unset env vars
@@ -138,7 +142,14 @@ def hydrate_env_secret_from_file(
 
 
 load_dotenv()
-hydrate_env_secret_from_file("OS_API_KEY")
+for _secret_key in (
+    "OS_API_KEY",
+    "NOMIS_UID",
+    "NOMIS_SIGNATURE",
+    "MCP_HTTP_AUTH_TOKEN",
+    "MCP_HTTP_JWT_HS256_SECRET",
+):
+    hydrate_env_secret_from_file(_secret_key)
 
 
 settings = Settings()

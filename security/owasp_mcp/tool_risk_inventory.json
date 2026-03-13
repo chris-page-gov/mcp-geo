@@ -1,0 +1,688 @@
+{
+  "meta": {
+    "defaults": {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    "generated_on": "2026-03-13",
+    "policy_note": "Read-only tools default to no HITL requirement unless explicitly marked high-risk.",
+    "project": "mcp-geo"
+  },
+  "tools": [
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "admin_lookup.area_geometry",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "admin_lookup.containing_areas",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "admin_lookup.find_by_name",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "admin_lookup.get_cache_status",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "admin_lookup.reverse_hierarchy",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "admin_lookup.search_cache",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "nomis.codelists",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "nomis.concepts",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "nomis.datasets",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "nomis.query",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_codes.list",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_codes.options",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.create_filter",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.dimensions",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.editions",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.get_filter_output",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.get_observation",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.query",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_data.versions",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "ons_geo.by_postcode",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "ons_geo.by_uprn",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_geo.cache_status",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_search.query",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_select.search",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.log_event",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.render_boundary_explorer",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.render_feature_inspector",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.render_geography_selector",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.render_route_planner",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.render_statistics_dashboard",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_apps.render_ui_probe",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_downloads.get_export",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_downloads.get_product",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_downloads.list_data_packages",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_downloads.list_product_downloads",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_downloads.list_products",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_downloads.prepare_export",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_features.collections",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_features.query",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_features.wfs_archive_capabilities",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_features.wfs_capabilities",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_landscape.find",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_landscape.get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_linked_ids.feature_types",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_linked_ids.get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_linked_ids.identifiers",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_linked_ids.product_version_info",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_map.export",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_map.get_export",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "low"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_map.inventory",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_maps.raster_tile",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_maps.render",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_maps.wmts_capabilities",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_mcp.descriptor",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_mcp.route_query",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_mcp.select_toolsets",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_mcp.stats_routing",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_names.find",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_names.nearest",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_net.rinex_years",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_net.station_get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_net.station_log",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_offline.descriptor",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_offline.get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_peat.evidence_paths",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_peat.layers",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.by_postcode",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.by_uprn",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.nearest",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.polygon",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.radius",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.search",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "os_places.within",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_poi.nearest",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_poi.search",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_poi.within",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_qgis.export_geopackage_descriptor",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_qgis.vector_tile_profile",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_route.descriptor",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_route.get",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_tiles_ota.collections",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_tiles_ota.conformance",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_tiles_ota.tilematrixsets",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "os_vector_tiles.descriptor",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    }
+  ]
+}

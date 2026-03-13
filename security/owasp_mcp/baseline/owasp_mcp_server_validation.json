@@ -1,0 +1,636 @@
+{
+  "controls": [
+    {
+      "applies_when": {
+        "requires_remote_mcp": false
+      },
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "FastAPI route declaration for /mcp",
+          "path": "server/mcp/http_transport.py"
+        }
+      ],
+      "id": "OMCP-ARCH-001",
+      "pass_criteria": "The repo exposes and classifies remote /mcp transport explicitly.",
+      "rationale": "Remote /mcp transport is present and classified as remotely reachable.",
+      "remediation_template": "Keep the remote /mcp surface explicit in code and validation scope.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "medium",
+      "source_quote": "Remote MCP servers need explicit transport inventory.",
+      "status": "pass",
+      "title": "Remote transport is inventoried"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-ARCH-002",
+      "pass_criteria": "Machine-readable evidence proves authenticated ingress is enforced for remote /mcp.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add an attestation covering the deployed ingress auth layer for remote /mcp.",
+      "requirement_level": "minimum_bar",
+      "section": "secure architecture",
+      "severity": "critical",
+      "source_quote": "Remote access should be authenticated and policy-bound.",
+      "status": "pass",
+      "title": "Remote /mcp requires authenticated ingress policy"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "JSON-RPC parse and params validation",
+          "path": "server/mcp/http_transport.py"
+        }
+      ],
+      "id": "OMCP-ARCH-003",
+      "pass_criteria": "Remote MCP handlers reject malformed JSON-RPC envelopes and invalid params.",
+      "rationale": "JSON-RPC requests are validated before dispatch.",
+      "remediation_template": "Reject malformed JSON-RPC messages before reaching tool dispatch.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "high",
+      "source_quote": "Validate protocol envelopes before execution.",
+      "status": "pass",
+      "title": "JSON-RPC messages are validated before dispatch"
+    },
+    {
+      "applies_when": {
+        "requires_sessions": true
+      },
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Session map, TTL, and cleanup logic",
+          "path": "server/mcp/http_transport.py"
+        }
+      ],
+      "id": "OMCP-ARCH-004",
+      "pass_criteria": "Session state is keyed per session and stale state is cleaned up deterministically.",
+      "rationale": "Session state is isolated and stale sessions are cleaned up deterministically.",
+      "remediation_template": "Keep session state isolated and expire stale session state deterministically.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "medium",
+      "source_quote": "Sessions should be isolated and cleaned up deterministically.",
+      "status": "pass",
+      "title": "Session isolation and cleanup exist"
+    },
+    {
+      "applies_when": {
+        "requires_sessions": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-ARCH-005",
+      "pass_criteria": "Evidence shows the deployed service enforces per-session quotas or equivalent controls.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add attested evidence for per-session quotas or implement them directly.",
+      "requirement_level": "required",
+      "section": "secure architecture",
+      "severity": "high",
+      "source_quote": "Resource limits should be scoped to sessions.",
+      "status": "pass",
+      "title": "Per-session quotas are evidenced"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Explicit per-tool risk metadata",
+          "path": "security/owasp_mcp/tool_risk_inventory.json"
+        }
+      ],
+      "id": "OMCP-TOOL-001",
+      "pass_criteria": "The tool risk inventory lists every registered tool with explicit risk fields.",
+      "rationale": "Tool risk inventory matches the registered tool set.",
+      "remediation_template": "Synchronize the tool risk inventory with the registered tool set.",
+      "requirement_level": "required",
+      "section": "safe tool design",
+      "severity": "medium",
+      "source_quote": "Every tool should have explicit risk metadata.",
+      "status": "pass",
+      "title": "Explicit tool risk inventory covers every tool"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Committed tool manifest lockfile",
+          "path": "security/owasp_mcp/tool_manifest.lock.json"
+        },
+        {
+          "detail": "Verified OK",
+          "path": "security/owasp_mcp/tool_manifest.lock.json.sig"
+        }
+      ],
+      "id": "OMCP-TOOL-002",
+      "pass_criteria": "A signed manifest lockfile matches the current registered tool contracts.",
+      "rationale": "Signed tool manifest matches the registered tool contracts.",
+      "remediation_template": "Regenerate and sign the tool manifest lockfile whenever tool contracts change.",
+      "requirement_level": "minimum_bar",
+      "section": "safe tool design",
+      "severity": "critical",
+      "source_quote": "Tool catalogs should be locked and integrity-protected.",
+      "status": "pass",
+      "title": "Signed tool manifest matches the registry"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 180,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Security-sensitive tool changes require protected-branch review",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-TOOL-003",
+      "pass_criteria": "Machine-readable evidence exists for tool-change approval and review policy.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add an attestation for the tool approval workflow or wire the workflow into CI evidence.",
+      "requirement_level": "required",
+      "section": "safe tool design",
+      "severity": "high",
+      "source_quote": "Tool changes should follow explicit approval paths.",
+      "status": "pass",
+      "title": "Tool additions and changes have approval evidence"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Separate /tools/list and /tools/describe surfaces",
+          "path": "server/mcp/tools.py"
+        }
+      ],
+      "id": "OMCP-TOOL-004",
+      "pass_criteria": "List surfaces stay compact and richer tool schemas are only exposed through describe flows.",
+      "rationale": "Tool names are listed separately from richer describe metadata.",
+      "remediation_template": "Keep list/describe surfaces separated and avoid over-broad schema disclosure.",
+      "requirement_level": "required",
+      "section": "safe tool design",
+      "severity": "medium",
+      "source_quote": "Expose only the metadata needed for the current step.",
+      "status": "pass",
+      "title": "Tool metadata exposure is minimized"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Structured tool registry with schemas per tool",
+          "path": "tools/registry.py"
+        }
+      ],
+      "id": "OMCP-DATA-001",
+      "pass_criteria": "Every registered tool exposes input and output schemas.",
+      "rationale": "Every registered tool exposes input/output schemas for structured validation.",
+      "remediation_template": "Add explicit input/output schemas for every tool contract.",
+      "requirement_level": "minimum_bar",
+      "section": "data validation and resource management",
+      "severity": "high",
+      "source_quote": "Use schemas to define and constrain tool contracts.",
+      "status": "pass",
+      "title": "Tool contracts remain schema-bound"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Secret and key-name redaction helpers",
+          "path": "server/security.py"
+        },
+        {
+          "detail": "Inline/export size limits",
+          "path": "server/config.py"
+        }
+      ],
+      "id": "OMCP-DATA-002",
+      "pass_criteria": "Redaction helpers and size-limit settings exist for tool outputs or artifacts.",
+      "rationale": "Redaction helpers and output size limits are present.",
+      "remediation_template": "Add output redaction and hard byte or item limits before returning payloads.",
+      "requirement_level": "required",
+      "section": "data validation and resource management",
+      "severity": "medium",
+      "source_quote": "Bound outputs and sanitize sensitive content.",
+      "status": "pass",
+      "title": "Outputs are redacted and size-bounded"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "HTTP tools/call expects a JSON object",
+          "path": "server/mcp/tools.py"
+        },
+        {
+          "detail": "JSON-RPC tools/call payload must be object",
+          "path": "server/mcp/http_transport.py"
+        }
+      ],
+      "id": "OMCP-DATA-003",
+      "pass_criteria": "HTTP and JSON-RPC tool invocation surfaces require structured JSON objects.",
+      "rationale": "Tool invocation surfaces enforce structured JSON payloads.",
+      "remediation_template": "Reject non-JSON or freeform execution paths for tool calls.",
+      "requirement_level": "minimum_bar",
+      "section": "data validation and resource management",
+      "severity": "high",
+      "source_quote": "Avoid freeform execution channels for tools.",
+      "status": "pass",
+      "title": "Tool invocation stays structured JSON"
+    },
+    {
+      "applies_when": {
+        "requires_high_risk_tools": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [],
+      "id": "OMCP-PI-001",
+      "pass_criteria": "High-risk tools are bound to HITL or equivalent approval evidence.",
+      "rationale": "Control does not apply for the current profile/tool inventory.",
+      "remediation_template": "Add HITL or equivalent approval evidence for any high-risk tool.",
+      "requirement_level": "required",
+      "section": "prompt injection controls",
+      "severity": "high",
+      "source_quote": "High-risk actions should require human approval.",
+      "status": "not_applicable",
+      "title": "High-risk tools have HITL or equivalent approval"
+    },
+    {
+      "applies_when": {
+        "requires_sessions": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-PI-002",
+      "pass_criteria": "Evidence shows long-lived sessions are compartmentalized against prompt carry-over risk.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add deployment or runtime evidence for session/task compartmentalization.",
+      "requirement_level": "required",
+      "section": "prompt injection controls",
+      "severity": "high",
+      "source_quote": "Long-lived sessions need compartmentalized task boundaries.",
+      "status": "pass",
+      "title": "Long-lived sessions have compartmentalization evidence"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-AUTH-001",
+      "pass_criteria": "Machine-readable evidence proves OAuth/OIDC or equivalent remote auth is deployed.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add an attestation for OAuth/OIDC or equivalent remote auth on /mcp.",
+      "requirement_level": "minimum_bar",
+      "section": "authentication and authorization",
+      "severity": "critical",
+      "source_quote": "Remote MCP should sit behind modern auth.",
+      "status": "pass",
+      "title": "OAuth 2.1/OIDC or equivalent protects remote /mcp"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Authorization bearer forwarding logic",
+          "path": "server/maps_proxy.py"
+        }
+      ],
+      "id": "OMCP-AUTH-002",
+      "pass_criteria": "Checked transport code does not forward client bearer tokens to upstream services.",
+      "rationale": "No token passthrough surface was detected in the checked transport code.",
+      "remediation_template": "Remove token passthrough and use server-held or brokered credentials instead.",
+      "requirement_level": "required",
+      "section": "authentication and authorization",
+      "severity": "high",
+      "source_quote": "Do not pass client tokens through server tool chains.",
+      "status": "pass",
+      "title": "Token passthrough is prohibited"
+    },
+    {
+      "applies_when": {
+        "requires_remote_mcp": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Remote /mcp authentication, token binding, and session safeguards are deployed",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/remote_auth_and_session_controls_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-AUTH-003",
+      "pass_criteria": "Evidence shows tokens are short-lived, scoped, and bound to user or client identity.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add attestation evidence for token TTL, scopes, and subject binding.",
+      "requirement_level": "required",
+      "section": "authentication and authorization",
+      "severity": "high",
+      "source_quote": "Tokens should be short-lived, scoped, and bound.",
+      "status": "pass",
+      "title": "Short-lived scoped tokens are evidenced"
+    },
+    {
+      "applies_when": {
+        "requires_restricted_tools": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [],
+      "id": "OMCP-AUTH-004",
+      "pass_criteria": "Restricted data or sensitive actions are controlled by centralized policy enforcement.",
+      "rationale": "Control does not apply for the current profile/tool inventory.",
+      "remediation_template": "Add policy-engine evidence for restricted tools or mark them out of scope explicitly.",
+      "requirement_level": "required",
+      "section": "authentication and authorization",
+      "severity": "high",
+      "source_quote": "Sensitive actions should be mediated by centralized policy.",
+      "status": "not_applicable",
+      "title": "Restricted data uses centralized policy enforcement"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Runtime hardening and secret-file delivery are configured for production",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-DEPLOY-001",
+      "pass_criteria": "Evidence covers non-root execution, isolation, and network restriction posture.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add attestation evidence for hardened runtime and network segmentation controls.",
+      "requirement_level": "minimum_bar",
+      "section": "secure deployment and updates",
+      "severity": "critical",
+      "source_quote": "Deploy hardened runtimes with network boundaries.",
+      "status": "pass",
+      "title": "Runtime hardening and network restrictions are evidenced"
+    },
+    {
+      "applies_when": {
+        "requires_secret_delivery": true
+      },
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Runtime hardening and secret-file delivery are configured for production",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/hardened_runtime_and_secret_delivery_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-DEPLOY-002",
+      "pass_criteria": "Evidence shows secret injection or equivalent controls prevent plain env-var-only exposure.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add attestation evidence for vault or secret-injection controls, or remove raw env-secret dependency.",
+      "requirement_level": "required",
+      "section": "secure deployment and updates",
+      "severity": "high",
+      "source_quote": "Secrets handling should not rely on raw environment exposure alone.",
+      "status": "pass",
+      "title": "Secrets delivery is controlled beyond plain env vars"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "CI workflow security gates",
+          "path": ".github/workflows/ci.yml"
+        }
+      ],
+      "id": "OMCP-DEPLOY-003",
+      "pass_criteria": "CI contains static analysis, dependency auditing, and secret scanning gates.",
+      "rationale": "CI includes static analysis, dependency auditing, and secret scanning gates.",
+      "remediation_template": "Add or expand CI gates to cover SAST, SCA, and secret scanning.",
+      "requirement_level": "minimum_bar",
+      "section": "secure deployment and updates",
+      "severity": "critical",
+      "source_quote": "Continuous validation should include secret and dependency scanning.",
+      "status": "pass",
+      "title": "CI includes security gates"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Audit pack assembly and manifests",
+          "path": "server/audit/pack_builder.py"
+        },
+        {
+          "detail": "Disclosure/redaction derivatives",
+          "path": "server/audit/redaction.py"
+        },
+        {
+          "detail": "SHA-256 integrity verification",
+          "path": "server/audit/integrity.py"
+        }
+      ],
+      "id": "OMCP-GOV-001",
+      "pass_criteria": "The repo contains audit, integrity, and redaction support for sealed evidence packs.",
+      "rationale": "Audit packs include integrity and redaction support.",
+      "remediation_template": "Add integrity and redaction support to audit artifacts.",
+      "requirement_level": "required",
+      "section": "governance",
+      "severity": "medium",
+      "source_quote": "Keep auditable evidence that can be verified and disclosed safely.",
+      "status": "pass",
+      "title": "Audit trails are immutable enough to verify and redact"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 180,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Security-sensitive tool changes require protected-branch review",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/tool_change_review_and_branch_protection_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-GOV-002",
+      "pass_criteria": "Machine-readable evidence exists for peer review of security-sensitive changes.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add attestation evidence for branch protection or required review policy.",
+      "requirement_level": "required",
+      "section": "governance",
+      "severity": "medium",
+      "source_quote": "Security-sensitive changes should carry review evidence.",
+      "status": "pass",
+      "title": "Security-sensitive change review is evidenced"
+    },
+    {
+      "applies_when": {},
+      "attestation_max_age_days": 90,
+      "check_type": "attestation",
+      "evidence": [
+        {
+          "detail": "Monitoring, alerting, and SIEM log routing are defined for production",
+          "path": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations/monitoring_and_alerting_prod_strict.json"
+        }
+      ],
+      "id": "OMCP-GOV-003",
+      "pass_criteria": "Attested evidence exists for monitoring, alerting, and log routing.",
+      "rationale": "Valid attestation evidence present.",
+      "remediation_template": "Add attestation evidence for monitoring, SIEM ingestion, and alerting policy.",
+      "requirement_level": "required",
+      "section": "governance",
+      "severity": "medium",
+      "source_quote": "Continuous monitoring should back deployed controls.",
+      "status": "pass",
+      "title": "Monitoring and alerting evidence exists"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Dedicated OWASP validation job and artifact upload",
+          "path": ".github/workflows/ci.yml"
+        },
+        {
+          "detail": "Single local entrypoint wrapper",
+          "path": "scripts/validate-owasp-mcp-local"
+        }
+      ],
+      "id": "OMCP-CONT-001",
+      "pass_criteria": "CI runs the OWASP validator and uploads the generated report/backlog artifacts.",
+      "rationale": "OWASP validator is wired into CI and artifacts are uploaded.",
+      "remediation_template": "Add a dedicated CI job for the OWASP validator with artifact publication.",
+      "requirement_level": "required",
+      "section": "tools and continuous validation",
+      "severity": "medium",
+      "source_quote": "Validation should be repeatable locally and in CI.",
+      "status": "pass",
+      "title": "OWASP validator runs in CI and publishes artifacts"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "evidence": [
+        {
+          "detail": "Supply-chain posture checks",
+          "path": ".github/workflows/ci.yml"
+        }
+      ],
+      "id": "OMCP-CONT-002",
+      "pass_criteria": "CI includes OpenSSF Scorecard or an equivalent supply-chain posture check.",
+      "rationale": "Supply-chain posture checks include OpenSSF Scorecard or equivalent.",
+      "remediation_template": "Add OpenSSF Scorecard or an equivalent supply-chain posture check to CI.",
+      "requirement_level": "required",
+      "section": "tools and continuous validation",
+      "severity": "medium",
+      "source_quote": "Supply-chain posture should be validated continuously.",
+      "status": "pass",
+      "title": "Supply-chain posture checks exist"
+    },
+    {
+      "applies_when": {},
+      "check_type": "static_repo",
+      "depends_on_controls": [
+        "OMCP-ARCH-002",
+        "OMCP-TOOL-002",
+        "OMCP-DATA-001",
+        "OMCP-DATA-003",
+        "OMCP-AUTH-001",
+        "OMCP-DEPLOY-001",
+        "OMCP-DEPLOY-003"
+      ],
+      "evidence": [
+        {
+          "detail": "Minimum-bar control dependencies",
+          "path": "security/owasp_mcp/control_catalog.json"
+        }
+      ],
+      "id": "OMCP-MIN-001",
+      "pass_criteria": "All minimum-bar controls pass in the strict profile.",
+      "rationale": "All minimum-bar controls passed.",
+      "remediation_template": "Close every failing minimum-bar control before claiming OWASP MCP baseline compliance.",
+      "requirement_level": "minimum_bar",
+      "section": "minimum-bar checklist",
+      "severity": "critical",
+      "source_quote": "The minimum bar is only met when the core controls hold together.",
+      "status": "pass",
+      "title": "OWASP MCP minimum bar checklist passes"
+    }
+  ],
+  "meta": {
+    "artifacts": {
+      "attestation_dir": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/attestations",
+      "control_catalog": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/control_catalog.json",
+      "tool_manifest_lock": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/tool_manifest.lock.json",
+      "tool_risk_inventory": "/Users/crpage/repos/projects/mcp-geo/security-task-2026-03-13/security/owasp_mcp/tool_risk_inventory.json"
+    },
+    "attestation_issues": [],
+    "profile": "prod-strict",
+    "project": "mcp-geo",
+    "run_at": "2026-03-13T11:40:12Z",
+    "source": {
+      "accessed": "2026-03-13",
+      "pdf_download_url": "https://genai.owasp.org/download/52676/?tmstv=1771286427",
+      "pdf_sha256": "e0681dc7f64074f9dfceedda90533cf6db1cc3566508d28f77c69cc3cc2307b0",
+      "publication_date": "2026-02",
+      "title": "A Practical Guide for Secure MCP Server Development",
+      "url": "https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/",
+      "version": "1.0"
+    },
+    "validator": "owasp_mcp_validation"
+  },
+  "summary": {
+    "applicable_controls": 25,
+    "counts": {
+      "fail": 0,
+      "not_applicable": 2,
+      "pass": 25
+    },
+    "required_failures": [],
+    "score": 100.0,
+    "verdict": "compliant"
+  }
+}

@@ -1,0 +1,151 @@
+services:
+  mcp-geo:
+    image: ghcr.io/chris-page-gov/mcp-geo:latest
+    command: ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    environment:
+      LOG_JSON: "true"
+      METRICS_ENABLED: "true"
+      RATE_LIMIT_BYPASS: "false"
+      RATE_LIMIT_PER_MIN: "207"
+      MCP_HTTP_AUTH_MODE: "hs256_jwt"
+      MCP_HTTP_JWT_ISSUER: "https://id.example.gov.uk/oidc"
+      MCP_HTTP_JWT_AUDIENCE: "mcp-geo"
+      MCP_HTTP_JWT_REQUIRED_SCOPES: "mcp:invoke"
+      MCP_HTTP_JWT_CLOCK_SKEW_SECONDS: "30"
+      MCP_HTTP_SESSION_TTL: "900"
+      MCP_HTTP_SESSION_TOOL_CALL_LIMIT: "100"
+      OS_API_KEY_FILE: "/run/secrets/os_api_key"
+      NOMIS_UID_FILE: "/run/secrets/nomis_uid"
+      NOMIS_SIGNATURE_FILE: "/run/secrets/nomis_signature"
+      MCP_HTTP_JWT_HS256_SECRET_FILE: "/run/secrets/mcp_http_jwt_hs256_secret"
+      AUDIT_PACK_ROOT: "/var/lib/mcp-geo/audit-packs"
+      UI_EVENT_LOG_PATH: "/var/lib/mcp-geo/logs/ui-events.jsonl"
+      PLAYGROUND_EVENT_LOG_PATH: "/var/lib/mcp-geo/logs/playground-events.jsonl"
+    secrets:
+      - os_api_key
+      - nomis_uid
+      - nomis_signature
+      - mcp_http_jwt_hs256_secret
+    volumes:
+      - mcp_geo_runtime:/var/lib/mcp-geo
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app_internal
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      mcp-geo:
+        condition: service_healthy
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./Caddyfile.example:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    secrets:
+      - tls_cert
+      - tls_key
+    networks:
+      - edge
+      - app_internal
+
+  prometheus:
+    image: prom/prometheus:v3.4.2
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/prometheus-alert-rules.yml:/etc/prometheus/prometheus-alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    expose:
+      - "9090"
+    depends_on:
+      mcp-geo:
+        condition: service_healthy
+    networks:
+      - app_internal
+
+  vector:
+    image: timberio/vector:0.43.1-alpine
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    command: ["--config", "/etc/vector/vector.toml"]
+    volumes:
+      - ../monitoring/vector.toml:/etc/vector/vector.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - mcp_geo_runtime:/var/lib/mcp-geo:ro
+    environment:
+      SIEM_HTTP_ENDPOINT: "https://siem.example.gov.uk/ingest/mcp-geo"
+      SIEM_HTTP_TOKEN: "replace-me-at-runtime"
+    depends_on:
+      mcp-geo:
+        condition: service_healthy
+    networks:
+      - app_internal
+
+networks:
+  edge: {}
+  app_internal:
+    internal: true
+
+volumes:
+  caddy_config: {}
+  caddy_data: {}
+  mcp_geo_runtime: {}
+  prometheus_data: {}
+
+secrets:
+  os_api_key:
+    file: ./secrets/os_api_key.txt
+  nomis_uid:
+    file: ./secrets/nomis_uid.txt
+  nomis_signature:
+    file: ./secrets/nomis_signature.txt
+  mcp_http_jwt_hs256_secret:
+    file: ./secrets/mcp_http_jwt_hs256_secret.txt
+  tls_cert:
+    file: ./secrets/tls.crt
+  tls_key:
+    file: ./secrets/tls.key

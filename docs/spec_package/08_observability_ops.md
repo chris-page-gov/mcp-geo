@@ -8,12 +8,13 @@
 ## Metrics
 
 - Prometheus endpoint at `/metrics`.
-- Rate limiting counters and request latency histograms.
+- Rate limiting counters, request latency histograms, MCP HTTP auth failure counters, session quota counters, and tool error counters.
 
 ## Operational controls
 
 - `RATE_LIMIT_PER_MIN` and `RATE_LIMIT_BYPASS`.
 - `METRICS_ENABLED` toggle.
+- Prometheus alert rules and Vector SIEM routing live under `ops/monitoring/`.
 - `DEBUG_ERRORS` for stack traces (dev only).
 
 ## Cache monitoring

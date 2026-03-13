@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_hashes": {
+      "type": "object"
+    },
+    "attestation_id": {
+      "type": "string"
+    },
+    "control_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "evidence_uri": {
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "verified_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "verifier": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attestation_id",
+    "title",
+    "control_ids",
+    "environment",
+    "verifier",
+    "verified_at",
+    "evidence_uri",
+    "artifact_hashes"
+  ],
+  "title": "OWASP MCP attestation",
+  "type": "object"
+}

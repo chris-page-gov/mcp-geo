@@ -1,0 +1,680 @@
+{
+  "manifest_type": "owasp-mcp-tool-lock",
+  "project": "mcp-geo",
+  "schema_version": 1,
+  "tool_count": 84,
+  "tools": [
+    {
+      "description": "Return bbox geometry for a given area id",
+      "description_sha256": "eab8024c509fe7fedba98ee604bb86bf54ed2a688293303064e3bc6bcaa8071e",
+      "input_schema_sha256": "ecc15142bec43211654aea917df0cf3501d697ffd36c1fce28a224b7629f9613",
+      "name": "admin_lookup.area_geometry",
+      "output_schema_sha256": "792cd6af05cbafc7550e54f3fae77cb982a9a061857d356afec7be359391ce05",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return containing administrative areas for a point (lat/lon)",
+      "description_sha256": "5e3daee71da7049f9a90a9ec3f82a2761d209b2e54631dc822f2792c9a3d65a9",
+      "input_schema_sha256": "2ca8aac1804fca384e67cc16a3b2cfdc5925719951dce4ed8efa251bf6a4fc3b",
+      "name": "admin_lookup.containing_areas",
+      "output_schema_sha256": "22cf0cfe4bfab3c0992ee9775098cd6bab2da7bdd592aa494ff91719aa3b2fc8",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Substring case-insensitive search by area name",
+      "description_sha256": "bc4586fee9bfdef29d17c84a371aea6d0c8418061a7245b26ad374f857b18f4f",
+      "input_schema_sha256": "1f4e0c68f9a8a7dabdbcbf185a4b65321fd33e339ab3e8137da91782bacce95e",
+      "name": "admin_lookup.find_by_name",
+      "output_schema_sha256": "5a726fc6923f367f6300eb468b06d0ab3e2063b0106295080abcd77c9cca2a6d",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return boundary cache status (levels, datasets, counts).",
+      "description_sha256": "a10732033b2c094d2cfe874ae89c97e25f461329d53530fdb7cce9c611d42a4c",
+      "input_schema_sha256": "2a81341f4bccbacfb2f1969fea476a9f32ddf871b52989dcd66f09b0c79a29ca",
+      "name": "admin_lookup.get_cache_status",
+      "output_schema_sha256": "53aad18e0516c25056b8569dc58f224044ce4664593bad2a65bd142bb0a8611f",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return ancestor chain for a given area id",
+      "description_sha256": "71d9d3753c111d382ee2d7dc6e116e54bf56fa7869b52f60a44657549b04a335",
+      "input_schema_sha256": "6f58d42e48f67722c32c219ae0008eaec7f3a2519815e0678c27488138e6f522",
+      "name": "admin_lookup.reverse_hierarchy",
+      "output_schema_sha256": "7b01ff0e67341bb7fd4bb9a216763c229be90e430dc6fdc1635918fbab8ae44a",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Search the boundary cache by id/name/level.",
+      "description_sha256": "baa3dcb219d0f812240fe2ec8912dfd069f1ec960c5082514f9c415237a49b5f",
+      "input_schema_sha256": "301e36749ff55809d1374e653cae08e47cd0a2f10e0bf659ae529a0028798c2e",
+      "name": "admin_lookup.search_cache",
+      "output_schema_sha256": "5a726fc6923f367f6300eb468b06d0ab3e2063b0106295080abcd77c9cca2a6d",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List NOMIS codelists or return a codelist definition.",
+      "description_sha256": "7770a8e9a62e55aa67683820610b64b5bf9c36b5423a04c25f148c759a7add89",
+      "input_schema_sha256": "ce2eb4379e50db7cfc30360d3adbc7ffda6396c33fb482b42341d61a8e96fcd3",
+      "name": "nomis.codelists",
+      "output_schema_sha256": "6e52e76ea2a41076e18496440e9dd332d0f843d8b1dde114df01257315f3cae7",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List NOMIS concepts or return a concept definition.",
+      "description_sha256": "196a42af6df8cb1e0bf7deaedcd801d9079ee191efb7c3fb94b2d7bacc06c093",
+      "input_schema_sha256": "c6e25a5d5edfcc5fc77af9433bc64368923307a742ec159e64f2b57b828cfc20",
+      "name": "nomis.concepts",
+      "output_schema_sha256": "0daa3b761207d14ff8751e2687203c814236941f335f61b7346ec86e76b91865",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List NOMIS datasets (filtered and limited summary by default), or return a dataset definition.",
+      "description_sha256": "ae26d201ee526ed67514a36d40ded838439765b3fdd2c8ae49d24a7983f4d606",
+      "input_schema_sha256": "7255cc839c6837e5886a3bef8dff581e5543de53ba641dd38c31a2235c1bbc3f",
+      "name": "nomis.datasets",
+      "output_schema_sha256": "1910cfac7cdb3ca0bdedd4a953bba56c24fd2203750bcb9baa3ffead25e9574c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Query NOMIS datasets (JSON-stat or SDMX JSON).",
+      "description_sha256": "9f9ea28269484555d02b0f006aacff6fcded96eecd80507d2959af60929dc166",
+      "input_schema_sha256": "d2bbc5c4443c65c9efbb7b6bc67dc969ab336cb38172cac719136aafc8b21830",
+      "name": "nomis.query",
+      "output_schema_sha256": "2b5a8fb887c55f70dda98a243a023671e635052cb6bcde150257719ff0e253c2",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List available ONS dimensions for a live dataset version.",
+      "description_sha256": "ecb74befff838becc2a2a2cf1f367ed9bf8b7733d5ccd7c47fbc9da13bc4e4a4",
+      "input_schema_sha256": "1b3a229ae4420eceeae543325c72f6cc52c80111eac3954b90c494f543bbee2f",
+      "name": "ons_codes.list",
+      "output_schema_sha256": "34d67679a4543baedcd8fdcbb936aedabcb801d836f2a7125d4fd66b89073283",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List codes/options for a given ONS live dimension.",
+      "description_sha256": "30000467a595bfcea6c9a0d0028346876a2500d01fec1c96608f9316558d9fff",
+      "input_schema_sha256": "1d6c5ae6d4669956d0139a633bc01089f9208e00434c3c7a1761f896c55a99f2",
+      "name": "ons_codes.options",
+      "output_schema_sha256": "6bf7da9ffab23ba8fdc5662fa5beaf4df17b8b466cd7c0ca0636cb3ef0fc8a60",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Create a filter for live ONS observations. Returns filterId.",
+      "description_sha256": "b0e71b026b46fab43b19ef991a7850d122e51b994756ccba985de476bd6bb6c7",
+      "input_schema_sha256": "f0366e422c84c8106854b85076490bb4d5a0bec25ed9d5f6a8bbdbffd9d62ada",
+      "name": "ons_data.create_filter",
+      "output_schema_sha256": "9aeb860959ed2ccad54cb9aea052165a9b4dd5048b9a288d5ac5d98620388245",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List available ONS observation dimensions from the live API.",
+      "description_sha256": "b700521f3a342c668656033166974e576da814a6fd4123967f4dbe8b9230b14d",
+      "input_schema_sha256": "08e5f13735047363ee45d6b4649924774bf612eb19da34cfb830c296c8e3e61f",
+      "name": "ons_data.dimensions",
+      "output_schema_sha256": "0361abcf58ab5de0dbf43a57979ea0782290405c1644dbe1db6470afbd16c92d",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List live editions for an ONS dataset.",
+      "description_sha256": "4aee13d09f7963774503815465aa97d3a9294a6451530ccd3c2a3faf2fc31624",
+      "input_schema_sha256": "f4aaeaaf3b0d49734960eed68e21e112c86cb017348319d56e717ec12fceaa1e",
+      "name": "ons_data.editions",
+      "output_schema_sha256": "5ba1a6b72cb70de20aa06efba3540bfad25b90777b0eea859118ad1aa157eac4",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Retrieve data for a previously created filter (formats: JSON, CSV, XLSX). Supports inline or resource delivery for larger outputs.",
+      "description_sha256": "d72a612043b4dd4137d0845d1204213a515f950f527b73925c789e67544301f3",
+      "input_schema_sha256": "b5d03c12476cbb0f6ad7cc316ee2118833659c3484ef05d1234c1cb957d6b9ac",
+      "name": "ons_data.get_filter_output",
+      "output_schema_sha256": "a291e5d41d9332cbe92c64e888ee65e6940342dcc9db4278f2fe9fa2fd4e24cf",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Fetch a single observation by geography, measure, time from the live ONS API.",
+      "description_sha256": "0df354be854b3b1989391c3d3e2d7270b448afee4291d84fc7ef61efb1e75afc",
+      "input_schema_sha256": "7eb228bba17bcb20b3bf64776559903edc5ccf05e91be7e681358dc2dd3c3f6e",
+      "name": "ons_data.get_observation",
+      "output_schema_sha256": "9c036e234c866efa5b0d8c1954cd789643292e0f8c318dd136dc8783faa0b39a",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Query live ONS observations (dataset/edition/version or search term).",
+      "description_sha256": "0578cf1b4cbd4fc29f7adc9f5ff949eb608d21e567d1ddc7cb8e3d04dc66d71a",
+      "input_schema_sha256": "e5d3041c5ed9d4568d72169ee0cff687c73130f317fa72dc8d9e137a69a98555",
+      "name": "ons_data.query",
+      "output_schema_sha256": "7f07c4a60c7c626d2d77ca536d230f7c210d3b611c9048ab3fdeb9b32633294a",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List live versions for an ONS dataset edition.",
+      "description_sha256": "c83236757cb7db713987a230636353acb9b7c52fd87d61415e86bb607bcad7fe",
+      "input_schema_sha256": "5b0e2354df251cf54e2327500e966e132e11875b4f4de2a945e8b4ec51aa17ca",
+      "name": "ons_data.versions",
+      "output_schema_sha256": "3b724711db7f4d74e4bff116704d214b58cfdfce8bb3385451299de01dcfc022",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Lookup all cached geographies for a postcode using derivation mode (exact via ONSPD, best_fit via NSPL).",
+      "description_sha256": "ab463ba51d6b139a2df9c932009f06fe299f0f4f78cefd18d94a50a0a58c920d",
+      "input_schema_sha256": "2df0342a7fb2c074bb3d659ff03138690848f46b9e5e6f33e58f0ddfd9fc06fd",
+      "name": "ons_geo.by_postcode",
+      "output_schema_sha256": "20faa3a79b374668ddc4af501fd57a6259504096c997e3d82f679c87a4c034e0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Lookup all cached geographies for a UPRN using derivation mode (exact via ONSUD, best_fit via NSUL).",
+      "description_sha256": "65f2e0114c2347b3223e1c735c6cdfda14de875133a1ed582ae037c335605433",
+      "input_schema_sha256": "c4db0029fedad6888cddfa3548bfc111ccfa763ec6864cf72fcefe79601a7675",
+      "name": "ons_geo.by_uprn",
+      "output_schema_sha256": "20faa3a79b374668ddc4af501fd57a6259504096c997e3d82f679c87a4c034e0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return cache/index status for ONS geography lookups (ONSPD/ONSUD/NSPL/NSUL).",
+      "description_sha256": "718ce89e2de1398c7369b3fcd28914b7e124f0cbb2bf1954fc8fe227ac4aa43a",
+      "input_schema_sha256": "7fbb88d41cd55abb15b3daba80592399adfbd7162ae11c824bd0b86311167098",
+      "name": "ons_geo.cache_status",
+      "output_schema_sha256": "02b7fd7eba78e1b63569fb4bf2eec94b54469bb601fe46351d8e809b6b2cf18c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Search live ONS datasets by term.",
+      "description_sha256": "a2c464d9780e590d074e1564a45ec6dbe541af2bac02adb02f262c4c46bb982b",
+      "input_schema_sha256": "4f6f77a4b6c6a57fbec507f688aab7ced85a3a0d84ccf6f50d732b8cc1f2217b",
+      "name": "ons_search.query",
+      "output_schema_sha256": "e75d39f8c8e5b062b8339a9f2b17ea69e1ea7e2e44f466fd4a53e843ac6ed1e9",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Rank ONS datasets using a cached catalog with explainable scoring and elicitation prompts for missing context.",
+      "description_sha256": "503c8d2f5ec41bc979e92cd274c44823d5a9935d9bd150d4f6f4e50477e5e8d9",
+      "input_schema_sha256": "0d9bb94346cfcd09e9b8931bad9671b3dc088937ecdf528c524fe669b72d6c94",
+      "name": "ons_select.search",
+      "output_schema_sha256": "b1beff06290e09931eb289c75ab7ea4f6a6122e6dc2856f18404c71d50599617",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Log MCP-Apps UI interaction events for tracing.",
+      "description_sha256": "bf7e9218501510f06e103b061010777cefc55986f95fc9b9b07c6a2046fa3e83",
+      "input_schema_sha256": "a3922cebbab3505506923fbcd28a5cd5111f6072bbc08d85b23546fc63d258c0",
+      "name": "os_apps.log_event",
+      "output_schema_sha256": "8108feca778193808fa4c0d2930fba452e1bc281db8da0103393180fffb21485",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Open the MCP-Apps boundary explorer widget.",
+      "description_sha256": "872c8ac40430b6dd11431a3fd3f2785f4fc7abfc94341737c51c76aaa914f694",
+      "input_schema_sha256": "ca37b54a622d009e478a1dd7b78a4160f6b13c607d7783b9ec15c7d91f08fa85",
+      "name": "os_apps.render_boundary_explorer",
+      "output_schema_sha256": "88cdde4e557a9a98c9a07ccc047b36e8a97fe7035c4bd83b94f053c3a0fc435c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Open the MCP-Apps feature inspector widget.",
+      "description_sha256": "c4b19eec38adab22e8fe7a96a857bd5086f7c1a1c33a50ad446718ad855a6887",
+      "input_schema_sha256": "6f192419fcb956efade69331050292c83dda7d376354c20418db57fc7bb6391c",
+      "name": "os_apps.render_feature_inspector",
+      "output_schema_sha256": "88cdde4e557a9a98c9a07ccc047b36e8a97fe7035c4bd83b94f053c3a0fc435c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Open the MCP-Apps geography selector widget.",
+      "description_sha256": "b1127aa934daac572f5eecf5b68a313f00432ebb2a071edfc7477fb96363ab24",
+      "input_schema_sha256": "5b0d8b0e7966edbe8c1933d57cd16365f22691a4a0139fe7ee8b17c5eae3d625",
+      "name": "os_apps.render_geography_selector",
+      "output_schema_sha256": "88cdde4e557a9a98c9a07ccc047b36e8a97fe7035c4bd83b94f053c3a0fc435c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Open the MCP-Apps route planner widget.",
+      "description_sha256": "1f0fe02eb1d1a37a05bd77c9aa6b475985f3675faddac6306846a384e5918eec",
+      "input_schema_sha256": "25aec29c02a7e944fab771c163b88900b6efa924ea4c5416d22ec9cbcca2439b",
+      "name": "os_apps.render_route_planner",
+      "output_schema_sha256": "88cdde4e557a9a98c9a07ccc047b36e8a97fe7035c4bd83b94f053c3a0fc435c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Open the MCP-Apps statistics dashboard widget.",
+      "description_sha256": "f8aebc88c03617eb59b4c18bb53a76dd334ba92fd922310f4798dd953fc7b477",
+      "input_schema_sha256": "f3fb7d83d55f76774291b55e25211c5ce0318e869be6deae5770158b4a2fd5ae",
+      "name": "os_apps.render_statistics_dashboard",
+      "output_schema_sha256": "88cdde4e557a9a98c9a07ccc047b36e8a97fe7035c4bd83b94f053c3a0fc435c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Probe MCP-Apps UI rendering support.",
+      "description_sha256": "0cf5bbeae36be5c0c43b6518a5680a8b9521f5ab55d04fb9cc43886588280ef8",
+      "input_schema_sha256": "ff4d6df3e1acb4a741fc597aabaa164441531f6a7c6a1a3a9e6f35956c5d5231",
+      "name": "os_apps.render_ui_probe",
+      "output_schema_sha256": "88cdde4e557a9a98c9a07ccc047b36e8a97fe7035c4bd83b94f053c3a0fc435c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Retrieve a previously prepared OS downloads export by exportId.",
+      "description_sha256": "d7285fd88dee74e022347395db33ba22a0217b0e3d7877a98e10ba057a7df142",
+      "input_schema_sha256": "493324efbc1620c9963e568a7942493b7dcbaab0927ed5fdb9f51803afa27f04",
+      "name": "os_downloads.get_export",
+      "output_schema_sha256": "2e61f7dfd596e9dccbfe4d08fd3d8699ba5e8fbdfbb87bc120e848332089e9e2",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Get OS Downloads product metadata by productId.",
+      "description_sha256": "43648fe6ecd0e0962f0e9a52739cb1aa8681886294748bb81c2fc385e93fb67e",
+      "input_schema_sha256": "696c892974caab7d85ad97ffcbee8fdaa97341fab959973954759937dab47e5e",
+      "name": "os_downloads.get_product",
+      "output_schema_sha256": "616e2b1d852e096ce75c3e5e6d36e29cdceb56726e0cd3d37c98676f7b9c0d7c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List account-specific OS data packages (permission dependent).",
+      "description_sha256": "91d124d662e3a176a40d45e5c252aaf77df1720beab66938f7cd62d029cc4019",
+      "input_schema_sha256": "a99e94f0794b2a0fd073ce0c0006cdfae38e09d770c020653f3ef30207d8552f",
+      "name": "os_downloads.list_data_packages",
+      "output_schema_sha256": "e9308ebab8f5c82a066b0a443457f18754e2151a8a58a0a88fc8f6ec4a114a9f",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List download entries for a specific OS Downloads product.",
+      "description_sha256": "defdcc55a329d11e96e76ed3c5baef5c32a998463bbf7ae8be509a0d483dcfed",
+      "input_schema_sha256": "4498e1dd5c72a19d746f6c0942ad537b48ee1502f32ee32950f2a2f0f5ff8967",
+      "name": "os_downloads.list_product_downloads",
+      "output_schema_sha256": "7a283d1e2791f1ef5d1f6df0f5b9ec901ff0c3733ad0459170b8768c05ac0a18",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List OS Downloads products with optional local query filtering.",
+      "description_sha256": "09a5f3c8665f123869983bc3d740d7023fbf559b3a2f783d5c4414207ce80612",
+      "input_schema_sha256": "d264d4cab9b795c942e0a022257254084f154f51f92c1462456caffa81221324",
+      "name": "os_downloads.list_products",
+      "output_schema_sha256": "0001a2c2e6b043d54c94b46f2d0c2e3b889b39e90839e29faf04f472c63f7caf",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Prepare an OS downloads export payload and return inline or resource delivery metadata.",
+      "description_sha256": "254ccf0cf680506200591cd667960c277b4022730dd08fd9089191892b66b86e",
+      "input_schema_sha256": "11f16394981c360559b7362e79b30f867885c90848f902d1486202e54e28ec8d",
+      "name": "os_downloads.prepare_export",
+      "output_schema_sha256": "2e61f7dfd596e9dccbfe4d08fd3d8699ba5e8fbdfbb87bc120e848332089e9e2",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List OS NGD OGC API Features collections (and a latest-by-base mapping).",
+      "description_sha256": "ef0f2cc5a75ba80bfa38c0f0f44b90a83cd1958f4ce78fadd83b43ed629bd9e2",
+      "input_schema_sha256": "2265638be6ecad3ec21ac6f46663d1e021ffad9fb6f259f7fb2d50b77a2f6280",
+      "name": "os_features.collections",
+      "output_schema_sha256": "e6ffb88579119028257140f0fe9ab4dcdf4f2de293d94f31ee23d0d5fbe6cf05",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Query OS NGD features by collection using bbox or polygon constraints, with optional filter/projection/sort/queryables support.",
+      "description_sha256": "86e465414c322c3084d0ff1b2db6285b403508bf131481ec582d6d4a5e998656",
+      "input_schema_sha256": "d3239d91733d263310039bd4c4bca95bc5a23c3dd26008e1a921a497af44faa5",
+      "name": "os_features.query",
+      "output_schema_sha256": "3316aa777845f984d54db6cd4b4671f881764c6d6ea5fffd6c5fd8f538df08fb",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Fetch WFS archive GetCapabilities (entitlement dependent).",
+      "description_sha256": "df076976cbe29521600cebbfd4ca5e3db98a1fb8a905b065c7d4eab7c248e962",
+      "input_schema_sha256": "1f6f57e79850eaf6f789a0f1956dd7d74dc7d6a1f6c1693b47a97a01453b5d03",
+      "name": "os_features.wfs_archive_capabilities",
+      "output_schema_sha256": "1d585254bbe6817a47d2455480a6548feeb66f39bf17a36d1f6de5218dc63c2a",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Fetch WFS GetCapabilities for OS Features API.",
+      "description_sha256": "41731d40c4efd3835e736aab4a701f113d43dc0dc3b2b517dab958c71cbdbe2c",
+      "input_schema_sha256": "e649cd7329300df30c78289137954ba554cd1a78036c8592afa3ec39e4f3a90b",
+      "name": "os_features.wfs_capabilities",
+      "output_schema_sha256": "1d585254bbe6817a47d2455480a6548feeb66f39bf17a36d1f6de5218dc63c2a",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Find protected landscapes (AONB/National Landscape) by name for AOI-first environmental survey routing.",
+      "description_sha256": "aad9b3d39722dc0d97987a85bc7f3d670376a4a716ee8e3e5e2c36f72d194dd4",
+      "input_schema_sha256": "3ce231eb175e9e72a86ef28a0abb1742f2d05d121a6be43ae615e20b489edc04",
+      "name": "os_landscape.find",
+      "output_schema_sha256": "be5463d06e766ae3150394685c02c1a1759905a6c25dd341087b91276e56d17b",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Retrieve a protected-landscape record and boundary geometry by id or name.",
+      "description_sha256": "30bc26c5c066c4f3179c21309868277292f3af88a4468da3cb09c53b2af415ac",
+      "input_schema_sha256": "ddbe075ab6fa7d724c8e9de69a13f212ad4d6340158858f0290c0955b4778361",
+      "name": "os_landscape.get",
+      "output_schema_sha256": "5ab99ce4093652c514a5cba98f746c1da814b6e2db3df47d38764dd7e7820450",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Resolve linked identifiers using /featureTypes/{featureType}/{id}.",
+      "description_sha256": "c15227f9cc508dd5d0ed2c74308a9304bd051bed5be47dafd171a0a63f735770",
+      "input_schema_sha256": "02018d429f78d162c3df6872fb716d852baf0324fd78922e8f293f0ee945c0ab",
+      "name": "os_linked_ids.feature_types",
+      "output_schema_sha256": "cbc9b38981805aed142c9b866184b02a519752f55a36db0c672372f12807c0d0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Resolve linked identifiers (UPRN/USRN/TOID) using OS search/links API.",
+      "description_sha256": "7f27f2da0125b3d96d67fb1d33778f44151bd0441f71a3d0797adf53e13f7b7f",
+      "input_schema_sha256": "98913c655e755ee26fa6abe5a45feb7587a6e46616f7a0d49e0f627a1000bf8b",
+      "name": "os_linked_ids.get",
+      "output_schema_sha256": "16f47486bb04658d95baa3941a610573fbce88a99bd35db32545f770495db497",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Resolve linked identifiers using /identifiers/{id}.",
+      "description_sha256": "174a5c013dec14d629577ccd8ace41db4fa1e9dec445b0f2c0beed753624929f",
+      "input_schema_sha256": "e505548d1de17a4cad72c2855daff2076aa555260a53879c9699a768f8be2042",
+      "name": "os_linked_ids.identifiers",
+      "output_schema_sha256": "07bf410f195e2c87f2a5fb9fc2af61e37484728c683b3ecbd481802077b00b36",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Resolve product version info for a correlation method.",
+      "description_sha256": "d72c0756395d23d61a20f85639e589c71f066e5d1abd99e18197109eb8d5d6ad",
+      "input_schema_sha256": "b81157db9e853f6d77b1e859e32e73bde7c5b8d597ec3affaa1ccc2cd5a9783b",
+      "name": "os_linked_ids.product_version_info",
+      "output_schema_sha256": "e6a2c3d92ba80eeb2d20b48755d6d04bae465108da9f10b0955a4f0c90465caa",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Export a map artifact. Legacy mode exports inventory snapshots from bbox; selection_uprn mode queues async selector-driven UPRN exports.",
+      "description_sha256": "9a78478141b276a0a52ff7f43ec67db5b2b9dea1feb345ed87c15ca3b9f9c789",
+      "input_schema_sha256": "4d2240a6b55d4cb78a66b7cad96eca6fa0b5f9b04aadde4078855dd19081efb2",
+      "name": "os_map.export",
+      "output_schema_sha256": "05342964c01cc86e59daaaac4fbc893bef8de0679e99dfe431a95fbf081fda2e",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Get async export status for a selector-driven os_map.export job.",
+      "description_sha256": "1dafe165625bc37a0ae421630711ba305a85648d21a4d4a351d53747ef0ea4bd",
+      "input_schema_sha256": "a1242c6780ed32d4bc64a4e42a6a0e546cffedbeab14191b538c946c37ad7c26",
+      "name": "os_map.get_export",
+      "output_schema_sha256": "752e0ae4c1cf0455b77d1ce4523c42034fbb394c2fed36e7a18c92b0c0619442",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return a bounded inventory (UPRNs, buildings, road links, path links) for a bbox.",
+      "description_sha256": "11f15b1d430f8c36990f22a7cae534d088517c256fafc6db39d175001ec94cee",
+      "input_schema_sha256": "533a35df2808c8de81c12c2ba22fb02eda4bdba35c932e75190e43bf04422b85",
+      "name": "os_map.inventory",
+      "output_schema_sha256": "38688dd63ff35f49e0ef9ec315d39dbd5ccbc2955ae085619f342ac794500c16",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Fetch a raster ZXY tile with inline/resource delivery controls.",
+      "description_sha256": "c12e32dc2c5091e479d41d800d55a3d07c0529f5b5551409cc71611a866e3e18",
+      "input_schema_sha256": "c79e7f6def2102747622180f32d415b69d1a2de5e607f419f90f1db2a4b1e04b",
+      "name": "os_maps.raster_tile",
+      "output_schema_sha256": "0bed4fdbd3f43ed5d467f4b13bb1c02af4f06a2215167d3ef6f434be86c8293c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return metadata for rendering a static map image (proxy URL) with overlay-ready geometry contracts and optional os_map.inventory hydration.",
+      "description_sha256": "87bbd30af5631dc590307ed2ce601b04b407fd702380006cbfe1e36f19bb1bcb",
+      "input_schema_sha256": "c32fa531f72a9d2be6af1c975cf3629e1eee68a6b4933cf69a22198e306b38a6",
+      "name": "os_maps.render",
+      "output_schema_sha256": "aea84be45f04b0926524e391c88b2413243fe4bbabf73c02b0930111afa7141b",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Fetch WMTS GetCapabilities with inline/resource delivery controls.",
+      "description_sha256": "b7fe93d65791de27ed7e8ce6e184b5b80892741dc7731818a3b526eb8263da69",
+      "input_schema_sha256": "78e3bf2ac301b04db8cf8317ad4d5e95486a8c8ef440101d23a7ae58c5c0877c",
+      "name": "os_maps.wmts_capabilities",
+      "output_schema_sha256": "1d585254bbe6817a47d2455480a6548feeb66f39bf17a36d1f6de5218dc63c2a",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Describe server capabilities and tool search configuration.",
+      "description_sha256": "89d61c48529fdc22c9e127202600a19d6ca3ff6c131d7a4c360368800b9c1fea",
+      "input_schema_sha256": "ab6223030ec68b43736ceba3c53cc20b1f617eab150967029ae81fd4401f01b7",
+      "name": "os_mcp.descriptor",
+      "output_schema_sha256": "f41343f29f6e9cd52ad6f1874602c4e6ef3444e6c9b3e5b7750c4dc0a83a7658",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Classify a query and recommend the right tool/workflow.",
+      "description_sha256": "5348e0e8dbc8478807a6c066d3847bf3320ced03545e2af730a079ece814f0ac",
+      "input_schema_sha256": "24a680941d2373c7e8feafc0dcc6e0d62bffd414c098d529463b70e7ddfa52ed",
+      "name": "os_mcp.route_query",
+      "output_schema_sha256": "9269ccd096e46096362b4e4baf3d4f4050a11ea7146e20966aac340edef7e8f9",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Select discovery toolsets and return tools/list filter guidance.",
+      "description_sha256": "c3284f491e8bf42f9da7b7fadf250567306e0e38233175f56e091c779c9123e6",
+      "input_schema_sha256": "8dbfa16684f35ec43e5bbf18662030fa2feb395eea708842bef592da7d6b5d8e",
+      "name": "os_mcp.select_toolsets",
+      "output_schema_sha256": "c4ba92a56aeef7e2af85b6c623b1a39ff6da683d186bd76004c7c30773d543f9",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Explain whether stats queries route to ONS or NOMIS.",
+      "description_sha256": "b9b05fd3f89a1e33b1f5c6b055d7ea857ff17e0ffff1e4fe1c63385a385979ed",
+      "input_schema_sha256": "848c8b8ed80206b2980139aa7110f7ff5150cc71389bfc6f6a1215d1a72ff562",
+      "name": "os_mcp.stats_routing",
+      "output_schema_sha256": "2ff329195619aa96e125d13bed7dcfd7bf1a5397b2db97ec57f209ee3af672ae",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Find place names",
+      "description_sha256": "e40b73c6cb4b8c7037efd1d7618d8c293d90d4aad216c1da03a81e3966a10482",
+      "input_schema_sha256": "2f5470f3afafeb4817b66f19d3faa5c5ae29fb82847f1dbd4ce4bb2fc9b4955b",
+      "name": "os_names.find",
+      "output_schema_sha256": "9445c5d89d15a3bd18e874243019adac69bbcf0ea072ce895da98553a9c7d12e",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Nearest named features",
+      "description_sha256": "8abb1119991ca17631cadad41652dd6247f5fccb4321c0ecdb4bb535b701aeac",
+      "input_schema_sha256": "d4b4b4fe370d028491f0349a057f2ba17720770817efe95e4e0a464c0ddccb02",
+      "name": "os_names.nearest",
+      "output_schema_sha256": "186cf24c758fa6e5cb9b97afaac4f644982bedc7015a211f581f43039c42fd98",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List OS Net RINEX years.",
+      "description_sha256": "be614f6732f35657c0da7b5aa427cb904ef2b90deffe8c111c8f52d8c2f3f9f3",
+      "input_schema_sha256": "d475a8480d2c73f88c1bd539afbad8764514c5312cd25765ec43abb37aaebd94",
+      "name": "os_net.rinex_years",
+      "output_schema_sha256": "3c7e0c30a5ee55710553393b8b6751991eb0f7e3b2a45a424a1d88f7225f67e4",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Get OS Net station metadata by stationId.",
+      "description_sha256": "c26bc29a5b75c90f2378db03803d6a922fdea8ed59530d5f90cc007794a94228",
+      "input_schema_sha256": "d36fb5037ff64da299556a762d66a2188bec295034bccd759af53e73b8507c86",
+      "name": "os_net.station_get",
+      "output_schema_sha256": "384c94cef564385a0ea69c178d41bce1e7021c8d0408fe75c8efc3f8873bd4bc",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Get OS Net station log text with inline/resource delivery controls.",
+      "description_sha256": "c5d237cc2c6fd709caf932f94e0042fa0f98954aa64be1108c22ddb2334f30e4",
+      "input_schema_sha256": "faa820c64abc614e7563bfd24c9065aacc1aaf19e9f6ea4bfe32bcc70e21124d",
+      "name": "os_net.station_log",
+      "output_schema_sha256": "885d0a7f142ac2711835a5c5eb3513a75a703f25b85977851683b55d0d5bcf8b",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Describe PMTiles/MBTiles offline map packs and retrieval contracts.",
+      "description_sha256": "70d3b02aa902d440f3b3860ce19140e5ce523e39ed80c880ae662085218250f6",
+      "input_schema_sha256": "38cca153106c21d9418a9001fa6cc878190d8148ede7febf0f203a428481cd15",
+      "name": "os_offline.descriptor",
+      "output_schema_sha256": "8052225e80778068e06a593359c9b85343db9b1eb561b3e4a01a3257fa3aa26c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return offline delivery handoff skeletons for a PMTiles/MBTiles pack.",
+      "description_sha256": "03d662389d02da058d200d5a6af47f4af0108f132f9dcd5a5d90b39885f7f842",
+      "input_schema_sha256": "660b02210a0c61d977dd0604073e3c03c41de5d836bba373f05ad40eda398c74",
+      "name": "os_offline.get",
+      "output_schema_sha256": "a1fab3d23d1f0b8a5a52899fde8d851499c7391f55fb2fa107d9373f63a3bdab",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Build AOI-scoped peat evidence and proxy query plans with explicit provenance, confidence, and caveats.",
+      "description_sha256": "b5c442c658c7b5662952e21520556f35450eeef20885af7efe59d73fd0db3e5e",
+      "input_schema_sha256": "7e4cc20dc2b4af91b5bda879bc472af8a036d2b1734e500d4cc51416b8339282",
+      "name": "os_peat.evidence_paths",
+      "output_schema_sha256": "454b17c0db68ac1f75884b7d9636810c3a5b3805d05941ee0b940afab2f3826c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List peat evidence layers and proxy layers with provenance and caveats.",
+      "description_sha256": "2bb8358070d2a550d978bc4ea295def9bb9f793044b6fb4b8d8daaf9dd676429",
+      "input_schema_sha256": "784b759a7ea76ec44206278dcb3555651f29cc236fc3eca4ac22e295c89f9988",
+      "name": "os_peat.layers",
+      "output_schema_sha256": "742af2e179e7c1ba5bab2e320e89928fe97eb5048e82c7f44befcbd24e82b7a1",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Lookup UPRNs and addresses for a UK postcode via OS Places API",
+      "description_sha256": "d0e1d0f85b34f66d396bf811e95a6e24b51759a46b200f75385da67b77d1baf1",
+      "input_schema_sha256": "71b8136a701cba623c157954394aca3b626701ca6792408a5e4334a4e92d33fe",
+      "name": "os_places.by_postcode",
+      "output_schema_sha256": "bebd4b6a4256321cb9684c2f2093e2e6a4b51b1249be7bc4138d1493b45d65f4",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Lookup a single address by UPRN",
+      "description_sha256": "1483575f123419d9b33d8cb378d4705ff5a16d542c91fbe5cd37fd73e781f54f",
+      "input_schema_sha256": "e5f11f5143d988f45a219856ef656b13514f46174550f40e7aa89c79bad4bdc2",
+      "name": "os_places.by_uprn",
+      "output_schema_sha256": "f0b68931a24224e7f1a5b526074b9c85edf8cf76b5d7f38c8190285ba4a111d8",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Find nearest addresses to a point",
+      "description_sha256": "fe8db427d823eca58ac605eddcb2ce7f4e8f869af6cf34a43d51582b89f4275f",
+      "input_schema_sha256": "a12302cc0519c0f3cfef8548c515c521241e1e8cde2f79cd52d7c6b03a9fcdb1",
+      "name": "os_places.nearest",
+      "output_schema_sha256": "186cf24c758fa6e5cb9b97afaac4f644982bedc7015a211f581f43039c42fd98",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Addresses within a polygon",
+      "description_sha256": "954105ceb3e1218d0a6d4b14cea4a6cf2869e9db298ff229d63ae375e34a549a",
+      "input_schema_sha256": "f74ca43ba468a6fa0d40ef77a5d6382eb3c85069dc53f2e7bc9bb37564ca66dd",
+      "name": "os_places.polygon",
+      "output_schema_sha256": "51202a226df9615ec61e35bcc1d2dcb00f534038a476e957e37ef8135629604f",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Addresses within a radius of a WGS84 point",
+      "description_sha256": "01564a852cc1f53257ac9d985baa2f2fe0623ba068b58328162f4457b22fe62c",
+      "input_schema_sha256": "b450a7c41a76466acc1b2b918b21d49f8d59b07cbb5773033e4c3f13fa96a12a",
+      "name": "os_places.radius",
+      "output_schema_sha256": "51202a226df9615ec61e35bcc1d2dcb00f534038a476e957e37ef8135629604f",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Free text search in OS Places",
+      "description_sha256": "6711eb6ee3d9ed68b7c1c110147cab325837c6161a533240b1d3ff53e5fd8620",
+      "input_schema_sha256": "6fe4091102f15d7ef6e4fbc7459cebe51af01c457f36b4f08586a3ba53e98dd4",
+      "name": "os_places.search",
+      "output_schema_sha256": "e0fb73a753668ec5962991206c69964cb645d27fd68ca5e6cdf49d0e79421dad",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Addresses within a bounding box",
+      "description_sha256": "6eeb6c91d9627db6a8d69df62a55eac18710017d7bad339e5b77c0b2365175ab",
+      "input_schema_sha256": "0c5b2fd81de50ec3108e6e313efb41ba5a1a0721259325828ecc949eb9eabb44",
+      "name": "os_places.within",
+      "output_schema_sha256": "914652144e06c9771ab22297a1e34ca5582c855a8687a002b27e9f708c64b437",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Find nearby OS Points of Interest for a latitude/longitude point.",
+      "description_sha256": "0d823e6e79c6e90f695f69c6671b3b0058b34537c682121e503e181ff4ff0f23",
+      "input_schema_sha256": "440f210acb64af491d9b97b2a5399d17c405c6b4913b72590dffecb73a32feae",
+      "name": "os_poi.nearest",
+      "output_schema_sha256": "b55928f5863618dda420d390cfb848c361f5863a54c2dc2ec4c24aeddb20b829",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Search OS Points of Interest by text, with optional bbox filtering.",
+      "description_sha256": "05fb0cd614301642897ce0c93f7b5283675d15ded1eb188f1c36f1ade05acdb3",
+      "input_schema_sha256": "929a9642d563e245dd5f1ccb7d59aa070c87bdb78c4cc0de2f532f29874a09f3",
+      "name": "os_poi.search",
+      "output_schema_sha256": "b55928f5863618dda420d390cfb848c361f5863a54c2dc2ec4c24aeddb20b829",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Find OS Points of Interest within a WGS84 bounding box.",
+      "description_sha256": "d5fbb9ad3adafcdcf434d110b970da2de404deeca103c953c1931d5cc431d1e4",
+      "input_schema_sha256": "6959f0e7da66321526c90cf72b2ad7e73f90078f27000e341837a22f7c000fd1",
+      "name": "os_poi.within",
+      "output_schema_sha256": "b55928f5863618dda420d390cfb848c361f5863a54c2dc2ec4c24aeddb20b829",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Build a QGIS GeoPackage import descriptor for a resource-backed export artifact.",
+      "description_sha256": "83f73dcd9ff2f0c12be74630ad310fe0d2b4d91b0657b79f9be7d04f66440107",
+      "input_schema_sha256": "412c22cda542de3614e17afd00e83d20c4989acf6c54a00ac687ba78d844f5cb",
+      "name": "os_qgis.export_geopackage_descriptor",
+      "output_schema_sha256": "88a94b784e7378a1fbda6ef7e2d5871fac0b5287e590ab9be4e1bb0c64c632ee",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return a QGIS-ready OS vector tile profile (proxy or direct URL mode).",
+      "description_sha256": "608650c0016f2134df5dc4d4b3272d38c4831bdd626f871b23b0243fcb4ac78d",
+      "input_schema_sha256": "6ec7823624b30baa611d02f4db95613d514e4d2be312d6c34be09e9a65e481fe",
+      "name": "os_qgis.vector_tile_profile",
+      "output_schema_sha256": "f186b8499085c6d5f85dc1d6a44864f97668ac36e8cfa696d40599038569b96b",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Describe MCP Geo route-planning capabilities and graph readiness.",
+      "description_sha256": "ac5576a441cc7b7491db7598f402fd35c694c138d2389911f3f13e1b6bda3db7",
+      "input_schema_sha256": "383e1f5eecf30e2371df9e4202f9148c32e8062c0d86517837c830d1568d3f2d",
+      "name": "os_route.descriptor",
+      "output_schema_sha256": "230c1d7b3a2b0eaff5a6c888c10bcc20ab3b0d6d2725d0e88ffc645bc84839b8",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Resolve route stops and compute a pgRouting-backed route.",
+      "description_sha256": "c4daec923a077542d385c9f7888c3ed441140f5750a4a00e7ab16f69718d4769",
+      "input_schema_sha256": "a57d3f293eae714aea0764d76f369b37d2f5c2cc1251bb23965c953fbdf3fac8",
+      "name": "os_route.get",
+      "output_schema_sha256": "0d5c8b54048a14c9f0ce5a356d20d264022c4fc0361ae0acd9c4c3bd286c226e",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List OS NGD OTA tile collections.",
+      "description_sha256": "366598df0a05628b538b64323a70f80077931f2f568646becf0e3a2c697605aa",
+      "input_schema_sha256": "3e6daf8b7511b34a18248cfa4ad8e2355e1e665eff1ebb58d89cfca2d02590eb",
+      "name": "os_tiles_ota.collections",
+      "output_schema_sha256": "8db3a98eb993e0464b1c34030befbe175e55f7a89e0beaffbb86e43805ae457d",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List OGC conformance classes supported by OS NGD OTA.",
+      "description_sha256": "d5ebb81c544e783b7e84231ae083c7a747dee0a0c8d27422d5089d1a1f0164bf",
+      "input_schema_sha256": "3f94d3967e5450afe3299493afeaba164e151b351474245ee3b46e6182784732",
+      "name": "os_tiles_ota.conformance",
+      "output_schema_sha256": "c7f25667a1ea6a31d064cfaf2f45384d50621d6c57b77c49fc6fe848a31363be",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List OS NGD OTA tile matrix sets.",
+      "description_sha256": "62cc61db4ee44a1f7c1d8a9965331d0da682f451b00461687f5dd12b084d7b7f",
+      "input_schema_sha256": "0b4020045be61bf97223759338cc72a8b2705a1109f58d3ac66f983c4f7b1312",
+      "name": "os_tiles_ota.tilematrixsets",
+      "output_schema_sha256": "9bac67a5fda49f2f17f8fca678319fd16dd1459e4f29c64fabb4532fde430df6",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return vector tiles style and tile template URLs",
+      "description_sha256": "cc169e120a24bec16ad80c13f166a17b92bc70bb4ab515075e69e4dfc2c94226",
+      "input_schema_sha256": "6ee726dc89b630e8e80b218debb3cf4c25c72a3e56e55c9591708774990ef03a",
+      "name": "os_vector_tiles.descriptor",
+      "output_schema_sha256": "819c60f721fcad5e38908be8a320f01e10be093026150295be4780d811374096",
+      "version": "0.1.0"
+    }
+  ]
+}

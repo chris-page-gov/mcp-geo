@@ -1,0 +1,38 @@
+groups:
+  - name: mcp-geo-security
+    rules:
+      - alert: MCPGeoAuthFailuresBurst
+        expr: increase(mcp_http_auth_failures_total[5m]) >= 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: MCP HTTP authentication failures are spiking.
+          description: Investigate invalid or unauthorized MCP HTTP authentication attempts.
+
+      - alert: MCPGeoSessionQuotaRejections
+        expr: increase(mcp_http_session_quota_rejections_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: MCP session quotas are being exhausted.
+          description: A client exceeded the per-session MCP tool call quota.
+
+      - alert: MCPGeoRateLimitSpike
+        expr: increase(app_rate_limited_total[5m]) >= 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: HTTP rate limiting is firing frequently.
+          description: Investigate client abuse, scraping, or a rate-limit regression.
+
+      - alert: MCPGeoToolErrorsHigh
+        expr: increase(mcp_tool_errors_total[10m]) >= 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Tool execution errors are elevated.
+          description: Inspect MCP tool failures and correlated upstream dependency health.
