@@ -295,6 +295,61 @@ def test_route_get_rejects_delivery_and_inline_max_errors(monkeypatch):
     assert body["message"] == "bad inline"
 
 
+def test_route_get_accepts_null_constraints_and_resolve_stop_surfaces_upstream_edge_cases(monkeypatch):
+    fake = FakeRouteGraph(
+        (
+            200,
+            {
+                "resolvedStops": [{"label": "Start"}, {"label": "End"}],
+                "distanceMeters": 10.0,
+                "durationSeconds": 5.0,
+                "route": {"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}},
+                "legs": [],
+                "steps": [],
+                "modeChanges": [],
+                "warnings": [],
+                "graph": {"ready": True, "graphVersion": "mrn-2026-03-01"},
+            },
+        )
+    )
+    monkeypatch.setattr(os_route, "_route_graph", lambda: fake)
+
+    status, body = os_route._route_get(
+        {
+            "stops": [{"coordinates": [-1.5, 52.4]}, {"coordinates": [-0.1, 51.5]}],
+            "constraints": None,
+        }
+    )
+    assert status == 200
+    assert body["requestedConstraints"] == {"avoidAreas": [], "avoidIds": [], "softAvoid": True}
+    assert fake.calls[0]["constraints"] == {"avoidAreas": [], "avoidIds": [], "softAvoid": True}
+
+    monkeypatch.setattr(os_route, "_places_by_uprn", lambda _payload: (503, {"code": "UPSTREAM"}))
+    status, body = os_route._resolve_stop({"uprn": "100023336959"}, index=0)
+    assert status == 503
+    assert body == {"code": "UPSTREAM"}
+
+    monkeypatch.setattr(os_route, "_places_by_uprn", lambda _payload: (200, {"result": None}))
+    status, body = os_route._resolve_stop({"uprn": "100023336959"}, index=0)
+    assert status == 404
+    assert body["code"] == "STOP_NOT_FOUND"
+
+    status, body = os_route._resolve_stop({"query": "   "}, index=0)
+    assert status == 400
+    assert body["code"] == "INVALID_INPUT"
+
+    monkeypatch.setattr(os_route, "_by_postcode", lambda _payload: (503, {"code": "POSTCODE_UPSTREAM"}))
+    status, body = os_route._resolve_stop({"query": "SW1A 2AA"}, index=1)
+    assert status == 503
+    assert body == {"code": "POSTCODE_UPSTREAM"}
+
+    monkeypatch.setattr(os_route, "_places_search", lambda _payload: (200, {"results": []}))
+    monkeypatch.setattr(os_route, "_names_find", lambda _payload: (503, {"code": "NAMES_UPSTREAM"}))
+    status, body = os_route._resolve_stop({"query": "Coventry"}, index=2)
+    assert status == 503
+    assert body == {"code": "NAMES_UPSTREAM"}
+
+
 def test_route_get_resource_delivery_exports_payload(monkeypatch):
     fake = FakeRouteGraph(
         (
