@@ -49,8 +49,7 @@ def main() -> int:
         parser.error(str(exc))
         return 2
 
-    print(f"OWASP MCP verdict: {report['summary']['verdict']}")
-    print(f"OWASP MCP score: {report['summary']['score']}")
+    print("OWASP MCP validation completed.")
     print(f"JSON report: {outputs['json_report']}")
     print(f"Markdown report: {outputs['markdown_report']}")
     print(f"Backlog: {outputs['backlog']}")

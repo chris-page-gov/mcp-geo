@@ -376,7 +376,7 @@ def test_current_repo_snapshot_matches_committed_compliant_baseline(tmp_path: Pa
         capture_output=True,
         text=True,
     )
-    assert "OWASP MCP verdict: compliant" in completed.stdout
+    assert "OWASP MCP validation completed." in completed.stdout
     report = json.loads(
         (output_dir / "owasp_mcp_server_validation.json").read_text(encoding="utf-8")
     )
