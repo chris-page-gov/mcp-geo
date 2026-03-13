@@ -304,6 +304,17 @@ def test_http_transport_auth_helpers_and_non_applicable_quota(monkeypatch):
     assert state["tool_call_count"] == 0
 
 
+def test_http_transport_error_response_helpers():
+    auth = json.loads(http_transport._authentication_failure_response("msg-1", {}).body)
+    assert auth["error"]["message"] == "Authentication failed"
+
+    authorization = json.loads(http_transport._authorization_failure_response("msg-2", {}).body)
+    assert authorization["error"]["message"] == "Forbidden"
+
+    quota = json.loads(http_transport._session_quota_failure_response("msg-3", {}).body)
+    assert quota["error"]["message"] == "Session quota exceeded"
+
+
 def test_http_transport_auth_error_branches(monkeypatch):
     monkeypatch.setattr(
         http_transport.base64,
@@ -326,6 +337,10 @@ def test_http_transport_auth_error_branches(monkeypatch):
     monkeypatch.delenv("MCP_HTTP_AUTH_TOKEN", raising=False)
     with pytest.raises(http_transport.AuthenticationError):
         http_transport._authenticate_request(_AuthRequest("Bearer test"), {})
+
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "expected-token")
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._authenticate_request(_AuthRequest("Bearer wrong-token"), {})
 
 
 def test_http_transport_verify_hs256_jwt_error_paths(monkeypatch):

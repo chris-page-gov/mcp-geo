@@ -327,6 +327,19 @@ def test_mcp_http_hs256_jwt_enforces_subject_audience_and_scope(client, monkeypa
     assert forbidden.json()["error"]["code"] == 1005
 
 
+def test_mcp_http_hs256_jwt_rejects_non_ascii_tokens_as_auth_failures(monkeypatch):
+    from server.mcp import http_transport
+
+    monkeypatch.setenv("MCP_HTTP_JWT_HS256_SECRET", "jwt-secret-value")
+
+    try:
+        http_transport._verify_hs256_jwt("a.b.caf\xe9")
+    except http_transport.AuthenticationError:
+        pass
+    else:
+        raise AssertionError("Expected AuthenticationError for non-ASCII bearer token")
+
+
 def test_mcp_http_session_tool_call_quota(client, monkeypatch):
     from server.mcp import http_transport
 
@@ -364,6 +377,27 @@ def test_mcp_http_session_tool_call_quota(client, monkeypatch):
     )
     assert second.status_code == 429
     assert second.json()["error"]["code"] == 1006
+
+
+def test_mcp_http_result_messages_require_authentication(client, monkeypatch):
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "result-token")
+
+    init_resp = client.post(
+        "/mcp",
+        headers={"Authorization": "Bearer result-token"},
+        json=_initialize_payload(),
+    )
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    unauthenticated = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json={"jsonrpc": "2.0", "id": "elicitation-1", "result": {"action": "accept"}},
+    )
+    assert unauthenticated.status_code == 401
+    assert unauthenticated.json()["error"]["code"] == 1004
 
 
 def test_mcp_http_invalid_request_shapes(client):

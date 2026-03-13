@@ -121,7 +121,7 @@ def _b64url_decode(value: str) -> bytes:
     padded = value + "=" * (-len(value) % 4)
     try:
         return base64.urlsafe_b64decode(padded.encode("ascii"))
-    except (ValueError, binascii.Error) as exc:
+    except (ValueError, UnicodeEncodeError, binascii.Error) as exc:
         raise AuthenticationError("Invalid bearer token encoding") from exc
 
 
@@ -285,6 +285,33 @@ def _record_session_quota_rejection() -> None:
     global _SESSION_QUOTA_REJECTIONS_TOTAL
     with _MCP_HTTP_METRICS_LOCK:
         _SESSION_QUOTA_REJECTIONS_TOTAL += 1
+
+
+def _authentication_failure_response(msg_id: Any, headers: dict[str, str]) -> JSONResponse:
+    _record_auth_failure("authentication")
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content=_resp_error(msg_id, 1004, "Authentication failed"),
+        headers=headers,
+    )
+
+
+def _authorization_failure_response(msg_id: Any, headers: dict[str, str]) -> JSONResponse:
+    _record_auth_failure("authorization")
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content=_resp_error(msg_id, 1005, "Forbidden"),
+        headers=headers,
+    )
+
+
+def _session_quota_failure_response(msg_id: Any, headers: dict[str, str]) -> JSONResponse:
+    _record_session_quota_rejection()
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content=_resp_error(msg_id, 1006, "Session quota exceeded"),
+        headers=headers,
+    )
 
 
 def build_prometheus_lines() -> list[str]:
@@ -693,6 +720,12 @@ async def mcp_endpoint(request: Request):
     method = msg.get("method")
     if method is None:
         # JSON-RPC response from the client (e.g., elicitation result).
+        try:
+            _authenticate_request(request, session_state)
+        except AuthenticationError:
+            return _authentication_failure_response(msg_id, headers)
+        except AuthorizationError:
+            return _authorization_failure_response(msg_id, headers)
         if msg_id is not None and ("result" in msg or "error" in msg):
             result = msg.get("result")
             if not _resolve_pending(session_state, msg_id, result):
@@ -734,27 +767,12 @@ async def mcp_endpoint(request: Request):
     try:
         auth_claims = _authenticate_request(request, session_state)
         _enforce_session_quota(method, session_state, auth_claims)
-    except AuthenticationError as exc:
-        _record_auth_failure("authentication")
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content=_resp_error(msg_id, 1004, str(exc)),
-            headers=headers,
-        )
-    except AuthorizationError as exc:
-        _record_auth_failure("authorization")
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content=_resp_error(msg_id, 1005, str(exc)),
-            headers=headers,
-        )
-    except SessionQuotaExceeded as exc:
-        _record_session_quota_rejection()
-        return JSONResponse(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            content=_resp_error(msg_id, 1006, str(exc)),
-            headers=headers,
-        )
+    except AuthenticationError:
+        return _authentication_failure_response(msg_id, headers)
+    except AuthorizationError:
+        return _authorization_failure_response(msg_id, headers)
+    except SessionQuotaExceeded:
+        return _session_quota_failure_response(msg_id, headers)
     if msg_id is None:
         try:
             _dispatch(method, params, session_state)
