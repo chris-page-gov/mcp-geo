@@ -251,12 +251,13 @@ def _authenticate_request(request: Request, session_state: dict[str, Any]) -> di
         claims = _verify_hs256_jwt(token)
         subject = str(claims["sub"])
 
-    bound_subject = session_state.get("auth_subject")
-    if bound_subject is None:
-        session_state["auth_subject"] = subject
-    elif bound_subject != subject:
-        raise AuthorizationError("Session is bound to a different authenticated subject")
-    session_state["auth_mode"] = mode
+    with _SESSION_LOCK:
+        bound_subject = session_state.get("auth_subject")
+        if bound_subject is None:
+            session_state["auth_subject"] = subject
+        elif bound_subject != subject:
+            raise AuthorizationError("Session is bound to a different authenticated subject")
+        session_state["auth_mode"] = mode
     return claims
 
 

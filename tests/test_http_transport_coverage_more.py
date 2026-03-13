@@ -343,6 +343,50 @@ def test_http_transport_auth_error_branches(monkeypatch):
         http_transport._authenticate_request(_AuthRequest("Bearer wrong-token"), {})
 
 
+def test_http_transport_auth_subject_binding_uses_session_lock(monkeypatch):
+    class TrackingLock:
+        def __init__(self) -> None:
+            self.depth = 0
+
+        def __enter__(self):
+            self.depth += 1
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            self.depth -= 1
+
+    class LockedSession(dict[str, object]):
+        def __init__(self, lock: TrackingLock) -> None:
+            super().__init__()
+            self.lock = lock
+
+        def get(self, key: str, default=None):
+            if key == "auth_subject":
+                assert self.lock.depth > 0
+            return super().get(key, default)
+
+        def __setitem__(self, key: str, value: object) -> None:
+            if key in {"auth_subject", "auth_mode"}:
+                assert self.lock.depth > 0
+            super().__setitem__(key, value)
+
+    tracking_lock = TrackingLock()
+    session_state = LockedSession(tracking_lock)
+    monkeypatch.setattr(http_transport, "_SESSION_LOCK", tracking_lock)
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "expected-token")
+
+    claims = http_transport._authenticate_request(
+        _AuthRequest("Bearer expected-token"),
+        session_state,
+    )
+
+    assert claims == {"sub": "static-bearer-client", "scope": "mcp"}
+    assert session_state["auth_subject"] == "static-bearer-client"
+    assert session_state["auth_mode"] == "static_bearer"
+    assert tracking_lock.depth == 0
+
+
 def test_http_transport_verify_hs256_jwt_error_paths(monkeypatch):
     secret = "coverage-secret"
     now = int(time.time())
