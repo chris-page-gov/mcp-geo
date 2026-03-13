@@ -3,7 +3,18 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-11
+Last updated: 2026-03-13
+
+## OWASP MCP validation pack (2026-03-13)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| OWASP-MCP-1 Locked control catalog, tool-risk inventory, and attestation schema | done | none | Added `security/owasp_mcp/control_catalog.json`, `security/owasp_mcp/tool_risk_inventory.json`, and `security/owasp_mcp/attestations/schema.json`, pinned to OWASP GenAI Security Project _A Practical Guide for Secure MCP Server Development_ Version 1.0 (February 2026) with the downloaded PDF SHA-256 recorded in the catalog metadata. |
+| OWASP-MCP-2 Rerunnable strict validator CLI and signed tool manifest | done | OWASP-MCP-1 | Added `server/owasp_mcp_validation.py`, `scripts/validate_owasp_mcp_server.py`, `scripts/validate-owasp-mcp-local`, and `scripts/generate_owasp_mcp_tool_manifest.py`, plus the committed signed manifest artifacts under `security/owasp_mcp/`. The validator emits JSON + Markdown report outputs and a JSON remediation backlog. |
+| OWASP-MCP-3 Regression coverage and seeded pass/fail fixtures | done | OWASP-MCP-2 | Added `tests/test_owasp_mcp_validation.py` covering catalog/inventory parsing, missing attestation failure, stale attestation failure, high-risk applicability, signed-manifest mismatch handling, backlog stability, and the current repo baseline failure path. |
+| OWASP-MCP-4 CI integration, published baseline, and tracker sync | done | OWASP-MCP-2 | Added dedicated GitHub Actions OWASP validation and Scorecard jobs in `.github/workflows/ci.yml`, committed baseline outputs under `security/owasp_mcp/baseline/`, added human-readable report `docs/reports/owasp_mcp_server_validation_2026-03-13.md`, and documented the local command in `README.md`, `docs/Build.md`, and `security/owasp_mcp/README.md`. Current strict baseline score: `51.65`, verdict `non_compliant`. |
 
 ## AI Community analytical index replacement (2026-03-11)
 

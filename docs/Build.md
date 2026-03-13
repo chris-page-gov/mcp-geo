@@ -54,6 +54,15 @@ Focused host-side lint/type checks:
 ./scripts/mypy-local <paths...>
 ```
 
+Strict OWASP MCP validation:
+
+```bash
+./scripts/validate-owasp-mcp-local
+```
+
+This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
+`output/owasp-mcp-validation/`.
+
 ## Environment variables
 
 - `OS_API_KEY`: required for Ordnance Survey tools (Places, Names, NGD Features).

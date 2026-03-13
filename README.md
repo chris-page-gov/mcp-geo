@@ -656,6 +656,16 @@ Host-side wrappers:
 - If the tool is still unavailable, they fall back to `uv run`.
 - Override with `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
 
+Strict OWASP MCP validation:
+
+```bash
+./scripts/validate-owasp-mcp-local
+```
+
+This writes JSON/Markdown report artifacts plus a remediation backlog under
+`output/owasp-mcp-validation/` and fails when any `minimum_bar` or `required`
+control is unmet.
+
 ## Contributing
 
 - Use Conventional Commits (e.g. `feat(tools): add os_places.within pagination`).

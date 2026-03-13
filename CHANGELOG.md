@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a repo-pinned OWASP MCP validation namespace under `security/owasp_mcp/`, including the locked control catalog, explicit tool-risk inventory, attestation schema, signed tool manifest lockfile, and committed baseline JSON outputs for the strict `prod-strict` profile.
+- Added the OWASP MCP validator implementation in `server/owasp_mcp_validation.py` plus CLI and helper entrypoints `scripts/validate_owasp_mcp_server.py`, `scripts/validate-owasp-mcp-local`, and `scripts/generate_owasp_mcp_tool_manifest.py`.
+- Added focused regression coverage in `tests/test_owasp_mcp_validation.py` for strict attestation behavior, high-risk tool applicability, signed-manifest verification, backlog stability, and the current-repo baseline failure path.
+- Added the OWASP MCP validation report `docs/reports/owasp_mcp_server_validation_2026-03-13.md` and updated the reports index.
 - Added a standalone MCP-Geo analytical index publication set pinned to commit
   `fe862910da246ca77f374cfbe484985f5df4d316`, including the canonical report
   `docs/reports/mcp_geo_analytical_index_2026-03-11.md`, appendix-ready slice
@@ -78,6 +82,8 @@ All notable changes to this project will be documented in this file.
   `tests/test_stakeholder_benchmark_pack.py`.
 
 ### Changed
+- Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence.
+- Updated `README.md`, `docs/Build.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the OWASP MCP validation workflow and the current strict baseline verdict (`non_compliant`, score `51.65`).
 - Updated `docs/reports/README.md`,
   `docs/public_sector_ai_community/14_evidence_and_report_index.md`,
   `CONTEXT.md`, and `PROGRESS.MD` so the analytical-index workflow, appendix
