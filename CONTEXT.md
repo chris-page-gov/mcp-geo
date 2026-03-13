@@ -183,6 +183,18 @@ assumptions change.
   bridge preview-session allowlist to accept `resources/read` requests by
   resource name as well as URI, matching the MCP contract returned by
   `resources/list`.
+- Capturing the durable PR `#36` lessons in `AGENTS.md`: bridge allowlists
+  must treat `resources/read` names and URIs as equivalent valid shapes,
+  deterministic frontend Playwright fixes should be rerun through the exact CI
+  entrypoint with an override port to catch hard-coded assumptions, routing/UI
+  full-suite specs should wait for stable rendered state before selecting
+  controls, and GitHub Advanced Security discussion markers cannot be resolved
+  through the normal review-thread API.
+- Clearing the newest PR `#36` `frontend` failure by making `connect()` keep
+  the playground in `connecting` state until the descriptor, benchmark, and
+  audit bootstrap loads complete, and by removing the end-of-connect tab reset
+  that could switch Benchmarks or Routing back to Explorer while the full
+  Playwright suite was waiting on seeded demo content.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

@@ -590,13 +590,12 @@
         clientInfo: PLAYGROUND_CLIENT_INFO,
         uiResourceMime: UI_RESOURCE_MIME,
       });
-      status = "connected";
       capabilities = session.getServerCapabilities?.() ?? null;
       await refreshLists();
       await fetchDescriptor();
       await loadBenchmarks();
       await refreshAuditPacks();
-      activeTab = "explorer";
+      status = "connected";
       logDebug("Connected to MCP server", { serverUrl });
     } catch (err) {
       status = "error";

@@ -133,6 +133,12 @@ All notable changes to this project will be documented in this file.
   `resources/read` by either resource URI or resource name, matching the
   accepted MCP request shape and clearing the remaining actionable PR `#36`
   review comment on `playground/src/lib/uiBridge.js`.
+- Fixed the remaining deterministic playground CI race by keeping the host in
+  `connecting` state until `refreshLists()`, descriptor load, benchmark load,
+  and audit-pack refresh complete, and by no longer forcing the active tab
+  back to Explorer at the end of `connect()`. This stops the full-suite
+  Benchmarks and Routing specs from being switched away mid-wait on slower
+  GitHub runners.
 - Updated `README.md` and `docs/Build.md` to document the published GHCR image
   path and to require absolute `--env-file` paths for GUI desktop clients such
   as Claude Desktop, avoiding broken `.env` resolution outside the repo
