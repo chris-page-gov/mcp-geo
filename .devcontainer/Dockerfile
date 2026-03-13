@@ -1,39 +1,63 @@
 FROM mcr.microsoft.com/devcontainers/python:3.11
 
-# Install CA certificates for SSL support and update trust store
-RUN rm -f /etc/apt/sources.list.d/yarn.list || true && \
-	find /etc/apt/sources.list.d -maxdepth 1 -type f -name "*.list" \
-		-exec grep -l "dl.yarnpkg.com" {} + 2>/dev/null \
-		| xargs -r rm -f || true && \
-	apt-get update && \
-	apt-get install -y --no-install-recommends \
-		ca-certificates \
-		curl \
-		build-essential \
-		libpq-dev \
-		pkg-config \
-		gdal-bin \
-		libgdal-dev \
-		libgeos-dev \
-		proj-bin \
-		libproj-dev && \
-	update-ca-certificates && \
-	rm -rf /var/lib/apt/lists/*
+ARG HTTP_PROXY=""
+ARG HTTPS_PROXY=""
+ARG NO_PROXY=""
+ARG http_proxy=""
+ARG https_proxy=""
+ARG no_proxy=""
+ARG INSTALL_NGROK="false"
+ARG NGROK_TARBALL_URL="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz"
+
+COPY .devcontainer/certs/ /tmp/devcontainer-certs/
+
+# Install CA certificates for SSL support and update trust store.
+RUN set -eu; \
+    mkdir -p /usr/local/share/ca-certificates/custom; \
+    find /tmp/devcontainer-certs -maxdepth 1 -type f -name "*.crt" \
+        -exec cp {} /usr/local/share/ca-certificates/custom/ \; || true; \
+    rm -f /etc/apt/sources.list.d/yarn.list || true; \
+    find /etc/apt/sources.list.d -maxdepth 1 -type f -name "*.list" \
+        -exec grep -l "dl.yarnpkg.com" {} + 2>/dev/null \
+        | xargs -r rm -f || true; \
+    HTTP_PROXY="${HTTP_PROXY}" HTTPS_PROXY="${HTTPS_PROXY}" NO_PROXY="${NO_PROXY}" \
+    http_proxy="${http_proxy}" https_proxy="${https_proxy}" no_proxy="${no_proxy}" \
+    apt-get update; \
+    HTTP_PROXY="${HTTP_PROXY}" HTTPS_PROXY="${HTTPS_PROXY}" NO_PROXY="${NO_PROXY}" \
+    http_proxy="${http_proxy}" https_proxy="${https_proxy}" no_proxy="${no_proxy}" \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        build-essential \
+        libpq-dev \
+        pkg-config \
+        gdal-bin \
+        libgdal-dev \
+        libgeos-dev \
+        proj-bin \
+        libproj-dev; \
+    update-ca-certificates; \
+    rm -rf /tmp/devcontainer-certs; \
+    rm -rf /var/lib/apt/lists/*
+
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt
 
 # Set workdir (optional, VS Code devcontainer will set this automatically)
 WORKDIR /workspaces/mcp-geo
 
-
 # Install Python dependencies globally (for CI and dev reliability)
 RUN pip install fastapi uvicorn python-dotenv pydantic-settings psycopg[binary] --upgrade certifi
 
-# Ensure requests uses certifi's CA bundle (set to actual path, no shell expansion)
-ENV REQUESTS_CA_BUNDLE=/usr/local/lib/python3.11/site-packages/certifi/cacert.pem
-
-# Install ngrok for HTTPS tunneling in devcontainer workflows
-ARG NGROK_TARBALL_URL="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz"
-RUN curl -sSL "$NGROK_TARBALL_URL" -o /tmp/ngrok.tgz && \
-	tar -xzf /tmp/ngrok.tgz -C /usr/local/bin && \
-	rm /tmp/ngrok.tgz
+# Install ngrok for HTTPS tunneling in devcontainer workflows when requested.
+RUN if [ "${INSTALL_NGROK}" = "true" ]; then \
+        curl -sSL "${NGROK_TARBALL_URL}" -o /tmp/ngrok.tgz && \
+        tar -xzf /tmp/ngrok.tgz -C /usr/local/bin && \
+        rm /tmp/ngrok.tgz; \
+    else \
+        echo "Skipping ngrok install"; \
+    fi
 
 # No CMD needed; VS Code devcontainer will handle the default command
