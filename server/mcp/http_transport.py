@@ -175,7 +175,10 @@ def _verify_hs256_jwt(token: str) -> dict[str, Any]:
     parts = token.split(".")
     if len(parts) != 3:
         raise AuthenticationError("Invalid bearer token format")
-    signing_input = ".".join(parts[:2]).encode("ascii")
+    try:
+        signing_input = ".".join(parts[:2]).encode("ascii")
+    except UnicodeEncodeError as exc:
+        raise AuthenticationError("Invalid bearer token encoding") from exc
     signature = _b64url_decode(parts[2])
     expected = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
     if not hmac.compare_digest(signature, expected):

@@ -333,7 +333,7 @@ def test_mcp_http_hs256_jwt_rejects_non_ascii_tokens_as_auth_failures(monkeypatc
     monkeypatch.setenv("MCP_HTTP_JWT_HS256_SECRET", "jwt-secret-value")
 
     try:
-        http_transport._verify_hs256_jwt("a.b.caf\xe9")
+        http_transport._verify_hs256_jwt("a\xe9.b.c")
     except http_transport.AuthenticationError:
         pass
     else:
