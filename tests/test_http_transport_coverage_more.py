@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import hmac
 import json
 import time
 
@@ -8,6 +11,31 @@ from server.main import app
 from server.mcp import http_transport
 from server.protocol import PROTOCOL_VERSION
 from tools.registry import Tool, register
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _mint_hs256_jwt_for_coverage(
+    secret: str,
+    claims: dict[str, object],
+    *,
+    alg: str = "HS256",
+) -> str:
+    header = {"alg": alg, "typ": "JWT"}
+    encoded_header = _b64url(json.dumps(header, separators=(",", ":")).encode("utf-8"))
+    encoded_claims = _b64url(json.dumps(claims, separators=(",", ":")).encode("utf-8"))
+    signing_input = f"{encoded_header}.{encoded_claims}".encode("ascii")
+    signature = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
+    return f"{encoded_header}.{encoded_claims}.{_b64url(signature)}"
+
+
+class _AuthRequest:
+    def __init__(self, authorization: str | None = None) -> None:
+        self.headers: dict[str, str] = {}
+        if authorization is not None:
+            self.headers["authorization"] = authorization
 
 
 def test_sse_event_includes_retry():
@@ -67,7 +95,10 @@ def test_mcp_http_empty_body_and_unknown_response_id():
 
 def test_mcp_http_missing_params_defaults_and_notification_exception_swallowed(monkeypatch):
     client = TestClient(app)
-    init_resp = client.post("/mcp", json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}})
+    init_resp = client.post(
+        "/mcp",
+        json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}},
+    )
     session_id = init_resp.headers.get("mcp-session-id")
     assert session_id
 
@@ -91,7 +122,10 @@ def test_mcp_http_missing_params_defaults_and_notification_exception_swallowed(m
 
 def test_mcp_http_capabilities_not_dict_branch():
     client = TestClient(app)
-    init_resp = client.post("/mcp", json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}})
+    init_resp = client.post(
+        "/mcp",
+        json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}},
+    )
     session_id = init_resp.headers.get("mcp-session-id")
     assert session_id
     http_transport._SESSION_STATE[session_id]["capabilities"] = "bad"  # force branch
@@ -128,7 +162,10 @@ def test_mcp_http_initialize_negotiates_protocol_and_sets_header():
 
 def test_mcp_http_rejects_unsupported_protocol_header():
     client = TestClient(app)
-    init_resp = client.post("/mcp", json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}})
+    init_resp = client.post(
+        "/mcp",
+        json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}},
+    )
     session_id = init_resp.headers.get("mcp-session-id")
     assert session_id
     resp = client.post(
@@ -194,11 +231,18 @@ def test_mcp_http_uses_negotiated_protocol_header_on_subsequent_requests():
 
 def test_mcp_http_generic_internal_error_handler(monkeypatch):
     client = TestClient(app)
-    init_resp = client.post("/mcp", json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}})
+    init_resp = client.post(
+        "/mcp",
+        json={"jsonrpc": "2.0", "id": "i", "method": "initialize", "params": {}},
+    )
     session_id = init_resp.headers.get("mcp-session-id")
     assert session_id
 
-    monkeypatch.setattr(http_transport, "_dispatch", lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(
+        http_transport,
+        "_dispatch",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
     resp = client.post(
         "/mcp",
         headers={"mcp-session-id": session_id},
@@ -229,3 +273,121 @@ def test_internal_error_logs_exception_type_only(monkeypatch):
     serialized = json.dumps(captured)
     assert "secret-http-token" not in serialized
     assert "RuntimeError" in serialized
+
+
+def test_http_transport_auth_helpers_and_non_applicable_quota(monkeypatch):
+    monkeypatch.delenv("MCP_HTTP_AUTH_MODE", raising=False)
+    monkeypatch.delenv("MCP_HTTP_JWT_HS256_SECRET", raising=False)
+    monkeypatch.delenv("MCP_HTTP_AUTH_TOKEN", raising=False)
+    assert http_transport._auth_mode() == "off"
+
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "invalid")
+    assert http_transport._auth_mode() == "off"
+
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "")
+    monkeypatch.setenv("MCP_HTTP_JWT_HS256_SECRET", "secret")
+    assert http_transport._auth_mode() == "hs256_jwt"
+
+    monkeypatch.delenv("MCP_HTTP_JWT_HS256_SECRET", raising=False)
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "static-token")
+    assert http_transport._auth_mode() == "static_bearer"
+
+    assert http_transport._parse_scopes({"scope": "a b"}) == {"a", "b"}
+    assert http_transport._parse_scopes({"scp": ["a", "b"]}) == {"a", "b"}
+    assert http_transport._parse_scopes({"scp": "a b"}) == {"a", "b"}
+    assert http_transport._parse_scopes({}) == set()
+
+    state = {"tool_call_count": 0}
+    monkeypatch.setattr(http_transport, "_SESSION_TOOL_CALL_LIMIT", 0)
+    http_transport._enforce_session_quota("tools/list", state)
+    http_transport._enforce_session_quota("tools/call", state)
+    assert state["tool_call_count"] == 0
+
+
+def test_http_transport_auth_error_branches(monkeypatch):
+    monkeypatch.setattr(
+        http_transport.base64,
+        "urlsafe_b64decode",
+        lambda _value: (_ for _ in ()).throw(ValueError("bad-base64")),
+    )
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._b64url_decode("ignored")
+
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._bearer_token_from_request(_AuthRequest())
+
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._bearer_token_from_request(_AuthRequest("Bearer   "))
+
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "off")
+    assert http_transport._authenticate_request(_AuthRequest(), {}) is None
+
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.delenv("MCP_HTTP_AUTH_TOKEN", raising=False)
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._authenticate_request(_AuthRequest("Bearer test"), {})
+
+
+def test_http_transport_verify_hs256_jwt_error_paths(monkeypatch):
+    secret = "coverage-secret"
+    now = int(time.time())
+
+    monkeypatch.delenv("MCP_HTTP_JWT_HS256_SECRET", raising=False)
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt("a.b.c")
+
+    monkeypatch.setenv("MCP_HTTP_JWT_HS256_SECRET", secret)
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt("not-a-jwt")
+
+    bad_signature = (
+        _mint_hs256_jwt_for_coverage(secret, {"sub": "user", "exp": now + 60})[:-2]
+        + "xx"
+    )
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt(bad_signature)
+
+    wrong_alg = _mint_hs256_jwt_for_coverage(secret, {"sub": "user", "exp": now + 60}, alg="RS256")
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt(wrong_alg)
+
+    expired = _mint_hs256_jwt_for_coverage(secret, {"sub": "user", "exp": now - 120})
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt(expired)
+
+    future_nbf = _mint_hs256_jwt_for_coverage(
+        secret,
+        {"sub": "user", "exp": now + 300, "nbf": now + 120},
+    )
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt(future_nbf)
+
+    missing_sub = _mint_hs256_jwt_for_coverage(secret, {"exp": now + 300})
+    with pytest.raises(http_transport.AuthenticationError):
+        http_transport._verify_hs256_jwt(missing_sub)
+
+    monkeypatch.setenv("MCP_HTTP_JWT_AUDIENCE", "mcp-geo")
+    audience_mismatch = _mint_hs256_jwt_for_coverage(
+        secret,
+        {"sub": "user", "exp": now + 300, "aud": "other"},
+    )
+    with pytest.raises(http_transport.AuthorizationError):
+        http_transport._verify_hs256_jwt(audience_mismatch)
+
+    monkeypatch.delenv("MCP_HTTP_JWT_AUDIENCE", raising=False)
+    monkeypatch.setenv("MCP_HTTP_JWT_ISSUER", "https://issuer.example")
+    issuer_mismatch = _mint_hs256_jwt_for_coverage(
+        secret,
+        {"sub": "user", "exp": now + 300, "iss": "https://wrong.example"},
+    )
+    with pytest.raises(http_transport.AuthorizationError):
+        http_transport._verify_hs256_jwt(issuer_mismatch)
+
+    monkeypatch.delenv("MCP_HTTP_JWT_ISSUER", raising=False)
+    monkeypatch.setenv("MCP_HTTP_JWT_REQUIRED_SCOPES", "mcp:invoke")
+    missing_scope = _mint_hs256_jwt_for_coverage(
+        secret,
+        {"sub": "user", "exp": now + 300, "scope": "other"},
+    )
+    with pytest.raises(http_transport.AuthorizationError):
+        http_transport._verify_hs256_jwt(missing_scope)

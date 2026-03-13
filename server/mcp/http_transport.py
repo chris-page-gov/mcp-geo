@@ -1,19 +1,37 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
+import hashlib
+import hmac
 import json
 import os
 import threading
 import time
 import uuid
-from typing import Any, Dict, Optional, Tuple
-
-from loguru import logger
+from typing import Any, cast
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse, Response, StreamingResponse
+from loguru import logger
 
 from server import stdio_adapter
+from server.mcp.client_capabilities import (
+    bool_env as _shared_bool_env,
+)
+from server.mcp.client_capabilities import (
+    client_supports_ui as _shared_client_supports_ui,
+)
+from server.mcp.client_capabilities import (
+    read_bool_env as _shared_read_bool_env,
+)
+from server.mcp.client_capabilities import (
+    summarize_client_capabilities as _summarize_client_capabilities,
+)
+from server.mcp.client_capabilities import (
+    ui_fallback_for_tool as _shared_ui_fallback_for_tool,
+)
 from server.mcp.elicitation_forms import (
     apply_ons_select_elicitation_result,
     apply_toolset_selection_elicitation_result,
@@ -21,16 +39,9 @@ from server.mcp.elicitation_forms import (
     build_toolset_selection_elicitation_params,
     client_supports_elicitation_form,
 )
-from server.mcp.client_capabilities import (
-    bool_env as _shared_bool_env,
-    client_supports_ui as _shared_client_supports_ui,
-    summarize_client_capabilities as _summarize_client_capabilities,
-    read_bool_env as _shared_read_bool_env,
-    ui_fallback_for_tool as _shared_ui_fallback_for_tool,
-)
-from server.mcp.tool_search import get_toolset_catalog, resolve_default_toolset_filters_from_env
-from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.prompts import get_prompt, list_prompts
+from server.mcp.resource_catalog import MCP_APPS_MIME
+from server.mcp.tool_search import get_toolset_catalog, resolve_default_toolset_filters_from_env
 from server.observability import record_tool_call
 from server.protocol import (
     HTTP_DEFAULT_PROTOCOL_VERSION,
@@ -47,16 +58,37 @@ router = APIRouter()
 JSONRPC = stdio_adapter.JSONRPC
 
 _SESSION_LOCK = threading.Lock()
-_SESSION_STATE: Dict[str, Dict[str, Any]] = {}
+_SESSION_STATE: dict[str, dict[str, Any]] = {}
+_MCP_HTTP_METRICS_LOCK = threading.Lock()
+_AUTH_FAILURES_TOTAL: dict[str, int] = {}
+_SESSION_QUOTA_REJECTIONS_TOTAL = 0
 try:
     _SESSION_TTL_SECONDS = float(
-        (os.getenv("MCP_HTTP_SESSION_TTL", "") or "0").strip() or "0"
+        (os.getenv("MCP_HTTP_SESSION_TTL", "") or "900").strip() or "900"
     )
 except ValueError:
     _SESSION_TTL_SECONDS = 0.0
+try:
+    _SESSION_TOOL_CALL_LIMIT = int(
+        (os.getenv("MCP_HTTP_SESSION_TOOL_CALL_LIMIT", "") or "100").strip() or "100"
+    )
+except ValueError:
+    _SESSION_TOOL_CALL_LIMIT = 0
 
 
 class MethodNotFound(Exception):
+    pass
+
+
+class AuthenticationError(Exception):
+    pass
+
+
+class AuthorizationError(Exception):
+    pass
+
+
+class SessionQuotaExceeded(Exception):
     pass
 
 
@@ -70,7 +102,7 @@ def _cleanup_sessions(now: float) -> None:
             _SESSION_STATE.pop(sid, None)
 
 
-def _get_session(request: Request) -> Tuple[str, Dict[str, Any]]:
+def _get_session(request: Request) -> tuple[str, dict[str, Any]]:
     session_id = request.headers.get("mcp-session-id")
     now = time.time()
     _cleanup_sessions(now)
@@ -85,16 +117,209 @@ def _get_session(request: Request) -> Tuple[str, Dict[str, Any]]:
         return resolved, state
 
 
-def _read_bool_env(name: str) -> Optional[bool]:
-    return _shared_read_bool_env(name)
+def _b64url_decode(value: str) -> bytes:
+    padded = value + "=" * (-len(value) % 4)
+    try:
+        return base64.urlsafe_b64decode(padded.encode("ascii"))
+    except (ValueError, binascii.Error) as exc:
+        raise AuthenticationError("Invalid bearer token encoding") from exc
+
+
+def _parse_scopes(claims: dict[str, Any]) -> set[str]:
+    scope_claim = claims.get("scope")
+    if isinstance(scope_claim, str):
+        return {item for item in scope_claim.split() if item}
+    scp_claim = claims.get("scp")
+    if isinstance(scp_claim, list):
+        return {str(item).strip() for item in scp_claim if str(item).strip()}
+    if isinstance(scp_claim, str):
+        return {item for item in scp_claim.split() if item}
+    return set()
+
+
+def _load_bearer_token() -> str:
+    return (os.getenv("MCP_HTTP_AUTH_TOKEN", "") or "").strip()
+
+
+def _load_jwt_secret() -> str:
+    return (os.getenv("MCP_HTTP_JWT_HS256_SECRET", "") or "").strip()
+
+
+def _auth_mode() -> str:
+    mode = (os.getenv("MCP_HTTP_AUTH_MODE", "") or "").strip().lower()
+    if not mode:
+        if _load_jwt_secret():
+            return "hs256_jwt"
+        if _load_bearer_token():
+            return "static_bearer"
+        return "off"
+    if mode not in {"off", "static_bearer", "hs256_jwt"}:
+        return "off"
+    return mode
+
+
+def _bearer_token_from_request(request: Request) -> str:
+    auth_header = (request.headers.get("authorization") or "").strip()
+    if not auth_header.lower().startswith("bearer "):
+        raise AuthenticationError("Missing bearer token")
+    token = auth_header[7:].strip()
+    if not token:
+        raise AuthenticationError("Missing bearer token")
+    return token
+
+
+def _verify_hs256_jwt(token: str) -> dict[str, Any]:
+    secret = _load_jwt_secret()
+    if not secret:
+        raise AuthenticationError("JWT auth secret is not configured")
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise AuthenticationError("Invalid bearer token format")
+    signing_input = ".".join(parts[:2]).encode("ascii")
+    signature = _b64url_decode(parts[2])
+    expected = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
+    if not hmac.compare_digest(signature, expected):
+        raise AuthenticationError("Invalid bearer token signature")
+    try:
+        header = json.loads(_b64url_decode(parts[0]).decode("utf-8"))
+        claims = json.loads(_b64url_decode(parts[1]).decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise AuthenticationError("Invalid bearer token payload") from exc
+    if not isinstance(header, dict) or header.get("alg") != "HS256":
+        raise AuthenticationError("Unsupported bearer token algorithm")
+    if not isinstance(claims, dict):
+        raise AuthenticationError("Invalid bearer token claims")
+
+    now = time.time()
+    leeway_raw = (os.getenv("MCP_HTTP_JWT_CLOCK_SKEW_SECONDS", "") or "").strip()
+    try:
+        leeway = float(leeway_raw or "30")
+    except ValueError:
+        leeway = 30.0
+    exp = claims.get("exp")
+    if not isinstance(exp, (int, float)) or float(exp) < now - leeway:
+        raise AuthenticationError("Bearer token is expired")
+    nbf = claims.get("nbf")
+    if isinstance(nbf, (int, float)) and float(nbf) > now + leeway:
+        raise AuthenticationError("Bearer token is not yet valid")
+    sub = claims.get("sub")
+    if not isinstance(sub, str) or not sub.strip():
+        raise AuthenticationError("Bearer token is missing subject")
+    audience = (os.getenv("MCP_HTTP_JWT_AUDIENCE", "") or "").strip()
+    if audience:
+        aud = claims.get("aud")
+        if isinstance(aud, str):
+            aud_values = {aud}
+        elif isinstance(aud, list):
+            aud_values = {str(item) for item in aud}
+        else:
+            aud_values = set()
+        if audience not in aud_values:
+            raise AuthorizationError("Bearer token audience is not permitted")
+    issuer = (os.getenv("MCP_HTTP_JWT_ISSUER", "") or "").strip()
+    if issuer and claims.get("iss") != issuer:
+        raise AuthorizationError("Bearer token issuer is not permitted")
+    required_scope_env = (os.getenv("MCP_HTTP_JWT_REQUIRED_SCOPES", "") or "").strip()
+    required_scopes = {item.strip() for item in required_scope_env.split(",") if item.strip()}
+    if required_scopes:
+        scopes = _parse_scopes(claims)
+        missing = sorted(required_scopes - scopes)
+        if missing:
+            raise AuthorizationError(
+                "Bearer token is missing required scopes: " + ", ".join(missing)
+            )
+    return claims
+
+
+def _authenticate_request(request: Request, session_state: dict[str, Any]) -> dict[str, Any] | None:
+    mode = _auth_mode()
+    if mode == "off":
+        return None
+    token = _bearer_token_from_request(request)
+    if mode == "static_bearer":
+        expected = _load_bearer_token()
+        if not expected:
+            raise AuthenticationError("Static bearer auth token is not configured")
+        if not hmac.compare_digest(token, expected):
+            raise AuthenticationError("Invalid bearer token")
+        subject = "static-bearer-client"
+        claims: dict[str, Any] = {"sub": subject, "scope": "mcp"}
+    else:
+        claims = _verify_hs256_jwt(token)
+        subject = str(claims["sub"])
+
+    bound_subject = session_state.get("auth_subject")
+    if bound_subject is None:
+        session_state["auth_subject"] = subject
+    elif bound_subject != subject:
+        raise AuthorizationError("Session is bound to a different authenticated subject")
+    session_state["auth_mode"] = mode
+    return claims
+
+
+def _enforce_session_quota(
+    method: str,
+    session_state: dict[str, Any],
+    auth_claims: dict[str, Any] | None = None,
+) -> None:
+    if method != "tools/call":
+        return
+    if _SESSION_TOOL_CALL_LIMIT <= 0:
+        return
+    with _SESSION_LOCK:
+        current = int(session_state.get("tool_call_count", 0))
+        if current >= _SESSION_TOOL_CALL_LIMIT:
+            raise SessionQuotaExceeded("Per-session tool call limit exceeded")
+        session_state["tool_call_count"] = current + 1
+        if auth_claims and isinstance(auth_claims.get("sub"), str):
+            session_state["last_authenticated_subject"] = auth_claims["sub"]
+
+
+def _record_auth_failure(reason: str) -> None:
+    normalized = reason.strip().lower().replace(" ", "_") if reason.strip() else "unknown"
+    with _MCP_HTTP_METRICS_LOCK:
+        _AUTH_FAILURES_TOTAL[normalized] = _AUTH_FAILURES_TOTAL.get(normalized, 0) + 1
+
+
+def _record_session_quota_rejection() -> None:
+    global _SESSION_QUOTA_REJECTIONS_TOTAL
+    with _MCP_HTTP_METRICS_LOCK:
+        _SESSION_QUOTA_REJECTIONS_TOTAL += 1
+
+
+def build_prometheus_lines() -> list[str]:
+    lines = [
+        "# HELP mcp_http_auth_failures_total Total failed MCP HTTP auth decisions by reason",
+        "# TYPE mcp_http_auth_failures_total counter",
+        "# HELP mcp_http_session_quota_rejections_total Total MCP HTTP session quota rejections",
+        "# TYPE mcp_http_session_quota_rejections_total counter",
+        "# HELP mcp_http_sessions_active Current active MCP HTTP sessions",
+        "# TYPE mcp_http_sessions_active gauge",
+    ]
+    with _MCP_HTTP_METRICS_LOCK:
+        auth_failures = dict(_AUTH_FAILURES_TOTAL)
+        quota_rejections = _SESSION_QUOTA_REJECTIONS_TOTAL
+    for reason, count in sorted(auth_failures.items()):
+        lines.append(f'mcp_http_auth_failures_total{{reason="{reason}"}} {count}')
+    lines.append(f"mcp_http_session_quota_rejections_total {quota_rejections}")
+    with _SESSION_LOCK:
+        lines.append(f"mcp_http_sessions_active {len(_SESSION_STATE)}")
+    return lines
+
+
+def _read_bool_env(name: str) -> bool | None:
+    return cast(bool | None, _shared_read_bool_env(name))
 
 
 def _bool_env(name: str, default: bool = False) -> bool:
-    return _shared_bool_env(name, default=default)
+    return cast(bool, _shared_bool_env(name, default=default))
 
 
-def _client_supports_ui(capabilities: Dict[str, Any]) -> bool:
-    return _shared_client_supports_ui(capabilities, override_env="MCP_HTTP_UI_SUPPORTED")
+def _client_supports_ui(capabilities: dict[str, Any]) -> bool:
+    return cast(
+        bool,
+        _shared_client_supports_ui(capabilities, override_env="MCP_HTTP_UI_SUPPORTED"),
+    )
 
 
 def _accepts_event_stream(request: Request) -> bool:
@@ -103,16 +328,23 @@ def _accepts_event_stream(request: Request) -> bool:
         return False
     accept_lower = accept.lower()
     # Some clients (and test harnesses) send "*/*"; treat that as compatible.
-    return ("text/event-stream" in accept_lower) or ("*/*" in accept_lower) or (not accept_lower.strip())
+    return (
+        ("text/event-stream" in accept_lower)
+        or ("*/*" in accept_lower)
+        or (not accept_lower.strip())
+    )
 
 
-def _needs_toolset_elicitation(payload: Dict[str, Any]) -> bool:
+def _needs_toolset_elicitation(payload: dict[str, Any]) -> bool:
     if payload.get("skipElicitation") is True:
         return False
-    return not any(payload.get(key) is not None for key in ("toolset", "includeToolsets", "excludeToolsets"))
+    return not any(
+        payload.get(key) is not None
+        for key in ("toolset", "includeToolsets", "excludeToolsets")
+    )
 
 
-def _build_toolset_elicitation_params(payload: Dict[str, Any]) -> Dict[str, Any]:
+def _build_toolset_elicitation_params(payload: dict[str, Any]) -> dict[str, Any]:
     catalog = get_toolset_catalog()
     default_toolset, default_include, default_exclude = resolve_default_toolset_filters_from_env()
     include_seed = list(default_include)
@@ -120,15 +352,18 @@ def _build_toolset_elicitation_params(payload: Dict[str, Any]) -> Dict[str, Any]
         include_seed.append(default_toolset)
     query = payload.get("query")
     query_text = query.strip() if isinstance(query, str) else ""
-    return build_toolset_selection_elicitation_params(
+    return cast(
+        dict[str, Any],
+        build_toolset_selection_elicitation_params(
         query=query_text,
         toolset_names=sorted(catalog.keys()),
         default_include=include_seed,
         default_exclude=default_exclude,
+        ),
     )
 
 
-def _sse_event(data: str, *, event_id: Optional[str] = None, retry_ms: Optional[int] = None) -> str:
+def _sse_event(data: str, *, event_id: str | None = None, retry_ms: int | None = None) -> str:
     # SSE requires each field on its own line; terminate events with a blank line.
     lines: list[str] = []
     if retry_ms is not None:
@@ -141,7 +376,7 @@ def _sse_event(data: str, *, event_id: Optional[str] = None, retry_ms: Optional[
     return "\n".join(lines) + "\n"
 
 
-def _pending_bucket(session_state: Dict[str, Any]) -> Dict[str, Any]:
+def _pending_bucket(session_state: dict[str, Any]) -> dict[str, Any]:
     pending = session_state.get("pending")
     if isinstance(pending, dict):
         return pending
@@ -150,7 +385,7 @@ def _pending_bucket(session_state: Dict[str, Any]) -> Dict[str, Any]:
     return pending
 
 
-def _next_elicitation_request_id(session_state: Dict[str, Any]) -> str:
+def _next_elicitation_request_id(session_state: dict[str, Any]) -> str:
     with _SESSION_LOCK:
         raw = session_state.get("elicitation_seq", 0)
         try:
@@ -162,7 +397,7 @@ def _next_elicitation_request_id(session_state: Dict[str, Any]) -> str:
     return f"elicitation-{seq}"
 
 
-def _register_pending(session_state: Dict[str, Any], request_id: str) -> asyncio.Future[Any]:
+def _register_pending(session_state: dict[str, Any], request_id: str) -> asyncio.Future[Any]:
     loop = asyncio.get_running_loop()
     fut: asyncio.Future[Any] = loop.create_future()
     with _SESSION_LOCK:
@@ -171,7 +406,7 @@ def _register_pending(session_state: Dict[str, Any], request_id: str) -> asyncio
     return fut
 
 
-def _resolve_pending(session_state: Dict[str, Any], request_id: Any, result: Any) -> bool:
+def _resolve_pending(session_state: dict[str, Any], request_id: Any, result: Any) -> bool:
     if not isinstance(request_id, str):
         return False
     with _SESSION_LOCK:
@@ -194,18 +429,18 @@ def _resolve_pending(session_state: Dict[str, Any], request_id: Any, result: Any
     return True
 
 
-def _resp_success(msg_id: Any, result: Any) -> Dict[str, Any]:
+def _resp_success(msg_id: Any, result: Any) -> dict[str, Any]:
     return {"jsonrpc": JSONRPC, "id": msg_id, "result": result}
 
 
-def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> Dict[str, Any]:
-    err: Dict[str, Any] = {"code": code, "message": message}
+def _resp_error(msg_id: Any, code: int, message: str, data: Any = None) -> dict[str, Any]:
+    err: dict[str, Any] = {"code": code, "message": message}
     if data is not None:
         err["data"] = data
     return {"jsonrpc": JSONRPC, "id": msg_id, "error": err}
 
 
-def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> Dict[str, Any]:
+def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> dict[str, Any]:
     correlation_id = str(uuid.uuid4())
     logger.error(
         "MCP http internal error correlation_id={} method={} msg_id={} error_type={}",
@@ -217,7 +452,7 @@ def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> Dict[str
     return _resp_error(msg_id, -32603, "Internal error", {"correlationId": correlation_id})
 
 
-def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[str, Any]:
+def _initialize(params: dict[str, Any], session_state: dict[str, Any]) -> dict[str, Any]:
     requested = params.get("protocolVersion")
     protocol_version = negotiate_protocol_version(requested)
     capabilities = params.get("capabilities")
@@ -252,12 +487,12 @@ def _initialize(params: Dict[str, Any], session_state: Dict[str, Any]) -> Dict[s
 
 def _protocol_error_response(
     *,
-    headers: Dict[str, str],
+    headers: dict[str, str],
     message: str,
     requested: str | None = None,
     negotiated: str | None = None,
 ) -> JSONResponse:
-    data: Dict[str, Any] = {"supported": list(SUPPORTED_PROTOCOL_VERSIONS)}
+    data: dict[str, Any] = {"supported": list(SUPPORTED_PROTOCOL_VERSIONS)}
     if requested is not None:
         data["requested"] = requested
     if negotiated is not None:
@@ -273,8 +508,8 @@ def _resolve_request_protocol_version(
     *,
     request: Request,
     method: str,
-    session_state: Dict[str, Any],
-    headers: Dict[str, str],
+    session_state: dict[str, Any],
+    headers: dict[str, str],
 ) -> tuple[str, JSONResponse | None]:
     header_version = normalize_protocol_version(request.headers.get("mcp-protocol-version"))
     if header_version and not is_supported_protocol_version(header_version):
@@ -317,7 +552,7 @@ def _resolve_request_protocol_version(
     return HTTP_DEFAULT_PROTOCOL_VERSION, None
 
 
-def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str, Any]:
+def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str, Any]:
     name = params.get("tool") or params.get("name")
     if not isinstance(name, str):
         raise ValueError("Missing tool name")
@@ -353,7 +588,7 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
         latency_ms=(time.perf_counter() - started) * 1000.0,
     )
     ok = 200 <= status_code < 300
-    result: Dict[str, Any] = {"status": status_code, "ok": ok, "data": data}
+    result: dict[str, Any] = {"status": status_code, "ok": ok, "data": data}
     allow_resource = _bool_env("MCP_HTTP_RESOURCE_CONTENT", default=True)
     if isinstance(data, dict):
         content_override = data.get("content")
@@ -382,7 +617,7 @@ def _call_tool(params: Dict[str, Any], capabilities: Dict[str, Any]) -> Dict[str
     return result
 
 
-def _dispatch(method: str, params: Dict[str, Any], session_state: Dict[str, Any]) -> Any:
+def _dispatch(method: str, params: dict[str, Any], session_state: dict[str, Any]) -> Any:
     if method == "initialize":
         return _initialize(params, session_state)
     if method == "tools/list":
@@ -496,6 +731,30 @@ async def mcp_endpoint(request: Request):
             content=_resp_error(msg_id, -32602, "Invalid params"),
             headers=headers,
         )
+    try:
+        auth_claims = _authenticate_request(request, session_state)
+        _enforce_session_quota(method, session_state, auth_claims)
+    except AuthenticationError as exc:
+        _record_auth_failure("authentication")
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content=_resp_error(msg_id, 1004, str(exc)),
+            headers=headers,
+        )
+    except AuthorizationError as exc:
+        _record_auth_failure("authorization")
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content=_resp_error(msg_id, 1005, str(exc)),
+            headers=headers,
+        )
+    except SessionQuotaExceeded as exc:
+        _record_session_quota_rejection()
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content=_resp_error(msg_id, 1006, str(exc)),
+            headers=headers,
+        )
     if msg_id is None:
         try:
             _dispatch(method, params, session_state)
@@ -554,7 +813,7 @@ async def mcp_endpoint(request: Request):
                                     timeout_s = 120.0
                             try:
                                 elicitation_result = await asyncio.wait_for(fut, timeout=timeout_s)
-                            except asyncio.TimeoutError:
+                            except TimeoutError:
                                 final_result = _call_tool(call_params, capabilities)
                             else:
                                 if isinstance(elicitation_result, dict):
@@ -584,8 +843,12 @@ async def mcp_endpoint(request: Request):
                                         }
                                 else:
                                     final_result = _call_tool(call_params, capabilities)
+                            response_payload = json.dumps(
+                                _resp_success(msg_id, final_result),
+                                separators=(",", ":"),
+                            )
                             yield _sse_event(
-                                json.dumps(_resp_success(msg_id, final_result), separators=(",", ":")),
+                                response_payload,
                                 event_id=f"{elicitation_id}-response",
                             )
                         finally:
@@ -645,7 +908,7 @@ async def mcp_endpoint(request: Request):
                                     timeout_s = 120.0
                             try:
                                 elicitation_result = await asyncio.wait_for(fut, timeout=timeout_s)
-                            except asyncio.TimeoutError:
+                            except TimeoutError:
                                 final_result = initial_result
                             else:
                                 final_result = initial_result
@@ -656,8 +919,12 @@ async def mcp_endpoint(request: Request):
                                     )
                                     if changed:
                                         final_result = _call_tool(call_params, capabilities)
+                            response_payload = json.dumps(
+                                _resp_success(msg_id, final_result),
+                                separators=(",", ":"),
+                            )
                             yield _sse_event(
-                                json.dumps(_resp_success(msg_id, final_result), separators=(",", ":")),
+                                response_payload,
                                 event_id=f"{elicitation_id}-response",
                             )
                         finally:

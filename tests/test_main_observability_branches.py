@@ -91,6 +91,35 @@ def test_metrics_disabled_branch(monkeypatch):
     assert resp.json()["code"] == "NOT_ENABLED"
 
 
+def test_metrics_include_mcp_http_metrics(monkeypatch):
+    from server.mcp import http_transport
+
+    client = TestClient(app)
+    monkeypatch.setattr(settings, "METRICS_ENABLED", True, raising=False)
+    monkeypatch.setattr(
+        http_transport,
+        "_AUTH_FAILURES_TOTAL",
+        {"authentication": 2},
+        raising=False,
+    )
+    monkeypatch.setattr(
+        http_transport,
+        "_SESSION_QUOTA_REJECTIONS_TOTAL",
+        1,
+        raising=False,
+    )
+    http_transport._SESSION_STATE.clear()
+    http_transport._SESSION_STATE["session-1"] = {"last_seen": time.time()}
+
+    resp = client.get("/metrics")
+
+    assert resp.status_code == 200
+    body = resp.text
+    assert 'mcp_http_auth_failures_total{reason="authentication"} 2' in body
+    assert "mcp_http_session_quota_rejections_total 1" in body
+    assert "mcp_http_sessions_active 1" in body
+
+
 def test_generic_exception_handler_non_debug_path(monkeypatch):
     from tools.registry import Tool, register
 
@@ -183,3 +212,65 @@ def test_record_latency_overflow_bucket():
         assert main._latency_overflow == 1
     finally:
         main._latency_overflow = original_overflow
+
+
+def test_rate_limit_helper_edges_and_health_endpoint():
+    import server.main as main
+
+    original_exempt = settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES
+    try:
+        settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES = []
+        assert main._rate_limit_exempt_prefixes() == ()
+        settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES = "/maps/vector"
+        assert main._is_rate_limit_exempt("/maps/vector/vts") is True
+        assert main._is_rate_limit_exempt("/health") is False
+    finally:
+        settings.RATE_LIMIT_EXEMPT_PATH_PREFIXES = original_exempt
+
+    client = TestClient(app)
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "OK"}
+
+
+def test_record_latency_bucket_and_counter_increment():
+    import server.main as main
+
+    original_hist = dict(main._latency_hist)
+    original_requests = main._requests_total
+    original_limited = main._rate_limited_total
+    try:
+        main._latency_hist = dict.fromkeys(main._latency_buckets, 0)
+        main._requests_total = 0
+        main._rate_limited_total = 0
+        main._record_latency(1.0)
+        main._increment_counter()
+        main._increment_counter(rate_limited=True)
+        assert main._latency_hist[5] == 1
+        assert main._requests_total == 2
+        assert main._rate_limited_total == 1
+    finally:
+        main._latency_hist = original_hist
+        main._requests_total = original_requests
+        main._rate_limited_total = original_limited
+
+
+def test_generic_exception_handler_debug_path(monkeypatch):
+    from tools.registry import Tool, register
+
+    def boom(_payload):
+        raise RuntimeError(f"debug crash {settings.NOMIS_SIGNATURE}")
+
+    name = f"temp.debug.{int(time.time() * 1000000)}"
+    register(Tool(name=name, description="debug tool", handler=boom))
+    monkeypatch.setattr(settings, "DEBUG_ERRORS", True, raising=False)
+    monkeypatch.setattr(settings, "NOMIS_SIGNATURE", "debug-signature-secret", raising=False)
+
+    client = TestClient(app, raise_server_exceptions=False)
+    resp = client.post("/tools/call", json={"tool": name})
+    assert resp.status_code == 500
+    body = resp.json()
+    assert body["code"] == "INTERNAL_ERROR"
+    assert "traceback" in body
+    assert "debug-signature-secret" not in body["message"]
+    assert "[REDACTED]" in body["message"]

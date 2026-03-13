@@ -77,7 +77,7 @@ def test_static_osm_map_honors_large_size_with_multi_tile_render(
     assert len(calls) > 1
 
 
-def test_vector_proxy_prefers_bearer_token(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_vector_proxy_does_not_forward_bearer_token(monkeypatch: pytest.MonkeyPatch) -> None:
     client = TestClient(app)
 
     def fake_get(
@@ -86,8 +86,8 @@ def test_vector_proxy_prefers_bearer_token(monkeypatch: pytest.MonkeyPatch) -> N
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
     ) -> _FakeResponse:
-        assert headers == {"Authorization": "Bearer test-token"}
-        assert "key" not in (params or {})
+        assert headers in (None, {})
+        assert (params or {}).get("key") == "env-key"
         return _FakeResponse(
             200,
             b"tile-bytes",
