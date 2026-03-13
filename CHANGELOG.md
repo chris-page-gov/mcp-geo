@@ -139,6 +139,11 @@ All notable changes to this project will be documented in this file.
   back to Explorer at the end of `connect()`. This stops the full-suite
   Benchmarks and Routing specs from being switched away mid-wait on slower
   GitHub runners.
+- Added full-UI Explorer resource validation in
+  `playground/tests/full/explorer_resources_full.spec.js`, proving that the
+  hardened playground still lets users select every baseline fixture resource
+  from the Explorer resource list and open each MCP-App resource through the
+  host preview flow while keeping data resources viewable in the detail pane.
 - Updated `README.md` and `docs/Build.md` to document the published GHCR image
   path and to require absolute `--env-file` paths for GUI desktop clients such
   as Claude Desktop, avoiding broken `.env` resolution outside the repo

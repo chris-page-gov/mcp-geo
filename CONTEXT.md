@@ -195,6 +195,11 @@ assumptions change.
   audit bootstrap loads complete, and by removing the end-of-connect tab reset
   that could switch Benchmarks or Routing back to Explorer while the full
   Playwright suite was waiting on seeded demo content.
+- Validating preservation of the original Explorer resource flows by adding
+  `playground/tests/full/explorer_resources_full.spec.js`, which iterates over
+  every baseline fixture resource, confirms each one remains selectable from
+  the hardened Explorer list, verifies every MCP-App resource still opens in
+  the host preview, and keeps data resources visible through the detail pane.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled
