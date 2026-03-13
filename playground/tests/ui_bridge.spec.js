@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { buildCsp, createUiPreviewSession, injectCsp } from "../src/lib/uiBridge.js";
+import { buildCsp, createUiPreviewSession, injectCsp, validateUiMessage } from "../src/lib/uiBridge.js";
 
 test("preview session only expects host origin when same-origin is effectively enabled", () => {
   const base = {
@@ -61,4 +61,55 @@ test("refreshing an active preview can preserve the existing bridge session toke
   expect(refreshedSession.token).toBe(initialSession.token);
   expect(refreshedSession.createdAt).toBe(initialSession.createdAt);
   expect(Array.from(refreshedSession.allowedToolNames)).toContain("os_route.descriptor");
+});
+
+test("preview session permits resources/read calls by resource name as well as uri", () => {
+  const previewSession = createUiPreviewSession({
+    resourceUri: "ui://mcp-geo/route-planner",
+    uiAllowSameOrigin: false,
+    uiResourceMeta: { ui: {} },
+    hostOrigin: "http://127.0.0.1:4173",
+    tools: [],
+    resources: [
+      {
+        uri: "resource://mcp-geo/stakeholder-benchmark-pack",
+        name: "stakeholder_benchmark_pack",
+      },
+    ],
+  });
+
+  const baseEvent = {
+    origin: "null",
+  };
+  const baseMeta = {
+    __mcpGeoHost: {
+      sessionToken: previewSession.token,
+    },
+  };
+
+  expect(
+    validateUiMessage({
+      event: baseEvent,
+      message: {
+        jsonrpc: "2.0",
+        method: "resources/read",
+        params: { uri: "resource://mcp-geo/stakeholder-benchmark-pack" },
+        ...baseMeta,
+      },
+      previewSession,
+    })
+  ).toEqual({ ok: true });
+
+  expect(
+    validateUiMessage({
+      event: baseEvent,
+      message: {
+        jsonrpc: "2.0",
+        method: "resources/read",
+        params: { name: "stakeholder_benchmark_pack" },
+        ...baseMeta,
+      },
+      previewSession,
+    })
+  ).toEqual({ ok: true });
 });

@@ -129,6 +129,10 @@ All notable changes to this project will be documented in this file.
   SG03/SG12 scenario buttons through the routing workbench's list-item UI
   instead of a page-wide accessible-name match, eliminating the flaky
   `frontend` CI timeout on PR `#36`.
+- Updated the playground bridge resource allowlist so iframe widgets may call
+  `resources/read` by either resource URI or resource name, matching the
+  accepted MCP request shape and clearing the remaining actionable PR `#36`
+  review comment on `playground/src/lib/uiBridge.js`.
 - Updated `README.md` and `docs/Build.md` to document the published GHCR image
   path and to require absolute `--env-file` paths for GUI desktop clients such
   as Claude Desktop, avoiding broken `.env` resolution outside the repo

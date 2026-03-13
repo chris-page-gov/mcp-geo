@@ -179,6 +179,10 @@ assumptions change.
   full-suite selectors in `playground/tests/support/full_playground.js` and
   `playground/tests/full/routing_full.spec.js`, so the SG03/SG12 seeded demos
   are selected only after the routing workbench renders its list items.
+- Clearing the last actionable PR `#36` review thread by extending the iframe
+  bridge preview-session allowlist to accept `resources/read` requests by
+  resource name as well as URI, matching the MCP contract returned by
+  `resources/list`.
 - Rolling out the Map Lab novice-learning and selector-based collection/export
   workflow on the compatibility-locked boundary explorer entrypoint.
 - Hardening storage isolation so mutable database/cache/log state is decoupled

@@ -50,6 +50,32 @@ function buildToolAliasSet(tools) {
   return aliases;
 }
 
+function buildResourceAliasSet(resources, resourceUri) {
+  const aliases = new Set();
+  if (Array.isArray(resources)) {
+    resources.forEach((entry) => {
+      const uri = typeof entry?.uri === "string" ? entry.uri.trim() : "";
+      const name = typeof entry?.name === "string" ? entry.name.trim() : "";
+      [uri, name].filter(Boolean).forEach((value) => {
+        aliases.add(value);
+        const sanitized = sanitizeBridgeName(value);
+        if (sanitized) {
+          aliases.add(sanitized);
+        }
+      });
+    });
+  }
+  const resourceValue = typeof resourceUri === "string" ? resourceUri.trim() : "";
+  if (resourceValue) {
+    aliases.add(resourceValue);
+    const sanitized = sanitizeBridgeName(resourceValue);
+    if (sanitized) {
+      aliases.add(sanitized);
+    }
+  }
+  return aliases;
+}
+
 function createSessionToken() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -320,9 +346,7 @@ export function createUiPreviewSession({
     allowSameOrigin: sameOrigin,
     expectedOrigin: sameOrigin ? hostOrigin : "null",
     allowedToolNames: buildToolAliasSet(tools),
-    allowedResourceUris: Array.from(
-      new Set([...resources.map((entry) => entry?.uri).filter(Boolean), resourceUri].filter(Boolean))
-    ),
+    allowedResourceNames: buildResourceAliasSet(resources, resourceUri),
   };
 }
 
@@ -395,7 +419,7 @@ export function validateUiMessage({ event, message, previewSession }) {
   }
   if (method === "resources/read") {
     const uri = message.params?.uri || message.params?.name;
-    if (!previewSession.allowedResourceUris.includes(uri)) {
+    if (!previewSession.allowedResourceNames.has(uri)) {
       return {
         ok: false,
         reason: `Widget requested unknown resource: ${uri || "unknown"}`,
