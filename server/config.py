@@ -98,6 +98,8 @@ class Settings(_PydanticBaseSettings):
     MCP_TOOLS_DEFAULT_TOOLSET: str = ""
     MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS: str = ""
     MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS: str = ""
+    MCP_RESOURCE_HTTP_LINKS_ENABLED: bool = False
+    MCP_PUBLIC_BASE_URL: str = ""
     ROUTE_GRAPH_ENABLED: bool = False
     ROUTE_GRAPH_DSN: str = ""
     ROUTE_GRAPH_SCHEMA: str = "routing"

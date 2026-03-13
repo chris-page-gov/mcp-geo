@@ -69,6 +69,11 @@ assumptions change.
   standards (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM
   guidance, W3C provenance/catalog standards, and MCP `2025-11-25`.
 - Maintaining the new rerunnable OWASP MCP validation pack under `security/owasp_mcp/`, including the strict baseline report `docs/reports/owasp_mcp_server_validation_2026-03-13.md`, signed tool manifest verification, CI artifact publication, and attestation-backed control evaluation. The current strict score is `100.0` with verdict `compliant`; the repo now has committed deployment/auth/governance attestations, hardened `/mcp` auth and session controls, private monitoring assets, and no live token passthrough in `server/maps_proxy.py`.
+- Maintaining the new auth-aware cross-transport resource fallback so clients
+  that do not auto-resolve `resource://` URIs can still retrieve MCP
+  resources safely via `os_resources.get`, while HTTP `/tools/call` and
+  `/resources/*` now follow the same auth gate surface as `/mcp` when MCP
+  HTTP auth is enabled and direct HTTP resource links remain opt-in only.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery

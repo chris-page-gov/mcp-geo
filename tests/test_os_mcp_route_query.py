@@ -270,7 +270,7 @@ def test_route_query_ui_probe_phrase():
 def test_route_query_unknown_skills_guide_request():
     body = _route("Fetch the MCP Geo skills guide")
     assert body["intent"] == "unknown"
-    assert body["recommended_tool"] == "resources/read"
+    assert body["recommended_tool"] == "os_resources.get"
 
 
 def test_route_query_unknown_descriptor_request():

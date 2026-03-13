@@ -2,20 +2,17 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, Header, Query, Response
+from fastapi import APIRouter, HTTPException, Header, Query, Request, Response
 from fastapi.responses import FileResponse, RedirectResponse
 
+from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
+from server.mcp.resource_access import read_resource_content, read_result_payload
 from server.mcp.resource_catalog import (
-    DATA_RESOURCE_PREFIX,
     list_data_resources,
     list_skill_resources,
     list_ui_resources,
-    load_data_content,
-    load_skill_content,
     load_ui_content,
-    resolve_data_resource,
     resolve_offline_pack_download,
-    resolve_skill_resource,
     resolve_ui_resource,
     UI_DIR,
 )
@@ -90,19 +87,15 @@ def _build_resource_list() -> list[dict[str, Any]]:
 
 def _read_result(
     uri: str,
-    mime_type: Optional[str],
+    mime_type: str | None,
     text: str,
-    meta: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
-    item: Dict[str, Any] = {"uri": uri, "text": text}
-    if mime_type:
-        item["mimeType"] = mime_type
-    if meta:
-        item["_meta"] = meta
-    return {"contents": [item]}
+    meta: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = {"uri": uri, "mimeType": mime_type, "text": text, "_meta": meta}
+    return read_result_payload(payload)
 
 
-def _read_json_result(uri: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+def _read_json_result(uri: str, payload: dict[str, Any]) -> dict[str, Any]:
     return _read_result(
         uri,
         "application/json",
@@ -111,7 +104,11 @@ def _read_json_result(uri: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 @router.get("/resources/list")
-def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
+def list_resources(request: Request, response: Response, limit: int = 10, page: int = 1) -> Any:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     resources = _build_resource_list()
     start = (page - 1) * limit
     end = start + limit
@@ -120,7 +117,11 @@ def list_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
 
 
 @router.get("/resources/describe")
-def describe_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
+def describe_resources(request: Request, response: Response, limit: int = 10, page: int = 1) -> Any:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     resources = _build_resource_list()
     start = (page - 1) * limit
     end = start + limit
@@ -130,6 +131,7 @@ def describe_resources(limit: int = 10, page: int = 1) -> Dict[str, Any]:
 
 @router.get("/resources/read")
 def read_resource(
+    request: Request,
     response: Response,
     name: str | None = Query(default=None),
     uri: str | None = Query(default=None),
@@ -143,6 +145,10 @@ def read_resource(
     geography: Optional[str] = Query(default=None),
     measure: Optional[str] = Query(default=None),
 ) -> Optional[Dict[str, Any]]:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     if not name and not uri:
         raise HTTPException(status_code=400, detail="Missing resource name or uri")
 
@@ -152,92 +158,21 @@ def read_resource(
         candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
         return etag in candidates or "*" in candidates
 
-    def _meta_mime_type(meta: Dict[str, Any] | None) -> str:
-        if isinstance(meta, dict):
-            value = meta.get("mimeType")
-            if isinstance(value, str) and value.strip():
-                return value
-        return "application/json"
+    try:
+        resource = read_resource_content(name=name, uri=uri, asset_mode="absolute")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail="Resource not found") from exc
 
-    if uri:
-        if uri.startswith(DATA_RESOURCE_PREFIX):
-            entry = resolve_data_resource(uri)
-            if entry:
-                content, etag, meta = load_data_content(entry)
-                if _match_etag(etag):
-                    response.status_code = 304
-                    response.headers["ETag"] = etag
-                    return None
-                response.headers["ETag"] = etag
-                response.headers["Cache-Control"] = "public, max-age=300"
-                return _read_result(uri, _meta_mime_type(meta), content, meta)
-            raise HTTPException(status_code=404, detail="Resource not found")
-        else:
-            ui_entry = resolve_ui_resource(uri)
-            if ui_entry:
-                content, etag = load_ui_content(ui_entry, asset_mode="absolute")
-                if _match_etag(etag):
-                    response.status_code = 304
-                    response.headers["ETag"] = etag
-                    return None
-                response.headers["ETag"] = etag
-                response.headers["Cache-Control"] = "public, max-age=300"
-                return _read_result(
-                    ui_entry["uri"],
-                    ui_entry["mimeType"],
-                    content,
-                    ui_entry.get("resourceMeta"),
-                )
-            skill_entry = resolve_skill_resource(uri)
-            if skill_entry:
-                content, etag = load_skill_content()
-                if _match_etag(etag):
-                    response.status_code = 304
-                    response.headers["ETag"] = etag
-                    return None
-                response.headers["ETag"] = etag
-                response.headers["Cache-Control"] = "public, max-age=300"
-                return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
-            raise HTTPException(status_code=404, detail="Resource not found")
-
-    if name:
-        ui_entry = resolve_ui_resource(name)
-        if ui_entry:
-            content, etag = load_ui_content(ui_entry, asset_mode="absolute")
-            if _match_etag(etag):
-                response.status_code = 304
-                response.headers["ETag"] = etag
-                return None
-            response.headers["ETag"] = etag
-            response.headers["Cache-Control"] = "public, max-age=300"
-            return _read_result(
-                ui_entry["uri"],
-                ui_entry["mimeType"],
-                content,
-                ui_entry.get("resourceMeta"),
-            )
-        skill_entry = resolve_skill_resource(name)
-        if skill_entry:
-            content, etag = load_skill_content()
-            if _match_etag(etag):
-                response.status_code = 304
-                response.headers["ETag"] = etag
-                return None
-            response.headers["ETag"] = etag
-            response.headers["Cache-Control"] = "public, max-age=300"
-            return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
-        if name.startswith(DATA_RESOURCE_PREFIX) or resolve_data_resource(name):
-            entry = resolve_data_resource(name)
-            if entry:
-                content, etag, meta = load_data_content(entry)
-                if _match_etag(etag):
-                    response.status_code = 304
-                    response.headers["ETag"] = etag
-                    return None
-                response.headers["ETag"] = etag
-                response.headers["Cache-Control"] = "public, max-age=300"
-                uri_value = name if name.startswith(DATA_RESOURCE_PREFIX) else f"{DATA_RESOURCE_PREFIX}{entry.get('slug','')}"
-                return _read_result(uri_value, _meta_mime_type(meta), content, meta)
+    etag = str(resource["etag"])
+    if _match_etag(etag):
+        response.status_code = 304
+        response.headers["ETag"] = etag
+        return None
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return read_result_payload(resource)
 
     raise HTTPException(status_code=404, detail="Resource not found")
 
@@ -344,10 +279,21 @@ def simple_map_lab_redirect() -> RedirectResponse:
 
 @router.get("/resources/download")
 def download_resource(
+    request: Request,
+    response: Response,
     uri: str = Query(...),
-) -> FileResponse:
+) -> Any:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     resolved = resolve_offline_pack_download(uri)
     if not resolved:
         raise HTTPException(status_code=404, detail="Offline pack not found")
     path, media_type = resolved
-    return FileResponse(path=str(path), filename=path.name, media_type=media_type)
+    return FileResponse(
+        path=str(path),
+        filename=path.name,
+        media_type=media_type,
+        headers=auth_headers,
+    )

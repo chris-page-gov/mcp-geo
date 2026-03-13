@@ -98,7 +98,6 @@ def _delivery_wrap(
         "resourceUri": meta["resourceUri"],
         "bytes": meta["bytes"],
         "sha256": meta["sha256"],
-        "path": meta["path"],
     }
 
 

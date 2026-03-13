@@ -7,6 +7,8 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from server.mcp.http_route_auth import authorize_http_route
+from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
     filter_tool_names_by_toolsets,
@@ -46,6 +48,7 @@ _IMPORT_MODULES = [
     "tools.ons_geo",
     "tools.nomis_data",
     "tools.os_map",
+    "tools.os_resources",
     "tools.os_offline",
     "tools.os_mcp",
     "tools.os_apps",
@@ -117,6 +120,7 @@ _PREFIX_IMPORTS = {
     "ons_geo": ["tools.ons_geo"],
     "nomis": ["tools.nomis_data"],
     "os_map": ["tools.os_map"],
+    "os_resources": ["tools.os_resources"],
     "os_offline": ["tools.os_offline"],
     "os_mcp": ["tools.os_mcp"],
     "os_apps": ["tools.os_apps"],
@@ -181,6 +185,9 @@ def list_tools_endpoint(
 
 @router.post("/tools/call")
 async def call_tool(request: Request):
+    auth_headers, auth_error = authorize_http_route(request, quota_method="tools/call")
+    if auth_error is not None:
+        return auth_error
     try:
         data = await request.json()
     except (json.JSONDecodeError, ValueError):
@@ -250,6 +257,8 @@ async def call_tool(request: Request):
     if resolved_name == "os_mcp.descriptor" and isinstance(payload, dict):
         payload = dict(payload)
         payload.setdefault("transport", "http")
+    if isinstance(payload, dict) and resolved_name != "os_resources.get":
+        payload = decorate_resource_handoff(payload)
     record_tool_call(
         tool_name=resolved_name,
         transport="http_tools",
@@ -258,7 +267,7 @@ async def call_tool(request: Request):
         status_code=status_code,
         latency_ms=(time.perf_counter() - started) * 1000.0,
     )
-    return JSONResponse(status_code=status_code, content=payload)
+    return JSONResponse(status_code=status_code, content=payload, headers=auth_headers)
 
 
 @router.post("/tools/search")

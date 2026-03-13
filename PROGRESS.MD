@@ -5,6 +5,18 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-13
 
+## Auth-aware cross-transport resource fallback (2026-03-13)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| RFB-1 Generic MCP resource bridge tool | done | none | Added `tools/os_resources.py` with `os_resources.get`, backed by shared helpers in `server/mcp/resource_access.py`, so readable `resource://`, `ui://`, and `skills://` assets can be fetched through a normal tool call with bounded UTF-8-safe chunking, deterministic `pageToken` byte offsets, and sanitized `_meta`. |
+| RFB-2 Transport-level handoff normalization | done | RFB-1 | Added `server/mcp/resource_handoff.py` and wired it into `server/mcp/tools.py`, `server/mcp/http_transport.py`, and `server/stdio_adapter.py` so resource-backed tool results now emit normalized `resourceHandoff` metadata plus spec-native `resource_link` content blocks while preserving legacy `resourceUri` / `resultUri` / `statusUri` / `uri` fields. |
+| RFB-3 Auth parity and safe HTTP exposure | done | RFB-1 | Added shared auth helpers in `server/mcp/http_route_auth.py`, enforced MCP HTTP auth on raw `/tools/call` plus `/resources/list`, `/resources/describe`, `/resources/read`, and `/resources/download`, and introduced `MCP_RESOURCE_HTTP_LINKS_ENABLED` / `MCP_PUBLIC_BASE_URL` so direct HTTP resource URLs stay disabled by default and are only advertised when explicitly configured. |
+| RFB-4 Public-surface hardening and guidance refresh | done | RFB-2, RFB-3 | Removed outward filesystem `path` leakage from public resource/tool payloads, normalized `os_map.export` to return `resourceUri` alongside legacy `uri`, and updated `README.md`, `SKILL.md`, `tools/os_mcp.py`, and related tool hints to recommend `os_resources.get` as the portable fallback when clients cannot call protocol `resources/read`. |
+| RFB-5 Regression coverage | done | RFB-1, RFB-2, RFB-3, RFB-4 | Added `tests/test_resource_fallback.py` plus expectation updates in existing map/route-query tests. Validation passed on 2026-03-13 via `./scripts/pytest-local -q --no-cov tests/test_resource_fallback.py tests/test_os_mcp_route_query.py tests/test_os_map_tools.py tests/test_stdio_adapter_coverage_more.py tests/test_stdio_adapter_direct.py tests/test_mcp_http.py tests/test_resources_ui_skills.py tests/test_resources_data_catalog.py tests/test_os_downloads_tools.py tests/test_os_qgis_tools.py tests/test_os_route_tools.py` (`255 passed`). |
+
 ## OWASP MCP validation pack (2026-03-13)
 
 Legend: pending, in_progress, done, blocked

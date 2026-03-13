@@ -1331,7 +1331,7 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
                     "uri": uri,
                     "mode": "resource",
                     "chunkBytes": 65536,
-                    "hint": "Use resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                    "hint": "Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
                 },
             }
         inline_payload["delivery"] = "inline"
@@ -1364,7 +1364,7 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
                     "uri": uri,
                     "mode": "resource",
                     "chunkBytes": 65536,
-                    "hint": "Use resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                    "hint": "Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
                 },
             }
         return 200, {
@@ -1406,7 +1406,7 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
                         "uri": uri,
                         "mode": "resource",
                         "chunkBytes": 65536,
-                        "hint": "Use resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                        "hint": "Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
                     },
                 }
             return 200, {

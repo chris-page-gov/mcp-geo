@@ -124,14 +124,13 @@ def _delivery_response(
         "resourceUri": export_meta["resourceUri"],
         "bytes": export_meta["bytes"],
         "sha256": export_meta["sha256"],
-        "path": export_meta["path"],
     }
     if include_stream_hint:
         response["stream"] = {
             "uri": export_meta["resourceUri"],
             "mode": "resource",
             "chunkBytes": 65536,
-            "hint": "Use resources/read with resourceUri to fetch large OS outputs.",
+            "hint": "Use os_resources.get or resources/read with resourceUri to fetch large OS outputs.",
         }
     return 200, response
 
@@ -416,7 +415,7 @@ def _prepare_export(payload: dict[str, Any]) -> ToolResult:
             "uri": resource_meta["resourceUri"],
             "mode": "resource",
             "chunkBytes": 65536,
-            "hint": "Use resources/read with resourceUri to fetch large OS outputs.",
+            "hint": "Use os_resources.get or resources/read with resourceUri to fetch large OS outputs.",
         }
     else:
         response["export"] = export_payload

@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added cross-transport MCP resource fallback support via the new
+  `os_resources.get` tool, shared resource-reading helpers in
+  `server/mcp/resource_access.py`, normalized `resourceHandoff` metadata in
+  `server/mcp/resource_handoff.py`, and focused regression coverage in
+  `tests/test_resource_fallback.py`.
 - Added hardened production deployment assets under `ops/deployment/`, including a private-network Docker Compose profile, TLS edge proxy example, Docker secret-file delivery contract, and operator runbook for JWT-protected `/mcp` deployments.
 - Added monitoring assets under `ops/monitoring/`, including Prometheus scrape configuration, OWASP-oriented alert rules, and Vector SIEM routing for structured container and audit/runtime logs.
 - Added OWASP MCP evidence and attestation records under `security/owasp_mcp/evidence/` and `security/owasp_mcp/attestations/`, plus captured live GitHub branch-protection state for `main`.
@@ -127,6 +132,18 @@ All notable changes to this project will be documented in this file.
   `playground/tests/support/fixture_server.mjs`.
 
 ### Changed
+- Updated raw `/tools/call`, `/resources/list`, `/resources/describe`,
+  `/resources/read`, and `/resources/download` to enforce the same MCP HTTP
+  auth gate surface as `/mcp` when auth is enabled, kept direct HTTP resource
+  links opt-in via `MCP_RESOURCE_HTTP_LINKS_ENABLED` and
+  `MCP_PUBLIC_BASE_URL`, stripped outward filesystem `path` leakage from
+  public resource/tool payloads, and normalized `os_map.export` to return
+  `resourceUri` alongside the legacy `uri`.
+- Updated MCP HTTP and STDIO tool responses so resource-backed results now add
+  spec-native `resource_link` content plus normalized `resourceHandoff`
+  metadata, and refreshed README/skill/router guidance to recommend
+  `os_resources.get` as the portable fallback when clients cannot invoke
+  protocol `resources/read`.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,

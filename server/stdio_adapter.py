@@ -29,18 +29,13 @@ from server.mcp import tools as _mcp_import  # noqa: F401
 
 from tools.registry import all_tools, get as get_tool
 from server.mcp.resource_catalog import (
-    DATA_RESOURCE_PREFIX,
     list_data_resources,
     MCP_APPS_MIME,
     list_skill_resources,
     list_ui_resources,
-    load_data_content,
-    load_skill_content,
-    load_ui_content,
-    resolve_data_resource,
-    resolve_skill_resource,
-    resolve_ui_resource,
 )
+from server.mcp.resource_access import read_resource_content, read_result_payload
+from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.prompts import get_prompt as get_prompt_def, list_prompts as list_prompt_defs
 from tools.os_apps import build_ui_tool_meta
 from server.mcp.tool_search import (
@@ -84,68 +79,11 @@ RESOURCE_LIST.extend(list_ui_resources())
 RESOURCE_LIST.extend(list_data_resources())
 
 
-def _resource_mime_from_meta(meta: dict[str, Any] | None) -> str:
-    if isinstance(meta, dict):
-        value = meta.get("mimeType")
-        if isinstance(value, str) and value.strip():
-            return value
-    return "application/json"
-
-
 def handle_get_resource(params: Dict[str, Any]) -> Any:
     name = params.get("name")
     uri = params.get("uri")
-    if not name and not uri:
-        raise ValueError("Missing resource name or uri")
-    if uri:
-        if isinstance(uri, str) and uri.startswith(DATA_RESOURCE_PREFIX):
-            entry = resolve_data_resource(uri)
-            if entry:
-                content, _etag, meta = load_data_content(entry)
-                return _read_result(uri, _resource_mime_from_meta(meta), content, meta)
-            raise LookupError(f"Unknown resource '{uri}'")
-        else:
-            ui_entry = resolve_ui_resource(str(uri))
-            if ui_entry:
-                content, _etag = load_ui_content(ui_entry)
-                return _read_result(
-                    ui_entry["uri"],
-                    ui_entry["mimeType"],
-                    content,
-                    ui_entry.get("resourceMeta"),
-                )
-            skill_entry = resolve_skill_resource(str(uri))
-            if skill_entry:
-                content, _etag = load_skill_content()
-                return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
-            raise LookupError(f"Unknown resource '{uri}'")
-    if name:
-        ui_entry = resolve_ui_resource(str(name))
-        if ui_entry:
-            content, _etag = load_ui_content(ui_entry)
-            return _read_result(
-                ui_entry["uri"],
-                ui_entry["mimeType"],
-                content,
-                ui_entry.get("resourceMeta"),
-            )
-        skill_entry = resolve_skill_resource(str(name))
-        if skill_entry:
-            content, _etag = load_skill_content()
-            return _read_result(skill_entry["uri"], skill_entry["mimeType"], content)
-        if str(name).startswith(DATA_RESOURCE_PREFIX) or resolve_data_resource(str(name)):
-            entry = resolve_data_resource(str(name))
-            if entry:
-                content, _etag, meta = load_data_content(entry)
-                uri_value = (
-                    str(name)
-                    if str(name).startswith(DATA_RESOURCE_PREFIX)
-                    else f"{DATA_RESOURCE_PREFIX}{entry.get('slug', '')}"
-                )
-                return _read_result(uri_value, _resource_mime_from_meta(meta), content, meta)
-    if not isinstance(name, str):
-        raise ValueError("Missing resource name")
-    raise LookupError(f"Unknown resource '{name}'")
+    resource = read_resource_content(name=name, uri=uri)
+    return read_result_payload(resource)
 
 def _resolve_framing() -> Optional[str]:
     raw = os.environ.get("MCP_STDIO_FRAMING", "").strip().lower()
@@ -1000,6 +938,8 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
         )
         if fallback:
             data["fallback"] = fallback
+        if resolved_name != "os_resources.get":
+            data = decorate_resource_handoff(data)
     record_tool_call(
         tool_name=resolved_name,
         transport="stdio",

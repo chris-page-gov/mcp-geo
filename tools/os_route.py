@@ -129,7 +129,6 @@ def _route_get(payload: dict[str, Any]) -> ToolResult:
         "resourceUri": export_meta["resourceUri"],
         "bytes": export_meta["bytes"],
         "sha256": export_meta["sha256"],
-        "path": export_meta["path"],
         "graph": response.get("graph"),
         "resolvedStops": response.get("resolvedStops"),
         "profile": profile,
