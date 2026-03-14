@@ -4,7 +4,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _assert_ca_refresh_precedes_apt(text: str) -> None:
-    first_refresh = text.index("update-ca-certificates")
+    first_refresh = text.index("update-ca-certificates;")
     first_apt_update = text.index("apt-get update")
     assert first_refresh < first_apt_update
 
