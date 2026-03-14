@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from starlette.requests import Request
+
 from server import stdio_adapter
 from server.config import settings
 
@@ -176,6 +178,12 @@ def test_os_resources_validation_error_branches(monkeypatch) -> None:  # type: i
     assert status_code == 400
     assert payload["message"] == "pageToken must align to a UTF-8 codepoint boundary"
 
+    status_code, payload = os_resources._get_resource(
+        {"uri": "resource://mcp-geo/demo", "pageToken": 1, "maxBytes": 1}
+    )
+    assert status_code == 400
+    assert payload["message"] == "maxBytes is too small to fit the next UTF-8 codepoint"
+
 
 def test_resource_handoff_helper_branches(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from server.mcp import resource_access, resource_handoff
@@ -330,6 +338,27 @@ def test_raw_tools_call_validation_errors_keep_session_header(client, monkeypatc
     assert resp.json()["code"] == "INVALID_INPUT"
     assert resp.headers.get("mcp-session-id")
 
+    malformed = client.post(
+        "/tools/call",
+        headers={
+            "Authorization": "Bearer raw-token",
+            "Content-Type": "application/json",
+        },
+        content=b"{bad",
+    )
+    assert malformed.status_code == 400
+    assert malformed.json()["code"] == "INVALID_INPUT"
+    assert malformed.headers.get("mcp-session-id")
+
+    unknown = client.post(
+        "/tools/call",
+        headers={"Authorization": "Bearer raw-token"},
+        json={"tool": "os_unknown.missing"},
+    )
+    assert unknown.status_code == 404
+    assert unknown.json()["code"] == "UNKNOWN_TOOL"
+    assert unknown.headers.get("mcp-session-id")
+
 
 def test_raw_http_auth_metrics_cover_auth_and_quota_failures(client, monkeypatch) -> None:
     from server.mcp import http_transport
@@ -365,6 +394,30 @@ def test_raw_http_auth_metrics_cover_auth_and_quota_failures(client, monkeypatch
     lines = "\n".join(http_transport.build_prometheus_lines())
     assert 'mcp_http_auth_failures_total{reason="authentication"} 1' in lines
     assert "mcp_http_session_quota_rejections_total 1" in lines
+
+
+def test_authorize_http_route_records_authorization_failure_metric(monkeypatch) -> None:
+    from server.mcp import http_transport
+    from server.mcp.http_route_auth import authorize_http_route
+
+    http_transport._AUTH_FAILURES_TOTAL.clear()
+
+    monkeypatch.setattr(http_transport, "_auth_mode", lambda: "static_bearer", raising=True)
+    monkeypatch.setattr(http_transport, "_get_session", lambda _request: ("session-1", {}), raising=True)
+
+    def _raise_authorization(_request, _session_state):
+        raise http_transport.AuthorizationError("Forbidden")
+
+    monkeypatch.setattr(http_transport, "_authenticate_request", _raise_authorization, raising=True)
+
+    request = Request({"type": "http", "method": "GET", "path": "/resources/read", "headers": []})
+    headers, auth_error = authorize_http_route(request)
+
+    assert headers == {"mcp-session-id": "session-1"}
+    assert auth_error is not None
+    assert auth_error.status_code == 403
+    lines = "\n".join(http_transport.build_prometheus_lines())
+    assert 'mcp_http_auth_failures_total{reason="authorization"} 1' in lines
 
 
 def test_mcp_http_wrapped_resource_handoff_and_auth_safe_http_links(

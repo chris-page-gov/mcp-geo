@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
 from fastapi import APIRouter, HTTPException, Header, Query, Request, Response
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 
 from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
 from server.mcp.resource_access import read_resource_content, read_result_payload
@@ -35,6 +35,8 @@ _UI_STATIC_ASSETS: dict[str, Path] = {
     "vendor/maplibre-gl-csp-worker.js": _UI_VENDOR_MAPLIBRE_WORKER_JS,
     "vendor/shp.min.js": _UI_VENDOR_SHP_JS,
 }
+
+_DOWNLOAD_CHUNK_BYTES = 64 * 1024
 
 
 def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
@@ -74,6 +76,31 @@ def _static_asset_response(
         content=asset_path.read_bytes(),
         media_type=_ui_asset_media_type(asset_path),
         headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
+    )
+
+
+def _stream_binary_file(path: Path) -> Iterator[bytes]:
+    with path.open("rb") as handle:
+        while True:
+            chunk = handle.read(_DOWNLOAD_CHUNK_BYTES)
+            if not chunk:
+                break
+            yield chunk
+
+
+def _download_headers(path: Path, headers: dict[str, str]) -> dict[str, str]:
+    file_headers = dict(headers)
+    safe_name = path.name.replace('"', "")
+    file_headers["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+    file_headers["Content-Length"] = str(path.stat().st_size)
+    return file_headers
+
+
+def _binary_file_response(path: Path, media_type: str, headers: dict[str, str]) -> StreamingResponse:
+    return StreamingResponse(
+        _stream_binary_file(path),
+        media_type=media_type,
+        headers=_download_headers(path, headers),
     )
 
 
@@ -280,20 +307,13 @@ def simple_map_lab_redirect() -> RedirectResponse:
 @router.get("/resources/download")
 def download_resource(
     request: Request,
-    response: Response,
     uri: str = Query(...),
 ) -> Any:
     auth_headers, auth_error = authorize_http_route(request)
     if auth_error is not None:
         return auth_error
-    apply_auth_headers(response, auth_headers)
     resolved = resolve_offline_pack_download(uri)
     if not resolved:
         raise HTTPException(status_code=404, detail="Offline pack not found")
     path, media_type = resolved
-    return FileResponse(
-        path=str(path),
-        filename=path.name,
-        media_type=media_type,
-        headers=auth_headers,
-    )
+    return _binary_file_response(path, media_type, auth_headers)

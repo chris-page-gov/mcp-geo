@@ -149,6 +149,14 @@ All notable changes to this project will be documented in this file.
   non-UI hosts), and aligned offline-pack `resources/read` payload resolution
   with `/resources/download` by requiring trusted offline catalog URI matches
   for both paths.
+- Hardened the auth-aware raw HTTP/resource fallback follow-up by keeping
+  authenticated `/tools/call` parse/lookup errors on the same `mcp-session-id`
+  surface, recording authorization failures from `authorize_http_route()` in
+  the shared MCP HTTP Prometheus counters, streaming `/resources/download`
+  from prevalidated offline-pack paths instead of feeding `FileResponse` a
+  user-derived path, rejecting offline-pack symlink escapes outside
+  `data/offline_packs`, and returning `INVALID_INPUT` when `os_resources.get`
+  receives a `maxBytes` value too small to fit the next UTF-8 codepoint.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,

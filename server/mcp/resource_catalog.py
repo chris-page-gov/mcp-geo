@@ -635,7 +635,19 @@ def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
 def _offline_pack_files() -> list[Path]:
     if not OFFLINE_PACKS_DIR.exists():
         return []
-    return sorted(path for path in OFFLINE_PACKS_DIR.glob("*") if path.is_file())
+    resolved_root = OFFLINE_PACKS_DIR.resolve()
+    files: list[Path] = []
+    for path in OFFLINE_PACKS_DIR.glob("*"):
+        if not path.is_file():
+            continue
+        try:
+            resolved_path = path.resolve()
+        except OSError:
+            continue
+        if not _is_path_within(resolved_path, resolved_root):
+            continue
+        files.append(path)
+    return sorted(files)
 
 
 def _map_scenario_pack_files() -> list[Path]:

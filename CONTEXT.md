@@ -73,7 +73,13 @@ assumptions change.
   that do not auto-resolve `resource://` URIs can still retrieve MCP
   resources safely via `os_resources.get`, while HTTP `/tools/call` and
   `/resources/*` now follow the same auth gate surface as `/mcp` when MCP
-  HTTP auth is enabled and direct HTTP resource links remain opt-in only.
+  HTTP auth is enabled and direct HTTP resource links remain opt-in only. The
+  2026-03-14 PR `#39` follow-up also keeps raw `/tools/call` parse/lookup
+  errors on the authenticated session header surface, records authorization
+  failures in the shared HTTP auth metrics, streams `/resources/download` only
+  from prevalidated offline-pack paths, rejects offline-pack symlink escapes
+  outside `data/offline_packs`, and makes `os_resources.get` fail cleanly when
+  `maxBytes` cannot fit the next UTF-8 codepoint.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery

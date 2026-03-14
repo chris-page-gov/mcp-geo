@@ -57,12 +57,6 @@ def _slice_text(encoded: bytes, start: int, max_bytes: int) -> tuple[str, int]:
             return encoded[start:end].decode("utf-8"), end
         except UnicodeDecodeError:
             end -= 1
-    probe = start + 1
-    while probe <= len(encoded):
-        try:
-            return encoded[start:probe].decode("utf-8"), probe
-        except UnicodeDecodeError:
-            probe += 1
     return "", start
 
 
@@ -127,6 +121,8 @@ def _get_resource(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         return _error("pageToken must align to a UTF-8 codepoint boundary")
 
     chunk_text, next_offset = _slice_text(encoded, offset, max_bytes or DEFAULT_RESOURCE_CHUNK_BYTES)
+    if next_offset == offset and offset < len(encoded):
+        return _error("maxBytes is too small to fit the next UTF-8 codepoint")
     complete = next_offset >= len(encoded)
     delivery = "inline" if complete and offset == 0 else "chunked"
     response: dict[str, Any] = {
