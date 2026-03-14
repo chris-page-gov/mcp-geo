@@ -184,7 +184,10 @@ All notable changes to this project will be documented in this file.
   and custom-CA environments use the system certificate bundle, keep proxy
   values build-scoped in the image, source container-wide runtime env from the
   Docker Compose service instead of `devcontainer.json`, and retain both Ruff
-  and Svelte editor support in the VS Code extension list.
+  and Svelte editor support in the VS Code extension list. A 2026-03-14
+  follow-up refreshes the injected CA trust store before the first devcontainer
+  APT fetch so corporate MITM roots under `.devcontainer/certs/*.crt` are
+  active for `apt-get update`.
 - Rejected JSON boolean values for integer request parameters across the
   resource fallback and discovery surfaces, including `os_resources.get`
   chunking inputs, paginated OS/ONS/admin download/search handlers,

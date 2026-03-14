@@ -590,7 +590,9 @@ assumptions change.
   trusts corporate/local roots via `.devcontainer/certs/*.crt` plus the system
   CA bundle, and sources container-wide runtime env from
   `.devcontainer/docker-compose.yml` rather than `devcontainer.json` for the
-  Docker Compose-based workspace.
+  Docker Compose-based workspace. A same-day PR follow-up also restores the
+  pre-APT `update-ca-certificates` step in `.devcontainer/Dockerfile`, so
+  custom corporate roots are live before the first package index fetch.
 - 2026-03-04: Completed public-release `v0.5.0` publication: formal repository
   security review (`docs/reports/public_release_security_review_2026-03-04.md`),
   release notes (`RELEASE_NOTES/0.5.0.md`), version bump

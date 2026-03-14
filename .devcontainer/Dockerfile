@@ -21,6 +21,9 @@ RUN set -eu; \
 	mkdir -p /usr/local/share/ca-certificates/custom; \
 	find /tmp/devcontainer-certs -maxdepth 1 -type f -name "*.crt" \
 		-exec cp {} /usr/local/share/ca-certificates/custom/ \; || true; \
+	if command -v update-ca-certificates >/dev/null 2>&1; then \
+		update-ca-certificates; \
+	fi; \
 	rm -f /etc/apt/sources.list.d/yarn.list || true; \
 	find /etc/apt/sources.list.d -maxdepth 1 -type f -name "*.list" \
 		-exec grep -l "dl.yarnpkg.com" {} + 2>/dev/null \
