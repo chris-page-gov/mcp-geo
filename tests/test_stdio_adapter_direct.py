@@ -147,6 +147,16 @@ def test_ui_tools_include_resource_content_by_default(monkeypatch):
     assert "Open the geography selector" in content[0]["text"]
 
 
+def test_stdio_os_resources_get_keeps_relative_ui_assets():
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_resources_get", "arguments": {"uri": "ui://mcp-geo/geography-selector"}}
+    )
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    assert 'href="shared/compact_contract.css"' in data.get("text", "")
+    assert 'href="/ui/shared/compact_contract.css"' not in data.get("text", "")
+
+
 def test_stdio_resource_handoff_omits_resource_link_without_ui_support(monkeypatch):
     class _FakeTool:
         def call(self, _payload):

@@ -51,6 +51,17 @@ def test_os_resources_get_reads_skills_resource(client) -> None:
     assert "MCP Geo Skills" in body["text"]
 
 
+def test_os_resources_get_http_tool_fallback_uses_absolute_ui_assets(client) -> None:
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_resources.get", "uri": "ui://mcp-geo/geography-selector"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert 'href="/ui/shared/compact_contract.css"' in body["text"]
+    assert 'href="shared/compact_contract.css"' not in body["text"]
+
+
 def test_os_resources_get_chunks_utf8_boundaries(monkeypatch, client) -> None:  # type: ignore[no-untyped-def]
     from tools import os_resources
 
@@ -598,6 +609,26 @@ def test_mcp_http_resource_handoff_http_links_do_not_require_auth_when_disabled(
     assert handoff["httpAccess"]["readUrl"].startswith("https://example.test/resources/read?uri=")
     assert handoff["httpAccess"]["authMode"] == "off"
     assert handoff["httpAccess"]["requiresAuthorization"] is False
+
+
+def test_mcp_http_os_resources_get_uses_absolute_ui_assets(client) -> None:
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    assert session_id
+
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload(
+            "resource-tool-1",
+            "tools/call",
+            {"name": "os_resources_get", "arguments": {"uri": "ui://mcp-geo/geography-selector"}},
+        ),
+    )
+    assert resp.status_code == 200
+    body = resp.json()["result"]["data"]
+    assert 'href="/ui/shared/compact_contract.css"' in body["text"]
+    assert 'href="shared/compact_contract.css"' not in body["text"]
 
 
 def test_stdio_resource_handoff_added_for_resource_backed_tools(

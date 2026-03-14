@@ -232,6 +232,9 @@ async def call_tool(request: Request):
     if resolved_name != tool_name:
         data = dict(data)
         data["tool"] = resolved_name
+    if resolved_name == "os_resources.get":
+        data = dict(data)
+        data.setdefault("_assetMode", "absolute")
     if not tool:
         errors = _try_import_for_tool(resolved_name)
         tool = get(resolved_name)

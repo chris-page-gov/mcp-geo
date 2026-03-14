@@ -91,7 +91,10 @@ assumptions change.
   unauthenticated bad-query requests no longer bypass the 401/403 surface via
   FastAPI 422s, preserved `mcp-session-id` on `/resources/download` 400/404
   responses, and kept configured `httpAccess.readUrl` handoffs visible even
-  when MCP HTTP auth is disabled.
+  when MCP HTTP auth is disabled. A final 2026-03-14 follow-up made
+  `os_resources.get` transport-aware for `ui://` resources, so HTTP tool
+  callers now receive absolute `/ui/...` asset URLs while stdio callers retain
+  relative resource-local asset paths.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery

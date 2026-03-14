@@ -84,6 +84,13 @@ def _resource_error_payload(resource: dict[str, Any]) -> tuple[int, dict[str, An
     return None
 
 
+def _asset_mode_from_payload(payload: dict[str, Any]) -> str:
+    mode = payload.get("_assetMode")
+    if mode == "absolute":
+        return "absolute"
+    return "relative"
+
+
 def _get_resource(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
     uri = payload.get("uri")
     name = payload.get("name")
@@ -102,7 +109,11 @@ def _get_resource(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         return _error(max_error)
 
     try:
-        resource = read_resource_content(name=name, uri=uri)
+        resource = read_resource_content(
+            name=name,
+            uri=uri,
+            asset_mode=_asset_mode_from_payload(payload),
+        )
     except ValueError as exc:
         return _error(str(exc))
     except LookupError:

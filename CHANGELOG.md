@@ -170,6 +170,10 @@ All notable changes to this project will be documented in this file.
   preserving `mcp-session-id` on `/resources/download` 400/404 responses, and
   continuing to advertise configured `httpAccess.readUrl` handoffs when MCP
   HTTP auth is disabled.
+- Normalized `os_resources.get` UI asset paths by transport so HTTP tool
+  callers receive absolute `/ui/...` asset URLs while stdio callers keep
+  resource-local relative paths that remain fetchable without an HTTP side
+  channel.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,

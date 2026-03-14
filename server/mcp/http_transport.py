@@ -595,6 +595,9 @@ def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str
     payload = params.get("args") or params.get("arguments") or params.get("payload") or {}
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
+    payload = dict(payload)
+    if resolved_name == "os_resources.get":
+        payload.setdefault("_assetMode", "absolute")
     started = time.perf_counter()
     status_code, data = tool.call(payload)
     if isinstance(data, dict):
