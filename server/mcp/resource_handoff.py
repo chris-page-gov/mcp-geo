@@ -75,12 +75,10 @@ def _http_access(resource_uri: str) -> dict[str, Any] | None:
     if not base_url:
         return None
     auth_mode = _current_http_auth_mode()
-    if auth_mode == "off":
-        return None
     return {
         "readUrl": f"{base_url}/resources/read?uri={quote(resource_uri, safe='')}",
         "authMode": auth_mode,
-        "requiresAuthorization": True,
+        "requiresAuthorization": auth_mode != "off",
     }
 
 

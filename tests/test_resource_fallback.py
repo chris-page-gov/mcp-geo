@@ -238,7 +238,11 @@ def test_resource_handoff_helper_branches(monkeypatch) -> None:  # type: ignore[
     monkeypatch.setattr(settings, "MCP_RESOURCE_HTTP_LINKS_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "MCP_PUBLIC_BASE_URL", "https://example.test", raising=False)
     monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "off")
-    assert resource_handoff._http_access("resource://mcp-geo/demo") is None
+    assert resource_handoff._http_access("resource://mcp-geo/demo") == {
+        "readUrl": "https://example.test/resources/read?uri=resource%3A%2F%2Fmcp-geo%2Fdemo",
+        "authMode": "off",
+        "requiresAuthorization": False,
+    }
 
     handoff = resource_handoff.build_resource_handoff(
         {
@@ -453,6 +457,69 @@ def test_raw_resources_read_errors_keep_session_header(client, monkeypatch) -> N
     assert unknown.headers.get("mcp-session-id")
 
 
+def test_raw_resource_routes_authenticate_before_query_validation(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "raw-token")
+
+    list_resp = client.get("/resources/list", params={"limit": "bad"})
+    assert list_resp.status_code == 401
+    assert list_resp.headers.get("mcp-session-id")
+
+    describe_resp = client.get("/resources/describe", params={"page": 0})
+    assert describe_resp.status_code == 401
+    assert describe_resp.headers.get("mcp-session-id")
+
+    read_resp = client.get("/resources/read", params={"limit": 0})
+    assert read_resp.status_code == 401
+    assert read_resp.headers.get("mcp-session-id")
+
+    download_resp = client.get("/resources/download")
+    assert download_resp.status_code == 401
+    assert download_resp.headers.get("mcp-session-id")
+
+
+def test_raw_resource_route_validation_and_download_404_keep_session_header(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "raw-token")
+
+    invalid = client.get(
+        "/resources/list",
+        headers={"Authorization": "Bearer raw-token"},
+        params={"limit": "bad"},
+    )
+    assert invalid.status_code == 400
+    assert invalid.headers.get("mcp-session-id")
+
+    invalid_describe = client.get(
+        "/resources/describe",
+        headers={"Authorization": "Bearer raw-token"},
+        params={"page": 0},
+    )
+    assert invalid_describe.status_code == 400
+    assert invalid_describe.headers.get("mcp-session-id")
+
+    missing_download = client.get(
+        "/resources/download",
+        headers={"Authorization": "Bearer raw-token"},
+    )
+    assert missing_download.status_code == 400
+    assert missing_download.headers.get("mcp-session-id")
+
+    unknown_download = client.get(
+        "/resources/download",
+        headers={"Authorization": "Bearer raw-token"},
+        params={"uri": "resource://mcp-geo/offline-packs/missing.pmtiles"},
+    )
+    assert unknown_download.status_code == 404
+    assert unknown_download.headers.get("mcp-session-id")
+
+
 def test_mcp_http_wrapped_resource_handoff_and_auth_safe_http_links(
     client, monkeypatch, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]
@@ -511,6 +578,26 @@ def test_mcp_http_wrapped_resource_handoff_and_auth_safe_http_links(
     )
     assert authenticated.status_code == 200
     assert authenticated.headers.get("mcp-session-id")
+
+
+def test_mcp_http_resource_handoff_http_links_do_not_require_auth_when_disabled(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    _stub_os_map_export(monkeypatch, tmp_path)
+    monkeypatch.delenv("MCP_HTTP_AUTH_MODE", raising=False)
+    monkeypatch.delenv("MCP_HTTP_AUTH_TOKEN", raising=False)
+    monkeypatch.setattr(settings, "MCP_RESOURCE_HTTP_LINKS_ENABLED", True, raising=False)
+    monkeypatch.setattr(settings, "MCP_PUBLIC_BASE_URL", "https://example.test", raising=False)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_map.export", "bbox": [-0.12, 51.5, -0.11, 51.51]},
+    )
+    assert resp.status_code == 200
+    handoff = resp.json()["resourceHandoff"]
+    assert handoff["httpAccess"]["readUrl"].startswith("https://example.test/resources/read?uri=")
+    assert handoff["httpAccess"]["authMode"] == "off"
+    assert handoff["httpAccess"]["requiresAuthorization"] is False
 
 
 def test_stdio_resource_handoff_added_for_resource_backed_tools(

@@ -164,6 +164,12 @@ All notable changes to this project will be documented in this file.
   back to `FileResponse` on prevalidated pack paths, and normalized all
   `os_resources.get` stream hints (`os_downloads`, `ons_data`) to the shared
   chunk-size contract exposed by `server/mcp/resource_handoff.py`.
+- Closed the remaining raw-resource auth parity gaps by moving
+  `/resources/list`, `/resources/describe`, `/resources/read`, and
+  `/resources/download` query validation behind the shared auth helper,
+  preserving `mcp-session-id` on `/resources/download` 400/404 responses, and
+  continuing to advertise configured `httpAccess.readUrl` handoffs when MCP
+  HTTP auth is disabled.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,

@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, Header, Query, Request, Response
+from fastapi import APIRouter, HTTPException, Header, Request, Response
 from fastapi.responses import FileResponse, RedirectResponse
 
 from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
@@ -49,6 +49,31 @@ def _raise_http_route_error(
     auth_headers: dict[str, str],
 ) -> None:
     raise HTTPException(status_code=status_code, detail=detail, headers=auth_headers)
+
+
+def _parse_int_query(
+    raw_value: str | None,
+    *,
+    name: str,
+    default: int,
+    minimum: int | None = None,
+    maximum: int | None = None,
+) -> int:
+    if raw_value is None or raw_value == "":
+        return default
+    try:
+        value = int(raw_value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be an integer") from exc
+    if minimum is not None and value < minimum:
+        if maximum is not None:
+            raise ValueError(f"{name} must be between {minimum} and {maximum}")
+        raise ValueError(f"{name} must be >= {minimum}")
+    if maximum is not None and value > maximum:
+        if minimum is not None:
+            raise ValueError(f"{name} must be between {minimum} and {maximum}")
+        raise ValueError(f"{name} must be <= {maximum}")
+    return value
 
 
 def _ui_asset_media_type(path: Path) -> str:
@@ -120,11 +145,26 @@ def _read_json_result(uri: str, payload: dict[str, Any]) -> dict[str, Any]:
 
 
 @router.get("/resources/list")
-def list_resources(request: Request, response: Response, limit: int = 10, page: int = 1) -> Any:
+def list_resources(request: Request, response: Response) -> Any:
     auth_headers, auth_error = authorize_http_route(request)
     if auth_error is not None:
         return auth_error
     apply_auth_headers(response, auth_headers)
+    try:
+        limit = _parse_int_query(
+            request.query_params.get("limit"),
+            name="limit",
+            default=10,
+            minimum=1,
+        )
+        page = _parse_int_query(
+            request.query_params.get("page"),
+            name="page",
+            default=1,
+            minimum=1,
+        )
+    except ValueError as exc:
+        _raise_http_route_error(400, str(exc), auth_headers)
     resources = _build_resource_list()
     start = (page - 1) * limit
     end = start + limit
@@ -133,11 +173,26 @@ def list_resources(request: Request, response: Response, limit: int = 10, page: 
 
 
 @router.get("/resources/describe")
-def describe_resources(request: Request, response: Response, limit: int = 10, page: int = 1) -> Any:
+def describe_resources(request: Request, response: Response) -> Any:
     auth_headers, auth_error = authorize_http_route(request)
     if auth_error is not None:
         return auth_error
     apply_auth_headers(response, auth_headers)
+    try:
+        limit = _parse_int_query(
+            request.query_params.get("limit"),
+            name="limit",
+            default=10,
+            minimum=1,
+        )
+        page = _parse_int_query(
+            request.query_params.get("page"),
+            name="page",
+            default=1,
+            minimum=1,
+        )
+    except ValueError as exc:
+        _raise_http_route_error(400, str(exc), auth_headers)
     resources = _build_resource_list()
     start = (page - 1) * limit
     end = start + limit
@@ -149,22 +204,32 @@ def describe_resources(request: Request, response: Response, limit: int = 10, pa
 def read_resource(
     request: Request,
     response: Response,
-    name: str | None = Query(default=None),
-    uri: str | None = Query(default=None),
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
-    limit: int = Query(default=100, ge=1, le=500),
-    page: int = Query(default=1, ge=1),
-    level: Optional[str] = Query(default=None),
-    nameContains: Optional[str] = Query(default=None),
-    geography: Optional[str] = Query(default=None),
-    measure: Optional[str] = Query(default=None),
 ) -> Optional[Dict[str, Any]]:
     auth_headers, auth_error = authorize_http_route(request)
     if auth_error is not None:
         return auth_error
     apply_auth_headers(response, auth_headers)
+    name = request.query_params.get("name")
+    uri = request.query_params.get("uri")
+    try:
+        _parse_int_query(
+            request.query_params.get("limit"),
+            name="limit",
+            default=100,
+            minimum=1,
+            maximum=500,
+        )
+        _parse_int_query(
+            request.query_params.get("page"),
+            name="page",
+            default=1,
+            minimum=1,
+        )
+    except ValueError as exc:
+        _raise_http_route_error(400, str(exc), auth_headers)
     if not name and not uri:
         _raise_http_route_error(400, "Missing resource name or uri", auth_headers)
 
@@ -294,13 +359,15 @@ def simple_map_lab_redirect() -> RedirectResponse:
 @router.get("/resources/download")
 def download_resource(
     request: Request,
-    uri: str = Query(...),
 ) -> Any:
     auth_headers, auth_error = authorize_http_route(request)
     if auth_error is not None:
         return auth_error
+    uri = request.query_params.get("uri")
+    if not uri:
+        _raise_http_route_error(400, "Missing resource uri", auth_headers)
     resolved = resolve_offline_pack_download(uri)
     if not resolved:
-        raise HTTPException(status_code=404, detail="Offline pack not found")
+        _raise_http_route_error(404, "Offline pack not found", auth_headers)
     path, media_type = resolved
     return _binary_file_response(path, media_type, auth_headers)

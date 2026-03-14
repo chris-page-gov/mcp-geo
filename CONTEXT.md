@@ -86,7 +86,12 @@ assumptions change.
   downloads now retain `Range`/resume semantics via `FileResponse` on the
   prevalidated pack path, and all resource-backed stream hints that point
   callers at `os_resources.get` now use the shared chunk-size limits from
-  `server/mcp/resource_handoff.py`.
+  `server/mcp/resource_handoff.py`. A second 2026-03-14 manual-review pass
+  moved raw `/resources/*` query validation behind `authorize_http_route()` so
+  unauthenticated bad-query requests no longer bypass the 401/403 surface via
+  FastAPI 422s, preserved `mcp-session-id` on `/resources/download` 400/404
+  responses, and kept configured `httpAccess.readUrl` handoffs visible even
+  when MCP HTTP auth is disabled.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery
