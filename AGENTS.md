@@ -88,6 +88,11 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 - Pytest with coverage gate (≥90%). Current suite covers success + validation + upstream error paths.
 - When adding a tool: include validation tests, success path (mocked upstream), and at least one upstream error normalization test.
+- When fixing a bug or review finding: search for structurally similar code paths
+  across the repo, patch every confirmed sibling instance in the same change,
+  and add regression coverage for both the reported case and at least one
+  equivalent path when such a sibling exists. If the reported site is unique,
+  note that conclusion in the task summary or tracking docs.
 - Prefer monkeypatching minimal surface (e.g., `client.get_json` / `requests.get`) to reach normalization logic.
 - Future: introduce golden fixtures for canonical postcodes & feature queries.
 
@@ -126,6 +131,10 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - Read `CONTEXT.md` at the start of each session and update it when priorities,
   decisions, or active work items change.
+- Treat every bug fix and PR-comment fix as a small codebase review: identify
+  whether the problem sits in a shared helper, repeated pattern, or transport
+  variant before editing; then either fix all confirmed matches or record why
+  the implementation is single-site.
 - Prefer the shared `openaiDeveloperDocs` MCP server
   (`https://developers.openai.com/mcp`) for OpenAI/Codex/API/App SDK
   documentation when it is available.
@@ -184,6 +193,10 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - When creating PRs/comments with markdown that includes backticks, never inline the body directly in a shell command. Write body text to a temp file and use `gh pr create --body-file` / `gh pr edit --body-file` / `gh pr comment --body-file` to avoid shell interpolation and command substitution.
 - In this repo, Codex review is triggered by PR comment (`@codex review`), not by reviewer assignment. If a Codex review is requested, post the trigger comment on the PR and confirm the comment URL.
+- When addressing PR comments, do not stop at the exact line cited by the
+  reviewer. Run a same-pattern scan (`rg`, shared-helper inspection, transport
+  variant check, and targeted regressions) so the follow-up closes the entire
+  class of issue rather than one manifestation.
 - GitHub Advanced Security discussion markers are not normal review
   conversations. They may remain visible on a PR even after the underlying
   CodeQL alert is fixed, and `resolveReviewThread` will fail with

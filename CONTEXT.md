@@ -1022,6 +1022,10 @@ assumptions change.
 - 2026-02-11: Playground setup now includes a version matrix showing MCP core + MCP Apps + client/SDK versions; Playwright playground tests now run on port `4173` to avoid local `5173` collisions.
 - 2026-03-13: Follow-up PR hardening now gates stdio `resource_link` handoff blocks on negotiated UI capability support and requires offline-pack catalog URI matches consistently for both `resources/read` payloads and `/resources/download` resolution.
 - 2026-03-14: Fixed the remaining MCP-Apps text-mode follow-up by making `tools/os_apps.py` set `uiTextOnlyOverride` from the resolved content mode rather than only explicit payload overrides, so env-driven `MCP_APPS_CONTENT_MODE=text` no longer lets raw HTTP or stdio handoff decoration re-append `resource_link` blocks. Audited the current UI tool surface and confirmed all `os_apps.render_*` responses share `_build_widget_response()`, so this fix covers the present MCP-Apps widget implementations in one place.
+- 2026-03-14: Standardized the repo fix workflow in `AGENTS.md`: bug fixes and
+  PR-comment fixes now require a same-pattern codebase scan, patching all
+  confirmed sibling cases in the same change and adding regressions for both
+  the reported path and an equivalent sibling when one exists.
 - 2026-02-10: Added `scripts/vscode_mcp_stdio.py` and updated `.vscode/mcp.json` to use it so VS Code can start stdio servers on macOS without requiring global Python deps (it prefers the repo venv at `.venv/`).
 - 2026-02-10: Added `scripts/vscode_trace_snapshot.py` to convert VS Code trace artifacts into a `logs/sessions/` directory that can be summarized by `scripts/trace_report.py`.
 - 2026-03-13: Tightened `resolve_offline_pack_download` to require exact catalog URI matches only (removed basename fallback) so `/resources/download` no longer accepts alternate user-supplied URI path variants for trusted files.
