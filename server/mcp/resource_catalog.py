@@ -629,14 +629,6 @@ def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
     path = trusted_paths.get(uri)
     if path is not None:
         return path, _offline_pack_media_type(path)
-    if not uri.startswith(OFFLINE_PACKS_PREFIX):
-        return None
-    filename = Path(uri[len(OFFLINE_PACKS_PREFIX) :]).name
-    if not filename:
-        return None
-    path = trusted_paths.get(f"{OFFLINE_PACKS_PREFIX}{filename}")
-    if path is not None:
-        return path, _offline_pack_media_type(path)
     return None
 
 
@@ -1341,12 +1333,15 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid offline pack path."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        if not path.exists() or not path.is_file():
+        resource_uri = f"{OFFLINE_PACKS_PREFIX}{filename}"
+        resolved = resolve_offline_pack_download(resource_uri)
+        if resolved is None:
             content = json.dumps(
                 {"isError": True, "code": "NOT_FOUND", "message": "Offline pack not found."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        payload, sha256 = _offline_pack_payload(path=path, uri=f"{OFFLINE_PACKS_PREFIX}{filename}")
+        path, _media_type = resolved
+        payload, sha256 = _offline_pack_payload(path=path, uri=resource_uri)
         content = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
         etag = _etag_from_bytes(sha256.encode("ascii"), slug)
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}

@@ -316,7 +316,23 @@ def test_offline_pack_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None
     packs_dir.mkdir()
     pack_file = packs_dir / "demo.pmtiles"
     pack_file.write_text("PMTILES", encoding="utf-8")
+    catalog_path = tmp_path / "offline_map_catalog.json"
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "packs": [
+                    {
+                        "id": "demo",
+                        "format": "pmtiles",
+                        "resourceUri": "resource://mcp-geo/offline-packs/demo.pmtiles",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
     monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", catalog_path)
 
     content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs-index"})
     payload = json.loads(content)
@@ -339,7 +355,23 @@ def test_offline_pack_large_file_omits_inline_blob(monkeypatch: MonkeyPatch, tmp
     packs_dir.mkdir()
     pack_file = packs_dir / "large.pmtiles"
     pack_file.write_bytes(b"P" * (resource_catalog.OFFLINE_PACK_INLINE_MAX_BYTES + 1))
+    catalog_path = tmp_path / "offline_map_catalog.json"
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "packs": [
+                    {
+                        "id": "large",
+                        "format": "pmtiles",
+                        "resourceUri": "resource://mcp-geo/offline-packs/large.pmtiles",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
     monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", catalog_path)
 
     content, etag, meta = resource_catalog.load_data_content({"slug": "offline-packs/large.pmtiles"})
     payload = json.loads(content)
@@ -381,6 +413,12 @@ def test_resolve_offline_pack_download(monkeypatch: MonkeyPatch, tmp_path) -> No
     path, media_type = resolved
     assert path == pack_file.resolve()
     assert media_type == "application/vnd.pmtiles"
+    assert (
+        resource_catalog.resolve_offline_pack_download(
+            "resource://mcp-geo/offline-packs/alternate/demo.pmtiles"
+        )
+        is None
+    )
 
 
 def test_offline_pack_media_type_variants(tmp_path) -> None:
@@ -410,6 +448,21 @@ def test_resolve_offline_pack_download_rejects_invalid(monkeypatch: MonkeyPatch,
         )
         is None
     )
+
+
+def test_load_offline_pack_requires_catalog_match(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    pack_file = packs_dir / "demo.pmtiles"
+    pack_file.write_bytes(b"PMTILES")
+    catalog_path = tmp_path / "offline_map_catalog.json"
+    catalog_path.write_text(json.dumps({"packs": []}), encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", catalog_path)
+
+    content, _etag, _meta = resource_catalog.load_data_content({"slug": "offline-packs/demo.pmtiles"})
+    payload = json.loads(content)
+    assert payload["code"] == "NOT_FOUND"
 
 
 def test_pack_file_helpers_missing_dirs(monkeypatch: MonkeyPatch, tmp_path) -> None:

@@ -66,6 +66,30 @@ def _slice_text(encoded: bytes, start: int, max_bytes: int) -> tuple[str, int]:
     return "", start
 
 
+def _resource_error_payload(resource: dict[str, Any]) -> tuple[int, dict[str, Any]] | None:
+    if resource.get("kind") != "data":
+        return None
+    slug = resource.get("slug")
+    if not isinstance(slug, str) or "/" not in slug:
+        return None
+    if resource.get("mimeType") != "application/json":
+        return None
+    text = str(resource.get("text") or "")
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(parsed, dict) or parsed.get("isError") is not True:
+        return None
+    code = str(parsed.get("code") or "")
+    message = str(parsed.get("message") or "Resource not found")
+    if code == "INVALID_INPUT":
+        return 400, {"isError": True, "code": code, "message": message}
+    if code == "NOT_FOUND":
+        return 404, {"isError": True, "code": code, "message": message}
+    return None
+
+
 def _get_resource(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
     uri = payload.get("uri")
     name = payload.get("name")
@@ -90,18 +114,9 @@ def _get_resource(payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
     except LookupError:
         return 404, {"isError": True, "code": "NOT_FOUND", "message": "Resource not found"}
 
-    if resource.get("mimeType") == "application/json":
-        try:
-            parsed = json.loads(str(resource["text"]))
-        except json.JSONDecodeError:
-            parsed = None
-        if isinstance(parsed, dict) and parsed.get("isError") is True:
-            code = str(parsed.get("code") or "")
-            message = str(parsed.get("message") or "Resource not found")
-            if code == "INVALID_INPUT":
-                return 400, {"isError": True, "code": code, "message": message}
-            if code == "NOT_FOUND":
-                return 404, {"isError": True, "code": code, "message": message}
+    payload_error = _resource_error_payload(resource)
+    if payload_error is not None:
+        return payload_error
 
     text = str(resource["text"])
     encoded = text.encode("utf-8")

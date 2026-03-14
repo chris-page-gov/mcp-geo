@@ -107,6 +107,33 @@ def test_os_resources_get_rejects_missing_or_invalid_dynamic_resources(client) -
     assert traversal.json()["code"] == "INVALID_INPUT"
 
 
+def test_os_resources_get_preserves_json_resource_payloads(monkeypatch, client) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_resources
+
+    monkeypatch.setattr(
+        os_resources,
+        "read_resource_content",
+        lambda **_kwargs: {
+            "uri": "resource://mcp-geo/demo-status",
+            "mimeType": "application/json",
+            "text": '{"isError":true,"code":"NOT_FOUND","message":"Resource still loading"}',
+            "etag": 'W/"status"',
+            "_meta": None,
+        },
+        raising=True,
+    )
+
+    response = client.post(
+        "/tools/call",
+        json={"tool": "os_resources.get", "uri": "resource://mcp-geo/demo-status"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["mimeType"] == "application/json"
+    assert body["text"] == '{"isError":true,"code":"NOT_FOUND","message":"Resource still loading"}'
+    assert body["complete"] is True
+
+
 def test_os_resources_validation_error_branches(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_resources
 
@@ -209,6 +236,29 @@ def test_resource_handoff_helper_branches(monkeypatch) -> None:  # type: ignore[
         {"resourceUri": "resource://mcp-geo/readme.txt", "structuredContent": {}}
     )
     assert decorated["structuredContent"]["resourceHandoff"]["mimeType"] == "text/plain"
+    decorated_existing_content = resource_handoff.decorate_resource_handoff(
+        {
+            "resourceUri": "ui://mcp-geo/geography-selector",
+            "content": [{"type": "text", "text": "Open the widget."}],
+        }
+    )
+    assert any(
+        block.get("type") == "resource_link"
+        for block in decorated_existing_content["content"]
+        if isinstance(block, dict)
+    )
+    decorated_without_link = resource_handoff.decorate_resource_handoff(
+        {
+            "resourceUri": "resource://mcp-geo/readme.txt",
+            "content": [{"type": "text", "text": "Chunk available."}],
+        },
+        include_resource_link=False,
+    )
+    assert not any(
+        block.get("type") == "resource_link"
+        for block in decorated_without_link["content"]
+        if isinstance(block, dict)
+    )
 
     try:
         resource_access.read_resource_content(uri=123)  # type: ignore[arg-type]
@@ -381,6 +431,17 @@ def test_stdio_resource_handoff_added_for_resource_backed_tools(
     monkeypatch, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]
     _stub_os_map_export(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        stdio_adapter,
+        "CLIENT_CAPABILITIES",
+        {
+            "extensions": {
+                "io.modelcontextprotocol/ui": {
+                    "mimeTypes": ["text/html;profile=mcp-app"],
+                }
+            }
+        },
+    )
     call = stdio_adapter.handle_call_tool(
         {"name": "os_map_export", "arguments": {"bbox": [-0.12, 51.5, -0.11, 51.51]}}
     )

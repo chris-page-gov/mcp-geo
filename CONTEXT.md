@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-13
+Last updated: 2026-03-14
 Owner: @chris-page-gov
 
 ## Purpose
@@ -151,7 +151,11 @@ assumptions change.
   workbench, routing demos for SG03/SG12, benchmark-pack/live-run resources,
   and the new deterministic fixture-backed frontend Playwright acceptance suite
   plus env-gated live smoke coverage that supersede the earlier
-  dependency-only PRs `#24` and `#29`.
+  dependency-only PRs `#24` and `#29`. The 2026-03-14 live-smoke follow-up
+  fixed the remaining SG03 bridge failure by treating sanitized and original
+  tool aliases as equivalent in the preview-session allowlist, so the route
+  planner's `os_route.get` call is no longer rejected as `TOOL_NOT_ALLOWED`
+  when the live MCP `tools/list` surface only advertises `os_route_get`.
 - Clearing the remaining PR `#36` follow-up blockers by keeping the full
   Playwright config port override honest, restoring the devcontainer's system
   CA/custom-cert policy, and replacing parameterized widget asset routes with
@@ -995,8 +999,10 @@ assumptions change.
 - 2026-02-11: Evaluation audit records now summarize per-task `429` hits (including a by-tool breakdown) to track backoff reliance.
 - 2026-02-11: Core protocol negotiation now prefers MCP `2025-11-25` with compatibility for `2025-06-18`, `2025-03-26`, and `2024-11-05`; HTTP now validates `MCP-Protocol-Version` against negotiated session version.
 - 2026-02-11: Playground setup now includes a version matrix showing MCP core + MCP Apps + client/SDK versions; Playwright playground tests now run on port `4173` to avoid local `5173` collisions.
+- 2026-03-13: Follow-up PR hardening now gates stdio `resource_link` handoff blocks on negotiated UI capability support and requires offline-pack catalog URI matches consistently for both `resources/read` payloads and `/resources/download` resolution.
 - 2026-02-10: Added `scripts/vscode_mcp_stdio.py` and updated `.vscode/mcp.json` to use it so VS Code can start stdio servers on macOS without requiring global Python deps (it prefers the repo venv at `.venv/`).
 - 2026-02-10: Added `scripts/vscode_trace_snapshot.py` to convert VS Code trace artifacts into a `logs/sessions/` directory that can be summarized by `scripts/trace_report.py`.
+- 2026-03-13: Tightened `resolve_offline_pack_download` to require exact catalog URI matches only (removed basename fallback) so `/resources/download` no longer accepts alternate user-supplied URI path variants for trusted files.
 
 ## Open Questions
 

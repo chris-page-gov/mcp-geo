@@ -60,6 +60,7 @@ def read_resource_content(
                     "etag": etag,
                     "_meta": sanitize_resource_meta(meta),
                     "kind": "data",
+                    "slug": entry.get("slug"),
                 }
             raise LookupError(f"Unknown resource '{uri}'")
         ui_entry = resolve_ui_resource(uri)
@@ -125,6 +126,7 @@ def read_resource_content(
                 "etag": etag,
                 "_meta": sanitize_resource_meta(meta),
                 "kind": "data",
+                "slug": entry.get("slug"),
             }
     raise LookupError(f"Unknown resource '{name}'")
 

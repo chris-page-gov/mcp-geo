@@ -144,6 +144,11 @@ All notable changes to this project will be documented in this file.
   metadata, and refreshed README/skill/router guidance to recommend
   `os_resources.get` as the portable fallback when clients cannot invoke
   protocol `resources/read`.
+- Updated STDIO resource-handoff decoration to gate `resource_link` blocks on
+  advertised MCP-Apps UI support (leaving text handoff metadata intact for
+  non-UI hosts), and aligned offline-pack `resources/read` payload resolution
+  with `/resources/download` by requiring trusted offline catalog URI matches
+  for both paths.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,
@@ -160,6 +165,13 @@ All notable changes to this project will be documented in this file.
   `resources/read` by either resource URI or resource name, matching the
   accepted MCP request shape and clearing the remaining actionable PR `#36`
   review comment on `playground/src/lib/uiBridge.js`.
+- Updated `playground/src/lib/uiBridge.js` so preview-session tool validation
+  treats sanitized and original tool aliases as equivalent, allowing live
+  widgets that call dotted names such as `os_route.get` to pass the host
+  allowlist even when MCP `tools/list` only exposes sanitized aliases such as
+  `os_route_get`; added regression coverage in
+  `playground/tests/ui_bridge.spec.js` and confirmed the live smoke suite now
+  passes `4/4` on fresh ports.
 - Fixed the remaining deterministic playground CI race by keeping the host in
   `connecting` state until `refreshLists()`, descriptor load, benchmark load,
   and audit-pack refresh complete, and by no longer forcing the active tab

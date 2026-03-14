@@ -147,6 +147,45 @@ def test_ui_tools_include_resource_content_by_default(monkeypatch):
     assert "Open the geography selector" in content[0]["text"]
 
 
+def test_stdio_resource_handoff_omits_resource_link_without_ui_support(monkeypatch):
+    class _FakeTool:
+        def call(self, _payload):
+            return 200, {"resourceUri": "resource://mcp-geo/offline-packs/demo.pmtiles"}
+
+    monkeypatch.setattr(stdio_adapter, "get_tool", lambda _name: _FakeTool())
+    monkeypatch.setattr(stdio_adapter, "_resolve_tool_name", lambda name: name)
+    monkeypatch.setattr(stdio_adapter, "CLIENT_CAPABILITIES", {})
+    call = stdio_adapter.handle_call_tool({"name": "custom_resource_tool", "arguments": {}})
+    assert call.get("ok") is True
+    content = call.get("content", [])
+    assert any(block.get("type") == "text" for block in content if isinstance(block, dict))
+    assert not any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+
+
+def test_stdio_resource_handoff_includes_resource_link_with_ui_support(monkeypatch):
+    class _FakeTool:
+        def call(self, _payload):
+            return 200, {"resourceUri": "resource://mcp-geo/offline-packs/demo.pmtiles"}
+
+    monkeypatch.setattr(stdio_adapter, "get_tool", lambda _name: _FakeTool())
+    monkeypatch.setattr(stdio_adapter, "_resolve_tool_name", lambda name: name)
+    monkeypatch.setattr(
+        stdio_adapter,
+        "CLIENT_CAPABILITIES",
+        {
+            "extensions": {
+                "io.modelcontextprotocol/ui": {
+                    "mimeTypes": ["text/html;profile=mcp-app"],
+                }
+            }
+        },
+    )
+    call = stdio_adapter.handle_call_tool({"name": "custom_resource_tool", "arguments": {}})
+    assert call.get("ok") is True
+    content = call.get("content", [])
+    assert any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+
+
 def test_claude_defaults_ui_tool_content_mode_to_resource_link(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
     monkeypatch.setenv("MCP_APPS_CONTENT_MODE", "embedded")

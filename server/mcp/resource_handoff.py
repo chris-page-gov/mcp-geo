@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 from server.config import settings
 from server.mcp.resource_access import is_resource_uri
-from server.mcp.resource_catalog import MCP_APPS_MIME
+from server.mcp.resource_catalog import MCP_APPS_MIME, resolve_data_resource, resolve_skill_resource, resolve_ui_resource
 
 DEFAULT_RESOURCE_CHUNK_BYTES = 16_384
 MAX_RESOURCE_CHUNK_BYTES = 24_576
@@ -122,20 +122,50 @@ def build_resource_link_block(resource_uri: str, mime_type: str) -> dict[str, An
     }
 
 
-def build_resource_handoff_content(handoff: dict[str, Any]) -> list[dict[str, Any]]:
+def build_resource_handoff_content(
+    handoff: dict[str, Any], *, include_resource_link: bool = True
+) -> list[dict[str, Any]]:
     resource_uri = str(handoff["resourceUri"])
     mime_type = str(handoff.get("mimeType") or "application/json")
     text = (
         "Large resource output is available via os_resources.get or resources/read "
         f"using {resource_uri}."
     )
-    return [
-        {"type": "text", "text": text},
-        build_resource_link_block(resource_uri, mime_type),
-    ]
+    content: list[dict[str, Any]] = [{"type": "text", "text": text}]
+    if include_resource_link:
+        content.append(build_resource_link_block(resource_uri, mime_type))
+    return content
 
 
-def decorate_resource_handoff(data: dict[str, Any]) -> dict[str, Any]:
+def _content_has_resource_link(content: list[Any], resource_uri: str) -> bool:
+    for block in content:
+        if not isinstance(block, dict):
+            continue
+        if block.get("type") != "resource_link":
+            continue
+        if block.get("uri") == resource_uri:
+            return True
+    return False
+
+
+def _preserve_text_only_override(data: dict[str, Any]) -> bool:
+    meta = data.get("_meta")
+    return isinstance(meta, dict) and meta.get("uiTextOnlyOverride") is True
+
+
+def _resource_link_available(resource_uri: str) -> bool:
+    if resource_uri.startswith("ui://"):
+        return resolve_ui_resource(resource_uri) is not None
+    if resource_uri.startswith("skills://"):
+        return resolve_skill_resource(resource_uri) is not None
+    if resource_uri.startswith("resource://"):
+        return resolve_data_resource(resource_uri) is not None
+    return False
+
+
+def decorate_resource_handoff(
+    data: dict[str, Any], *, include_resource_link: bool = True
+) -> dict[str, Any]:
     handoff = build_resource_handoff(data)
     if handoff is None:
         return data
@@ -151,5 +181,20 @@ def decorate_resource_handoff(data: dict[str, Any]) -> dict[str, Any]:
 
     content = decorated.get("content")
     if not isinstance(content, list):
-        decorated["content"] = build_resource_handoff_content(decorated["resourceHandoff"])
+        decorated["content"] = build_resource_handoff_content(
+            decorated["resourceHandoff"],
+            include_resource_link=include_resource_link
+            and _resource_link_available(str(decorated["resourceHandoff"]["resourceUri"])),
+        )
+    elif include_resource_link and not _preserve_text_only_override(decorated):
+        resource_uri = str(decorated["resourceHandoff"]["resourceUri"])
+        if _resource_link_available(resource_uri) and not _content_has_resource_link(content, resource_uri):
+            updated_content = list(content)
+            updated_content.append(
+                build_resource_link_block(
+                    resource_uri,
+                    str(decorated["resourceHandoff"].get("mimeType") or "application/json"),
+                )
+            )
+            decorated["content"] = updated_content
     return decorated

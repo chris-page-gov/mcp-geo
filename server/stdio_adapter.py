@@ -939,7 +939,10 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
         if fallback:
             data["fallback"] = fallback
         if resolved_name != "os_resources.get":
-            data = decorate_resource_handoff(data)
+            data = decorate_resource_handoff(
+                data,
+                include_resource_link=_client_supports_ui(CLIENT_CAPABILITIES),
+            )
     record_tool_call(
         tool_name=resolved_name,
         transport="stdio",
