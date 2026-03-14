@@ -51,6 +51,12 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the Harold Wood trace analysis package under `troubleshooting/`,
+  including the new evidence/deep-analysis reports, route-query hardening for
+  `resource://` recovery prompts and conversational place extraction, the
+  Harold Wood bbox regression coverage, and the same-route Codex validation
+  artifact under
+  `logs/sessions/20260314T203104Z-harold-wood-wrapper-validation/`.
 - Finalizing public launch packaging for `v0.5.0`, including secret/sensitive
   content review, release notes, tagging, and repository visibility transition
   to Public.

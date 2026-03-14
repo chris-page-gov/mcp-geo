@@ -5,6 +5,16 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-14
 
+## Harold Wood trace analysis and resource-handoff routing (2026-03-14)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| HWT-REP-1 Transcript extraction and evidence/deep-analysis docs | done | none | Added the Harold Wood markdown working copy plus `troubleshooting/harold-wood-essex-trace-evidence-2026-03-14.md` and `troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md`, scoped to the transcript, `logs/claude-trace.jsonl`, and current server/test surface. |
+| HWT-INT-2 Route-query hardening for Harold Wood and `resource://` prompts | done | HWT-REP-1 | `tools/os_mcp.py` now classifies resource-bridge prompts, routes them to `os_resources.get` / `resources/read`, adds explicit no-filesystem guidance, and ignores conversational opener words so `What can MCP-Geo tell me about Harold Wood, Essex?` resolves to `Harold Wood`. |
+| HWT-VAL-3 Harold Wood regressions and same-route validation | done | HWT-INT-2 | Added focused regressions in `tests/test_os_mcp_route_query.py` and `tests/test_os_map_tools.py`; focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_os_mcp_route_query.py tests/test_os_map_tools.py tests/test_os_places_extra_more_success.py tests/test_resource_fallback.py` (`93 passed`). `./scripts/check_shared_benchmark_cache.sh` remained blocked because `mcp-geo_devcontainer-postgis-1` was absent, but same-route Codex validation still completed through the Claude wrapper using the manual proxy artifact `logs/sessions/20260314T203104Z-harold-wood-wrapper-validation/`, which captured successful `resourceHandoff`, `os_resources.get`, and `resources/read` behavior. |
+
 ## Devcontainer cross-platform trust cleanup (2026-03-14)
 
 Legend: pending, in_progress, done, blocked

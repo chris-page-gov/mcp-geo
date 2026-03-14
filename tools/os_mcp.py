@@ -223,11 +223,14 @@ LINKED_ID_PATTERNS = [
 CORRELATION_METHOD_REGEX = re.compile(r"\b[A-Z0-9_]+_[0-9]+\b")
 LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
 AREA_CODE_REGEX = re.compile(r"\b([EKNSW]\d{8})\b", re.IGNORECASE)
+RESOURCE_URI_REGEX = re.compile(r"(resource://[^\s\"'<>]+)", re.IGNORECASE)
 
 _PLACE_NAME_STOP_WORDS = {
     "a",
     "an",
+    "about",
     "and",
+    "can",
     "build",
     "cache",
     "capabilities",
@@ -236,6 +239,7 @@ _PLACE_NAME_STOP_WORDS = {
     "config",
     "configuration",
     "create",
+    "details",
     "describe",
     "edition",
     "editions",
@@ -245,14 +249,18 @@ _PLACE_NAME_STOP_WORDS = {
     "find",
     "for",
     "from",
+    "geo",
     "get",
+    "give",
     "guide",
     "hierarchy",
+    "how",
     "in",
     "list",
     "log",
     "map",
     "mcp",
+    "me",
     "mode",
     "nomis",
     "observation",
@@ -261,6 +269,7 @@ _PLACE_NAME_STOP_WORDS = {
     "ons",
     "open",
     "probe",
+    "read",
     "render",
     "search",
     "server",
@@ -269,13 +278,16 @@ _PLACE_NAME_STOP_WORDS = {
     "stack",
     "static",
     "status",
+    "tell",
     "the",
     "to",
     "tool",
     "tools",
     "ui",
+    "uri",
     "version",
     "versions",
+    "what",
     "widget",
     "workflow",
 }
@@ -414,6 +426,13 @@ def _extract_area_code(query: str) -> str | None:
     return match.group(1).upper()
 
 
+def _extract_resource_uri(query: str) -> str | None:
+    match = RESOURCE_URI_REGEX.search(query)
+    if not match:
+        return None
+    return match.group(1)
+
+
 def _extract_place_name(query: str) -> str | None:
     directional_pattern = re.compile(
         r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+"
@@ -488,6 +507,23 @@ def _extract_landscape_focus(query: str) -> str | None:
         if candidate:
             return candidate
     return None
+
+
+def _looks_like_resource_bridge_query(query_lower: str) -> bool:
+    if (
+        "resource://" in query_lower
+        or "resources/read" in query_lower
+        or "os_resources.get" in query_lower
+    ):
+        return True
+    if re.search(r"\bresource uri\b|\bmcp resource\b|\bresource handoff\b", query_lower):
+        return True
+    if re.search(r"\blarge (output|payload|response)\b", query_lower) and re.search(
+        r"\b(resource|uri|handoff|read)\b",
+        query_lower,
+    ):
+        return True
+    return False
 
 
 def _find_level_mentions(query_lower: str) -> list[str]:
@@ -620,10 +656,17 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if level_mentions:
         context["levels"] = level_mentions
     place_name = _extract_place_name(query)
+    resource_uri = _extract_resource_uri(query)
 
     if re.search(r"\bfetch\b.*\b(mcp geo )?skills guide\b|\bskills guide\b", query_lower):
         context["unknown_mode"] = "skills_resource"
         return QueryIntent.UNKNOWN, 0.92, {"uri": SKILLS_RESOURCE["uri"]}, context
+    if _looks_like_resource_bridge_query(query_lower):
+        context["unknown_mode"] = "resource_bridge"
+        if resource_uri:
+            context["resource_uri"] = resource_uri
+            return QueryIntent.UNKNOWN, 0.94, {"uri": resource_uri}, context
+        return QueryIntent.UNKNOWN, 0.93, {}, context
     if re.search(r"\bdescribe\b.*\b(server capabilities|tool search config)\b", query_lower):
         context["unknown_mode"] = "descriptor"
         return QueryIntent.UNKNOWN, 0.92, {}, context
@@ -1179,6 +1222,15 @@ def _get_tool_for_intent(
             ["os_resources.get", "resources/read"],
             "Read the MCP Geo skills guide resource via the portable resource bridge.",
         )
+    if unknown_mode == "resource_bridge":
+        return (
+            "os_resources.get",
+            ["os_resources.get", "resources/read"],
+            (
+                "Read resource-backed MCP output via os_resources.get or protocol "
+                "resources/read instead of searching the filesystem."
+            ),
+        )
     if unknown_mode == "descriptor":
         return (
             "os_mcp.descriptor",
@@ -1582,6 +1634,16 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         "guidance": _get_guidance_for_intent(intent),
         "workflow_profile_uri": workflow_profile_uri,
     }
+    if str(context.get("unknown_mode") or "") == "resource_bridge":
+        resource_guidance = (
+            "When a tool returns delivery='resource' or a resource:// URI, do not search the "
+            "filesystem. Read it with os_resources.get or protocol resources/read using the "
+            "exact URI returned by the prior tool."
+        )
+        resource_uri = context.get("resource_uri")
+        if isinstance(resource_uri, str) and resource_uri:
+            resource_guidance = f"{resource_guidance} Example URI: {resource_uri}"
+        response["guidance"] = resource_guidance
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
         focus_raw = context.get("survey_focus")
         focus = focus_raw if isinstance(focus_raw, str) else None

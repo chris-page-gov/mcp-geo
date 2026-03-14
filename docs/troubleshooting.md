@@ -193,6 +193,39 @@ Recommended handling:
 - Prefer `delivery=auto` for large feature queries in stdio-heavy hosts to avoid
   response truncation and context pressure.
 
+## Harold Wood trace: bbox failures and `resource://` recovery
+The 2026-03-14 Harold Wood analysis separates three different causes that were
+easy to conflate in one conversation:
+
+- Historical server bug:
+  the old Harold Wood `os_map.inventory` trace showed the `uprns` branch
+  sending an OS Places bbox with invalid WGS84 axis ordering, which triggered
+  `BBox has SouthWest Coordinate Greater than NorthEast Coordinate`.
+- Client/runtime limitation:
+  Claude later received a valid `resource://` handoff for the Harold Wood road
+  network but tried to search the filesystem instead of using MCP resource
+  retrieval.
+- Upstream instability:
+  adjacent branches in the same inventory call also showed read timeout /
+  `CIRCUIT_OPEN`, which are not the same defect as the bbox-order bug.
+
+Current repo status:
+
+- `os_places.within` now sends WGS84 bbox parameters in OS Places axis order
+  `lat,lon,lat,lon`.
+- `tests/test_os_map_tools.py` includes a Harold Wood ward bbox regression so
+  the historical inventory failure cannot recur unnoticed.
+- `os_mcp.route_query` now recognizes questions about `resource://` URIs and
+  recommends `os_resources.get` or protocol `resources/read`.
+
+Recommended handling:
+
+- If a tool returns `delivery=\"resource\"` or a `resourceUri`, do not search
+  `/tmp` or other host paths.
+- Read the exact URI with `os_resources.get` or `resources/read`.
+- When actual area geometry is available, prefer polygon-constrained feature
+  queries over bbox approximations for boundary-sensitive analysis.
+
 ## `os_features.query` with `resultType="hits"` shows `count=0` but `results` mode returns features
 This can happen when upstream omits `numberMatched` for a count-only query.
 

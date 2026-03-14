@@ -25,6 +25,13 @@ def test_route_query_place_lookup():
     assert body["recommended_parameters"]["text"] == "Westminster"
 
 
+def test_route_query_harold_wood_prompt_ignores_question_openers():
+    body = _route("What can MCP-Geo tell me about Harold Wood, Essex?")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "admin_lookup.find_by_name"
+    assert body["recommended_parameters"]["text"] == "Harold Wood"
+
+
 def test_route_query_postcode_lookup():
     body = _route("UPRNs for SW1A 1AA")
     assert body["intent"] == "address_lookup"
@@ -247,6 +254,14 @@ def test_route_query_tool_discovery_phrase():
     body = _route("Find tools related to postcode search")
     assert body["intent"] == "unknown"
     assert body["confidence"] >= 0.8
+
+
+def test_route_query_resource_uri_bridge_phrase():
+    body = _route("How do I read a resource:// URI from MCP-Geo?")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["workflow_steps"] == ["os_resources.get", "resources/read"]
+    assert "do not search the filesystem" in body["guidance"]
 
 
 def test_route_query_statistics_dashboard_area_comparison():

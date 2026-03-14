@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the Harold Wood troubleshooting package:
+  `troubleshooting/MCP-Geo view of Harold Wood Essex.md`,
+  `troubleshooting/harold-wood-essex-trace-evidence-2026-03-14.md`, and
+  `troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md`.
+- Added Harold Wood-focused regressions in
+  `tests/test_os_mcp_route_query.py` and `tests/test_os_map_tools.py` covering
+  conversational place routing, `resource://` bridge guidance, and OS Places
+  bbox axis ordering through `os_map.inventory`.
 - Added cross-transport MCP resource fallback support via the new
   `os_resources.get` tool, shared resource-reading helpers in
   `server/mcp/resource_access.py`, normalized `resourceHandoff` metadata in
@@ -132,6 +140,11 @@ All notable changes to this project will be documented in this file.
   `playground/tests/support/fixture_server.mjs`.
 
 ### Changed
+- Updated `tools/os_mcp.py` so `os_mcp.route_query` now routes
+  `resource://` / large-output recovery prompts to `os_resources.get` and
+  `resources/read`, explicitly warns against filesystem searches, and ignores
+  conversational prompt openers when extracting place names such as
+  `Harold Wood`.
 - Updated raw `/tools/call`, `/resources/list`, `/resources/describe`,
   `/resources/read`, and `/resources/download` to enforce the same MCP HTTP
   auth gate surface as `/mcp` when auth is enabled, kept direct HTTP resource
