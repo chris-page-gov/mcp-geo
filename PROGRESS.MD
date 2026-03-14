@@ -907,8 +907,9 @@ Common playground capabilities still required:
 | Preserve session headers on raw `/resources/read` 400/404s | Done | `server/mcp/resources.py` now attaches `mcp-session-id` to validation and not-found failures, with regressions in `tests/test_resource_fallback.py`. |
 | Restore resume/range support for offline-pack downloads | Done | `server/mcp/resources.py` now serves prevalidated offline packs through `FileResponse`, preserving `Range` support while keeping the validated-path guardrail. |
 | Normalize `os_resources.get` stream hints to the shared chunk contract | Done | `server/mcp/resource_handoff.py` now provides the canonical stream hint used by `tools/os_downloads.py` and `tools/ons_data.py`, with regressions in `tests/test_os_downloads_tools.py` and `tests/test_ons_data.py`. |
+| Honor effective text-only UI mode across handoff decoration | Done | `tools/os_apps.py` now sets `uiTextOnlyOverride` from the resolved content mode, so env-driven `MCP_APPS_CONTENT_MODE=text` prevents both raw HTTP and stdio decoration from re-appending `resource_link` blocks; regressions cover direct helper, raw `/tools/call`, and stdio paths. |
 
-Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
+Latest full test run: `./scripts/pytest-local -q` (90.20% coverage, 1173 passed, 6 skipped) on 2026-03-14.
 Latest playground UI test run: `npm --prefix playground run test` (6 passed) on 2026-02-11.
 
 ## Claude UI fallback plan (short)

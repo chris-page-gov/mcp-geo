@@ -174,6 +174,12 @@ All notable changes to this project will be documented in this file.
   callers receive absolute `/ui/...` asset URLs while stdio callers keep
   resource-local relative paths that remain fetchable without an HTTP side
   channel.
+- Honored the effective `MCP_APPS_CONTENT_MODE=text` setting for MCP-Apps
+  widget tools by setting `uiTextOnlyOverride` from the resolved content mode,
+  which prevents raw HTTP and stdio handoff decoration from re-appending
+  `resource_link` blocks to text-only UI responses; tightened stdio coverage
+  to validate the loaded settings path rather than incidental environment
+  defaults.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,

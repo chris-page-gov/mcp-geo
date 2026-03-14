@@ -67,6 +67,14 @@ def test_os_apps_render_geography_selector_text_only_override(monkeypatch):
     assert all(block.get("type") == "text" for block in content if isinstance(block, dict))
 
 
+def test_os_apps_env_text_mode_sets_text_only_override(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+    status, body = os_apps._render_geography_selector({})
+    assert status == 200
+    assert body["_meta"]["uiTextOnlyOverride"] is True
+    assert all(block.get("type") == "text" for block in body.get("content", []) if isinstance(block, dict))
+
+
 def test_os_apps_render_boundary_explorer(monkeypatch):
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
     resp = client.post(

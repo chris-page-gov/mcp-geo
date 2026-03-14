@@ -327,6 +327,23 @@ def test_raw_tools_call_adds_resource_handoff_without_path(client, monkeypatch, 
     assert "_meta" not in contents[0] or "path" not in contents[0].get("_meta", {})
 
 
+def test_raw_ui_tools_respect_env_text_mode_without_resource_link(client, monkeypatch) -> None:
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_apps.render_geography_selector"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["_meta"]["uiTextOnlyOverride"] is True
+    assert not any(
+        block.get("type") == "resource_link"
+        for block in body.get("content", [])
+        if isinstance(block, dict)
+    )
+
+
 def test_raw_tools_call_requires_auth_when_enabled(client, monkeypatch) -> None:
     from server.mcp import http_transport
 

@@ -147,6 +147,20 @@ def test_ui_tools_include_resource_content_by_default(monkeypatch):
     assert "Open the geography selector" in content[0]["text"]
 
 
+def test_stdio_ui_tools_respect_env_text_mode_without_resource_link(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+    monkeypatch.setenv("MCP_STDIO_UI_SUPPORTED", "1")
+    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
+    assert call.get("ok") is True
+    data = call.get("data", {})
+    assert data.get("_meta", {}).get("uiTextOnlyOverride") is True
+    assert not any(
+        block.get("type") == "resource_link"
+        for block in call.get("content", [])
+        if isinstance(block, dict)
+    )
+
+
 def test_stdio_os_resources_get_keeps_relative_ui_assets():
     call = stdio_adapter.handle_call_tool(
         {"name": "os_resources_get", "arguments": {"uri": "ui://mcp-geo/geography-selector"}}
@@ -198,7 +212,7 @@ def test_stdio_resource_handoff_includes_resource_link_with_ui_support(monkeypat
 
 def test_claude_defaults_ui_tool_content_mode_to_resource_link(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
-    monkeypatch.setenv("MCP_APPS_CONTENT_MODE", "embedded")
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
     monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
     assert call.get("ok") is True
@@ -224,7 +238,7 @@ def test_claude_ui_content_mode_respects_explicit_override(monkeypatch):
 
 def test_codex_does_not_inherit_claude_resource_link_default(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
-    monkeypatch.setenv("MCP_APPS_CONTENT_MODE", "embedded")
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
     monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "Codex CLI"})
     call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
     assert call.get("ok") is True

@@ -192,7 +192,6 @@ def _build_widget_response(
     content_mode: str | None = None,
 ) -> ToolResult:
     content = [{"type": "text", "text": instructions}]
-    requested_mode = _normalize_content_mode(content_mode)
     mode = _resolve_content_mode(content_mode)
     if mode == "resource_link":
         link_meta = _UI_RESOURCE_LINKS.get(resource_uri)
@@ -233,7 +232,7 @@ def _build_widget_response(
         "structuredContent": structured,
         "content": content,
     }
-    if requested_mode == "text":
+    if mode == "text":
         response["_meta"]["uiTextOnlyOverride"] = True
     return 200, _enforce_widget_response_limit(response, resource_uri=resource_uri)
 
