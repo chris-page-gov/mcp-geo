@@ -79,7 +79,10 @@ assumptions change.
   failures in the shared HTTP auth metrics, streams `/resources/download` only
   from prevalidated offline-pack paths, rejects offline-pack symlink escapes
   outside `data/offline_packs`, and makes `os_resources.get` fail cleanly when
-  `maxBytes` cannot fit the next UTF-8 codepoint.
+  `maxBytes` cannot fit the next UTF-8 codepoint. The latest follow-up also
+  keeps raw `/resources/read` 400/404 responses on the same `mcp-session-id`
+  surface and aligns `offline-packs-index` discovery with the same trusted
+  catalog whitelist used for offline-pack reads/downloads.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery

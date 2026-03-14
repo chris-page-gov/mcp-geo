@@ -420,6 +420,29 @@ def test_authorize_http_route_records_authorization_failure_metric(monkeypatch) 
     assert 'mcp_http_auth_failures_total{reason="authorization"} 1' in lines
 
 
+def test_raw_resources_read_errors_keep_session_header(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "raw-token")
+
+    missing = client.get(
+        "/resources/read",
+        headers={"Authorization": "Bearer raw-token"},
+    )
+    assert missing.status_code == 400
+    assert missing.headers.get("mcp-session-id")
+
+    unknown = client.get(
+        "/resources/read",
+        headers={"Authorization": "Bearer raw-token"},
+        params={"uri": "ui://mcp-geo/does-not-exist"},
+    )
+    assert unknown.status_code == 404
+    assert unknown.headers.get("mcp-session-id")
+
+
 def test_mcp_http_wrapped_resource_handoff_and_auth_safe_http_links(
     client, monkeypatch, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]

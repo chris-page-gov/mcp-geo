@@ -46,6 +46,14 @@ def _etag_match(if_none_match: Optional[str], etag: str) -> bool:
     return etag in candidates or "*" in candidates
 
 
+def _raise_http_route_error(
+    status_code: int,
+    detail: str,
+    auth_headers: dict[str, str],
+) -> None:
+    raise HTTPException(status_code=status_code, detail=detail, headers=auth_headers)
+
+
 def _ui_asset_media_type(path: Path) -> str:
     if path.suffix == ".js":
         return "application/javascript"
@@ -177,7 +185,7 @@ def read_resource(
         return auth_error
     apply_auth_headers(response, auth_headers)
     if not name and not uri:
-        raise HTTPException(status_code=400, detail="Missing resource name or uri")
+        _raise_http_route_error(400, "Missing resource name or uri", auth_headers)
 
     def _match_etag(etag: str) -> bool:
         if not if_none_match:
@@ -188,9 +196,9 @@ def read_resource(
     try:
         resource = read_resource_content(name=name, uri=uri, asset_mode="absolute")
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except LookupError as exc:
-        raise HTTPException(status_code=404, detail="Resource not found") from exc
+        _raise_http_route_error(400, str(exc), auth_headers)
+    except LookupError:
+        _raise_http_route_error(404, "Resource not found", auth_headers)
 
     etag = str(resource["etag"])
     if _match_etag(etag):
@@ -200,8 +208,6 @@ def read_resource(
     response.headers["ETag"] = etag
     response.headers["Cache-Control"] = "public, max-age=300"
     return read_result_payload(resource)
-
-    raise HTTPException(status_code=404, detail="Resource not found")
 
 
 @router.get("/ui/{slug}")

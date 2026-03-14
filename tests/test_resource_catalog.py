@@ -421,6 +421,33 @@ def test_resolve_offline_pack_download(monkeypatch: MonkeyPatch, tmp_path) -> No
     )
 
 
+def test_trusted_offline_pack_entries_skip_nested_catalog_paths(
+    monkeypatch: MonkeyPatch, tmp_path
+) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    (packs_dir / "demo.pmtiles").write_bytes(b"PMTILES")
+    catalog_path = tmp_path / "offline_map_catalog.json"
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "packs": [
+                    {
+                        "id": "demo",
+                        "format": "pmtiles",
+                        "resourceUri": "resource://mcp-geo/offline-packs/nested/demo.pmtiles",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", catalog_path)
+
+    assert resource_catalog._trusted_offline_pack_entries() == []
+
+
 def test_offline_pack_media_type_variants(tmp_path) -> None:
     assert resource_catalog._offline_pack_media_type(tmp_path / "demo.mbtiles") == "application/vnd.sqlite3"
     assert resource_catalog._offline_pack_media_type(tmp_path / "demo.bin") == "application/octet-stream"
@@ -499,6 +526,67 @@ def test_load_offline_pack_requires_catalog_match(monkeypatch: MonkeyPatch, tmp_
     content, _etag, _meta = resource_catalog.load_data_content({"slug": "offline-packs/demo.pmtiles"})
     payload = json.loads(content)
     assert payload["code"] == "NOT_FOUND"
+
+
+def test_offline_pack_index_uses_trusted_catalog_entries(
+    monkeypatch: MonkeyPatch, tmp_path
+) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    trusted_pack = packs_dir / "trusted.pmtiles"
+    trusted_pack.write_bytes(b"TRUSTED")
+    (packs_dir / "uncataloged.pmtiles").write_bytes(b"UNCATALOGED")
+    catalog_path = tmp_path / "offline_map_catalog.json"
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "packs": [
+                    {
+                        "id": "trusted",
+                        "format": "pmtiles",
+                        "resourceUri": "resource://mcp-geo/offline-packs/trusted.pmtiles",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", catalog_path)
+
+    resources = resource_catalog.list_data_resources()
+    assert any(
+        entry.get("uri") == "resource://mcp-geo/offline-packs-index" for entry in resources
+    )
+
+    content, _etag, _meta = resource_catalog.load_data_content({"slug": "offline-packs-index"})
+    payload = json.loads(content)
+    assert payload["items"] == [
+        {
+            "name": "trusted.pmtiles",
+            "uri": "resource://mcp-geo/offline-packs/trusted.pmtiles",
+            "bytes": trusted_pack.stat().st_size,
+        }
+    ]
+
+
+def test_offline_pack_index_hidden_without_trusted_catalog_entries(
+    monkeypatch: MonkeyPatch, tmp_path
+) -> None:
+    packs_dir = tmp_path / "offline_packs"
+    packs_dir.mkdir(parents=True, exist_ok=True)
+    (packs_dir / "uncataloged.pmtiles").write_bytes(b"UNCATALOGED")
+    catalog_path = tmp_path / "offline_map_catalog.json"
+    catalog_path.write_text(json.dumps({"packs": []}), encoding="utf-8")
+    monkeypatch.setattr(resource_catalog, "OFFLINE_PACKS_DIR", packs_dir)
+    monkeypatch.setattr(resource_catalog, "OFFLINE_MAP_CATALOG_PATH", catalog_path)
+
+    resources = resource_catalog.list_data_resources()
+    assert all(entry.get("uri") != "resource://mcp-geo/offline-packs-index" for entry in resources)
+
+    content, _etag, _meta = resource_catalog.load_data_content({"slug": "offline-packs-index"})
+    payload = json.loads(content)
+    assert payload["items"] == []
 
 
 def test_pack_file_helpers_missing_dirs(monkeypatch: MonkeyPatch, tmp_path) -> None:

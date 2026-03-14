@@ -903,6 +903,8 @@ Common playground capabilities still required:
 | Gate stdio `resource_link` handoff by UI capability | Done | `server/stdio_adapter.py` now only injects `resource_link` blocks for decorated resource handoffs when the negotiated stdio client capabilities advertise MCP-Apps UI support. |
 | Keep offline pack reads/downloads on the same trusted URI contract | Done | `server/mcp/resource_catalog.py` now resolves `offline-packs/*` content via the same catalog-backed `resolve_offline_pack_download()` path used by `/resources/download`. |
 | Add regressions for handoff gating and catalog-only offline pack reads | Done | Added focused tests in `tests/test_stdio_adapter_direct.py` and `tests/test_resource_catalog.py`. |
+| Keep offline pack discovery on the same trusted whitelist | Done | `server/mcp/resource_catalog.py` now builds `offline-packs-index` and the `offline-packs-index` list entry from the same trusted catalog-backed helper used by `resolve_offline_pack_download()`, so uncataloged files are no longer advertised. |
+| Preserve session headers on raw `/resources/read` 400/404s | Done | `server/mcp/resources.py` now attaches `mcp-session-id` to validation and not-found failures, with regressions in `tests/test_resource_fallback.py`. |
 
 Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
 Latest playground UI test run: `npm --prefix playground run test` (6 passed) on 2026-02-11.
