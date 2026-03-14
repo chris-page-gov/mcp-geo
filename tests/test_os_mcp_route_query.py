@@ -270,7 +270,7 @@ def test_route_query_ui_probe_phrase():
 def test_route_query_unknown_skills_guide_request():
     body = _route("Fetch the MCP Geo skills guide")
     assert body["intent"] == "unknown"
-    assert body["recommended_tool"] == "resources/read"
+    assert body["recommended_tool"] == "os_resources.get"
 
 
 def test_route_query_unknown_descriptor_request():
@@ -454,6 +454,14 @@ def test_select_toolsets_rejects_invalid_max_tools():
     resp = client.post(
         "/tools/call",
         json={"tool": "os_mcp.select_toolsets", "maxTools": 0},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.select_toolsets", "maxTools": True},
     )
     assert resp.status_code == 400
     body = resp.json()

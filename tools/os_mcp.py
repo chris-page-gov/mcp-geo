@@ -20,6 +20,7 @@ from server.protocol import (
 )
 from server.route_planning import extract_route_request, looks_like_route_query
 from tools.registry import Tool, ToolResult, all_tools, register
+from tools.typing_utils import is_strict_int
 
 
 class QueryIntent(StrEnum):
@@ -1098,7 +1099,8 @@ def _get_tool_for_intent(
                 (
                     "Query NOMIS labour/census statistics directly. "
                     "If dataset id is unknown, use nomis.datasets with q and limit. "
-                    "See resource://mcp-geo/nomis-workflows for dataset-specific workflow profiles."
+                    "Use os_resources.get or resources/read for "
+                    "resource://mcp-geo/nomis-workflows dataset-specific workflow profiles."
                 ),
             )
         return (
@@ -1149,7 +1151,8 @@ def _get_tool_for_intent(
                 ["nomis.datasets", "nomis.codelists"],
                 (
                     "List NOMIS datasets with q+limit, then inspect code lists if needed. "
-                    "See resource://mcp-geo/nomis-workflows for workflow templates."
+                    "Use os_resources.get or resources/read for "
+                    "resource://mcp-geo/nomis-workflows workflow templates."
                 ),
             )
         return (
@@ -1172,9 +1175,9 @@ def _get_tool_for_intent(
     unknown_mode = str(context.get("unknown_mode") or "")
     if unknown_mode == "skills_resource":
         return (
-            "resources/read",
-            ["resources/read"],
-            "Read the MCP Geo skills guide resource.",
+            "os_resources.get",
+            ["os_resources.get", "resources/read"],
+            "Read the MCP Geo skills guide resource via the portable resource bridge.",
         )
     if unknown_mode == "descriptor":
         return (
@@ -1223,7 +1226,7 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.by_uprn",
         ],
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find", "os_poi.search"],
-        QueryIntent.BOUNDARY_FETCH: ["resources/read"],
+        QueryIntent.BOUNDARY_FETCH: ["os_resources.get", "resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
         QueryIntent.ENVIRONMENTAL_SURVEY: [
             "os_landscape.get",
@@ -1292,7 +1295,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Prefer nomis.query directly when dataset is known. If you need discovery, call "
             "nomis.datasets with q and limit to avoid large payloads. ONS flow: "
             "ons_data.dimensions to find filters, then ons_data.query for observations. "
-            "NOMIS workflow profiles are available at resource://mcp-geo/nomis-workflows."
+            "NOMIS workflow profiles are available via os_resources.get or resources/read "
+            "at resource://mcp-geo/nomis-workflows."
         ),
         QueryIntent.AREA_COMPARISON: (
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
@@ -1310,7 +1314,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use ons_select.search for ranked ONS dataset discovery (with explanations), or "
             "ons_search.query for raw live search; "
             "nomis.datasets with q and limit for labour/census. "
-            "NOMIS workflow profiles are available at resource://mcp-geo/nomis-workflows."
+            "NOMIS workflow profiles are available via os_resources.get or resources/read "
+            "at resource://mcp-geo/nomis-workflows."
         ),
         QueryIntent.MAP_RENDER: (
             "Use os_maps.render with a bbox to obtain a static map URL template."
@@ -1393,7 +1398,7 @@ def _select_toolsets(payload: dict[str, Any]) -> ToolResult:
             "message": "toolset must be a string when provided",
         }
     max_tools = payload.get("maxTools", 20)
-    if not isinstance(max_tools, int) or max_tools < 1 or max_tools > 200:
+    if not is_strict_int(max_tools) or max_tools < 1 or max_tools > 200:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

@@ -86,6 +86,7 @@ def test_os_downloads_prepare_and_get_export(monkeypatch) -> None:  # type: igno
 
 def test_os_downloads_product_downloads_resource_fallback(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_downloads
+    from server.mcp import resource_handoff
 
     def fake_get_json(url: str, params=None):
         if url.endswith("/downloads/v1/products/openroads/downloads"):
@@ -120,6 +121,8 @@ def test_os_downloads_product_downloads_resource_fallback(monkeypatch) -> None: 
     body = resp.json()
     assert body["delivery"] == "resource"
     assert body["resourceUri"].startswith("resource://mcp-geo/os-exports/")
+    assert body["stream"]["chunkBytes"] == resource_handoff.DEFAULT_RESOURCE_CHUNK_BYTES
+    assert body["stream"]["maxBytes"] == resource_handoff.MAX_RESOURCE_CHUNK_BYTES
 
 
 def test_os_downloads_list_data_packages_inline_and_invalid(monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -168,6 +171,14 @@ def test_os_downloads_internal_list_products_branches(monkeypatch) -> None:  # t
     assert body["code"] == "INVALID_INPUT"
 
     code, body = os_downloads._list_products({"limit": 1, "pageToken": "bad-token"})
+    assert code == 400
+    assert body["code"] == "INVALID_INPUT"
+
+    code, body = os_downloads._list_products({"limit": True})
+    assert code == 400
+    assert body["code"] == "INVALID_INPUT"
+
+    code, body = os_downloads._list_products({"limit": 1, "pageToken": True})
     assert code == 400
     assert body["code"] == "INVALID_INPUT"
 
@@ -239,6 +250,12 @@ def test_os_downloads_internal_error_paths(monkeypatch) -> None:  # type: ignore
     assert code == 400
     assert body["code"] == "INVALID_INPUT"
 
+    code, body = os_downloads._list_product_downloads(
+        {"productId": "openroads", "inlineMaxBytes": True}
+    )
+    assert code == 400
+    assert body["code"] == "INVALID_INPUT"
+
     code, body = os_downloads._list_product_downloads({"productId": "openroads", "offset": -1})
     assert code == 400
     assert body["code"] == "INVALID_INPUT"
@@ -256,6 +273,7 @@ def test_os_downloads_internal_error_paths(monkeypatch) -> None:  # type: ignore
 
 def test_os_downloads_prepare_and_get_export_internal_paths(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_downloads
+    from server.mcp import resource_handoff
 
     os_downloads._EXPORT_STORE.clear()
 
@@ -332,6 +350,8 @@ def test_os_downloads_prepare_and_get_export_internal_paths(monkeypatch) -> None
     assert code == 200
     assert body["delivery"] == "resource"
     assert body["resourceUri"].startswith("resource://mcp-geo/os-exports/")
+    assert body["stream"]["chunkBytes"] == resource_handoff.DEFAULT_RESOURCE_CHUNK_BYTES
+    assert body["stream"]["maxBytes"] == resource_handoff.MAX_RESOURCE_CHUNK_BYTES
     assert calls["n"] == 1
 
     code, body = os_downloads._get_export({"exportId": export_id, "delivery": "bad"})

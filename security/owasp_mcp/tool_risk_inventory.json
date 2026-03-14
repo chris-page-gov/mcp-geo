@@ -655,6 +655,14 @@
     {
       "data_sensitivity": "public",
       "high_risk_action": false,
+      "name": "os_resources.get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
       "name": "os_tiles_ota.collections",
       "network_write": false,
       "requires_user_context": false,

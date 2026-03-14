@@ -6,6 +6,7 @@ from typing import Any
 from server.config import settings
 from tools.nomis_common import client as nomis_client
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _DATASET_ID_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)+$", re.IGNORECASE)
 _GSS_CODE_PATTERN = re.compile(r"^[EWNS]\d{8}$", re.IGNORECASE)
@@ -792,7 +793,7 @@ def _datasets(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset must be a string"}
     if query is not None and not isinstance(query, str):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "q must be a string"}
-    if not isinstance(limit, int) or limit < 1 or limit > 100:
+    if not is_strict_int(limit) or limit < 1 or limit > 100:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

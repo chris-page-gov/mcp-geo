@@ -7,6 +7,8 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from server.mcp.http_route_auth import authorize_http_route
+from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
     filter_tool_names_by_toolsets,
@@ -19,6 +21,7 @@ from server.observability import record_tool_call
 from server.tool_naming import build_tool_name_maps, resolve_tool_name, rewrite_tool_schema
 from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
+from tools.typing_utils import is_strict_int
 
 # Explicitly import tool modules to guarantee registration
 # (some environments skipped side-effect imports).
@@ -46,6 +49,7 @@ _IMPORT_MODULES = [
     "tools.ons_geo",
     "tools.nomis_data",
     "tools.os_map",
+    "tools.os_resources",
     "tools.os_offline",
     "tools.os_mcp",
     "tools.os_apps",
@@ -117,6 +121,7 @@ _PREFIX_IMPORTS = {
     "ons_geo": ["tools.ons_geo"],
     "nomis": ["tools.nomis_data"],
     "os_map": ["tools.os_map"],
+    "os_resources": ["tools.os_resources"],
     "os_offline": ["tools.os_offline"],
     "os_mcp": ["tools.os_mcp"],
     "os_apps": ["tools.os_apps"],
@@ -137,6 +142,20 @@ def _try_import_for_tool(tool_name: str) -> list[str]:
 # (Legacy static import block retained for clarity; dynamic imports above ensure execution.)
 
 router = APIRouter()
+
+
+def _http_error_response(
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    headers: dict[str, str] | None = None,
+    details: Any | None = None,
+) -> JSONResponse:
+    content: dict[str, Any] = {"isError": True, "code": code, "message": message}
+    if details is not None:
+        content["details"] = details
+    return JSONResponse(status_code=status_code, content=content, headers=headers or None)
 
 
 @router.get("/tools/list")
@@ -181,35 +200,32 @@ def list_tools_endpoint(
 
 @router.post("/tools/call")
 async def call_tool(request: Request):
+    auth_headers, auth_error = authorize_http_route(request, quota_method="tools/call")
+    if auth_error is not None:
+        return auth_error
     try:
         data = await request.json()
     except (json.JSONDecodeError, ValueError):
-        return JSONResponse(
+        return _http_error_response(
             status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Malformed JSON request body",
-            },
+            code="INVALID_INPUT",
+            message="Malformed JSON request body",
+            headers=auth_headers,
         )
     if not isinstance(data, dict):
-        return JSONResponse(
+        return _http_error_response(
             status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Request body must be a JSON object",
-            },
+            code="INVALID_INPUT",
+            message="Request body must be a JSON object",
+            headers=auth_headers,
         )
     tool_name = data.get("tool")
     if not isinstance(tool_name, str) or not tool_name.strip():
-        return JSONResponse(
+        return _http_error_response(
             status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Missing 'tool' field",
-            },
+            code="INVALID_INPUT",
+            message="Missing 'tool' field",
+            headers=auth_headers,
         )
     tool_name = tool_name.strip()
     resolved_name = resolve_tool_name(tool_name, list_tools())
@@ -217,6 +233,9 @@ async def call_tool(request: Request):
     if resolved_name != tool_name:
         data = dict(data)
         data["tool"] = resolved_name
+    if resolved_name == "os_resources.get":
+        data = dict(data)
+        data.setdefault("_assetMode", "absolute")
     if not tool:
         errors = _try_import_for_tool(resolved_name)
         tool = get(resolved_name)
@@ -228,28 +247,26 @@ async def call_tool(request: Request):
                 if errors
                 else "Tool module imported but tool not registered"
             )
-            return JSONResponse(
+            return _http_error_response(
                 status_code=501,
-                content={
-                    "isError": True,
-                    "code": code,
-                    "message": message,
-                    "details": errors,
-                },
+                code=code,
+                message=message,
+                headers=auth_headers,
+                details=errors,
             )
-        return JSONResponse(
+        return _http_error_response(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "isError": True,
-                "code": "UNKNOWN_TOOL",
-                "message": f"Tool '{tool_name}' not found",
-            },
+            code="UNKNOWN_TOOL",
+            message=f"Tool '{tool_name}' not found",
+            headers=auth_headers,
         )
     started = time.perf_counter()
     status_code, payload = tool.call(data)
     if resolved_name == "os_mcp.descriptor" and isinstance(payload, dict):
         payload = dict(payload)
         payload.setdefault("transport", "http")
+    if isinstance(payload, dict) and resolved_name != "os_resources.get":
+        payload = decorate_resource_handoff(payload)
     record_tool_call(
         tool_name=resolved_name,
         transport="http_tools",
@@ -258,7 +275,7 @@ async def call_tool(request: Request):
         status_code=status_code,
         latency_ms=(time.perf_counter() - started) * 1000.0,
     )
-    return JSONResponse(status_code=status_code, content=payload)
+    return JSONResponse(status_code=status_code, content=payload, headers=auth_headers)
 
 
 @router.post("/tools/search")
@@ -304,7 +321,7 @@ async def search_tools_endpoint(request: Request):
             },
         )
     limit = data.get("limit", 10)
-    if not isinstance(limit, int) or limit < 1:
+    if not is_strict_int(limit) or limit < 1:
         return JSONResponse(
             status_code=400,
             content={

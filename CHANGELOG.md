@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added cross-transport MCP resource fallback support via the new
+  `os_resources.get` tool, shared resource-reading helpers in
+  `server/mcp/resource_access.py`, normalized `resourceHandoff` metadata in
+  `server/mcp/resource_handoff.py`, and focused regression coverage in
+  `tests/test_resource_fallback.py`.
 - Added hardened production deployment assets under `ops/deployment/`, including a private-network Docker Compose profile, TLS edge proxy example, Docker secret-file delivery contract, and operator runbook for JWT-protected `/mcp` deployments.
 - Added monitoring assets under `ops/monitoring/`, including Prometheus scrape configuration, OWASP-oriented alert rules, and Vector SIEM routing for structured container and audit/runtime logs.
 - Added OWASP MCP evidence and attestation records under `security/owasp_mcp/evidence/` and `security/owasp_mcp/attestations/`, plus captured live GitHub branch-protection state for `main`.
@@ -127,6 +132,59 @@ All notable changes to this project will be documented in this file.
   `playground/tests/support/fixture_server.mjs`.
 
 ### Changed
+- Updated raw `/tools/call`, `/resources/list`, `/resources/describe`,
+  `/resources/read`, and `/resources/download` to enforce the same MCP HTTP
+  auth gate surface as `/mcp` when auth is enabled, kept direct HTTP resource
+  links opt-in via `MCP_RESOURCE_HTTP_LINKS_ENABLED` and
+  `MCP_PUBLIC_BASE_URL`, stripped outward filesystem `path` leakage from
+  public resource/tool payloads, and normalized `os_map.export` to return
+  `resourceUri` alongside the legacy `uri`.
+- Updated MCP HTTP and STDIO tool responses so resource-backed results now add
+  spec-native `resource_link` content plus normalized `resourceHandoff`
+  metadata, and refreshed README/skill/router guidance to recommend
+  `os_resources.get` as the portable fallback when clients cannot invoke
+  protocol `resources/read`.
+- Updated STDIO resource-handoff decoration to gate `resource_link` blocks on
+  advertised MCP-Apps UI support (leaving text handoff metadata intact for
+  non-UI hosts), and aligned offline-pack `resources/read` payload resolution
+  with `/resources/download` by requiring trusted offline catalog URI matches
+  for both paths.
+- Hardened the auth-aware raw HTTP/resource fallback follow-up by keeping
+  authenticated `/tools/call` parse/lookup errors on the same `mcp-session-id`
+  surface, recording authorization failures from `authorize_http_route()` in
+  the shared MCP HTTP Prometheus counters, streaming `/resources/download`
+  from prevalidated offline-pack paths instead of feeding `FileResponse` a
+  user-derived path, rejecting offline-pack symlink escapes outside
+  `data/offline_packs`, and returning `INVALID_INPUT` when `os_resources.get`
+  receives a `maxBytes` value too small to fit the next UTF-8 codepoint.
+- Preserved `mcp-session-id` on raw `/resources/read` 400/404 responses and
+  aligned offline-pack discovery with the same catalog-backed whitelist used
+  by `/resources/download` and offline-pack `resources/read` payloads.
+- Restored range-aware offline-pack downloads by switching `/resources/download`
+  back to `FileResponse` on prevalidated pack paths, and normalized all
+  `os_resources.get` stream hints (`os_downloads`, `ons_data`) to the shared
+  chunk-size contract exposed by `server/mcp/resource_handoff.py`.
+- Closed the remaining raw-resource auth parity gaps by moving
+  `/resources/list`, `/resources/describe`, `/resources/read`, and
+  `/resources/download` query validation behind the shared auth helper,
+  preserving `mcp-session-id` on `/resources/download` 400/404 responses, and
+  continuing to advertise configured `httpAccess.readUrl` handoffs when MCP
+  HTTP auth is disabled.
+- Normalized `os_resources.get` UI asset paths by transport so HTTP tool
+  callers receive absolute `/ui/...` asset URLs while stdio callers keep
+  resource-local relative paths that remain fetchable without an HTTP side
+  channel.
+- Honored the effective `MCP_APPS_CONTENT_MODE=text` setting for MCP-Apps
+  widget tools by setting `uiTextOnlyOverride` from the resolved content mode,
+  which prevents raw HTTP and stdio handoff decoration from re-appending
+  `resource_link` blocks to text-only UI responses; tightened stdio coverage
+  to validate the loaded settings path rather than incidental environment
+  defaults.
+- Rejected JSON boolean values for integer request parameters across the
+  resource fallback and discovery surfaces, including `os_resources.get`
+  chunking inputs, paginated OS/ONS/admin download/search handlers,
+  `os_mcp.select_toolsets.maxTools`, HTTP/stdio tool-search limits, and MCP-Apps
+  widget numeric inputs.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,
@@ -143,6 +201,13 @@ All notable changes to this project will be documented in this file.
   `resources/read` by either resource URI or resource name, matching the
   accepted MCP request shape and clearing the remaining actionable PR `#36`
   review comment on `playground/src/lib/uiBridge.js`.
+- Updated `playground/src/lib/uiBridge.js` so preview-session tool validation
+  treats sanitized and original tool aliases as equivalent, allowing live
+  widgets that call dotted names such as `os_route.get` to pass the host
+  allowlist even when MCP `tools/list` only exposes sanitized aliases such as
+  `os_route_get`; added regression coverage in
+  `playground/tests/ui_bridge.spec.js` and confirmed the live smoke suite now
+  passes `4/4` on fresh ports.
 - Fixed the remaining deterministic playground CI race by keeping the host in
   `connecting` state until `refreshLists()`, descriptor load, benchmark load,
   and audit-pack refresh complete, and by no longer forcing the active tab

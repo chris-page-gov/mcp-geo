@@ -11,11 +11,13 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
+      "/health": proxyTarget,
       "/audit": proxyTarget,
       "/mcp": proxyTarget,
       "/playground": proxyTarget,
       "/maps": proxyTarget,
       "/resources": proxyTarget,
+      "/tools": proxyTarget,
       "/ui": proxyTarget,
     },
     hmr: {

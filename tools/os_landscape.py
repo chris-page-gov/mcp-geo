@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _RESOURCE_PATH = Path(__file__).resolve().parents[1] / "resources" / "protected_landscapes_england.json"
 _CACHE: dict[str, Any] | None = None
@@ -110,7 +111,7 @@ def _find(payload: dict[str, Any]) -> ToolResult:
             "message": "text must be a non-empty string",
         }
     limit_raw = payload.get("limit", 5)
-    if not isinstance(limit_raw, int) or limit_raw < 1 or limit_raw > 25:
+    if not is_strict_int(limit_raw) or limit_raw < 1 or limit_raw > 25:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

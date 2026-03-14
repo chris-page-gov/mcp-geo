@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from server.config import settings
 from server.logging import log_export_lifecycle
+from server.mcp.resource_handoff import build_resource_stream_hint
 from tools.os_common import client
 from tools.os_delivery import (
     now_utc_iso,
@@ -16,6 +17,7 @@ from tools.os_delivery import (
     write_resource_payload,
 )
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _DOWNLOADS_BASE = "https://api.os.uk/downloads/v1"
 _DEFAULT_LIMIT = 50
@@ -68,7 +70,7 @@ def _downloads_get(path: str, params: dict[str, Any] | None = None) -> ToolResul
 def _parse_limit(value: Any) -> int | None:
     if value is None:
         return _DEFAULT_LIMIT
-    if isinstance(value, int) and 1 <= value <= _MAX_LIMIT:
+    if is_strict_int(value) and 1 <= value <= _MAX_LIMIT:
         return value
     return None
 
@@ -76,7 +78,7 @@ def _parse_limit(value: Any) -> int | None:
 def _parse_offset(value: Any) -> int | None:
     if value is None:
         return 0
-    if isinstance(value, int):
+    if is_strict_int(value):
         return value if value >= 0 else None
     if isinstance(value, str):
         text = value.strip()
@@ -124,15 +126,12 @@ def _delivery_response(
         "resourceUri": export_meta["resourceUri"],
         "bytes": export_meta["bytes"],
         "sha256": export_meta["sha256"],
-        "path": export_meta["path"],
     }
     if include_stream_hint:
-        response["stream"] = {
-            "uri": export_meta["resourceUri"],
-            "mode": "resource",
-            "chunkBytes": 65536,
-            "hint": "Use resources/read with resourceUri to fetch large OS outputs.",
-        }
+        response["stream"] = build_resource_stream_hint(
+            export_meta["resourceUri"],
+            hint="Use os_resources.get or resources/read with resourceUri to fetch large OS outputs.",
+        )
     return 200, response
 
 
@@ -412,12 +411,10 @@ def _prepare_export(payload: dict[str, Any]) -> ToolResult:
         response["resourceUri"] = resource_meta["resourceUri"]
         response["bytes"] = resource_meta["bytes"]
         response["sha256"] = resource_meta["sha256"]
-        response["stream"] = {
-            "uri": resource_meta["resourceUri"],
-            "mode": "resource",
-            "chunkBytes": 65536,
-            "hint": "Use resources/read with resourceUri to fetch large OS outputs.",
-        }
+        response["stream"] = build_resource_stream_hint(
+            resource_meta["resourceUri"],
+            hint="Use os_resources.get or resources/read with resourceUri to fetch large OS outputs.",
+        )
     else:
         response["export"] = export_payload
         response["bytes"] = payload_bytes(export_payload)
@@ -519,6 +516,10 @@ def _get_export(payload: dict[str, Any]) -> ToolResult:
             "resourceUri": resource_meta["resourceUri"],
             "bytes": resource_meta["bytes"],
             "sha256": resource_meta["sha256"],
+            "stream": build_resource_stream_hint(
+                resource_meta["resourceUri"],
+                hint="Use os_resources.get or resources/read with resourceUri to fetch large OS outputs.",
+            ),
             "live": True,
         }
         _log_export_state(

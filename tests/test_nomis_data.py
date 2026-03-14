@@ -734,6 +734,8 @@ def test_nomis_datasets_limit_validation(monkeypatch):
     monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
     resp = client.post("/tools/call", json={"tool": "nomis.datasets", "limit": 0})
     assert resp.status_code == 400
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "limit": True})
+    assert resp.status_code == 400
     resp = client.post("/tools/call", json={"tool": "nomis.datasets", "includeRaw": "yes"})
     assert resp.status_code == 400
 

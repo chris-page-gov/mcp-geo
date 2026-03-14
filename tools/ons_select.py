@@ -9,6 +9,7 @@ from typing import Any, Iterable
 from server.config import settings
 from tools.ons_common import ONSClient
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _CATALOG_CLIENT = ONSClient()
 
@@ -708,7 +709,7 @@ def _search(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing query"}
 
     limit = payload.get("limit", _DEFAULT_LIMIT)
-    if not isinstance(limit, int) or limit < 1:
+    if not is_strict_int(limit) or limit < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be >= 1"}
     limit = min(limit, _MAX_LIMIT)
 
@@ -747,7 +748,7 @@ def _search(payload: dict[str, Any]) -> ToolResult:
             "message": "includeRelated must be a boolean",
         }
     related_limit = payload.get("relatedLimit", _DEFAULT_RELATED_LIMIT)
-    if not isinstance(related_limit, int) or related_limit < 1:
+    if not is_strict_int(related_limit) or related_limit < 1:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

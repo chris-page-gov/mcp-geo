@@ -426,8 +426,10 @@ In addition to data resources, MCP Geo exposes:
 - `ui://mcp-geo/feature-inspector`
 - `ui://mcp-geo/route-planner`
 
-Use `GET /resources/read?uri=...` to fetch these resources. MCP-Apps widgets are
-HTML documents with `text/html;profile=mcp-app` MIME types.
+Use `GET /resources/read?uri=...` to fetch these resources. When a host can call
+tools but cannot invoke protocol-level `resources/read`, use `os_resources.get`
+as the portable fallback bridge. MCP-Apps widgets are HTML documents with
+`text/html;profile=mcp-app` MIME types.
 
 ## Route Planning
 

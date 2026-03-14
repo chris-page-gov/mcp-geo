@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 84,
+  "tool_count": 85,
   "tools": [
     {
       "description": "Return bbox geometry for a given area id",
@@ -626,6 +626,14 @@
       "input_schema_sha256": "6ec7823624b30baa611d02f4db95613d514e4d2be312d6c34be09e9a65e481fe",
       "name": "os_qgis.vector_tile_profile",
       "output_schema_sha256": "f186b8499085c6d5f85dc1d6a44864f97668ac36e8cfa696d40599038569b96b",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Read an MCP Geo resource by uri or name with transport-safe chunking.",
+      "description_sha256": "73afb11d79dc962800fdf75ed9cf2a0d22753dfa580b4b6e7d0955f9cd76ceb8",
+      "input_schema_sha256": "3c0f5832217463c214ab251a4f229a3e16edbcd06333995fc246da76a523abc5",
+      "name": "os_resources.get",
+      "output_schema_sha256": "45a3fd088962e686cf594cc23f790f0817b6a94eb9542d0ddcfae861321a05a7",
       "version": "0.1.0"
     },
     {

@@ -164,8 +164,10 @@ def test_os_map_export_writes_file_and_is_readable_via_resource_uri(
     assert resp.status_code == 200
     body = resp.json()
     assert body["uri"].startswith("resource://mcp-geo/exports/")
+    assert body["resourceUri"] == body["uri"]
+    assert "path" not in body
 
-    export_path = Path(body["path"])
+    export_path = exports_dir / f"{body['exportId']}.json"
     assert export_path.exists()
 
     read = client.get("/resources/read", params={"uri": body["uri"]})

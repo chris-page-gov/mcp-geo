@@ -105,7 +105,9 @@ including `deferLoading` hints for MCP tool search integrations.
 ## Resources
 
 Use `/resources/list` or `/resources/describe` to discover available resources.
-Fetch content with `/resources/read` using `uri`. Example:
+Fetch content with `/resources/read` using `uri`. If a client cannot call the
+protocol-level resource method directly, use the `os_resources.get` tool as the
+portable fallback. Example:
 
 - `skills://mcp-geo/getting-started` (this document)
 - `ui://mcp-geo/geography-selector` (UI widget HTML)
