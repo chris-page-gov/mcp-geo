@@ -16,19 +16,6 @@
       "installYarnUsingApt": false
     }
   },
-  "containerEnv": {
-    "OS_API_KEY": "${localEnv:OS_API_KEY}",
-    "STDIO_KEY": "${localEnv:STDIO_KEY}",
-    "BEARER_TOKENS": "${localEnv:BEARER_TOKENS}",
-    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
-    "MCP_GEO_LIVE_DB_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
-    "BOUNDARY_CACHE_ENABLED": "true",
-    "BOUNDARY_CACHE_DSN": "postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo",
-    "CORS_ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173",
-    "MCP_MAP_TRIALS_DIR": "/workspaces/mcp-geo/research/map_delivery_research_2026-02",
-    "PYTHONPATH": "/workspaces/mcp-geo",
-    "CODEX_HOME": "/home/vscode/.codex"
-  },
   "mounts": [
     "source=mcp-geo-codex,target=/home/vscode/.codex,type=volume"
   ],
@@ -55,7 +42,8 @@
         "docker.docker",
         "openai.chatgpt",
         "ms-vscode.live-server",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "svelte.svelte-vscode"
       ]
     }
   },

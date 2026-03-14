@@ -584,6 +584,13 @@ assumptions change.
   TLS trust through the system CA bundle plus local `.devcontainer/certs/`
   injection so Windows checkouts and corporate proxy environments no longer
   require application-code changes.
+- 2026-03-14: Re-aligned the devcontainer implementation with that cross-platform
+  contract after a local simplification drifted away from it. The supported
+  setup again keeps proxy values build-scoped in `.devcontainer/Dockerfile`,
+  trusts corporate/local roots via `.devcontainer/certs/*.crt` plus the system
+  CA bundle, and sources container-wide runtime env from
+  `.devcontainer/docker-compose.yml` rather than `devcontainer.json` for the
+  Docker Compose-based workspace.
 - 2026-03-04: Completed public-release `v0.5.0` publication: formal repository
   security review (`docs/reports/public_release_security_review_2026-03-04.md`),
   release notes (`RELEASE_NOTES/0.5.0.md`), version bump
