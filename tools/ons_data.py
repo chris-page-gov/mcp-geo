@@ -12,6 +12,7 @@ from tools.registry import Tool, register, ToolResult
 from server.config import settings
 from server.mcp.resource_handoff import build_resource_stream_hint
 from tools.ons_common import client as ons_client
+from tools.typing_utils import is_strict_int
 
 
 def _require_live() -> ToolResult | None:
@@ -532,9 +533,9 @@ def _query(payload: dict[str, Any]) -> ToolResult:
         return live_check
     if filters is not None and not isinstance(filters, dict):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "filters must be an object"}
-    if not isinstance(limit, int) or not 1 <= limit <= 500:
+    if not is_strict_int(limit) or not 1 <= limit <= 500:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be 1-500"}
-    if not isinstance(page, int) or page < 1:
+    if not is_strict_int(page) or page < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "page must be >=1"}
     alias_retry_used = bool(payload.get("_aliasRetried"))
     term = payload.get("term") or payload.get("query") or payload.get("datasetQuery")
@@ -958,7 +959,7 @@ def _editions(payload: dict[str, Any]) -> ToolResult:
         if not isinstance(item, dict):
             continue
         edition_id = item.get("edition") or item.get("id")
-        if isinstance(edition_id, int):
+        if is_strict_int(edition_id):
             edition_id = str(edition_id)
         if not isinstance(edition_id, str):
             continue
@@ -999,7 +1000,7 @@ def _versions(payload: dict[str, Any]) -> ToolResult:
         if not isinstance(item, dict):
             continue
         version_id = item.get("version") or item.get("id")
-        if isinstance(version_id, int):
+        if is_strict_int(version_id):
             version_id = str(version_id)
         if not isinstance(version_id, str):
             continue
@@ -1288,7 +1289,7 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "delivery must be one of inline, resource, auto",
         }
-    if not isinstance(inline_max_bytes, int) or inline_max_bytes < 1:
+    if not is_strict_int(inline_max_bytes) or inline_max_bytes < 1:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

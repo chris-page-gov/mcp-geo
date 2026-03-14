@@ -21,6 +21,15 @@ def test_ons_select_missing_query(client):
     data = resp.json()
     assert data["code"] == "INVALID_INPUT"
 
+    resp = client.post("/tools/call", json={"tool": "ons_select.search", "query": "inflation", "limit": True})
+    assert resp.status_code == 400
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_select.search", "query": "inflation", "relatedLimit": True},
+    )
+    assert resp.status_code == 400
+
 
 def test_ons_select_ranks_from_catalog(client, monkeypatch, tmp_path):
     catalog = _write_catalog(

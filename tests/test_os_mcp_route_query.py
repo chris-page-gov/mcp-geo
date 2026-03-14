@@ -458,3 +458,11 @@ def test_select_toolsets_rejects_invalid_max_tools():
     assert resp.status_code == 400
     body = resp.json()
     assert body.get("code") == "INVALID_INPUT"
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.select_toolsets", "maxTools": True},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"

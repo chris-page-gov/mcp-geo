@@ -17,6 +17,7 @@ from tools.os_delivery import (
     write_resource_payload,
 )
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _DOWNLOADS_BASE = "https://api.os.uk/downloads/v1"
 _DEFAULT_LIMIT = 50
@@ -69,7 +70,7 @@ def _downloads_get(path: str, params: dict[str, Any] | None = None) -> ToolResul
 def _parse_limit(value: Any) -> int | None:
     if value is None:
         return _DEFAULT_LIMIT
-    if isinstance(value, int) and 1 <= value <= _MAX_LIMIT:
+    if is_strict_int(value) and 1 <= value <= _MAX_LIMIT:
         return value
     return None
 
@@ -77,7 +78,7 @@ def _parse_limit(value: Any) -> int | None:
 def _parse_offset(value: Any) -> int | None:
     if value is None:
         return 0
-    if isinstance(value, int):
+    if is_strict_int(value):
         return value if value >= 0 else None
     if isinstance(value, str):
         text = value.strip()

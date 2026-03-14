@@ -8,6 +8,9 @@ def test_tools_search_invalid_limit(client):
     resp = client.post("/tools/search", json={"query": "os", "limit": 0})
     assert resp.status_code == 400
     assert resp.json()["code"] == "INVALID_INPUT"
+    resp = client.post("/tools/search", json={"query": "os", "limit": True})
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
 
 
 def test_tools_search_invalid_category(client):

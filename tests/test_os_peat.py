@@ -32,6 +32,13 @@ def test_os_peat_evidence_paths_requires_aoi() -> None:
     assert resp.status_code == 400
     assert resp.json()["code"] == "INVALID_INPUT"
 
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_peat.evidence_paths", "bbox": [-2.95, 53.78, -2.4, 54.15], "limit": True},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
 
 def test_os_peat_evidence_paths_with_bbox() -> None:
     resp = client.post(

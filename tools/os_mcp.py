@@ -20,6 +20,7 @@ from server.protocol import (
 )
 from server.route_planning import extract_route_request, looks_like_route_query
 from tools.registry import Tool, ToolResult, all_tools, register
+from tools.typing_utils import is_strict_int
 
 
 class QueryIntent(StrEnum):
@@ -1397,7 +1398,7 @@ def _select_toolsets(payload: dict[str, Any]) -> ToolResult:
             "message": "toolset must be a string when provided",
         }
     max_tools = payload.get("maxTools", 20)
-    if not isinstance(max_tools, int) or max_tools < 1 or max_tools > 200:
+    if not is_strict_int(max_tools) or max_tools < 1 or max_tools > 200:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

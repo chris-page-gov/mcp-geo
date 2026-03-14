@@ -38,6 +38,7 @@ from server.mcp.resource_access import read_resource_content, read_result_payloa
 from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.prompts import get_prompt as get_prompt_def, list_prompts as list_prompt_defs
 from tools.os_apps import build_ui_tool_meta
+from tools.typing_utils import is_strict_int
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
     filter_tools_by_toolsets,
@@ -793,7 +794,7 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
         if not isinstance(mode, str):
             raise ValueError("mode must be a string")
         limit = _params.get("limit", 10)
-        if not isinstance(limit, int) or limit < 1:
+        if not is_strict_int(limit) or limit < 1:
             raise ValueError("limit must be >= 1")
         category = _params.get("category")
         if category is not None and not isinstance(category, str):
@@ -829,7 +830,7 @@ def handle_search_tools(params: Dict[str, Any]) -> Any:
     if not isinstance(mode, str):
         raise ValueError("mode must be a string")
     limit = params.get("limit", 10)
-    if not isinstance(limit, int) or limit < 1:
+    if not is_strict_int(limit) or limit < 1:
         raise ValueError("limit must be >= 1")
     category = params.get("category")
     if category is not None and not isinstance(category, str):

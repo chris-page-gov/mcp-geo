@@ -174,6 +174,14 @@ def test_os_downloads_internal_list_products_branches(monkeypatch) -> None:  # t
     assert code == 400
     assert body["code"] == "INVALID_INPUT"
 
+    code, body = os_downloads._list_products({"limit": True})
+    assert code == 400
+    assert body["code"] == "INVALID_INPUT"
+
+    code, body = os_downloads._list_products({"limit": 1, "pageToken": True})
+    assert code == 400
+    assert body["code"] == "INVALID_INPUT"
+
 
 def test_os_downloads_internal_error_paths(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_downloads
@@ -238,6 +246,12 @@ def test_os_downloads_internal_error_paths(monkeypatch) -> None:  # type: ignore
 
     code, body = os_downloads._list_product_downloads(
         {"productId": "openroads", "inlineMaxBytes": 0}
+    )
+    assert code == 400
+    assert body["code"] == "INVALID_INPUT"
+
+    code, body = os_downloads._list_product_downloads(
+        {"productId": "openroads", "inlineMaxBytes": True}
     )
     assert code == 400
     assert body["code"] == "INVALID_INPUT"

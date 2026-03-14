@@ -28,6 +28,34 @@ def test_ons_query_live_disabled(monkeypatch):
     assert resp.json()["code"] == "LIVE_DISABLED"
 
 
+def test_ons_query_rejects_boolean_pagination_inputs():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "limit": True,
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "page": True,
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
 def test_ons_query_live_success(monkeypatch):
     from tools import ons_common
 

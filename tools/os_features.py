@@ -14,6 +14,7 @@ from tools.os_delivery import (
     write_resource_payload,
 )
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 
 def _int_setting(value: Any, default: int, *, minimum: int, maximum: int) -> int:
@@ -336,7 +337,7 @@ def _parse_bbox_param(value: str) -> tuple[float, float, float, float] | None:
 def _parse_limit(value: Any, warnings: list[str]) -> int | None:
     if value is None:
         return _DEFAULT_LIMIT
-    if not isinstance(value, int) or value < 1:
+    if not is_strict_int(value) or value < 1:
         return None
     if value > _MAX_LIMIT:
         add_warning(warnings, "RESULT_LIMIT_CLAMPED")
@@ -347,7 +348,7 @@ def _parse_limit(value: Any, warnings: list[str]) -> int | None:
 def _parse_offset(value: Any) -> int | None:
     if value is None:
         return 0
-    if isinstance(value, int):
+    if is_strict_int(value):
         if value < 0:
             return None
         return value
@@ -730,7 +731,7 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     scan_page_budget_raw = payload.get("scanPageBudget")
     if scan_page_budget_raw is None:
         scan_page_budget = _DEFAULT_SCAN_PAGE_BUDGET
-    elif not isinstance(scan_page_budget_raw, int):
+    elif not is_strict_int(scan_page_budget_raw):
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",

@@ -21,7 +21,17 @@ def test_ons_search_invalid_limit_offset(client):
     assert resp.status_code == 400
     resp = client.post(
         "/tools/call",
+        json={"tool": "ons_search.query", "term": "test", "limit": True},
+    )
+    assert resp.status_code == 400
+    resp = client.post(
+        "/tools/call",
         json={"tool": "ons_search.query", "term": "test", "offset": -1},
+    )
+    assert resp.status_code == 400
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_search.query", "term": "test", "offset": True},
     )
     assert resp.status_code == 400
 

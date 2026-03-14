@@ -21,6 +21,7 @@ from server.observability import record_tool_call
 from server.tool_naming import build_tool_name_maps, resolve_tool_name, rewrite_tool_schema
 from tools.os_apps import build_ui_tool_meta
 from tools.registry import Tool, all_tools, get, list_tools, register
+from tools.typing_utils import is_strict_int
 
 # Explicitly import tool modules to guarantee registration
 # (some environments skipped side-effect imports).
@@ -320,7 +321,7 @@ async def search_tools_endpoint(request: Request):
             },
         )
     limit = data.get("limit", 10)
-    if not isinstance(limit, int) or limit < 1:
+    if not is_strict_int(limit) or limit < 1:
         return JSONResponse(
             status_code=400,
             content={

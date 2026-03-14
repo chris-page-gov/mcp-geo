@@ -162,7 +162,23 @@ def test_os_resources_validation_error_branches(monkeypatch) -> None:  # type: i
             "message": "pageToken must be a non-negative integer offset",
         },
     )
+    assert os_resources._get_resource({"uri": "resource://mcp-geo/demo", "pageToken": True}) == (
+        400,
+        {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "pageToken must be a non-negative integer offset",
+        },
+    )
     assert os_resources._get_resource({"uri": "resource://mcp-geo/demo", "maxBytes": 0}) == (
+        400,
+        {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "maxBytes must be an integer between 1 and 24576",
+        },
+    )
+    assert os_resources._get_resource({"uri": "resource://mcp-geo/demo", "maxBytes": True}) == (
         400,
         {
             "isError": True,

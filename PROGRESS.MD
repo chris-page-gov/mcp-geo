@@ -908,8 +908,9 @@ Common playground capabilities still required:
 | Restore resume/range support for offline-pack downloads | Done | `server/mcp/resources.py` now serves prevalidated offline packs through `FileResponse`, preserving `Range` support while keeping the validated-path guardrail. |
 | Normalize `os_resources.get` stream hints to the shared chunk contract | Done | `server/mcp/resource_handoff.py` now provides the canonical stream hint used by `tools/os_downloads.py` and `tools/ons_data.py`, with regressions in `tests/test_os_downloads_tools.py` and `tests/test_ons_data.py`. |
 | Honor effective text-only UI mode across handoff decoration | Done | `tools/os_apps.py` now sets `uiTextOnlyOverride` from the resolved content mode, so env-driven `MCP_APPS_CONTENT_MODE=text` prevents both raw HTTP and stdio decoration from re-appending `resource_link` blocks; regressions cover direct helper, raw `/tools/call`, and stdio paths. |
+| Reject boolean values for integer request parameters across sibling parsers | Done | Added `tools.typing_utils.is_strict_int()` / `is_strict_number()` and applied them across `os_resources`, `os_downloads`, `os_features`, `ons_search`, `ons_data`, `ons_select`, `nomis_data`, `admin_lookup`, `os_qgis`, `os_peat`, `os_landscape`, HTTP/stdio tool-search limits, `os_mcp.select_toolsets.maxTools`, and MCP-Apps widget numeric inputs; focused regressions now cover the reported `os_resources` path plus scanned sibling surfaces. |
 
-Latest full test run: `./scripts/pytest-local -q` (90.20% coverage, 1173 passed, 6 skipped) on 2026-03-14.
+Latest full test run: `./scripts/pytest-local -q` (90.27% coverage, 1176 passed, 6 skipped) on 2026-03-14.
 Latest playground UI test run: `npm --prefix playground run test` (6 passed) on 2026-02-11.
 
 ## Claude UI fallback plan (short)

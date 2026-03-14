@@ -16,6 +16,7 @@ from tools.os_delivery import (
     write_resource_payload,
 )
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _STYLE_ROOT = _REPO_ROOT / "submodules" / "os-vector-tile-api-stylesheets"
@@ -103,7 +104,7 @@ def _delivery_wrap(
 
 def _vector_tile_profile(payload: dict[str, Any]) -> ToolResult:
     srs = payload.get("srs", 3857)
-    if not isinstance(srs, int) or srs not in {3857, 27700}:
+    if not is_strict_int(srs) or srs not in {3857, 27700}:
         return _invalid("srs must be one of 3857 or 27700")
     style_id = _resolve_style_id(payload.get("style"), srs=srs)
     available = _available_style_ids(srs)

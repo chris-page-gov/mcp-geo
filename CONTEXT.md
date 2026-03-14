@@ -1026,6 +1026,14 @@ assumptions change.
   PR-comment fixes now require a same-pattern codebase scan, patching all
   confirmed sibling cases in the same change and adding regressions for both
   the reported path and an equivalent sibling when one exists.
+- 2026-03-14: Addressed the latest PR #39 `os_resources.get` validation review
+  finding by adding strict integer guards that reject JSON booleans for integer
+  request fields. Applied the same-pattern sweep across sibling public parsers:
+  resource chunking, paginated OS/ONS/admin search/download handlers,
+  `os_mcp.select_toolsets.maxTools`, HTTP/stdio tool-search limits, and
+  MCP-Apps widget numeric inputs. The remaining raw review threads for HTTP
+  auth metrics and offline-pack discovery were rechecked and are already
+  satisfied by the current branch code plus regression coverage.
 - 2026-02-10: Added `scripts/vscode_mcp_stdio.py` and updated `.vscode/mcp.json` to use it so VS Code can start stdio servers on macOS without requiring global Python deps (it prefers the repo venv at `.venv/`).
 - 2026-02-10: Added `scripts/vscode_trace_snapshot.py` to convert VS Code trace artifacts into a `logs/sessions/` directory that can be summarized by `scripts/trace_report.py`.
 - 2026-03-13: Tightened `resolve_offline_pack_download` to require exact catalog URI matches only (removed basename fallback) so `/resources/download` no longer accepts alternate user-supplied URI path variants for trusted files.

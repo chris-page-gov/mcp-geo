@@ -6,6 +6,7 @@ from typing import Any
 from server.config import settings
 from tools.ons_common import ONSClient
 from tools.registry import Tool, register, ToolResult
+from tools.typing_utils import is_strict_int
 
 _SEARCH_CLIENT = ONSClient()
 _SEARCH_CLIENT.base_api = (
@@ -128,9 +129,9 @@ def _search(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing search term"}
     limit = payload.get("limit", 20)
     offset = payload.get("offset", 0)
-    if not isinstance(limit, int) or limit < 1:
+    if not is_strict_int(limit) or limit < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be >= 1"}
-    if not isinstance(offset, int) or offset < 0:
+    if not is_strict_int(offset) or offset < 0:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "offset must be >= 0"}
     if not _live_enabled():
         return 501, {

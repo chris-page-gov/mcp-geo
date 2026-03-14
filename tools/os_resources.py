@@ -9,6 +9,7 @@ from server.mcp.resource_handoff import (
     MAX_RESOURCE_CHUNK_BYTES,
 )
 from tools.registry import Tool, register
+from tools.typing_utils import is_strict_int
 
 
 def _error(message: str, code: str = "INVALID_INPUT") -> tuple[int, dict[str, Any]]:
@@ -18,7 +19,7 @@ def _error(message: str, code: str = "INVALID_INPUT") -> tuple[int, dict[str, An
 def _parse_page_token(value: Any) -> tuple[int | None, str | None]:
     if value is None or value == "":
         return 0, None
-    if isinstance(value, int):
+    if is_strict_int(value):
         if value < 0:
             return None, "pageToken must be a non-negative integer offset"
         return value, None
@@ -35,7 +36,7 @@ def _parse_page_token(value: Any) -> tuple[int | None, str | None]:
 def _parse_max_bytes(value: Any) -> tuple[int | None, str | None]:
     if value is None:
         return DEFAULT_RESOURCE_CHUNK_BYTES, None
-    if not isinstance(value, int):
+    if not is_strict_int(value):
         return None, "maxBytes must be an integer between 1 and 24576"
     if value < 1 or value > MAX_RESOURCE_CHUNK_BYTES:
         return None, "maxBytes must be an integer between 1 and 24576"
