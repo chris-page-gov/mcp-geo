@@ -178,8 +178,16 @@ All notable changes to this project will be documented in this file.
   widget tools by setting `uiTextOnlyOverride` from the resolved content mode,
   which prevents raw HTTP and stdio handoff decoration from re-appending
   `resource_link` blocks to text-only UI responses; tightened stdio coverage
-  to validate the loaded settings path rather than incidental environment
-  defaults.
+  accordingly to validate the loaded settings path rather than incidental
+  environment defaults.
+- Restored the cross-platform devcontainer trust contract so corporate proxy
+  and custom-CA environments use the system certificate bundle, keep proxy
+  values build-scoped in the image, source container-wide runtime env from the
+  Docker Compose service instead of `devcontainer.json`, and retain both Ruff
+  and Svelte editor support in the VS Code extension list. A 2026-03-14
+  follow-up refreshes the injected CA trust store before the first devcontainer
+  APT fetch so corporate MITM roots under `.devcontainer/certs/*.crt` are
+  active for `apt-get update`.
 - Rejected JSON boolean values for integer request parameters across the
   resource fallback and discovery surfaces, including `os_resources.get`
   chunking inputs, paginated OS/ONS/admin download/search handlers,

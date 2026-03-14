@@ -3,6 +3,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
+def _assert_ca_refresh_precedes_apt(text: str) -> None:
+    first_refresh = text.index("update-ca-certificates;")
+    first_apt_update = text.index("apt-get update")
+    assert first_refresh < first_apt_update
+
+
 def test_repo_line_endings_policy_is_tracked() -> None:
     gitattributes = (REPO_ROOT / ".gitattributes").read_text(encoding="utf-8")
     editorconfig = (REPO_ROOT / ".editorconfig").read_text(encoding="utf-8")
@@ -51,9 +57,11 @@ def test_container_images_use_system_ca_bundle_and_local_cert_drop_point() -> No
         assert "REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" in text
         assert "COPY .devcontainer/certs/" in text
         assert "HTTP_PROXY=${HTTP_PROXY}" not in text
+        _assert_ca_refresh_precedes_apt(text)
 
     assert "COPY .devcontainer/certs/ /tmp/devcontainer-certs/" in devcontainer_dockerfile
     assert "COPY .devcontainer/certs/ /tmp/devcontainer-certs/" in postgis_dockerfile
     assert "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt" in devcontainer_dockerfile
     assert "ca-certificates" in postgis_dockerfile
+    _assert_ca_refresh_precedes_apt(postgis_dockerfile)
     assert cert_ignore.strip() == "*\n!.gitignore"

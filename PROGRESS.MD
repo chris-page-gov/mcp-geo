@@ -5,6 +5,16 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-14
 
+## Devcontainer cross-platform trust cleanup (2026-03-14)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| DEVCON-TRUST-1 Restore system-CA and build-scoped proxy contract | done | none | Reinstated `.devcontainer/Dockerfile` support for build-time proxy args, local `.devcontainer/certs/*.crt` trust injection, system CA bundle env (`SSL_CERT_FILE`, `REQUESTS_CA_BUNDLE`, `CURL_CA_BUNDLE`, `PIP_CERT`), and opt-in `INSTALL_NGROK` so locked-down corporate environments and unconstrained Mac hosts share the same container contract. A 2026-03-14 follow-up now refreshes the trust store before the first `apt-get update`, matching the hardened ordering already used in the root and PostGIS Dockerfiles. |
+| DEVCON-TRUST-2 Align Docker Compose devcontainer env ownership | done | DEVCON-TRUST-1 | Moved container-wide runtime env ownership from `.devcontainer/devcontainer.json` into `.devcontainer/docker-compose.yml`, keeping machine-specific overrides in `.devcontainer/.env` and preserving the mounted `CODEX_HOME` path inside the running app container. |
+| DEVCON-TRUST-3 Guidance refresh | done | DEVCON-TRUST-1, DEVCON-TRUST-2 | Updated `README.md`, `.devcontainer/.env.example`, `CHANGELOG.md`, and `CONTEXT.md` so the documented Mac/corporate-VM setup matches the implemented Compose + system-CA behavior. |
+
 ## Auth-aware cross-transport resource fallback (2026-03-13)
 
 Legend: pending, in_progress, done, blocked
