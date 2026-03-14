@@ -82,7 +82,11 @@ assumptions change.
   `maxBytes` cannot fit the next UTF-8 codepoint. The latest follow-up also
   keeps raw `/resources/read` 400/404 responses on the same `mcp-session-id`
   surface and aligns `offline-packs-index` discovery with the same trusted
-  catalog whitelist used for offline-pack reads/downloads.
+  catalog whitelist used for offline-pack reads/downloads. Offline-pack
+  downloads now retain `Range`/resume semantics via `FileResponse` on the
+  prevalidated pack path, and all resource-backed stream hints that point
+  callers at `os_resources.get` now use the shared chunk-size limits from
+  `server/mcp/resource_handoff.py`.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery

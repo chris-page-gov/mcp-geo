@@ -212,6 +212,18 @@ def test_resources_download_offline_pack_file() -> None:
     assert b"PMTILES_PLACEHOLDER" in resp.content
 
 
+def test_resources_download_offline_pack_file_supports_range_requests() -> None:
+    resp = client.get(
+        "/resources/download",
+        params={"uri": "resource://mcp-geo/offline-packs/gb_basemap_light_pmtiles.pmtiles"},
+        headers={"Range": "bytes=0-6"},
+    )
+    assert resp.status_code == 206
+    assert resp.headers.get("accept-ranges") == "bytes"
+    assert resp.headers.get("content-range", "").startswith("bytes 0-6/")
+    assert resp.content == b"PMTILES"
+
+
 def test_resources_list_includes_ons_exports_index_when_present(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
     from server.mcp import resource_catalog
 

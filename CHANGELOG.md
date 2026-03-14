@@ -160,6 +160,10 @@ All notable changes to this project will be documented in this file.
 - Preserved `mcp-session-id` on raw `/resources/read` 400/404 responses and
   aligned offline-pack discovery with the same catalog-backed whitelist used
   by `/resources/download` and offline-pack `resources/read` payloads.
+- Restored range-aware offline-pack downloads by switching `/resources/download`
+  back to `FileResponse` on prevalidated pack paths, and normalized all
+  `os_resources.get` stream hints (`os_downloads`, `ons_data`) to the shared
+  chunk-size contract exposed by `server/mcp/resource_handoff.py`.
 - Extended `.github/workflows/ci.yml` with a dedicated `owasp-mcp-validate` job that runs `gitleaks`, `pip-audit`, and the strict OWASP validator with artifact upload, plus a separate OpenSSF Scorecard job for supply-chain posture evidence; paired it with protected-branch enforcement and code-owner review evidence on `main`.
 - Updated `README.md`, `docs/Build.md`, `security/owasp_mcp/README.md`, `CONTEXT.md`, and `PROGRESS.MD` to document the hardened `/mcp` auth contract, secret-file delivery, monitoring profile, and the current strict baseline verdict (`compliant`, score `100.0`).
 - Updated `docs/reports/README.md`,

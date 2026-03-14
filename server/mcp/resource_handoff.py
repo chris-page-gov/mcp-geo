@@ -113,6 +113,16 @@ def build_resource_handoff(data: dict[str, Any]) -> dict[str, Any] | None:
     return handoff
 
 
+def build_resource_stream_hint(resource_uri: str, *, hint: str) -> dict[str, Any]:
+    return {
+        "uri": resource_uri,
+        "mode": "resource",
+        "chunkBytes": DEFAULT_RESOURCE_CHUNK_BYTES,
+        "maxBytes": MAX_RESOURCE_CHUNK_BYTES,
+        "hint": hint,
+    }
+
+
 def build_resource_link_block(resource_uri: str, mime_type: str) -> dict[str, Any]:
     return {
         "type": "resource_link",

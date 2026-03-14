@@ -223,6 +223,16 @@ def test_resource_handoff_helper_branches(monkeypatch) -> None:  # type: ignore[
     assert resource_handoff._primary_resource_uri({"stream": {"uri": "resource://mcp-geo/demo"}}) == (
         "resource://mcp-geo/demo"
     )
+    assert resource_handoff.build_resource_stream_hint(
+        "resource://mcp-geo/demo",
+        hint="Use os_resources.get.",
+    ) == {
+        "uri": "resource://mcp-geo/demo",
+        "mode": "resource",
+        "chunkBytes": resource_handoff.DEFAULT_RESOURCE_CHUNK_BYTES,
+        "maxBytes": resource_handoff.MAX_RESOURCE_CHUNK_BYTES,
+        "hint": "Use os_resources.get.",
+    }
     assert resource_handoff._http_access("resource://mcp-geo/demo") is None
 
     monkeypatch.setattr(settings, "MCP_RESOURCE_HTTP_LINKS_ENABLED", True, raising=False)

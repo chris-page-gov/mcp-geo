@@ -905,6 +905,8 @@ Common playground capabilities still required:
 | Add regressions for handoff gating and catalog-only offline pack reads | Done | Added focused tests in `tests/test_stdio_adapter_direct.py` and `tests/test_resource_catalog.py`. |
 | Keep offline pack discovery on the same trusted whitelist | Done | `server/mcp/resource_catalog.py` now builds `offline-packs-index` and the `offline-packs-index` list entry from the same trusted catalog-backed helper used by `resolve_offline_pack_download()`, so uncataloged files are no longer advertised. |
 | Preserve session headers on raw `/resources/read` 400/404s | Done | `server/mcp/resources.py` now attaches `mcp-session-id` to validation and not-found failures, with regressions in `tests/test_resource_fallback.py`. |
+| Restore resume/range support for offline-pack downloads | Done | `server/mcp/resources.py` now serves prevalidated offline packs through `FileResponse`, preserving `Range` support while keeping the validated-path guardrail. |
+| Normalize `os_resources.get` stream hints to the shared chunk contract | Done | `server/mcp/resource_handoff.py` now provides the canonical stream hint used by `tools/os_downloads.py` and `tools/ons_data.py`, with regressions in `tests/test_os_downloads_tools.py` and `tests/test_ons_data.py`. |
 
 Latest full test run: `pytest -q --cov-report=term-missing:skip-covered` (90.22% coverage, 675 passed, 6 skipped) on 2026-02-13.
 Latest playground UI test run: `npm --prefix playground run test` (6 passed) on 2026-02-11.

@@ -10,6 +10,7 @@ from typing import Any, cast
 from urllib.parse import urljoin
 from tools.registry import Tool, register, ToolResult
 from server.config import settings
+from server.mcp.resource_handoff import build_resource_stream_hint
 from tools.ons_common import client as ons_client
 
 
@@ -1327,12 +1328,10 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
                 "contentType": content_type,
                 "bytes": resource_bytes,
                 "rows": len(rows),
-                "stream": {
-                    "uri": uri,
-                    "mode": "resource",
-                    "chunkBytes": 65536,
-                    "hint": "Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
-                },
+                "stream": build_resource_stream_hint(
+                    uri,
+                    hint="Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                ),
             }
         inline_payload["delivery"] = "inline"
         inline_payload["bytes"] = payload_bytes
@@ -1360,12 +1359,10 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
                 "rows": row_count,
                 "columns": col_count,
                 "bytes": resource_bytes,
-                "stream": {
-                    "uri": uri,
-                    "mode": "resource",
-                    "chunkBytes": 65536,
-                    "hint": "Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
-                },
+                "stream": build_resource_stream_hint(
+                    uri,
+                    hint="Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                ),
             }
         return 200, {
             "filterId": filter_id,
@@ -1402,12 +1399,10 @@ def _get_filter_output(payload: dict[str, Any]) -> ToolResult:
                     "rows": row_count,
                     "columns": col_count,
                     "bytes": resource_bytes,
-                    "stream": {
-                        "uri": uri,
-                        "mode": "resource",
-                        "chunkBytes": 65536,
-                        "hint": "Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
-                    },
+                    "stream": build_resource_stream_hint(
+                        uri,
+                        hint="Use os_resources.get or resources/read with resourceUri to fetch large outputs without oversized tool payloads.",
+                    ),
                 }
             return 200, {
                 "filterId": filter_id,
