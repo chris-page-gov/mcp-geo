@@ -51,6 +51,13 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the 2026-03-14 NOMIS dataset-geography recovery in
+  `tools/nomis_data.py`, including dataset-specific geography-type lookup,
+  stale-code recovery by area name, focused regressions in
+  `tests/test_nomis_data.py`, and the follow-on live-source refresh in
+  `tools/admin_lookup.py` that moves ward/district lookups to the 2024 ArcGIS
+  services so Harold Wood now resolves to current ward code `E05013973`
+  directly at source.
 - Maintaining the Harold Wood trace analysis package under `troubleshooting/`,
   including the new evidence/deep-analysis reports, route-query hardening for
   `resource://` recovery prompts and conversational place extraction, the

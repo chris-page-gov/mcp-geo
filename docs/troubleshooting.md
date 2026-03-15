@@ -150,6 +150,9 @@ Common pitfalls:
 - Passing an invalid measure code for the dataset (for example `20100` for `NM_17_5`)
 - Passing unsupported dimension keys for the selected dataset
   (for example `c2021_age_92` against `NM_2028_1`)
+- Passing a stale GSS geography code that no longer matches the dataset's
+  current NOMIS geography type (for example a 2019 ward code against a Census
+  2021 dataset that exposes `2022 wards`)
 
 Recommended flow:
 1. Call `nomis.datasets` with `dataset=<id>` and inspect `queryTemplate` + dimensions.
@@ -157,10 +160,34 @@ Recommended flow:
 3. Inspect `queryAdjusted` in error/success payloads:
    - `paramNormalization`: alias/drop fixes (`date -> time`, dropped `cell`)
    - `dimensionAutoAdjust`: required-dimension auto-fill and unknown-key removal
+   - `geographyResolution`: whether the server used dataset-specific geography
+     types, a legacy generic lookup, or a name fallback from a stale code
+   - `mapping[].currentGss`: the current NOMIS geography code when an older
+     input code was mapped forward
 4. Use `nomis.codelists` if you need valid dimension codes.
 5. If geography is supplied as GSS codes and still fails, test a known-working
    geography code for the dataset first (for example LA code) to separate
    geography issues from dimension issues.
+
+Current behavior:
+- `nomis.query` now prefers dataset-specific geography endpoints from the
+  NOMIS dataset overview before falling back to the older generic
+  `geography/TYPE*` lookups.
+- If a stale code is still recognizable through `admin_lookup`, `nomis.query`
+  can recover by area name and expose the mapped current NOMIS code in
+  `queryAdjusted.mapping`.
+- This fixes the Harold Wood Census 2021 ward case where older ward code
+  `E05000312` must be mapped to current NOMIS ward `E05013973`
+  (numeric geography `641734965`).
+- `admin_lookup` live ward and district searches now use the current 2024
+  ArcGIS boundary services and fields, so `admin_lookup.find_by_name` returns
+  the current Harold Wood ward code `E05013973` directly instead of the older
+  `E05000312`.
+
+Remaining risk:
+- If a long-lived process or stale trace still shows the older ward/district
+  codes, rebuild or restart the running MCP session so the updated live source
+  definitions are loaded before retrying the workflow.
 
 ## `os_mcp.descriptor` with `category=\"stats\"` previously returned tool-search category errors
 `os_mcp.descriptor` now accepts `stats` as an alias for `statistics`.

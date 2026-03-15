@@ -139,6 +139,34 @@ All notable changes to this project will be documented in this file.
   stack-like keys from deterministic fixture-server JSON responses in
   `playground/tests/support/fixture_server.mjs`.
 
+### Fixed
+- `nomis.query` now reads dataset-specific geography types from NOMIS dataset
+  overviews before resolving plain GSS geography codes, so Census 2021 ward
+  queries can use the dataset's current geography type (for example `TYPE153`
+  / `2022 wards`) instead of relying on the older generic `TYPE297` lookup.
+- `nomis.query` now falls back from stale admin-lookup geography codes to the
+  current NOMIS geography by area name when the dataset-specific code search
+  misses, which restores live Census 2021 responses for cases such as Harold
+  Wood (`E05000312` -> `E05013973` -> `641734965`).
+- `nomis.query` success payloads now expose richer
+  `queryAdjusted.geographyResolution` and `mapping[].currentGss` metadata so
+  stale-code recoveries are visible instead of looking like intermittent NOMIS
+  failures.
+- `admin_lookup` now uses the current ArcGIS ward and district services
+  `Wards_December_2024_Boundaries_UK_BGC` and
+  `Local_Authority_Districts_December_2024_Boundaries_UK_BGC`, with the
+  matching `WD24*` and `LAD24*` fields, so live admin lookups return current
+  codes such as Harold Wood ward `E05013973` at the source.
+
+### Tests
+- Added focused NOMIS regressions covering dataset-specific geography-type
+  resolution and stale ward-code recovery by area-name fallback in
+  `tests/test_nomis_data.py`.
+- Added admin-lookup regressions locking the default ward/district source
+  vintages and proving `admin_lookup._live_find_by_name()` returns the current
+  Harold Wood ward code through the 2024 ward service in
+  `tests/test_admin_lookup_live_internals.py`.
+
 ### Changed
 - Updated `tools/os_mcp.py` so `os_mcp.route_query` now routes
   `resource://` / large-output recovery prompts to `os_resources.get` and
