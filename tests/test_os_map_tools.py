@@ -203,6 +203,59 @@ def test_os_map_inventory_preserves_harold_wood_places_bbox_axis_order(
     assert len(places_calls) > 1
 
 
+def test_os_map_inventory_keeps_harold_wood_places_clamp_below_strict_vendor_limit(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_places_extra
+
+    places_calls: list[dict[str, Any]] = []
+
+    def places_bbox_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        places_calls.append(dict(params))
+        lat_min, lon_min, lat_max, lon_max = [float(value) for value in params["bbox"].split(",")]
+        area = os_places_extra._bbox_area_m2(lon_min, lat_min, lon_max, lat_max)
+        assert area < os_places_extra.MAX_BBOX_AREA_M2
+        return 200, {
+            "results": [
+                {
+                    "DPA": {
+                        "UPRN": "10024386371",
+                        "ADDRESS": "HAROLD WOOD POLYCLINIC, COPSE AVENUE, HAROLD WOOD, RM3 0FE",
+                        "LAT": 51.5931845,
+                        "LNG": 0.2257232,
+                        "CLASS": "CM02",
+                    }
+                }
+            ]
+        }
+
+    _install_os_stubs(
+        monkeypatch,
+        mock_os_client,
+        places_bbox_handler=places_bbox_handler,
+    )
+
+    harold_wood_bbox = [0.212839, 51.572372, 0.287124, 51.609192]
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.inventory",
+            "bbox": harold_wood_bbox,
+            "layers": ["uprns"],
+            "limits": {"uprns": 20},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    uprns = body["layers"]["uprns"]
+    assert uprns["count"] == 1
+    assert uprns["results"][0]["uprn"] == "10024386371"
+    assert uprns["provenance"]["bboxMode"] == "clamped"
+    assert uprns["provenance"]["tileCount"] == 1
+    assert uprns["provenance"]["originalTileCount"] > 25
+    assert len(places_calls) == 1
+
+
 def test_os_map_export_writes_file_and_is_readable_via_resource_uri(
     client, monkeypatch, mock_os_client, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]

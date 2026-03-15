@@ -68,9 +68,19 @@ assumptions change.
   `troubleshooting/`, including the new transcript working copy and analysis
   that separate ward-geometry discoverability from client/runtime failures on
   `resource://` export consumption and `os_mcp.select_toolsets`, plus the
-  follow-on metadata cleanup that makes `admin_lookup.find_by_name` explicitly
-  bbox-oriented, `admin_lookup.area_geometry` explicitly polygon-capable, and
-  `os_mcp.descriptor` tolerant of `category="map"` as an alias for `maps`.
+  follow-on metadata and startup-profile cleanup that makes
+  `admin_lookup.find_by_name` explicitly bbox-oriented,
+  `admin_lookup.area_geometry` explicitly polygon-capable,
+  `os_mcp.descriptor` tolerant of `category="map"` as an alias for `maps`, and
+  the Harold Wood recovery tools (`admin_lookup.area_geometry`,
+  `os_linked_ids.get`, `os_resources.get`) always loaded instead of deferred.
+- Maintaining the 2026-03-15 fourth Harold Wood follow-up analysis under
+  `troubleshooting/`, including the new transcript working copy and exhaustive
+  report that narrow the remaining hard server-side defect to the strict OS
+  Places `< 1 km²` clamp in `os_places.within`, plus the follow-on helper fix
+  that now targets a safety margin below the vendor threshold and the focused
+  Harold Wood regressions in `tests/test_os_places_extra_more_success.py` and
+  `tests/test_os_map_tools.py`.
 - Finalizing public launch packaging for `v0.5.0`, including secret/sensitive
   content review, release notes, tagging, and repository visibility transition
   to Public.

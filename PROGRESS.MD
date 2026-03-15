@@ -22,7 +22,16 @@ Legend: pending, in_progress, done, blocked
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
 | HWT-FUP-4 Third Harold Wood transcript extraction and analysis | done | HWT-VAL-3 | Added `troubleshooting/Third Harold Wood, after updates.md` plus `troubleshooting/third-harold-wood-after-updates-analysis-2026-03-15.md`. The follow-up distinguishes the third run from both the historical bbox-order bug and the second-run widget mount failure: ward-selection exports succeeded, but Claude stalled on consuming `resource://` output and hit a client-side `os_mcp.select_toolsets` execution failure. |
-| HWT-FUP-5 Geometry/discovery wording and `map` alias cleanup | done | HWT-FUP-4 | `server/mcp/tool_search.py` now accepts `map` as an alias for `maps`, and `tools/admin_lookup.py` now makes the split explicit between `admin_lookup.find_by_name` (discovery + bbox summary) and `admin_lookup.area_geometry` (bbox + optional full geometry). Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_tool_search.py tests/test_os_mcp_descriptor.py`. |
+| HWT-FUP-5 Geometry/discovery wording, starter-tool loading, and `map` alias cleanup | done | HWT-FUP-4 | `server/mcp/tool_search.py` now accepts `map` as an alias for `maps` and force-loads `admin_lookup.area_geometry`, `os_linked_ids.get`, and `os_resources.get` so Harold Wood recovery no longer depends on deferred-tool activation. `tools/admin_lookup.py` now makes the split explicit between `admin_lookup.find_by_name` (discovery + bbox summary) and `admin_lookup.area_geometry` (bbox + optional full geometry). Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_tool_search.py tests/test_tools_search.py tests/test_tools_describe.py tests/test_os_mcp_descriptor.py` (`43 passed`). |
+
+## Harold Wood fourth follow-up analysis (2026-03-15)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| HWT-FUP-6 Fourth Harold Wood transcript extraction and exhaustive analysis | done | HWT-FUP-5 | Added `troubleshooting/Fourth Harold Wood, after updates.md` plus `troubleshooting/fourth-harold-wood-after-updates-analysis-2026-03-15.md`. The fourth run confirms the ward-code refresh, full-geometry discovery path, and NOMIS recovery now hold in a realistic Claude flow, while narrowing the remaining hard server defect to the `os_places.within` strict-size clamp used by the `uprns` branch of `os_map.inventory`. |
+| HWT-FUP-7 Strict OS Places sub-limit clamp for Harold Wood inventories | done | HWT-FUP-6 | `tools/os_places_extra.py` now keeps tiled/clamped OS Places bboxes below the vendor's strict `< 1 km²` limit by using a safety margin instead of the exact published threshold. Added focused regressions in `tests/test_os_places_extra_more_success.py` and `tests/test_os_map_tools.py` proving the Harold Wood clamp stays sub-limit through both the helper and `os_map.inventory`. |
 
 ## NOMIS dataset geography recovery (2026-03-14)
 

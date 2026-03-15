@@ -13,10 +13,17 @@ All notable changes to this project will be documented in this file.
 - Added the third Harold Wood follow-up transcript working copy and analysis:
   `troubleshooting/Third Harold Wood, after updates.md` and
   `troubleshooting/third-harold-wood-after-updates-analysis-2026-03-15.md`.
+- Added the fourth Harold Wood follow-up transcript working copy and
+  exhaustive analysis:
+  `troubleshooting/Fourth Harold Wood, after updates.md` and
+  `troubleshooting/fourth-harold-wood-after-updates-analysis-2026-03-15.md`.
 - Added Harold Wood-focused regressions in
   `tests/test_os_mcp_route_query.py` and `tests/test_os_map_tools.py` covering
   conversational place routing, `resource://` bridge guidance, and OS Places
   bbox axis ordering through `os_map.inventory`.
+- Added focused regressions in `tests/test_os_places_extra_more_success.py`
+  and `tests/test_os_map_tools.py` proving the Harold Wood OS Places clamp now
+  stays strictly below the vendor's `< 1 km²` limit.
 - Added cross-transport MCP resource fallback support via the new
   `os_resources.get` tool, shared resource-reading helpers in
   `server/mcp/resource_access.py`, normalized `resourceHandoff` metadata in
@@ -82,6 +89,13 @@ All notable changes to this project will be documented in this file.
 - `os_mcp.descriptor` and tool-search category normalization now accept
   `category="map"` as an alias for `maps`, matching the existing
   `stats -> statistics` tolerance.
+- Promoted `admin_lookup.area_geometry`, `os_linked_ids.get`, and
+  `os_resources.get` into the starter/always-loaded tool set so Harold Wood
+  recovery no longer depends on deferred-tool activation in Claude-like hosts.
+- `tools/os_places_extra.py` now targets a safety margin below the published
+  1 km² OS Places bbox limit so clamped or tiled helper-generated bboxes do not
+  reproduce the fourth Harold Wood `uprns` failure at the strict vendor
+  threshold.
 - Clarified admin-boundary tool descriptions so `admin_lookup.find_by_name`
   reads as discovery plus bbox summary, while `admin_lookup.area_geometry`
   reads as the route to optional full boundary geometry.
@@ -177,6 +191,10 @@ All notable changes to this project will be documented in this file.
   vintages and proving `admin_lookup._live_find_by_name()` returns the current
   Harold Wood ward code through the 2024 ward service in
   `tests/test_admin_lookup_live_internals.py`.
+- Added focused Harold Wood tool-discovery regressions covering exact-name
+  `/tools/search` queries for `os_linked_ids.get` and `os_resources.get`,
+  transcript-phrase search hits, and descriptor assertions that the Harold
+  Wood recovery tools are no longer deferred.
 
 ### Changed
 - Updated `tools/os_mcp.py` so `os_mcp.route_query` now routes

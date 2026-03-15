@@ -93,6 +93,7 @@ DEFAULT_INCLUDE_TOOLSETS_ENV = "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"
 DEFAULT_EXCLUDE_TOOLSETS_ENV = "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS"
 
 STARTER_TOOLS: tuple[str, ...] = (
+    "admin_lookup.area_geometry",
     "admin_lookup.find_by_name",
     "nomis.query",
     "ons_data.query",
@@ -108,8 +109,10 @@ STARTER_TOOLS: tuple[str, ...] = (
     "os_mcp.select_toolsets",
     "os_mcp.stats_routing",
     "os_names.find",
+    "os_linked_ids.get",
     "os_places.by_postcode",
     "os_places.search",
+    "os_resources.get",
 )
 
 TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {

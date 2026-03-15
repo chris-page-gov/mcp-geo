@@ -72,3 +72,9 @@ def test_search_tools_accepts_stats_alias_category():
 
 def test_starter_toolset_includes_select_toolsets():
     assert "os_mcp.select_toolsets" in STARTER_TOOLS
+
+
+def test_starter_toolset_includes_harold_wood_recovery_tools():
+    assert "admin_lookup.area_geometry" in STARTER_TOOLS
+    assert "os_linked_ids.get" in STARTER_TOOLS
+    assert "os_resources.get" in STARTER_TOOLS

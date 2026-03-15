@@ -18,6 +18,9 @@ class NormalizedAddress(TypedDict, total=False):
 
 
 MAX_BBOX_AREA_M2 = 1_000_000.0
+# OS Places enforces a strict "less than 1km2" rule, so target slightly below
+# the published limit to absorb projection and rounding differences.
+SAFE_BBOX_AREA_M2 = MAX_BBOX_AREA_M2 * 0.99
 MAX_BBOX_TILE_COUNT = 25
 _SEARCH_DEFAULT_LIMIT = 25
 _SEARCH_MAX_LIMIT = 200
@@ -60,12 +63,12 @@ def _tile_or_clamp_bbox(
     width_deg = max_lon - min_lon
     height_deg = max_lat - min_lat
     area = _bbox_area_m2(min_lon, min_lat, max_lon, max_lat)
-    if area <= MAX_BBOX_AREA_M2:
+    if area <= SAFE_BBOX_AREA_M2:
         return [(min_lon, min_lat, max_lon, max_lat)], {"bboxMode": "single", "tileCount": 1}
     if m_per_deg_lat <= 0 or m_per_deg_lon <= 0:
         return [(min_lon, min_lat, max_lon, max_lat)], {"bboxMode": "single", "tileCount": 1}
 
-    target_edge_m = math.sqrt(MAX_BBOX_AREA_M2)
+    target_edge_m = math.sqrt(SAFE_BBOX_AREA_M2)
     tile_lon_deg = target_edge_m / m_per_deg_lon
     tile_lat_deg = target_edge_m / m_per_deg_lat
     tiles_x = max(1, math.ceil(width_deg / tile_lon_deg))
@@ -73,7 +76,7 @@ def _tile_or_clamp_bbox(
     tile_count = tiles_x * tiles_y
 
     if tile_count > MAX_BBOX_TILE_COUNT:
-        scale = math.sqrt(MAX_BBOX_AREA_M2 / area)
+        scale = math.sqrt(SAFE_BBOX_AREA_M2 / area)
         new_width_deg = width_deg * scale
         new_height_deg = height_deg * scale
         center_lon = (min_lon + max_lon) / 2.0

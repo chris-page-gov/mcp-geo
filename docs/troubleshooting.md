@@ -271,6 +271,9 @@ Current repo status:
 - `admin_lookup.area_geometry` is the correct tool for full area geometry after
   discovery by name. `admin_lookup.find_by_name` should be treated as discovery
   plus bbox summary.
+- `admin_lookup.area_geometry`, `os_linked_ids.get`, and `os_resources.get`
+  are now force-loaded starter tools so Claude-like hosts do not need deferred
+  tool activation for the Harold Wood recovery path.
 - `os_map.export` may remain resource-backed even when callers request
   `delivery=\"inline\"`; async selection exports are expected to hand back a
   `resourceUri`.
@@ -284,8 +287,45 @@ Recommended handling:
 - For export-backed outputs:
   read the returned `resourceUri` immediately with `resources/read` or
   `os_resources.get`
+- If the host claims tool search cannot surface `os_linked_ids.get` or
+  `os_resources.get`, treat that as a host/runtime issue first. Current
+  repo-side descriptor and `/tools/search` both surface those tools, and they
+  are no longer deferred.
 - Treat client-side `select_toolsets` execution errors as host/runtime evidence,
   not as proof that the server lacks the relevant deferred tools
+
+## Harold Wood fourth follow-up: strict OS Places size limit and mixed-success summaries
+The 2026-03-15 fourth Harold Wood follow-up showed a much narrower failure:
+
+- Harold Wood now resolved directly to current ward `E05013973`.
+- `admin_lookup.area_geometry` returned the full ward polygon successfully.
+- `nomis.query` succeeded directly for the ward and returned the expected
+  Census 2021 population data.
+- The remaining hard failure sat in the `uprns` branch of `os_map.inventory`,
+  where the shared `os_places.within` helper clamped the ward bbox to a sample
+  that landed just above the strict OS Places `< 1 km²` limit.
+
+Current repo status:
+
+- `os_places.within` now targets a safety margin below the published 1 km²
+  limit, so helper-generated tiled or clamped bboxes stay strictly under the
+  vendor threshold.
+- `tests/test_os_places_extra_more_success.py` and
+  `tests/test_os_map_tools.py` now include Harold Wood regressions proving the
+  strict-limit clamp no longer reproduces through either the helper or the
+  `os_map.inventory` path.
+- `os_features.query` still applies generic thin-mode projection rules, so
+  `gnm-fts-namedpoint-1` can return technically valid but human-unhelpful field
+  sets unless callers use `thinMode=false` or explicit `includeFields`.
+
+Recommended handling:
+
+- For broad premises exploration inside a large ward bbox:
+  expect `os_map.inventory` `uprns` to be sampled or clamped, not exhaustive.
+- If you need human-readable named features from `gnm-*` collections, call
+  `os_features.query` with `thinMode=false` or explicit `includeFields`.
+- If a mixed inventory response contains layer errors or degrade warnings, treat
+  the result as partial success rather than a complete area inventory.
 
 ## `os_features.query` with `resultType="hits"` shows `count=0` but `results` mode returns features
 This can happen when upstream omits `numberMatched` for a count-only query.
