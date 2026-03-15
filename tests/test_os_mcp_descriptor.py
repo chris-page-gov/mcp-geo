@@ -44,3 +44,12 @@ def test_os_mcp_descriptor_accepts_stats_category_alias():
     tool_search = body.get("toolSearch", {})
     assert "error" not in tool_search
     assert tool_search.get("filtered_category") == "statistics"
+
+
+def test_os_mcp_descriptor_accepts_map_category_alias():
+    resp = client.post("/tools/call", json={"tool": "os_mcp.descriptor", "category": "map"})
+    assert resp.status_code == 200
+    body = resp.json()
+    tool_search = body.get("toolSearch", {})
+    assert "error" not in tool_search
+    assert tool_search.get("filtered_category") == "maps"

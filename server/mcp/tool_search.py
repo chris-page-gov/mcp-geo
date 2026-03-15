@@ -27,6 +27,7 @@ class ToolCategory(str, Enum):
 
 
 _CATEGORY_ALIASES: dict[str, str] = {
+    "map": ToolCategory.MAPS.value,
     "stats": ToolCategory.STATISTICS.value,
 }
 

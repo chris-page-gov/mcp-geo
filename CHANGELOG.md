@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
   `troubleshooting/MCP-Geo view of Harold Wood Essex.md`,
   `troubleshooting/harold-wood-essex-trace-evidence-2026-03-14.md`, and
   `troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md`.
+- Added the third Harold Wood follow-up transcript working copy and analysis:
+  `troubleshooting/Third Harold Wood, after updates.md` and
+  `troubleshooting/third-harold-wood-after-updates-analysis-2026-03-15.md`.
 - Added Harold Wood-focused regressions in
   `tests/test_os_mcp_route_query.py` and `tests/test_os_map_tools.py` covering
   conversational place routing, `resource://` bridge guidance, and OS Places
@@ -74,6 +77,14 @@ All notable changes to this project will be documented in this file.
   `scripts/stakeholder_benchmark_pack.py` to turn the Phase 3 evaluation
   prompts into concrete benchmark scenarios with reusable-header prompts,
   scored reference outputs, and workflow validation.
+
+### Changed
+- `os_mcp.descriptor` and tool-search category normalization now accept
+  `category="map"` as an alias for `maps`, matching the existing
+  `stats -> statistics` tolerance.
+- Clarified admin-boundary tool descriptions so `admin_lookup.find_by_name`
+  reads as discovery plus bbox summary, while `admin_lookup.area_geometry`
+  reads as the route to optional full boundary geometry.
 - Added Phase 1 stakeholder benchmark extension module
   `scripts/stakeholder_phase1_extension.py` plus seeded routing helper
   `scripts/seed_benchmark_route_graph.py` so the benchmark harness can expand

@@ -25,6 +25,17 @@ def test_get_tool_search_config_stats_alias():
     assert all(meta.get("category") == "statistics" for meta in tools.values())
 
 
+def test_get_tool_search_config_map_alias():
+    result = get_tool_search_config("map")
+    assert "error" not in result
+    assert result.get("filtered_category") == "maps"
+    alias = result.get("categoryAlias")
+    assert alias == {"input": "map", "normalized": "maps"}
+    tools = result.get("tools", {})
+    assert tools
+    assert all(meta.get("category") == "maps" for meta in tools.values())
+
+
 def test_search_tools_regex_mode_and_schemas():
     results = search_tools("postcode", mode="regex", include_schemas=True)
     assert results

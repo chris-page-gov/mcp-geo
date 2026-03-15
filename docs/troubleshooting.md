@@ -253,6 +253,40 @@ Recommended handling:
 - When actual area geometry is available, prefer polygon-constrained feature
   queries over bbox approximations for boundary-sensitive analysis.
 
+## Harold Wood follow-up: ward polygons, async exports, and `map` vs `maps`
+The 2026-03-15 third Harold Wood follow-up exposed a different failure chain:
+
+- `admin_lookup.find_by_name(includeGeometry=true)` still surfaced only a bbox
+  summary for Harold Wood, so Claude concluded it still lacked the ward
+  polygon.
+- `os_map.export` with `selectionSpec` for ward `E05013973` succeeded and
+  returned explicit `resource://` handoffs, but Claude never followed those
+  URIs with `resources/read` or `os_resources.get`.
+- `os_mcp.select_toolsets` then failed with
+  `No result received from client-side tool execution`, which is a host/runtime
+  failure rather than a normal repo-side result payload.
+
+Current repo status:
+
+- `admin_lookup.area_geometry` is the correct tool for full area geometry after
+  discovery by name. `admin_lookup.find_by_name` should be treated as discovery
+  plus bbox summary.
+- `os_map.export` may remain resource-backed even when callers request
+  `delivery=\"inline\"`; async selection exports are expected to hand back a
+  `resourceUri`.
+- `os_mcp.descriptor` now accepts `category=\"map\"` as an alias for `maps`,
+  removing the singular/plural mismatch that appeared in the follow-up trace.
+
+Recommended handling:
+
+- For named wards or other admin areas:
+  `admin_lookup.find_by_name` -> `admin_lookup.area_geometry`
+- For export-backed outputs:
+  read the returned `resourceUri` immediately with `resources/read` or
+  `os_resources.get`
+- Treat client-side `select_toolsets` execution errors as host/runtime evidence,
+  not as proof that the server lacks the relevant deferred tools
+
 ## `os_features.query` with `resultType="hits"` shows `count=0` but `results` mode returns features
 This can happen when upstream omits `numberMatched` for a count-only query.
 

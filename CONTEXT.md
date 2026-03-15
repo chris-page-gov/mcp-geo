@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-14
+Last updated: 2026-03-15
 Owner: @chris-page-gov
 
 ## Purpose
@@ -64,6 +64,13 @@ assumptions change.
   Harold Wood bbox regression coverage, and the same-route Codex validation
   artifact under
   `logs/sessions/20260314T203104Z-harold-wood-wrapper-validation/`.
+- Maintaining the 2026-03-15 third Harold Wood follow-up analysis under
+  `troubleshooting/`, including the new transcript working copy and analysis
+  that separate ward-geometry discoverability from client/runtime failures on
+  `resource://` export consumption and `os_mcp.select_toolsets`, plus the
+  follow-on metadata cleanup that makes `admin_lookup.find_by_name` explicitly
+  bbox-oriented, `admin_lookup.area_geometry` explicitly polygon-capable, and
+  `os_mcp.descriptor` tolerant of `category="map"` as an alias for `maps`.
 - Finalizing public launch packaging for `v0.5.0`, including secret/sensitive
   content review, release notes, tagging, and repository visibility transition
   to Public.

@@ -816,7 +816,7 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
 
 register(Tool(
     name="admin_lookup.area_geometry",
-    description="Return bbox geometry for a given area id",
+    description="Return bbox and optional full boundary geometry for a given area id",
     input_schema={
         "type": "object",
         "properties": {
@@ -902,7 +902,10 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
 
 register(Tool(
     name="admin_lookup.find_by_name",
-    description="Substring case-insensitive search by area name",
+    description=(
+        "Search administrative areas by name; returns ids and bbox summaries. "
+        "Use admin_lookup.area_geometry for full boundary geometry."
+    ),
     input_schema={
         "type": "object",
         "properties": {
