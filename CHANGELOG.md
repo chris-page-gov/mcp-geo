@@ -5,12 +5,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
+  note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
+  licensing, security-reporting, and Docker MCP catalog metadata guidance.
+
 ### Changed
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
   on release-tag pushes, limiting it to pull requests and the default branch so
   `v*` release tags do not fail on the action's unsupported tag-push path. The
   scorecard artifact upload now also runs only when the SARIF output exists, so
   unsupported or upstream-failed runs do not add a second missing-file error.
+- Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
+  `Dockerfile`, and aligned active Docker-facing docs and wrappers on
+  `OS_API_KEY` as the required live credential. `NOMIS_UID` and
+  `NOMIS_SIGNATURE` are now the only optional higher-rate stats credentials,
+  and stale `ONS_API_KEY` forwarding has been removed from active runtime,
+  tracing, benchmark, live-playwright, and CI surfaces.
+- Refactored the benchmark and trace helper scripts so the targeted local
+  quality gates now pass: `scripts/host_benchmark.py`,
+  `scripts/trace_session.py`, `scripts/trace_report.py`, and
+  `scripts/trace_utils.py` no longer drag unrelated server modules into the
+  `mypy` graph, and the focused Ruff checks for the benchmark/trace scripts and
+  regressions are now clean.
 
 ## [0.7.0] - 2026-03-16
 

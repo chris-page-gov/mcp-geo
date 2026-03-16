@@ -4,7 +4,6 @@ import os
 import subprocess
 from pathlib import Path
 
-
 FAKE_CODEX = """#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\n' "$*" >> "$CODEX_LOG"
@@ -42,6 +41,8 @@ def test_devcontainer_setup_registers_codex_launcher(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}:{env['PATH']}"
     env["CODEX_LOG"] = str(log_path)
+    env["OS_API_KEY"] = "os-secret"
+    env["ONS_API_KEY"] = "unused-ons-secret"
 
     subprocess.run(
         ["bash", str(repo_root / "scripts" / "devcontainer_mcp_setup.sh")],
@@ -53,8 +54,9 @@ def test_devcontainer_setup_registers_codex_launcher(tmp_path: Path) -> None:
     log_text = log_path.read_text(encoding="utf-8")
     add_lines = [line for line in log_text.splitlines() if line.startswith("mcp add")]
     assert any(str(repo_root / "scripts" / "codex-mcp-local") in line for line in add_lines)
+    assert any("--env OS_API_KEY=os-secret" in line for line in add_lines)
+    assert not any("ONS_API_KEY" in line for line in add_lines)
     assert any(
-        "openaiDeveloperDocs --url https://developers.openai.com/mcp" in line
-        for line in add_lines
+        "openaiDeveloperDocs --url https://developers.openai.com/mcp" in line for line in add_lines
     )
     assert not any("claude-mcp-local" in line for line in add_lines)

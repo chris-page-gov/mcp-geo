@@ -1,5 +1,12 @@
 FROM python:3.11-slim
 
+LABEL org.opencontainers.image.title="mcp-geo" \
+      org.opencontainers.image.description="Research MCP server for UK geospatial and official statistics tooling" \
+      org.opencontainers.image.source="https://github.com/chris-page-gov/mcp-geo" \
+      org.opencontainers.image.url="https://github.com/chris-page-gov/mcp-geo" \
+      org.opencontainers.image.documentation="https://github.com/chris-page-gov/mcp-geo/blob/main/README.md" \
+      org.opencontainers.image.licenses="MIT"
+
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 ARG NO_PROXY=""

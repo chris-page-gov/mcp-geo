@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib
 import json
 import os
 import subprocess
@@ -15,24 +16,25 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tests.evaluation.questions import ALL_QUESTIONS
-
-from scripts.trace_report import _build_summary as build_trace_summary
-from scripts.trace_utils import (
+from scripts.trace_report import _build_summary as build_trace_summary  # noqa: E402
+from scripts.trace_utils import (  # noqa: E402
     DOCKER_LOCAL_WRAPPER_NAMES,
     build_ui_event_env,
     classify_startup_discovery,
     classify_tool_search_usage,
     extract_fallback_responses,
     extract_resource_reads,
-    find_trace_files,
     find_response_by_id,
+    find_trace_files,
     parse_mcp_trace,
     parse_ui_events,
     summarize_upstream_log,
 )
+from tests.evaluation.questions import ALL_QUESTIONS  # noqa: E402
 
-DEFAULT_SCENARIO_PACK = REPO_ROOT / "docs" / "benchmarking" / "codex_vs_claude_host_scenarios_v1.json"
+DEFAULT_SCENARIO_PACK = (
+    REPO_ROOT / "docs" / "benchmarking" / "codex_vs_claude_host_scenarios_v1.json"
+)
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
 DEFAULT_REPORT_ROOT = REPO_ROOT / "docs" / "reports"
 EXPECTED_TRACKS = [
@@ -41,7 +43,36 @@ EXPECTED_TRACKS = [
     ("claude_desktop", "Claude Desktop", "claude", "desktop"),
 ]
 QUESTION_BY_ID = {question.id: question for question in ALL_QUESTIONS}
-_TOOL_NAME_MAPS: tuple[dict[str, str], dict[str, str]] | None = None
+_REGISTERED_TOOL_NAMES: tuple[str, ...] | None = None
+_TOOL_IMPORT_MODULES = (
+    "tools.os_places",
+    "tools.os_places_extra",
+    "tools.os_poi",
+    "tools.os_names",
+    "tools.os_linked_ids",
+    "tools.os_features",
+    "tools.os_peat",
+    "tools.os_landscape",
+    "tools.os_maps",
+    "tools.os_vector_tiles",
+    "tools.os_qgis",
+    "tools.os_tiles_ota",
+    "tools.os_net",
+    "tools.os_downloads",
+    "tools.os_route",
+    "tools.admin_lookup",
+    "tools.ons_data",
+    "tools.ons_search",
+    "tools.ons_select",
+    "tools.ons_codes",
+    "tools.ons_geo",
+    "tools.nomis_data",
+    "tools.os_map",
+    "tools.os_resources",
+    "tools.os_offline",
+    "tools.os_mcp",
+    "tools.os_apps",
+)
 
 
 def _utc_now() -> str:
@@ -64,18 +95,31 @@ def _status_from_score(score: float) -> str:
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"Expected JSON object in {path}")
+    return payload
+
+
+def _scenario_entries(pack: dict[str, Any]) -> list[dict[str, Any]]:
+    scenarios = pack.get("scenarios")
+    if not isinstance(scenarios, list) or not scenarios:
+        raise ValueError("Scenario pack missing scenarios")
+
+    entries: list[dict[str, Any]] = []
+    for scenario in scenarios:
+        if not isinstance(scenario, dict):
+            raise ValueError("Scenario pack contains non-object entry")
+        entries.append(scenario)
+    return entries
 
 
 def load_scenario_pack(path: Path = DEFAULT_SCENARIO_PACK) -> dict[str, Any]:
     pack = _load_json(path)
-    scenarios = pack.get("scenarios")
-    if not isinstance(scenarios, list) or not scenarios:
-        raise ValueError(f"Scenario pack missing scenarios: {path}")
-    for scenario in scenarios:
-        if not isinstance(scenario, dict):
-            raise ValueError(f"Scenario pack contains non-object entry: {path}")
+    for scenario in _scenario_entries(pack):
         question_id = scenario.get("sourceQuestionId")
+        if not isinstance(question_id, str):
+            raise ValueError(f"Scenario pack missing sourceQuestionId: {path}")
         question = QUESTION_BY_ID.get(question_id)
         if question is None:
             raise ValueError(f"Unknown sourceQuestionId in scenario pack: {question_id}")
@@ -88,25 +132,29 @@ def load_scenario_pack(path: Path = DEFAULT_SCENARIO_PACK) -> dict[str, Any]:
 
 
 def _scenario_by_id(pack: dict[str, Any], scenario_id: str) -> dict[str, Any]:
-    for scenario in pack["scenarios"]:
+    for scenario in _scenario_entries(pack):
         if scenario.get("id") == scenario_id:
             return scenario
     raise KeyError(f"Scenario not found in pack: {scenario_id}")
 
 
+def _registered_tool_names() -> tuple[str, ...]:
+    global _REGISTERED_TOOL_NAMES
+    if _REGISTERED_TOOL_NAMES is None:
+        for module_name in _TOOL_IMPORT_MODULES:
+            importlib.import_module(module_name)
+        registry_module: Any = importlib.import_module("tools.registry")
+        all_tools = registry_module.all_tools
+        _REGISTERED_TOOL_NAMES = tuple(str(tool.name) for tool in all_tools())
+    return _REGISTERED_TOOL_NAMES
+
+
 def _normalize_tool_name(name: str | None) -> str | None:
     if not isinstance(name, str):
         return None
-    global _TOOL_NAME_MAPS
-    if _TOOL_NAME_MAPS is None:
-        import tools.registry as _registry  # noqa: F401
-        from server.mcp import tools as _mcp_import  # noqa: F401
-        from server.tool_naming import build_tool_name_maps
-        from tools.registry import all_tools
-
-        _TOOL_NAME_MAPS = build_tool_name_maps([tool.name for tool in all_tools()])
-    _, sanitized_to_original = _TOOL_NAME_MAPS
-    return sanitized_to_original.get(name, name)
+    tool_naming_module: Any = importlib.import_module("server.tool_naming")
+    resolve_tool_name = tool_naming_module.resolve_tool_name
+    return str(resolve_tool_name(name, _registered_tool_names()))
 
 
 def _load_session_meta(session_dir: Path) -> dict[str, Any]:
@@ -189,7 +237,10 @@ def _codex_get_server(name: str) -> dict[str, Any] | None:
     )
     if proc.returncode != 0:
         return None
-    return json.loads(proc.stdout)
+    payload = json.loads(proc.stdout)
+    if not isinstance(payload, dict):
+        return None
+    return payload
 
 
 def _codex_remove_server(name: str) -> None:
@@ -267,7 +318,9 @@ def _write_initial_session_meta(
     _save_session_meta(session_dir, payload)
 
 
-def _load_traces(session_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any] | None, dict[str, Any]]:
+def _load_traces(
+    session_dir: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any] | None, dict[str, Any]]:
     files = find_trace_files(session_dir)
     mcp_summaries: list[dict[str, Any]] = []
     if "stdio" in files:
@@ -284,13 +337,12 @@ def _load_traces(session_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str
 
 def collect_session_evidence(session_dir: Path) -> dict[str, Any]:
     requests, responses, ui_summary, files = _load_traces(session_dir)
-    session_meta = _load_session_meta(session_dir)
     tool_calls = [
         request["toolNormalized"]
         for request in requests
         if request.get("method") == "tools/call" and isinstance(request.get("toolNormalized"), str)
     ]
-    ui_event_types = defaultdict(int)
+    ui_event_types: defaultdict[str, int] = defaultdict(int)
     if ui_summary:
         for event in ui_summary["events"]:
             event_type = event.get("eventType")
@@ -339,7 +391,9 @@ def collect_session_evidence(session_dir: Path) -> dict[str, Any]:
         "uiEventTypes": dict(ui_event_types),
         "fallbackCount": len(extract_fallback_responses(responses)),
         "fallbackTools": [
-            pair["tool"] for pair in tool_response_pairs if pair["hasFallback"] and isinstance(pair.get("tool"), str)
+            pair["tool"]
+            for pair in tool_response_pairs
+            if pair["hasFallback"] and isinstance(pair.get("tool"), str)
         ],
         "errorCodes": [
             str(response.get("code") or "UNKNOWN")
@@ -364,7 +418,10 @@ def _category(score: float, detail: str, **extra: Any) -> dict[str, Any]:
     return payload
 
 
-def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+def score_session(
+    session_dir: Path,
+    scenario: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
     evidence = collect_session_evidence(session_dir)
     session_meta = evidence["session"]
     tool_calls = evidence["toolCalls"]
@@ -382,7 +439,9 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
     has_expected_resources = all(resource in resource_reads for resource in expected_resources)
     surface = str(session_meta.get("surface") or "unknown")
     expects_ui_runtime = _surface_expects_ui_runtime(session_meta)
-    fallback_expected = surface in set(scenario.get("scoringHints", {}).get("fallbackExpectedOn", []))
+    fallback_expected = surface in set(
+        scenario.get("scoringHints", {}).get("fallbackExpectedOn", [])
+    )
     fallback_observed = evidence["fallbackCount"] > 0
     error_codes = [
         str(pair.get("errorCode") or "UNKNOWN")
@@ -415,12 +474,30 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
 
     tool_search_hint = scenario.get("scoringHints", {}).get("toolSearch", "optional")
     tool_search_usage = evidence["toolSearchUsage"]
+    preferred_tool_search_scores = {
+        "used": 1.0,
+        "supported": 0.75,
+        "unused": 0.25,
+        "not evidenced": 0.0,
+    }
+    optional_tool_search_scores = {
+        "used": 1.0,
+        "supported": 1.0,
+        "unused": 0.75,
+        "not evidenced": 0.5,
+    }
+    passive_tool_search_scores = {
+        "used": 0.5,
+        "supported": 0.5,
+        "unused": 1.0,
+        "not evidenced": 1.0,
+    }
     if tool_search_hint == "preferred":
-        tool_search_score = {"used": 1.0, "supported": 0.75, "unused": 0.25, "not evidenced": 0.0}[tool_search_usage]
+        tool_search_score = preferred_tool_search_scores[tool_search_usage]
     elif tool_search_hint == "optional":
-        tool_search_score = {"used": 1.0, "supported": 1.0, "unused": 0.75, "not evidenced": 0.5}[tool_search_usage]
+        tool_search_score = optional_tool_search_scores[tool_search_usage]
     else:
-        tool_search_score = {"used": 0.5, "supported": 0.5, "unused": 1.0, "not evidenced": 1.0}[tool_search_usage]
+        tool_search_score = passive_tool_search_scores[tool_search_usage]
 
     resource_hint = scenario.get("scoringHints", {}).get("resourcesRead", "none")
     if resource_hint == "required":
@@ -534,7 +611,11 @@ def score_session(session_dir: Path, scenario: dict[str, Any]) -> tuple[dict[str
     return evidence, score
 
 
-def write_score_artifacts(session_dir: Path, evidence: dict[str, Any], score: dict[str, Any]) -> None:
+def write_score_artifacts(
+    session_dir: Path,
+    evidence: dict[str, Any],
+    score: dict[str, Any],
+) -> None:
     (session_dir / "benchmark-evidence.json").write_text(
         json.dumps(evidence, indent=2), encoding="utf-8"
     )
@@ -555,7 +636,10 @@ def summarize_sessions(
     *,
     scenario_pack: dict[str, Any],
 ) -> tuple[dict[str, Any], str]:
-    scenario_labels = {scenario["id"]: scenario.get("label", scenario["id"]) for scenario in scenario_pack["scenarios"]}
+    scenario_labels = {
+        scenario["id"]: scenario.get("label", scenario["id"])
+        for scenario in _scenario_entries(scenario_pack)
+    }
     track_rows: dict[str, dict[str, Any]] = {}
     for track_id, label, source, surface in EXPECTED_TRACKS:
         track_rows[track_id] = {
@@ -612,7 +696,7 @@ def summarize_sessions(
             }
         )
 
-    aggregate = {
+    aggregate: dict[str, Any] = {
         "generatedAt": _utc_now(),
         "scenarioPack": scenario_pack.get("id"),
         "sessions": session_summaries,
@@ -631,7 +715,11 @@ def summarize_sessions(
 
     for track_id, track in track_rows.items():
         scenario_count = len(track["scenarios"])
-        overall = round(sum(track["overallScores"]) / len(track["overallScores"]), 4) if track["overallScores"] else None
+        overall = (
+            round(sum(track["overallScores"]) / len(track["overallScores"]), 4)
+            if track["overallScores"]
+            else None
+        )
         category_avgs = {
             name: round(sum(values) / len(values), 4)
             for name, values in track["categoryScores"].items()
@@ -648,15 +736,19 @@ def summarize_sessions(
             "scenarios": track["scenarios"],
         }
         overall_text = f"{overall:.2f}" if overall is not None else "missing"
-        lines.append(f"| {track['label']} | {len(track['sessions'])} | {scenario_count} | {overall_text} |")
+        lines.append(
+            f"| {track['label']} | {len(track['sessions'])} | {scenario_count} | {overall_text} |"
+        )
 
-    lines.extend([
-        "",
-        "## Scenario Matrix",
-        "| Scenario | Codex CLI | Codex IDE | Claude Desktop |",
-        "| --- | --- | --- | --- |",
-    ])
-    for scenario in scenario_pack["scenarios"]:
+    lines.extend(
+        [
+            "",
+            "## Scenario Matrix",
+            "| Scenario | Codex CLI | Codex IDE | Claude Desktop |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    for scenario in _scenario_entries(scenario_pack):
         scenario_id = scenario["id"]
         row = [scenario_labels[scenario_id]]
         for track_id, _label, _source, _surface in EXPECTED_TRACKS:
@@ -664,17 +756,17 @@ def summarize_sessions(
             if not details:
                 row.append("missing")
                 continue
-            row.append(
-                f"{details.get('status')} ({float(details.get('score') or 0.0):.2f})"
-            )
+            row.append(f"{details.get('status')} ({float(details.get('score') or 0.0):.2f})")
         lines.append(f"| {' | '.join(row)} |")
 
-    lines.extend([
-        "",
-        "## Category Averages",
-        "| Category | Codex CLI | Codex IDE | Claude Desktop |",
-        "| --- | ---: | ---: | ---: |",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Category Averages",
+            "| Category | Codex CLI | Codex IDE | Claude Desktop |",
+            "| --- | ---: | ---: | ---: |",
+        ]
+    )
     categories = [
         "protocolNegotiation",
         "startupDiscovery",
@@ -745,7 +837,11 @@ def cmd_summarize(args: argparse.Namespace) -> int:
     session_dirs = [Path(value).resolve() for value in args.sessions]
     aggregate, markdown = summarize_sessions(session_dirs, scenario_pack=pack)
     date_stamp = dt.date.today().isoformat()
-    prefix = Path(args.out_prefix).resolve() if args.out_prefix else DEFAULT_REPORT_ROOT / f"codex_vs_claude_host_benchmark_{date_stamp}"
+    prefix = (
+        Path(args.out_prefix).resolve()
+        if args.out_prefix
+        else DEFAULT_REPORT_ROOT / f"codex_vs_claude_host_benchmark_{date_stamp}"
+    )
     prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = prefix.with_suffix(".json")
     md_path = prefix.with_suffix(".md")
@@ -760,7 +856,8 @@ def _prompt_for_scenario(scenario: dict[str, Any]) -> str:
     return (
         "Use the connected `mcp-geo` MCP server to answer the user request below. "
         "Prefer MCP tools and resources over repository inspection or shell commands. "
-        "If the server returns a UI tool and the host does not support UI, use the fallback payload. "
+        "If the server returns a UI tool and the host does not support UI, "
+        "use the fallback payload. "
         "Return a concise final answer.\n\n"
         f"User request: {scenario['prompt']}"
     )
@@ -770,14 +867,15 @@ def cmd_run_codex_cli(args: argparse.Namespace) -> int:
     pack = load_scenario_pack(Path(args.scenario_pack).resolve())
     scenario = _scenario_by_id(pack, args.scenario_id)
     scenario_slug = _slug(scenario["id"])
-    session_name = args.name or f"{dt.datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')}-codex-cli-{scenario_slug}"
+    session_name = (
+        args.name or f"{dt.datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')}-codex-cli-{scenario_slug}"
+    )
     session_dir = _ensure_session_dir(Path(args.session_root).resolve(), session_name)
     wrapper = Path(args.wrapper).resolve()
     inherited_env = {
         key: value
         for key, value in {
             "OS_API_KEY": os.getenv("OS_API_KEY"),
-            "ONS_API_KEY": os.getenv("ONS_API_KEY"),
             "ONS_LIVE_ENABLED": os.getenv("ONS_LIVE_ENABLED"),
             "STDIO_KEY": os.getenv("STDIO_KEY"),
             "BEARER_TOKENS": os.getenv("BEARER_TOKENS"),
@@ -788,7 +886,11 @@ def cmd_run_codex_cli(args: argparse.Namespace) -> int:
         }.items()
         if value
     }
-    temp_server = _build_temp_stdio_server(session_dir, wrapper=wrapper, inherited_env=inherited_env)
+    temp_server = _build_temp_stdio_server(
+        session_dir,
+        wrapper=wrapper,
+        inherited_env=inherited_env,
+    )
     previous = _codex_get_server(args.server_name)
     restore_config = _prepare_restore_server_config(previous)
     _write_initial_session_meta(
@@ -848,12 +950,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run and score MCP host benchmarks.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    scenario_pack_parser = subparsers.add_parser("scenario-pack", help="Print or export the scenario pack.")
+    scenario_pack_parser = subparsers.add_parser(
+        "scenario-pack",
+        help="Print or export the scenario pack.",
+    )
     scenario_pack_parser.add_argument("--scenario-pack", default=str(DEFAULT_SCENARIO_PACK))
     scenario_pack_parser.add_argument("--out")
     scenario_pack_parser.set_defaults(func=cmd_scenario_pack)
 
-    score_parser = subparsers.add_parser("score-session", help="Score an existing traced session.")
+    score_parser = subparsers.add_parser(
+        "score-session",
+        help="Score an existing traced session.",
+    )
     score_parser.add_argument("session_dir")
     score_parser.add_argument("--scenario-pack", default=str(DEFAULT_SCENARIO_PACK))
     score_parser.add_argument("--scenario-id")
@@ -864,13 +972,19 @@ def build_parser() -> argparse.ArgumentParser:
     score_parser.add_argument("--model")
     score_parser.set_defaults(func=cmd_score_session)
 
-    summarize_parser = subparsers.add_parser("summarize", help="Aggregate scored sessions into a report.")
+    summarize_parser = subparsers.add_parser(
+        "summarize",
+        help="Aggregate scored sessions into a report.",
+    )
     summarize_parser.add_argument("sessions", nargs="+")
     summarize_parser.add_argument("--scenario-pack", default=str(DEFAULT_SCENARIO_PACK))
     summarize_parser.add_argument("--out-prefix")
     summarize_parser.set_defaults(func=cmd_summarize)
 
-    run_parser = subparsers.add_parser("run-codex-cli", help="Run a scripted Codex CLI benchmark scenario.")
+    run_parser = subparsers.add_parser(
+        "run-codex-cli",
+        help="Run a scripted Codex CLI benchmark scenario.",
+    )
     run_parser.add_argument("scenario_id")
     run_parser.add_argument("--scenario-pack", default=str(DEFAULT_SCENARIO_PACK))
     run_parser.add_argument("--model", default="gpt-5.4")

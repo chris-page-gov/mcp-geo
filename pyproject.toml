@@ -8,7 +8,13 @@ version = "0.7.0"
 description = "MCP server for geospatial and ONS tools"
 authors = [ { name = "DCMS-TECH" } ]
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
@@ -23,6 +29,12 @@ dependencies = [
     "pyproj",  # WGS84 -> BNG conversion for os_names.nearest
     "psycopg[binary]",  # PostGIS / pgRouting-backed boundary and routing access
 ]
+
+[project.urls]
+Homepage = "https://github.com/chris-page-gov/mcp-geo"
+Repository = "https://github.com/chris-page-gov/mcp-geo"
+Issues = "https://github.com/chris-page-gov/mcp-geo/issues"
+Security = "https://github.com/chris-page-gov/mcp-geo/security/policy"
 
 [project.scripts]
 mcp-geo-stdio = "scripts.os_mcp:main"
@@ -75,3 +87,4 @@ disallow_incomplete_defs = true
 
 [tool.setuptools]
 packages = ["server", "tools", "scripts"]
+license-files = ["LICENSE"]
