@@ -3,9 +3,9 @@
     ".github/CODEOWNERS": "b9599aa976fdceac612a36146cf3393ec2c39f61275e53858ea390b04dbdc187",
     ".github/workflows/ci.yml": "3b0d367e45321140a57a51bbeb6f54b1a00938e5a273bbaeced87c02990a6e21",
     "security/owasp_mcp/evidence/github_main_branch_protection_2026-03-13.json": "eb96ead58916290b17215752461a95301ce8aa511ea4e1e04091916f3f57d3d6",
-    "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md": "ef5db815d541d24d43d53ced4c7c590f3adb5842bd632d7e1748280db8f89fc6",
-    "security/owasp_mcp/tool_manifest.lock.json": "745fcc60a4921054ddbf30dec0ab1a2dbb8f6b332e79d04fe4d50a4757549e9c",
-    "security/owasp_mcp/tool_manifest.lock.json.sig": "3aeb0c114a114de350a6e254d9f4f64f744f534b0f6ee0442bf659e61f25eae1"
+    "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md": "c9d701db3520ddda4794e512ec7489d1712a905d4e243df56552064dfbcb3231",
+    "security/owasp_mcp/tool_manifest.lock.json": "269dd873af499c98826195370771f371499a644a292d70b381c1779f629f6828",
+    "security/owasp_mcp/tool_manifest.lock.json.sig": "3a04cb980456776c090d6fcbf98af9124583d421fdc5330440d4f468a852bad5"
   },
   "attestation_id": "owasp-mcp-tool-review-and-branch-protection-2026-03-13",
   "control_ids": [

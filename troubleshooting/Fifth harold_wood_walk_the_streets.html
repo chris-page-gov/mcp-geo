@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harold Wood — Walk the Streets</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1419;
+    --surface: #1a2029;
+    --surface2: #232d3a;
+    --accent: #e8a838;
+    --accent2: #38b2e8;
+    --text: #e8e6e1;
+    --text-dim: #8a9099;
+    --green: #4ecb71;
+    --red: #e85858;
+    --orange: #e8a838;
+    --border: #2a3545;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    line-height: 1.6;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a2029 0%, #0f1419 50%, #1a2535 100%);
+    padding: 60px 40px 40px;
+    border-bottom: 2px solid var(--accent);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(232,168,56,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 3rem;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    font-weight: 300;
+    max-width: 700px;
+  }
+  .stats-bar {
+    display: flex;
+    gap: 32px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 24px;
+    min-width: 160px;
+  }
+  .stat .val {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat .label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .content { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+  .street-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .street-section:hover { border-color: var(--accent); }
+  .street-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    background: var(--surface2);
+    cursor: pointer;
+    user-select: none;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .street-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .street-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-lit { background: rgba(78,203,113,0.15); color: var(--green); }
+  .badge-unlit { background: rgba(232,88,88,0.15); color: var(--red); }
+  .badge-pavement { background: rgba(56,178,232,0.15); color: var(--accent2); }
+  .badge-cycle { background: rgba(232,168,56,0.15); color: var(--accent); }
+  .badge-count { background: rgba(232,168,56,0.12); color: var(--accent); font-family: 'Playfair Display', serif; font-size: 0.85rem; }
+  .badge-class { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+
+  .street-body { padding: 0 28px 24px; display: none; }
+  .street-body.open { display: block; }
+
+  .road-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .meta-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .meta-card .mk { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .meta-card .mv { font-size: 1.05rem; font-weight: 600; margin-top: 2px; }
+
+  .narrative {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    border-left: 3px solid var(--accent2);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .narrative em { color: var(--accent2); font-style: normal; font-weight: 600; }
+
+  .uprn-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 0.85rem;
+  }
+  .uprn-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .uprn-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(42,53,69,0.5);
+    vertical-align: top;
+  }
+  .uprn-table tr:hover td { background: rgba(232,168,56,0.04); }
+  .uprn-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .uprn-link:hover { text-decoration: underline; }
+  .sv-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(56,178,232,0.12);
+    color: var(--accent2);
+    padding: 3px 10px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .sv-link:hover { background: rgba(56,178,232,0.25); }
+  .class-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title span { color: var(--accent); }
+
+  .walk-narrative {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    margin-bottom: 40px;
+    line-height: 1.9;
+    font-size: 1.02rem;
+  }
+  .walk-narrative h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    color: var(--accent);
+  }
+  .walk-narrative p { margin-bottom: 16px; }
+  .walk-narrative .sv-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(56,178,232,0.12);
+    color: var(--accent2);
+    padding: 2px 10px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .walk-narrative .sv-inline:hover { background: rgba(56,178,232,0.25); }
+
+  .note-box {
+    background: rgba(232,168,56,0.08);
+    border: 1px solid rgba(232,168,56,0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .note-box strong { color: var(--accent); }
+
+  .expand-all {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .expand-all:hover { border-color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .hero { padding: 32px 20px 24px; }
+    .hero h1 { font-size: 2rem; }
+    .content { padding: 24px 12px; }
+    .street-header { padding: 14px 16px; }
+    .street-body { padding: 0 16px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Harold Wood<span>,</span> Essex</h1>
+  <p class="subtitle">An MCP-Geo deep dive into the streets, premises, and road infrastructure of Harold Wood ward — London Borough of Havering. 100 UPRNs across 30+ streets, matched to OS NGD road link intelligence.</p>
+  <div class="stats-bar">
+    <div class="stat"><div class="val">100</div><div class="label">UPRNs Sampled</div></div>
+    <div class="stat"><div class="val">30+</div><div class="label">Named Streets</div></div>
+    <div class="stat"><div class="val">E05013973</div><div class="label">Ward Code</div></div>
+    <div class="stat"><div class="val">RM3</div><div class="label">Postcode District</div></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="note-box">
+    <strong>Data sources:</strong> UPRNs from OS Places API, road link details from OS NGD <code>trn-ntwk-roadlink-5</code> collection. Attributes include road width, pavement coverage (left/right %), street lighting, cycle lane presence, and road classification — all derived via MCP-Geo tool calls. Street View links use Google Maps at the UPRN coordinates.
+  </div>
+
+  <!-- ===================== WALKING NARRATIVE ===================== -->
+  <div class="section-title">🚶 <span>Walk the Streets</span> of Harold Wood</div>
+
+  <div class="walk-narrative">
+    <h3>Starting at Harold Wood Station</h3>
+    <p>Step off the train at Harold Wood station and you're immediately on <em>Station Road</em> — the commercial spine of this suburban Essex neighbourhood. At number 11, there's <strong>Missy Moo Balloons</strong>, a cheerful shop front, and just up at 35 you'll pass <strong>Williams Bakery & Sandwich Bar</strong>, the kind of independent high-street trader that gives Harold Wood its village feel. Above the shops, flats at 41A and 43B tell the familiar story of London's intensification — retail below, residential above.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5935275,0.2332455" target="_blank">📍 Street View: Station Rd</a>
+    </p>
+
+    <h3>Along Gubbins Lane</h3>
+    <p>Head north-west from the station and you're on <em>Gubbins Lane</em>, the busiest road in our sample. The NGD data tells us it's a <strong>B Road (B175)</strong> — classified, with an average width of around 8.5m. Street lighting? <em>Fully lit</em>. Pavement coverage is 100%, with an average width of 1.7m on each side. At number 69, the semi-detached houses begin — classic 1930s London suburban stock. Then at 63, <strong>Bell Flower Lodge</strong> rises — a modern apartment block with at least 74 flats, its presence signalling the newer development that has reshaped parts of Harold Wood. Up at 120A, terraced housing returns.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5941700,0.2323696" target="_blank">📍 Street View: Gubbins Lane</a>
+    </p>
+
+    <h3>The Residential Heart: Athelstan Road & Ethelburga Road</h3>
+    <p>Turn east off Gubbins Lane and you're into the Anglo-Saxon named streets that define Harold Wood's residential character. <em>Athelstan Road</em> is a quiet local road — around 6.6m wide, fully lit, pavement on both sides. It runs from number 2 at the southern end (semi-detached, RM3 0QB) all the way to the 50s. At number 31, the semi-detacheds are classic interwar builds. The community hub sits here too — <strong>Athelstan Hall</strong>, classified as a public/community facility, anchoring the neighbourhood.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5921633,0.2344259" target="_blank">📍 Street View: Athelstan Hall</a>
+    </p>
+    <p>Cross over to <em>Ethelburga Road</em> and the pattern continues — terraces at number 33, converted flats at 4B and 6C, and at the eastern end, <strong>St. Ethelburga Court</strong>, a purpose-built apartment block with at least 16 units. The road is unclassified, around 5.7m wide, and fully lit.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5910117,0.2371805" target="_blank">📍 Street View: St Ethelburga Court</a>
+    </p>
+
+    <h3>The Drive & The Ridgeway — Leafier Ground</h3>
+    <p>Head west and you reach <em>The Drive</em>, where the housing steps up. At number 3, there are terraces, but by 45 and 53 you're among the detached and semi-detached homes of RM3 0DU — wider plots, deeper front gardens. This is the more aspirational end of Harold Wood. Parallel to it, <em>The Ridgeway</em> carries similar character — semi-detacheds at numbers 12, 43, and 54, along a fully lit local road with pavement on both sides. The road data shows 100% pavement coverage and an average width of 7.4m.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5941863,0.2280625" target="_blank">📍 Street View: The Drive</a>
+    </p>
+
+    <h3>The New Harold Wood: Wildcary Lane & St Clements Avenue</h3>
+    <p>South-west of the station, the streets tell a different story. <em>Wildcary Lane</em>, <em>Charlock Close</em>, <em>Safflower Lane</em>, <em>Huntingdon Drive</em> — these are the new-build streets of the Harold Hill/Harold Wood regeneration. The UPRNs here are overwhelmingly flats: Thistle House, Wayfaring Court, Baneberry Lodge. The road data for <em>St Clements Avenue</em> is notable — it shows <strong>100% cycle lane coverage</strong>, one of the few roads in our sample with any cycle infrastructure at all. Average road width is 7.8m with good pavement (average 1.98m wide).
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5924568,0.2308791" target="_blank">📍 Street View: Wildcary Lane area</a>
+    </p>
+
+    <h3>The Industrial Edge: Church Road & Bates Estate</h3>
+    <p>Follow Church Road north-east and you hit <em>Bates Industrial Estate</em> — the commercial backbone. Here you'll find <strong>International Water Solution</strong> (Unit 1A, workshop/light industrial), <strong>Essex Electric</strong> (Unit 1E), and warehouse units at number 26. This is Harold Wood's working edge — away from the residential streets, where the postcode transitions from homes to enterprise.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5957487,0.238516" target="_blank">📍 Street View: Bates Industrial Estate</a>
+    </p>
+
+    <h3>Southward: Squirrels Heath Road & Hamilton Drive</h3>
+    <p>The southern boundary of our sample area runs along <em>Squirrels Heath Road</em> — a mix of semi-detached and detached homes. Number 149 is a detached property, 152 and 154 are semis. Turn into <em>Hamilton Drive</em> and you find a long residential street with terraces at 99 and 101, and converted flats at 94 and 121. The road link data shows it's fully lit with 100% pavement coverage and an average road width of about 7m.
+      <a class="sv-inline" href="https://www.google.com/maps?layer=c&cbll=51.5893301,0.2341171" target="_blank">📍 Street View: Squirrels Heath Rd</a>
+    </p>
+  </div>
+
+  <!-- ===================== STREET-BY-STREET DATA ===================== -->
+  <div class="section-title">📊 <span>Street-by-Street</span> Data</div>
+
+  <button class="expand-all" onclick="toggleAll()">Expand / Collapse All</button>
+
+  <div id="streets"></div>
+
+</div>
+
+<script>
+// ---- DATA ----
+const uprns = [
+  {uprn:"10024389049",address:"11 Godwin Terrace",postcode:"RM3 0FJ",lat:51.5937792,lon:0.2269226,cls:"RD03",desc:"Semi-Detached",street:"Godwin Terrace"},
+  {uprn:"100021395768",address:"6 Saxon Close",postcode:"RM3 0PX",lat:51.5913848,lon:0.2341013,cls:"RD03",desc:"Semi-Detached",street:"Saxon Close"},
+  {uprn:"100021395766",address:"4 Saxon Close",postcode:"RM3 0PX",lat:51.5915059,lon:0.2340389,cls:"RD03",desc:"Semi-Detached",street:"Saxon Close"},
+  {uprn:"100023216245",address:"Missy Moo Balloons, 11 Station Road",postcode:"RM3 0BP",lat:51.5935275,lon:0.2332455,cls:"CR08",desc:"Shop / Showroom",street:"Station Road"},
+  {uprn:"100023216381",address:"Williams Bakery, 35 Station Road",postcode:"RM3 0BS",lat:51.5938255,lon:0.2342503,cls:"CR08",desc:"Shop / Showroom",street:"Station Road"},
+  {uprn:"100021398105",address:"43B Station Road",postcode:"RM3 0BS",lat:51.5939103,lon:0.2345236,cls:"RD06",desc:"Flat",street:"Station Road"},
+  {uprn:"200002799826",address:"41A Station Road",postcode:"RM3 0BS",lat:51.5938805,lon:0.2344405,cls:"RD06",desc:"Flat",street:"Station Road"},
+  {uprn:"10070706995",address:"120A Gubbins Lane",postcode:"RM3 0DR",lat:51.5956608,lon:0.2326776,cls:"RD04",desc:"Terraced",street:"Gubbins Lane"},
+  {uprn:"100021375676",address:"69 Gubbins Lane",postcode:"RM3 0BH",lat:51.59417,lon:0.2323696,cls:"RD03",desc:"Semi-Detached",street:"Gubbins Lane"},
+  {uprn:"100021375682",address:"76 Gubbins Lane",postcode:"RM3 0BL",lat:51.594096,lon:0.2328751,cls:"RD04",desc:"Terraced",street:"Gubbins Lane"},
+  {uprn:"10091579277",address:"Flat 74, Bell Flower Lodge, 63 Gubbins Lane",postcode:"RM3 0NQ",lat:51.5931021,lon:0.2321709,cls:"RD06",desc:"Flat",street:"Gubbins Lane"},
+  {uprn:"10091579229",address:"Flat 26, Bell Flower Lodge, 63 Gubbins Lane",postcode:"RM3 0NQ",lat:51.5931021,lon:0.2321709,cls:"RD06",desc:"Flat",street:"Gubbins Lane"},
+  {uprn:"100021359267",address:"26 Arundel Road",postcode:"RM3 0RT",lat:51.595124,lon:0.2339403,cls:"RD03",desc:"Semi-Detached",street:"Arundel Road"},
+  {uprn:"100021359239",address:"3 Arundel Road",postcode:"RM3 0RX",lat:51.5947134,lon:0.2350338,cls:"RD06",desc:"Flat",street:"Arundel Road"},
+  {uprn:"100021359290",address:"48 Arundel Road",postcode:"RM3 0RT",lat:51.5961181,lon:0.2335394,cls:"RD03",desc:"Semi-Detached",street:"Arundel Road"},
+  {uprn:"100021359672",address:"50 Athelstan Road",postcode:"RM3 0QH",lat:51.5923938,lon:0.2349485,cls:"RD03",desc:"Semi-Detached",street:"Athelstan Road"},
+  {uprn:"100021359649",address:"31 Athelstan Road",postcode:"RM3 0QD",lat:51.5911654,lon:0.2348677,cls:"RD03",desc:"Semi-Detached",street:"Athelstan Road"},
+  {uprn:"100021359675",address:"53 Athelstan Road",postcode:"RM3 0QD",lat:51.5920452,lon:0.234553,cls:"RD03",desc:"Semi-Detached",street:"Athelstan Road"},
+  {uprn:"100021359632",address:"11 Athelstan Road",postcode:"RM3 0QB",lat:51.5904692,lon:0.2350568,cls:"RD03",desc:"Semi-Detached",street:"Athelstan Road"},
+  {uprn:"100021359623",address:"2 Athelstan Road",postcode:"RM3 0QB",lat:51.5900269,lon:0.2358186,cls:"RD03",desc:"Semi-Detached",street:"Athelstan Road"},
+  {uprn:"100023216347",address:"Athelstan Hall",postcode:"RM3 0QD",lat:51.5921633,lon:0.2344259,cls:"CC04",desc:"Community Facility",street:"Athelstan Road"},
+  {uprn:"100021372853",address:"33 Ethelburga Road",postcode:"RM3 0QR",lat:51.5919093,lon:0.2365753,cls:"RD04",desc:"Terraced",street:"Ethelburga Road"},
+  {uprn:"10094416375",address:"20 Ethelburga Road",postcode:"RM3 0QP",lat:51.591916,lon:0.2360668,cls:"RD03",desc:"Semi-Detached",street:"Ethelburga Road"},
+  {uprn:"100021372822",address:"6C Ethelburga Road",postcode:"RM3 0QP",lat:51.5924508,lon:0.2356732,cls:"RD06",desc:"Flat",street:"Ethelburga Road"},
+  {uprn:"100021372816",address:"4B Ethelburga Road",postcode:"RM3 0QP",lat:51.5925507,lon:0.2355727,cls:"RD06",desc:"Flat",street:"Ethelburga Road"},
+  {uprn:"100021372887",address:"Flat 16, St. Ethelburga Court",postcode:"RM3 0QQ",lat:51.5910117,lon:0.2371805,cls:"RD06",desc:"Flat",street:"Ethelburga Road"},
+  {uprn:"100021372879",address:"Flat 8, St. Ethelburga Court",postcode:"RM3 0QQ",lat:51.5910117,lon:0.2371805,cls:"RD06",desc:"Flat",street:"Ethelburga Road"},
+  {uprn:"100021399438",address:"45 The Drive",postcode:"RM3 0DU",lat:51.5941863,lon:0.2280625,cls:"RD02",desc:"Detached",street:"The Drive"},
+  {uprn:"100021399442",address:"57 The Drive",postcode:"RM3 0DX",lat:51.594167,lon:0.2273599,cls:"RD03",desc:"Semi-Detached",street:"The Drive"},
+  {uprn:"100021399440",address:"53 The Drive",postcode:"RM3 0DX",lat:51.59419,lon:0.2275978,cls:"RD03",desc:"Semi-Detached",street:"The Drive"},
+  {uprn:"100021399396",address:"3 The Drive",postcode:"RM3 0DU",lat:51.5944073,lon:0.2309631,cls:"RD04",desc:"Terraced",street:"The Drive"},
+  {uprn:"100021399527",address:"12 The Ridgeway",postcode:"RM3 0DT",lat:51.5957739,lon:0.2314531,cls:"RD03",desc:"Semi-Detached",street:"The Ridgeway"},
+  {uprn:"100021399564",address:"43 The Ridgeway",postcode:"RM3 0DS",lat:51.5952107,lon:0.2297643,cls:"RD03",desc:"Semi-Detached",street:"The Ridgeway"},
+  {uprn:"100021399558",address:"54 The Ridgeway",postcode:"RM3 0DT",lat:51.5954521,lon:0.2290515,cls:"RD03",desc:"Semi-Detached",street:"The Ridgeway"},
+  {uprn:"100021388928",address:"16 Newhall Drive",postcode:"RM3 0EL",lat:51.5951037,lon:0.2281325,cls:"RD02",desc:"Detached",street:"Newhall Drive"},
+  {uprn:"100021388940",address:"28 Newhall Drive",postcode:"RM3 0EL",lat:51.5956955,lon:0.2280319,cls:"RD02",desc:"Detached",street:"Newhall Drive"},
+  {uprn:"100021394758",address:"44 Rosslyn Avenue",postcode:"RM3 0DJ",lat:51.5903496,lon:0.2298546,cls:"RD03",desc:"Semi-Detached",street:"Rosslyn Avenue"},
+  {uprn:"100021394800",address:"86 Rosslyn Avenue",postcode:"RM3 0DJ",lat:51.5889855,lon:0.2285436,cls:"RD03",desc:"Semi-Detached",street:"Rosslyn Avenue"},
+  {uprn:"100021394791",address:"77 Rosslyn Avenue",postcode:"RM3 0RG",lat:51.5891771,lon:0.2290377,cls:"RD02",desc:"Detached",street:"Rosslyn Avenue"},
+  {uprn:"100021394734",address:"18 Rosslyn Avenue",postcode:"RM3 0RQ",lat:51.590805,lon:0.2314755,cls:"RD03",desc:"Semi-Detached",street:"Rosslyn Avenue"},
+  {uprn:"10091578019",address:"Flat 3, The Grange, 4 Wildcary Lane",postcode:"RM3 0LP",lat:51.5929041,lon:0.2306533,cls:"RD06",desc:"Flat",street:"Wildcary Lane"},
+  {uprn:"10091579121",address:"Flat 7, Thistle House, 1 Wildcary Lane",postcode:"RM3 0LZ",lat:51.5924568,lon:0.2308791,cls:"RD06",desc:"Flat",street:"Wildcary Lane"},
+  {uprn:"10024389021",address:"Flat 14, Denmark Lodge, 29 St Clements Ave",postcode:"RM3 0FH",lat:51.5935275,lon:0.2276617,cls:"RD06",desc:"Flat",street:"St Clements Avenue"},
+  {uprn:"10091579330",address:"Flat 27, Freesia Lodge, 1A St Clements Ave",postcode:"RM3 0FH",lat:51.5935558,lon:0.2311785,cls:"RD06",desc:"Flat",street:"St Clements Avenue"},
+  {uprn:"10091579336",address:"Flat 33, Freesia Lodge, 1A St Clements Ave",postcode:"RM3 0FH",lat:51.5935558,lon:0.2311785,cls:"RD06",desc:"Flat",street:"St Clements Avenue"},
+  {uprn:"10091579341",address:"Flat 38, Freesia Lodge, 1A St Clements Ave",postcode:"RM3 0FH",lat:51.5935558,lon:0.2311785,cls:"RD06",desc:"Flat",street:"St Clements Avenue"},
+  {uprn:"10024390252",address:"Flat 25, Blackthorn House, 55 St Clements Ave",postcode:"RM3 0JE",lat:51.5922964,lon:0.2266977,cls:"RD06",desc:"Flat",street:"St Clements Avenue"},
+  {uprn:"10091577848",address:"4 St Clements Avenue",postcode:"RM3 0HY",lat:51.5931146,lon:0.2291781,cls:"RD04",desc:"Terraced",street:"St Clements Avenue"},
+  {uprn:"100021392928",address:"6 Abbotts Court, Queens Park Road",postcode:"RM3 0NX",lat:51.5947217,lon:0.2362997,cls:"RD06",desc:"Flat",street:"Queens Park Road"},
+  {uprn:"100021392927",address:"5 Abbotts Court, Queens Park Road",postcode:"RM3 0NX",lat:51.5946962,lon:0.2361461,cls:"RD06",desc:"Flat",street:"Queens Park Road"},
+  {uprn:"100021392901",address:"42 Queens Park Road",postcode:"RM3 0HJ",lat:51.5949447,lon:0.2375667,cls:"RD04",desc:"Terraced",street:"Queens Park Road"},
+  {uprn:"100021392866",address:"11 Queens Park Road",postcode:"RM3 0HJ",lat:51.5949862,lon:0.2369249,cls:"RD04",desc:"Terraced",street:"Queens Park Road"},
+  {uprn:"100021379804",address:"7 Holdbrook Way",postcode:"RM3 0JD",lat:51.5920515,lon:0.2323953,cls:"RD06",desc:"Flat",street:"Holdbrook Way"},
+  {uprn:"100021379826",address:"29 Holdbrook Way",postcode:"RM3 0JD",lat:51.5917564,lon:0.2317047,cls:"RD06",desc:"Flat",street:"Holdbrook Way"},
+  {uprn:"100021379818",address:"21 Holdbrook Way",postcode:"RM3 0JD",lat:51.5917564,lon:0.2317047,cls:"RD06",desc:"Flat",street:"Holdbrook Way"},
+  {uprn:"100021379834",address:"37 Holdbrook Way",postcode:"RM3 0JD",lat:51.5917564,lon:0.2317047,cls:"RD06",desc:"Flat",street:"Holdbrook Way"},
+  {uprn:"100021397530",address:"152 Squirrels Heath Road",postcode:"RM3 0NA",lat:51.5893301,lon:0.2341171,cls:"RD03",desc:"Semi-Detached",street:"Squirrels Heath Road"},
+  {uprn:"100021397532",address:"154 Squirrels Heath Road",postcode:"RM3 0NA",lat:51.5893694,lon:0.2342683,cls:"RD03",desc:"Semi-Detached",street:"Squirrels Heath Road"},
+  {uprn:"100021397476",address:"97 Squirrels Heath Road",postcode:"RM3 0LR",lat:51.5890258,lon:0.2312922,cls:"RD03",desc:"Semi-Detached",street:"Squirrels Heath Road"},
+  {uprn:"100021397526",address:"149 Squirrels Heath Road",postcode:"RM3 0NT",lat:51.5899151,lon:0.235069,cls:"RD02",desc:"Detached",street:"Squirrels Heath Road"},
+  {uprn:"100021376445",address:"121 Hamilton Drive",postcode:"RM3 0UX",lat:51.5899482,lon:0.2273804,cls:"RD06",desc:"Flat",street:"Hamilton Drive"},
+  {uprn:"100021376433",address:"101 Hamilton Drive",postcode:"RM3 0UX",lat:51.5896109,lon:0.2269897,cls:"RD04",desc:"Terraced",street:"Hamilton Drive"},
+  {uprn:"100021376431",address:"99 Hamilton Drive",postcode:"RM3 0UX",lat:51.5895679,lon:0.2270361,cls:"RD04",desc:"Terraced",street:"Hamilton Drive"},
+  {uprn:"100021376426",address:"94 Hamilton Drive",postcode:"RM3 0UU",lat:51.5896736,lon:0.2276509,cls:"RD06",desc:"Flat",street:"Hamilton Drive"},
+  {uprn:"100021376436",address:"104 Hamilton Drive",postcode:"RM3 0UU",lat:51.5896736,lon:0.2276509,cls:"RD06",desc:"Flat",street:"Hamilton Drive"},
+  {uprn:"100023216239",address:"International Water Solution, Unit 1A, Bates Ind Est, Church Road",postcode:"RM3 0HU",lat:51.5957487,lon:0.238516,cls:"CI03",desc:"Workshop / Light Industrial",street:"Church Road"},
+  {uprn:"100023516567",address:"Essex Electric, Unit 1E, Bates Ind Est, Church Road",postcode:"RM3 0HU",lat:51.5956158,lon:0.2393343,cls:"CI03",desc:"Workshop / Light Industrial",street:"Church Road"},
+  {uprn:"10096018833",address:"Unit 26, Bates Ind Est, Church Road",postcode:"RM3 0HU",lat:51.5959555,lon:0.2391654,cls:"CI04",desc:"Warehouse / Storage",street:"Church Road"},
+  {uprn:"100021366510",address:"154 Church Road",postcode:"RM3 0SA",lat:51.5957545,lon:0.2367011,cls:"RD02",desc:"Detached",street:"Church Road"},
+  {uprn:"100021359029",address:"26 Archibald Road",postcode:"RM3 0RH",lat:51.5923404,lon:0.2369386,cls:"RD04",desc:"Terraced",street:"Archibald Road"},
+  {uprn:"200002667849",address:"11A Fitzilian Avenue",postcode:"RM3 0QS",lat:51.593123,lon:0.2351077,cls:"RD06",desc:"Flat",street:"Fitzilian Avenue"},
+  {uprn:"100021359862",address:"51 Avenue Road",postcode:"RM3 0SS",lat:51.5958116,lon:0.2351024,cls:"RD06",desc:"Flat",street:"Avenue Road"},
+  {uprn:"100021393739",address:"1 Reginald Road",postcode:"RM3 0RA",lat:51.5938886,lon:0.2383653,cls:"RD02",desc:"Detached",street:"Reginald Road"},
+  {uprn:"100021389677",address:"35 Oak Road",postcode:"RM3 0PH",lat:51.5928981,lon:0.234431,cls:"RD06",desc:"Flat",street:"Oak Road"},
+  {uprn:"100021386315",address:"2 Matthews Close",postcode:"RM3 0DN",lat:51.5921353,lon:0.233362,cls:"RD06",desc:"Flat",street:"Matthews Close"},
+  {uprn:"100021399657",address:"25 Tindall Close",postcode:"RM3 0PB",lat:51.5895578,lon:0.2316782,cls:"RD03",desc:"Semi-Detached",street:"Tindall Close"},
+  {uprn:"100021399642",address:"8 Tindall Close",postcode:"RM3 0PB",lat:51.5899959,lon:0.231839,cls:"RD03",desc:"Semi-Detached",street:"Tindall Close"},
+  {uprn:"100021399665",address:"33 Tindall Close",postcode:"RM3 0PB",lat:51.5893932,lon:0.2309209,cls:"RD03",desc:"Semi-Detached",street:"Tindall Close"},
+  {uprn:"100021362886",address:"8 Briars Walk",postcode:"RM3 0DH",lat:51.59063,lon:0.2292875,cls:"RD04",desc:"Terraced",street:"Briars Walk"},
+  {uprn:"100021359164",address:"3 Arlington Gardens",postcode:"RM3 0EA",lat:51.5943756,lon:0.2264755,cls:"RD03",desc:"Semi-Detached",street:"Arlington Gardens"},
+  {uprn:"100021359200",address:"39 Arlington Gardens",postcode:"RM3 0EA",lat:51.595418,lon:0.2255924,cls:"RD03",desc:"Semi-Detached",street:"Arlington Gardens"},
+  {uprn:"100021359188",address:"27 Arlington Gardens",postcode:"RM3 0EA",lat:51.5949175,lon:0.225516,cls:"RD03",desc:"Semi-Detached",street:"Arlington Gardens"},
+  {uprn:"10091577083",address:"Flat 9, Baneberry Lodge, 21 Huntingdon Drive",postcode:"RM3 0FU",lat:51.5917394,lon:0.2289775,cls:"RD06",desc:"Flat",street:"Huntingdon Drive"},
+  {uprn:"10091577063",address:"12 Huntingdon Drive",postcode:"RM3 0FA",lat:51.5922775,lon:0.2285595,cls:"RD02",desc:"Detached",street:"Huntingdon Drive"},
+  {uprn:"10091577057",address:"6 Huntingdon Drive",postcode:"RM3 0FA",lat:51.5925103,lon:0.227815,cls:"RD03",desc:"Semi-Detached",street:"Huntingdon Drive"},
+  {uprn:"10024389069",address:"5 Rose Garden Close",postcode:"RM3 0FN",lat:51.5932175,lon:0.2262263,cls:"RD04",desc:"Terraced",street:"Rose Garden Close"},
+  {uprn:"10024389388",address:"10 Hawfinch Gardens",postcode:"RM3 0GW",lat:51.5909828,lon:0.2268187,cls:"RD04",desc:"Terraced",street:"Hawfinch Gardens"},
+  {uprn:"10024389383",address:"5 Hawfinch Gardens",postcode:"RM3 0GW",lat:51.591149,lon:0.2265209,cls:"RD04",desc:"Terraced",street:"Hawfinch Gardens"},
+  {uprn:"10024389393",address:"6 Scotspine Lane",postcode:"RM3 0FY",lat:51.5912777,lon:0.226895,cls:"RD04",desc:"Terraced",street:"Scotspine Lane"},
+  {uprn:"10024390165",address:"14 Gulderose Road",postcode:"RM3 0JZ",lat:51.5916731,lon:0.225502,cls:"RD04",desc:"Terraced",street:"Gulderose Road"},
+  {uprn:"10024390150",address:"7 Sallow Road",postcode:"RM3 0LB",lat:51.5912705,lon:0.2251095,cls:"RD04",desc:"Terraced",street:"Sallow Road"},
+  {uprn:"10024390152",address:"9 Sallow Road",postcode:"RM3 0LB",lat:51.5913047,lon:0.225283,cls:"RD04",desc:"Terraced",street:"Sallow Road"},
+  {uprn:"10024390186",address:"Flat 4, Downey House, 13 Ashflower Drive",postcode:"RM3 0JW",lat:51.5917064,lon:0.2262701,cls:"RD06",desc:"Flat",street:"Ashflower Drive"},
+  {uprn:"10024390201",address:"Flat 19, Downey House, 13 Ashflower Drive",postcode:"RM3 0JW",lat:51.5917064,lon:0.2262701,cls:"RD06",desc:"Flat",street:"Ashflower Drive"},
+  {uprn:"10024389362",address:"Flat 2, Peacock Court, 4 Firwood Lane",postcode:"RM3 0FT",lat:51.5906156,lon:0.2261927,cls:"RD06",desc:"Flat",street:"Firwood Lane"},
+  {uprn:"10024389358",address:"Flat 43, Wild Rose House, 3 Firwood Lane",postcode:"RM3 0FQ",lat:51.5905879,lon:0.2254491,cls:"RD06",desc:"Flat",street:"Firwood Lane"},
+  {uprn:"10091577923",address:"30 Charlock Close",postcode:"RM3 0LE",lat:51.5929935,lon:0.2287068,cls:"RD06",desc:"Flat",street:"Charlock Close"},
+  {uprn:"10091578978",address:"Flat 14, Wayfaring Court, Safflower Lane",postcode:"RM3 0LQ",lat:51.592472,lon:0.2299996,cls:"RD06",desc:"Flat",street:"Safflower Lane"},
+  {uprn:"10024388998",address:"2 Wessex Lane",postcode:"RM3 0FG",lat:51.5937163,lon:0.2303276,cls:"RD03",desc:"Semi-Detached",street:"Wessex Lane"},
+];
+
+// Road link metadata per street (from NGD data)
+const roadMeta = {
+  "Gubbins Lane": {classification:"B Road (B175)",width:"~8.5m avg",lighting:"Fully Lit",pavement:"100% (avg 1.7m)",cycle:"0%",hierarchy:"Secondary Access Road"},
+  "Station Road": {classification:"Unclassified",width:"~7m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Athelstan Road": {classification:"Unclassified",width:"~6.6m avg",lighting:"Fully Lit",pavement:"100% (avg 2.0m)",cycle:"0%",hierarchy:"Local Road"},
+  "Ethelburga Road": {classification:"Unclassified",width:"~5.7m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "The Drive": {classification:"Unclassified",width:"~7m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "The Ridgeway": {classification:"Unclassified",width:"~7.4m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "St Clements Avenue": {classification:"Not Classified",width:"~7.8m avg",lighting:"Fully Lit",pavement:"100% (avg 1.98m)",cycle:"100%",hierarchy:"Local Road"},
+  "Arundel Road": {classification:"Unclassified",width:"~7.0m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Queens Park Road": {classification:"Unclassified",width:"~6.5m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Hamilton Drive": {classification:"Unclassified",width:"~7.0m avg",lighting:"Fully Lit",pavement:"100% (avg 2.36m)",cycle:"0%",hierarchy:"Local Road"},
+  "Squirrels Heath Road": {classification:"Unclassified",width:"~7.5m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Church Road": {classification:"B Road (B175)",width:"~9m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Secondary Access Road"},
+  "Tindall Close": {classification:"Unclassified",width:"~14m avg (turning area)",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Holdbrook Way": {classification:"Unclassified",width:"~6m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Rosslyn Avenue": {classification:"Unclassified",width:"~6.8m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Newhall Drive": {classification:"Unclassified",width:"~7m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Local Road"},
+  "Huntingdon Drive": {classification:"Unclassified",width:"~6m avg",lighting:"Fully Lit",pavement:"100%",cycle:"0%",hierarchy:"Restricted Local Access"},
+  "Godwin Terrace": {classification:"Unclassified",width:"~8.4m avg",lighting:"Fully Lit",pavement:"100% (avg 1.82m)",cycle:"0%",hierarchy:"Local Road"},
+  "Ronald Road": {classification:"Unclassified",width:"~7.3m avg",lighting:"Fully Lit",pavement:"100% (avg 2.36m)",cycle:"0%",hierarchy:"Local Road"},
+  "Partridge Lane": {classification:"Unclassified",width:"~7.9m avg",lighting:"Fully Lit",pavement:"100% (avg 1.71m)",cycle:"0%",hierarchy:"Local Road"},
+  "Brinsmead Road": {classification:"Unclassified",width:"~3.5m avg",lighting:"Fully Unlit",pavement:"0%",cycle:"0%",hierarchy:"Local Road"},
+  "Goldcrest Way": {classification:"Not Classified",width:"~4.9m avg",lighting:"Unknown",pavement:"100%",cycle:"0%",hierarchy:"Restricted Local Access"},
+};
+
+// Group UPRNs by street
+const grouped = {};
+uprns.forEach(u => {
+  if (!grouped[u.street]) grouped[u.street] = [];
+  grouped[u.street].push(u);
+});
+
+// Sort streets by count descending
+const streets = Object.keys(grouped).sort((a,b) => grouped[b].length - grouped[a].length);
+
+function svLink(lat, lon) {
+  return `https://www.google.com/maps?layer=c&cbll=${lat},${lon}`;
+}
+
+function clsBadgeColor(cls) {
+  if (cls.startsWith('RD')) return '#4ecb71';
+  if (cls.startsWith('CR')) return '#e8a838';
+  if (cls.startsWith('CI')) return '#e85858';
+  if (cls.startsWith('CC')) return '#38b2e8';
+  return '#8a9099';
+}
+
+const container = document.getElementById('streets');
+
+streets.forEach((street, idx) => {
+  const items = grouped[street];
+  const meta = roadMeta[street];
+
+  let html = `<div class="street-section">
+    <div class="street-header" onclick="toggleStreet(${idx})">
+      <div>
+        <span class="street-name">${street}</span>
+      </div>
+      <div class="street-badges">
+        <span class="badge badge-count">${items.length} UPRN${items.length > 1 ? 's' : ''}</span>
+        ${meta && meta.lighting === 'Fully Lit' ? '<span class="badge badge-lit">Fully Lit</span>' : ''}
+        ${meta && meta.lighting === 'Fully Unlit' ? '<span class="badge badge-unlit">Unlit</span>' : ''}
+        ${meta && meta.cycle !== '0%' ? '<span class="badge badge-cycle">Cycle Lane</span>' : ''}
+        ${meta && meta.pavement.startsWith('100') ? '<span class="badge badge-pavement">Full Pavement</span>' : ''}
+      </div>
+    </div>
+    <div class="street-body" id="sb-${idx}">`;
+
+  if (meta) {
+    html += `<div class="road-meta">
+      <div class="meta-card"><div class="mk">Classification</div><div class="mv">${meta.classification}</div></div>
+      <div class="meta-card"><div class="mk">Road Width</div><div class="mv">${meta.width}</div></div>
+      <div class="meta-card"><div class="mk">Street Lighting</div><div class="mv">${meta.lighting}</div></div>
+      <div class="meta-card"><div class="mk">Pavement Coverage</div><div class="mv">${meta.pavement}</div></div>
+      <div class="meta-card"><div class="mk">Cycle Lanes</div><div class="mv">${meta.cycle}</div></div>
+      <div class="meta-card"><div class="mk">Hierarchy</div><div class="mv">${meta.hierarchy}</div></div>
+    </div>`;
+  } else {
+    html += `<p style="color:var(--text-dim);margin:16px 0;font-size:0.9rem;">No matching NGD road link data in this sample — this may be a private or minor access road.</p>`;
+  }
+
+  html += `<table class="uprn-table">
+    <thead><tr><th>UPRN</th><th>Address</th><th>Type</th><th>Postcode</th><th>Street View</th></tr></thead><tbody>`;
+
+  items.forEach(u => {
+    html += `<tr>
+      <td><span class="uprn-link">${u.uprn}</span></td>
+      <td>${u.address}</td>
+      <td><span class="class-pill" style="border-left:2px solid ${clsBadgeColor(u.cls)};padding-left:8px;">${u.desc}</span></td>
+      <td>${u.postcode}</td>
+      <td><a class="sv-link" href="${svLink(u.lat, u.lon)}" target="_blank">📍 View</a></td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+  container.innerHTML += html;
+});
+
+function toggleStreet(idx) {
+  document.getElementById(`sb-${idx}`).classList.toggle('open');
+}
+
+let allOpen = false;
+function toggleAll() {
+  allOpen = !allOpen;
+  document.querySelectorAll('.street-body').forEach(el => {
+    el.classList.toggle('open', allOpen);
+  });
+}
+</script>
+
+</body>
+</html>
