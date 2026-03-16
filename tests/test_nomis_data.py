@@ -56,11 +56,38 @@ def test_nomis_query_normalizes_date_and_drops_cell_for_jsonstat(monkeypatch):
             "/dataset/NM_17_5.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
         ):
             return 200, {"overview": {"dimensions": {"dimension": []}}}
+        if url.endswith("/geography/TYPE486.def.sdmx.json"):
+            assert params == {"search": "E07000222"}
+            return 200, {
+                "structure": {
+                    "codelists": {
+                        "codelist": [
+                            {
+                                "code": [
+                                    {
+                                        "value": "1946157250",
+                                        "description": {"value": "Test district"},
+                                        "annotations": {
+                                            "annotation": [
+                                                {
+                                                    "annotationtitle": "GeogCode",
+                                                    "annotationtext": "E07000222",
+                                                }
+                                            ]
+                                        },
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
         assert url.endswith("/dataset/NM_17_5.jsonstat.json")
         params = params or {}
         assert params.get("time") == "latest"
         assert "date" not in params
         assert "cell" not in params
+        assert params.get("geography") == "1946157250"
         return 200, {"dataset": "NM_17_5", "value": 321}
 
     monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
