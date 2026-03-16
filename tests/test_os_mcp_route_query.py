@@ -264,6 +264,27 @@ def test_route_query_resource_uri_bridge_phrase():
     assert "do not search the filesystem" in body["guidance"]
 
 
+def test_route_query_resource_uri_strips_sentence_punctuation():
+    body = _route("Read resource://mcp-geo/demo-status.")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/demo-status"
+
+
+def test_route_query_resource_uri_preserves_balanced_suffix_characters():
+    body = _route("Read resource://mcp-geo/report(v2)?view=full!")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/report(v2)?view=full!"
+
+
+def test_route_query_resource_uri_strips_residual_dot_after_bracket_cleanup():
+    body = _route("See resource://mcp-geo/item.) for details")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/item"
+
+
 def test_route_query_statistics_dashboard_area_comparison():
     body = _route("Open the statistics dashboard for Westminster")
     assert body["intent"] == "area_comparison"
