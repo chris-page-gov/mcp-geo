@@ -85,6 +85,12 @@ All notable changes to this project will be documented in this file.
   prompts into concrete benchmark scenarios with reusable-header prompts,
   scored reference outputs, and workflow validation.
 
+### Fixed
+- Restored NOMIS legacy district GSS resolution in `tools/nomis_data.py` by
+  mapping district codes through generic NOMIS geography type `TYPE486` when a
+  dataset overview does not expose district-specific geography types, and added
+  a focused regression in `tests/test_nomis_data.py`.
+
 ### Changed
 - `os_mcp.descriptor` and tool-search category normalization now accept
   `category="map"` as an alias for `maps`, matching the existing

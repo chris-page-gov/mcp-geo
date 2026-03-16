@@ -727,6 +727,8 @@ def _legacy_resolve_gss_geography_type(gss_codes: list[str]) -> tuple[int, str] 
         return 298, "lsoa"
     if level == "MSOA":
         return 299, "msoa"
+    if level == "DISTRICT":
+        return 486, "districts"
     return None
 
 
