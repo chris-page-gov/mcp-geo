@@ -27,6 +27,10 @@ This folder contains human-readable run reports and investigation summaries.
 
 - 2026-02-19: [Peatland survey reliability implementation plan](peatland_survey_reliability_implementation_plan_2026-02-19.md)
 
+## Street Data Planning
+
+- 2026-03-16: [Road Stat USRN integration task brief](road_stat_usrn_integration_task_brief_2026-03-16.md)
+
 ## Place Profiling
 
 Wheelchair-access HTML reports now include an optional browser-side `OS Detailed`
