@@ -3,7 +3,16 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-15
+Last updated: 2026-03-16
+
+## Public DOCX hygiene baseline (2026-03-16)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| DOCX-HYG-1 Repo-authored DOCX inventory and hygiene policy | done | none | Added `docs/document_hygiene.md` and generated audit outputs `docs/reports/docx_hygiene_audit_2026-03-16.{md,json}` covering repo-authored public DOCX files under `docs/` and `troubleshooting/`, including missing sibling `.md` / `.pdf` pairs, unsafe metadata, body-level absolute-path hits, and Office lockfile detection. |
+| DOCX-HYG-2 Sanitizer/checker automation and first-pass cleanup | done | DOCX-HYG-1 | Added `scripts/docx_hygiene.py` plus focused regression coverage in `tests/test_docx_hygiene.py`, stripped creator / last-modified core metadata and custom MSIP properties from repo-authored public DOCX files, and removed the stray Office lockfile under `docs/reports/`. Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_docx_hygiene.py` (`3 passed`). |
 
 ## Harold Wood trace analysis and resource-handoff routing (2026-03-14)
 

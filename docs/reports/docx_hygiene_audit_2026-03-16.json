@@ -1,0 +1,279 @@
+{
+  "summary": {
+    "docx_total": 30,
+    "public_docx_total": 24,
+    "lockfiles": [],
+    "missing_md": [
+      "docs/Claude failed conversation.docx",
+      "docs/Documentation collection task.docx",
+      "docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx",
+      "docs/Working with MCP Servers.docx",
+      "docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx",
+      "docs/reports/Succinct information pack by GPT-5.4.docx",
+      "docs/reports/UPRN Data Cards.docx",
+      "docs/reports/Working with Codex redacted.docx",
+      "docs/reports/mcp_geo_ai_community_event_record.docx",
+      "troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx",
+      "troubleshooting/Fifth Harold Wood, after updates.docx",
+      "troubleshooting/Second Harold Wood, after updates.docx"
+    ],
+    "missing_pdf": [
+      "docs/Claude Conversations on MCP-Geo.docx",
+      "docs/Documentation collection task.docx",
+      "docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx",
+      "docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx",
+      "docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx",
+      "docs/Working with MCP Servers.docx",
+      "docs/reports/Succinct information pack by GPT-5.4.docx",
+      "docs/reports/UPRN Data Cards.docx",
+      "docs/reports/Working with Codex redacted.docx",
+      "docs/reports/mcp_geo_ai_community_event_record.docx",
+      "troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx",
+      "troubleshooting/Fifth Harold Wood, after updates.docx",
+      "troubleshooting/Fourth Harold Wood, after updates.docx",
+      "troubleshooting/MCP-Geo view of Harold Wood Essex.docx",
+      "troubleshooting/Second Harold Wood, after updates.docx",
+      "troubleshooting/Third Harold Wood, after updates.docx",
+      "troubleshooting/Validating-NOMIS.docx"
+    ],
+    "missing_both": [
+      "docs/Documentation collection task.docx",
+      "docs/Working with MCP Servers.docx",
+      "docs/reports/Succinct information pack by GPT-5.4.docx",
+      "docs/reports/UPRN Data Cards.docx",
+      "docs/reports/Working with Codex redacted.docx",
+      "docs/reports/mcp_geo_ai_community_event_record.docx",
+      "troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx",
+      "troubleshooting/Fifth Harold Wood, after updates.docx",
+      "troubleshooting/Second Harold Wood, after updates.docx"
+    ],
+    "unsafe_metadata": [],
+    "body_absolute_paths": [
+      "docs/Claude Conversations on MCP-Geo.docx",
+      "docs/Working with MCP Servers.docx"
+    ]
+  },
+  "records": [
+    {
+      "path": "docs/Claude Conversations on MCP-Geo.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": [
+        "/Users/crpage/repos/"
+      ]
+    },
+    {
+      "path": "docs/Claude failed conversation.docx",
+      "has_md": false,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/Documentation collection task.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx",
+      "has_md": false,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/Working with MCP Servers.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": [
+        "/Users/crpage/Downloads/cv1_3hb_map.html",
+        "/Users/crpage/Downloads/cv3_1hb_map.html"
+      ]
+    },
+    {
+      "path": "docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx",
+      "has_md": true,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx",
+      "has_md": true,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx",
+      "has_md": false,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/Succinct information pack by GPT-5.4.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/UPRN Data Cards.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/Working with Codex redacted.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/mcp_geo_ai_community_event_record.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "docs/reports/mcp_geo_functionality_showcase_2026-03-07.docx",
+      "has_md": true,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Fifth Harold Wood, after updates.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx",
+      "has_md": true,
+      "has_pdf": true,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Fourth Harold Wood, after updates.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/MCP-Geo view of Harold Wood Essex.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Second Harold Wood, after updates.docx",
+      "has_md": false,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Third Harold Wood, after updates.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    },
+    {
+      "path": "troubleshooting/Validating-NOMIS.docx",
+      "has_md": true,
+      "has_pdf": false,
+      "creator": "",
+      "last_modified_by": "",
+      "custom_properties": [],
+      "body_absolute_paths": []
+    }
+  ]
+}
