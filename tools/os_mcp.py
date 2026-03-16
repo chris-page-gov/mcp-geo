@@ -422,13 +422,17 @@ def _extract_correlation_method(query: str) -> str | None:
 def _normalize_resource_uri_candidate(value: str) -> str:
     trimmed = value.rstrip(".,")
     paired_closers = {")": "(", "]": "[", "}": "{"}
+    removed_unmatched_closer = False
     while trimmed and trimmed[-1] in paired_closers:
         closer = trimmed[-1]
         opener = paired_closers[closer]
         if trimmed.count(closer) > trimmed.count(opener):
             trimmed = trimmed[:-1]
+            removed_unmatched_closer = True
             continue
         break
+    if removed_unmatched_closer:
+        trimmed = trimmed.rstrip(".,")
     return trimmed
 
 
