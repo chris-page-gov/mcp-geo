@@ -640,11 +640,11 @@ print('starter', len(starter_resp['tools']), len(starter_json.encode('utf-8')), 
 PY
 ```
 
-Latest measurement on 2026-02-22:
+Latest measurement on 2026-03-15:
 
-- Full `tools/list` (81 tools): `87,805` bytes (~`21,951` tokens approximate).
-- Starter `tools/list` (15 tools): `21,151` bytes (~`5,287` tokens approximate).
-- Startup reduction with `MCP_TOOLS_DEFAULT_TOOLSET=starter`: about `76%` fewer
+- Full `tools/list` (85 tools): `95,527` bytes (~`23,881` tokens approximate).
+- Starter `tools/list` (20 tools): `28,722` bytes (~`7,180` tokens approximate).
+- Startup reduction with `MCP_TOOLS_DEFAULT_TOOLSET=starter`: about `70%` fewer
   bytes/tokens.
 
 Claude-safe mitigation workflow (no deferred loading dependency):
@@ -654,6 +654,10 @@ Claude-safe mitigation workflow (no deferred loading dependency):
 3. Re-run `tools/list` with returned `includeToolsets`.
 4. Call target tool(s), using sanitized names shown by Claude (for example
    `ons_geo_by_postcode`).
+
+The starter toolset now also force-loads `admin_lookup.area_geometry`,
+`os_linked_ids.get`, and `os_resources.get` so common Harold Wood-style
+recovery paths do not depend on deferred-tool activation.
 
 This keeps startup context small while preserving deterministic expansion paths.
 

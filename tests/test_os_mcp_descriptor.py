@@ -44,3 +44,27 @@ def test_os_mcp_descriptor_accepts_stats_category_alias():
     tool_search = body.get("toolSearch", {})
     assert "error" not in tool_search
     assert tool_search.get("filtered_category") == "statistics"
+
+
+def test_os_mcp_descriptor_accepts_map_category_alias():
+    resp = client.post("/tools/call", json={"tool": "os_mcp.descriptor", "category": "map"})
+    assert resp.status_code == 200
+    body = resp.json()
+    tool_search = body.get("toolSearch", {})
+    assert "error" not in tool_search
+    assert tool_search.get("filtered_category") == "maps"
+
+
+def test_os_mcp_descriptor_force_loads_harold_wood_recovery_tools():
+    resp = client.post("/tools/call", json={"tool": "os_mcp.descriptor"})
+    assert resp.status_code == 200
+    tool_search = resp.json().get("toolSearch", {})
+    always_loaded = set(tool_search.get("always_loaded", []))
+    deferred = set(tool_search.get("deferred", []))
+
+    assert "admin_lookup.area_geometry" in always_loaded
+    assert "os_linked_ids.get" in always_loaded
+    assert "os_resources.get" in always_loaded
+    assert "admin_lookup.area_geometry" not in deferred
+    assert "os_linked_ids.get" not in deferred
+    assert "os_resources.get" not in deferred

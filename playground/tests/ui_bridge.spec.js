@@ -113,3 +113,29 @@ test("preview session permits resources/read calls by resource name as well as u
     })
   ).toEqual({ ok: true });
 });
+
+test("preview session accepts original dotted tool names when tools/list only exposed sanitized aliases", () => {
+  const previewSession = createUiPreviewSession({
+    resourceUri: "ui://mcp-geo/route-planner",
+    uiAllowSameOrigin: false,
+    uiResourceMeta: { ui: {} },
+    hostOrigin: "http://127.0.0.1:4173",
+    tools: [{ name: "os_route_get" }],
+    resources: [],
+  });
+
+  expect(
+    validateUiMessage({
+      event: { origin: "null" },
+      message: {
+        jsonrpc: "2.0",
+        method: "tools/call",
+        params: { name: "os_route.get", arguments: {} },
+        __mcpGeoHost: {
+          sessionToken: previewSession.token,
+        },
+      },
+      previewSession,
+    })
+  ).toEqual({ ok: true });
+});

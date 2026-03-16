@@ -93,6 +93,11 @@ def test_admin_lookup_find_by_name_validation(monkeypatch):
         json={"tool": "admin_lookup.find_by_name", "text": "Test", "limit": 0},
     )
     assert resp.status_code == 400
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "admin_lookup.find_by_name", "text": "Test", "limit": True},
+    )
+    assert resp.status_code == 400
 
     resp = client.post(
         "/tools/call",
@@ -103,6 +108,11 @@ def test_admin_lookup_find_by_name_validation(monkeypatch):
     resp = client.post(
         "/tools/call",
         json={"tool": "admin_lookup.find_by_name", "text": "Test", "limitPerLevel": 0},
+    )
+    assert resp.status_code == 400
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "admin_lookup.find_by_name", "text": "Test", "limitPerLevel": True},
     )
     assert resp.status_code == 400
 

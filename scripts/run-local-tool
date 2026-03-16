@@ -232,8 +232,15 @@ run_venv() {
 
 run_uv() {
   local cmd=()
+  local uv_cache_dir
   if ! command -v uv >/dev/null 2>&1; then
     return 1
+  fi
+  if [[ -z "${UV_CACHE_DIR:-}" ]]; then
+    uv_cache_dir="$ROOT_DIR/.cache/uv"
+    if mkdir -p "$uv_cache_dir" 2>/dev/null && [[ -w "$uv_cache_dir" ]]; then
+      export UV_CACHE_DIR="$uv_cache_dir"
+    fi
   fi
   cmd=(uv run)
   for package in "${UV_PACKAGES[@]}"; do

@@ -9,7 +9,6 @@ import uuid
 from pathlib import Path
 from typing import Any, Iterable
 
-from server.config import settings
 from server.ons_geo_cache import ONSGeoCache, normalize_postcode, normalize_uprn
 from tools.registry import Tool, ToolResult, get as get_tool, register
 
@@ -484,9 +483,9 @@ def _export_inventory_snapshot(payload: dict[str, Any]) -> ToolResult:
     return 200, {
         "exportId": export_id,
         "uri": uri,
-        "path": str(path),
+        "resourceUri": uri,
         "notes": [
-            "Use resources/read with the returned uri to fetch the exported JSON content.",
+            "Use os_resources.get or resources/read with the returned uri to fetch the exported JSON content.",
         ],
     }
 

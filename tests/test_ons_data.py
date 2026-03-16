@@ -28,6 +28,34 @@ def test_ons_query_live_disabled(monkeypatch):
     assert resp.json()["code"] == "LIVE_DISABLED"
 
 
+def test_ons_query_rejects_boolean_pagination_inputs():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "limit": True,
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_data.query",
+            "dataset": "gdp",
+            "edition": "time-series",
+            "version": "1",
+            "page": True,
+        },
+    )
+    assert resp.status_code == 400
+    assert resp.json()["code"] == "INVALID_INPUT"
+
+
 def test_ons_query_live_success(monkeypatch):
     from tools import ons_common
 
@@ -543,6 +571,7 @@ def test_ons_query_auto_resolve(monkeypatch):
 
 def test_filter_output_resource_delivery(monkeypatch, tmp_path):
     from server.mcp import resource_catalog
+    from server.mcp import resource_handoff
     from tools import ons_data
 
     monkeypatch.setattr(ons_data, "_ONS_EXPORTS_DIR", tmp_path / "ons_exports")
@@ -579,6 +608,8 @@ def test_filter_output_resource_delivery(monkeypatch, tmp_path):
     body = output_resp.json()
     assert body["delivery"] == "resource"
     assert body["resourceUri"].startswith("resource://mcp-geo/ons-exports/")
+    assert body["stream"]["chunkBytes"] == resource_handoff.DEFAULT_RESOURCE_CHUNK_BYTES
+    assert body["stream"]["maxBytes"] == resource_handoff.MAX_RESOURCE_CHUNK_BYTES
 
     read_resp = client.get("/resources/read", params={"uri": body["resourceUri"]})
     assert read_resp.status_code == 200
@@ -592,6 +623,7 @@ def test_filter_output_resource_delivery(monkeypatch, tmp_path):
 
 def test_filter_output_auto_switches_to_resource(monkeypatch, tmp_path):
     from server.mcp import resource_catalog
+    from server.mcp import resource_handoff
     from tools import ons_data
 
     monkeypatch.setattr(ons_data, "_ONS_EXPORTS_DIR", tmp_path / "ons_exports")
@@ -633,3 +665,5 @@ def test_filter_output_auto_switches_to_resource(monkeypatch, tmp_path):
     body = output_resp.json()
     assert body["delivery"] == "resource"
     assert body["resourceUri"].startswith("resource://mcp-geo/ons-exports/")
+    assert body["stream"]["chunkBytes"] == resource_handoff.DEFAULT_RESOURCE_CHUNK_BYTES
+    assert body["stream"]["maxBytes"] == resource_handoff.MAX_RESOURCE_CHUNK_BYTES

@@ -150,6 +150,9 @@ Common pitfalls:
 - Passing an invalid measure code for the dataset (for example `20100` for `NM_17_5`)
 - Passing unsupported dimension keys for the selected dataset
   (for example `c2021_age_92` against `NM_2028_1`)
+- Passing a stale GSS geography code that no longer matches the dataset's
+  current NOMIS geography type (for example a 2019 ward code against a Census
+  2021 dataset that exposes `2022 wards`)
 
 Recommended flow:
 1. Call `nomis.datasets` with `dataset=<id>` and inspect `queryTemplate` + dimensions.
@@ -157,10 +160,34 @@ Recommended flow:
 3. Inspect `queryAdjusted` in error/success payloads:
    - `paramNormalization`: alias/drop fixes (`date -> time`, dropped `cell`)
    - `dimensionAutoAdjust`: required-dimension auto-fill and unknown-key removal
+   - `geographyResolution`: whether the server used dataset-specific geography
+     types, a legacy generic lookup, or a name fallback from a stale code
+   - `mapping[].currentGss`: the current NOMIS geography code when an older
+     input code was mapped forward
 4. Use `nomis.codelists` if you need valid dimension codes.
 5. If geography is supplied as GSS codes and still fails, test a known-working
    geography code for the dataset first (for example LA code) to separate
    geography issues from dimension issues.
+
+Current behavior:
+- `nomis.query` now prefers dataset-specific geography endpoints from the
+  NOMIS dataset overview before falling back to the older generic
+  `geography/TYPE*` lookups.
+- If a stale code is still recognizable through `admin_lookup`, `nomis.query`
+  can recover by area name and expose the mapped current NOMIS code in
+  `queryAdjusted.mapping`.
+- This fixes the Harold Wood Census 2021 ward case where older ward code
+  `E05000312` must be mapped to current NOMIS ward `E05013973`
+  (numeric geography `641734965`).
+- `admin_lookup` live ward and district searches now use the current 2024
+  ArcGIS boundary services and fields, so `admin_lookup.find_by_name` returns
+  the current Harold Wood ward code `E05013973` directly instead of the older
+  `E05000312`.
+
+Remaining risk:
+- If a long-lived process or stale trace still shows the older ward/district
+  codes, rebuild or restart the running MCP session so the updated live source
+  definitions are loaded before retrying the workflow.
 
 ## `os_mcp.descriptor` with `category=\"stats\"` previously returned tool-search category errors
 `os_mcp.descriptor` now accepts `stats` as an alias for `statistics`.
@@ -192,6 +219,113 @@ Recommended handling:
   a smaller bbox before asserting analytical conclusions.
 - Prefer `delivery=auto` for large feature queries in stdio-heavy hosts to avoid
   response truncation and context pressure.
+
+## Harold Wood trace: bbox failures and `resource://` recovery
+The 2026-03-14 Harold Wood analysis separates three different causes that were
+easy to conflate in one conversation:
+
+- Historical server bug:
+  the old Harold Wood `os_map.inventory` trace showed the `uprns` branch
+  sending an OS Places bbox with invalid WGS84 axis ordering, which triggered
+  `BBox has SouthWest Coordinate Greater than NorthEast Coordinate`.
+- Client/runtime limitation:
+  Claude later received a valid `resource://` handoff for the Harold Wood road
+  network but tried to search the filesystem instead of using MCP resource
+  retrieval.
+- Upstream instability:
+  adjacent branches in the same inventory call also showed read timeout /
+  `CIRCUIT_OPEN`, which are not the same defect as the bbox-order bug.
+
+Current repo status:
+
+- `os_places.within` now sends WGS84 bbox parameters in OS Places axis order
+  `lat,lon,lat,lon`.
+- `tests/test_os_map_tools.py` includes a Harold Wood ward bbox regression so
+  the historical inventory failure cannot recur unnoticed.
+- `os_mcp.route_query` now recognizes questions about `resource://` URIs and
+  recommends `os_resources.get` or protocol `resources/read`.
+
+Recommended handling:
+
+- If a tool returns `delivery=\"resource\"` or a `resourceUri`, do not search
+  `/tmp` or other host paths.
+- Read the exact URI with `os_resources.get` or `resources/read`.
+- When actual area geometry is available, prefer polygon-constrained feature
+  queries over bbox approximations for boundary-sensitive analysis.
+
+## Harold Wood follow-up: ward polygons, async exports, and `map` vs `maps`
+The 2026-03-15 third Harold Wood follow-up exposed a different failure chain:
+
+- `admin_lookup.find_by_name(includeGeometry=true)` still surfaced only a bbox
+  summary for Harold Wood, so Claude concluded it still lacked the ward
+  polygon.
+- `os_map.export` with `selectionSpec` for ward `E05013973` succeeded and
+  returned explicit `resource://` handoffs, but Claude never followed those
+  URIs with `resources/read` or `os_resources.get`.
+- `os_mcp.select_toolsets` then failed with
+  `No result received from client-side tool execution`, which is a host/runtime
+  failure rather than a normal repo-side result payload.
+
+Current repo status:
+
+- `admin_lookup.area_geometry` is the correct tool for full area geometry after
+  discovery by name. `admin_lookup.find_by_name` should be treated as discovery
+  plus bbox summary.
+- `admin_lookup.area_geometry`, `os_linked_ids.get`, and `os_resources.get`
+  are now force-loaded starter tools so Claude-like hosts do not need deferred
+  tool activation for the Harold Wood recovery path.
+- `os_map.export` may remain resource-backed even when callers request
+  `delivery=\"inline\"`; async selection exports are expected to hand back a
+  `resourceUri`.
+- `os_mcp.descriptor` now accepts `category=\"map\"` as an alias for `maps`,
+  removing the singular/plural mismatch that appeared in the follow-up trace.
+
+Recommended handling:
+
+- For named wards or other admin areas:
+  `admin_lookup.find_by_name` -> `admin_lookup.area_geometry`
+- For export-backed outputs:
+  read the returned `resourceUri` immediately with `resources/read` or
+  `os_resources.get`
+- If the host claims tool search cannot surface `os_linked_ids.get` or
+  `os_resources.get`, treat that as a host/runtime issue first. Current
+  repo-side descriptor and `/tools/search` both surface those tools, and they
+  are no longer deferred.
+- Treat client-side `select_toolsets` execution errors as host/runtime evidence,
+  not as proof that the server lacks the relevant deferred tools
+
+## Harold Wood fourth follow-up: strict OS Places size limit and mixed-success summaries
+The 2026-03-15 fourth Harold Wood follow-up showed a much narrower failure:
+
+- Harold Wood now resolved directly to current ward `E05013973`.
+- `admin_lookup.area_geometry` returned the full ward polygon successfully.
+- `nomis.query` succeeded directly for the ward and returned the expected
+  Census 2021 population data.
+- The remaining hard failure sat in the `uprns` branch of `os_map.inventory`,
+  where the shared `os_places.within` helper clamped the ward bbox to a sample
+  that landed just above the strict OS Places `< 1 km²` limit.
+
+Current repo status:
+
+- `os_places.within` now targets a safety margin below the published 1 km²
+  limit, so helper-generated tiled or clamped bboxes stay strictly under the
+  vendor threshold.
+- `tests/test_os_places_extra_more_success.py` and
+  `tests/test_os_map_tools.py` now include Harold Wood regressions proving the
+  strict-limit clamp no longer reproduces through either the helper or the
+  `os_map.inventory` path.
+- `os_features.query` still applies generic thin-mode projection rules, so
+  `gnm-fts-namedpoint-1` can return technically valid but human-unhelpful field
+  sets unless callers use `thinMode=false` or explicit `includeFields`.
+
+Recommended handling:
+
+- For broad premises exploration inside a large ward bbox:
+  expect `os_map.inventory` `uprns` to be sampled or clamped, not exhaustive.
+- If you need human-readable named features from `gnm-*` collections, call
+  `os_features.query` with `thinMode=false` or explicit `includeFields`.
+- If a mixed inventory response contains layer errors or degrade warnings, treat
+  the result as partial success rather than a complete area inventory.
 
 ## `os_features.query` with `resultType="hits"` shows `count=0` but `results` mode returns features
 This can happen when upstream omits `numberMatched` for a count-only query.

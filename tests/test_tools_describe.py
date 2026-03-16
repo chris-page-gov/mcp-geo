@@ -94,6 +94,16 @@ def test_tools_describe_uses_default_toolset_env(monkeypatch):
     assert names == {"os_maps_render", "os_vector_tiles_descriptor"}
 
 
+def test_tools_list_starter_default_includes_harold_wood_recovery_tools(monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "starter")
+    resp = client.get("/tools/list", params={"limit": 100})
+    assert resp.status_code == 200
+    names = set(resp.json()["tools"])
+    assert "admin_lookup_area_geometry" in names
+    assert "os_linked_ids_get" in names
+    assert "os_resources_get" in names
+
+
 def test_tools_list_handles_filter_validation_error(monkeypatch):
     monkeypatch.setattr(
         tools_api,

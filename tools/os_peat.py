@@ -6,6 +6,7 @@ from typing import Any
 
 from tools.registry import Tool, ToolResult, register
 from tools.registry import get as get_tool
+from tools.typing_utils import is_strict_int
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _RESOURCE_PATH = _REPO_ROOT / "resources" / "peat_layers_england.json"
@@ -176,7 +177,7 @@ def _layers(payload: dict[str, Any]) -> ToolResult:
 
 def _evidence_paths(payload: dict[str, Any]) -> ToolResult:
     limit_raw = payload.get("limit", _DEFAULT_LIMIT)
-    if not isinstance(limit_raw, int) or limit_raw < 1 or limit_raw > 100:
+    if not is_strict_int(limit_raw) or limit_raw < 1 or limit_raw > 100:
         return _error("limit must be an integer between 1 and 100")
 
     result_type = payload.get("resultType", _DEFAULT_RESULT_TYPE)

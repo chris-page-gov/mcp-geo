@@ -9,7 +9,10 @@ from typing import Any
 
 
 def _install_os_stubs(  # type: ignore[no-untyped-def]
-    monkeypatch, mock_os_client
+    monkeypatch,
+    mock_os_client,
+    *,
+    places_bbox_handler=None,
 ) -> list[tuple[str, dict[str, Any]]]:
     from tools import os_common, os_features, os_places_extra
 
@@ -23,7 +26,7 @@ def _install_os_stubs(  # type: ignore[no-untyped-def]
     os_map._NGD_COLLECTION_CACHE["stored_at"] = 0.0
     os_map._NGD_COLLECTION_CACHE["latest_by_base"] = {}
 
-    def places_bbox_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def default_places_bbox_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
         return 200, {
             "results": [
                 {
@@ -98,7 +101,7 @@ def _install_os_stubs(  # type: ignore[no-untyped-def]
         sliced = feats[offset:offset + limit]
         return 200, {"features": sliced, "numberMatched": total}
 
-    mock_os_client["places/v1/bbox"] = places_bbox_handler
+    mock_os_client["places/v1/bbox"] = places_bbox_handler or default_places_bbox_handler
     mock_os_client["features/ngd/ofa/v1/collections"] = ngd_handler
     return ngd_calls
 
@@ -144,6 +147,115 @@ def test_os_map_inventory_orchestrates_layers_and_geometry_flags(client, monkeyp
     assert any("/items" in u for u in urls)
 
 
+def test_os_map_inventory_preserves_harold_wood_places_bbox_axis_order(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    places_calls: list[dict[str, Any]] = []
+
+    def places_bbox_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        places_calls.append(dict(params))
+        lat_min, lon_min, lat_max, lon_max = [float(value) for value in params["bbox"].split(",")]
+        assert lat_min < lat_max
+        assert lon_min < lon_max
+        return 200, {
+            "results": [
+                {
+                    "DPA": {
+                        "UPRN": "10024386371",
+                        "ADDRESS": "HAROLD WOOD POLYCLINIC, COPSE AVENUE, HAROLD WOOD, RM3 0FE",
+                        "LAT": 51.5931845,
+                        "LNG": 0.2257232,
+                        "CLASS": "CM02",
+                    }
+                }
+            ]
+        }
+
+    _install_os_stubs(
+        monkeypatch,
+        mock_os_client,
+        places_bbox_handler=places_bbox_handler,
+    )
+
+    harold_wood_bbox = [
+        0.212767901572177,
+        51.5770138134869,
+        0.270927815822217,
+        51.6091919953636,
+    ]
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.inventory",
+            "bbox": harold_wood_bbox,
+            "layers": ["uprns"],
+            "limits": {"uprns": 10},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    uprns = body["layers"]["uprns"]
+    assert uprns["count"] == 1
+    assert uprns["truncated"] is False
+    assert uprns["results"][0]["uprn"] == "10024386371"
+    assert uprns["provenance"]["bboxMode"] == "tiled"
+    assert uprns["provenance"]["tileCount"] == len(places_calls)
+    assert len(places_calls) > 1
+
+
+def test_os_map_inventory_keeps_harold_wood_places_clamp_below_strict_vendor_limit(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_places_extra
+
+    places_calls: list[dict[str, Any]] = []
+
+    def places_bbox_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+        places_calls.append(dict(params))
+        lat_min, lon_min, lat_max, lon_max = [float(value) for value in params["bbox"].split(",")]
+        area = os_places_extra._bbox_area_m2(lon_min, lat_min, lon_max, lat_max)
+        assert area < os_places_extra.MAX_BBOX_AREA_M2
+        return 200, {
+            "results": [
+                {
+                    "DPA": {
+                        "UPRN": "10024386371",
+                        "ADDRESS": "HAROLD WOOD POLYCLINIC, COPSE AVENUE, HAROLD WOOD, RM3 0FE",
+                        "LAT": 51.5931845,
+                        "LNG": 0.2257232,
+                        "CLASS": "CM02",
+                    }
+                }
+            ]
+        }
+
+    _install_os_stubs(
+        monkeypatch,
+        mock_os_client,
+        places_bbox_handler=places_bbox_handler,
+    )
+
+    harold_wood_bbox = [0.212839, 51.572372, 0.287124, 51.609192]
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.inventory",
+            "bbox": harold_wood_bbox,
+            "layers": ["uprns"],
+            "limits": {"uprns": 20},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    uprns = body["layers"]["uprns"]
+    assert uprns["count"] == 1
+    assert uprns["results"][0]["uprn"] == "10024386371"
+    assert uprns["provenance"]["bboxMode"] == "clamped"
+    assert uprns["provenance"]["tileCount"] == 1
+    assert uprns["provenance"]["originalTileCount"] > 25
+    assert len(places_calls) == 1
+
+
 def test_os_map_export_writes_file_and_is_readable_via_resource_uri(
     client, monkeypatch, mock_os_client, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]
@@ -164,8 +276,10 @@ def test_os_map_export_writes_file_and_is_readable_via_resource_uri(
     assert resp.status_code == 200
     body = resp.json()
     assert body["uri"].startswith("resource://mcp-geo/exports/")
+    assert body["resourceUri"] == body["uri"]
+    assert "path" not in body
 
-    export_path = Path(body["path"])
+    export_path = exports_dir / f"{body['exportId']}.json"
     assert export_path.exists()
 
     read = client.get("/resources/read", params={"uri": body["uri"]})

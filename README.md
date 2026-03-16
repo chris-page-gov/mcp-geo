@@ -426,8 +426,10 @@ In addition to data resources, MCP Geo exposes:
 - `ui://mcp-geo/feature-inspector`
 - `ui://mcp-geo/route-planner`
 
-Use `GET /resources/read?uri=...` to fetch these resources. MCP-Apps widgets are
-HTML documents with `text/html;profile=mcp-app` MIME types.
+Use `GET /resources/read?uri=...` to fetch these resources. When a host can call
+tools but cannot invoke protocol-level `resources/read`, use `os_resources.get`
+as the portable fallback bridge. MCP-Apps widgets are HTML documents with
+`text/html;profile=mcp-app` MIME types.
 
 ## Route Planning
 
@@ -733,6 +735,9 @@ without code changes.
   rebuilding the devcontainer or Docker image.
 - For proxied networks, set `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` via
   `.devcontainer/.env` (or host env exports).
+- In this Docker Compose-based devcontainer, container-wide env is sourced from
+  `.devcontainer/docker-compose.yml`; keep machine-specific values in
+  `.devcontainer/.env` or your host shell rather than `devcontainer.json`.
 - Proxy settings are only used at build/runtime injection points and are not
   persisted into the final runtime image metadata.
 - `INSTALL_NGROK` is opt-in for the devcontainer build so TLS-inspected

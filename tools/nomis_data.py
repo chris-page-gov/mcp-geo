@@ -6,6 +6,7 @@ from typing import Any
 from server.config import settings
 from tools.nomis_common import client as nomis_client
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int
 
 _DATASET_ID_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)+$", re.IGNORECASE)
 _GSS_CODE_PATTERN = re.compile(r"^[EWNS]\d{8}$", re.IGNORECASE)
@@ -13,6 +14,7 @@ _CENSUS_GSS_PREFIXES_OA = ("E00", "W00")
 _CENSUS_GSS_PREFIXES_LSOA = ("E01", "W01")
 _CENSUS_GSS_PREFIXES_MSOA = ("E02", "W02")
 _CENSUS_GSS_PREFIXES_WARD = ("E05", "W05")
+_CENSUS_GSS_PREFIXES_DISTRICT = ("E06", "E07", "E08", "E09", "W06")
 _SEARCH_TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 _MULTI_TERM_SYNONYMS: dict[str, tuple[str, ...]] = {
     "population": ("resident", "census", "demography"),
@@ -26,6 +28,13 @@ _NOMIS_TRANSIENT_CODES = {
     "UPSTREAM_CONNECT_ERROR",
     "UPSTREAM_INVALID_RESPONSE",
     "CIRCUIT_OPEN",
+}
+_GEOGRAPHY_LEVEL_TYPE_MATCHERS: dict[str, tuple[str, ...]] = {
+    "OA": ("output area",),
+    "LSOA": ("lower layer", "lsoa"),
+    "MSOA": ("middle layer", "msoa"),
+    "WARD": ("ward",),
+    "DISTRICT": ("local authorit", "district"),
 }
 
 
@@ -311,12 +320,26 @@ def _overview_dimensions(overview_data: Any) -> list[dict[str, Any]]:
             size = int(size_raw) if size_raw is not None else None
         except (TypeError, ValueError):
             size = None
+        type_entries: list[dict[str, str]] = []
+        types_node = dimension.get("types")
+        if isinstance(types_node, dict):
+            raw_types = types_node.get("type")
+            types = raw_types if isinstance(raw_types, list) else [raw_types]
+            for type_entry in types:
+                if not isinstance(type_entry, dict):
+                    continue
+                type_name = _extract_text(type_entry.get("name"))
+                type_value = _extract_text(type_entry.get("value"))
+                if not type_name or not type_value:
+                    continue
+                type_entries.append({"name": type_name, "value": type_value})
         out.append(
             {
                 "concept": concept,
                 "name": name,
                 "size": size,
                 "sampleValues": sample_values[:10],
+                "types": type_entries,
             }
         )
     return out
@@ -551,23 +574,196 @@ def _annotation_value(code: dict[str, Any], title: str) -> str | None:
     return None
 
 
-def _resolve_gss_geography_type(gss_codes: list[str]) -> tuple[int, str] | None:
+def _resolve_gss_geography_level(gss_codes: list[str]) -> str | None:
     prefixes = {code.upper()[:3] for code in gss_codes if code}
     if not prefixes:
         return None
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_WARD):
-        return 297, "wards"
+        return "WARD"
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_OA):
-        return 300, "output areas"
+        return "OA"
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_LSOA):
-        return 298, "lsoa"
+        return "LSOA"
     if prefixes.issubset(_CENSUS_GSS_PREFIXES_MSOA):
-        return 299, "msoa"
+        return "MSOA"
+    if prefixes.issubset(_CENSUS_GSS_PREFIXES_DISTRICT):
+        return "DISTRICT"
     return None
 
 
+def _dataset_geography_types(
+    overview: dict[str, Any] | None,
+    level: str,
+) -> list[dict[str, str]]:
+    if not isinstance(overview, dict):
+        return []
+    dimensions = overview.get("dimensions")
+    if not isinstance(dimensions, list):
+        return []
+    matchers = _GEOGRAPHY_LEVEL_TYPE_MATCHERS.get(level, ())
+    if not matchers:
+        return []
+    for dim in dimensions:
+        if not isinstance(dim, dict):
+            continue
+        if str(dim.get("concept", "")).strip().lower() != "geography":
+            continue
+        raw_types = dim.get("types")
+        if not isinstance(raw_types, list):
+            return []
+        matched: list[dict[str, str]] = []
+        for type_entry in raw_types:
+            if not isinstance(type_entry, dict):
+                continue
+            type_name = str(type_entry.get("name", "")).strip()
+            type_value = str(type_entry.get("value", "")).strip()
+            if not type_name or not type_value:
+                continue
+            lowered = type_name.lower()
+            if any(matcher in lowered for matcher in matchers):
+                matched.append({"name": type_name, "value": type_value})
+        return matched
+    return []
+
+
+def _extract_geography_code_match(codes: list[dict[str, Any]], search: str) -> dict[str, Any] | None:
+    wanted = search.strip().upper()
+    for code in codes:
+        if not isinstance(code, dict):
+            continue
+        geog_code = _annotation_value(code, "GeogCode")
+        if geog_code and geog_code.strip().upper() == wanted:
+            return code
+    return None
+
+
+def _extract_geography_name_match(codes: list[dict[str, Any]], name: str) -> dict[str, Any] | None:
+    wanted = name.strip().casefold()
+    exact_matches: list[dict[str, Any]] = []
+    for code in codes:
+        if not isinstance(code, dict):
+            continue
+        description = code.get("description")
+        current_name = _extract_text(description) if description is not None else None
+        if current_name and current_name.strip().casefold() == wanted:
+            exact_matches.append(code)
+    if len(exact_matches) == 1:
+        return exact_matches[0]
+    if not exact_matches and len(codes) == 1 and isinstance(codes[0], dict):
+        return codes[0]
+    return None
+
+
+def _search_dataset_geography(
+    dataset: str,
+    type_value: str,
+    search: str,
+) -> list[dict[str, Any]] | None:
+    status, data = nomis_client.get_json(
+        _build_url(f"dataset/{dataset}/geography/{type_value}.def.sdmx.json"),
+        params={"search": search},
+    )
+    if status != 200:
+        return None
+    return _sdmx_first_code_list(data)
+
+
+def _lookup_admin_area_for_gss(gss: str) -> dict[str, str] | None:
+    try:
+        from tools import admin_lookup
+    except Exception:
+        return None
+
+    area, err = admin_lookup._live_find_by_id(gss)  # noqa: SLF001
+    if err or not isinstance(area, dict):
+        return None
+    name = area.get("name")
+    level = area.get("level")
+    if not isinstance(name, str) or not name.strip():
+        return None
+    return {
+        "name": name.strip(),
+        "level": str(level).strip().upper() if level is not None else "",
+    }
+
+
+def _match_dataset_geography_code(
+    dataset: str,
+    dataset_types: list[dict[str, str]],
+    search: str,
+) -> tuple[dict[str, Any] | None, dict[str, str] | None]:
+    for dataset_type in dataset_types:
+        codes = _search_dataset_geography(dataset, dataset_type["value"], search)
+        if codes is None:
+            continue
+        match = _extract_geography_code_match(codes, search)
+        if match:
+            return match, dataset_type
+    return None, None
+
+
+def _match_dataset_geography_name(
+    dataset: str,
+    dataset_types: list[dict[str, str]],
+    search: str,
+) -> tuple[dict[str, Any] | None, dict[str, str] | None]:
+    for dataset_type in dataset_types:
+        codes = _search_dataset_geography(dataset, dataset_type["value"], search)
+        if codes is None:
+            continue
+        match = _extract_geography_name_match(codes, search)
+        if match:
+            return match, dataset_type
+    return None, None
+
+
+def _legacy_resolve_gss_geography_type(gss_codes: list[str]) -> tuple[int, str] | None:
+    level = _resolve_gss_geography_level(gss_codes)
+    if level == "WARD":
+        return 297, "wards"
+    if level == "OA":
+        return 300, "output areas"
+    if level == "LSOA":
+        return 298, "lsoa"
+    if level == "MSOA":
+        return 299, "msoa"
+    if level == "DISTRICT":
+        return 486, "districts"
+    return None
+
+
+def _code_to_resolution_entry(
+    gss: str,
+    code: dict[str, Any],
+    *,
+    type_name: str,
+    type_value: str,
+    resolution: str,
+    searched_name: str | None = None,
+) -> dict[str, Any] | None:
+    value = code.get("value")
+    if not isinstance(value, (int, str)) or not str(value).strip():
+        return None
+    description = code.get("description")
+    current_name = _extract_text(description) if description is not None else None
+    current_gss = _annotation_value(code, "GeogCode")
+    entry: dict[str, Any] = {
+        "gss": gss,
+        "nomis": int(value),
+        "name": current_name,
+        "currentGss": current_gss or gss,
+        "resolution": resolution,
+        "geographyType": {"name": type_name, "value": type_value},
+    }
+    if searched_name:
+        entry["searchedName"] = searched_name
+    return entry
+
+
 def _maybe_resolve_gss_geographies(
-    dataset: str, params: dict[str, Any]
+    dataset: str,
+    params: dict[str, Any],
+    overview: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]] | None:
     geography = params.get("geography")
     if not isinstance(geography, str):
@@ -577,39 +773,77 @@ def _maybe_resolve_gss_geographies(
     parts = [part.strip().upper() for part in geography.split(",") if part.strip()]
     if not parts:
         return None
-    resolved_type = _resolve_gss_geography_type(parts)
-    if not resolved_type:
-        return None
-    type_code, type_name = resolved_type
+    level = _resolve_gss_geography_level(parts)
+    dataset_types = _dataset_geography_types(overview, level) if level else []
 
     resolved: list[dict[str, Any]] = []
     unresolved: list[str] = []
+    used_name_fallback = False
+    used_legacy_lookup = False
+    type_info: dict[str, str] | None = None
     for gss in parts:
-        status, data = nomis_client.get_json(
-            _build_url(f"geography/TYPE{type_code}.def.sdmx.json"),
-            params={"search": gss},
-        )
-        if status != 200:
-            return None
-        codes = _sdmx_first_code_list(data)
-        match: dict[str, Any] | None = None
-        for code in codes:
-            if not isinstance(code, dict):
+        dataset_match, matched_type = _match_dataset_geography_code(dataset, dataset_types, gss)
+        if dataset_match and matched_type:
+            resolved_entry = _code_to_resolution_entry(
+                gss,
+                dataset_match,
+                type_name=matched_type["name"],
+                type_value=matched_type["value"],
+                resolution="dataset_geography_code_search",
+            )
+            if resolved_entry is not None:
+                resolved.append(resolved_entry)
+                type_info = matched_type
                 continue
-            geog_code = _annotation_value(code, "GeogCode")
-            if geog_code and geog_code.strip().upper() != gss:
-                continue
-            value = code.get("value")
-            if not isinstance(value, (int, str)) or not str(value).strip():
-                continue
-            description = code.get("description")
-            name = _extract_text(description) if description is not None else None
-            match = {"gss": gss, "nomis": int(value), "name": name}
-            break
-        if not match:
-            unresolved.append(gss)
-            continue
-        resolved.append(match)
+
+        legacy_type = _legacy_resolve_gss_geography_type([gss]) if not dataset_types else None
+        if legacy_type:
+            type_code, type_name = legacy_type
+            status, data = nomis_client.get_json(
+                _build_url(f"geography/TYPE{type_code}.def.sdmx.json"),
+                params={"search": gss},
+            )
+            if status == 200:
+                codes = _sdmx_first_code_list(data)
+                legacy_match = _extract_geography_code_match(codes, gss)
+                if legacy_match:
+                    resolved_entry = _code_to_resolution_entry(
+                        gss,
+                        legacy_match,
+                        type_name=type_name,
+                        type_value=f"TYPE{type_code}",
+                        resolution="legacy_generic_code_search",
+                    )
+                    if resolved_entry is not None:
+                        resolved.append(resolved_entry)
+                        type_info = {"name": type_name, "value": f"TYPE{type_code}"}
+                        used_legacy_lookup = True
+                        continue
+
+        area = _lookup_admin_area_for_gss(gss)
+        search_name = area.get("name") if area else None
+        if search_name and dataset_types:
+            dataset_match, matched_type = _match_dataset_geography_name(
+                dataset,
+                dataset_types,
+                search_name,
+            )
+            if dataset_match and matched_type:
+                resolved_entry = _code_to_resolution_entry(
+                    gss,
+                    dataset_match,
+                    type_name=matched_type["name"],
+                    type_value=matched_type["value"],
+                    resolution="dataset_geography_name_fallback",
+                    searched_name=search_name,
+                )
+                if resolved_entry is not None:
+                    resolved.append(resolved_entry)
+                    type_info = matched_type
+                    used_name_fallback = True
+                    continue
+
+        unresolved.append(gss)
 
     if unresolved:
         return None
@@ -617,7 +851,13 @@ def _maybe_resolve_gss_geographies(
     adjusted["geography"] = ",".join(str(item["nomis"]) for item in resolved)
     query_adjusted = {
         "geographyResolvedFromGss": True,
-        "geographyType": {"code": type_code, "name": type_name},
+        "geographyResolution": {
+            "level": level,
+            "usedDatasetTypeLookup": bool(dataset_types),
+            "usedLegacyLookup": used_legacy_lookup,
+            "usedNameFallback": used_name_fallback,
+            "datasetType": type_info,
+        },
         "originalGeography": geography,
         "resolvedGeography": adjusted["geography"],
         "mapping": resolved[:50],
@@ -792,7 +1032,7 @@ def _datasets(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "dataset must be a string"}
     if query is not None and not isinstance(query, str):
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "q must be a string"}
-    if not isinstance(limit, int) or limit < 1 or limit > 100:
+    if not is_strict_int(limit) or limit < 1 or limit > 100:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",
@@ -1031,6 +1271,7 @@ def _query(payload: dict[str, Any]) -> ToolResult:
     suffix = "jsonstat.json" if fmt == "jsonstat" else "generic.sdmx.json"
     path = f"dataset/{dataset}.{suffix}"
     params_dict, normalization_changes = _normalize_query_params(params or {}, fmt)
+    overview: dict[str, Any] | None = None
     normalized = dict(params_dict)
     if normalization_changes:
         query_adjusted = {
@@ -1040,7 +1281,11 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                 "normalized": normalized,
             }
         }
-    resolved = _maybe_resolve_gss_geographies(dataset, params_dict)
+    if isinstance(params_dict.get("geography"), str) and _is_plain_gss_geography(
+        params_dict["geography"]
+    ):
+        overview = _fetch_dataset_overview(dataset)
+    resolved = _maybe_resolve_gss_geographies(dataset, params_dict, overview=overview)
     if resolved:
         params_dict, geography_adjusted = resolved
         if query_adjusted is None:
@@ -1054,7 +1299,8 @@ def _query(payload: dict[str, Any]) -> ToolResult:
     if err:
         err_lower = err.lower()
         if "incomplete" in err_lower or "cannot create query" in err_lower:
-            overview = _fetch_dataset_overview(dataset)
+            if overview is None:
+                overview = _fetch_dataset_overview(dataset)
             adjusted = dict(params_dict)
             adjusted_meta: dict[str, Any] = {}
             overview_adjusted, overview_meta = _build_retry_params_from_overview(adjusted, overview)

@@ -597,27 +597,73 @@ def _offline_pack_payload(*, path: Path, uri: str) -> tuple[dict[str, Any], str]
     return payload, sha256
 
 
+def _trusted_offline_pack_entries() -> list[tuple[str, Path]]:
+    if not OFFLINE_MAP_CATALOG_PATH.exists():
+        return []
+    try:
+        catalog = json.loads(OFFLINE_MAP_CATALOG_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    packs = catalog.get("packs")
+    if not isinstance(packs, list):
+        return []
+    try:
+        resolved_root = OFFLINE_PACKS_DIR.resolve()
+    except OSError:
+        return []
+    available = {pack_path.name: pack_path.resolve() for pack_path in _offline_pack_files()}
+    seen_uris: set[str] = set()
+    resolved: list[tuple[str, Path]] = []
+    for pack in packs:
+        if not isinstance(pack, dict):
+            continue
+        resource_uri = pack.get("resourceUri")
+        if not isinstance(resource_uri, str) or not resource_uri.startswith(OFFLINE_PACKS_PREFIX):
+            continue
+        filename = resource_uri[len(OFFLINE_PACKS_PREFIX) :]
+        if (
+            not filename
+            or _has_disallowed_path_tokens(filename)
+            or Path(filename).name != filename
+            or resource_uri in seen_uris
+        ):
+            continue
+        path = available.get(filename)
+        if path is None or not _is_path_within(path, resolved_root):
+            continue
+        seen_uris.add(resource_uri)
+        resolved.append((resource_uri, path))
+    return resolved
+
+
+def _offline_pack_path_by_uri() -> dict[str, Path]:
+    return {resource_uri: path for resource_uri, path in _trusted_offline_pack_entries()}
+
+
 def resolve_offline_pack_download(uri: str) -> tuple[Path, str] | None:
-    slug = uri
-    if uri.startswith(OFFLINE_PACKS_PREFIX):
-        slug = f"offline-packs/{uri[len(OFFLINE_PACKS_PREFIX):]}"
-    if not slug.startswith("offline-packs/"):
-        return None
-    filename = slug.split("/", 1)[1] if "/" in slug else ""
-    if not filename:
-        return None
-    path = _resolve_scoped_path(OFFLINE_PACKS_DIR, filename)
-    if path is None:
-        return None
-    if not path.exists() or not path.is_file():
-        return None
-    return path, _offline_pack_media_type(path)
+    trusted_paths = _offline_pack_path_by_uri()
+    path = trusted_paths.get(uri)
+    if path is not None:
+        return path, _offline_pack_media_type(path)
+    return None
 
 
 def _offline_pack_files() -> list[Path]:
     if not OFFLINE_PACKS_DIR.exists():
         return []
-    return sorted(path for path in OFFLINE_PACKS_DIR.glob("*") if path.is_file())
+    resolved_root = OFFLINE_PACKS_DIR.resolve()
+    files: list[Path] = []
+    for path in OFFLINE_PACKS_DIR.glob("*"):
+        if not path.is_file():
+            continue
+        try:
+            resolved_path = path.resolve()
+        except OSError:
+            continue
+        if not _is_path_within(resolved_path, resolved_root):
+            continue
+        files.append(path)
+    return sorted(files)
 
 
 def _map_scenario_pack_files() -> list[Path]:
@@ -734,8 +780,8 @@ def list_data_resources() -> list[dict[str, Any]]:
                 "type": "data",
             }
         )
-    offline_pack_files = _offline_pack_files()
-    if offline_pack_files:
+    offline_pack_entries = _trusted_offline_pack_entries()
+    if offline_pack_entries:
         resources.append(
             {
                 "uri": data_resource_uri("offline-packs-index"),
@@ -1207,12 +1253,16 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         )
     if slug == "offline-packs-index":
         items = []
-        for pack_path in _offline_pack_files():
+        for resource_uri, pack_path in _trusted_offline_pack_entries():
+            try:
+                size_bytes = pack_path.stat().st_size
+            except OSError:
+                continue
             items.append(
                 {
                     "name": pack_path.name,
-                    "uri": f"{OFFLINE_PACKS_PREFIX}{pack_path.name}",
-                    "bytes": pack_path.stat().st_size,
+                    "uri": resource_uri,
+                    "bytes": size_bytes,
                 }
             )
         content = json.dumps({"items": items}, ensure_ascii=True, separators=(",", ":"))
@@ -1315,12 +1365,15 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
                 {"isError": True, "code": "INVALID_INPUT", "message": "Invalid offline pack path."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        if not path.exists() or not path.is_file():
+        resource_uri = f"{OFFLINE_PACKS_PREFIX}{filename}"
+        resolved = resolve_offline_pack_download(resource_uri)
+        if resolved is None:
             content = json.dumps(
                 {"isError": True, "code": "NOT_FOUND", "message": "Offline pack not found."}
             )
             return content, _etag_from_bytes(content.encode("utf-8"), slug), None
-        payload, sha256 = _offline_pack_payload(path=path, uri=f"{OFFLINE_PACKS_PREFIX}{filename}")
+        path, _media_type = resolved
+        payload, sha256 = _offline_pack_payload(path=path, uri=resource_uri)
         content = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
         etag = _etag_from_bytes(sha256.encode("ascii"), slug)
         return content, etag, {"generatedAt": datetime.now(timezone.utc).isoformat(), "path": str(path)}

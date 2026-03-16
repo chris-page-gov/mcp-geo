@@ -36,3 +36,27 @@ def test_features_query_bad_bbox():
         },
     )
     assert resp.status_code == 400
+
+
+def test_features_query_rejects_boolean_limit_and_page_token():
+    limit_resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "limit": True,
+        },
+    )
+    assert limit_resp.status_code == 400
+
+    page_resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "buildings",
+            "bbox": [0, 0, 1, 1],
+            "pageToken": True,
+        },
+    )
+    assert page_resp.status_code == 400

@@ -33,6 +33,14 @@ def test_os_qgis_vector_tile_profile_invalid_style() -> None:
     body = resp.json()
     assert body["code"] == "INVALID_INPUT"
 
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_qgis.vector_tile_profile", "srs": True},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "INVALID_INPUT"
+
 
 def test_os_qgis_vector_tile_profile_resource_delivery(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_qgis

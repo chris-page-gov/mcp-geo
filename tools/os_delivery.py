@@ -8,6 +8,7 @@ from typing import Any
 from uuid import uuid4
 
 from server.config import settings
+from tools.typing_utils import is_strict_int
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _OS_EXPORT_RESOURCE_PREFIX = "resource://mcp-geo/os-exports/"
@@ -44,7 +45,7 @@ def parse_delivery(value: Any, default: str = "auto") -> tuple[str | None, str |
 def parse_inline_max_bytes(value: Any) -> tuple[int | None, str | None]:
     if value is None:
         return int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)), None
-    if not isinstance(value, int) or value < 1:
+    if not is_strict_int(value) or value < 1:
         return None, "inlineMaxBytes must be a positive integer"
     return value, None
 
@@ -89,4 +90,3 @@ def write_resource_payload(
 
 def now_utc_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-

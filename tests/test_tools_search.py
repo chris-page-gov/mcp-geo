@@ -69,3 +69,32 @@ def test_tools_search_toolset_exclude_filter():
         )
         for name in original_names
     )
+
+
+def test_tools_search_exact_name_returns_linked_ids_tool() -> None:
+    resp = client.post("/tools/search", json={"query": "os_linked_ids.get"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    assert tool["name"] == "os_linked_ids_get"
+    assert tool["annotations"]["originalName"] == "os_linked_ids.get"
+
+
+def test_tools_search_exact_name_returns_resource_bridge_tool() -> None:
+    resp = client.post("/tools/search", json={"query": "os_resources.get"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    assert tool["name"] == "os_resources_get"
+    assert tool["annotations"]["originalName"] == "os_resources.get"
+
+
+def test_tools_search_transcript_phrase_surfaces_harold_wood_recovery_tools() -> None:
+    resp = client.post("/tools/search", json={"query": "linked identifiers get feature types"})
+    assert resp.status_code == 200
+    original_names = [tool["annotations"]["originalName"] for tool in resp.json()["tools"]]
+    assert "os_linked_ids.feature_types" in original_names
+    assert "os_linked_ids.get" in original_names
+
+    resp = client.post("/tools/search", json={"query": "os_resources get export job read"})
+    assert resp.status_code == 200
+    original_names = [tool["annotations"]["originalName"] for tool in resp.json()["tools"]]
+    assert "os_resources.get" in original_names

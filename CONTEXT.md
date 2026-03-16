@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-13
+Last updated: 2026-03-15
 Owner: @chris-page-gov
 
 ## Purpose
@@ -51,6 +51,36 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the 2026-03-14 NOMIS dataset-geography recovery in
+  `tools/nomis_data.py`, including dataset-specific geography-type lookup,
+  stale-code recovery by area name, focused regressions in
+  `tests/test_nomis_data.py`, and the follow-on live-source refresh in
+  `tools/admin_lookup.py` that moves ward/district lookups to the 2024 ArcGIS
+  services so Harold Wood now resolves to current ward code `E05013973`
+  directly at source.
+- Maintaining the Harold Wood trace analysis package under `troubleshooting/`,
+  including the new evidence/deep-analysis reports, route-query hardening for
+  `resource://` recovery prompts and conversational place extraction, the
+  Harold Wood bbox regression coverage, and the same-route Codex validation
+  artifact under
+  `logs/sessions/20260314T203104Z-harold-wood-wrapper-validation/`.
+- Maintaining the 2026-03-15 third Harold Wood follow-up analysis under
+  `troubleshooting/`, including the new transcript working copy and analysis
+  that separate ward-geometry discoverability from client/runtime failures on
+  `resource://` export consumption and `os_mcp.select_toolsets`, plus the
+  follow-on metadata and startup-profile cleanup that makes
+  `admin_lookup.find_by_name` explicitly bbox-oriented,
+  `admin_lookup.area_geometry` explicitly polygon-capable,
+  `os_mcp.descriptor` tolerant of `category="map"` as an alias for `maps`, and
+  the Harold Wood recovery tools (`admin_lookup.area_geometry`,
+  `os_linked_ids.get`, `os_resources.get`) always loaded instead of deferred.
+- Maintaining the 2026-03-15 fourth Harold Wood follow-up analysis under
+  `troubleshooting/`, including the new transcript working copy and exhaustive
+  report that narrow the remaining hard server-side defect to the strict OS
+  Places `< 1 km²` clamp in `os_places.within`, plus the follow-on helper fix
+  that now targets a safety margin below the vendor threshold and the focused
+  Harold Wood regressions in `tests/test_os_places_extra_more_success.py` and
+  `tests/test_os_map_tools.py`.
 - Finalizing public launch packaging for `v0.5.0`, including secret/sensitive
   content review, release notes, tagging, and repository visibility transition
   to Public.
@@ -69,6 +99,32 @@ assumptions change.
   standards (NCSC/ICO/Data Ethics Framework/ATRS/Five Safes), OWASP LLM
   guidance, W3C provenance/catalog standards, and MCP `2025-11-25`.
 - Maintaining the new rerunnable OWASP MCP validation pack under `security/owasp_mcp/`, including the strict baseline report `docs/reports/owasp_mcp_server_validation_2026-03-13.md`, signed tool manifest verification, CI artifact publication, and attestation-backed control evaluation. The current strict score is `100.0` with verdict `compliant`; the repo now has committed deployment/auth/governance attestations, hardened `/mcp` auth and session controls, private monitoring assets, and no live token passthrough in `server/maps_proxy.py`.
+- Maintaining the new auth-aware cross-transport resource fallback so clients
+  that do not auto-resolve `resource://` URIs can still retrieve MCP
+  resources safely via `os_resources.get`, while HTTP `/tools/call` and
+  `/resources/*` now follow the same auth gate surface as `/mcp` when MCP
+  HTTP auth is enabled and direct HTTP resource links remain opt-in only. The
+  2026-03-14 PR `#39` follow-up also keeps raw `/tools/call` parse/lookup
+  errors on the authenticated session header surface, records authorization
+  failures in the shared HTTP auth metrics, streams `/resources/download` only
+  from prevalidated offline-pack paths, rejects offline-pack symlink escapes
+  outside `data/offline_packs`, and makes `os_resources.get` fail cleanly when
+  `maxBytes` cannot fit the next UTF-8 codepoint. The latest follow-up also
+  keeps raw `/resources/read` 400/404 responses on the same `mcp-session-id`
+  surface and aligns `offline-packs-index` discovery with the same trusted
+  catalog whitelist used for offline-pack reads/downloads. Offline-pack
+  downloads now retain `Range`/resume semantics via `FileResponse` on the
+  prevalidated pack path, and all resource-backed stream hints that point
+  callers at `os_resources.get` now use the shared chunk-size limits from
+  `server/mcp/resource_handoff.py`. A second 2026-03-14 manual-review pass
+  moved raw `/resources/*` query validation behind `authorize_http_route()` so
+  unauthenticated bad-query requests no longer bypass the 401/403 surface via
+  FastAPI 422s, preserved `mcp-session-id` on `/resources/download` 400/404
+  responses, and kept configured `httpAccess.readUrl` handoffs visible even
+  when MCP HTTP auth is disabled. A final 2026-03-14 follow-up made
+  `os_resources.get` transport-aware for `ui://` resources, so HTTP tool
+  callers now receive absolute `/ui/...` asset URLs while stdio callers retain
+  relative resource-local asset paths.
 - Running map delivery interoperability research focused on reliable rendering across
   MCP clients, browsers, and GIS workflows.
 - Executing the map delivery recommendation workstreams in phased delivery
@@ -146,7 +202,11 @@ assumptions change.
   workbench, routing demos for SG03/SG12, benchmark-pack/live-run resources,
   and the new deterministic fixture-backed frontend Playwright acceptance suite
   plus env-gated live smoke coverage that supersede the earlier
-  dependency-only PRs `#24` and `#29`.
+  dependency-only PRs `#24` and `#29`. The 2026-03-14 live-smoke follow-up
+  fixed the remaining SG03 bridge failure by treating sanitized and original
+  tool aliases as equivalent in the preview-session allowlist, so the route
+  planner's `os_route.get` call is no longer rejected as `TOOL_NOT_ALLOWED`
+  when the live MCP `tools/list` surface only advertises `os_route_get`.
 - Clearing the remaining PR `#36` follow-up blockers by keeping the full
   Playwright config port override honest, restoring the devcontainer's system
   CA/custom-cert policy, and replacing parameterized widget asset routes with
@@ -554,6 +614,15 @@ assumptions change.
   TLS trust through the system CA bundle plus local `.devcontainer/certs/`
   injection so Windows checkouts and corporate proxy environments no longer
   require application-code changes.
+- 2026-03-14: Re-aligned the devcontainer implementation with that cross-platform
+  contract after a local simplification drifted away from it. The supported
+  setup again keeps proxy values build-scoped in `.devcontainer/Dockerfile`,
+  trusts corporate/local roots via `.devcontainer/certs/*.crt` plus the system
+  CA bundle, and sources container-wide runtime env from
+  `.devcontainer/docker-compose.yml` rather than `devcontainer.json` for the
+  Docker Compose-based workspace. A same-day PR follow-up also restores the
+  pre-APT `update-ca-certificates` step in `.devcontainer/Dockerfile`, so
+  custom corporate roots are live before the first package index fetch.
 - 2026-03-04: Completed public-release `v0.5.0` publication: formal repository
   security review (`docs/reports/public_release_security_review_2026-03-04.md`),
   release notes (`RELEASE_NOTES/0.5.0.md`), version bump
@@ -990,8 +1059,23 @@ assumptions change.
 - 2026-02-11: Evaluation audit records now summarize per-task `429` hits (including a by-tool breakdown) to track backoff reliance.
 - 2026-02-11: Core protocol negotiation now prefers MCP `2025-11-25` with compatibility for `2025-06-18`, `2025-03-26`, and `2024-11-05`; HTTP now validates `MCP-Protocol-Version` against negotiated session version.
 - 2026-02-11: Playground setup now includes a version matrix showing MCP core + MCP Apps + client/SDK versions; Playwright playground tests now run on port `4173` to avoid local `5173` collisions.
+- 2026-03-13: Follow-up PR hardening now gates stdio `resource_link` handoff blocks on negotiated UI capability support and requires offline-pack catalog URI matches consistently for both `resources/read` payloads and `/resources/download` resolution.
+- 2026-03-14: Fixed the remaining MCP-Apps text-mode follow-up by making `tools/os_apps.py` set `uiTextOnlyOverride` from the resolved content mode rather than only explicit payload overrides, so env-driven `MCP_APPS_CONTENT_MODE=text` no longer lets raw HTTP or stdio handoff decoration re-append `resource_link` blocks. Audited the current UI tool surface and confirmed all `os_apps.render_*` responses share `_build_widget_response()`, so this fix covers the present MCP-Apps widget implementations in one place.
+- 2026-03-14: Standardized the repo fix workflow in `AGENTS.md`: bug fixes and
+  PR-comment fixes now require a same-pattern codebase scan, patching all
+  confirmed sibling cases in the same change and adding regressions for both
+  the reported path and an equivalent sibling when one exists.
+- 2026-03-14: Addressed the latest PR #39 `os_resources.get` validation review
+  finding by adding strict integer guards that reject JSON booleans for integer
+  request fields. Applied the same-pattern sweep across sibling public parsers:
+  resource chunking, paginated OS/ONS/admin search/download handlers,
+  `os_mcp.select_toolsets.maxTools`, HTTP/stdio tool-search limits, and
+  MCP-Apps widget numeric inputs. The remaining raw review threads for HTTP
+  auth metrics and offline-pack discovery were rechecked and are already
+  satisfied by the current branch code plus regression coverage.
 - 2026-02-10: Added `scripts/vscode_mcp_stdio.py` and updated `.vscode/mcp.json` to use it so VS Code can start stdio servers on macOS without requiring global Python deps (it prefers the repo venv at `.venv/`).
 - 2026-02-10: Added `scripts/vscode_trace_snapshot.py` to convert VS Code trace artifacts into a `logs/sessions/` directory that can be summarized by `scripts/trace_report.py`.
+- 2026-03-13: Tightened `resolve_offline_pack_download` to require exact catalog URI matches only (removed basename fallback) so `/resources/download` no longer accepts alternate user-supplied URI path variants for trusted files.
 
 ## Open Questions
 

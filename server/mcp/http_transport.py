@@ -40,6 +40,7 @@ from server.mcp.elicitation_forms import (
     client_supports_elicitation_form,
 )
 from server.mcp.prompts import get_prompt, list_prompts
+from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.mcp.tool_search import get_toolset_catalog, resolve_default_toolset_filters_from_env
 from server.observability import record_tool_call
@@ -594,6 +595,9 @@ def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str
     payload = params.get("args") or params.get("arguments") or params.get("payload") or {}
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
+    payload = dict(payload)
+    if resolved_name == "os_resources.get":
+        payload.setdefault("_assetMode", "absolute")
     started = time.perf_counter()
     status_code, data = tool.call(payload)
     if isinstance(data, dict):
@@ -610,6 +614,8 @@ def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str
         )
         if fallback:
             data["fallback"] = fallback
+        if resolved_name != "os_resources.get":
+            data = decorate_resource_handoff(data)
     record_tool_call(
         tool_name=resolved_name,
         transport="mcp_http",

@@ -1,11 +1,11 @@
 {
   "artifact_hashes": {
     ".github/CODEOWNERS": "b9599aa976fdceac612a36146cf3393ec2c39f61275e53858ea390b04dbdc187",
-    ".github/workflows/ci.yml": "712111ee2171ad2629f3c4636e5a84497fd4dd3ecef3f072282b8dace2740188",
+    ".github/workflows/ci.yml": "3b0d367e45321140a57a51bbeb6f54b1a00938e5a273bbaeced87c02990a6e21",
     "security/owasp_mcp/evidence/github_main_branch_protection_2026-03-13.json": "eb96ead58916290b17215752461a95301ce8aa511ea4e1e04091916f3f57d3d6",
-    "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md": "4d4eae8b2cef4aca8834b083e4471c6f0d68cd77955ba68f5a4d87f19ddc9cdb",
-    "security/owasp_mcp/tool_manifest.lock.json": "4b26808269efb89d88e9a942c8f3d8dc31d1bfbdf713d52fd8c8c29b91523d3d",
-    "security/owasp_mcp/tool_manifest.lock.json.sig": "f09431bbfcaf07a4396d6abcb097084e93f92947c3b90442a44e72bb131fde50"
+    "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md": "c9d701db3520ddda4794e512ec7489d1712a905d4e243df56552064dfbcb3231",
+    "security/owasp_mcp/tool_manifest.lock.json": "269dd873af499c98826195370771f371499a644a292d70b381c1779f629f6828",
+    "security/owasp_mcp/tool_manifest.lock.json.sig": "3a04cb980456776c090d6fcbf98af9124583d421fdc5330440d4f468a852bad5"
   },
   "attestation_id": "owasp-mcp-tool-review-and-branch-protection-2026-03-13",
   "control_ids": [
@@ -14,9 +14,9 @@
   ],
   "environment": "prod-strict",
   "evidence_uri": "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md",
-  "expires_at": "2026-09-09T00:00:00Z",
+  "expires_at": "2026-09-12T00:00:00Z",
   "notes": "The main branch requires mandatory CI checks, code-owner review, stale-review dismissal, last-push approval, and conversation resolution.",
   "title": "Security-sensitive tool changes require protected-branch review",
-  "verified_at": "2026-03-13T11:34:23Z",
+  "verified_at": "2026-03-16T07:10:00Z",
   "verifier": "Codex with live GitHub protection capture"
 }

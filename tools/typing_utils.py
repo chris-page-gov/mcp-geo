@@ -1,6 +1,16 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypeGuard
+
+
+def is_strict_int(value: Any) -> TypeGuard[int]:
+    """Return True only for real integers, excluding booleans."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def is_strict_number(value: Any) -> TypeGuard[int | float]:
+    """Return True for int/float inputs, excluding booleans."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def parse_float(value: Any) -> float:
@@ -9,8 +19,10 @@ def parse_float(value: Any) -> float:
     """
     if value is None:
         return 0.0
+    if isinstance(value, bool):
+        return 0.0
     try:
-        if isinstance(value, (int, float)):
+        if is_strict_number(value):
             return float(value)
         if isinstance(value, str):
             v = value.strip()

@@ -20,6 +20,7 @@ from server.protocol import (
 )
 from server.route_planning import extract_route_request, looks_like_route_query
 from tools.registry import Tool, ToolResult, all_tools, register
+from tools.typing_utils import is_strict_int
 
 
 class QueryIntent(StrEnum):
@@ -222,11 +223,14 @@ LINKED_ID_PATTERNS = [
 CORRELATION_METHOD_REGEX = re.compile(r"\b[A-Z0-9_]+_[0-9]+\b")
 LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
 AREA_CODE_REGEX = re.compile(r"\b([EKNSW]\d{8})\b", re.IGNORECASE)
+RESOURCE_URI_REGEX = re.compile(r"(resource://[^\s\"'<>]+)", re.IGNORECASE)
 
 _PLACE_NAME_STOP_WORDS = {
     "a",
     "an",
+    "about",
     "and",
+    "can",
     "build",
     "cache",
     "capabilities",
@@ -235,6 +239,7 @@ _PLACE_NAME_STOP_WORDS = {
     "config",
     "configuration",
     "create",
+    "details",
     "describe",
     "edition",
     "editions",
@@ -244,14 +249,18 @@ _PLACE_NAME_STOP_WORDS = {
     "find",
     "for",
     "from",
+    "geo",
     "get",
+    "give",
     "guide",
     "hierarchy",
+    "how",
     "in",
     "list",
     "log",
     "map",
     "mcp",
+    "me",
     "mode",
     "nomis",
     "observation",
@@ -260,6 +269,7 @@ _PLACE_NAME_STOP_WORDS = {
     "ons",
     "open",
     "probe",
+    "read",
     "render",
     "search",
     "server",
@@ -268,13 +278,16 @@ _PLACE_NAME_STOP_WORDS = {
     "stack",
     "static",
     "status",
+    "tell",
     "the",
     "to",
     "tool",
     "tools",
     "ui",
+    "uri",
     "version",
     "versions",
+    "what",
     "widget",
     "workflow",
 }
@@ -406,11 +419,36 @@ def _extract_correlation_method(query: str) -> str | None:
     return match.group(0)
 
 
+def _normalize_resource_uri_candidate(value: str) -> str:
+    trimmed = value.rstrip(".,")
+    paired_closers = {")": "(", "]": "[", "}": "{"}
+    removed_unmatched_closer = False
+    while trimmed and trimmed[-1] in paired_closers:
+        closer = trimmed[-1]
+        opener = paired_closers[closer]
+        if trimmed.count(closer) > trimmed.count(opener):
+            trimmed = trimmed[:-1]
+            removed_unmatched_closer = True
+            continue
+        break
+    if removed_unmatched_closer:
+        trimmed = trimmed.rstrip(".,")
+    return trimmed
+
+
 def _extract_area_code(query: str) -> str | None:
     match = AREA_CODE_REGEX.search(query)
     if not match:
         return None
     return match.group(1).upper()
+
+
+def _extract_resource_uri(query: str) -> str | None:
+    match = RESOURCE_URI_REGEX.search(query)
+    if not match:
+        return None
+    uri = _normalize_resource_uri_candidate(match.group(1))
+    return uri or None
 
 
 def _extract_place_name(query: str) -> str | None:
@@ -487,6 +525,23 @@ def _extract_landscape_focus(query: str) -> str | None:
         if candidate:
             return candidate
     return None
+
+
+def _looks_like_resource_bridge_query(query_lower: str) -> bool:
+    if (
+        "resource://" in query_lower
+        or "resources/read" in query_lower
+        or "os_resources.get" in query_lower
+    ):
+        return True
+    if re.search(r"\bresource uri\b|\bmcp resource\b|\bresource handoff\b", query_lower):
+        return True
+    if re.search(r"\blarge (output|payload|response)\b", query_lower) and re.search(
+        r"\b(resource|uri|handoff|read)\b",
+        query_lower,
+    ):
+        return True
+    return False
 
 
 def _find_level_mentions(query_lower: str) -> list[str]:
@@ -619,10 +674,17 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if level_mentions:
         context["levels"] = level_mentions
     place_name = _extract_place_name(query)
+    resource_uri = _extract_resource_uri(query)
 
     if re.search(r"\bfetch\b.*\b(mcp geo )?skills guide\b|\bskills guide\b", query_lower):
         context["unknown_mode"] = "skills_resource"
         return QueryIntent.UNKNOWN, 0.92, {"uri": SKILLS_RESOURCE["uri"]}, context
+    if _looks_like_resource_bridge_query(query_lower):
+        context["unknown_mode"] = "resource_bridge"
+        if resource_uri:
+            context["resource_uri"] = resource_uri
+            return QueryIntent.UNKNOWN, 0.94, {"uri": resource_uri}, context
+        return QueryIntent.UNKNOWN, 0.93, {}, context
     if re.search(r"\bdescribe\b.*\b(server capabilities|tool search config)\b", query_lower):
         context["unknown_mode"] = "descriptor"
         return QueryIntent.UNKNOWN, 0.92, {}, context
@@ -1098,7 +1160,8 @@ def _get_tool_for_intent(
                 (
                     "Query NOMIS labour/census statistics directly. "
                     "If dataset id is unknown, use nomis.datasets with q and limit. "
-                    "See resource://mcp-geo/nomis-workflows for dataset-specific workflow profiles."
+                    "Use os_resources.get or resources/read for "
+                    "resource://mcp-geo/nomis-workflows dataset-specific workflow profiles."
                 ),
             )
         return (
@@ -1149,7 +1212,8 @@ def _get_tool_for_intent(
                 ["nomis.datasets", "nomis.codelists"],
                 (
                     "List NOMIS datasets with q+limit, then inspect code lists if needed. "
-                    "See resource://mcp-geo/nomis-workflows for workflow templates."
+                    "Use os_resources.get or resources/read for "
+                    "resource://mcp-geo/nomis-workflows workflow templates."
                 ),
             )
         return (
@@ -1172,9 +1236,18 @@ def _get_tool_for_intent(
     unknown_mode = str(context.get("unknown_mode") or "")
     if unknown_mode == "skills_resource":
         return (
-            "resources/read",
-            ["resources/read"],
-            "Read the MCP Geo skills guide resource.",
+            "os_resources.get",
+            ["os_resources.get", "resources/read"],
+            "Read the MCP Geo skills guide resource via the portable resource bridge.",
+        )
+    if unknown_mode == "resource_bridge":
+        return (
+            "os_resources.get",
+            ["os_resources.get", "resources/read"],
+            (
+                "Read resource-backed MCP output via os_resources.get or protocol "
+                "resources/read instead of searching the filesystem."
+            ),
         )
     if unknown_mode == "descriptor":
         return (
@@ -1223,7 +1296,7 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.by_uprn",
         ],
         QueryIntent.PLACE_LOOKUP: ["admin_lookup.area_geometry", "os_names.find", "os_poi.search"],
-        QueryIntent.BOUNDARY_FETCH: ["resources/read"],
+        QueryIntent.BOUNDARY_FETCH: ["os_resources.get", "resources/read"],
         QueryIntent.FEATURE_SEARCH: ["os_names.find", "os_vector_tiles.descriptor"],
         QueryIntent.ENVIRONMENTAL_SURVEY: [
             "os_landscape.get",
@@ -1292,7 +1365,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Prefer nomis.query directly when dataset is known. If you need discovery, call "
             "nomis.datasets with q and limit to avoid large payloads. ONS flow: "
             "ons_data.dimensions to find filters, then ons_data.query for observations. "
-            "NOMIS workflow profiles are available at resource://mcp-geo/nomis-workflows."
+            "NOMIS workflow profiles are available via os_resources.get or resources/read "
+            "at resource://mcp-geo/nomis-workflows."
         ),
         QueryIntent.AREA_COMPARISON: (
             "Use the statistics dashboard to compare multiple areas, or query per area and compare."
@@ -1310,7 +1384,8 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use ons_select.search for ranked ONS dataset discovery (with explanations), or "
             "ons_search.query for raw live search; "
             "nomis.datasets with q and limit for labour/census. "
-            "NOMIS workflow profiles are available at resource://mcp-geo/nomis-workflows."
+            "NOMIS workflow profiles are available via os_resources.get or resources/read "
+            "at resource://mcp-geo/nomis-workflows."
         ),
         QueryIntent.MAP_RENDER: (
             "Use os_maps.render with a bbox to obtain a static map URL template."
@@ -1393,7 +1468,7 @@ def _select_toolsets(payload: dict[str, Any]) -> ToolResult:
             "message": "toolset must be a string when provided",
         }
     max_tools = payload.get("maxTools", 20)
-    if not isinstance(max_tools, int) or max_tools < 1 or max_tools > 200:
+    if not is_strict_int(max_tools) or max_tools < 1 or max_tools > 200:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",
@@ -1577,6 +1652,16 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         "guidance": _get_guidance_for_intent(intent),
         "workflow_profile_uri": workflow_profile_uri,
     }
+    if str(context.get("unknown_mode") or "") == "resource_bridge":
+        resource_guidance = (
+            "When a tool returns delivery='resource' or a resource:// URI, do not search the "
+            "filesystem. Read it with os_resources.get or protocol resources/read using the "
+            "exact URI returned by the prior tool."
+        )
+        resource_uri = context.get("resource_uri")
+        if isinstance(resource_uri, str) and resource_uri:
+            resource_guidance = f"{resource_guidance} Example URI: {resource_uri}"
+        response["guidance"] = resource_guidance
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
         focus_raw = context.get("survey_focus")
         focus = focus_raw if isinstance(focus_raw, str) else None

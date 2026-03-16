@@ -1543,14 +1543,14 @@
       },
       {
         "hack_label": "WARD",
-        "code_field": "WD19CD (example vintage)",
-        "name_field": "WD19NM",
+        "code_field": "WD24CD (example vintage)",
+        "name_field": "WD24NM",
         "family_id": "wards_uk"
       },
       {
         "hack_label": "DISTRICT",
-        "code_field": "LAD17CD (example vintage)",
-        "name_field": "LAD17NM",
+        "code_field": "LAD24CD (example vintage)",
+        "name_field": "LAD24NM",
         "family_id": "lad_uk"
       },
       {

@@ -52,11 +52,42 @@ def test_nomis_query_normalizes_date_and_drops_cell_for_jsonstat(monkeypatch):
         params: Dict[str, Any] | None = None,
         use_cache: bool = True,
     ) -> Tuple[int, Dict[str, Any]]:
+        if url.endswith(
+            "/dataset/NM_17_5.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, {"overview": {"dimensions": {"dimension": []}}}
+        if url.endswith("/geography/TYPE486.def.sdmx.json"):
+            assert params == {"search": "E07000222"}
+            return 200, {
+                "structure": {
+                    "codelists": {
+                        "codelist": [
+                            {
+                                "code": [
+                                    {
+                                        "value": "1946157250",
+                                        "description": {"value": "Test district"},
+                                        "annotations": {
+                                            "annotation": [
+                                                {
+                                                    "annotationtitle": "GeogCode",
+                                                    "annotationtext": "E07000222",
+                                                }
+                                            ]
+                                        },
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
         assert url.endswith("/dataset/NM_17_5.jsonstat.json")
         params = params or {}
         assert params.get("time") == "latest"
         assert "date" not in params
         assert "cell" not in params
+        assert params.get("geography") == "1946157250"
         return 200, {"dataset": "NM_17_5", "value": 321}
 
     monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
@@ -85,6 +116,32 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
     from server.config import settings
 
     monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    overview = {
+        "overview": {
+            "dimensions": {
+                "dimension": [
+                    {"concept": "time", "codes": {"code": [{"value": "2021"}]}},
+                    {
+                        "concept": "geography",
+                        "types": {
+                            "type": [
+                                {"name": "2022 wards", "value": "TYPE153"},
+                            ]
+                        },
+                    },
+                    {
+                        "concept": "c2021_restype_3",
+                        "codes": {"code": [{"value": "0"}]},
+                    },
+                    {
+                        "concept": "measures",
+                        "codes": {"code": [{"value": "20100"}]},
+                    },
+                ]
+            }
+        }
+    }
 
     def geo_def(value: int, gss: str, name: str) -> Dict[str, Any]:
         return {
@@ -117,7 +174,11 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
         use_cache: bool = True,
     ) -> Tuple[int, Dict[str, Any]]:
         params = params or {}
-        if url.endswith("/geography/TYPE297.def.sdmx.json"):
+        if url.endswith(
+            "/dataset/NM_2021_1.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, overview
+        if url.endswith("/dataset/NM_2021_1/geography/TYPE153.def.sdmx.json"):
             search = params.get("search")
             if search == "E05012621":
                 return 200, geo_def(641733691, "E05012621", "Leamington Brunswick")
@@ -144,6 +205,218 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
     assert body["queryAdjusted"]["geographyResolvedFromGss"] is True
     assert body["queryAdjusted"]["originalGeography"] == "E05012621,E05012622"
     assert body["queryAdjusted"]["resolvedGeography"] == "641733691,641733692"
+    resolution = body["queryAdjusted"]["geographyResolution"]
+    assert resolution["level"] == "WARD"
+    assert resolution["usedDatasetTypeLookup"] is True
+    assert resolution["usedLegacyLookup"] is False
+
+
+def test_nomis_query_resolves_legacy_ward_gss_by_name_fallback(monkeypatch):
+    from tools import nomis_common, nomis_data
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    overview = {
+        "overview": {
+            "dimensions": {
+                "dimension": [
+                    {"concept": "time", "codes": {"code": [{"value": "2021"}]}},
+                    {
+                        "concept": "geography",
+                        "types": {
+                            "type": [
+                                {"name": "2022 wards", "value": "TYPE153"},
+                            ]
+                        },
+                    },
+                    {
+                        "concept": "c2021_restype_3",
+                        "codes": {"code": [{"value": "0"}]},
+                    },
+                    {
+                        "concept": "measures",
+                        "codes": {"code": [{"value": "20100"}]},
+                    },
+                ]
+            }
+        }
+    }
+
+    def geo_def(value: int, gss: str, name: str) -> Dict[str, Any]:
+        return {
+            "structure": {
+                "codelists": {
+                    "codelist": [
+                        {
+                            "code": [
+                                {
+                                    "value": value,
+                                    "description": {"value": name},
+                                    "annotations": {
+                                        "annotation": [
+                                            {"annotationtitle": "GeogCode", "annotationtext": gss},
+                                            {"annotationtitle": "TypeCode", "annotationtext": 153},
+                                            {
+                                                "annotationtitle": "TypeName",
+                                                "annotationtext": "2022 wards",
+                                            },
+                                        ]
+                                    },
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+    def empty_geo_def() -> Dict[str, Any]:
+        return {
+            "structure": {
+                "codelists": {
+                    "codelist": [
+                        {
+                            "name": {"value": "geography"},
+                        }
+                    ]
+                }
+            }
+        }
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        params = params or {}
+        if url.endswith(
+            "/dataset/NM_2021_1.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, overview
+        if url.endswith("/dataset/NM_2021_1/geography/TYPE153.def.sdmx.json"):
+            search = params.get("search")
+            if search == "E05000312":
+                return 200, empty_geo_def()
+            if search == "Harold Wood":
+                return 200, geo_def(641734965, "E05013973", "Harold Wood")
+            return 200, empty_geo_def()
+        if url.endswith("/geography/TYPE297.def.sdmx.json"):
+            return 200, empty_geo_def()
+        if url.endswith("/dataset/NM_2021_1.jsonstat.json"):
+            assert params.get("geography") == "641734965"
+            assert params.get("time") == "2021"
+            assert params.get("c2021_restype_3") == "0"
+            assert params.get("measures") == "20100"
+            return 200, {"value": [10330]}
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    monkeypatch.setattr(
+        nomis_data,
+        "_lookup_admin_area_for_gss",
+        lambda gss: {"name": "Harold Wood", "level": "WARD"} if gss == "E05000312" else None,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_2021_1",
+            "params": {
+                "geography": "E05000312",
+                "measures": "20100",
+                "time": "2021",
+                "c2021_restype_3": "0",
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["value"][0] == 10330
+    resolution = body["queryAdjusted"]["geographyResolution"]
+    assert resolution["usedDatasetTypeLookup"] is True
+    assert resolution["usedNameFallback"] is True
+    assert resolution["usedLegacyLookup"] is False
+    mapping = body["queryAdjusted"]["mapping"][0]
+    assert mapping["gss"] == "E05000312"
+    assert mapping["currentGss"] == "E05013973"
+    assert mapping["searchedName"] == "Harold Wood"
+
+
+def test_nomis_query_resolves_district_gss_via_legacy_lookup(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    def geo_def(value: int, gss: str, name: str) -> Dict[str, Any]:
+        return {
+            "structure": {
+                "codelists": {
+                    "codelist": [
+                        {
+                            "code": [
+                                {
+                                    "value": value,
+                                    "description": {"value": name},
+                                    "annotations": {
+                                        "annotation": [
+                                            {"annotationtitle": "GeogCode", "annotationtext": gss},
+                                            {"annotationtitle": "TypeCode", "annotationtext": 486},
+                                            {"annotationtitle": "TypeName", "annotationtext": "Districts"},
+                                        ]
+                                    },
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        params = params or {}
+        if url.endswith(
+            "/dataset/NM_17_5.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, {"overview": {"dimensions": {"dimension": []}}}
+        if url.endswith("/geography/TYPE486.def.sdmx.json"):
+            assert params.get("search") == "E07000222"
+            return 200, geo_def(123456789, "E07000222", "Warwick")
+        if url.endswith("/dataset/NM_17_5.jsonstat.json"):
+            assert params.get("geography") == "123456789"
+            assert params.get("time") == "latest"
+            return 200, {"dataset": "NM_17_5", "value": 321}
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_17_5",
+            "params": {
+                "geography": "E07000222",
+                "time": "latest",
+                "variable": "1",
+                "measures": "20599",
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["value"] == 321
+    assert body["queryAdjusted"]["resolvedGeography"] == "123456789"
+    resolution = body["queryAdjusted"]["geographyResolution"]
+    assert resolution["level"] == "DISTRICT"
+    assert resolution["usedDatasetTypeLookup"] is False
+    assert resolution["usedLegacyLookup"] is True
+    assert resolution["datasetType"] == {"name": "districts", "value": "TYPE486"}
 
 
 def test_nomis_query_error_surface_includes_guidance(monkeypatch):
@@ -733,6 +1006,8 @@ def test_nomis_datasets_limit_validation(monkeypatch):
 
     monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
     resp = client.post("/tools/call", json={"tool": "nomis.datasets", "limit": 0})
+    assert resp.status_code == 400
+    resp = client.post("/tools/call", json={"tool": "nomis.datasets", "limit": True})
     assert resp.status_code == 400
     resp = client.post("/tools/call", json={"tool": "nomis.datasets", "includeRaw": "yes"})
     assert resp.status_code == 400

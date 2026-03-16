@@ -25,6 +25,13 @@ def test_route_query_place_lookup():
     assert body["recommended_parameters"]["text"] == "Westminster"
 
 
+def test_route_query_harold_wood_prompt_ignores_question_openers():
+    body = _route("What can MCP-Geo tell me about Harold Wood, Essex?")
+    assert body["intent"] == "place_lookup"
+    assert body["recommended_tool"] == "admin_lookup.find_by_name"
+    assert body["recommended_parameters"]["text"] == "Harold Wood"
+
+
 def test_route_query_postcode_lookup():
     body = _route("UPRNs for SW1A 1AA")
     assert body["intent"] == "address_lookup"
@@ -249,6 +256,35 @@ def test_route_query_tool_discovery_phrase():
     assert body["confidence"] >= 0.8
 
 
+def test_route_query_resource_uri_bridge_phrase():
+    body = _route("How do I read a resource:// URI from MCP-Geo?")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["workflow_steps"] == ["os_resources.get", "resources/read"]
+    assert "do not search the filesystem" in body["guidance"]
+
+
+def test_route_query_resource_uri_strips_sentence_punctuation():
+    body = _route("Read resource://mcp-geo/demo-status.")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/demo-status"
+
+
+def test_route_query_resource_uri_preserves_balanced_suffix_characters():
+    body = _route("Read resource://mcp-geo/report(v2)?view=full!")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/report(v2)?view=full!"
+
+
+def test_route_query_resource_uri_strips_residual_dot_after_bracket_cleanup():
+    body = _route("See resource://mcp-geo/item.) for details")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/item"
+
+
 def test_route_query_statistics_dashboard_area_comparison():
     body = _route("Open the statistics dashboard for Westminster")
     assert body["intent"] == "area_comparison"
@@ -270,7 +306,7 @@ def test_route_query_ui_probe_phrase():
 def test_route_query_unknown_skills_guide_request():
     body = _route("Fetch the MCP Geo skills guide")
     assert body["intent"] == "unknown"
-    assert body["recommended_tool"] == "resources/read"
+    assert body["recommended_tool"] == "os_resources.get"
 
 
 def test_route_query_unknown_descriptor_request():
@@ -454,6 +490,14 @@ def test_select_toolsets_rejects_invalid_max_tools():
     resp = client.post(
         "/tools/call",
         json={"tool": "os_mcp.select_toolsets", "maxTools": 0},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "os_mcp.select_toolsets", "maxTools": True},
     )
     assert resp.status_code == 400
     body = resp.json()

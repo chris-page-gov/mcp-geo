@@ -12,6 +12,7 @@ from server.config import settings
 from server.mcp.resource_catalog import MCP_APPS_MIME, load_ui_content, resolve_ui_resource
 from server.route_planning import normalize_route_profile, normalize_stop
 from tools.registry import Tool, ToolResult, register
+from tools.typing_utils import is_strict_int, is_strict_number
 
 _UI_URIS = {
     "geography": "ui://mcp-geo/geography-selector",
@@ -232,6 +233,8 @@ def _build_widget_response(
         "structuredContent": structured,
         "content": content,
     }
+    if mode == "text":
+        response["_meta"]["uiTextOnlyOverride"] = True
     return 200, _enforce_widget_response_limit(response, resource_uri=resource_uri)
 
 
@@ -431,11 +434,11 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
     initial_lat = payload.get("initialLat")
     initial_lng = payload.get("initialLng")
     initial_zoom = payload.get("initialZoom")
-    if initial_lat is not None and not isinstance(initial_lat, (int, float)):
+    if initial_lat is not None and not is_strict_number(initial_lat):
         return _error("initialLat must be a number")
-    if initial_lng is not None and not isinstance(initial_lng, (int, float)):
+    if initial_lng is not None and not is_strict_number(initial_lng):
         return _error("initialLng must be a number")
-    if initial_zoom is not None and not isinstance(initial_zoom, int):
+    if initial_zoom is not None and not is_strict_int(initial_zoom):
         return _error("initialZoom must be an integer")
     if initial_lat is not None and initial_lng is not None:
         config["initialView"] = {"lat": float(initial_lat), "lng": float(initial_lng)}
@@ -478,11 +481,11 @@ def _render_boundary_explorer(payload: dict[str, Any]) -> ToolResult:
     initial_lat = payload.get("initialLat")
     initial_lng = payload.get("initialLng")
     initial_zoom = payload.get("initialZoom")
-    if initial_lat is not None and not isinstance(initial_lat, (int, float)):
+    if initial_lat is not None and not is_strict_number(initial_lat):
         return _error("initialLat must be a number")
-    if initial_lng is not None and not isinstance(initial_lng, (int, float)):
+    if initial_lng is not None and not is_strict_number(initial_lng):
         return _error("initialLng must be a number")
-    if initial_zoom is not None and not isinstance(initial_zoom, int):
+    if initial_zoom is not None and not is_strict_int(initial_zoom):
         return _error("initialZoom must be an integer")
     if initial_lat is not None and initial_lng is not None:
         config["initialView"] = {"lat": float(initial_lat), "lng": float(initial_lng)}

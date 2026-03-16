@@ -350,6 +350,17 @@ export function createUiPreviewSession({
   };
 }
 
+function previewSessionAllowsTool(previewSession, toolName) {
+  if (typeof toolName !== "string" || !toolName) {
+    return false;
+  }
+  if (previewSession.allowedToolNames.has(toolName)) {
+    return true;
+  }
+  const sanitized = sanitizeBridgeName(toolName);
+  return Boolean(sanitized) && previewSession.allowedToolNames.has(sanitized);
+}
+
 export function buildBridgeEnvelope(previewSession, payload) {
   if (!previewSession) {
     return payload;
@@ -409,7 +420,7 @@ export function validateUiMessage({ event, message, previewSession }) {
   }
   if (method === "tools/call") {
     const toolName = message.params?.name || message.params?.tool;
-    if (!previewSession.allowedToolNames.has(toolName)) {
+    if (!previewSessionAllowsTool(previewSession, toolName)) {
       return {
         ok: false,
         reason: `Widget requested unknown tool: ${toolName || "unknown"}`,

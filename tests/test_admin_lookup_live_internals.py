@@ -339,3 +339,41 @@ def test_live_find_by_id_returns_match(monkeypatch):
     hit, err = admin_lookup._live_find_by_id("X4")
     assert err is None
     assert hit == {"id": "X4", "level": "TEST", "name": "Example", "lat": 10, "lon": -1}
+
+
+def test_default_admin_sources_use_current_ward_and_district_vintages():
+    ward = next(source for source in admin_lookup.ADMIN_SOURCES if source.level == "WARD")
+    district = next(source for source in admin_lookup.ADMIN_SOURCES if source.level == "DISTRICT")
+
+    assert ward.service == "Wards_December_2024_Boundaries_UK_BGC"
+    assert ward.id_field == "WD24CD"
+    assert ward.name_field == "WD24NM"
+
+    assert district.service == "Local_Authority_Districts_December_2024_Boundaries_UK_BGC"
+    assert district.id_field == "LAD24CD"
+    assert district.name_field == "LAD24NM"
+
+
+def test_live_find_by_name_returns_current_harold_wood_ward(monkeypatch):
+    def fake_fetch(url, params):  # noqa: ARG001
+        assert "Wards_December_2024_Boundaries_UK_BGC" in url
+        assert params["where"] == "UPPER(WD24NM) = 'HAROLD WOOD'"
+        return {
+            "features": [
+                {
+                    "attributes": {
+                        "WD24CD": "E05013973",
+                        "WD24NM": "Harold Wood",
+                    }
+                }
+            ]
+        }
+
+    monkeypatch.setattr(admin_lookup, "_fetch_arcgis", fake_fetch)
+    results = admin_lookup._live_find_by_name(
+        "Harold Wood",
+        limit=5,
+        levels=["WARD"],
+        match="exact",
+    )
+    assert results == [{"id": "E05013973", "level": "WARD", "name": "Harold Wood"}]

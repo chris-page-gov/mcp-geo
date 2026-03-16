@@ -169,7 +169,11 @@ def test_search_tools_validation_and_rewrite_skips_bad_entries(monkeypatch):
 
     monkeypatch.setattr(stdio_adapter, "search_tools", fake_search_tools)
     with pytest.raises(ValueError):
+        stdio_adapter.handle_list_tools({"query": "x", "limit": True})
+    with pytest.raises(ValueError):
         stdio_adapter.handle_search_tools({"query": "x", "mode": 123})
+    with pytest.raises(ValueError):
+        stdio_adapter.handle_search_tools({"query": "x", "limit": True})
     with pytest.raises(ValueError):
         stdio_adapter.handle_search_tools({"query": "x", "limit": 0})
     with pytest.raises(ValueError):

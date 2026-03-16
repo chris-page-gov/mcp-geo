@@ -24,6 +24,7 @@ from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
 from tools.ons_common import TTLCache
 from tools.registry import Tool, register, ToolResult
+from tools.typing_utils import is_strict_int
 
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
@@ -68,17 +69,17 @@ ADMIN_SOURCES: list[AdminSource] = [
     ),
     AdminSource(
         level="WARD",
-        service="Wards_December_2019_Boundaries_UK_BGC_2022",
-        id_field="WD19CD",
-        name_field="WD19NM",
+        service="Wards_December_2024_Boundaries_UK_BGC",
+        id_field="WD24CD",
+        name_field="WD24NM",
         lat_field="LAT",
         lon_field="LONG",
     ),
     AdminSource(
         level="DISTRICT",
-        service="Local_Authority_Districts_December_2017_Boundaries_GB_BGC_2022",
-        id_field="LAD17CD",
-        name_field="LAD17NM",
+        service="Local_Authority_Districts_December_2024_Boundaries_UK_BGC",
+        id_field="LAD24CD",
+        name_field="LAD24NM",
         lat_field="LAT",
         lon_field="LONG",
     ),
@@ -815,7 +816,7 @@ def _area_geometry(payload: dict[str, Any]) -> ToolResult:
 
 register(Tool(
     name="admin_lookup.area_geometry",
-    description="Return bbox geometry for a given area id",
+    description="Return bbox and optional full boundary geometry for a given area id",
     input_schema={
         "type": "object",
         "properties": {
@@ -849,7 +850,7 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
     if not text:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing text"}
     limit = payload.get("limit", 25)
-    if not isinstance(limit, int) or limit < 1:
+    if not is_strict_int(limit) or limit < 1:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be >= 1"}
     match = payload.get("match") or payload.get("matchType") or "contains"
     if not isinstance(match, str):
@@ -859,7 +860,7 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
         levels = _infer_levels_from_text(text)
     limit_per_level = payload.get("limitPerLevel")
     if limit_per_level is not None:
-        if not isinstance(limit_per_level, int) or limit_per_level < 1:
+        if not is_strict_int(limit_per_level) or limit_per_level < 1:
             return 400, {
                 "isError": True,
                 "code": "INVALID_INPUT",
@@ -901,7 +902,10 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
 
 register(Tool(
     name="admin_lookup.find_by_name",
-    description="Substring case-insensitive search by area name",
+    description=(
+        "Search administrative areas by name; returns ids and bbox summaries. "
+        "Use admin_lookup.area_geometry for full boundary geometry."
+    ),
     input_schema={
         "type": "object",
         "properties": {
@@ -1039,7 +1043,7 @@ def _cache_search(payload: dict[str, Any]) -> ToolResult:
     query = str(payload.get("query", "")).strip() or None
     level = str(payload.get("level", "")).strip() or None
     limit = payload.get("limit", 25)
-    if not isinstance(limit, int) or limit < 1 or limit > 200:
+    if not is_strict_int(limit) or limit < 1 or limit > 200:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be 1-200"}
     fallback_live = payload.get("fallbackLive", True)
     if not isinstance(fallback_live, bool):

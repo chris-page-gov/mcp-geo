@@ -169,3 +169,46 @@ def test_os_places_within_clamps_huge_bbox(monkeypatch):
     assert bbox_vals[1] < 0
     assert (bbox_vals[3] - bbox_vals[1]) < 7.0
     assert (bbox_vals[2] - bbox_vals[0]) < 9.0
+
+
+def test_os_places_within_harold_wood_clamp_stays_below_strict_vendor_limit(monkeypatch):
+    from tools import os_places_extra
+
+    calls = []
+
+    def fake_get_json(url, params):
+        calls.append(params)
+        bbox_vals = [float(value) for value in params["bbox"].split(",")]
+        area = os_places_extra._bbox_area_m2(
+            bbox_vals[1],
+            bbox_vals[0],
+            bbox_vals[3],
+            bbox_vals[2],
+        )
+        assert area < os_places_extra.MAX_BBOX_AREA_M2
+        return 200, _fake_body("HW1")
+
+    fake_client = type(
+        "C",
+        (),
+        {
+            "get_json": staticmethod(fake_get_json),
+            "base_places": "http://example",
+        },
+    )()
+    monkeypatch.setattr(os_places_extra, "client", fake_client)
+    client = TestClient(app)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_places.within",
+            "bbox": [0.212839, 51.572372, 0.287124, 51.609192],
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["results"][0]["uprn"] == "HW1"
+    assert data["provenance"]["bboxMode"] == "clamped"
+    assert data["provenance"]["tileCount"] == 1
+    assert data["provenance"]["originalTileCount"] > 25
+    assert len(calls) == 1
