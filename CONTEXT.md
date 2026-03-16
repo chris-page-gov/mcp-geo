@@ -51,6 +51,11 @@ assumptions change.
 
 ## Current Focus
 
+- Published release `v0.7.0`, including the post-`0.6.0` changelog/release
+  packaging, the merged docs-only follow-up for
+  `docs/reports/Working with Codex redacted.docx`, and the validated
+  `./scripts/pytest-local -q` release gate (`1200 passed`, `6 skipped`,
+  coverage `90.26%`).
 - Maintaining the new public-document hygiene workflow for repo-authored DOCX
   assets under `docs/` and `troubleshooting/`, including the metadata-stripping
   sanitizer/checker in `scripts/docx_hygiene.py`, the policy note

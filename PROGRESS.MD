@@ -5,6 +5,17 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-16
 
+## Release 0.7.0 (2026-03-16)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REL70-SCOPE-1 Release scope and merge-set closure | done | none | Release `0.7.0` packages all merged work after `v0.6.0`, including route-planning, stakeholder benchmark/live rerun expansion, OpenAI Documentation MCP adoption, devcontainer trust cleanup, analytical-index publication, playground hardening, OWASP MCP validation, auth-aware MCP resource fallback, Harold Wood/NOMIS recovery, DOCX hygiene tooling, and the post-merge docs-only fix for `docs/reports/Working with Codex redacted.docx`. |
+| REL70-PKG-2 Version, changelog, and release notes | done | REL70-SCOPE-1 | Bumped package/runtime version markers to `0.7.0`, promoted the accumulated `CHANGELOG.md` `Unreleased` content into `## [0.7.0] - 2026-03-16`, and added `RELEASE_NOTES/0.7.0.md`. |
+| REL70-VAL-3 Regression validation gate | done | REL70-PKG-2 | Full release-gate validation passed via `./scripts/pytest-local -q` with `1200 passed`, `6 skipped`, and coverage `90.26%`. |
+| REL70-PUB-4 Commit, tag, and publish | done | REL70-VAL-3 | Release `0.7.0` is packaged for publication on current `main`, including release commit/tag workflow and GitHub release publication against `RELEASE_NOTES/0.7.0.md`. |
+
 ## Public DOCX hygiene baseline (2026-03-16)
 
 Legend: pending, in_progress, done, blocked

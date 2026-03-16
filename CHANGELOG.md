@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-03-16
+
 ### Added
 - Added repo-authored DOCX hygiene tooling in `scripts/docx_hygiene.py`,
   focused regression coverage in `tests/test_docx_hygiene.py`, the policy note
