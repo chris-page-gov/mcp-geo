@@ -94,3 +94,22 @@ def test_cli_scan_writes_json_and_markdown_reports(tmp_path: Path, monkeypatch):
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     assert payload["summary"]["public_docx_total"] == 1
     assert md_path.read_text(encoding="utf-8").startswith("# DOCX Hygiene Audit")
+
+
+def test_build_report_detects_linux_absolute_paths(tmp_path: Path):
+    module = _load_module()
+    docx_path = tmp_path / "docs" / "linux-paths.docx"
+    _write_docx(
+        docx_path,
+        body_text=(
+            "Investigate /home/alice/project/report.md and /workspace/mcp-geo/docs/report.docx "
+            "but ignore https://example.com/docs/report.md"
+        ),
+    )
+
+    report = module.build_report(tmp_path)
+    record = report["records"][0]
+    assert record["body_absolute_paths"] == [
+        "/home/alice/project/report.md",
+        "/workspace/mcp-geo/docs/report.docx",
+    ]

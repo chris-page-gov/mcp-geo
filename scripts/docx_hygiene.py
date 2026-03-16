@@ -4,9 +4,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable
+from xml.etree import ElementTree
 from zipfile import ZIP_DEFLATED, ZipFile
 
 CORE_PROPS_XML = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -16,7 +17,7 @@ EMPTY_CUSTOM_XML = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"/>"""
 
 ABSOLUTE_PATH_PATTERNS = [
-    re.compile(r"/Users/[^<\s`)\]\"]+"),
+    re.compile(r"(?<![A-Za-z0-9:/])/(?:[^<\s`)\]\"]+/)+[^<\s`)\]\"]+"),
     re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:(?:\\|/)(?:[^<\s`)\]\"]+(?:\\|/))+[^<\s`)\]\"]+"),
 ]
 
@@ -71,9 +72,13 @@ def _extract_custom_property_names(xml_text: str) -> list[str]:
 
 
 def _extract_body_absolute_paths(xml_text: str) -> list[str]:
+    try:
+        text = " ".join(text for text in ElementTree.fromstring(xml_text).itertext() if text)
+    except ElementTree.ParseError:
+        text = xml_text
     hits: set[str] = set()
     for pattern in ABSOLUTE_PATH_PATTERNS:
-        hits.update(pattern.findall(xml_text))
+        hits.update(pattern.findall(text))
     return sorted(hits)
 
 
