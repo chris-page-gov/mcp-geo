@@ -238,8 +238,9 @@ run_uv() {
   fi
   if [[ -z "${UV_CACHE_DIR:-}" ]]; then
     uv_cache_dir="$ROOT_DIR/.cache/uv"
-    mkdir -p "$uv_cache_dir"
-    export UV_CACHE_DIR="$uv_cache_dir"
+    if mkdir -p "$uv_cache_dir" 2>/dev/null && [[ -w "$uv_cache_dir" ]]; then
+      export UV_CACHE_DIR="$uv_cache_dir"
+    fi
   fi
   cmd=(uv run)
   for package in "${UV_PACKAGES[@]}"; do
