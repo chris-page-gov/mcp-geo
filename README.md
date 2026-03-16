@@ -259,7 +259,7 @@ docker pull ghcr.io/chris-page-gov/mcp-geo:latest
 Available tags:
 - `latest` for the default branch image
 - `<sha>` for a specific commit image
-- `<version>` for release tags such as `0.6.0`
+- `<version>` for release tags such as `0.7.0`
 
 The published image targets `linux/amd64` and `linux/arm64`.
 

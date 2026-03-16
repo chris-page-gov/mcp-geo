@@ -170,7 +170,7 @@ docker pull ghcr.io/chris-page-gov/mcp-geo:latest
 Published tags:
 - `latest` for the default branch image
 - `<sha>` for a specific commit image
-- `<version>` for release tags such as `0.6.0`
+- `<version>` for release tags such as `0.7.0`
 
 For proxied networks, pass the same build args explicitly if you are using the
 top-level Dockerfile outside the devcontainer flow:
