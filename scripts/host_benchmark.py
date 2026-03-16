@@ -44,35 +44,6 @@ EXPECTED_TRACKS = [
 ]
 QUESTION_BY_ID = {question.id: question for question in ALL_QUESTIONS}
 _REGISTERED_TOOL_NAMES: tuple[str, ...] | None = None
-_TOOL_IMPORT_MODULES = (
-    "tools.os_places",
-    "tools.os_places_extra",
-    "tools.os_poi",
-    "tools.os_names",
-    "tools.os_linked_ids",
-    "tools.os_features",
-    "tools.os_peat",
-    "tools.os_landscape",
-    "tools.os_maps",
-    "tools.os_vector_tiles",
-    "tools.os_qgis",
-    "tools.os_tiles_ota",
-    "tools.os_net",
-    "tools.os_downloads",
-    "tools.os_route",
-    "tools.admin_lookup",
-    "tools.ons_data",
-    "tools.ons_search",
-    "tools.ons_select",
-    "tools.ons_codes",
-    "tools.ons_geo",
-    "tools.nomis_data",
-    "tools.os_map",
-    "tools.os_resources",
-    "tools.os_offline",
-    "tools.os_mcp",
-    "tools.os_apps",
-)
 
 
 def _utc_now() -> str:
@@ -141,8 +112,9 @@ def _scenario_by_id(pack: dict[str, Any], scenario_id: str) -> dict[str, Any]:
 def _registered_tool_names() -> tuple[str, ...]:
     global _REGISTERED_TOOL_NAMES
     if _REGISTERED_TOOL_NAMES is None:
-        for module_name in _TOOL_IMPORT_MODULES:
-            importlib.import_module(module_name)
+        # Reuse the server's defensive registration path so one broken tool
+        # import does not abort benchmark/report analysis.
+        importlib.import_module("server.mcp.tools")
         registry_module: Any = importlib.import_module("tools.registry")
         all_tools = registry_module.all_tools
         _REGISTERED_TOOL_NAMES = tuple(str(tool.name) for tool in all_tools())

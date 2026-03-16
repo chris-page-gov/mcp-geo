@@ -5,6 +5,7 @@ import subprocess
 import sys
 from argparse import Namespace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -421,6 +422,30 @@ def test_run_codex_cli_does_not_forward_unused_ons_api_key(monkeypatch, tmp_path
     assert host_benchmark.cmd_run_codex_cli(args) == 0
     assert captured_inherited_env["OS_API_KEY"] == "os-secret"
     assert "ONS_API_KEY" not in captured_inherited_env
+
+
+def test_registered_tool_names_uses_defensive_server_import(monkeypatch) -> None:
+    monkeypatch.setattr(host_benchmark, "_REGISTERED_TOOL_NAMES", None)
+
+    def fake_import_module(name: str):
+        if name == "server.mcp.tools":
+            return SimpleNamespace()
+        if name == "tools.registry":
+            return SimpleNamespace(all_tools=lambda: [SimpleNamespace(name="os_places.search")])
+        if name == "server.tool_naming":
+            return SimpleNamespace(
+                resolve_tool_name=lambda requested, _originals: (
+                    "os_places.search" if requested == "os_places_search" else requested
+                )
+            )
+        if name.startswith("tools."):
+            raise AssertionError(f"unexpected direct tool import: {name}")
+        raise AssertionError(f"unexpected import: {name}")
+
+    monkeypatch.setattr(host_benchmark.importlib, "import_module", fake_import_module)
+
+    assert host_benchmark._normalize_tool_name("os_places_search") == "os_places.search"
+    assert host_benchmark._registered_tool_names() == ("os_places.search",)
 
 
 def test_summarize_sessions_builds_three_track_report(tmp_path: Path) -> None:
