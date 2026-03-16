@@ -271,6 +271,13 @@ def test_route_query_resource_uri_strips_sentence_punctuation():
     assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/demo-status"
 
 
+def test_route_query_resource_uri_preserves_balanced_suffix_characters():
+    body = _route("Read resource://mcp-geo/report(v2)?view=full!")
+    assert body["intent"] == "unknown"
+    assert body["recommended_tool"] == "os_resources.get"
+    assert body["recommended_parameters"]["uri"] == "resource://mcp-geo/report(v2)?view=full!"
+
+
 def test_route_query_statistics_dashboard_area_comparison():
     body = _route("Open the statistics dashboard for Westminster")
     assert body["intent"] == "area_comparison"

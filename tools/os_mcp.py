@@ -420,7 +420,16 @@ def _extract_correlation_method(query: str) -> str | None:
 
 
 def _normalize_resource_uri_candidate(value: str) -> str:
-    return value.rstrip(".,;:!?)]}")
+    trimmed = value.rstrip(".,")
+    paired_closers = {")": "(", "]": "[", "}": "{"}
+    while trimmed and trimmed[-1] in paired_closers:
+        closer = trimmed[-1]
+        opener = paired_closers[closer]
+        if trimmed.count(closer) > trimmed.count(opener):
+            trimmed = trimmed[:-1]
+            continue
+        break
+    return trimmed
 
 
 def _extract_area_code(query: str) -> str | None:
