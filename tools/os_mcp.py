@@ -429,7 +429,7 @@ def _normalize_resource_uri_candidate(value: str) -> str:
             trimmed = trimmed[:-1]
             continue
         break
-    return trimmed
+    return trimmed.rstrip(".,")
 
 
 def _extract_area_code(query: str) -> str | None:
