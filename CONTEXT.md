@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-15
+Last updated: 2026-03-16
 Owner: @chris-page-gov
 
 ## Purpose
@@ -50,6 +50,14 @@ assumptions change.
 - External ref (Docker volumes reference): `https://docs.docker.com/engine/storage/volumes/`.
 
 ## Current Focus
+
+- Maintaining the new public-document hygiene workflow for repo-authored DOCX
+  assets under `docs/` and `troubleshooting/`, including the metadata-stripping
+  sanitizer/checker in `scripts/docx_hygiene.py`, the policy note
+  `docs/document_hygiene.md`, the audit outputs
+  `docs/reports/docx_hygiene_audit_2026-03-16.{md,json}`, and the first-pass
+  sanitation of repo-authored public DOCX files to remove personal core
+  metadata and custom MSIP properties before wider release.
 
 - Maintaining the 2026-03-14 NOMIS dataset-geography recovery in
   `tools/nomis_data.py`, including dataset-specific geography-type lookup,

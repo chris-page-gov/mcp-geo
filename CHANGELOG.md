@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added repo-authored DOCX hygiene tooling in `scripts/docx_hygiene.py`,
+  focused regression coverage in `tests/test_docx_hygiene.py`, the policy note
+  `docs/document_hygiene.md`, and generated audit outputs
+  `docs/reports/docx_hygiene_audit_2026-03-16.{md,json}`.
 - Added the Harold Wood troubleshooting package:
   `troubleshooting/MCP-Geo view of Harold Wood Essex.md`,
   `troubleshooting/harold-wood-essex-trace-evidence-2026-03-14.md`, and
@@ -85,13 +89,11 @@ All notable changes to this project will be documented in this file.
   prompts into concrete benchmark scenarios with reusable-header prompts,
   scored reference outputs, and workflow validation.
 
-### Fixed
-- Restored NOMIS legacy district GSS resolution in `tools/nomis_data.py` by
-  mapping district codes through generic NOMIS geography type `TYPE486` when a
-  dataset overview does not expose district-specific geography types, and added
-  a focused regression in `tests/test_nomis_data.py`.
-
 ### Changed
+- Sanitized repo-authored public DOCX files under `docs/` and
+  `troubleshooting/` to strip personal core metadata and custom Microsoft
+  Information Protection properties, and removed a stray Office lockfile from
+  `docs/reports/`.
 - `os_mcp.descriptor` and tool-search category normalization now accept
   `category="map"` as an alias for `maps`, matching the existing
   `stats -> statistics` tolerance.
