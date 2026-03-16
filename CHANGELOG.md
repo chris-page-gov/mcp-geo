@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
+  on release-tag pushes, limiting it to pull requests and the default branch so
+  `v*` release tags do not fail on the action's unsupported tag-push path. The
+  scorecard artifact upload now also runs only when the SARIF output exists, so
+  unsupported or upstream-failed runs do not add a second missing-file error.
+
 ## [0.7.0] - 2026-03-16
 
 ### Added

@@ -5,6 +5,14 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-03-16
 
+## Release CI tag follow-up (2026-03-16)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REL70-CI-5 Release-tag Scorecard compatibility | done | REL70-PUB-4 | Updated `.github/workflows/ci.yml` so `supply-chain-posture` runs only on pull requests and the default branch, matching the OpenSSF Scorecard action's supported ref surface. The scorecard SARIF upload is now gated on file presence so unsupported refs do not produce a second missing-artifact failure. |
+
 ## Release 0.7.0 (2026-03-16)
 
 Legend: pending, in_progress, done, blocked

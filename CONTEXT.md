@@ -56,6 +56,11 @@ assumptions change.
   `docs/reports/Working with Codex redacted.docx`, and the validated
   `./scripts/pytest-local -q` release gate (`1200 passed`, `6 skipped`,
   coverage `90.26%`).
+- Maintaining the 2026-03-16 release-CI follow-up in `.github/workflows/ci.yml`
+  that skips the OpenSSF Scorecard `supply-chain-posture` job on `v*` tag
+  pushes, because the action only supports pull requests and the default-branch
+  ref surface; the SARIF upload step now also runs only when the Scorecard file
+  exists so unsupported refs do not add a second missing-artifact failure.
 - Maintaining the new public-document hygiene workflow for repo-authored DOCX
   assets under `docs/` and `troubleshooting/`, including the metadata-stripping
   sanitizer/checker in `scripts/docx_hygiene.py`, the policy note

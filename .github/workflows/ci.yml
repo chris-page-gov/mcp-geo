@@ -216,6 +216,12 @@ jobs:
           test "$OWASP_VALIDATE_OUTCOME" = "success"
 
   supply-chain-posture:
+    # OpenSSF Scorecard rejects tag-push refs; run on PRs and the default branch only.
+    if: >-
+      ${{
+        github.event_name == 'pull_request' ||
+        github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      }}
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -235,7 +241,7 @@ jobs:
           publish_results: false
 
       - name: Upload Scorecard artifact
-        if: always()
+        if: ${{ always() && hashFiles('scorecard-results.sarif') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: openssf-scorecard
