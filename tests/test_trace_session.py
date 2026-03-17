@@ -8,17 +8,23 @@ from pathlib import Path
 import scripts.trace_session as trace_session
 
 
-def test_trace_session_keeps_host_ui_event_path_for_codex_wrapper(monkeypatch, tmp_path: Path) -> None:
+def test_trace_session_keeps_host_ui_event_path_for_codex_wrapper(
+    monkeypatch, tmp_path: Path
+) -> None:
     session_root = tmp_path / "logs" / "sessions"
     captured: list[dict[str, object]] = []
 
-    def fake_run(command: list[str], env: dict[str, str] | None = None, check: bool = False, **_: object):
+    def fake_run(
+        command: list[str], env: dict[str, str] | None = None, check: bool = False, **_: object
+    ):
         captured.append({"command": command, "env": env, "check": check})
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(trace_session.subprocess, "run", fake_run)
     monkeypatch.setattr(trace_session, "_git_info", lambda: {})
     monkeypatch.setenv("MCP_GEO_LOG_DIR", str(tmp_path / "logs"))
+    monkeypatch.setenv("OS_API_KEY", "os-secret")
+    monkeypatch.setenv("ONS_API_KEY", "unused-ons-secret")
     monkeypatch.setattr(
         sys,
         "argv",
@@ -50,5 +56,7 @@ def test_trace_session_keeps_host_ui_event_path_for_codex_wrapper(monkeypatch, t
 
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["paths"]["uiEvents"] == str(host_ui_path)
+    assert session_meta["env"]["OS_API_KEY"] == "set"
+    assert "ONS_API_KEY" not in session_meta["env"]
     assert session_meta["exitCode"] == 0
     assert session_meta["endedAt"].endswith("Z")

@@ -139,7 +139,6 @@ jobs:
         run: npm --prefix playground run test:live
         env:
           OS_API_KEY: ${{ secrets.OS_API_KEY }}
-          ONS_API_KEY: ${{ secrets.ONS_API_KEY }}
 
       - name: Upload playground live-smoke artifacts
         if: failure()

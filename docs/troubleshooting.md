@@ -42,8 +42,8 @@ If Claude can connect to MCP but OS-backed calls return `NO_API_KEY`, the
 wrapper process likely cannot see your host key environment.
 
 `scripts/claude-mcp-local` now resolves secrets in this order (first hit wins):
-1. Existing process env (`OS_API_KEY`, `ONS_API_KEY`)
-2. Secret-file env (`OS_API_KEY_FILE`, `ONS_API_KEY_FILE`)
+1. Existing process env (`OS_API_KEY`)
+2. Secret-file env (`OS_API_KEY_FILE`)
 3. macOS GUI env via `launchctl getenv <KEY>`
 4. Repo dotenv file (`MCP_GEO_ENV_FILE`, default: `.env`)
 

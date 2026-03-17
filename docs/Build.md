@@ -9,6 +9,7 @@ repo-aligned instructions.
 - Python 3.11+
 - Optional: Docker (for container runs)
 - Optional: OS API key for live Ordnance Survey tools
+- Optional: NOMIS credentials for higher-rate statistical access
 
 ## Install
 
@@ -172,6 +173,9 @@ Published tags:
 - `<sha>` for a specific commit image
 - `<version>` for release tags such as `0.7.0`
 
+For the Docker MCP catalog submission draft and exact registry metadata, see
+`docs/docker_mcp_catalog_submission.md`.
+
 For proxied networks, pass the same build args explicitly if you are using the
 top-level Dockerfile outside the devcontainer flow:
 
@@ -192,7 +196,6 @@ Run HTTP transport:
 ```bash
 docker run --rm -p 8000:8000 \
   -e OS_API_KEY=your-api-key-here \
-  -e ONS_LIVE_ENABLED=true \
   mcp-geo-server \
   uvicorn server.main:app --host 0.0.0.0 --port 8000
 ```
@@ -202,7 +205,6 @@ Run STDIO (for MCP desktop clients):
 ```bash
 docker run --rm -i \
   -e OS_API_KEY=your-api-key-here \
-  -e ONS_LIVE_ENABLED=true \
   mcp-geo-server
 ```
 

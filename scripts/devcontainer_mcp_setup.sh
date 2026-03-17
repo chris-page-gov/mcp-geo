@@ -60,7 +60,7 @@ if codex mcp get "$legacy_server_name" >/dev/null 2>&1; then
 fi
 
 env_args=()
-for var in OS_API_KEY ONS_API_KEY ONS_LIVE_ENABLED LOG_LEVEL STDIO_KEY BEARER_TOKENS; do
+for var in OS_API_KEY ONS_LIVE_ENABLED LOG_LEVEL STDIO_KEY BEARER_TOKENS; do
   if [[ -n "${!var:-}" ]]; then
     env_args+=(--env "$var=${!var}")
   fi

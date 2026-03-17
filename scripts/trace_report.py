@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import sys
 import zipfile
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.trace_utils import (
+from scripts.trace_utils import (  # noqa: E402
     classify_startup_discovery,
     classify_tool_search_usage,
     extract_fallback_responses,
@@ -26,7 +27,6 @@ from scripts.trace_utils import (
     summarize_methods,
     summarize_upstream_log,
 )
-from server.audit.normalise import write_event_ledger
 
 DEFAULT_SESSION_ROOT = Path("logs") / "sessions"
 
@@ -36,9 +36,18 @@ def _load_session_meta(files: dict[str, Path]) -> dict[str, Any]:
     if not session_path or not session_path.exists():
         return {}
     try:
-        return json.loads(session_path.read_text(encoding="utf-8"))
+        payload = json.loads(session_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return {}
+    if not isinstance(payload, dict):
+        return {}
+    return payload
+
+
+def _write_event_ledger(session_dir: Path) -> Path:
+    audit_module: Any = importlib.import_module("server.audit.normalise")
+    write_event_ledger = audit_module.write_event_ledger
+    return Path(write_event_ledger(session_dir))
 
 
 def _build_summary(
@@ -58,13 +67,14 @@ def _build_summary(
         if request.get("method") == "tools/call" and isinstance(request.get("tool"), str)
     )
     error_counts: Counter[str] = Counter(
-        str(response.get("code") or "UNKNOWN")
-        for response in responses
-        if response.get("is_error")
+        str(response.get("code") or "UNKNOWN") for response in responses if response.get("is_error")
     )
     timestamps = [ts for summary in mcp_summaries for ts in summary["timestamps"]]
     duration = (max(timestamps) - min(timestamps)) if timestamps else None
-    initialize = next((request for request in requests if request.get("method") == "initialize"), None)
+    initialize = next(
+        (request for request in requests if request.get("method") == "initialize"),
+        None,
+    )
     first_useful = next(
         (
             request
@@ -83,7 +93,7 @@ def _build_summary(
     fallback_responses = extract_fallback_responses(responses)
 
     summary = {
-        "generatedAt": datetime.now(tz=timezone.utc).isoformat(),
+        "generatedAt": datetime.now(tz=UTC).isoformat(),
         "session": {
             "sessionId": session_meta.get("sessionId", session_dir.name),
             "mode": session_meta.get("mode", "unknown"),
@@ -238,7 +248,12 @@ def _build_report(
     return "\n".join(lines).strip() + "\n"
 
 
-def _bundle_zip(session_dir: Path, report_path: Path, summary_path: Path, files: dict[str, Path]) -> Path:
+def _bundle_zip(
+    session_dir: Path,
+    report_path: Path,
+    summary_path: Path,
+    files: dict[str, Path],
+) -> Path:
     bundle_path = session_dir / "bundle.zip"
     skip_paths = {report_path.resolve(), summary_path.resolve(), bundle_path.resolve()}
     with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -266,7 +281,7 @@ def main() -> int:
         raise SystemExit(f"Session directory not found: {session_dir}")
 
     files = find_trace_files(session_dir)
-    ledger_path = write_event_ledger(session_dir)
+    ledger_path = _write_event_ledger(session_dir)
     files["eventLedger"] = ledger_path
 
     mcp_summaries = []

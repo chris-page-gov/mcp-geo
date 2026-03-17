@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from datetime import datetime, timezone
+from collections.abc import Iterable, Mapping
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 DEFAULT_SESSION_ROOT = Path("logs") / "sessions"
 DOCKER_LOCAL_WRAPPER_NAMES = {"claude-mcp-local", "codex-mcp-local", "mcp-docker-local"}
@@ -39,7 +40,15 @@ def build_ui_event_env(
 def _has_scoped_tools_list_params(params: Mapping[str, Any]) -> bool:
     return any(
         params.get(key) is not None
-        for key in ("query", "q", "toolset", "includeToolsets", "excludeToolsets", "mode", "category")
+        for key in (
+            "query",
+            "q",
+            "toolset",
+            "includeToolsets",
+            "excludeToolsets",
+            "mode",
+            "category",
+        )
     )
 
 
@@ -130,8 +139,12 @@ def parse_mcp_trace(path: Path, transport: str) -> dict[str, Any]:
             method = extract_method(record)
             if not method:
                 continue
-            payload = record.get("json") if isinstance(record.get("json"), dict) else {}
-            req_id = record.get("id") or payload.get("id")
+            payload = record.get("json")
+            if not isinstance(payload, dict):
+                payload = {}
+            req_id = record.get("id")
+            if req_id is None:
+                req_id = payload.get("id")
             params = extract_params(record)
             tool = extract_tool_name(params) if method == "tools/call" else None
             requests.append(
@@ -155,18 +168,19 @@ def parse_mcp_trace(path: Path, transport: str) -> dict[str, Any]:
             error_code = None
             error_message = None
             is_error = False
-            result = payload.get("result")
+            result_payload = payload.get("result")
+            result = result_payload if isinstance(result_payload, dict) else {}
             if isinstance(payload.get("error"), dict):
                 is_error = True
                 error_code = payload["error"].get("code")
                 error_message = payload["error"].get("message")
             else:
-                if isinstance(result, dict):
-                    data = result.get("data") if isinstance(result.get("data"), dict) else {}
-                    if result.get("isError") or (isinstance(data, dict) and data.get("isError")):
-                        is_error = True
-                        error_code = data.get("code") or result.get("code")
-                        error_message = data.get("message") or result.get("message")
+                data = result.get("data")
+                data_dict = data if isinstance(data, dict) else {}
+                if result.get("isError") or data_dict.get("isError"):
+                    is_error = True
+                    error_code = data_dict.get("code") or result.get("code")
+                    error_message = data_dict.get("message") or result.get("message")
             responses.append(
                 {
                     "id": resp_id,
@@ -174,7 +188,7 @@ def parse_mcp_trace(path: Path, transport: str) -> dict[str, Any]:
                     "code": error_code,
                     "message": error_message,
                     "payload": payload,
-                    "result": result if isinstance(result, dict) else {},
+                    "result": result,
                     "ts": ts,
                     "transport": transport,
                 }
@@ -220,7 +234,7 @@ def format_bytes(value: int) -> str:
 def format_time(ts: float | None) -> str:
     if ts is None:
         return "n/a"
-    return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+    return datetime.fromtimestamp(ts, tz=UTC).isoformat()
 
 
 def first_useful_tool_request(requests: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -241,7 +255,11 @@ def classify_startup_discovery(requests: list[dict[str, Any]]) -> str:
         if useful and request is useful:
             break
         pre_useful.append(request)
-    discovery = [request for request in pre_useful if request.get("method") in {"tools/list", "tools/search", "resources/list"}]
+    discovery = [
+        request
+        for request in pre_useful
+        if request.get("method") in {"tools/list", "tools/search", "resources/list"}
+    ]
     if not discovery:
         return "direct_call"
     if any(request.get("method") == "tools/search" for request in discovery):

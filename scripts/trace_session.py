@@ -14,15 +14,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.trace_utils import DOCKER_LOCAL_WRAPPER_NAMES
-from scripts.trace_utils import build_ui_event_env
-
+from scripts.trace_utils import DOCKER_LOCAL_WRAPPER_NAMES, build_ui_event_env  # noqa: E402
 
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
-SENSITIVE_ENV = {"OS_API_KEY", "ONS_API_KEY", "STDIO_KEY", "BEARER_TOKENS"}
+SENSITIVE_ENV = {"OS_API_KEY", "STDIO_KEY", "BEARER_TOKENS"}
 ENV_SNAPSHOT_KEYS = [
     "OS_API_KEY",
-    "ONS_API_KEY",
     "STDIO_KEY",
     "BEARER_TOKENS",
     "ONS_LIVE_ENABLED",

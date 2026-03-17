@@ -22,7 +22,8 @@ git submodule update --init --recursive
 Set env vars for live data when you have keys:
 - `OS_API_KEY` (required) for Ordnance Survey tools
 - `OS_API_KEY_FILE` (optional) path to a local secret file (used when `OS_API_KEY` is unset)
-- `ONS_LIVE_ENABLED=true` for live ONS datasets
+- `NOMIS_UID` and `NOMIS_SIGNATURE` (optional) for higher-rate NOMIS access
+- `ONS_LIVE_ENABLED=true` only if you have explicitly disabled live ONS mode elsewhere
 - `LOG_JSON=true` to force JSON logs (now default)
 - `MCP_TOOLS_DEFAULT_TOOLSET=starter` to reduce startup `tools/list` payloads for STDIO clients
 
@@ -191,8 +192,8 @@ depending on the Inspector version).
 4) Click `Connect`.
 
 Note: for HTTP connections, Inspector does not pass environment variables.
-Set `ONS_LIVE_ENABLED=true` and `OS_API_KEY` on the server process
-before starting `uvicorn`.
+Set `OS_API_KEY` on the server process before starting `uvicorn`.
+`ONS_LIVE_ENABLED` defaults to `true` unless you have disabled it.
 
 If you prefer STDIO instead, use the repo wrapper:
 
@@ -201,7 +202,7 @@ If you prefer STDIO instead, use the repo wrapper:
 3) In `Environment Variables`, add:
    - `OS_API_KEY` (required for OS tools), or
    - `OS_API_KEY_FILE` (path to a file containing the OS key)
-   - `ONS_LIVE_ENABLED=true` (optional, enables live ONS tools)
+   - `ONS_LIVE_ENABLED=true` only if you have explicitly disabled live ONS tools elsewhere
 4) Click `Connect`.
 
 Note: STDIO mode runs the server process via the Inspector proxy, so it is best
@@ -456,7 +457,6 @@ Run STDIO:
 ```bash
 docker run --rm -i \
   -e OS_API_KEY=your-api-key-here \
-  -e ONS_LIVE_ENABLED=true \
   mcp-geo-server
 ```
 

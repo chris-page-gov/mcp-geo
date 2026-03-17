@@ -51,6 +51,12 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining Docker MCP catalog submission readiness in the repo, including
+  the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active
+  doc cleanup that standardizes on `OS_API_KEY` plus optional
+  `NOMIS_UID` / `NOMIS_SIGNATURE`, and the internal submission draft under
+  `docs/docker_mcp_catalog_submission.md` for the follow-on
+  `docker/mcp-registry` PR.
 - Published release `v0.7.0`, including the post-`0.6.0` changelog/release
   packaging, the merged docs-only follow-up for
   `docs/reports/Working with Codex redacted.docx`, and the validated

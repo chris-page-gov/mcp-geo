@@ -5,11 +5,17 @@ import subprocess
 import sys
 from argparse import Namespace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 import scripts.host_benchmark as host_benchmark
-from scripts.host_benchmark import load_scenario_pack, score_session, summarize_sessions, write_score_artifacts
+from scripts.host_benchmark import (
+    load_scenario_pack,
+    score_session,
+    summarize_sessions,
+    write_score_artifacts,
+)
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -32,7 +38,13 @@ def _response(ts: float, req_id: int, result: dict) -> dict:
     }
 
 
-def _make_session_dir(tmp_path: Path, name: str, metadata: dict, trace_rows: list[dict], ui_events: list[dict] | None = None) -> Path:
+def _make_session_dir(
+    tmp_path: Path,
+    name: str,
+    metadata: dict,
+    trace_rows: list[dict],
+    ui_events: list[dict] | None = None,
+) -> Path:
     session_dir = tmp_path / name
     session_dir.mkdir()
     (session_dir / "session.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
@@ -74,9 +86,20 @@ def test_score_session_classifies_fallback_only_cli_run(tmp_path: Path) -> None:
             _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
             _request(1.2, 2, "tools/list", {"query": "postcode", "limit": 5}),
             _response(1.3, 2, {"tools": [{"name": "os_places_by_postcode"}]}),
-            _request(1.4, 3, "tools/call", {"name": "os_mcp_route_query", "arguments": {"query": scenario["prompt"]}}),
-            _response(1.5, 3, {"ok": True, "data": {"recommended_tool": "os_apps.render_geography_selector"}}),
-            _request(1.6, 4, "tools/call", {"name": "os_apps_render_geography_selector", "arguments": {}}),
+            _request(
+                1.4,
+                3,
+                "tools/call",
+                {"name": "os_mcp_route_query", "arguments": {"query": scenario["prompt"]}},
+            ),
+            _response(
+                1.5,
+                3,
+                {"ok": True, "data": {"recommended_tool": "os_apps.render_geography_selector"}},
+            ),
+            _request(
+                1.6, 4, "tools/call", {"name": "os_apps_render_geography_selector", "arguments": {}}
+            ),
             _response(
                 1.8,
                 4,
@@ -117,26 +140,42 @@ def test_score_session_classifies_ui_runtime_and_resources(tmp_path: Path) -> No
             "scenarioPack": pack["id"],
         },
         [
-            _request(1.0, 1, "initialize", {"capabilities": {"extensions": {"io.modelcontextprotocol/ui": {}}}}),
+            _request(
+                1.0,
+                1,
+                "initialize",
+                {"capabilities": {"extensions": {"io.modelcontextprotocol/ui": {}}}},
+            ),
             _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
-            _request(1.2, 2, "tools/call", {"name": "os_apps_render_geography_selector", "arguments": {}}),
+            _request(
+                1.2, 2, "tools/call", {"name": "os_apps_render_geography_selector", "arguments": {}}
+            ),
             _response(
                 1.3,
                 2,
                 {
                     "ok": True,
                     "data": {"tool": "os_apps.render_geography_selector"},
-                    "content": [{"type": "resource_link", "uri": "ui://mcp-geo/geography-selector"}],
+                    "content": [
+                        {"type": "resource_link", "uri": "ui://mcp-geo/geography-selector"}
+                    ],
                 },
             ),
             _request(1.4, 3, "resources/read", {"uri": "ui://mcp-geo/geography-selector"}),
-            _response(1.5, 3, {"contents": [{"uri": "ui://mcp-geo/geography-selector", "mimeType": "text/html"}]}),
-            _request(1.6, 4, "tools/call", {"name": "os_apps_log_event", "arguments": {"eventType": "host_ready"}}),
+            _response(
+                1.5,
+                3,
+                {"contents": [{"uri": "ui://mcp-geo/geography-selector", "mimeType": "text/html"}]},
+            ),
+            _request(
+                1.6,
+                4,
+                "tools/call",
+                {"name": "os_apps_log_event", "arguments": {"eventType": "host_ready"}},
+            ),
             _response(1.7, 4, {"ok": True, "data": {"status": "logged"}}),
         ],
-        ui_events=[
-            {"timestamp": 1.65, "eventType": "host_ready", "source": "geography-selector"}
-        ],
+        ui_events=[{"timestamp": 1.65, "eventType": "host_ready", "source": "geography-selector"}],
     )
 
     evidence, score = score_session(session_dir, scenario)
@@ -166,7 +205,12 @@ def test_score_session_penalizes_unrecovered_but_normalized_error(tmp_path: Path
         [
             _request(1.0, 1, "initialize", {"capabilities": {}}),
             _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
-            _request(1.2, 2, "tools/call", {"name": "admin_lookup_area_geometry", "arguments": {"id": "bad"}}),
+            _request(
+                1.2,
+                2,
+                "tools/call",
+                {"name": "admin_lookup_area_geometry", "arguments": {"id": "bad"}},
+            ),
             {
                 "ts": 1.3,
                 "direction": "server->client",
@@ -187,7 +231,10 @@ def test_score_session_penalizes_unrecovered_but_normalized_error(tmp_path: Path
 
     assert score["categories"]["errorRecovery"]["status"] == "partial"
     assert score["categories"]["errorRecovery"]["score"] == 0.5
-    assert score["categories"]["errorRecovery"]["detail"] == "normalized error observed without recovery"
+    assert (
+        score["categories"]["errorRecovery"]["detail"]
+        == "normalized error observed without recovery"
+    )
 
 
 def test_score_session_fails_unnormalized_error(tmp_path: Path) -> None:
@@ -208,7 +255,12 @@ def test_score_session_fails_unnormalized_error(tmp_path: Path) -> None:
         [
             _request(1.0, 1, "initialize", {"capabilities": {}}),
             _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
-            _request(1.2, 2, "tools/call", {"name": "admin_lookup_area_geometry", "arguments": {"id": "bad"}}),
+            _request(
+                1.2,
+                2,
+                "tools/call",
+                {"name": "admin_lookup_area_geometry", "arguments": {"id": "bad"}},
+            ),
             {
                 "ts": 1.3,
                 "direction": "server->client",
@@ -275,8 +327,7 @@ def test_build_temp_stdio_server_keeps_host_ui_event_path_for_codex_wrapper(tmp_
 
     assert server["env"]["UI_EVENT_LOG_PATH"] == str(session_dir / "ui-events.jsonl")
     assert (
-        server["env"]["MCP_GEO_DOCKER_UI_EVENT_LOG_PATH"]
-        == "/logs/sessions/trace/ui-events.jsonl"
+        server["env"]["MCP_GEO_DOCKER_UI_EVENT_LOG_PATH"] == "/logs/sessions/trace/ui-events.jsonl"
     )
 
 
@@ -284,9 +335,15 @@ def test_run_codex_cli_refuses_to_clobber_non_stdio_server(monkeypatch, tmp_path
     removed: list[str] = []
     added: list[tuple[str, dict]] = []
 
-    monkeypatch.setattr(host_benchmark, "_codex_get_server", lambda _name: {"transport": {"type": "http", "url": "http://127.0.0.1:8000/mcp"}})
+    monkeypatch.setattr(
+        host_benchmark,
+        "_codex_get_server",
+        lambda _name: {"transport": {"type": "http", "url": "http://127.0.0.1:8000/mcp"}},
+    )
     monkeypatch.setattr(host_benchmark, "_codex_remove_server", lambda name: removed.append(name))
-    monkeypatch.setattr(host_benchmark, "_codex_add_stdio_server", lambda name, config: added.append((name, config)))
+    monkeypatch.setattr(
+        host_benchmark, "_codex_add_stdio_server", lambda name, config: added.append((name, config))
+    )
     monkeypatch.setattr(host_benchmark, "_codex_client_version", lambda: "codex-cli test")
 
     args = Namespace(
@@ -304,6 +361,91 @@ def test_run_codex_cli_refuses_to_clobber_non_stdio_server(monkeypatch, tmp_path
 
     assert removed == []
     assert added == []
+
+
+def test_run_codex_cli_does_not_forward_unused_ons_api_key(monkeypatch, tmp_path: Path) -> None:
+    captured_inherited_env: dict[str, str] = {}
+
+    monkeypatch.setenv("OS_API_KEY", "os-secret")
+    monkeypatch.setenv("ONS_API_KEY", "unused-ons-secret")
+    monkeypatch.setattr(
+        host_benchmark,
+        "load_scenario_pack",
+        lambda _path: {
+            "id": "pack",
+            "scenarios": [{"id": "tool_search_postcode", "prompt": "Find a postcode"}],
+        },
+    )
+    monkeypatch.setattr(
+        host_benchmark,
+        "_scenario_by_id",
+        lambda pack, scenario_id: next(
+            scenario for scenario in pack["scenarios"] if scenario["id"] == scenario_id
+        ),
+    )
+    monkeypatch.setattr(host_benchmark, "_codex_get_server", lambda _name: None)
+    monkeypatch.setattr(host_benchmark, "_codex_remove_server", lambda _name: None)
+    monkeypatch.setattr(host_benchmark, "_codex_add_stdio_server", lambda _name, _config: None)
+    monkeypatch.setattr(host_benchmark, "_restore_server", lambda _name, _config: None)
+    monkeypatch.setattr(host_benchmark, "_codex_client_version", lambda: "codex-cli test")
+    monkeypatch.setattr(host_benchmark, "_write_initial_session_meta", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        host_benchmark,
+        "_build_temp_stdio_server",
+        lambda session_dir, *, wrapper, inherited_env: (
+            captured_inherited_env.update(inherited_env)
+            or {"command": "python", "args": [], "env": {}}
+        ),
+    )
+    monkeypatch.setattr(
+        host_benchmark.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(
+        host_benchmark,
+        "score_session",
+        lambda _session_dir, _scenario: ({}, {}),
+    )
+    monkeypatch.setattr(host_benchmark, "write_score_artifacts", lambda *_args, **_kwargs: None)
+
+    args = Namespace(
+        scenario_id="tool_search_postcode",
+        scenario_pack=str(host_benchmark.DEFAULT_SCENARIO_PACK),
+        model="gpt-5.4",
+        server_name="mcp-geo",
+        wrapper=str(host_benchmark.REPO_ROOT / "scripts" / "codex-mcp-local"),
+        session_root=str(tmp_path / "logs" / "sessions"),
+        name="forwarding-check",
+    )
+
+    assert host_benchmark.cmd_run_codex_cli(args) == 0
+    assert captured_inherited_env["OS_API_KEY"] == "os-secret"
+    assert "ONS_API_KEY" not in captured_inherited_env
+
+
+def test_registered_tool_names_uses_defensive_server_import(monkeypatch) -> None:
+    monkeypatch.setattr(host_benchmark, "_REGISTERED_TOOL_NAMES", None)
+
+    def fake_import_module(name: str):
+        if name == "server.mcp.tools":
+            return SimpleNamespace()
+        if name == "tools.registry":
+            return SimpleNamespace(all_tools=lambda: [SimpleNamespace(name="os_places.search")])
+        if name == "server.tool_naming":
+            return SimpleNamespace(
+                resolve_tool_name=lambda requested, _originals: (
+                    "os_places.search" if requested == "os_places_search" else requested
+                )
+            )
+        if name.startswith("tools."):
+            raise AssertionError(f"unexpected direct tool import: {name}")
+        raise AssertionError(f"unexpected import: {name}")
+
+    monkeypatch.setattr(host_benchmark.importlib, "import_module", fake_import_module)
+
+    assert host_benchmark._normalize_tool_name("os_places_search") == "os_places.search"
+    assert host_benchmark._registered_tool_names() == ("os_places.search",)
 
 
 def test_summarize_sessions_builds_three_track_report(tmp_path: Path) -> None:

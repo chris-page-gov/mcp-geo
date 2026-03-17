@@ -22,14 +22,18 @@ action and not a formal proposal.
 This section is for first-time users.
 You do **not** need to understand MCP or the internal architecture — just follow the steps and your AI assistant will gain UK geographic and statistics awareness.
 
-### 1) Get access keys (2 minutes)
+### 1) Get access key (2 minutes)
 
-Create free developer keys:
+Create a free Ordnance Survey Data Hub key:
 
 - Ordnance Survey Data Hub: [https://osdatahub.os.uk/](https://osdatahub.os.uk/)
-- Office for National Statistics: [https://developer.ons.gov.uk/](https://developer.ons.gov.uk/)
 
-You only need the API keys — no datasets need downloading.
+Optional:
+
+- `NOMIS_UID` and `NOMIS_SIGNATURE` if you want higher-rate NOMIS access
+
+You only need the OS API key for the default live setup. The ONS live endpoints
+used by MCP-Geo do not require a separate ONS API key.
 
 ### 2) Run the server in a folder
 
@@ -39,11 +43,14 @@ cd mcp-geo
 cp .env.example .env
 ```
 
-Open `.env` and paste your keys:
+Open `.env` and paste the required key:
 
 ```text
 OS_API_KEY=your-key-here
-ONS_API_KEY=your-key-here
+
+# Optional: higher-rate NOMIS access
+NOMIS_UID=your-nomis-uid
+NOMIS_SIGNATURE=your-nomis-signature
 ```
 
 Now start the MCP server:
@@ -262,6 +269,8 @@ Available tags:
 - `<version>` for release tags such as `0.7.0`
 
 The published image targets `linux/amd64` and `linux/arm64`.
+For the Docker MCP catalog submission draft and validation checklist, see
+[`docs/docker_mcp_catalog_submission.md`](docs/docker_mcp_catalog_submission.md).
 
 Claude Desktop config example (STDIO transport):
 
@@ -695,6 +704,11 @@ state.
 - Include JSON schemas (input/output) when adding a tool.
 - Prefer incremental refactors; avoid unrelated changes in feature PRs.
 
+## Security
+
+Report vulnerabilities through GitHub Private Vulnerability Reporting for this
+repository. See [SECURITY.md](SECURITY.md) for reporting instructions and scope.
+
 ## Enriched Address Data
 
 `os_places.*` currently return raw OS Places fields only. Enrichment via local
@@ -745,7 +759,7 @@ without code changes.
 
 ## License
 
-MIT
+See [LICENSE](LICENSE).
 
 ## MCP STDIO Adapter (Local Dev)
 

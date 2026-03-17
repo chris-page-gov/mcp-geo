@@ -9,7 +9,7 @@ Describe the project setup so teams can reproduce development, testing, and trou
 - Python 3.11+
 - Node.js 20 for playground and Playwright
 - Docker (for containerized server and optional PostGIS)
-- OS and ONS API credentials for live calls
+- OS API credential for live OS calls and optional NOMIS credentials for higher-rate stats access
 
 ## Recommended Path: Devcontainer
 
@@ -45,7 +45,7 @@ Primary runtime variables are documented in:
 
 Current pattern supports:
 
-- direct key injection (`OS_API_KEY`, `ONS_API_KEY`)
+- direct key injection (`OS_API_KEY`)
 - file-based secret loading (`OS_API_KEY_FILE`)
 - wrapper-assisted loading for Claude workflows (`scripts/claude-mcp-local`)
 

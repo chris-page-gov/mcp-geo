@@ -261,7 +261,6 @@ fi
 # Hydrate API secrets from host env/secret file/launchctl/.env without requiring
 # hardcoded values in host MCP config.
 hydrate_env_secret "OS_API_KEY"
-hydrate_env_secret "ONS_API_KEY"
 
 case "$POSTGIS_STORAGE_MODE" in
   volume|bind)
@@ -389,7 +388,6 @@ env_args=(
 
 for var in \
   OS_API_KEY \
-  ONS_API_KEY \
   STDIO_KEY \
   BEARER_TOKENS \
   MCP_STDIO_UI_SUPPORTED \

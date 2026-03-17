@@ -36,7 +36,6 @@ export default defineConfig({
       env: {
         AUDIT_PACK_ROOT: auditPackRoot,
         OS_API_KEY: process.env.OS_API_KEY || "",
-        ONS_API_KEY: process.env.ONS_API_KEY || "",
         BOUNDARY_CACHE_DSN: process.env.BOUNDARY_CACHE_DSN || "",
         MCP_GEO_LIVE_DB_DSN: process.env.MCP_GEO_LIVE_DB_DSN || "",
         ROUTE_GRAPH_ENABLED: process.env.ROUTE_GRAPH_ENABLED || "",
