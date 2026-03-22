@@ -3,7 +3,15 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-16
+Last updated: 2026-03-18
+
+## Tool error structured-content interop (2026-03-18)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MCP-ERR-1 Suppress invalid structuredContent on tool errors | done | none | Updated `server/stdio_adapter.py` and `server/mcp/http_transport.py` so tool-error responses no longer emit `structuredContent`. This prevents clients that validate structured payloads against success-only output schemas from rejecting valid error results before surfacing them. Added focused regressions in `tests/test_stdio_adapter_direct.py` and `tests/test_mcp_http.py` for `os_places.by_postcode` returning `NO_API_KEY`. |
 
 ## Docker MCP catalog readiness (2026-03-16)
 
@@ -13,6 +21,7 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | DMC-REP-1 Repo compliance hardening and Docker metadata cleanup | done | none | Added root `LICENSE` and `SECURITY.md`, explicit MIT package metadata in `pyproject.toml`, OCI image labels in `Dockerfile`, and aligned active Docker-facing docs on `OS_API_KEY` as the required live credential with `NOMIS_UID` / `NOMIS_SIGNATURE` as optional higher-rate credentials. Removed stale `ONS_API_KEY` forwarding from active wrapper/trace/benchmark/playwright/CI surfaces and added focused regression coverage in `tests/test_devcontainer_codex_setup.py`, `tests/test_trace_session.py`, and `tests/test_host_benchmark.py`. |
 | DMC-REP-2 Internal Docker catalog submission draft | done | DMC-REP-1 | Added `docs/docker_mcp_catalog_submission.md` capturing the chosen Docker-built submission path, registry metadata, config secret mapping, and the exact `task validate` / `task build -- --tools` / `task catalog` validation flow for the future `docker/mcp-registry` PR. |
+| DMC-FIX-4 Secret placeholder normalization and fallback loading | done | DMC-REP-2 | Hardened `server/config.py` so placeholder-style secret values such as `${env:OS_API_KEY}` are treated as unset, `OS_API_KEY_FILE` can still hydrate the real secret, and the minimal settings shim used without `pydantic-settings` now reads environment-backed defaults. Added focused regressions in `tests/test_config_secret_file.py`. |
 | DMC-SUB-3 External registry submission | pending | DMC-REP-2 | Remaining work outside this repo: create `servers/mcp-geo/server.yaml` in `docker/mcp-registry`, pin it to the merged readiness SHA, run Docker's registry validation/build/catalog commands, and open the submission PR. |
 
 ## Release CI tag follow-up (2026-03-16)

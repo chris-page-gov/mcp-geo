@@ -10,12 +10,22 @@ All notable changes to this project will be documented in this file.
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
 
+### Fixed
+- MCP HTTP and STDIO tool responses now omit `structuredContent` for error
+  results, preventing clients such as Claude from validating error payloads
+  against success-only output schemas. Added focused postcode-tool regressions
+  covering the `NO_API_KEY` path across both transports.
+
 ### Changed
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
   on release-tag pushes, limiting it to pull requests and the default branch so
   `v*` release tags do not fail on the action's unsupported tag-push path. The
   scorecard artifact upload now also runs only when the SARIF output exists, so
   unsupported or upstream-failed runs do not add a second missing-file error.
+- Hardened secret loading in `server/config.py` so placeholder-style values
+  such as `${env:OS_API_KEY}` are treated as unset, `*_FILE` fallbacks can
+  still hydrate the real secret, and minimal runtimes without
+  `pydantic-settings` still read environment-backed settings.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and

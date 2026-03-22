@@ -1,4 +1,5 @@
 import os
+import re
 from collections.abc import MutableMapping
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
@@ -17,6 +18,13 @@ else:
     except ImportError:  # pragma: no cover - optional dependency fallback
         class _PydanticBaseSettings:  # minimal shim for tests without pydantic-settings
             def __init__(self, **kwargs):
+                annotations = getattr(type(self), "__annotations__", {})
+                for key in annotations:
+                    if key in kwargs:
+                        value = kwargs[key]
+                    else:
+                        value = os.environ.get(key, getattr(type(self), key, None))
+                    setattr(self, key, value)
                 for key, value in kwargs.items():
                     setattr(self, key, value)
 
@@ -124,11 +132,38 @@ class Settings(_PydanticBaseSettings):
     }
 
 
+_ENV_PLACEHOLDER_RE = re.compile(r"^\$\{(?:env:)?([A-Z0-9_]+)\}$")
+
+
+def _is_placeholder_secret_value(key: str, value: str) -> bool:
+    candidate = value.strip()
+    if not candidate:
+        return False
+    if candidate == key:
+        return True
+    match = _ENV_PLACEHOLDER_RE.fullmatch(candidate)
+    if match:
+        return match.group(1) == key
+    return False
+
+
+def normalize_env_secret(
+    key: str,
+    environ: MutableMapping[str, str] | None = None,
+) -> None:
+    env = environ if environ is not None else os.environ
+    value = (env.get(key) or "").strip()
+    if not _is_placeholder_secret_value(key, value):
+        return
+    env.pop(key, None)
+
+
 def hydrate_env_secret_from_file(
     key: str,
     environ: MutableMapping[str, str] | None = None,
 ) -> None:
     env = environ if environ is not None else os.environ
+    normalize_env_secret(key, env)
     value = (env.get(key) or "").strip()
     if value:
         return
