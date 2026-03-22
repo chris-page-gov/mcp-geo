@@ -447,6 +447,20 @@ def _default_structured_content(data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _should_emit_structured_content(status: int, data: Any) -> bool:
+    """Only emit structuredContent for successful tool results.
+
+    Some MCP clients validate structuredContent against the tool output schema
+    even when the tool returned an error payload. Most tool output schemas in
+    this repo describe the success shape only, so emitting structuredContent on
+    error results causes client-side schema failures before the error can be
+    surfaced.
+    """
+    if not (200 <= status < 300):
+        return False
+    return not (isinstance(data, dict) and data.get("isError") is True)
+
+
 def _read_result(
     uri: str,
     mime_type: Optional[str],
@@ -961,11 +975,12 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
             result["content"] = content_override
         else:
             result["content"] = _tool_content_from_data(data, allow_resource=allow_resource)
-        structured = data.get("structuredContent")
-        if isinstance(structured, dict):
-            result["structuredContent"] = structured
-        else:
-            result["structuredContent"] = _default_structured_content(data)
+        if _should_emit_structured_content(status, data):
+            structured = data.get("structuredContent")
+            if isinstance(structured, dict):
+                result["structuredContent"] = structured
+            else:
+                result["structuredContent"] = _default_structured_content(data)
         meta = data.get("_meta")
         if isinstance(meta, dict):
             result["_meta"] = meta

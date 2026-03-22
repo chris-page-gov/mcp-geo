@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-25
+Last updated: 2026-04-05
 Owner: @chris-page-gov
 
 ## Purpose
@@ -88,6 +88,11 @@ assumptions change.
   `NOMIS_UID` / `NOMIS_SIGNATURE`, and the internal submission draft under
   `docs/docker_mcp_catalog_submission.md` for the follow-on
   `docker/mcp-registry` PR.
+- Maintaining the 2026-03-17 secret-loading hardening follow-up in
+  `server/config.py`, including placeholder-value normalization for
+  `${env:OS_API_KEY}`-style injections, `OS_API_KEY_FILE` fallback hydration,
+  and the minimal-settings fallback path that now reads environment-backed
+  defaults even when `pydantic-settings` is unavailable.
 - Published release `v0.7.0`, including the post-`0.6.0` changelog/release
   packaging, the merged docs-only follow-up for
   `docs/reports/Working with Codex redacted.docx`, and the validated
