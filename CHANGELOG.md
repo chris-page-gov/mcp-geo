@@ -24,6 +24,12 @@ All notable changes to this project will be documented in this file.
   excerpts plus verified property-detail URLs for Westminster, Manchester, and
   York examples.
 
+### Fixed
+- MCP HTTP and STDIO tool responses now omit `structuredContent` for error
+  results, preventing clients such as Claude from validating error payloads
+  against success-only output schemas. Added focused postcode-tool regressions
+  covering the `NO_API_KEY` path across both transports.
+
 ### Changed
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
   on release-tag pushes, limiting it to pull requests and the default branch so
