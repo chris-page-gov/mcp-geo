@@ -1,8 +1,8 @@
 import os
 import re
-from collections.abc import MutableMapping
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, get_origin
 
 try:
     from dotenv import load_dotenv
@@ -18,15 +18,7 @@ else:
     except ImportError:  # pragma: no cover - optional dependency fallback
         class _PydanticBaseSettings:  # minimal shim for tests without pydantic-settings
             def __init__(self, **kwargs):
-                annotations = getattr(type(self), "__annotations__", {})
-                for key in annotations:
-                    if key in kwargs:
-                        value = kwargs[key]
-                    else:
-                        value = os.environ.get(key, getattr(type(self), key, None))
-                    setattr(self, key, value)
-                for key, value in kwargs.items():
-                    setattr(self, key, value)
+                _populate_fallback_settings(self, kwargs, os.environ)
 
 
 class Settings(_PydanticBaseSettings):
@@ -133,6 +125,54 @@ class Settings(_PydanticBaseSettings):
 
 
 _ENV_PLACEHOLDER_RE = re.compile(r"^\$\{(?:env:)?([A-Z0-9_]+)\}$")
+
+
+def _coerce_fallback_setting_value(value: Any, annotation: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+
+    target = annotation
+    if get_origin(target) is ClassVar:
+        return value
+
+    candidate = value.strip()
+    if target is bool:
+        lowered = candidate.lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+        return value
+    if target is int:
+        try:
+            return int(candidate)
+        except ValueError:
+            return value
+    if target is float:
+        try:
+            return float(candidate)
+        except ValueError:
+            return value
+    return value
+
+
+def _populate_fallback_settings(
+    instance: Any,
+    overrides: Mapping[str, Any],
+    environ: Mapping[str, str],
+) -> None:
+    annotations = getattr(type(instance), "__annotations__", {})
+    for key, annotation in annotations.items():
+        if get_origin(annotation) is ClassVar:
+            continue
+        if key in overrides:
+            value = overrides[key]
+        else:
+            value = environ.get(key, getattr(type(instance), key, None))
+        setattr(instance, key, _coerce_fallback_setting_value(value, annotation))
+    for key, value in overrides.items():
+        if key not in annotations:
+            setattr(instance, key, value)
 
 
 def _is_placeholder_secret_value(key: str, value: str) -> bool:
