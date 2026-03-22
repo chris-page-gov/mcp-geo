@@ -1,4 +1,10 @@
-from server.config import Settings, hydrate_env_secret_from_file, normalize_env_secret
+from server.config import (
+    Settings,
+    _coerce_fallback_setting_value,
+    _populate_fallback_settings,
+    hydrate_env_secret_from_file,
+    normalize_env_secret,
+)
 
 
 def test_hydrate_env_secret_from_file_sets_key(tmp_path):
@@ -59,3 +65,36 @@ def test_settings_reads_env_without_pydantic_settings(monkeypatch):
     settings = Settings()
 
     assert settings.OS_API_KEY == "env-key"
+
+
+def test_coerce_fallback_setting_value_handles_basic_typed_env_values():
+    assert _coerce_fallback_setting_value("207", int) == 207
+    assert _coerce_fallback_setting_value("false", bool) is False
+    assert _coerce_fallback_setting_value("true", bool) is True
+    assert _coerce_fallback_setting_value("30.5", float) == 30.5
+
+
+def test_populate_fallback_settings_coerces_env_backed_defaults():
+    class DummySettings:
+        RATE_LIMIT_PER_MIN: int = 207
+        RATE_LIMIT_BYPASS: bool = False
+        ONS_CACHE_TTL: float = 60.0
+        LOG_JSON: bool = True
+        OS_API_KEY: str = ""
+
+    dummy = DummySettings()
+    env = {
+        "RATE_LIMIT_PER_MIN": "207",
+        "RATE_LIMIT_BYPASS": "false",
+        "ONS_CACHE_TTL": "30.5",
+        "LOG_JSON": "true",
+        "OS_API_KEY": "env-key",
+    }
+
+    _populate_fallback_settings(dummy, {}, env)
+
+    assert dummy.RATE_LIMIT_PER_MIN == 207
+    assert dummy.RATE_LIMIT_BYPASS is False
+    assert dummy.ONS_CACHE_TTL == 30.5
+    assert dummy.LOG_JSON is True
+    assert dummy.OS_API_KEY == "env-key"
