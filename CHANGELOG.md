@@ -35,6 +35,10 @@ All notable changes to this project will be documented in this file.
   and `./scripts/ruff-local` / `./scripts/mypy-local` now default to the same
   curated phased static-analysis slice that CI enforces. The active docs and CI
   configuration now describe and reuse that shared wrapper-defined gate.
+- The curated phased Ruff/mypy slice now also covers shared
+  `server/config.py` and `server/security.py` infrastructure, with Ruff
+  coverage widened to the directly related security and wrapper regression
+  tests.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and

@@ -61,9 +61,11 @@ assumptions change.
   logs. The host-side wrapper zero-argument path is now repaired for
   `scripts/ruff-local` and `scripts/mypy-local`, those wrapper defaults now
   define the active curated static-analysis slice, and CI plus
-  `scripts/check_non_runtime_quality.sh` reuse that shared gate directly.
-  Remaining review-driven work is the incremental expansion of those curated
-  static analysis slices.
+  `scripts/check_non_runtime_quality.sh` reuse that shared gate directly. The
+  first follow-on expansion now includes shared `server/config.py` and
+  `server/security.py` infrastructure, plus the directly related Ruff
+  regression tests. Remaining review-driven work is the next incremental
+  expansion beyond that shared config/security slice.
 - Maintaining Docker MCP catalog submission readiness in the repo, including
   the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active
   doc cleanup that standardizes on `OS_API_KEY` plus optional

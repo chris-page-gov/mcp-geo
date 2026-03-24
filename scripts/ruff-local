@@ -5,11 +5,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
 DEFAULT_ARGS=(
   check
+  server/config.py
+  server/security.py
   server/mcp/tools.py
   tools/os_mcp.py
   tools/os_peat.py
+  tests/test_logging_redaction.py
+  tests/test_main_observability_branches.py
   tests/test_os_peat.py
   tests/test_psr_peat_e2e.py
+  tests/test_run_local_tool.py
+  tests/test_security.py
   tests/test_evaluation_harness_full.py
   tests/test_os_mcp_route_query.py
 )

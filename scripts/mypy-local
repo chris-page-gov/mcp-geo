@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
 DEFAULT_ARGS=(
   --follow-imports=skip
+  server/config.py
+  server/security.py
   server/mcp/tools.py
   server/mcp/resource_catalog.py
   tools/os_mcp.py
