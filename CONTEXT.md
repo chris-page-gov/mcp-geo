@@ -92,7 +92,9 @@ assumptions change.
   `server/config.py`, including placeholder-value normalization for
   `${env:OS_API_KEY}`-style injections, `OS_API_KEY_FILE` fallback hydration,
   and the minimal-settings fallback path that now reads environment-backed
-  defaults even when `pydantic-settings` is unavailable.
+  defaults even when `pydantic-settings` is unavailable, coerces typed env
+  values, and treats empty env strings as unset so it matches the primary
+  `env_ignore_empty` behavior.
 - Published release `v0.7.0`, including the post-`0.6.0` changelog/release
   packaging, the merged docs-only follow-up for
   `docs/reports/Working with Codex redacted.docx`, and the validated
