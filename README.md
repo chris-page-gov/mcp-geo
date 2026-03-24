@@ -200,6 +200,10 @@ Then visit:
 
 Set `OS_API_KEY` in the environment (or `.env`) for all Ordnance Survey calls. The server assumes it is present; missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
+If MCP HTTP auth is enabled, only `GET /health` remains public. The raw HTTP
+tool, resource, metrics, and playground routes all require the same bearer auth
+policy as `POST /mcp`.
+
 ## Canonical Map Delivery Baseline
 
 Use this order for reliable cross-host map delivery:
@@ -525,7 +529,9 @@ Notes:
 
 ## Metrics
 
-Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`):
+Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`).
+When MCP HTTP auth is enabled, `/metrics` follows the same auth policy as
+`/mcp`, `/tools/*`, `/resources/*`, and `/playground/*`.
 
 - `app_requests_total` counter
 - `app_rate_limited_total` counter
@@ -683,10 +689,14 @@ control is unmet.
 
 ## MCP HTTP Hardening
 
-Remote `/mcp` deployments should enable authenticated access and bounded session
-state.
+Remote MCP HTTP deployments should enable authenticated access and bounded
+session state. When auth is enabled, only `GET /health` remains public; the raw
+HTTP routes under `/tools/*`, `/resources/*`, `/playground/*`, and `/metrics`
+share the same auth boundary as `/mcp`.
 
 - `MCP_HTTP_AUTH_MODE=hs256_jwt` enables bearer JWT enforcement.
+- `MCP_HTTP_AUTH_MODE=static_bearer` enables a fixed bearer token for `/mcp`,
+  raw `/tools/*`, raw `/resources/*`, `/metrics`, and `/playground/*`.
 - `MCP_HTTP_JWT_HS256_SECRET_FILE` loads the signing secret from a mounted file.
 - `MCP_HTTP_JWT_ISSUER`, `MCP_HTTP_JWT_AUDIENCE`, and
   `MCP_HTTP_JWT_REQUIRED_SCOPES` constrain accepted tokens.

@@ -32,8 +32,8 @@ python run.py
 ## Core endpoints
 
 - `GET /health`
-- `POST /tools/list`
-- `POST /tools/describe`
+- `GET /tools/list`
+- `GET /tools/describe`
 - `POST /tools/search`
 - `POST /tools/call`
 - `GET /resources/list`
@@ -41,6 +41,10 @@ python run.py
 - `GET /resources/read`
 - `POST /mcp` (JSON-RPC)
 - `GET /metrics` (if enabled)
+
+If `MCP_HTTP_AUTH_MODE` is enabled, only `GET /health` remains public. Raw
+`/tools/*`, `/resources/*`, `/playground/*`, and `/metrics` then require the
+same bearer auth policy as `POST /mcp`.
 
 ## Tests
 
@@ -86,7 +90,8 @@ This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
 - `RATE_LIMIT_EXEMPT_PATH_PREFIXES`: comma-separated path prefixes excluded from rate limiting (default `/maps/vector/vts/tile,/maps/raster/osm,/maps/static/osm`).
 - `METRICS_ENABLED`: enable `/metrics` (default true).
 - `LOG_JSON`: loguru JSON output (default false).
-- `MCP_HTTP_AUTH_MODE`: `off`, `static_bearer`, or `hs256_jwt` for `POST /mcp`.
+- `MCP_HTTP_AUTH_MODE`: `off`, `static_bearer`, or `hs256_jwt` for `POST /mcp`,
+  raw `/tools/*`, raw `/resources/*`, `/metrics`, and `/playground/*`.
 - `MCP_HTTP_AUTH_TOKEN`: static bearer token when `MCP_HTTP_AUTH_MODE=static_bearer`.
 - `MCP_HTTP_AUTH_TOKEN_FILE`: file-based alternative to `MCP_HTTP_AUTH_TOKEN`.
 - `MCP_HTTP_JWT_HS256_SECRET_FILE`: file-based JWT signing secret for `/mcp`.
@@ -239,8 +244,9 @@ docker compose -f ops/deployment/docker-compose.prod.yml up -d
 ```
 
 That profile keeps the app container off the public edge, enables JWT-backed
-`/mcp`, mounts secrets via `*_FILE`, and exposes `/metrics` only on the private
-monitoring plane.
+auth for `/mcp`, raw `/tools/*`, raw `/resources/*`, `/metrics`, and
+`/playground/*`, mounts secrets via `*_FILE`, and still expects `/metrics` to
+be reachable only on the private monitoring plane.
 
 To rebuild the STDIO image:
 

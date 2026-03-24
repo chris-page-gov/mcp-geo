@@ -3,11 +3,11 @@ import json
 import time
 from typing import Any
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from server.mcp.http_route_auth import authorize_http_route
+from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
 from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
@@ -160,12 +160,18 @@ def _http_error_response(
 
 @router.get("/tools/list")
 def list_tools_endpoint(
+    request: Request,
+    response: Response,
     limit: int = 10,
     page: int = 1,
     toolset: str | None = None,
     includeToolsets: str | None = None,
     excludeToolsets: str | None = None,
 ) -> Any:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     names = list_tools()
     parsed_include_toolsets = parse_toolset_list(includeToolsets)
     parsed_exclude_toolsets = parse_toolset_list(excludeToolsets)
@@ -185,6 +191,7 @@ def list_tools_endpoint(
         return JSONResponse(
             status_code=400,
             content={"isError": True, "code": "INVALID_INPUT", "message": str(exc)},
+            headers=auth_headers,
         )
     original_to_sanitized, _ = build_tool_name_maps(names)
     sanitized = [original_to_sanitized.get(name, name) for name in filtered_names]
@@ -279,7 +286,11 @@ async def call_tool(request: Request):
 
 
 @router.post("/tools/search")
-async def search_tools_endpoint(request: Request):
+async def search_tools_endpoint(request: Request, response: Response):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     try:
         data = await request.json()
     except (json.JSONDecodeError, ValueError):
@@ -290,6 +301,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "Malformed JSON request body",
             },
+            headers=auth_headers,
         )
     if not isinstance(data, dict):
         return JSONResponse(
@@ -299,6 +311,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "Request body must be a JSON object",
             },
+            headers=auth_headers,
         )
     query = data.get("query") or data.get("q")
     if not isinstance(query, str) or not query.strip():
@@ -309,6 +322,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "Missing 'query' field",
             },
+            headers=auth_headers,
         )
     mode = data.get("mode", "token")
     if not isinstance(mode, str):
@@ -319,6 +333,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "mode must be a string",
             },
+            headers=auth_headers,
         )
     limit = data.get("limit", 10)
     if not is_strict_int(limit) or limit < 1:
@@ -329,6 +344,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "limit must be >= 1",
             },
+            headers=auth_headers,
         )
     category = data.get("category")
     if category is not None and not isinstance(category, str):
@@ -339,6 +355,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "category must be a string",
             },
+            headers=auth_headers,
         )
     include_schemas = data.get("includeSchemas", False)
     if not isinstance(include_schemas, bool):
@@ -349,6 +366,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "includeSchemas must be a boolean",
             },
+            headers=auth_headers,
         )
     toolset = data.get("toolset")
     if toolset is not None and not isinstance(toolset, str):
@@ -359,6 +377,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "toolset must be a string",
             },
+            headers=auth_headers,
         )
     try:
         include_toolsets = parse_toolset_list(data.get("includeToolsets"))
@@ -367,6 +386,7 @@ async def search_tools_endpoint(request: Request):
         return JSONResponse(
             status_code=400,
             content={"isError": True, "code": "INVALID_INPUT", "message": str(exc)},
+            headers=auth_headers,
         )
     try:
         results = search_tools(
@@ -387,6 +407,7 @@ async def search_tools_endpoint(request: Request):
                 "code": "INVALID_INPUT",
                 "message": str(exc),
             },
+            headers=auth_headers,
         )
     original_to_sanitized, _ = build_tool_name_maps(list_tools())
     normalized: list[dict[str, Any]] = []
@@ -453,11 +474,17 @@ def _describe_tool(tool: Tool, original_to_sanitized: dict[str, str]) -> dict[st
 
 @router.get("/tools/describe")
 def describe_tools(
+    request: Request,
+    response: Response,
     name: str | None = None,
     toolset: str | None = None,
     includeToolsets: str | None = None,
     excludeToolsets: str | None = None,
 ):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     original_names = list_tools()
     parsed_include_toolsets = parse_toolset_list(includeToolsets)
     parsed_exclude_toolsets = parse_toolset_list(excludeToolsets)
@@ -479,6 +506,7 @@ def describe_tools(
         return JSONResponse(
             status_code=400,
             content={"isError": True, "code": "INVALID_INPUT", "message": str(exc)},
+            headers=auth_headers,
         )
     original_to_sanitized, _ = build_tool_name_maps(original_names)
     if name:
@@ -491,6 +519,7 @@ def describe_tools(
                     "code": "UNKNOWN_TOOL",
                     "message": f"Tool '{name}' not found",
                 },
+                headers=auth_headers,
             )
         tool = get(resolved_name)
         if not tool:
@@ -501,6 +530,7 @@ def describe_tools(
                     "code": "UNKNOWN_TOOL",
                     "message": f"Tool '{name}' not found",
                 },
+                headers=auth_headers,
             )
         return {
             "tools": [_describe_tool(tool, original_to_sanitized)],

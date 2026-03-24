@@ -76,7 +76,7 @@ def test_playground_events_invalid_payload_and_pruning():
     client.delete("/playground/orchestration")
 
     invalid = client.post("/playground/events", json={"payload": {"text": "missing event type"}})
-    assert invalid.status_code == 200
+    assert invalid.status_code == 400
     assert invalid.json()["code"] == "INVALID_INPUT"
 
     playground.PLAYGROUND_EVENTS[:] = [{} for _ in range(playground.MAX_EVENTS * 2)]

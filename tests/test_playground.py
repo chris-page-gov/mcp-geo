@@ -19,7 +19,7 @@ def test_playground_transcript_initial():
 def test_playground_invalid_payload():
     # Missing required 'tool'
     resp = client.post("/playground/tool_call", json={"input": {"x": 1}})
-    assert resp.status_code == 200
+    assert resp.status_code == 400
     body = resp.json()
     assert body.get("isError")
     assert body.get("code") == "INVALID_INPUT"

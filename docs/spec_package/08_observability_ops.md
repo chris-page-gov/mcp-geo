@@ -8,6 +8,9 @@
 ## Metrics
 
 - Prometheus endpoint at `/metrics`.
+- When MCP HTTP auth is enabled, `/metrics` shares the same auth boundary as
+  `/mcp`, raw `/tools/*`, raw `/resources/*`, and `/playground/*`; only
+  `GET /health` remains public.
 - Rate limiting counters, request latency histograms, MCP HTTP auth failure counters, session quota counters, and tool error counters.
 
 ## Operational controls
@@ -21,4 +24,3 @@
 
 - `admin_lookup.get_cache_status` returns coverage and freshness metadata.
 - Boundary ticker script for progress: `scripts/boundary_status_ticker.py`.
-

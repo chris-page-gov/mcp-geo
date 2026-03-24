@@ -221,6 +221,10 @@ The playground is a lightweight MCP client built with Svelte + Vite. It uses
 the MCP TypeScript SDK to connect over HTTP and records tool calls and prompt
 events to the server's `/playground/*` endpoints.
 
+If `MCP_HTTP_AUTH_MODE` is enabled, only `GET /health` stays public. The
+playground API routes, raw `/tools/*`, raw `/resources/*`, and `/metrics` then
+require the same bearer auth as `/mcp`.
+
 From the repo root:
 
 ```bash

@@ -68,6 +68,9 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - Dynamic tool registration: Explicit import loop in `server/mcp/tools.py` ensures consistent registry population across agent/test environments.
 - Rate limiting: middleware in `server/main.py` (defaults: `RATE_LIMIT_PER_MIN=207`, `RATE_LIMIT_BYPASS=False` in `server/config.py`; over-limit returns `429` + `{code:"RATE_LIMITED"}`).
 - Metrics: `GET /metrics` enabled by default (`METRICS_ENABLED=True` in `server/config.py`).
+- When MCP HTTP auth is enabled, only `GET /health` remains public; raw
+  `/tools/*`, `/resources/*`, `/playground/*`, and `/metrics` share the same
+  bearer-auth boundary as `/mcp`.
 
 ## Tools & Resources Conventions
 

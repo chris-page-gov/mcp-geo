@@ -21,6 +21,12 @@ All notable changes to this project will be documented in this file.
   `v*` release tags do not fail on the action's unsupported tag-push path. The
   scorecard artifact upload now also runs only when the SARIF output exists, so
   unsupported or upstream-failed runs do not add a second missing-file error.
+- MCP HTTP auth now covers the remaining raw HTTP discovery and operator
+  surfaces: `/metrics`, `/tools/list`, `/tools/describe`, `/tools/search`, and
+  all `/playground/*` routes now follow the same bearer-auth boundary as
+  `/mcp`, leaving only `GET /health` public when auth is enabled. The
+  playground input-validation endpoints now return `400` for invalid payloads
+  instead of `200`.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and

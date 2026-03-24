@@ -51,11 +51,12 @@ assumptions change.
 
 ## Current Focus
 
-- Maintaining the 2026-03-24 full-code-review baseline under
-  `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, including the
-  confirmed auth-coverage gaps on `/metrics`, `/tools/list`,
-  `/tools/describe`, `/tools/search`, and `/playground/*` when MCP HTTP auth is
-  enabled, the secret-redaction omission for `MCP_HTTP_AUTH_TOKEN` and
+- Maintaining the 2026-03-24 remediation follow-up under
+  `docs/reports/mcp_geo_full_code_review_2026-03-24.md` and `PROGRESS.MD`.
+  The raw HTTP auth gap is now closed for `/metrics`, `/tools/list`,
+  `/tools/describe`, `/tools/search`, and `/playground/*`, leaving only
+  `GET /health` public when MCP HTTP auth is enabled. Remaining review-driven
+  work is the secret-redaction expansion for `MCP_HTTP_AUTH_TOKEN` and
   `MCP_HTTP_JWT_HS256_SECRET`, the broken zero-argument path in
   `scripts/run-local-tool` used by `scripts/ruff-local` and
   `scripts/mypy-local`, and the current CI/documentation drift around static
