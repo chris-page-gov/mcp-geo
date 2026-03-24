@@ -58,10 +58,12 @@ assumptions change.
   `GET /health` public when MCP HTTP auth is enabled. The shared
   secret-redaction path now also masks `MCP_HTTP_AUTH_TOKEN` and
   `MCP_HTTP_JWT_HS256_SECRET` in generic exception responses and structured
-  logs. Remaining review-driven work is the broken zero-argument path in
-  `scripts/run-local-tool` used by `scripts/ruff-local` and
-  `scripts/mypy-local`, plus the current CI/documentation drift around static
-  analysis scope.
+  logs. The host-side wrapper zero-argument path is now repaired for
+  `scripts/ruff-local` and `scripts/mypy-local`, those wrapper defaults now
+  define the active curated static-analysis slice, and CI plus
+  `scripts/check_non_runtime_quality.sh` reuse that shared gate directly.
+  Remaining review-driven work is the incremental expansion of those curated
+  static analysis slices.
 - Maintaining Docker MCP catalog submission readiness in the repo, including
   the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active
   doc cleanup that standardizes on `OS_API_KEY` plus optional

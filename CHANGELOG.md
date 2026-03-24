@@ -31,6 +31,10 @@ All notable changes to this project will be documented in this file.
   `MCP_HTTP_JWT_HS256_SECRET`, so both structured logs and generic exception
   responses mask the active MCP HTTP auth secrets alongside the existing
   OS/NOMIS credentials.
+- `scripts/run-local-tool` now handles zero-argument wrapper calls correctly,
+  and `./scripts/ruff-local` / `./scripts/mypy-local` now default to the same
+  curated phased static-analysis slice that CI enforces. The active docs and CI
+  configuration now describe and reuse that shared wrapper-defined gate.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and

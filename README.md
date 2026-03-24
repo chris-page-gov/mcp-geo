@@ -672,9 +672,13 @@ Coverage gate (configured) requires ≥90%. Add tests for both success and error
 
 Host-side wrappers:
 - `./scripts/pytest-local`, `./scripts/ruff-local`, and
-  `./scripts/mypy-local` prefer the running repo devcontainer app container.
+  `./scripts/mypy-local` run the current repo-supported phased CI slice by
+  default.
+- `./scripts/ruff-local [paths...]` and `./scripts/mypy-local [paths...]`
+  still prefer the running repo devcontainer app container.
 - If no devcontainer is running, they fall back to the repo `.venv`.
 - If the tool is still unavailable, they fall back to `uv run`.
+- Passing explicit paths overrides the default curated slice.
 - Override with `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
 
 Strict OWASP MCP validation:

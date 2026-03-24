@@ -543,7 +543,9 @@ Remediation:
 - For host-side verification commands, prefer `./scripts/pytest-local`,
   `./scripts/ruff-local`, and `./scripts/mypy-local`; they automatically reuse
   the running repo devcontainer when present and only fall back to host tools
-  when necessary.
+  when necessary. Zero-argument wrapper runs now execute the same curated
+  phased Ruff/mypy slice used in CI, and explicit path arguments override that
+  default.
 - Devcontainer: rebuild/reopen the devcontainer so `postCreateCommand` installs dependencies inside the container.
 
 ## Client context/window is exhausted after initialization

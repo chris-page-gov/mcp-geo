@@ -55,9 +55,15 @@ same bearer auth policy as `POST /mcp`.
 Focused host-side lint/type checks:
 
 ```bash
-./scripts/ruff-local check <paths...>
-./scripts/mypy-local <paths...>
+./scripts/ruff-local
+./scripts/mypy-local
+./scripts/ruff-local [paths...]
+./scripts/mypy-local [paths...]
 ```
+
+The zero-argument wrapper path now runs the same curated phased Ruff/mypy slice
+that CI enforces today. Passing explicit paths overrides that default; full-repo
+static analysis remains a tracked follow-on rather than the current gate.
 
 Strict OWASP MCP validation:
 

@@ -61,7 +61,9 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 ## Coding Standards
 
 - 4-space indent, LF, max line length 100.
-- Universal type hints; `mypy` clean (no unused ignores) & Ruff enforced.
+- Universal type hints for maintained runtime surfaces. Repo-supported CI
+  currently enforces phased Ruff/mypy gates on curated slices; expand those
+  gates only when each next slice is clean and documented.
 - Error model: `{ "isError": true, "code": str, "message": str, "correlationId"?: str }`.
 - `nextPageToken` for pagination (never snake case).
 - Logging via `loguru`; sensitive tokens masked (`server/security.py`).

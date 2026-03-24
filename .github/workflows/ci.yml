@@ -44,28 +44,11 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev,boundaries]"
 
-      - name: Ruff (repo-supported static gates)
-        run: |
-          ruff check \
-            server/mcp/tools.py \
-            tools/os_mcp.py \
-            tools/os_peat.py \
-            tests/test_os_peat.py \
-            tests/test_psr_peat_e2e.py \
-            tests/test_evaluation_harness_full.py \
-            tests/test_os_mcp_route_query.py
+      - name: Ruff (repo-supported phased static gates)
+        run: ./scripts/ruff-local
 
-      - name: Mypy (repo-supported static gates)
-        run: |
-          mypy --follow-imports=skip \
-            server/mcp/tools.py \
-            server/mcp/resource_catalog.py \
-            tools/os_mcp.py \
-            tools/os_peat.py \
-            tests/test_os_peat.py \
-            tests/test_psr_peat_e2e.py \
-            tests/test_evaluation_harness_full.py \
-            tests/test_os_mcp_route_query.py
+      - name: Mypy (repo-supported phased static gates)
+        run: ./scripts/mypy-local
 
       - name: Pytest
         run: pytest -q -m "not integration"
