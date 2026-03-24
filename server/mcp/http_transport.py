@@ -636,11 +636,12 @@ def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str
                 data,
                 allow_resource=allow_resource,
             )
-        structured = data.get("structuredContent")
-        if isinstance(structured, dict):
-            result["structuredContent"] = structured
-        else:
-            result["structuredContent"] = stdio_adapter._default_structured_content(data)
+        if stdio_adapter._should_emit_structured_content(status_code, data):
+            structured = data.get("structuredContent")
+            if isinstance(structured, dict):
+                result["structuredContent"] = structured
+            else:
+                result["structuredContent"] = stdio_adapter._default_structured_content(data)
         meta = data.get("_meta")
         if isinstance(meta, dict):
             result["_meta"] = meta

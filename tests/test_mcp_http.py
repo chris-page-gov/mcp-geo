@@ -177,6 +177,28 @@ def test_mcp_http_call_tool_accepts_arguments(client):
     assert isinstance(payload["result"].get("structuredContent"), dict)
 
 
+def test_mcp_http_omits_structured_content_for_postcode_errors(client, monkeypatch):
+    from tools import os_common
+
+    monkeypatch.setattr(settings, "OS_API_KEY", "", raising=False)
+    monkeypatch.setattr(os_common.client, "api_key", "")
+    init_resp = client.post("/mcp", json=_initialize_payload())
+    session_id = init_resp.headers.get("mcp-session-id")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-session-id": session_id},
+        json=_call_payload(
+            "postcode-error-1",
+            "tools/call",
+            {"name": "os_places_by_postcode", "arguments": {"postcode": "EC2V 8RT"}},
+        ),
+    )
+    payload = resp.json()["result"]
+    assert payload["isError"] is True
+    assert payload["data"]["code"] == "NO_API_KEY"
+    assert "structuredContent" not in payload
+
+
 def test_mcp_http_resources_get_ui(client):
     init_resp = client.post("/mcp", json=_initialize_payload())
     session_id = init_resp.headers.get("mcp-session-id")
