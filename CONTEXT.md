@@ -64,8 +64,10 @@ assumptions change.
   `scripts/check_non_runtime_quality.sh` reuse that shared gate directly. The
   first follow-on expansion now includes shared `server/config.py` and
   `server/security.py` infrastructure, plus the directly related Ruff
-  regression tests. Remaining review-driven work is the next incremental
-  expansion beyond that shared config/security slice.
+  regression tests. The OWASP MCP validator also now treats wrapper-based Ruff
+  CI gates as equivalent to inline `ruff check`, preserving the compliant
+  baseline after the wrapper cleanup. Remaining review-driven work is the next
+  incremental expansion beyond that shared config/security slice.
 - Maintaining Docker MCP catalog submission readiness in the repo, including
   the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active
   doc cleanup that standardizes on `OS_API_KEY` plus optional

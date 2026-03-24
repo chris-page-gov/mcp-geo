@@ -39,6 +39,10 @@ All notable changes to this project will be documented in this file.
   `server/config.py` and `server/security.py` infrastructure, with Ruff
   coverage widened to the directly related security and wrapper regression
   tests.
+- The OWASP MCP validator now recognizes wrapper-based Ruff CI gates
+  (`./scripts/ruff-local`) as equivalent to inline `ruff check`, so the
+  committed compliant baseline remains valid after the wrapper-based CI
+  cleanup.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and
