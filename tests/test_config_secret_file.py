@@ -98,3 +98,23 @@ def test_populate_fallback_settings_coerces_env_backed_defaults():
     assert dummy.ONS_CACHE_TTL == 30.5
     assert dummy.LOG_JSON is True
     assert dummy.OS_API_KEY == "env-key"
+
+
+def test_populate_fallback_settings_ignores_empty_env_values():
+    class DummySettings:
+        RATE_LIMIT_PER_MIN: int = 207
+        RATE_LIMIT_BYPASS: bool = False
+        ONS_DATASET_API_BASE: str = "https://api.beta.ons.gov.uk/v1"
+
+    dummy = DummySettings()
+    env = {
+        "RATE_LIMIT_PER_MIN": "",
+        "RATE_LIMIT_BYPASS": "",
+        "ONS_DATASET_API_BASE": "",
+    }
+
+    _populate_fallback_settings(dummy, {}, env)
+
+    assert dummy.RATE_LIMIT_PER_MIN == 207
+    assert dummy.RATE_LIMIT_BYPASS is False
+    assert dummy.ONS_DATASET_API_BASE == "https://api.beta.ons.gov.uk/v1"
