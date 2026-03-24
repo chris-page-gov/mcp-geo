@@ -55,11 +55,12 @@ assumptions change.
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md` and `PROGRESS.MD`.
   The raw HTTP auth gap is now closed for `/metrics`, `/tools/list`,
   `/tools/describe`, `/tools/search`, and `/playground/*`, leaving only
-  `GET /health` public when MCP HTTP auth is enabled. Remaining review-driven
-  work is the secret-redaction expansion for `MCP_HTTP_AUTH_TOKEN` and
-  `MCP_HTTP_JWT_HS256_SECRET`, the broken zero-argument path in
+  `GET /health` public when MCP HTTP auth is enabled. The shared
+  secret-redaction path now also masks `MCP_HTTP_AUTH_TOKEN` and
+  `MCP_HTTP_JWT_HS256_SECRET` in generic exception responses and structured
+  logs. Remaining review-driven work is the broken zero-argument path in
   `scripts/run-local-tool` used by `scripts/ruff-local` and
-  `scripts/mypy-local`, and the current CI/documentation drift around static
+  `scripts/mypy-local`, plus the current CI/documentation drift around static
   analysis scope.
 - Maintaining Docker MCP catalog submission readiness in the repo, including
   the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active

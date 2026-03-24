@@ -124,12 +124,19 @@ def test_generic_exception_handler_non_debug_path(monkeypatch):
     from tools.registry import Tool, register
 
     def boom(_payload):
-        raise RuntimeError(f"non-debug crash {settings.NOMIS_SIGNATURE}")
+        raise RuntimeError(
+            "non-debug crash "
+            f"{settings.NOMIS_SIGNATURE} "
+            f"{settings.MCP_HTTP_AUTH_TOKEN} "
+            f"{settings.MCP_HTTP_JWT_HS256_SECRET}"
+        )
 
     name = f"temp.non_debug.{int(time.time() * 1000000)}"
     register(Tool(name=name, description="non-debug tool", handler=boom))
     monkeypatch.setattr(settings, "DEBUG_ERRORS", False, raising=False)
     monkeypatch.setattr(settings, "NOMIS_SIGNATURE", "signature-secret-value", raising=False)
+    monkeypatch.setattr(settings, "MCP_HTTP_AUTH_TOKEN", "handler-auth-token", raising=False)
+    monkeypatch.setattr(settings, "MCP_HTTP_JWT_HS256_SECRET", "handler-jwt-secret", raising=False)
 
     client = TestClient(app, raise_server_exceptions=False)
     resp = client.post("/tools/call", json={"tool": name})
@@ -138,6 +145,8 @@ def test_generic_exception_handler_non_debug_path(monkeypatch):
     assert body["code"] == "INTERNAL_ERROR"
     assert "traceback" not in body
     assert "signature-secret-value" not in body["message"]
+    assert "handler-auth-token" not in body["message"]
+    assert "handler-jwt-secret" not in body["message"]
     assert "[REDACTED]" in body["message"]
 
 
@@ -259,12 +268,19 @@ def test_generic_exception_handler_debug_path(monkeypatch):
     from tools.registry import Tool, register
 
     def boom(_payload):
-        raise RuntimeError(f"debug crash {settings.NOMIS_SIGNATURE}")
+        raise RuntimeError(
+            "debug crash "
+            f"{settings.NOMIS_SIGNATURE} "
+            f"{settings.MCP_HTTP_AUTH_TOKEN} "
+            f"{settings.MCP_HTTP_JWT_HS256_SECRET}"
+        )
 
     name = f"temp.debug.{int(time.time() * 1000000)}"
     register(Tool(name=name, description="debug tool", handler=boom))
     monkeypatch.setattr(settings, "DEBUG_ERRORS", True, raising=False)
     monkeypatch.setattr(settings, "NOMIS_SIGNATURE", "debug-signature-secret", raising=False)
+    monkeypatch.setattr(settings, "MCP_HTTP_AUTH_TOKEN", "debug-auth-secret", raising=False)
+    monkeypatch.setattr(settings, "MCP_HTTP_JWT_HS256_SECRET", "debug-jwt-secret", raising=False)
 
     client = TestClient(app, raise_server_exceptions=False)
     resp = client.post("/tools/call", json={"tool": name})
@@ -273,4 +289,6 @@ def test_generic_exception_handler_debug_path(monkeypatch):
     assert body["code"] == "INTERNAL_ERROR"
     assert "traceback" in body
     assert "debug-signature-secret" not in body["message"]
+    assert "debug-auth-secret" not in body["message"]
+    assert "debug-jwt-secret" not in body["message"]
     assert "[REDACTED]" in body["message"]

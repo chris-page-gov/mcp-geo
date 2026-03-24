@@ -46,5 +46,13 @@ def test_configured_secrets_collects_expected_settings():
         OS_API_KEY = "os-secret"
         NOMIS_UID = "nomis-uid"
         NOMIS_SIGNATURE = "nomis-signature"
+        MCP_HTTP_AUTH_TOKEN = "http-auth-token"
+        MCP_HTTP_JWT_HS256_SECRET = "jwt-secret"
 
-    assert configured_secrets(_Cfg()) == ["os-secret", "nomis-uid", "nomis-signature"]
+    assert configured_secrets(_Cfg()) == [
+        "os-secret",
+        "nomis-uid",
+        "nomis-signature",
+        "http-auth-token",
+        "jwt-secret",
+    ]

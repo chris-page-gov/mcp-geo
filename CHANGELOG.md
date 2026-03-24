@@ -27,6 +27,10 @@ All notable changes to this project will be documented in this file.
   `/mcp`, leaving only `GET /health` public when auth is enabled. The
   playground input-validation endpoints now return `400` for invalid payloads
   instead of `200`.
+- Central secret redaction now also covers `MCP_HTTP_AUTH_TOKEN` and
+  `MCP_HTTP_JWT_HS256_SECRET`, so both structured logs and generic exception
+  responses mask the active MCP HTTP auth secrets alongside the existing
+  OS/NOMIS credentials.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and

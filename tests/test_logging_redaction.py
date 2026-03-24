@@ -9,6 +9,13 @@ def test_log_upstream_error_masks_configured_and_token_like_values(monkeypatch, 
     monkeypatch.setattr(settings, "OS_API_KEY", "os-secret-key", raising=False)
     monkeypatch.setattr(settings, "NOMIS_UID", "uid-secret", raising=False)
     monkeypatch.setattr(settings, "NOMIS_SIGNATURE", "sig-secret", raising=False)
+    monkeypatch.setattr(settings, "MCP_HTTP_AUTH_TOKEN", "http-auth-secret", raising=False)
+    monkeypatch.setattr(
+        settings,
+        "MCP_HTTP_JWT_HS256_SECRET",
+        "jwt-signing-secret",
+        raising=False,
+    )
 
     configure_logging()
     log_upstream_error(
@@ -24,7 +31,10 @@ def test_log_upstream_error_masks_configured_and_token_like_values(monkeypatch, 
                 "token": "nested-token-value",
             },
         },
-        detail="upstream failed for os-secret-key uid-secret sig-secret",
+        detail=(
+            "upstream failed for os-secret-key uid-secret sig-secret "
+            "http-auth-secret jwt-signing-secret"
+        ),
     )
 
     output = capsys.readouterr().out
@@ -33,6 +43,8 @@ def test_log_upstream_error_masks_configured_and_token_like_values(monkeypatch, 
         "os-secret-key",
         "uid-secret",
         "sig-secret",
+        "http-auth-secret",
+        "jwt-signing-secret",
         "random-token",
         "inline-api-key",
         "nested-token-value",

@@ -4,7 +4,9 @@
 
 - OS and ONS credentials can be injected via `*_FILE` environment variables.
 - Remote `/mcp` can require HS256 JWT bearer tokens with issuer, audience, scope, and subject checks.
-- Logs redact sensitive tokens via `server/security.py`.
+- Logs and generic exception responses redact configured `OS_API_KEY`,
+  `NOMIS_UID`, `NOMIS_SIGNATURE`, `MCP_HTTP_AUTH_TOKEN`, and
+  `MCP_HTTP_JWT_HS256_SECRET` values via `server/security.py`.
 
 ## Input validation
 
@@ -26,4 +28,3 @@
 
 - No user PII stored by MCP Geo beyond upstream API calls.
 - Cache stores boundary geometries and metadata only (no user data).
-

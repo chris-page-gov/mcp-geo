@@ -20,7 +20,7 @@ Legend: pending, in_progress, done, blocked
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
 | REV-REM-1 Raw HTTP auth hardening and lockstep docs | done | REV-BASE-1 | Protected raw `/tools/list`, `/tools/describe`, `/tools/search`, `/metrics`, and `/playground/*` with the shared HTTP auth helper so only `GET /health` remains public when MCP HTTP auth is enabled. Updated `README.md`, `AGENTS.md`, `docs/Build.md`, `docs/getting_started.md`, and `docs/spec_package/08_observability_ops.md` to describe the new boundary, and added focused regressions covering authenticated and unauthenticated access plus the updated `400` playground validation semantics. |
-| REV-REM-2 Secret redaction expansion for MCP HTTP auth secrets | pending | REV-BASE-1 | Expand the shared secret collector to include `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET`, then add regression coverage and matching security/config documentation updates. |
+| REV-REM-2 Secret redaction expansion for MCP HTTP auth secrets | done | REV-BASE-1 | Expanded the shared secret collector to include `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET`, added focused regressions for generic exception responses and structured logging, and updated the active security/config docs to describe the central masking contract. |
 | REV-REM-3 Local quality-wrapper repair and phased static-analysis follow-up | pending | REV-BASE-1 | Fix the zero-argument `scripts/run-local-tool` path used by `scripts/ruff-local` and `scripts/mypy-local`, then align repo docs and CI guidance with the phased Ruff/mypy expansion plan. |
 
 ## Docker MCP catalog readiness (2026-03-16)

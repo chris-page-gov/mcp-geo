@@ -697,6 +697,8 @@ share the same auth boundary as `/mcp`.
 - `MCP_HTTP_AUTH_MODE=hs256_jwt` enables bearer JWT enforcement.
 - `MCP_HTTP_AUTH_MODE=static_bearer` enables a fixed bearer token for `/mcp`,
   raw `/tools/*`, raw `/resources/*`, `/metrics`, and `/playground/*`.
+- `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET` are included in the
+  shared log/exception redaction path alongside the OS/NOMIS credentials.
 - `MCP_HTTP_JWT_HS256_SECRET_FILE` loads the signing secret from a mounted file.
 - `MCP_HTTP_JWT_ISSUER`, `MCP_HTTP_JWT_AUDIENCE`, and
   `MCP_HTTP_JWT_REQUIRED_SCOPES` constrain accepted tokens.

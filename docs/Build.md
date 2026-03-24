@@ -94,6 +94,7 @@ This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
   raw `/tools/*`, raw `/resources/*`, `/metrics`, and `/playground/*`.
 - `MCP_HTTP_AUTH_TOKEN`: static bearer token when `MCP_HTTP_AUTH_MODE=static_bearer`.
 - `MCP_HTTP_AUTH_TOKEN_FILE`: file-based alternative to `MCP_HTTP_AUTH_TOKEN`.
+- `MCP_HTTP_JWT_HS256_SECRET`: HS256 signing secret for authenticated MCP HTTP deployments.
 - `MCP_HTTP_JWT_HS256_SECRET_FILE`: file-based JWT signing secret for `/mcp`.
 - `MCP_HTTP_JWT_ISSUER`: required issuer claim for JWT-backed `/mcp` access.
 - `MCP_HTTP_JWT_AUDIENCE`: required audience claim for JWT-backed `/mcp` access.
@@ -106,6 +107,13 @@ This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
 - `MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS`: default CSV exclude filters when no per-request filters are provided.
 
 You can copy `.env.example` to `.env` for local use.
+
+Secret-handling note:
+- `server/security.py` centrally redacts configured `OS_API_KEY`, `NOMIS_UID`,
+  `NOMIS_SIGNATURE`, `MCP_HTTP_AUTH_TOKEN`, and
+  `MCP_HTTP_JWT_HS256_SECRET` values from generic exception messages and
+  structured log payloads. Keep any new secret-bearing env vars wired through
+  that helper rather than adding endpoint-local masking.
 
 Storage recommendation:
 - Keep PostGIS data and cache directories outside git worktrees.

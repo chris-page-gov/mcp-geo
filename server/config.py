@@ -95,6 +95,14 @@ class Settings(_PydanticBaseSettings):
     OPENAI_WIDGET_DOMAIN: str = ""
     MCP_APPS_RESOURCE_LINK: bool = False
     MCP_APPS_CONTENT_MODE: str = ""
+    MCP_HTTP_AUTH_MODE: str = "off"
+    MCP_HTTP_AUTH_TOKEN: str = ""
+    MCP_HTTP_JWT_HS256_SECRET: str = ""
+    MCP_HTTP_JWT_ISSUER: str = ""
+    MCP_HTTP_JWT_AUDIENCE: str = ""
+    MCP_HTTP_JWT_REQUIRED_SCOPES: str = ""
+    MCP_HTTP_SESSION_TTL: float = 900.0
+    MCP_HTTP_SESSION_TOOL_CALL_LIMIT: int = 100
     MCP_TOOLS_DEFAULT_TOOLSET: str = ""
     MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS: str = ""
     MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS: str = ""
