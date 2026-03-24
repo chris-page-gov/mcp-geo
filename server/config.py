@@ -195,7 +195,12 @@ def _populate_fallback_settings(
         else:
             default = getattr(type(instance), key, None)
             env_value = environ.get(key)
-            value = default if env_value in {None, ""} else env_value
+            if env_value in {None, ""} or (
+                isinstance(env_value, str) and _is_placeholder_secret_value(key, env_value)
+            ):
+                value = default
+            else:
+                value = env_value
         setattr(instance, key, _coerce_fallback_setting_value(value, annotation))
     for key, value in overrides.items():
         if key not in annotations:
