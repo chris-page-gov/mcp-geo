@@ -2,20 +2,32 @@ import os
 import re
 from collections.abc import Mapping, MutableMapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, get_origin
+from typing import IO, TYPE_CHECKING, Any, ClassVar, get_origin
 
 try:
     from dotenv import load_dotenv
 except ImportError:  # pragma: no cover - optional dependency fallback
-    def load_dotenv() -> None:
-        return None
+    def load_dotenv(
+        dotenv_path: str | os.PathLike[str] | None = None,
+        stream: IO[str] | None = None,
+        verbose: bool = False,
+        override: bool = False,
+        interpolate: bool = True,
+        encoding: str | None = None,
+    ) -> bool:
+        del dotenv_path, stream, verbose, override, interpolate, encoding
+        return False
 
 if TYPE_CHECKING:
     from pydantic_settings import BaseSettings as _PydanticBaseSettings
+    from pydantic_settings import SettingsConfigDict
 else:
     try:
         from pydantic_settings import BaseSettings as _PydanticBaseSettings
+        from pydantic_settings import SettingsConfigDict
     except ImportError:  # pragma: no cover - optional dependency fallback
+        SettingsConfigDict = dict[str, object]
+
         class _PydanticBaseSettings:  # minimal shim for tests without pydantic-settings
             def __init__(self, **kwargs):
                 _populate_fallback_settings(self, kwargs, os.environ)
@@ -114,7 +126,7 @@ class Settings(_PydanticBaseSettings):
     ROUTE_GRAPH_SOFT_AVOID_PENALTY_SECONDS: float = 180.0
 
     # Pydantic v2 style configuration (replaces deprecated inner Config class)
-    model_config: ClassVar[dict[str, object]] = {
+    model_config: ClassVar[SettingsConfigDict] = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         # VS Code MCP config often supplies empty strings for unset env vars
@@ -168,7 +180,9 @@ def _populate_fallback_settings(
         if key in overrides:
             value = overrides[key]
         else:
-            value = environ.get(key, getattr(type(instance), key, None))
+            default = getattr(type(instance), key, None)
+            env_value = environ.get(key)
+            value = default if env_value in {None, ""} else env_value
         setattr(instance, key, _coerce_fallback_setting_value(value, annotation))
     for key, value in overrides.items():
         if key not in annotations:
