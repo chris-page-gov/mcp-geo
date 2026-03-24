@@ -3,7 +3,15 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-16
+Last updated: 2026-03-24
+
+## Full code review baseline (2026-03-24)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REV-BASE-1 Repository-wide code review and detailed report | done | none | Added `docs/reports/mcp_geo_full_code_review_2026-03-24.md` and indexed it in `docs/reports/README.md`. Review validation included `./scripts/pytest-local -q` (`1202 passed`, `6 skipped`, coverage `90.26%`), direct auth-enabled HTTP probes for `/metrics`, `/tools/*`, `/playground/*`, and local-quality-tool wrapper checks. Key findings: unauthenticated exposure of `/metrics`, `/tools/list`, `/tools/describe`, `/tools/search`, and `/playground/*` under MCP HTTP auth modes; central secret redaction omits `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET`; `scripts/ruff-local` and `scripts/mypy-local` fail on the zero-argument path in `scripts/run-local-tool`; and CI static-analysis scope is narrower than the repo guidance claims. |
 
 ## Docker MCP catalog readiness (2026-03-16)
 

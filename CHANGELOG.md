@@ -9,6 +9,11 @@ All notable changes to this project will be documented in this file.
 - Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
+- Added the full repository review report
+  `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
+  reports catalog, recorded the remediation baseline in `PROGRESS.MD` and
+  `CONTEXT.md`, and committed the Gemini review companion documents
+  `GEMINI.md` and `Gemini-Code-Review.md` as part of the recorded review trail.
 
 ### Changed
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job

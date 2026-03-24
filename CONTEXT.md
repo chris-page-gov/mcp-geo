@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-16
+Last updated: 2026-03-24
 Owner: @chris-page-gov
 
 ## Purpose
@@ -51,6 +51,15 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the 2026-03-24 full-code-review baseline under
+  `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, including the
+  confirmed auth-coverage gaps on `/metrics`, `/tools/list`,
+  `/tools/describe`, `/tools/search`, and `/playground/*` when MCP HTTP auth is
+  enabled, the secret-redaction omission for `MCP_HTTP_AUTH_TOKEN` and
+  `MCP_HTTP_JWT_HS256_SECRET`, the broken zero-argument path in
+  `scripts/run-local-tool` used by `scripts/ruff-local` and
+  `scripts/mypy-local`, and the current CI/documentation drift around static
+  analysis scope.
 - Maintaining Docker MCP catalog submission readiness in the repo, including
   the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active
   doc cleanup that standardizes on `OS_API_KEY` plus optional
