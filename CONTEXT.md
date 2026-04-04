@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 Owner: @chris-page-gov
 
 ## Purpose
@@ -31,7 +31,8 @@ assumptions change.
   `06_api_contracts.md` for interface details, `10_mcp_apps_ui.md` for UI behaviors, and
   `12_backlog_and_plan.md` for delivery sequencing.
 - Current scope snapshot: HTTP and STDIO MCP server; OS Places/Names/NGD/linked IDs/maps/
-  admin lookup/ONS tools; boundary cache pipeline; MCP-Apps UI resources via `ui://`.
+  admin lookup/ONS/NOMIS/Council Tax pilot tools; boundary cache pipeline; MCP-Apps UI
+  resources via `ui://`.
 
 ## Codex Usage (Mac App + Devcontainer)
 
@@ -51,6 +52,19 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the new 2026-03-25 experimental Council Tax pilot under
+  `tools/council_tax.py`, `README.md`, `PROGRESS.MD`, and related tests. The
+  first implementation is intentionally scoped to England/Wales public band
+  lookup only via the GOV.UK/HMRC service, with premise-level band matches and
+  billing-authority metadata as the target contract. Live probing on
+  2026-03-25 showed that the upstream public form flow can reject scripted
+  POSTs with the generic service-error page even when CSRF/cookie handling is
+  mirrored, so the pilot keeps the HTML-scrape provider explicit and surfaces
+  that instability as an upstream constraint rather than treating it as a
+  stable API. The follow-on gold fixture pack in
+  `tests/fixtures/council_tax*` now captures curated published examples from
+  the GOV.UK service, and the live no-results page title is treated as a
+  grounded empty-search outcome rather than a parser failure.
 - Maintaining the 2026-03-24 remediation follow-up under
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md` and `PROGRESS.MD`.
   The raw HTTP auth gap is now closed for `/metrics`, `/tools/list`,

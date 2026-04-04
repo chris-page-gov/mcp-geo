@@ -14,6 +14,15 @@ All notable changes to this project will be documented in this file.
   reports catalog, recorded the remediation baseline in `PROGRESS.MD` and
   `CONTEXT.md`, and committed the Gemini review companion documents
   `GEMINI.md` and `Gemini-Code-Review.md` as part of the recorded review trail.
+- Added the experimental `council_tax.band_lookup` pilot for England/Wales
+  premise-level Council Tax band searches, including the GOV.UK HTML client,
+  discovery wiring, focused mocked regressions, and the initial config/docs
+  surface for the new Council Tax namespace.
+- Added a deterministic gold evaluation fixture pack for
+  `council_tax.band_lookup` under `tests/fixtures/council_tax*` and
+  `tests/test_council_tax_gold_eval.py`, using curated public GOV.UK search
+  excerpts plus verified property-detail URLs for Westminster, Manchester, and
+  York examples.
 
 ### Changed
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
@@ -55,6 +64,9 @@ All notable changes to this project will be documented in this file.
   `scripts/trace_utils.py` no longer drag unrelated server modules into the
   `mypy` graph, and the focused Ruff checks for the benchmark/trace scripts and
   regressions are now clean.
+- The Council Tax band pilot now recognizes the GOV.UK service's live
+  `No results` page shape, so postcode searches with no published matches
+  return an empty result set instead of `UPSTREAM_INVALID_RESPONSE`.
 
 ## [0.7.0] - 2026-03-16
 

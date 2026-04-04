@@ -3,7 +3,16 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
+
+## Council Tax band lookup pilot (2026-03-25)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CTAX-PILOT-1 Experimental `council_tax.band_lookup` surface | done | none | Added `tools/council_tax.py` with a dedicated GOV.UK/HMRC HTML client, strict input validation, discovery/tool-search wiring, and focused mocked regressions. Current pilot scope is England/Wales only and explicitly marked experimental because the upstream is a public form flow rather than a published API; live probing on 2026-03-25 confirmed that scripted POSTs can receive the service's generic error page, so the implementation keeps that failure mode explicit rather than treating the source as stable machine-to-machine infrastructure. |
+| CTAX-PILOT-2 Gold evaluation fixture set for published band examples | done | CTAX-PILOT-1 | Added a deterministic gold fixture pack under `tests/fixtures/council_tax*` plus `tests/test_council_tax_gold_eval.py`, using curated public search-result excerpts and verified property-detail URLs from the GOV.UK Council Tax service. The pilot now also recognizes the live service's `No results` page title so postcode-level misses return an empty result set rather than `UPSTREAM_INVALID_RESPONSE`. |
 
 ## Full code review baseline (2026-03-24)
 

@@ -64,6 +64,12 @@ def test_search_tools_finds_ons_geo_keywords():
     assert "ons_geo.by_postcode" in names
 
 
+def test_search_tools_finds_council_tax_keywords():
+    results = search_tools("council tax band property", mode="token")
+    names = {item.get("name") for item in results}
+    assert "council_tax.band_lookup" in names
+
+
 def test_search_tools_accepts_stats_alias_category():
     results = search_tools("nomis", mode="token", category="stats")
     assert results

@@ -19,6 +19,7 @@ ERROR_TAXONOMY: Dict[str, str] = {
     "ONS_API_ERROR": "upstream",
     "NOMIS_API_ERROR": "upstream",
     "ADMIN_LOOKUP_API_ERROR": "upstream",
+    "COUNCIL_TAX_API_ERROR": "upstream",
     "BOUNDARY_CACHE_ERROR": "dependency",
     "ROUTE_GRAPH_ERROR": "dependency",
     "ROUTE_GRAPH_NOT_READY": "availability",

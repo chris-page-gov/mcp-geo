@@ -396,6 +396,7 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.reverse_hierarchy      | Ancestor chain for an administrative area                                     |
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
+| council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
 | ons_data.query                      | Query live ONS observations (dataset/edition/version or term)                 |
 | ons_data.dimensions                 | List ONS observation dimensions for a live dataset                            |
 | ons_data.get_observation            | Retrieve a single live observation                                            |
@@ -631,6 +632,18 @@ Use:
 - `nomis.concepts` / `nomis.codelists` for metadata
 - `nomis.query` for JSON-stat or SDMX JSON observations
 
+### Council Tax Band Lookup Pilot
+
+`council_tax.band_lookup` is an experimental England/Wales-only pilot backed by
+the public GOV.UK Council Tax band service. It currently uses an HTML form flow
+rather than a published API, so treat it as a pilot integration with explicit
+failure handling rather than a guaranteed stable machine-to-machine contract.
+
+Supported inputs include `postcode`, `propertyName`, `street`, `town`,
+`billingAuthorityReference`, and optional filters such as `band` and
+`bandStatus`. Set `COUNCIL_TAX_BAND_LIVE_ENABLED=true` to enable the live
+lookup surface.
+
 ## Error Model
 
 All errors conform to:
@@ -639,7 +652,7 @@ All errors conform to:
 { "isError": true, "code": "<CODE>", "message": "..." }
 ```
 
-Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `COUNCIL_TAX_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
 
 ## Project Structure
 

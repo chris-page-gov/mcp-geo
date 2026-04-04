@@ -54,6 +54,11 @@ class Settings(_PydanticBaseSettings):
     ONS_GEO_CACHE_DB: str = "ons_geo_cache.sqlite"
     ONS_GEO_CACHE_INDEX_PATH: str = "resources/ons_geo_cache_index.json"
     ONS_GEO_PRIMARY_DERIVATION: str = "exact"
+    COUNCIL_TAX_BAND_LIVE_ENABLED: bool = True
+    COUNCIL_TAX_BASE_URL: str = "https://www.tax.service.gov.uk/check-council-tax-band"
+    COUNCIL_TAX_HTTP_TIMEOUT_SECONDS: float = 10.0
+    COUNCIL_TAX_HTTP_RETRIES: int = 2
+    COUNCIL_TAX_USER_AGENT: str = "mcp-geo-council-tax-pilot/0.1"
     OS_EXPORT_INLINE_MAX_BYTES: int = 200_000
     OS_DATA_CACHE_DIR: str = "data/cache/os"
     OS_DATA_CACHE_TTL: float = 3600.0

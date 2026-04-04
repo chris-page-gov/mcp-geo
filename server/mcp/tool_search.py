@@ -56,6 +56,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "ons_geo": ToolCategory.CODES,
     "ons_codes": ToolCategory.CODES,
     "nomis": ToolCategory.STATISTICS,
+    "council_tax": ToolCategory.ADMIN,
     "os_apps": ToolCategory.APPS,
     "os_mcp": ToolCategory.CORE,
 }
@@ -84,6 +85,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "ons_geo": ["ons", "geography", "postcode", "uprn", "onspd", "onsud", "nspl", "nsul"],
     "ons_codes": ["codes", "dimension", "options"],
     "nomis": ["nomis", "labour", "employment", "census", "dataset", "statistics"],
+    "council_tax": ["council", "tax", "band", "billing", "authority", "voa", "hmrc", "property"],
     "os_apps": ["ui", "widget", "interactive", "mcp-apps", "event", "log", "telemetry"],
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
@@ -137,6 +139,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
     "ons_geo_lookup": ("ons_geo.*",),
     "ons_data": ("ons_data.*",),
     "nomis_data": ("nomis.*",),
+    "property_tax": ("council_tax.*",),
     "apps_ui": ("os_apps.render_*", "os_apps.log_event"),
 }
 
@@ -164,6 +167,7 @@ EXTERNAL_PREFIXES: Set[str] = {
     "ons_search",
     "ons_select",
     "nomis",
+    "council_tax",
 }
 
 STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter", "os_map.export"}
