@@ -19,6 +19,7 @@ def test_tools_describe_all():
     assert resp.status_code == 200
     data = resp.json()
     names = [t["name"] for t in data["tools"]]
+    assert "council_tax_band_lookup" in names
     assert "os_places_by_postcode" in names
     assert "ons_data_create_filter" in names
     # Ensure schemas present

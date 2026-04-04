@@ -200,6 +200,10 @@ Then visit:
 
 Set `OS_API_KEY` in the environment (or `.env`) for all Ordnance Survey calls. The server assumes it is present; missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
+If MCP HTTP auth is enabled, only `GET /health` remains public. The raw HTTP
+tool, resource, metrics, and playground routes all require the same bearer auth
+policy as `POST /mcp`.
+
 ## Canonical Map Delivery Baseline
 
 Use this order for reliable cross-host map delivery:
@@ -392,6 +396,7 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.reverse_hierarchy      | Ancestor chain for an administrative area                                     |
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
+| council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
 | ons_data.query                      | Query live ONS observations (dataset/edition/version or term)                 |
 | ons_data.dimensions                 | List ONS observation dimensions for a live dataset                            |
 | ons_data.get_observation            | Retrieve a single live observation                                            |
@@ -525,7 +530,9 @@ Notes:
 
 ## Metrics
 
-Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`):
+Prometheus-style metrics exposed at `GET /metrics` (if `METRICS_ENABLED=true`).
+When MCP HTTP auth is enabled, `/metrics` follows the same auth policy as
+`/mcp`, `/tools/*`, `/resources/*`, and `/playground/*`.
 
 - `app_requests_total` counter
 - `app_rate_limited_total` counter
@@ -625,6 +632,18 @@ Use:
 - `nomis.concepts` / `nomis.codelists` for metadata
 - `nomis.query` for JSON-stat or SDMX JSON observations
 
+### Council Tax Band Lookup Pilot
+
+`council_tax.band_lookup` is an experimental England/Wales-only pilot backed by
+the public GOV.UK Council Tax band service. It currently uses an HTML form flow
+rather than a published API, so treat it as a pilot integration with explicit
+failure handling rather than a guaranteed stable machine-to-machine contract.
+
+Supported inputs include `postcode`, `propertyName`, `street`, `town`,
+`billingAuthorityReference`, and optional filters such as `band` and
+`bandStatus`. Set `COUNCIL_TAX_BAND_LIVE_ENABLED=true` to enable the live
+lookup surface.
+
 ## Error Model
 
 All errors conform to:
@@ -633,7 +652,7 @@ All errors conform to:
 { "isError": true, "code": "<CODE>", "message": "..." }
 ```
 
-Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
+Primary codes: `INVALID_INPUT`, `UNKNOWN_TOOL`, `NO_API_KEY`, `OS_API_KEY_INVALID`, `OS_API_KEY_EXPIRED`, `LIVE_DISABLED`, `OS_API_ERROR`, `ONS_API_ERROR`, `NOMIS_API_ERROR`, `ADMIN_LOOKUP_API_ERROR`, `COUNCIL_TAX_API_ERROR`, `UPSTREAM_TLS_ERROR`, `UPSTREAM_CONNECT_ERROR`, `INTEGRATION_ERROR`, `RATE_LIMITED`, `UNKNOWN_FILTER`, `NO_OBSERVATION`.
 
 ## Project Structure
 
@@ -666,9 +685,13 @@ Coverage gate (configured) requires ≥90%. Add tests for both success and error
 
 Host-side wrappers:
 - `./scripts/pytest-local`, `./scripts/ruff-local`, and
-  `./scripts/mypy-local` prefer the running repo devcontainer app container.
+  `./scripts/mypy-local` run the current repo-supported phased CI slice by
+  default.
+- `./scripts/ruff-local [paths...]` and `./scripts/mypy-local [paths...]`
+  still prefer the running repo devcontainer app container.
 - If no devcontainer is running, they fall back to the repo `.venv`.
 - If the tool is still unavailable, they fall back to `uv run`.
+- Passing explicit paths overrides the default curated slice.
 - Override with `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
 
 Strict OWASP MCP validation:
@@ -683,10 +706,16 @@ control is unmet.
 
 ## MCP HTTP Hardening
 
-Remote `/mcp` deployments should enable authenticated access and bounded session
-state.
+Remote MCP HTTP deployments should enable authenticated access and bounded
+session state. When auth is enabled, only `GET /health` remains public; the raw
+HTTP routes under `/tools/*`, `/resources/*`, `/playground/*`, and `/metrics`
+share the same auth boundary as `/mcp`.
 
 - `MCP_HTTP_AUTH_MODE=hs256_jwt` enables bearer JWT enforcement.
+- `MCP_HTTP_AUTH_MODE=static_bearer` enables a fixed bearer token for `/mcp`,
+  raw `/tools/*`, raw `/resources/*`, `/metrics`, and `/playground/*`.
+- `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET` are included in the
+  shared log/exception redaction path alongside the OS/NOMIS credentials.
 - `MCP_HTTP_JWT_HS256_SECRET_FILE` loads the signing secret from a mounted file.
 - `MCP_HTTP_JWT_ISSUER`, `MCP_HTTP_JWT_AUDIENCE`, and
   `MCP_HTTP_JWT_REQUIRED_SCOPES` constrain accepted tokens.

@@ -9,6 +9,20 @@ All notable changes to this project will be documented in this file.
 - Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
+- Added the full repository review report
+  `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
+  reports catalog, recorded the remediation baseline in `PROGRESS.MD` and
+  `CONTEXT.md`, and committed the Gemini review companion documents
+  `GEMINI.md` and `Gemini-Code-Review.md` as part of the recorded review trail.
+- Added the experimental `council_tax.band_lookup` pilot for England/Wales
+  premise-level Council Tax band searches, including the GOV.UK HTML client,
+  discovery wiring, focused mocked regressions, and the initial config/docs
+  surface for the new Council Tax namespace.
+- Added a deterministic gold evaluation fixture pack for
+  `council_tax.band_lookup` under `tests/fixtures/council_tax*` and
+  `tests/test_council_tax_gold_eval.py`, using curated public GOV.UK search
+  excerpts plus verified property-detail URLs for Westminster, Manchester, and
+  York examples.
 
 ### Changed
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
@@ -16,6 +30,28 @@ All notable changes to this project will be documented in this file.
   `v*` release tags do not fail on the action's unsupported tag-push path. The
   scorecard artifact upload now also runs only when the SARIF output exists, so
   unsupported or upstream-failed runs do not add a second missing-file error.
+- MCP HTTP auth now covers the remaining raw HTTP discovery and operator
+  surfaces: `/metrics`, `/tools/list`, `/tools/describe`, `/tools/search`, and
+  all `/playground/*` routes now follow the same bearer-auth boundary as
+  `/mcp`, leaving only `GET /health` public when auth is enabled. The
+  playground input-validation endpoints now return `400` for invalid payloads
+  instead of `200`.
+- Central secret redaction now also covers `MCP_HTTP_AUTH_TOKEN` and
+  `MCP_HTTP_JWT_HS256_SECRET`, so both structured logs and generic exception
+  responses mask the active MCP HTTP auth secrets alongside the existing
+  OS/NOMIS credentials.
+- `scripts/run-local-tool` now handles zero-argument wrapper calls correctly,
+  and `./scripts/ruff-local` / `./scripts/mypy-local` now default to the same
+  curated phased static-analysis slice that CI enforces. The active docs and CI
+  configuration now describe and reuse that shared wrapper-defined gate.
+- The curated phased Ruff/mypy slice now also covers shared
+  `server/config.py` and `server/security.py` infrastructure, with Ruff
+  coverage widened to the directly related security and wrapper regression
+  tests.
+- The OWASP MCP validator now recognizes wrapper-based Ruff CI gates
+  (`./scripts/ruff-local`) as equivalent to inline `ruff check`, so the
+  committed compliant baseline remains valid after the wrapper-based CI
+  cleanup.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and
@@ -28,6 +64,9 @@ All notable changes to this project will be documented in this file.
   `scripts/trace_utils.py` no longer drag unrelated server modules into the
   `mypy` graph, and the focused Ruff checks for the benchmark/trace scripts and
   regressions are now clean.
+- The Council Tax band pilot now recognizes the GOV.UK service's live
+  `No results` page shape, so postcode searches with no published matches
+  return an empty result set instead of `UPSTREAM_INVALID_RESPONSE`.
 
 ## [0.7.0] - 2026-03-16
 

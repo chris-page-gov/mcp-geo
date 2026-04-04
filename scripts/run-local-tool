@@ -42,6 +42,13 @@ while [[ $# -gt 0 ]]; do
 done
 TOOL_ARGS=("$@")
 
+exec_tool_with_args() {
+  if ((${#TOOL_ARGS[@]})); then
+    exec "$@" "${TOOL_ARGS[@]}"
+  fi
+  exec "$@"
+}
+
 venv_tool_path() {
   printf '%s/.venv/bin/%s' "$ROOT_DIR" "$TOOL_NAME"
 }
@@ -180,7 +187,7 @@ run_current_env() {
       log "$TOOL_NAME found in repo .venv, but the runtime is not ready; trying PATH"
     else
       log "$TOOL_NAME via repo .venv"
-      exec "$venv_tool" "${TOOL_ARGS[@]}"
+      exec_tool_with_args "$venv_tool"
     fi
   fi
   if command -v "$TOOL_NAME" >/dev/null 2>&1; then
@@ -189,7 +196,7 @@ run_current_env() {
       exit 127
     fi
     log "$TOOL_NAME via current environment"
-    exec "$TOOL_NAME" "${TOOL_ARGS[@]}"
+    exec_tool_with_args "$TOOL_NAME"
   fi
   log "could not find '$TOOL_NAME' in the current environment"
   exit 127
@@ -214,7 +221,10 @@ run_devcontainer() {
     return 1
   fi
   log "$TOOL_NAME via devcontainer (${container})"
-  exec "$DOCKER_BIN" exec -i -w "$workspace" "$container" "$tool_cmd" "${TOOL_ARGS[@]}"
+  if ((${#TOOL_ARGS[@]})); then
+    exec "$DOCKER_BIN" exec -i -w "$workspace" "$container" "$tool_cmd" "${TOOL_ARGS[@]}"
+  fi
+  exec "$DOCKER_BIN" exec -i -w "$workspace" "$container" "$tool_cmd"
 }
 
 run_venv() {
@@ -227,7 +237,7 @@ run_venv() {
     return 1
   fi
   log "$TOOL_NAME via repo .venv"
-  exec "$venv_tool" "${TOOL_ARGS[@]}"
+  exec_tool_with_args "$venv_tool"
 }
 
 run_uv() {
@@ -246,7 +256,10 @@ run_uv() {
   for package in "${UV_PACKAGES[@]}"; do
     cmd+=(--with "$package")
   done
-  cmd+=("$TOOL_NAME" "${TOOL_ARGS[@]}")
+  cmd+=("$TOOL_NAME")
+  if ((${#TOOL_ARGS[@]})); then
+    cmd+=("${TOOL_ARGS[@]}")
+  fi
   log "$TOOL_NAME via uv run"
   exec "${cmd[@]}"
 }
@@ -259,7 +272,7 @@ run_path_tool() {
     return 1
   fi
   log "$TOOL_NAME via PATH"
-  exec "$TOOL_NAME" "${TOOL_ARGS[@]}"
+  exec_tool_with_args "$TOOL_NAME"
 }
 
 case "$MODE" in

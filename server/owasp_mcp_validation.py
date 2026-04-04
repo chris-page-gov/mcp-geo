@@ -399,6 +399,13 @@ def _workflow_contains(workflow_text: str, *needles: str) -> bool:
     return all(needle.lower() in lowered for needle in needles)
 
 
+def _workflow_has_ruff_gate(workflow_text: str) -> bool:
+    return any(
+        _workflow_contains(workflow_text, needle)
+        for needle in ("ruff check", "./scripts/ruff-local", "scripts/ruff-local")
+    )
+
+
 def collect_repo_facts(
     paths: ValidatorPaths,
     inventory: dict[str, Any],
@@ -661,8 +668,11 @@ def evaluate_control(
         evidence = [_evidence("server/maps_proxy.py", "Authorization bearer forwarding logic")]
     elif control_id == "OMCP-DEPLOY-003":
         workflow_text = facts["workflow_text"]
-        required_needles = ("ruff check", "pip-audit", "gitleaks")
-        status = "pass" if _workflow_contains(workflow_text, *required_needles) else "fail"
+        has_required_gates = (
+            _workflow_has_ruff_gate(workflow_text)
+            and _workflow_contains(workflow_text, "pip-audit", "gitleaks")
+        )
+        status = "pass" if has_required_gates else "fail"
         rationale = (
             "CI includes static analysis, dependency auditing, and secret scanning gates."
             if status == "pass"

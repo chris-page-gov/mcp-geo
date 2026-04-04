@@ -44,6 +44,12 @@ def test_search_tools_regex_mode_and_schemas():
     assert "outputSchema" in first
 
 
+def test_search_tools_regex_mode_supports_safe_wildcards():
+    results = search_tools("post*", mode="regex")
+    assert results
+    assert any(item.get("name") == "ons_geo.by_postcode" for item in results)
+
+
 def test_search_tools_invalid_regex():
     try:
         search_tools("(", mode="regex")
@@ -62,6 +68,12 @@ def test_search_tools_finds_ons_geo_keywords():
     results = search_tools("onspd postcode geography", mode="token")
     names = {item.get("name") for item in results}
     assert "ons_geo.by_postcode" in names
+
+
+def test_search_tools_finds_council_tax_keywords():
+    results = search_tools("council tax band property", mode="token")
+    names = {item.get("name") for item in results}
+    assert "council_tax.band_lookup" in names
 
 
 def test_search_tools_accepts_stats_alias_category():

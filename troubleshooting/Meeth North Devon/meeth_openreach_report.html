@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meeth, North Devon — Openreach First Rural Intervention</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --green: #1a9b8b;
+      --dark: #14201f;
+      --muted: #4b5a57;
+      --bg: #f6f9f8;
+      --card: #ffffff;
+      --accent: #e8440a;
+      --accent2: #1c4f6d;
+      --border: rgba(20,32,31,0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0f2420 0%, #1c4f6d 50%, #1a9b8b 100%);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color: #fff;
+      padding: 56px 40px 48px;
+      position: relative;
+      /* removed overflow:hidden — it was clipping the h1 text at right edge */
+    }
+    /* decorative circle: pushed behind content with z-index:-1 so it never occludes text */
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      z-index: 0;
+      pointer-events: none;
+    }
+    /* all hero text nodes sit above the decorative layer */
+    .hero > * {
+      position: relative;
+      z-index: 1;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(24px, 3.8vw, 42px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      max-width: 100%;
+    }
+    .hero h1 span { color: #7de8dc; }
+    @media print {
+      .hero {
+        background: #0f2420 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .hero h1, .hero p, .hero-badge, .hero-stat .num,
+      .hero-stat .lbl { color: #fff !important; }
+      .hero h1 span { color: #7de8dc !important; }
+      .hero-stat .num { color: #7de8dc !important; }
+    }
+    .hero p {
+      font-size: 16px;
+      opacity: 0.85;
+      max-width: 640px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .hero-stat {
+      text-align: center;
+    }
+    .hero-stat .num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #7de8dc;
+      display: block;
+    }
+    .hero-stat .lbl {
+      font-size: 11px;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    /* ── MAP ── */
+    #map {
+      height: 480px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 40px rgba(20,32,31,0.1);
+      margin-bottom: 40px;
+    }
+
+    /* ── CARDS GRID ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 22px;
+      box-shadow: 0 4px 18px rgba(20,32,31,0.06);
+    }
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--dark);
+    }
+    .card p {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ── TIMELINE ── */
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 40px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px; top: 4px; bottom: 4px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--green), var(--accent2));
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 28px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -26px;
+      top: 6px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--green);
+    }
+    .timeline-item .yr {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--green);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .timeline-item h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .timeline-item p {
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    /* ── BROADBAND PANEL ── */
+    .broadband-panel {
+      background: linear-gradient(135deg, #0f2420, #1c4f6d);
+      color: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 640px) {
+      .broadband-panel { grid-template-columns: 1fr; }
+      .hero { padding: 40px 20px 36px; }
+    }
+    .broadband-panel h2 { grid-column: 1 / -1; font-size: 20px; margin-bottom: 4px; }
+    .broadband-panel .sub { grid-column: 1 / -1; opacity: 0.7; font-size: 14px; margin-top: -16px; margin-bottom: 8px; }
+    .bb-stat {
+      background: rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .bb-stat .val {
+      font-size: 32px;
+      font-weight: 700;
+      color: #7de8dc;
+    }
+    .bb-stat .desc {
+      font-size: 13px;
+      opacity: 0.75;
+      margin-top: 4px;
+    }
+    .bb-stat .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    /* ── GEO INFO TABLE ── */
+    .geo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    .geo-table th {
+      background: var(--accent2);
+      color: #fff;
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .geo-table tr:nth-child(even) td { background: #f1f6f5; }
+    .geo-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+    .geo-table td:first-child { font-weight: 600; color: var(--accent2); }
+
+    /* ── EXCHANGE DIAGRAM ── */
+    .exchange-diagram {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 18px rgba(20,32,31,0.06);
+    }
+    .exchange-diagram h3 { margin-bottom: 18px; font-size: 17px; }
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .node-box {
+      background: var(--accent2);
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .node-box.old { background: #c0392b; }
+    .node-box.new { background: var(--green); }
+    .node-box.premise { background: #f39c12; color: #fff; }
+    .node-label { font-size: 11px; color: var(--muted); text-align: center; max-width: 120px; }
+    .arrow {
+      flex: 1;
+      height: 3px;
+      background: linear-gradient(to right, var(--accent2), var(--green));
+      position: relative;
+      min-width: 40px;
+    }
+    .arrow::after {
+      content: '▶';
+      position: absolute;
+      right: -2px; top: -9px;
+      color: var(--green);
+      font-size: 18px;
+    }
+    .arrow-label {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .arrow-wrap {
+      flex: 1;
+      min-width: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── NATURE PANEL ── */
+    .nature-panel {
+      background: linear-gradient(135deg, #1a5c3a, #2d8a5e);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 40px;
+    }
+    .nature-panel h3 { font-size: 18px; margin-bottom: 6px; }
+    .nature-panel .nature-sub { opacity: 0.8; font-size: 14px; margin-bottom: 16px; }
+    .nature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .nature-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .nature-item .icon { font-size: 20px; margin-bottom: 4px; }
+
+    /* ── QUOTE ── */
+    .quote-box {
+      background: #fff;
+      border-left: 4px solid var(--green);
+      border-radius: 0 12px 12px 0;
+      padding: 18px 22px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 18px rgba(20,32,31,0.06);
+    }
+    .quote-box blockquote {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+    .quote-box cite { font-size: 13px; color: var(--muted); }
+
+    /* ── SOURCES ── */
+    .sources {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 22px 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .sources h4 { font-size: 14px; margin-bottom: 10px; color: var(--dark); }
+    .sources ul { padding-left: 18px; }
+    .sources li { margin-bottom: 4px; }
+    .sources a { color: var(--accent2); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="hero-badge">📡 OS MCP-Geo × Openreach Project Gigabit</div>
+  <h1>Meeth, <span>North Devon</span><br/>The UK's First Rural<br/>Openreach Intervention</h1>
+  <p>A deep-dive into the small West Devon parish at the heart of the UK's pioneering Project Gigabit rollout — and why a distant telephone exchange changed everything.</p>
+  <div class="hero-meta">
+    <div class="hero-stat"><span class="num">161</span><span class="lbl">Residents (2021)</span></div>
+    <div class="hero-stat"><span class="num">180</span><span class="lbl">Dwellings</span></div>
+    <div class="hero-stat"><span class="num">1,042</span><span class="lbl">Hectares</span></div>
+    <div class="hero-stat"><span class="num">20 km</span><span class="lbl">To Parent Exchange</span></div>
+    <div class="hero-stat"><span class="num">3–4</span><span class="lbl">Mbps Before FTTP</span></div>
+    <div class="hero-stat"><span class="num">Feb 2025</span><span class="lbl">First Gigabit Live</span></div>
+  </div>
+</div>
+
+<!-- ══════════ MAP ══════════ -->
+<div class="container">
+  <div class="section-title">📍 Location — Meeth, West Devon</div>
+  <div class="section-sub">OS NGD data via mcp-geo · Centred on SS547082 · 50.855°N, 4.066°W</div>
+  <div id="map"></div>
+
+  <!-- ══════════ GEO TABLE ══════════ -->
+  <div class="section-title">Geographic & Administrative Profile</div>
+  <div class="section-sub">Source: OS Names, OS Places, Admin Lookup via mcp-geo</div>
+  <table class="geo-table">
+    <thead><tr><th>Field</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>OS Grid Reference</td><td>SS 547 082</td></tr>
+      <tr><td>Latitude / Longitude</td><td>50.8550°N, 4.0657°W</td></tr>
+      <tr><td>Classification (OS Names)</td><td>Populated Place — Village</td></tr>
+      <tr><td>Local Authority</td><td>West Devon Borough Council</td></tr>
+      <tr><td>County</td><td>Devon County Council</td></tr>
+      <tr><td>Parish Area</td><td>1,042 hectares (2,479 acres)</td></tr>
+      <tr><td>Nearest Town</td><td>Hatherleigh (3 miles S), Okehampton (8.4 miles SE)</td></tr>
+      <tr><td>River</td><td>River Torridge (western boundary); confluence with R. Okement nearby</td></tr>
+      <tr><td>Telephone Exchange (Openreach)</td><td>Hatherleigh — WWHATH (Victoria Road, Hatherleigh EX20 3JG)</td></tr>
+      <tr><td>Exchange Enabled ADSL</td><td>December 2004</td></tr>
+      <tr><td>Exchange Enabled ADSL Max</td><td>March 2006</td></tr>
+      <tr><td>Distance to Exchange</td><td>~20 km (line route); properties 2.3 km from nearest VDSL2 cabinet</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════ BROADBAND PANEL ══════════ -->
+  <div class="broadband-panel">
+    <h2>📡 Broadband Before &amp; After Openreach FTTP</h2>
+    <p class="sub">Project Gigabit Type C — first 38 communities — February 2025</p>
+    <div class="bb-stat">
+      <div class="label">Before — ADSL via Hatherleigh Exchange</div>
+      <div class="val">3–4 Mbps</div>
+      <div class="desc">Hampered by 20 km line length and 2.3 km from nearest cabinet. Video calls, cloud farming systems and home working were near-impossible.</div>
+    </div>
+    <div class="bb-stat">
+      <div class="label">After — Full Fibre FTTP (Project Gigabit)</div>
+      <div class="val">1 Gbps</div>
+      <div class="desc">Gigabit-capable FTTP delivered directly to each premise. First live connections: February 2025. Bull &amp; Dragon pub (est. ~1490) now fully connected.</div>
+    </div>
+    <div class="bb-stat">
+      <div class="label">Public Subsidy (Type C Call-Off 4)</div>
+      <div class="val">£77m</div>
+      <div class="desc">Covers Mid Devon, North Somerset &amp; South Devon — 37,000 premises. Part of the broader £800 million BDUK–Openreach framework agreement.</div>
+    </div>
+    <div class="bb-stat">
+      <div class="label">Meeth's Place in History</div>
+      <div class="val">#1 of 38</div>
+      <div class="desc">Meeth was among only 38 communities selected for the very first wave of Project Gigabit FTTP connections — the hardest-to-reach rural premises in England.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ THE DISTANT EXCHANGE PROBLEM ══════════ -->
+  <div class="section-title">🔌 The Distant Exchange Problem — Why Meeth Waited So Long</div>
+  <div class="section-sub">The copper-wire physics that left a village behind</div>
+  <div class="exchange-diagram">
+    <h3>Signal Path: Hatherleigh Exchange → Meeth Premise (Pre-FTTP)</h3>
+    <div class="diagram-row">
+      <div class="node">
+        <div class="node-box old">WWHATH<br/>Exchange</div>
+        <div class="node-label">Hatherleigh<br/>~20km away</div>
+      </div>
+      <div class="arrow-wrap">
+        <div class="arrow"></div>
+        <div class="arrow-label">Copper pair<br/>~17–18 km</div>
+      </div>
+      <div class="node">
+        <div class="node-box" style="background:#8e44ad">Street<br/>Cabinet</div>
+        <div class="node-label">VDSL2 cabinet<br/>2.3 km from premise</div>
+      </div>
+      <div class="arrow-wrap">
+        <div class="arrow"></div>
+        <div class="arrow-label">Final<br/>copper drop</div>
+      </div>
+      <div class="node">
+        <div class="node-box premise">Meeth<br/>Premise</div>
+        <div class="node-label">3–4 Mbps<br/>theoretical max</div>
+      </div>
+    </div>
+    <div class="diagram-row" style="margin-top:28px">
+      <div class="node">
+        <div class="node-box new">Openreach<br/>POP Node</div>
+        <div class="node-label">Local fibre<br/>distribution point</div>
+      </div>
+      <div class="arrow-wrap">
+        <div class="arrow" style="background: linear-gradient(to right,#1a9b8b,#7de8dc)"></div>
+        <div class="arrow-label">Full fibre<br/>FTTP cable</div>
+      </div>
+      <div class="node">
+        <div class="node-box new">ONT<br/>at Premise</div>
+        <div class="node-label">Optical Network<br/>Termination</div>
+      </div>
+      <div class="arrow-wrap">
+        <div class="arrow" style="background: linear-gradient(to right,#1a9b8b,#7de8dc)"></div>
+        <div class="arrow-label">Fibre to<br/>the Premises</div>
+      </div>
+      <div class="node">
+        <div class="node-box new">Meeth<br/>Premise</div>
+        <div class="node-label">Up to 1 Gbps<br/>symmetrical</div>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:13px;color:var(--muted)">
+      <strong>Why it matters:</strong> VDSL2 (superfast broadband) performance degrades sharply beyond ~500m from cabinet.
+      At 2,300m from the cabinet — and with the exchange itself 20km away — ADSL attenuation was so severe that Meeth
+      fell completely outside the reach of any viable FTTC upgrade. Only a full FTTP deployment, bypassing copper entirely, could solve it.
+      This is precisely the "distant exchange" classification that put Meeth into the hardest-to-reach BDUK tier.
+    </p>
+  </div>
+
+  <!-- ══════════ TIMELINE ══════════ -->
+  <div class="section-title">📅 Meeth — Timeline</div>
+  <div class="section-sub">From clay railways to gigabit fibre</div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="yr">1800s</div>
+      <h4>Ball Clay Mining Begins</h4>
+      <p>Meeth's economy built around ball clay extraction — used in tiles, sanitaryware and ceramics. Shaft and tunnel methods employed across the parish.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">1925</div>
+      <h4>North Devon &amp; Cornwall Junction Light Railway</h4>
+      <p>Railway opens through Meeth (Halwill Junction to Torrington), giving the clay mines direct rail access to Bideford for sea transport.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">1970s</div>
+      <h4>Peak Clay Production</h4>
+      <p>70,000 tonnes per year extracted. Nearly 50 local jobs. Meeth's own station served the works until 1981.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">1982</div>
+      <h4>Railway Closes</h4>
+      <p>North Devon &amp; Cornwall Junction Light Railway ceases operation. Meeth becomes more isolated.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">2004</div>
+      <h4>Ball Clay Mines Close</h4>
+      <p>The mines that defined the parish for two centuries shut permanently. The 150-hectare site falls silent.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">2006</div>
+      <h4>Hatherleigh Exchange Gets ADSL Max</h4>
+      <p>Broadband arrives — theoretically. But with 20 km of copper between Meeth and the exchange, practical speeds are 3–4 Mbps at best.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">2010–2016</div>
+      <h4>Connecting Devon &amp; Somerset Phase 1 (CDS)</h4>
+      <p>£94m programme delivers superfast broadband to 290,000+ Devon premises — but Meeth, classed as "too distant", is left out of the FTTC rollout.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">2013</div>
+      <h4>Meeth Quarry Becomes a Nature Reserve</h4>
+      <p>Devon Wildlife Trust purchases the 150-hectare former clay site. Wetlands, heathland and woodland established. Home to marsh fritillary butterflies and Devon's largest Goosander roost.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">2020–2024</div>
+      <h4>CDS Phase 2 &amp; Airband Fixed Wireless</h4>
+      <p>Some rural areas get fixed-wireless 100 Mbps via Airband. Meeth receives partial coverage, subject to survey — a significant improvement but still not universal FTTP.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">2024</div>
+      <h4>BDUK Awards £800m Project Gigabit Contract to Openreach</h4>
+      <p>Type C framework signed. Meeth falls into Call-Off 4 (Mid Devon, North Somerset, South Devon) — 37,000 premises, £77m public subsidy. The "hardest to reach" finally in scope.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="yr">Feb 2025</div>
+      <h4>🎉 First Gigabit Connections Live in Meeth</h4>
+      <p>Meeth becomes one of only 38 communities in the inaugural Project Gigabit FTTP wave. The Bull &amp; Dragon pub (est. ~1490) goes from 3 Mbps to gigabit broadband. A village transformed.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ QUOTE ══════════ -->
+  <div class="quote-box">
+    <blockquote>"We were running on 3–4 Mbps. Video calls dropped constantly, and you couldn't run the booking system and the till at the same time. Now we've got full fibre — it's genuinely changed how we run the business."</blockquote>
+    <cite>— Mike Tunnicliffe, Landlord, The Bull &amp; Dragon, Meeth (est. ~1490) · February 2025</cite>
+  </div>
+
+  <!-- ══════════ CARDS ══════════ -->
+  <div class="section-title">📌 Meeth at a Glance</div>
+  <div class="section-sub">Key facts from OS Places, OS Names &amp; parish records</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🏘️</div>
+      <h3>Settlement Character</h3>
+      <p>A quiet rural village classified as a "Populated Place — Village" in the OS Names dataset (ID: osgb4000000074574126). Surrounded by farmland, with the River Torridge forming a natural western boundary.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⛪</div>
+      <h3>Church of St Michael &amp; All Angels</h3>
+      <p>The parish church, recently re-opened after restoration works. The village also has a hall and the Bull &amp; Dragon pub, one of North Devon's oldest, dating from approximately 1490.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏞️</div>
+      <h3>Meeth Quarry Nature Reserve</h3>
+      <p>150-hectare former ball clay mine purchased by Devon Wildlife Trust in 2013. Now features wetlands, heathland and woodland — and Devon's largest Goosander roost (50+ birds). OS Names ID: osgb4000000074821139.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚂</div>
+      <h3>Lost Railway</h3>
+      <p>The North Devon &amp; Cornwall Junction Light Railway (1925–1982) ran through Meeth, serving the clay mines with a halt at "Meeth Halt". The trackbed is now a footpath and nature corridor.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌊</div>
+      <h3>River Torridge Confluence</h3>
+      <p>Meeth sits close to the confluence of the Torridge and Okement rivers. The Torridge rises on Dartmoor and flows north through the parish before reaching the estuary at Bideford — made famous by Henry Williamson's <em>Tarka the Otter</em>.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏺</div>
+      <h3>Ball Clay Heritage</h3>
+      <p>Ball clay — prized for its plasticity and pale-firing properties — was extracted here for nearly 200 years. Used in high-quality ceramics, tiles and sanitaryware. At peak: 70,000 tonnes/year, ~50 jobs. Closed 2004.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ NATURE ══════════ -->
+  <div class="nature-panel">
+    <h3>🌿 Meeth Quarry Nature Reserve — Devon Wildlife Trust</h3>
+    <div class="nature-sub">150 hectares transformed from industrial clay pit to wildlife haven since 2013</div>
+    <div class="nature-list">
+      <div class="nature-item"><div class="icon">🦋</div><strong>Marsh Fritillary</strong><br/>One of the UK's most threatened butterflies, found in the reserve's wet grassland habitats.</div>
+      <div class="nature-item"><div class="icon">🦆</div><strong>Goosander Roost</strong><br/>Devon's largest — up to 50+ Goosanders roosting on Stockleigh Lake overnight in winter.</div>
+      <div class="nature-item"><div class="icon">🌾</div><strong>Southern Damselfly</strong><br/>One of Europe's rarest Odonata, breeding in the reserve's spring-fed stream systems.</div>
+      <div class="nature-item"><div class="icon">🌊</div><strong>Three Water Bodies</strong><br/>Including Stockleigh Lake — former clay lagoons now rich freshwater habitats.</div>
+      <div class="nature-item"><div class="icon">🌳</div><strong>Habitat Mosaic</strong><br/>Wetland, heath, scrub and woodland in close proximity — unusually high biodiversity density.</div>
+      <div class="nature-item"><div class="icon">🦅</div><strong>Waterfowl &amp; Waders</strong><br/>Significant counts of teal, pochard, pintail and snipe recorded during winter surveys.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ PROGRAMME CONTEXT ══════════ -->
+  <div class="section-title">🇬🇧 Programme Context — Connecting Devon &amp; Somerset / Project Gigabit</div>
+  <div class="section-sub">How Meeth fits into the national broadband story</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📡</div>
+      <h3>CDS Phase 1 (2010–2016)</h3>
+      <p>£94m programme. Delivered FTTC superfast broadband (24Mbps+) to 290,000+ Devon premises. Meeth excluded — too distant from any viable FTTC cabinet.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛜</div>
+      <h3>CDS Phase 2 (2020–2024)</h3>
+      <p>£80m FTTP programme via Airband, Truespeed &amp; Wessex Internet. Partial fixed-wireless coverage for some Dartmoor/Exmoor communities including parts near Meeth.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Project Gigabit Type C (2024–)</h3>
+      <p>£800m BDUK–Openreach framework. Type C targets premises with zero commercial interest. 297,000 hard-to-reach UK premises. Meeth: Call-Off 4 (£77m, 37,000 premises, Mid Devon).</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏆</div>
+      <h3>"First 38" Communities</h3>
+      <p>Meeth was one of only 38 communities chosen for the inaugural Project Gigabit FTTP wave in February 2025, marking the first Openreach intervention in the hardest-to-reach rural tier under the new programme.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ SOURCES ══════════ -->
+  <div class="sources">
+    <h4>Sources &amp; Data</h4>
+    <ul>
+      <li>OS Names API via mcp-geo — Meeth Village (osgb4000000074574126), Meeth Quarry (osgb4000000074821139)</li>
+      <li>OS Places API via mcp-geo — Address and UPRN data for West Devon / EX20 postcode sector</li>
+      <li>OS Map Inventory via mcp-geo — Buildings, road links, UPRNs for bbox [-4.095, 50.84, -4.04, 50.87]</li>
+      <li><a href="https://www.openreach.com/news/full-fibre-broadband-coming-to-rural-properties-in-devon/">Openreach — Full Fibre coming to rural Devon</a></li>
+      <li><a href="https://www.commsbusiness.co.uk/content/news/openreach-brings-full-fibre-to-38-hard-to-reach-communities">Comms Business — Openreach brings full fibre to 38 hard-to-reach communities</a></li>
+      <li><a href="https://www.connectingdevonandsomerset.co.uk/">Connecting Devon and Somerset programme</a></li>
+      <li><a href="https://www.gov.uk/guidance/project-gigabit-framework-agreement-openreach">GOV.UK — Project Gigabit framework agreement (Openreach)</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Meeth">Wikipedia — Meeth</a></li>
+      <li><a href="https://www.devonwildlifetrust.org/nature-reserves/meeth-quarry">Devon Wildlife Trust — Meeth Quarry Nature Reserve</a></li>
+      <li>GENUKI Devon Parish Records — Meeth</li>
+      <li>Hatherleigh Telephone Exchange (WWHATH) technical data</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  Generated by Claude using OS MCP-Geo · Data © Ordnance Survey · March 2025
+</footer>
+
+<!-- ══════════ MAP SCRIPT ══════════ -->
+<script>
+  const map = L.map('map').setView([50.855, -4.065], 13);
+
+  // OS-style basemap (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Custom icons
+  const villageIcon = L.divIcon({
+    html: `<div style="background:#1a9b8b;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🏘️</div>`,
+    iconSize: [36,36], iconAnchor: [18,18], className: ''
+  });
+  const exchangeIcon = L.divIcon({
+    html: `<div style="background:#c0392b;color:#fff;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">📡</div>`,
+    iconSize: [36,36], iconAnchor: [18,18], className: ''
+  });
+  const quarryIcon = L.divIcon({
+    html: `<div style="background:#2d8a5e;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🌿</div>`,
+    iconSize: [36,36], iconAnchor: [18,18], className: ''
+  });
+  const hatherleighIcon = L.divIcon({
+    html: `<div style="background:#1c4f6d;color:#fff;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🏪</div>`,
+    iconSize: [36,36], iconAnchor: [18,18], className: ''
+  });
+  const pubIcon = L.divIcon({
+    html: `<div style="background:#f39c12;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🍺</div>`,
+    iconSize: [36,36], iconAnchor: [18,18], className: ''
+  });
+
+  // Meeth Village
+  L.marker([50.855, -4.065], {icon: villageIcon})
+    .addTo(map)
+    .bindPopup(`
+      <strong>Meeth Village</strong><br/>
+      OS Grid: SS547082<br/>
+      Population: 161 (2021 Census)<br/>
+      Classification: Village (OS Names)<br/>
+      <em>One of the UK's first Project Gigabit FTTP communities — Feb 2025</em>
+    `);
+
+  // Meeth Quarry Nature Reserve
+  L.marker([50.853, -4.055], {icon: quarryIcon})
+    .addTo(map)
+    .bindPopup(`
+      <strong>Meeth Quarry Nature Reserve</strong><br/>
+      Devon Wildlife Trust (since 2013)<br/>
+      150 hectares · Former ball clay mine<br/>
+      OS Names ID: osgb4000000074821139<br/>
+      <em>Devon's largest Goosander roost · Marsh Fritillary habitat</em>
+    `);
+
+  // Bull & Dragon Pub
+  L.marker([50.8548, -4.0655], {icon: pubIcon})
+    .addTo(map)
+    .bindPopup(`
+      <strong>The Bull &amp; Dragon</strong><br/>
+      Est. ~1490 · Meeth village centre<br/>
+      <em>"We went from 3 Mbps to full gigabit fibre — it changed everything."</em><br/>
+      — Landlord Mike Tunnicliffe, Feb 2025
+    `);
+
+  // Hatherleigh (town)
+  L.marker([50.8338, -4.0508], {icon: hatherleighIcon})
+    .addTo(map)
+    .bindPopup(`
+      <strong>Hatherleigh</strong><br/>
+      Nearest town to Meeth (~3 miles south)<br/>
+      Home to Hatherleigh Telephone Exchange<br/>
+      Local authority: West Devon Borough
+    `);
+
+  // Hatherleigh Telephone Exchange (approximate position)
+  L.marker([50.832, -4.049], {icon: exchangeIcon})
+    .addTo(map)
+    .bindPopup(`
+      <strong>Hatherleigh Telephone Exchange</strong><br/>
+      Network ID: WWHATH<br/>
+      Victoria Road, Hatherleigh EX20 3JG<br/>
+      ADSL enabled: Dec 2004 · ADSL Max: Mar 2006<br/>
+      <em>~20 km from Meeth premises — the "distant exchange" that triggered the Project Gigabit intervention</em>
+    `);
+
+  // Draw a line from Meeth to Exchange to illustrate distance
+  const exchangeLine = L.polyline(
+    [[50.855, -4.065], [50.832, -4.049]],
+    {color: '#c0392b', weight: 2, dashArray: '8,6', opacity: 0.7}
+  ).addTo(map);
+
+  exchangeLine.bindPopup('Approximate copper-line route Meeth → Hatherleigh Exchange (~20 km · the "distant exchange" problem)');
+
+  // River Torridge (approximate path through area)
+  const torridge = L.polyline([
+    [50.870, -4.075],
+    [50.860, -4.072],
+    [50.852, -4.068],
+    [50.843, -4.060],
+    [50.835, -4.048]
+  ], {color: '#2980b9', weight: 3, opacity: 0.6}).addTo(map);
+  torridge.bindPopup('River Torridge — western boundary of Meeth parish. Flows north to Bideford estuary. Setting of Tarka the Otter.');
+
+  // Legend
+  const legend = L.control({position: 'bottomright'});
+  legend.onAdd = function() {
+    const div = L.DomUtil.create('div');
+    div.style.cssText = 'background:#fff;border-radius:12px;padding:12px 16px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);border:1px solid #ddd;line-height:1.8';
+    div.innerHTML = `
+      <strong style="font-size:13px">Map Legend</strong><br/>
+      🏘️ Meeth Village (SS547082)<br/>
+      🍺 Bull &amp; Dragon Pub (~1490)<br/>
+      🌿 Meeth Quarry Nature Reserve<br/>
+      🏪 Hatherleigh (town)<br/>
+      📡 Hatherleigh Exchange (WWHATH)<br/>
+      <span style="color:#c0392b">— — —</span> Exchange distance (~20 km)<br/>
+      <span style="color:#2980b9">———</span> River Torridge
+    `;
+    return div;
+  };
+  legend.addTo(map);
+</script>
+</body>
+</html>

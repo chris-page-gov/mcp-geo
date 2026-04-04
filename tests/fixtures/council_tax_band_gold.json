@@ -1,0 +1,112 @@
+{
+  "provider": "hmrc_check_council_tax_band",
+  "verifiedOn": "2026-03-25",
+  "scope": "Curated public GOV.UK Council Tax band examples for deterministic council_tax.band_lookup evaluation.",
+  "cases": [
+    {
+      "id": "sw1a1aa_buckingham_palace_excerpt",
+      "payload": {
+        "postcode": "SW1A 1AA"
+      },
+      "fixture": "sw1a1aa_results.html",
+      "expectedCount": 6,
+      "expectedPresent": [
+        {
+          "address": "THE ROYAL RESIDENCE BUCKINGHAM PALACE, LONDON, SW1A 1AA",
+          "band": "H",
+          "billingAuthority": "Westminster",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/73f5a63d-044f-4721-ed6b-489edf3fa42e"
+        },
+        {
+          "address": "ROYAL GUARD ROOM, ROYAL MEWS, BUCKINGHAM PALACE, LONDON, SW1A 1AA",
+          "band": "F",
+          "billingAuthority": "Westminster",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/d8e49b33-a306-f2ae-72c5-213029717e7c"
+        },
+        {
+          "address": "GND FLR EAST ELEVATION 1 BUCKINGHAM PALACE, LONDON, SW1A 1AA",
+          "band": "Deleted",
+          "billingAuthority": "Westminster",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/19ccbd1d-a6df-5d10-c491-25f3219e9a07"
+        }
+      ],
+      "publishedDetailUrls": [
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/73f5a63d-044f-4721-ed6b-489edf3fa42e",
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/d8e49b33-a306-f2ae-72c5-213029717e7c",
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/19ccbd1d-a6df-5d10-c491-25f3219e9a07"
+      ],
+      "notes": "Curated excerpt from the public SW1A 1AA search results page. Published detail pages confirmed bands H, F, and Deleted on 2026-03-25."
+    },
+    {
+      "id": "m11ae_newton_street_excerpt",
+      "payload": {
+        "postcode": "M1 1AE"
+      },
+      "fixture": "m11ae_results.html",
+      "expectedCount": 5,
+      "expectedPresent": [
+        {
+          "address": "APARTMENT 1 AT 113 NEWTON STREET, MANCHESTER, M1 1AE",
+          "band": "D",
+          "billingAuthority": "Manchester",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/d5ad9cdb-fa7c-ce86-e5a7-9df2613cff12"
+        },
+        {
+          "address": "APARTMENT 3 AT 113 NEWTON STREET, MANCHESTER, M1 1AE",
+          "band": "C",
+          "billingAuthority": "Manchester",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/e8f72a6b-95ae-2b51-9b53-1fedf5847b6a"
+        },
+        {
+          "address": "APARTMENT 10 AT 113 NEWTON STREET, MANCHESTER, M1 1AE",
+          "band": "Deleted",
+          "billingAuthority": "Manchester",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/0a2ee008-e8fe-7853-c19c-f73a6f149bdf"
+        },
+        {
+          "address": "APARTMENT 10 AT 113 NEWTON STREET, MANCHESTER, M1 1AE",
+          "band": "C",
+          "billingAuthority": "Manchester",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/08c6aba8-e9f6-c374-51d1-355aad6299cf"
+        }
+      ],
+      "publishedDetailUrls": [
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/d5ad9cdb-fa7c-ce86-e5a7-9df2613cff12",
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/e8f72a6b-95ae-2b51-9b53-1fedf5847b6a",
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/08c6aba8-e9f6-c374-51d1-355aad6299cf"
+      ],
+      "notes": "Curated excerpt from the public M1 1AE search results page. Published detail pages confirmed bands D and C on 2026-03-25, including a second historical Deleted entry at the same address."
+    },
+    {
+      "id": "yo17hp_high_petergate_excerpt",
+      "payload": {
+        "postcode": "YO1 7HP"
+      },
+      "fixture": "yo17hp_results.html",
+      "expectedCount": 4,
+      "expectedPresent": [
+        {
+          "address": "33A HIGH PETERGATE, YORK, YO1 7HP",
+          "band": "B",
+          "billingAuthority": "City Of York",
+          "detailUrl": "https://www.tax.service.gov.uk/check-council-tax-band/property/d897a21c-b0e9-1365-8e3b-200f6e3fee10"
+        }
+      ],
+      "publishedDetailUrls": [
+        "https://www.tax.service.gov.uk/check-council-tax-band/property/d897a21c-b0e9-1365-8e3b-200f6e3fee10"
+      ],
+      "notes": "Curated excerpt from the public YO1 7HP search results page. The published detail page for 33A HIGH PETERGATE confirmed band B on 2026-03-25."
+    },
+    {
+      "id": "ls14ap_no_results",
+      "payload": {
+        "postcode": "LS1 4AP"
+      },
+      "fixture": "ls14ap_no_results.html",
+      "expectedCount": 0,
+      "expectedPresent": [],
+      "publishedDetailUrls": [],
+      "notes": "Observed public no-results page for LS1 4AP on 2026-03-25."
+    }
+  ]
+}

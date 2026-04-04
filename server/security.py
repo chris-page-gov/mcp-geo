@@ -37,7 +37,13 @@ def _is_sensitive_key_name(key: object) -> bool:
 def configured_secrets(config: object) -> list[str]:
     values: list[str] = []
     seen: set[str] = set()
-    for key in ("OS_API_KEY", "NOMIS_UID", "NOMIS_SIGNATURE"):
+    for key in (
+        "OS_API_KEY",
+        "NOMIS_UID",
+        "NOMIS_SIGNATURE",
+        "MCP_HTTP_AUTH_TOKEN",
+        "MCP_HTTP_JWT_HS256_SECRET",
+    ):
         raw = getattr(config, key, "")
         candidate = str(raw).strip() if raw is not None else ""
         if candidate and candidate not in seen:

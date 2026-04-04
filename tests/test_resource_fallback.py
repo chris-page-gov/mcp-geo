@@ -380,6 +380,164 @@ def test_raw_tools_call_requires_auth_when_enabled(client, monkeypatch) -> None:
     assert authorized.headers.get("mcp-session-id")
 
 
+def test_raw_tool_discovery_requires_auth_when_enabled(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "catalog-token")
+
+    list_unauthorized = client.get("/tools/list")
+    assert list_unauthorized.status_code == 401
+    assert list_unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert list_unauthorized.headers.get("mcp-session-id")
+
+    describe_unauthorized = client.get("/tools/describe")
+    assert describe_unauthorized.status_code == 401
+    assert describe_unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert describe_unauthorized.headers.get("mcp-session-id")
+
+    search_unauthorized = client.post("/tools/search", json={"query": "postcode"})
+    assert search_unauthorized.status_code == 401
+    assert search_unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert search_unauthorized.headers.get("mcp-session-id")
+
+    list_authorized = client.get(
+        "/tools/list",
+        headers={"Authorization": "Bearer catalog-token"},
+    )
+    assert list_authorized.status_code == 200
+    assert list_authorized.headers.get("mcp-session-id")
+
+    describe_authorized = client.get(
+        "/tools/describe",
+        headers={"Authorization": "Bearer catalog-token"},
+    )
+    assert describe_authorized.status_code == 200
+    assert describe_authorized.headers.get("mcp-session-id")
+
+    search_authorized = client.post(
+        "/tools/search",
+        headers={"Authorization": "Bearer catalog-token"},
+        json={"query": "postcode"},
+    )
+    assert search_authorized.status_code == 200
+    assert search_authorized.headers.get("mcp-session-id")
+
+
+def test_raw_tool_list_invalid_query_still_requires_auth_when_enabled(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "catalog-token")
+
+    unauthorized = client.get("/tools/list", params={"limit": "abc"})
+    assert unauthorized.status_code == 401
+    assert unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert unauthorized.headers.get("mcp-session-id")
+
+    authorized = client.get(
+        "/tools/list",
+        params={"limit": "abc"},
+        headers={"Authorization": "Bearer catalog-token"},
+    )
+    assert authorized.status_code == 400
+    assert authorized.json()["code"] == "INVALID_INPUT"
+    assert authorized.headers.get("mcp-session-id")
+
+
+def test_raw_metrics_requires_auth_when_enabled(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "metrics-token")
+
+    unauthorized = client.get("/metrics")
+    assert unauthorized.status_code == 401
+    assert unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert unauthorized.headers.get("mcp-session-id")
+
+    authorized = client.get(
+        "/metrics",
+        headers={"Authorization": "Bearer metrics-token"},
+    )
+    assert authorized.status_code == 200
+    assert authorized.headers.get("mcp-session-id")
+    assert "app_requests_total" in authorized.text
+
+
+def test_raw_playground_routes_require_auth_when_enabled(client, monkeypatch, tmp_path) -> None:
+    from server import config
+    from server.mcp import http_transport, playground
+
+    http_transport._SESSION_STATE.clear()
+    playground.TOOL_CALL_TRANSCRIPT.clear()
+    playground.PLAYGROUND_EVENTS.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "playground-token")
+    monkeypatch.setattr(config.settings, "PLAYGROUND_EVENT_LOG_PATH", str(tmp_path / "events.jsonl"))
+
+    transcript_unauthorized = client.get("/playground/transcript")
+    assert transcript_unauthorized.status_code == 401
+    assert transcript_unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert transcript_unauthorized.headers.get("mcp-session-id")
+
+    evaluation_unauthorized = client.get("/playground/evaluation/latest")
+    assert evaluation_unauthorized.status_code == 401
+    assert evaluation_unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert evaluation_unauthorized.headers.get("mcp-session-id")
+
+    authorized_headers = {"Authorization": "Bearer playground-token"}
+
+    tool_call = client.post(
+        "/playground/tool_call",
+        headers=authorized_headers,
+        json={"tool": "os_mcp_descriptor", "input": {}, "output": {}, "sessionId": "auth-session"},
+    )
+    assert tool_call.status_code == 200
+    assert tool_call.headers.get("mcp-session-id")
+
+    events = client.post(
+        "/playground/events",
+        headers=authorized_headers,
+        json={"eventType": "prompt", "payload": {"text": "auth"}, "sessionId": "auth-session"},
+    )
+    assert events.status_code == 200
+    assert events.headers.get("mcp-session-id")
+
+    transcript = client.get(
+        "/playground/transcript",
+        headers=authorized_headers,
+        params={"sessionId": "auth-session"},
+    )
+    assert transcript.status_code == 200
+    assert transcript.headers.get("mcp-session-id")
+
+    orchestration = client.get(
+        "/playground/orchestration",
+        headers=authorized_headers,
+        params={"sessionId": "auth-session"},
+    )
+    assert orchestration.status_code == 200
+    assert orchestration.headers.get("mcp-session-id")
+
+    evaluation = client.get(
+        "/playground/evaluation/latest",
+        headers=authorized_headers,
+    )
+    assert evaluation.status_code == 200
+    assert evaluation.headers.get("mcp-session-id")
+
+    reset = client.delete(
+        "/playground/orchestration",
+        headers=authorized_headers,
+    )
+    assert reset.status_code == 200
+    assert reset.headers.get("mcp-session-id")
+
+
 def test_raw_tools_call_validation_errors_keep_session_header(client, monkeypatch) -> None:
     from server.mcp import http_transport
 

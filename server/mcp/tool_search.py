@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import difflib
+import fnmatch
 import os
 import re
 from enum import Enum
@@ -56,6 +57,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "ons_geo": ToolCategory.CODES,
     "ons_codes": ToolCategory.CODES,
     "nomis": ToolCategory.STATISTICS,
+    "council_tax": ToolCategory.ADMIN,
     "os_apps": ToolCategory.APPS,
     "os_mcp": ToolCategory.CORE,
 }
@@ -84,6 +86,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "ons_geo": ["ons", "geography", "postcode", "uprn", "onspd", "onsud", "nspl", "nsul"],
     "ons_codes": ["codes", "dimension", "options"],
     "nomis": ["nomis", "labour", "employment", "census", "dataset", "statistics"],
+    "council_tax": ["council", "tax", "band", "billing", "authority", "voa", "hmrc", "property"],
     "os_apps": ["ui", "widget", "interactive", "mcp-apps", "event", "log", "telemetry"],
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
@@ -137,6 +140,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
     "ons_geo_lookup": ("ons_geo.*",),
     "ons_data": ("ons_data.*",),
     "nomis_data": ("nomis.*",),
+    "property_tax": ("council_tax.*",),
     "apps_ui": ("os_apps.render_*", "os_apps.log_event"),
 }
 
@@ -164,6 +168,7 @@ EXTERNAL_PREFIXES: Set[str] = {
     "ons_search",
     "ons_select",
     "nomis",
+    "council_tax",
 }
 
 STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter", "os_map.export"}
@@ -459,6 +464,68 @@ def _score_match(query: str, tool: Tool, keywords: Sequence[str]) -> float:
     return score
 
 
+_UNSUPPORTED_REGEX_METACHARS = frozenset("()[]{}|+")
+
+
+def _translate_regex_mode_query(query: str) -> tuple[str, bool, bool, bool]:
+    normalized = query.strip()
+    if not normalized:
+        return "", False, False, False
+    anchor_start = normalized.startswith("^")
+    anchor_end = normalized.endswith("$") and not normalized.endswith(r"\$")
+    body = normalized[1:] if anchor_start else normalized
+    if anchor_end:
+        body = body[:-1]
+    translated: list[str] = []
+    has_wildcards = False
+    index = 0
+    while index < len(body):
+        char = body[index]
+        if char == "\\":
+            index += 1
+            if index >= len(body):
+                raise ValueError("Invalid regex: trailing escape")
+            escaped = body[index]
+            if escaped not in {".", "*", "?", "\\", "^", "$"}:
+                raise ValueError(f"Invalid regex: unsupported escape '\\{escaped}'")
+            translated.append(escaped.lower())
+            index += 1
+            continue
+        if char in _UNSUPPORTED_REGEX_METACHARS:
+            raise ValueError(f"Invalid regex: unsupported metacharacter {char!r}")
+        if char == "." and index + 1 < len(body) and body[index + 1] == "*":
+            translated.append("*")
+            has_wildcards = True
+            index += 2
+            continue
+        if char in {"*", "?"}:
+            has_wildcards = True
+        translated.append(char.lower())
+        index += 1
+    return "".join(translated), anchor_start, anchor_end, has_wildcards
+
+
+def _matches_regex_mode(query: str, haystack: str) -> bool:
+    translated, anchor_start, anchor_end, has_wildcards = _translate_regex_mode_query(query)
+    if not translated:
+        return False
+    lowered_haystack = haystack.lower()
+    if not has_wildcards:
+        if anchor_start and anchor_end:
+            return lowered_haystack == translated
+        if anchor_start:
+            return lowered_haystack.startswith(translated)
+        if anchor_end:
+            return lowered_haystack.endswith(translated)
+        return translated in lowered_haystack
+    pattern = translated
+    if not anchor_start:
+        pattern = f"*{pattern}"
+    if not anchor_end:
+        pattern = f"{pattern}*"
+    return fnmatch.fnmatchcase(lowered_haystack, pattern)
+
+
 def search_tools(
     query: str,
     *,
@@ -477,12 +544,6 @@ def search_tools(
         exclude_toolsets=exclude_toolsets,
     )
     results: list[dict[str, Any]] = []
-    pattern = None
-    if mode == "regex":
-        try:
-            pattern = re.compile(query, re.IGNORECASE)
-        except re.error as exc:
-            raise ValueError(f"Invalid regex: {exc}") from exc
     normalized_category = normalize_category_alias(category)
     for tool in tools:
         meta = get_tool_metadata(tool)
@@ -490,10 +551,8 @@ def search_tools(
             continue
         keywords = meta.get("keywords", [])
         if mode == "regex":
-            if not pattern:
-                continue
             hay = f"{tool.name} {tool.description} {' '.join(keywords)}"
-            if not pattern.search(hay):
+            if not _matches_regex_mode(query, hay):
                 continue
             score = 1.0
         else:

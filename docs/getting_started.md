@@ -29,11 +29,15 @@ Set env vars for live data when you have keys:
 
 Host-side verification wrappers:
 - `./scripts/pytest-local -q`
-- `./scripts/ruff-local check <paths...>`
-- `./scripts/mypy-local <paths...>`
+- `./scripts/ruff-local`
+- `./scripts/mypy-local`
+- `./scripts/ruff-local [paths...]`
+- `./scripts/mypy-local [paths...]`
 - These wrappers prefer the running repo devcontainer app container, then the
   repo `.venv`, then `uv run`. Override with
   `MCP_GEO_LOCAL_TOOL_MODE=devcontainer|venv|uv|path`.
+- The zero-argument wrapper path runs the same curated phased Ruff/mypy slice
+  that CI enforces today; explicit paths override that default.
 
 Host shell best-practice:
 - Keep non-secret runtime vars in your shell profile (or sourced env file).
@@ -220,6 +224,10 @@ In Inspector you can:
 The playground is a lightweight MCP client built with Svelte + Vite. It uses
 the MCP TypeScript SDK to connect over HTTP and records tool calls and prompt
 events to the server's `/playground/*` endpoints.
+
+If `MCP_HTTP_AUTH_MODE` is enabled, only `GET /health` stays public. The
+playground API routes, raw `/tools/*`, raw `/resources/*`, and `/metrics` then
+require the same bearer auth as `/mcp`.
 
 From the repo root:
 

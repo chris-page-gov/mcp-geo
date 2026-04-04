@@ -16,6 +16,7 @@ from server import maps_proxy, observability
 from server.audit import api as audit_api
 from server.logging import configure_logging
 from server.mcp import http_transport, playground, resources, tools
+from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
 from server.security import configured_secrets, mask_in_text
 
 from .config import settings
@@ -156,7 +157,10 @@ app.include_router(audit_api.router)
 
 
 @app.get("/metrics")
-def metrics() -> FastAPIResponse:
+def metrics(request: Request) -> FastAPIResponse:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
     if not settings.METRICS_ENABLED:
         return JSONResponse(
             status_code=404,
@@ -165,6 +169,7 @@ def metrics() -> FastAPIResponse:
                 "code": "NOT_ENABLED",
                 "message": "Metrics disabled",
             },
+            headers=auth_headers,
         )
 
     lines = [
@@ -190,7 +195,9 @@ def metrics() -> FastAPIResponse:
     lines.extend(observability.build_prometheus_lines())
     lines.extend(http_transport.build_prometheus_lines())
     body = "\n".join(lines) + "\n"
-    return FastAPIResponse(content=body, media_type="text/plain; version=0.0.4")
+    response = FastAPIResponse(content=body, media_type="text/plain; version=0.0.4")
+    apply_auth_headers(response, auth_headers)
+    return response
 
 
 @app.get("/health")

@@ -19,10 +19,11 @@ def test_playground_transcript_initial():
 def test_playground_invalid_payload():
     # Missing required 'tool'
     resp = client.post("/playground/tool_call", json={"input": {"x": 1}})
-    assert resp.status_code == 200
+    assert resp.status_code == 400
     body = resp.json()
     assert body.get("isError")
     assert body.get("code") == "INVALID_INPUT"
+    assert body.get("message") == "Invalid payload"
 
 
 def test_playground_tool_call_rejects_malformed_json():
@@ -47,6 +48,14 @@ def test_playground_events_rejects_malformed_json():
     body = resp.json()
     assert body.get("code") == "INVALID_INPUT"
     assert body.get("message") == "Malformed JSON request body"
+
+
+def test_playground_events_invalid_payload_uses_generic_message():
+    resp = client.post("/playground/events", json={"payload": {"x": 1}})
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+    assert body.get("message") == "Invalid payload"
 
 
 def test_playground_record_and_prune():

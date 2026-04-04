@@ -54,6 +54,11 @@ class Settings(_PydanticBaseSettings):
     ONS_GEO_CACHE_DB: str = "ons_geo_cache.sqlite"
     ONS_GEO_CACHE_INDEX_PATH: str = "resources/ons_geo_cache_index.json"
     ONS_GEO_PRIMARY_DERIVATION: str = "exact"
+    COUNCIL_TAX_BAND_LIVE_ENABLED: bool = True
+    COUNCIL_TAX_BASE_URL: str = "https://www.tax.service.gov.uk/check-council-tax-band"
+    COUNCIL_TAX_HTTP_TIMEOUT_SECONDS: float = 10.0
+    COUNCIL_TAX_HTTP_RETRIES: int = 2
+    COUNCIL_TAX_USER_AGENT: str = "mcp-geo-council-tax-pilot/0.1"
     OS_EXPORT_INLINE_MAX_BYTES: int = 200_000
     OS_DATA_CACHE_DIR: str = "data/cache/os"
     OS_DATA_CACHE_TTL: float = 3600.0
@@ -95,6 +100,14 @@ class Settings(_PydanticBaseSettings):
     OPENAI_WIDGET_DOMAIN: str = ""
     MCP_APPS_RESOURCE_LINK: bool = False
     MCP_APPS_CONTENT_MODE: str = ""
+    MCP_HTTP_AUTH_MODE: str = "off"
+    MCP_HTTP_AUTH_TOKEN: str = ""
+    MCP_HTTP_JWT_HS256_SECRET: str = ""
+    MCP_HTTP_JWT_ISSUER: str = ""
+    MCP_HTTP_JWT_AUDIENCE: str = ""
+    MCP_HTTP_JWT_REQUIRED_SCOPES: str = ""
+    MCP_HTTP_SESSION_TTL: float = 900.0
+    MCP_HTTP_SESSION_TOOL_CALL_LIMIT: int = 100
     MCP_TOOLS_DEFAULT_TOOLSET: str = ""
     MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS: str = ""
     MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS: str = ""

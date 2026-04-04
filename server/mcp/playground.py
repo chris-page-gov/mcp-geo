@@ -4,11 +4,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from server.config import settings
+from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
 from server.observability import (
     record_playground_event,
     record_playground_orchestration_request,
@@ -47,6 +48,18 @@ def _append_event_log(entry: dict[str, Any]) -> None:
         handle.write(json.dumps(entry) + "\n")
 
 
+def _invalid_payload_response(auth_headers: dict[str, str]) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "Invalid payload",
+        },
+        headers=auth_headers,
+    )
+
+
 def _latest_evaluation_payload() -> dict[str, Any]:
     candidates = [
         Path("data/evaluation_results_live.json"),
@@ -79,13 +92,21 @@ def _summarize(values: list[dict[str, Any]], key: str) -> dict[str, int]:
 
 
 @router.get("/playground/transcript")
-async def get_transcript(sessionId: str | None = None):
+async def get_transcript(request: Request, response: Response, sessionId: str | None = None):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     filtered = _filter_by_session(TOOL_CALL_TRANSCRIPT, session_id=sessionId)
     return {"transcript": filtered[-MAX_TRANSCRIPT:]}
 
 
 @router.post("/playground/tool_call")
-async def record_tool_call(request: Request):
+async def record_tool_call(request: Request, response: Response):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     try:
         data_raw = await request.json()
     except (json.JSONDecodeError, ValueError):
@@ -96,15 +117,12 @@ async def record_tool_call(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "Malformed JSON request body",
             },
+            headers=auth_headers,
         )
     try:
         model = PlaygroundToolCall(**data_raw)
-    except Exception as exc:  # simple validation error path
-        return {
-            "isError": True,
-            "code": "INVALID_INPUT",
-            "message": f"Invalid payload: {exc}",
-        }
+    except ValidationError:
+        return _invalid_payload_response(auth_headers)
     entry = {
         "tool": model.tool,
         "input": model.input,
@@ -121,13 +139,21 @@ async def record_tool_call(request: Request):
 
 
 @router.get("/playground/events")
-async def list_events(sessionId: str | None = None):
+async def list_events(request: Request, response: Response, sessionId: str | None = None):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     filtered = _filter_by_session(PLAYGROUND_EVENTS, session_id=sessionId)
     return {"events": filtered[-MAX_EVENTS:]}
 
 
 @router.post("/playground/events")
-async def record_event(request: Request):
+async def record_event(request: Request, response: Response):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     try:
         data_raw = await request.json()
     except (json.JSONDecodeError, ValueError):
@@ -138,15 +164,12 @@ async def record_event(request: Request):
                 "code": "INVALID_INPUT",
                 "message": "Malformed JSON request body",
             },
+            headers=auth_headers,
         )
     try:
         model = PlaygroundEvent(**data_raw)
-    except Exception as exc:  # simple validation error path
-        return {
-            "isError": True,
-            "code": "INVALID_INPUT",
-            "message": f"Invalid payload: {exc}",
-        }
+    except ValidationError:
+        return _invalid_payload_response(auth_headers)
     entry = {
         "eventType": model.eventType,
         "payload": model.payload,
@@ -164,7 +187,11 @@ async def record_event(request: Request):
 
 
 @router.get("/playground/orchestration")
-async def orchestration_summary(sessionId: str | None = None):
+async def orchestration_summary(request: Request, response: Response, sessionId: str | None = None):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     record_playground_orchestration_request()
     transcript = _filter_by_session(TOOL_CALL_TRANSCRIPT, session_id=sessionId)
     events = _filter_by_session(PLAYGROUND_EVENTS, session_id=sessionId)
@@ -187,7 +214,11 @@ async def orchestration_summary(sessionId: str | None = None):
 
 
 @router.delete("/playground/orchestration")
-async def reset_orchestration_state():
+async def reset_orchestration_state(request: Request, response: Response):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     cleared_tools = len(TOOL_CALL_TRANSCRIPT)
     cleared_events = len(PLAYGROUND_EVENTS)
     TOOL_CALL_TRANSCRIPT.clear()
@@ -202,5 +233,9 @@ async def reset_orchestration_state():
 
 
 @router.get("/playground/evaluation/latest")
-async def latest_evaluation():
+async def latest_evaluation(request: Request, response: Response):
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    apply_auth_headers(response, auth_headers)
     return _latest_evaluation_payload()

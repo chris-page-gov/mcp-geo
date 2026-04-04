@@ -205,6 +205,7 @@ def _write_repo_files(
     include_ci_gates: bool,
     include_validator_job: bool,
     include_scorecard: bool,
+    use_wrapper_ruff_gate: bool = False,
 ) -> None:
     _write(
         repo_root / "server/mcp/http_transport.py",
@@ -252,7 +253,13 @@ def _write_repo_files(
     _write(repo_root / "scripts/validate-owasp-mcp-local", "#!/usr/bin/env bash\n")
     workflow_lines = ["name: CI"]
     if include_ci_gates:
-        workflow_lines.extend(["ruff check", "pip-audit", "gitleaks"])
+        workflow_lines.extend(
+            [
+                "./scripts/ruff-local" if use_wrapper_ruff_gate else "ruff check",
+                "pip-audit",
+                "gitleaks",
+            ]
+        )
     if include_validator_job:
         workflow_lines.extend(["validate_owasp_mcp_server.py", "upload-artifact"])
     if include_scorecard:
@@ -271,6 +278,7 @@ def _make_fixture_repo(
     include_ci_gates: bool = True,
     include_validator_job: bool = True,
     include_scorecard: bool = True,
+    use_wrapper_ruff_gate: bool = False,
 ) -> tuple[Path, list[ToolSnapshot]]:
     repo_root = tmp_path / "repo"
     tools = [_tool("os_places.search"), _tool("os_maps.render")]
@@ -289,6 +297,7 @@ def _make_fixture_repo(
         include_ci_gates=include_ci_gates,
         include_validator_job=include_validator_job,
         include_scorecard=include_scorecard,
+        use_wrapper_ruff_gate=use_wrapper_ruff_gate,
     )
     return repo_root, tools
 
@@ -309,6 +318,14 @@ def test_seeded_pass_fixture_is_compliant(tmp_path: Path):
     report, backlog = validate_repo(repo_root, registered_tools=tools)
     assert report["summary"]["verdict"] == "compliant"
     assert _control_status(report, "OMCP-PI-001") == "not_applicable"
+    assert backlog["items"] == []
+
+
+def test_wrapper_based_ruff_gate_counts_for_deploy_control(tmp_path: Path):
+    repo_root, tools = _make_fixture_repo(tmp_path, use_wrapper_ruff_gate=True)
+    report, backlog = validate_repo(repo_root, registered_tools=tools)
+    assert report["summary"]["verdict"] == "compliant"
+    assert _control_status(report, "OMCP-DEPLOY-003") == "pass"
     assert backlog["items"] == []
 
 

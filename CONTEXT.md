@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-03-16
+Last updated: 2026-03-25
 Owner: @chris-page-gov
 
 ## Purpose
@@ -31,7 +31,8 @@ assumptions change.
   `06_api_contracts.md` for interface details, `10_mcp_apps_ui.md` for UI behaviors, and
   `12_backlog_and_plan.md` for delivery sequencing.
 - Current scope snapshot: HTTP and STDIO MCP server; OS Places/Names/NGD/linked IDs/maps/
-  admin lookup/ONS tools; boundary cache pipeline; MCP-Apps UI resources via `ui://`.
+  admin lookup/ONS/NOMIS/Council Tax pilot tools; boundary cache pipeline; MCP-Apps UI
+  resources via `ui://`.
 
 ## Codex Usage (Mac App + Devcontainer)
 
@@ -51,6 +52,36 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the new 2026-03-25 experimental Council Tax pilot under
+  `tools/council_tax.py`, `README.md`, `PROGRESS.MD`, and related tests. The
+  first implementation is intentionally scoped to England/Wales public band
+  lookup only via the GOV.UK/HMRC service, with premise-level band matches and
+  billing-authority metadata as the target contract. Live probing on
+  2026-03-25 showed that the upstream public form flow can reject scripted
+  POSTs with the generic service-error page even when CSRF/cookie handling is
+  mirrored, so the pilot keeps the HTML-scrape provider explicit and surfaces
+  that instability as an upstream constraint rather than treating it as a
+  stable API. The follow-on gold fixture pack in
+  `tests/fixtures/council_tax*` now captures curated published examples from
+  the GOV.UK service, and the live no-results page title is treated as a
+  grounded empty-search outcome rather than a parser failure.
+- Maintaining the 2026-03-24 remediation follow-up under
+  `docs/reports/mcp_geo_full_code_review_2026-03-24.md` and `PROGRESS.MD`.
+  The raw HTTP auth gap is now closed for `/metrics`, `/tools/list`,
+  `/tools/describe`, `/tools/search`, and `/playground/*`, leaving only
+  `GET /health` public when MCP HTTP auth is enabled. The shared
+  secret-redaction path now also masks `MCP_HTTP_AUTH_TOKEN` and
+  `MCP_HTTP_JWT_HS256_SECRET` in generic exception responses and structured
+  logs. The host-side wrapper zero-argument path is now repaired for
+  `scripts/ruff-local` and `scripts/mypy-local`, those wrapper defaults now
+  define the active curated static-analysis slice, and CI plus
+  `scripts/check_non_runtime_quality.sh` reuse that shared gate directly. The
+  first follow-on expansion now includes shared `server/config.py` and
+  `server/security.py` infrastructure, plus the directly related Ruff
+  regression tests. The OWASP MCP validator also now treats wrapper-based Ruff
+  CI gates as equivalent to inline `ruff check`, preserving the compliant
+  baseline after the wrapper cleanup. Remaining review-driven work is the next
+  incremental expansion beyond that shared config/security slice.
 - Maintaining Docker MCP catalog submission readiness in the repo, including
   the new root `LICENSE` / `SECURITY.md`, Docker OCI image labels, the active
   doc cleanup that standardizes on `OS_API_KEY` plus optional

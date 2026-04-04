@@ -3,7 +3,39 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-16
+Last updated: 2026-03-25
+
+## Council Tax band lookup pilot (2026-03-25)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CTAX-PILOT-1 Experimental `council_tax.band_lookup` surface | done | none | Added `tools/council_tax.py` with a dedicated GOV.UK/HMRC HTML client, strict input validation, discovery/tool-search wiring, and focused mocked regressions. Current pilot scope is England/Wales only and explicitly marked experimental because the upstream is a public form flow rather than a published API; live probing on 2026-03-25 confirmed that scripted POSTs can receive the service's generic error page, so the implementation keeps that failure mode explicit rather than treating the source as stable machine-to-machine infrastructure. |
+| CTAX-PILOT-2 Gold evaluation fixture set for published band examples | done | CTAX-PILOT-1 | Added a deterministic gold fixture pack under `tests/fixtures/council_tax*` plus `tests/test_council_tax_gold_eval.py`, using curated public search-result excerpts and verified property-detail URLs from the GOV.UK Council Tax service. The pilot now also recognizes the live service's `No results` page title so postcode-level misses return an empty result set rather than `UPSTREAM_INVALID_RESPONSE`. |
+
+## Full code review baseline (2026-03-24)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REV-BASE-1 Repository-wide code review and detailed report | done | none | Added `docs/reports/mcp_geo_full_code_review_2026-03-24.md` and indexed it in `docs/reports/README.md`. Review validation included `./scripts/pytest-local -q` (`1202 passed`, `6 skipped`, coverage `90.26%`), direct auth-enabled HTTP probes for `/metrics`, `/tools/*`, `/playground/*`, and local-quality-tool wrapper checks. Key findings: unauthenticated exposure of `/metrics`, `/tools/list`, `/tools/describe`, `/tools/search`, and `/playground/*` under MCP HTTP auth modes; central secret redaction omits `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET`; `scripts/ruff-local` and `scripts/mypy-local` fail on the zero-argument path in `scripts/run-local-tool`; and CI static-analysis scope is narrower than the repo guidance claims. |
+
+## Remediation implementation (2026-03-24)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REV-REM-1 Raw HTTP auth hardening and lockstep docs | done | REV-BASE-1 | Protected raw `/tools/list`, `/tools/describe`, `/tools/search`, `/metrics`, and `/playground/*` with the shared HTTP auth helper so only `GET /health` remains public when MCP HTTP auth is enabled. Updated `README.md`, `AGENTS.md`, `docs/Build.md`, `docs/getting_started.md`, and `docs/spec_package/08_observability_ops.md` to describe the new boundary, and added focused regressions covering authenticated and unauthenticated access plus the updated `400` playground validation semantics. |
+| REV-REM-2 Secret redaction expansion for MCP HTTP auth secrets | done | REV-BASE-1 | Expanded the shared secret collector to include `MCP_HTTP_AUTH_TOKEN` and `MCP_HTTP_JWT_HS256_SECRET`, added focused regressions for generic exception responses and structured logging, and updated the active security/config docs to describe the central masking contract. |
+| REV-REM-3 Local quality-wrapper repair and phased static-analysis follow-up | done | REV-BASE-1 | Fixed the zero-argument `scripts/run-local-tool` path used by `scripts/ruff-local` and `scripts/mypy-local`, made the zero-arg wrapper path run the current curated static-analysis slice, added subprocess regressions for default and explicit-argument dispatch, and switched CI plus `scripts/check_non_runtime_quality.sh` to reuse that shared wrapper-defined gate. |
+| REV-REM-4 Ruff scope expansion beyond the current curated CI slice | done | REV-REM-3 | Expanded the wrapper/CI-backed Ruff slice to include `server/config.py`, `server/security.py`, and the directly related security/wrapper regression tests once the added files were green under the local wrapper. |
+| REV-REM-5 Mypy scope expansion beyond the current curated CI slice | done | REV-REM-3 | Expanded the wrapper/CI-backed mypy slice to include shared `server/config.py` and `server/security.py` infrastructure after confirming the extra slice was clean under `./scripts/mypy-local`. |
+| REV-REM-5A OWASP validator compatibility for wrapper-based CI gates | done | REV-REM-3 | Updated `server/owasp_mcp_validation.py` and its regression fixtures so `OMCP-DEPLOY-003` treats `./scripts/ruff-local` as an acceptable Ruff gate alongside inline `ruff check`, keeping the committed compliant baseline valid after the CI wrapper cleanup. |
+| REV-REM-6 Further Ruff slice expansion beyond shared config/security infrastructure | pending | REV-REM-4 | Continue widening Ruff across additional `server/` and `tools/` modules only after each next slice is green under the wrapper-defined gate and recorded in docs/tracking. |
+| REV-REM-7 Further mypy slice expansion beyond shared config/security infrastructure | pending | REV-REM-5 | Continue widening mypy beyond the shared config/security infrastructure only when each additional slice is clean and the curated CI/docs surface is updated in the same change. |
 
 ## Docker MCP catalog readiness (2026-03-16)
 

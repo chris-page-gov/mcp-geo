@@ -53,6 +53,7 @@ the fallback simplified view when no local browser key is available.
 ## Governance and Assurance
 
 - 2026-02-21: [Safe-by-design governance review](safe_by_design_review_2026-02-21.md)
+- 2026-03-24: [Full code review](mcp_geo_full_code_review_2026-03-24.md)
 
 ## OWASP MCP Validation
 

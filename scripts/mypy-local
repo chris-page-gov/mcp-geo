@@ -2,4 +2,24 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-exec "$ROOT_DIR/scripts/run-local-tool" mypy mypy types-requests -- "$@"
+
+DEFAULT_ARGS=(
+  --follow-imports=skip
+  server/config.py
+  server/security.py
+  server/mcp/tools.py
+  server/mcp/resource_catalog.py
+  tools/os_mcp.py
+  tools/os_peat.py
+  tests/test_os_peat.py
+  tests/test_psr_peat_e2e.py
+  tests/test_evaluation_harness_full.py
+  tests/test_os_mcp_route_query.py
+)
+
+ARGS=("$@")
+if [[ $# -eq 0 ]]; then
+  ARGS=("${DEFAULT_ARGS[@]}")
+fi
+
+exec "$ROOT_DIR/scripts/run-local-tool" mypy mypy types-requests -- "${ARGS[@]}"
