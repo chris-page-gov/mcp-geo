@@ -202,6 +202,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     # Newly added specialist OS surfaces are covered by dedicated unit/contract tests
     # and can be folded into evaluation questions in a later expansion pass.
     specialist_tools = {
+        "council_tax.band_lookup",
         "os_downloads.list_products",
         "os_downloads.get_product",
         "os_downloads.list_product_downloads",

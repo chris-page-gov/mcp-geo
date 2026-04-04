@@ -101,6 +101,34 @@ def test_council_tax_band_lookup_rejects_invalid_postcode(client: TestClient) ->
     assert response.json()["code"] == "INVALID_INPUT"
 
 
+def test_council_tax_band_lookup_accepts_blank_postcode_with_other_fields(monkeypatch) -> None:
+    submitted: dict[str, str] = {}
+
+    def fake_get_search_form():
+        return 200, FORM_HTML
+
+    def fake_submit_search(form_data: dict[str, str]):
+        submitted.update(form_data)
+        return 200, RESULTS_HTML
+
+    monkeypatch.setattr(council_tax.client, "get_search_form", fake_get_search_form)
+    monkeypatch.setattr(council_tax.client, "submit_search", fake_submit_search)
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={
+            "tool": "council_tax.band_lookup",
+            "postcode": "",
+            "propertyName": "Flat 1",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 1
+    assert "postcode" not in submitted
+    assert submitted["propertyName"] == "Flat 1"
+
+
 def test_council_tax_band_lookup_rejects_invalid_band(client: TestClient) -> None:
     response = client.post(
         "/tools/call",
@@ -108,6 +136,16 @@ def test_council_tax_band_lookup_rejects_invalid_band(client: TestClient) -> Non
     )
     assert response.status_code == 400
     assert response.json()["code"] == "INVALID_INPUT"
+
+
+def test_council_tax_band_lookup_rejects_overlong_band(client: TestClient) -> None:
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.band_lookup", "postcode": "SW1A 1AA", "band": "ABC"},
+    )
+    assert response.status_code == 400
+    assert response.json()["code"] == "INVALID_INPUT"
+    assert "band" in response.json()["message"]
 
 
 def test_council_tax_band_lookup_rejects_overlong_reference(client: TestClient) -> None:

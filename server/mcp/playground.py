@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from server.config import settings
 from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
@@ -46,6 +46,18 @@ def _append_event_log(entry: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry) + "\n")
+
+
+def _invalid_payload_response(auth_headers: dict[str, str]) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "Invalid payload",
+        },
+        headers=auth_headers,
+    )
 
 
 def _latest_evaluation_payload() -> dict[str, Any]:
@@ -109,16 +121,8 @@ async def record_tool_call(request: Request, response: Response):
         )
     try:
         model = PlaygroundToolCall(**data_raw)
-    except Exception as exc:  # simple validation error path
-        return JSONResponse(
-            status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Invalid payload",
-            },
-            headers=auth_headers,
-        )
+    except ValidationError:
+        return _invalid_payload_response(auth_headers)
     entry = {
         "tool": model.tool,
         "input": model.input,
@@ -164,16 +168,8 @@ async def record_event(request: Request, response: Response):
         )
     try:
         model = PlaygroundEvent(**data_raw)
-    except Exception as exc:  # simple validation error path
-        return JSONResponse(
-            status_code=400,
-            content={
-                "isError": True,
-                "code": "INVALID_INPUT",
-                "message": "Invalid payload",
-            },
-            headers=auth_headers,
-        )
+    except ValidationError:
+        return _invalid_payload_response(auth_headers)
     entry = {
         "eventType": model.eventType,
         "payload": model.payload,

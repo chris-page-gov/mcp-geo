@@ -44,6 +44,12 @@ def test_search_tools_regex_mode_and_schemas():
     assert "outputSchema" in first
 
 
+def test_search_tools_regex_mode_supports_safe_wildcards():
+    results = search_tools("post*", mode="regex")
+    assert results
+    assert any(item.get("name") == "ons_geo.by_postcode" for item in results)
+
+
 def test_search_tools_invalid_regex():
     try:
         search_tools("(", mode="regex")

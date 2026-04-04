@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import difflib
+import fnmatch
 import os
 import re
 from enum import Enum
@@ -463,6 +464,68 @@ def _score_match(query: str, tool: Tool, keywords: Sequence[str]) -> float:
     return score
 
 
+_UNSUPPORTED_REGEX_METACHARS = frozenset("()[]{}|+")
+
+
+def _translate_regex_mode_query(query: str) -> tuple[str, bool, bool, bool]:
+    normalized = query.strip()
+    if not normalized:
+        return "", False, False, False
+    anchor_start = normalized.startswith("^")
+    anchor_end = normalized.endswith("$") and not normalized.endswith(r"\$")
+    body = normalized[1:] if anchor_start else normalized
+    if anchor_end:
+        body = body[:-1]
+    translated: list[str] = []
+    has_wildcards = False
+    index = 0
+    while index < len(body):
+        char = body[index]
+        if char == "\\":
+            index += 1
+            if index >= len(body):
+                raise ValueError("Invalid regex: trailing escape")
+            escaped = body[index]
+            if escaped not in {".", "*", "?", "\\", "^", "$"}:
+                raise ValueError(f"Invalid regex: unsupported escape '\\{escaped}'")
+            translated.append(escaped.lower())
+            index += 1
+            continue
+        if char in _UNSUPPORTED_REGEX_METACHARS:
+            raise ValueError(f"Invalid regex: unsupported metacharacter {char!r}")
+        if char == "." and index + 1 < len(body) and body[index + 1] == "*":
+            translated.append("*")
+            has_wildcards = True
+            index += 2
+            continue
+        if char in {"*", "?"}:
+            has_wildcards = True
+        translated.append(char.lower())
+        index += 1
+    return "".join(translated), anchor_start, anchor_end, has_wildcards
+
+
+def _matches_regex_mode(query: str, haystack: str) -> bool:
+    translated, anchor_start, anchor_end, has_wildcards = _translate_regex_mode_query(query)
+    if not translated:
+        return False
+    lowered_haystack = haystack.lower()
+    if not has_wildcards:
+        if anchor_start and anchor_end:
+            return lowered_haystack == translated
+        if anchor_start:
+            return lowered_haystack.startswith(translated)
+        if anchor_end:
+            return lowered_haystack.endswith(translated)
+        return translated in lowered_haystack
+    pattern = translated
+    if not anchor_start:
+        pattern = f"*{pattern}"
+    if not anchor_end:
+        pattern = f"{pattern}*"
+    return fnmatch.fnmatchcase(lowered_haystack, pattern)
+
+
 def search_tools(
     query: str,
     *,
@@ -481,12 +544,6 @@ def search_tools(
         exclude_toolsets=exclude_toolsets,
     )
     results: list[dict[str, Any]] = []
-    pattern = None
-    if mode == "regex":
-        try:
-            pattern = re.compile(query, re.IGNORECASE)
-        except re.error as exc:
-            raise ValueError(f"Invalid regex: {exc}") from exc
     normalized_category = normalize_category_alias(category)
     for tool in tools:
         meta = get_tool_metadata(tool)
@@ -494,10 +551,8 @@ def search_tools(
             continue
         keywords = meta.get("keywords", [])
         if mode == "regex":
-            if not pattern:
-                continue
             hay = f"{tool.name} {tool.description} {' '.join(keywords)}"
-            if not pattern.search(hay):
+            if not _matches_regex_mode(query, hay):
                 continue
             score = 1.0
         else:

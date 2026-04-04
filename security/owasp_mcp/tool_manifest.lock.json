@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 85,
+  "tool_count": 86,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -50,6 +50,14 @@
       "input_schema_sha256": "301e36749ff55809d1374e653cae08e47cd0a2f10e0bf659ae529a0028798c2e",
       "name": "admin_lookup.search_cache",
       "output_schema_sha256": "5a726fc6923f367f6300eb468b06d0ab3e2063b0106295080abcd77c9cca2a6d",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Experimental England/Wales Council Tax band lookup via the public GOV.UK service.",
+      "description_sha256": "9c42259fa91c1b3e1aab91ff5163806365f547fc3dd6ae2bbbd5b20a5d841e47",
+      "input_schema_sha256": "487ab47162adc12e4923fb91d69dca4d767b1d5e612d9e6bb1787cca4a34e9fa",
+      "name": "council_tax.band_lookup",
+      "output_schema_sha256": "be21ad1db9f6d1771576787a2cc38fa230b8f8408f52e687bef8b675c8ca80d7",
       "version": "0.1.0"
     },
     {

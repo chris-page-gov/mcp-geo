@@ -425,6 +425,28 @@ def test_raw_tool_discovery_requires_auth_when_enabled(client, monkeypatch) -> N
     assert search_authorized.headers.get("mcp-session-id")
 
 
+def test_raw_tool_list_invalid_query_still_requires_auth_when_enabled(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "catalog-token")
+
+    unauthorized = client.get("/tools/list", params={"limit": "abc"})
+    assert unauthorized.status_code == 401
+    assert unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert unauthorized.headers.get("mcp-session-id")
+
+    authorized = client.get(
+        "/tools/list",
+        params={"limit": "abc"},
+        headers={"Authorization": "Bearer catalog-token"},
+    )
+    assert authorized.status_code == 400
+    assert authorized.json()["code"] == "INVALID_INPUT"
+    assert authorized.headers.get("mcp-session-id")
+
+
 def test_raw_metrics_requires_auth_when_enabled(client, monkeypatch) -> None:
     from server.mcp import http_transport
 

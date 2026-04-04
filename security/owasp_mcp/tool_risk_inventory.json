@@ -7,7 +7,7 @@
       "requires_user_context": false,
       "side_effect_level": "none"
     },
-    "generated_on": "2026-03-13",
+    "generated_on": "2026-04-04",
     "policy_note": "Read-only tools default to no HITL requirement unless explicitly marked high-risk.",
     "project": "mcp-geo"
   },
@@ -56,6 +56,14 @@
       "data_sensitivity": "public",
       "high_risk_action": false,
       "name": "admin_lookup.search_cache",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "council_tax.band_lookup",
       "network_write": false,
       "requires_user_context": false,
       "side_effect_level": "none"

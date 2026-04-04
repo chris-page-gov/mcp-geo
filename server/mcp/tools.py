@@ -160,12 +160,38 @@ def _http_error_response(
     return JSONResponse(status_code=status_code, content=content, headers=headers or None)
 
 
+def _parse_positive_int_query(
+    value: str | None,
+    *,
+    default: int,
+    field_name: str,
+    minimum: int,
+) -> tuple[int, int | JSONResponse]:
+    if value is None:
+        return 200, default
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return 400, _http_error_response(
+            status_code=400,
+            code="INVALID_INPUT",
+            message=f"{field_name} must be an integer greater than or equal to {minimum}",
+        )
+    if parsed < minimum:
+        return 400, _http_error_response(
+            status_code=400,
+            code="INVALID_INPUT",
+            message=f"{field_name} must be an integer greater than or equal to {minimum}",
+        )
+    return 200, parsed
+
+
 @router.get("/tools/list")
 def list_tools_endpoint(
     request: Request,
     response: Response,
-    limit: int = 10,
-    page: int = 1,
+    limit: str | None = None,
+    page: str | None = None,
     toolset: str | None = None,
     includeToolsets: str | None = None,
     excludeToolsets: str | None = None,
@@ -174,6 +200,26 @@ def list_tools_endpoint(
     if auth_error is not None:
         return auth_error
     apply_auth_headers(response, auth_headers)
+    limit_status, parsed_limit = _parse_positive_int_query(
+        limit,
+        default=10,
+        field_name="limit",
+        minimum=1,
+    )
+    if limit_status != 200:
+        assert isinstance(parsed_limit, JSONResponse)
+        parsed_limit.headers.update(auth_headers)
+        return parsed_limit
+    page_status, parsed_page = _parse_positive_int_query(
+        page,
+        default=1,
+        field_name="page",
+        minimum=1,
+    )
+    if page_status != 200:
+        assert isinstance(parsed_page, JSONResponse)
+        parsed_page.headers.update(auth_headers)
+        return parsed_page
     names = list_tools()
     parsed_include_toolsets = parse_toolset_list(includeToolsets)
     parsed_exclude_toolsets = parse_toolset_list(excludeToolsets)
@@ -197,9 +243,11 @@ def list_tools_endpoint(
         )
     original_to_sanitized, _ = build_tool_name_maps(names)
     sanitized = [original_to_sanitized.get(name, name) for name in filtered_names]
-    start = (page - 1) * limit
-    end = start + limit
-    next_page_token = str(page + 1) if end < len(sanitized) else None
+    assert isinstance(parsed_limit, int)
+    assert isinstance(parsed_page, int)
+    start = (parsed_page - 1) * parsed_limit
+    end = start + parsed_limit
+    next_page_token = str(parsed_page + 1) if end < len(sanitized) else None
     return {
         "tools": sanitized[start:end],
         "nextPageToken": next_page_token,

@@ -534,7 +534,7 @@ def _validate_and_build_query(
 ) -> tuple[int, dict[str, str] | dict[str, Any]]:
     postcode = payload.get("postcode")
     normalized_postcode = None
-    if postcode is not None:
+    if _normalize_space(str(postcode or "")):
         normalized_postcode = _normalize_postcode(postcode)
         if normalized_postcode is None:
             return 400, {
@@ -551,7 +551,10 @@ def _validate_and_build_query(
             "message": "page must be a non-negative integer",
         }
 
-    band = _clean_optional_text(payload.get("band"), max_length=2)
+    band_status, band_value = _validate_optional_text(payload, "band", max_length=2)
+    if band_status != 200:
+        return band_status, band_value
+    band = band_value
     if band is not None:
         band = band.upper()
         if band not in {"A", "B", "C", "D", "E", "F", "G", "H", "I"}:
