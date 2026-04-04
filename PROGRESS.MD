@@ -3,7 +3,31 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-03-25
+Last updated: 2026-04-04
+
+## LandIS phase 2 surfacing review (2026-04-04)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| LANDIS-P2-1 Archive triage and phase-2 surfacing plan | done | LANDIS-MVP-6 | Added `docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md`, documenting the complete authenticated archive state (`106` items, `33` data services, `73` non-feature payloads, `0` manifest errors) and turning it into a family-level surfacing decision: keep the MVP screening tools stable, normalize NATMAP next, treat NSI as evidence-first, and defer AUGER/catalogue layers from the first analytical expansion. |
+| LANDIS-P2-2 Machine-readable archive triage manifest | pending | LANDIS-P2-1 | Create a checked-in manifest that classifies every mirrored LandIS service as `warehouse_next`, `resource_only`, `archive_only`, or `deferred`, with the chosen runtime family (`natmap`, `nsi`, `auger`, `catalogue`) and the archive paths/service URLs needed for repeatable ingestion. |
+| LANDIS-P2-3 Normalized NATMAP core ingestion design | pending | LANDIS-P2-1 | Define the PostGIS schema and loading rules for `NationalSoilMap`, `NATMAPsoilscapes`, `NATMAPassociations`, `SOILSERIES`, `HORIZONfundamentals`, and `HORIZONhydraulics`, including the join model and provenance/version contract that should underpin the first phase-2 analytical tools. |
+| LANDIS-P2-4 Phase-2 public contract for new LandIS families | pending | LANDIS-P2-1, LANDIS-P2-3 | Design the additive phase-2 MCP namespaces around `landis_natmap.*`, `landis_nsi.*`, and archive-backed resources, while explicitly keeping the current MVP tools (`landis_catalog.*`, `landis_metadata.get`, `landis_soilscapes.*`, `landis_derive.pipe_risk`) stable and additive-only. |
+
+## LandIS MVP implementation (2026-04-04)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| LANDIS-MVP-1 Product registry, config surface, and static resources | done | none | Added LandIS settings in `server/config.py` and `.env.example`, a checked-in product registry in `resources/landis_products.json`, supporting guidance/licence resources under `resources/landis/`, prompt catalog entries for the three LandIS briefs, discovery/tool-search wiring, and `README.md` documentation for the new namespace. |
+| LANDIS-MVP-2 Warehouse-backed Soilscapes and derived tool runtime | done | LANDIS-MVP-1 | Added `server/landis.py` plus the new tool modules `tools/landis_catalog.py`, `tools/landis_metadata.py`, `tools/landis_soilscapes.py`, and `tools/landis_derive.py`. The runtime now supports offline-safe registry listing/metadata plus warehouse-backed Soilscapes point lookup, area summaries, and area-based pipe corrosion / shrink-swell screening with explicit caveats and provenance blocks. |
+| LANDIS-MVP-3 Ingestion scaffolding and normalized schema contract | done | LANDIS-MVP-1 | Added `scripts/landis_schema.sql` and `scripts/landis_ingest.py` to define the minimum PostGIS warehouse schema for LandIS MVP datasets, including product registry, dataset provenance, Soilscapes polygons, and normalized pipe-risk polygons. |
+| LANDIS-MVP-4 Regression coverage and evaluation-harness alignment | done | LANDIS-MVP-2 | Added focused LandIS tests in `tests/test_landis_tools.py`, `tests/test_landis_resources.py`, and `tests/test_landis_ingest.py`, plus evaluation-harness alignment so the new LandIS tools are treated as specialist surfaces until the canonical full-evaluation question bank is expanded to cover them directly. |
+| LANDIS-MVP-5 Authenticated portal inventory and documentation index | done | LANDIS-MVP-3 | Added `scripts/landis_portal_inventory.py`, plus generated inventories at `research/landis-data-source/landis_portal_inventory_2026-04-04.json` and `docs/reports/landis_portal_inventory_2026-04-04.md`, so the authenticated Atlas route now yields a reproducible index of the protected LandIS data catalog, portal pages, web experiences, maps, and supporting media without storing session tokens. |
+| LANDIS-MVP-6 Authenticated portal download mirror | done | LANDIS-MVP-5 | Added `scripts/landis_portal_download.py` so the authenticated Atlas route can mirror the indexed portal items to local storage, writing per-item metadata, raw item payloads for documentation/media, and chunked GeoJSON/JSON exports for Feature Service layers and tables. |
 
 ## Council Tax band lookup pilot (2026-03-25)
 

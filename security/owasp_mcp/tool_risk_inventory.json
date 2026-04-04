@@ -71,6 +71,46 @@
     {
       "data_sensitivity": "public",
       "high_risk_action": false,
+      "name": "landis_catalog.list_products",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_derive.pipe_risk",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_metadata.get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_soilscapes.area_summary",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_soilscapes.point",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
       "name": "nomis.codelists",
       "network_write": false,
       "requires_user_context": false,

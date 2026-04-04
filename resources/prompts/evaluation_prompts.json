@@ -176,6 +176,51 @@
       "tags": [
         "tiles"
       ]
+    },
+    {
+      "name": "landis_planner_soil_constraints_brief",
+      "title": "LandIS: Planner Soil Constraints Brief",
+      "description": "Summarize generalized soil constraints and caveats for a planning area.",
+      "question": "Given an area geometry, summarize the dominant Soilscapes classes, key soil constraints, and the caveats that a planning officer should carry into an evidence pack.",
+      "intent": "landis_planning_brief",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "landis",
+        "planning",
+        "soil"
+      ]
+    },
+    {
+      "name": "landis_water_utility_pipe_risk_brief",
+      "title": "LandIS: Water Utility Pipe Risk Brief",
+      "description": "Screen corrosion and shrink-swell risk for a water utility area of interest.",
+      "question": "Given an area geometry, produce a corrosion and shrink-swell pipe risk screening summary, explain the drivers, and include a verification checklist before trenching or asset intervention.",
+      "intent": "landis_pipe_risk",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "landis",
+        "utilities",
+        "pipe-risk"
+      ]
+    },
+    {
+      "name": "landis_catchment_soil_behaviour_brief",
+      "title": "LandIS: Catchment Soil Behaviour Brief",
+      "description": "Summarize generalized soil behaviour and caveats for catchment-style screening.",
+      "question": "Given an area geometry, summarize the dominant Soilscapes classes, likely generalized soil behaviour patterns, and the caveats that a catchment manager should keep in view.",
+      "intent": "landis_catchment_brief",
+      "difficulty": "advanced",
+      "requires_os_api": false,
+      "requires_ons_live": false,
+      "tags": [
+        "landis",
+        "catchment",
+        "soil"
+      ]
     }
   ]
 }

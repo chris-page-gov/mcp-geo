@@ -203,6 +203,11 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     # and can be folded into evaluation questions in a later expansion pass.
     specialist_tools = {
         "council_tax.band_lookup",
+        "landis_catalog.list_products",
+        "landis_derive.pipe_risk",
+        "landis_metadata.get",
+        "landis_soilscapes.area_summary",
+        "landis_soilscapes.point",
         "os_downloads.list_products",
         "os_downloads.get_product",
         "os_downloads.list_product_downloads",

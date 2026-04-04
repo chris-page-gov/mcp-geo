@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 86,
+  "tool_count": 91,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -58,6 +58,46 @@
       "input_schema_sha256": "487ab47162adc12e4923fb91d69dca4d767b1d5e612d9e6bb1787cca4a34e9fa",
       "name": "council_tax.band_lookup",
       "output_schema_sha256": "be21ad1db9f6d1771576787a2cc38fa230b8f8408f52e687bef8b675c8ca80d7",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List the LandIS MVP product registry with coverage, access tier, and resource hints.",
+      "description_sha256": "0be70aa399a36dda0f680aa81e4e94cc31525ddd97bca87f16417c792b8a310a",
+      "input_schema_sha256": "68cbe57f75f3384e2e14f0255637b9ae7b62cbbf990e6ad874b985035c62c208",
+      "name": "landis_catalog.list_products",
+      "output_schema_sha256": "9875bd6d0f45ff73937df65af59f7a1a599880a8933e9fa527cf05adee5192c8",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Screen corrosion and shrink-swell pipe risk for a bbox or GeoJSON Polygon/MultiPolygon.",
+      "description_sha256": "705d36a8317b41befe5f11b4ed41acdbcafc1c376ab7590fdd1472aa7d336f95",
+      "input_schema_sha256": "c778041a95bb633900e2d06b89016b51b0a8c722c0cb11812ec840565c019cd9",
+      "name": "landis_derive.pipe_risk",
+      "output_schema_sha256": "8f79d31ad25614605ae81d50c4c3b95ad8bcd90fab61c5f3368b4ee0ce652c30",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Retrieve LandIS product metadata, provenance notes, and linked resources.",
+      "description_sha256": "421d2ef44235446d9b1aa14359d4c30953c8827f379d6702159f95030f4dbf55",
+      "input_schema_sha256": "4ba3aad5d897e61caab5978ac354425cfd348327c2884d6ebb57bd18d4e005b6",
+      "name": "landis_metadata.get",
+      "output_schema_sha256": "f7a9f786216ab9c651add14288ef219dc6f1beb7a9b01398592681dabca064c8",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Summarize LandIS Soilscapes coverage for a bbox or GeoJSON Polygon/MultiPolygon.",
+      "description_sha256": "c34f49437a357d511f0c9af4125fdac422a77bfb2d50efac44567d48f5ace43a",
+      "input_schema_sha256": "1525af71e4dfd5b5b697b60e6c846d00d933656fdf3bdfd5fbf1da2efabbaeb8",
+      "name": "landis_soilscapes.area_summary",
+      "output_schema_sha256": "0ca44e6ae1d4be8b7890efe8eb1cacdb6661c86b408625b088eb5a6450a6c2c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Return the LandIS Soilscapes class and caveats for a WGS84 point.",
+      "description_sha256": "e6b709e563e9cb46ef53e4198b6e03587bdc8e77a8a50c223f3fa6691d551b6a",
+      "input_schema_sha256": "b2ec54c1476e9094ac1212630e8a626e3ec0730ef4b5d76ef374dbd6cbda32f4",
+      "name": "landis_soilscapes.point",
+      "output_schema_sha256": "a11bd89679d381dbeab46f243956ba46af04584f779fbdce7392733ace198343",
       "version": "0.1.0"
     },
     {

@@ -1,0 +1,172 @@
+{
+  "version": "2026-04-04-mvp",
+  "updatedAt": "2026-04-04",
+  "sources": [
+    {
+      "title": "LandIS as AI-accessible soil data infrastructure: evidence, use cases, and an MCP access strategy",
+      "path": "research/landis-data-source/LandIS as AI-accessible soil data infrastructure_ evidence, use cases, and an MCP access strategy.md",
+      "lastReviewed": "2026-04-04"
+    }
+  ],
+  "products": [
+    {
+      "id": "soilscapes",
+      "title": "LandIS Soilscapes",
+      "family": "soilscapes",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "generalized regional polygons",
+      "scale": "1:250,000 class family context",
+      "accessTier": "open-access portal plus local warehouse",
+      "resourceUri": "resource://mcp-geo/landis-products",
+      "datasetVersion": "2026-mvp",
+      "updatedAt": "2026-04-04",
+      "tags": ["soil", "soilscapes", "screening", "planning"],
+      "abstract": "Generalized soil pattern layer for regional screening and briefing outputs.",
+      "lineage": "Derived from the LandIS Soilscapes product family and normalized into the local LandIS warehouse for point and area summary tooling.",
+      "limitations": [
+        "Generalized polygons should not be treated as parcel-scale or trench-scale certainty.",
+        "Outputs require field verification before engineering or regulatory use."
+      ],
+      "citations": [
+        {
+          "title": "Soilscapes use and applications brochure",
+          "url": "https://www.landis.org.uk/downloads/downloads/Soilscapes_Brochure.pdf"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-docs-soil-classification",
+        "resource://mcp-geo/landis-licence-current"
+      ],
+      "sourceUrl": "https://www.landis.org.uk/",
+      "license": "Open-access portal terms still require operator validation for redistribution specifics.",
+      "lastReviewed": "2026-04-04"
+    },
+    {
+      "id": "pipe-risk",
+      "title": "LandIS Pipe Risk Screening",
+      "family": "derived-screening",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "area screening overlay",
+      "scale": "screening only",
+      "accessTier": "mcp-geo derived tool",
+      "resourceUri": "resource://mcp-geo/landis-products",
+      "datasetVersion": "2026-mvp",
+      "updatedAt": "2026-04-04",
+      "tags": ["utilities", "corrosion", "shrink-swell", "trenching"],
+      "abstract": "Derived corrosion and shrink-swell screening layer intended for early pipe-risk triage rather than design approval.",
+      "lineage": "Aggregates normalized LandIS-derived corrosion and shrink-swell attributes inside the local warehouse and exposes a caveated area summary.",
+      "limitations": [
+        "This is a screening indicator and not an engineering sign-off.",
+        "Made ground, recent utility works, and drainage interventions may materially change local conditions."
+      ],
+      "citations": [
+        {
+          "title": "LandIS data applications",
+          "url": "https://www.landis.org.uk/overview/applications.cfm"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-licence-current",
+        "resource://mcp-geo/landis-docs-soil-data-structures"
+      ],
+      "sourceUrl": "https://www.landis.org.uk/",
+      "license": "Derived screening output built from LandIS-backed warehouse tables; review LandIS licence terms before redistribution.",
+      "lastReviewed": "2026-04-04"
+    },
+    {
+      "id": "soil-data-structures",
+      "title": "LandIS Soil Data Structures and Relationships",
+      "family": "documentation",
+      "coverage": "England and Wales",
+      "spatialType": "document",
+      "resolution": "schema and join guidance",
+      "scale": "n/a",
+      "accessTier": "checked-in MCP resource",
+      "resourceUri": "resource://mcp-geo/landis-docs-soil-data-structures",
+      "datasetVersion": "2024-04 reference",
+      "updatedAt": "2026-04-04",
+      "tags": ["documentation", "joins", "natmap", "series"],
+      "abstract": "Join guidance for moving from LandIS associations to component series and related attributes.",
+      "lineage": "Curated MCP-facing summary of the LandIS soil data structures paper.",
+      "limitations": [
+        "This resource is a concise operational summary, not a replacement for the original source document."
+      ],
+      "citations": [
+        {
+          "title": "Soil data structures and relationships",
+          "url": "https://www.landis.org.uk/downloads/downloads/Soil%20Data%20Structures.pdf"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-docs-soil-data-structures"
+      ],
+      "sourceUrl": "https://www.landis.org.uk/downloads/downloads/Soil%20Data%20Structures.pdf",
+      "license": "Original LandIS document terms apply.",
+      "lastReviewed": "2026-04-04"
+    },
+    {
+      "id": "soil-classification",
+      "title": "LandIS Soil Classification Guidance",
+      "family": "documentation",
+      "coverage": "England and Wales",
+      "spatialType": "document",
+      "resolution": "classification guidance",
+      "scale": "n/a",
+      "accessTier": "checked-in MCP resource",
+      "resourceUri": "resource://mcp-geo/landis-docs-soil-classification",
+      "datasetVersion": "2024-04 reference",
+      "updatedAt": "2026-04-04",
+      "tags": ["documentation", "classification", "soil", "glossary"],
+      "abstract": "Operational summary of the LandIS national soil map and classification guide for MCP callers.",
+      "lineage": "Curated MCP-facing summary of the LandIS classification paper.",
+      "limitations": [
+        "This resource is a concise operational summary, not a replacement for the original source document."
+      ],
+      "citations": [
+        {
+          "title": "National Soil Map and Soil Classification",
+          "url": "https://www.landis.org.uk/downloads/downloads/Soil%20Classification.pdf"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-docs-soil-classification"
+      ],
+      "sourceUrl": "https://www.landis.org.uk/downloads/downloads/Soil%20Classification.pdf",
+      "license": "Original LandIS document terms apply.",
+      "lastReviewed": "2026-04-04"
+    },
+    {
+      "id": "licence-current",
+      "title": "LandIS Licence and Open Access Status",
+      "family": "governance",
+      "coverage": "England and Wales",
+      "spatialType": "document",
+      "resolution": "licensing summary",
+      "scale": "n/a",
+      "accessTier": "checked-in MCP resource",
+      "resourceUri": "resource://mcp-geo/landis-licence-current",
+      "datasetVersion": "2026-04-04 review",
+      "updatedAt": "2026-04-04",
+      "tags": ["licence", "governance", "open-access", "provenance"],
+      "abstract": "Current governance note on the open-access transition and remaining licence questions that must be checked before wider redistribution.",
+      "lineage": "Derived from the LandIS report and official LandIS portal/home-page statements available on 2026-04-04.",
+      "limitations": [
+        "Portal licence text still requires direct operator validation before relying on redistribution assumptions."
+      ],
+      "citations": [
+        {
+          "title": "LandIS homepage",
+          "url": "https://www.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-licence-current"
+      ],
+      "sourceUrl": "https://www.landis.org.uk/",
+      "license": "Validation required against current LandIS portal terms.",
+      "lastReviewed": "2026-04-04"
+    }
+  ]
+}

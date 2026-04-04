@@ -9,6 +9,34 @@ All notable changes to this project will be documented in this file.
 - Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
+- Added the LandIS MVP namespace, including `landis_catalog.list_products`,
+  `landis_metadata.get`, `landis_soilscapes.point`,
+  `landis_soilscapes.area_summary`, and `landis_derive.pipe_risk`, backed by
+  the new LandIS runtime helpers in `server/landis.py`.
+- Added LandIS product and guidance resources:
+  `resource://mcp-geo/landis-products`,
+  `resource://mcp-geo/landis-docs-soil-data-structures`,
+  `resource://mcp-geo/landis-docs-soil-classification`, and
+  `resource://mcp-geo/landis-licence-current`, plus three LandIS prompt
+  templates for planner, water-utility, and catchment soil briefings.
+- Added LandIS warehouse scaffolding via `scripts/landis_schema.sql` and
+  `scripts/landis_ingest.py`, defining the minimum PostGIS ingestion contract
+  for the Soilscapes and pipe-risk MVP datasets with explicit provenance
+  tables.
+- Added `scripts/landis_portal_inventory.py` plus generated LandIS catalog
+  inventories at `research/landis-data-source/landis_portal_inventory_2026-04-04.json`
+  and `docs/reports/landis_portal_inventory_2026-04-04.md`, documenting the
+  authenticated Atlas-visible portal datasets, documentation pages, maps,
+  applications, and supporting assets.
+- Added `scripts/landis_portal_download.py` to mirror the authenticated LandIS
+  portal to local storage, including raw item payload capture for docs/media
+  and chunked layer/table exports for Feature Services.
+- Added the follow-on LandIS phase-2 architecture report
+  `docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md`, documenting how
+  the completed authenticated archive (`106` mirrored items with `0` manifest
+  errors) should evolve into the next MCP surface: keep the validated MVP
+  stable, normalize NATMAP next, treat NSI as evidence-first, and defer AUGER
+  plus catalogue/reference layers from the first analytical expansion.
 - Added the full repository review report
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
   reports catalog, recorded the remediation baseline in `PROGRESS.MD` and
@@ -31,6 +59,9 @@ All notable changes to this project will be documented in this file.
   covering the `NO_API_KEY` path across both transports.
 
 ### Changed
+- Tool/resource discovery now includes the LandIS namespace and resources, and
+  the full evaluation harness treats the initial LandIS tool set as specialist
+  surfaces until the canonical question bank expands to cover them directly.
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
   on release-tag pushes, limiting it to pull requests and the default branch so
   `v*` release tags do not fail on the action's unsupported tag-push path. The

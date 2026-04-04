@@ -52,6 +52,10 @@ _IMPORT_MODULES = [
     "tools.os_map",
     "tools.os_resources",
     "tools.os_offline",
+    "tools.landis_catalog",
+    "tools.landis_metadata",
+    "tools.landis_soilscapes",
+    "tools.landis_derive",
     "tools.os_mcp",
     "tools.os_apps",
 ]
@@ -125,6 +129,10 @@ _PREFIX_IMPORTS = {
     "os_map": ["tools.os_map"],
     "os_resources": ["tools.os_resources"],
     "os_offline": ["tools.os_offline"],
+    "landis_catalog": ["tools.landis_catalog"],
+    "landis_metadata": ["tools.landis_metadata"],
+    "landis_soilscapes": ["tools.landis_soilscapes"],
+    "landis_derive": ["tools.landis_derive"],
     "os_mcp": ["tools.os_mcp"],
     "os_apps": ["tools.os_apps"],
 }

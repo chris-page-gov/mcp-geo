@@ -53,6 +53,7 @@ dev = [
     "psycopg[binary]",
 ]
 boundaries = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely", "psycopg[binary]"]
+landis = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely", "psycopg[binary]"]
 
 [tool.ruff]
 line-length = 100

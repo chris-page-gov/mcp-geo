@@ -397,6 +397,11 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
 | council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
+| landis_catalog.list_products        | LandIS MVP product registry and access tiers                                  |
+| landis_metadata.get                | LandIS product metadata, provenance, and linked resources                     |
+| landis_soilscapes.point            | LandIS Soilscapes class lookup for a WGS84 point                              |
+| landis_soilscapes.area_summary     | LandIS Soilscapes area composition summary                                    |
+| landis_derive.pipe_risk            | LandIS-derived corrosion and shrink-swell pipe risk screening                 |
 | ons_data.query                      | Query live ONS observations (dataset/edition/version or term)                 |
 | ons_data.dimensions                 | List ONS observation dimensions for a live dataset                            |
 | ons_data.get_observation            | Retrieve a single live observation                                            |
@@ -428,6 +433,37 @@ manifest, cache status, and local ONS code cache entries).
 - `GET /resources/list` returns skill, UI, and data resource descriptors (with provenance metadata).
 - `GET /resources/read?uri=skills://mcp-geo/getting-started` returns skills guidance.
 - `GET /resources/read?uri=ui://mcp-geo/geography-selector` returns MCP-Apps UI HTML.
+- `GET /resources/read?uri=resource://mcp-geo/landis-products` returns the checked-in LandIS MVP registry.
+
+### LandIS Soil Screening MVP
+
+The LandIS MVP adds a small, evidence-heavy soil screening surface rather than a
+full UI workbench. The checked-in registry and prompt resources work offline;
+the spatial tools require a normalized PostGIS warehouse.
+
+Use:
+
+- `landis_catalog.list_products` to discover the supported MVP products and
+  linked resources.
+- `landis_metadata.get` to retrieve provenance and limitations for a specific
+  LandIS product.
+- `landis_soilscapes.point` and `landis_soilscapes.area_summary` for generalized
+  Soilscapes lookups.
+- `landis_derive.pipe_risk` for caveated corrosion and shrink-swell screening.
+
+Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
+and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with
+`python scripts/landis_ingest.py --dsn ... --soilscapes <file> --pipe-risk <file>`.
+To inventory the authenticated LandIS portal itself from a local Atlas sign-in,
+run `python scripts/landis_portal_inventory.py`. The generated machine-readable
+catalog lands in `research/landis-data-source/landis_portal_inventory_2026-04-04.json`
+and the human-readable index lands in
+`docs/reports/landis_portal_inventory_2026-04-04.md`.
+To mirror the authenticated portal payloads to local storage, run
+`python scripts/landis_portal_download.py --destination /Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04`.
+The downloader reuses the Atlas session, stores per-item metadata plus raw item
+payloads, and exports Feature Service layers/tables in chunked GeoJSON/JSON
+files under the destination root without storing the session token itself.
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources

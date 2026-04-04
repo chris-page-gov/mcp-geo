@@ -31,6 +31,11 @@ This folder contains human-readable run reports and investigation summaries.
 
 - 2026-03-16: [Road Stat USRN integration task brief](road_stat_usrn_integration_task_brief_2026-03-16.md)
 
+## LandIS Portal Inventory
+
+- 2026-04-04: [LandIS portal inventory](landis_portal_inventory_2026-04-04.md)
+- 2026-04-04: [LandIS phase 2 surfacing plan](landis_phase_2_surfacing_plan_2026-04-04.md)
+
 ## Place Profiling
 
 Wheelchair-access HTML reports now include an optional browser-side `OS Detailed`
