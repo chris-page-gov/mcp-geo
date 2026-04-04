@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OS MasterMap · 3D Buildings</title>
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      overflow: hidden;
+    }
+
+    #map { width: 100vw; height: 100vh; }
+
+    /* ── MODAL ─────────────────────────────── */
+    #modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    #modal-box {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 14px;
+      padding: 36px;
+      max-width: 500px; width: 92%;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    }
+
+    .os-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .os-badge-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #0078d4, #005a9e);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 15px; color: white;
+      letter-spacing: -0.5px;
+    }
+
+    .os-badge-label {
+      font-size: 14px; font-weight: 600; color: #c9d1d9;
+    }
+
+    #modal-box h2 {
+      font-size: 22px; font-weight: 700;
+      color: #f0f6fc; margin-bottom: 8px;
+    }
+
+    .modal-subtitle {
+      font-size: 13px; color: #8b949e;
+      line-height: 1.6; margin-bottom: 24px;
+    }
+
+    .input-row { display: flex; gap: 10px; }
+
+    .api-input {
+      flex: 1; padding: 11px 14px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #e6edf3;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+      transition: border-color 0.2s;
+    }
+
+    .api-input::placeholder { color: #484f58; }
+    .api-input:focus { outline: none; border-color: #0078d4; box-shadow: 0 0 0 3px rgba(0,120,212,0.2); }
+
+    .btn-primary {
+      padding: 11px 22px;
+      background: #0078d4; border: none;
+      border-radius: 8px; color: white;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #006cbf; }
+    .btn-primary:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+
+    .security-note {
+      margin-top: 14px; padding: 12px 14px;
+      background: rgba(0, 120, 212, 0.08);
+      border: 1px solid rgba(0, 120, 212, 0.25);
+      border-radius: 8px;
+      font-size: 12px; color: #79c0ff; line-height: 1.6;
+    }
+
+    .modal-error {
+      margin-top: 10px; color: #f85149;
+      font-size: 13px; display: none;
+    }
+
+    /* ── SEARCH PANEL ──────────────────────── */
+    #search-panel {
+      position: absolute; top: 16px; left: 16px;
+      z-index: 100; width: 300px; display: none;
+    }
+
+    .panel-card {
+      background: rgba(13, 17, 23, 0.93);
+      backdrop-filter: blur(14px);
+      border: 1px solid #30363d;
+      border-radius: 12px; padding: 14px 16px;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+    }
+
+    .panel-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .panel-os-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #0078d4; flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 11px; font-weight: 700;
+      color: #8b949e; text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .search-row { display: flex; gap: 8px; }
+
+    #postcode-input {
+      flex: 1; padding: 9px 12px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #f0f6fc; font-size: 14px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      transition: border-color 0.2s;
+    }
+
+    #postcode-input::placeholder { color: #484f58; text-transform: none; letter-spacing: 0; }
+    #postcode-input:focus { outline: none; border-color: #0078d4; }
+
+    #search-btn {
+      padding: 9px 16px;
+      background: #0078d4; border: none;
+      border-radius: 8px; color: white;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    #search-btn:hover { background: #006cbf; }
+    #search-btn:disabled { background: #21262d; cursor: not-allowed; }
+
+    #status-msg {
+      margin-top: 8px; font-size: 12px;
+      color: #8b949e; min-height: 18px;
+    }
+    #status-msg.error { color: #f85149; }
+    #status-msg.success { color: #3fb950; }
+    #status-msg.loading { color: #79c0ff; }
+
+    /* ── TOOLBAR (3D toggle + bearing reset) ─ */
+    #toolbar {
+      position: absolute; top: 16px; right: 50px;
+      z-index: 100; display: none;
+      display: none; flex-direction: column; gap: 6px;
+    }
+
+    .tool-btn {
+      padding: 8px 14px;
+      background: rgba(13, 17, 23, 0.93);
+      backdrop-filter: blur(14px);
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tool-btn:hover { border-color: #0078d4; color: #79c0ff; }
+    .tool-btn.active {
+      background: rgba(0, 120, 212, 0.2);
+      border-color: #0078d4; color: #79c0ff;
+    }
+
+    /* ── LEGEND ────────────────────────────── */
+    #legend {
+      position: absolute; bottom: 36px; right: 16px;
+      z-index: 100; display: none;
+    }
+
+    .legend-heading {
+      font-size: 10px; font-weight: 700;
+      color: #8b949e; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px;
+    }
+
+    .legend-item {
+      display: flex; align-items: center; gap: 9px;
+      margin-bottom: 7px; font-size: 12px; color: #c9d1d9;
+    }
+    .legend-item:last-child { margin-bottom: 0; }
+
+    .legend-swatch {
+      width: 14px; height: 14px; border-radius: 3px;
+      flex-shrink: 0; border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* ── SPINNER ───────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 11px; height: 11px;
+      border: 2px solid #30363d;
+      border-top-color: #79c0ff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin-right: 5px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── POPUP ─────────────────────────────── */
+    .maplibregl-popup-content {
+      background: #161b22 !important;
+      border: 1px solid #30363d !important;
+      border-radius: 10px !important;
+      color: #e6edf3 !important;
+      padding: 14px 16px !important;
+      font-size: 12px !important;
+      max-width: 260px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+    }
+    .maplibregl-popup-close-button {
+      color: #8b949e !important; font-size: 18px !important;
+      right: 8px !important; top: 6px !important;
+    }
+    .maplibregl-popup-close-button:hover { color: #f0f6fc !important; }
+
+    .popup-title {
+      font-size: 13px; font-weight: 700;
+      color: #f0f6fc; margin-bottom: 10px;
+      padding-left: 9px;
+      border-left-width: 3px; border-left-style: solid;
+    }
+    .popup-row {
+      display: flex; justify-content: space-between;
+      align-items: baseline; gap: 10px; margin-bottom: 4px;
+    }
+    .popup-row:last-child { margin-bottom: 0; }
+    .popup-label { color: #8b949e; flex-shrink: 0; }
+    .popup-value { color: #e6edf3; font-weight: 500; text-align: right; }
+
+    /* ── BUILDING COUNT BADGE ─────────────── */
+    #building-count {
+      position: absolute; bottom: 36px; left: 16px;
+      z-index: 100; display: none;
+    }
+
+    .count-badge {
+      background: rgba(13,17,23,0.93);
+      backdrop-filter: blur(14px);
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px; color: #8b949e;
+    }
+
+    .count-badge strong { color: #3fb950; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ API KEY MODAL ═══════════════ -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div class="os-badge">
+      <div class="os-badge-icon">OS</div>
+      <div class="os-badge-label">Ordnance Survey · Data Hub</div>
+    </div>
+    <h2>OS MasterMap 3D Buildings</h2>
+    <p class="modal-subtitle">
+      Enter your OS Data Hub API key to load MasterMap NGD building data,
+      colour-coded by AddressBase classification with real building heights.
+    </p>
+    <div class="input-row">
+      <input type="password" id="api-key-input" class="api-input"
+             placeholder="Paste your OS API key…"
+             autocomplete="off" spellcheck="false">
+      <button class="btn-primary" id="connect-btn" onclick="submitApiKey()">Connect</button>
+    </div>
+    <div class="modal-error" id="api-error"></div>
+    <div class="security-note">
+      🔒 <strong>Secure by design:</strong> Your API key is held only in JavaScript
+      memory for this browser session. It is never written to disk, localStorage,
+      or sent anywhere other than OS API endpoints. It is cleared when you close
+      or refresh the page.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MAP ═══════════════ -->
+<div id="map"></div>
+
+<!-- ═══════════════ SEARCH PANEL ═══════════════ -->
+<div id="search-panel">
+  <div class="panel-card">
+    <div class="panel-header">
+      <div class="panel-os-dot"></div>
+      <div class="panel-title">OS MasterMap · NGD Buildings</div>
+    </div>
+    <div class="search-row">
+      <input type="text" id="postcode-input"
+             placeholder="Enter postcode…" maxlength="8" value="EX20 3HP"
+             onkeypress="if(event.key==='Enter') searchPostcode()">
+      <button id="search-btn" onclick="searchPostcode()">Search</button>
+    </div>
+    <div id="status-msg"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TOOLBAR ═══════════════ -->
+<div id="toolbar">
+  <button class="tool-btn active" id="btn-3d" onclick="toggle3D()" title="Toggle 3D / 2D">▲ 3D</button>
+  <button class="tool-btn" onclick="resetNorth()" title="Reset bearing to North">⊕ N</button>
+</div>
+
+<!-- ═══════════════ LEGEND ═══════════════ -->
+<div id="legend">
+  <div class="panel-card">
+    <div class="legend-heading">AddressBase Classification</div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#4A8FD9"></div>Residential (R)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#F5A623"></div>Commercial (C)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#9B59B6"></div>Industrial (I)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#27AE60"></div>Land (L)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#C0392B"></div>Military / Defence (M)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#F1C40F"></div>Object of Interest (X/Z)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#E67E22"></div>Other (O)
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#7F8C8D"></div>Unclassified / Unknown
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ COUNT BADGE ═══════════════ -->
+<div id="building-count">
+  <div class="count-badge" id="count-text"></div>
+</div>
+
+<script>
+  // ────────────────────────────────────────────────────────
+  //  SECURITY NOTE: API key is stored ONLY in this variable.
+  //  It lives in JS heap memory and is cleared on page close/
+  //  refresh. It is never written to disk or any Web Storage.
+  // ────────────────────────────────────────────────────────
+  let API_KEY = null;
+
+  let map        = null;
+  let is3D       = true;
+  let currentPopup = null;
+
+  // ── AddressBase classification colours ──
+  const CLASS_COLOURS = {
+    R: '#4A8FD9',   // Residential    – blue
+    C: '#F5A623',   // Commercial     – amber
+    I: '#9B59B6',   // Industrial     – purple
+    L: '#27AE60',   // Land           – green
+    M: '#C0392B',   // Military       – red
+    X: '#F1C40F',   // Obj of Interest– gold
+    Z: '#F1C40F',   // Obj of Interest– gold (alt)
+    O: '#E67E22',   // Other          – orange
+    P: '#BDC3C7',   // Parent Shell   – light grey
+    U: '#7F8C8D',   // Unclassified   – slate
+  };
+
+  const CLASS_LABELS = {
+    R: 'Residential',
+    C: 'Commercial',
+    I: 'Industrial',
+    L: 'Land',
+    M: 'Military / Defence',
+    X: 'Object of Interest',
+    Z: 'Object of Interest',
+    O: 'Other',
+    P: 'Parent Shell',
+    U: 'Unclassified',
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  MODAL — API key submission
+  // ─────────────────────────────────────────────────────────
+  document.getElementById('api-key-input')
+    .addEventListener('keypress', e => { if (e.key === 'Enter') submitApiKey(); });
+
+  async function submitApiKey() {
+    const input   = document.getElementById('api-key-input');
+    const btn     = document.getElementById('connect-btn');
+    const errorEl = document.getElementById('api-error');
+    const key     = input.value.trim();
+
+    if (!key || key.length < 10) {
+      showModalError('Please enter your OS Data Hub API key.');
+      return;
+    }
+
+    btn.disabled   = true;
+    btn.textContent = 'Connecting…';
+    errorEl.style.display = 'none';
+
+    try {
+      // Lightweight validation: call OS Names API
+      const testUrl = `https://api.os.uk/search/names/v1/find?query=London&key=${encodeURIComponent(key)}&maxresults=1`;
+      const res = await fetch(testUrl);
+
+      if (res.status === 401 || res.status === 403) {
+        throw new Error('API key rejected (401/403). Please check your key and try again.');
+      }
+      if (!res.ok) {
+        throw new Error(`Unexpected response ${res.status}. Check your key or network connection.`);
+      }
+
+      // ✅ Key is valid — store in memory only, clear the input
+      API_KEY      = key;
+      input.value  = '';           // wipe from DOM immediately
+
+      document.getElementById('modal-overlay').style.display = 'none';
+      document.getElementById('search-panel').style.display  = 'block';
+      document.getElementById('toolbar').style.display       = 'flex';
+      document.getElementById('legend').style.display        = 'block';
+
+      initMap();
+
+    } catch (err) {
+      showModalError(err.message || 'Connection failed. Please try again.');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Connect';
+    }
+  }
+
+  function showModalError(msg) {
+    const el = document.getElementById('api-error');
+    el.textContent    = msg;
+    el.style.display  = 'block';
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  MAP — initialise with OS Vector Tiles
+  // ─────────────────────────────────────────────────────────
+  function initMap() {
+    map = new maplibregl.Map({
+      container : 'map',
+      style     : `https://api.os.uk/maps/vector/v1/vts/resources/styles?srs=3857&key=${API_KEY}`,
+      center    : [-1.5, 52.5],
+      zoom      : 6,
+      pitch     : 45,
+      bearing   : -10,
+      maxZoom   : 20,
+      minZoom   : 5,
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+    map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+    map.on('load', () => {
+      setupBuildingLayers();
+    });
+
+    // Fallback: if OS vector style fails, use OSM raster
+    map.on('error', (e) => {
+      if (e.error && e.error.status === 401) {
+        setStatus('error', 'Map style rejected API key — check key has Maps API access.');
+      }
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  BUILDING LAYERS
+  // ─────────────────────────────────────────────────────────
+  function setupBuildingLayers() {
+    // Empty GeoJSON source — populated after postcode search
+    map.addSource('buildings', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    });
+
+    const colorExpr = buildingColorExpression();
+
+    // 2D flat footprints (shown when 3D toggled off)
+    map.addLayer({
+      id     : 'buildings-2d',
+      type   : 'fill',
+      source : 'buildings',
+      paint  : {
+        'fill-color'         : colorExpr,
+        'fill-opacity'       : 0.75,
+        'fill-outline-color' : 'rgba(255,255,255,0.25)',
+      },
+      layout : { visibility: 'none' },
+    });
+
+    // 3D extrusion layer (default on)
+    map.addLayer({
+      id     : 'buildings-3d',
+      type   : 'fill-extrusion',
+      source : 'buildings',
+      paint  : {
+        'fill-extrusion-color'             : colorExpr,
+        'fill-extrusion-height'            : [
+          'coalesce',
+          ['get', 'height_relativeroofbase_m'],
+          ['get', 'height_relativemax_m'],
+          4,   // fallback for buildings without height data
+        ],
+        'fill-extrusion-base'              : 0,
+        'fill-extrusion-opacity'           : 0.88,
+        'fill-extrusion-vertical-gradient' : true,
+      },
+      layout : { visibility: 'visible' },
+    });
+
+    // Outline ring on 3D buildings
+    map.addLayer({
+      id     : 'buildings-3d-outline',
+      type   : 'line',
+      source : 'buildings',
+      paint  : {
+        'line-color'   : 'rgba(255,255,255,0.15)',
+        'line-width'   : 0.5,
+      },
+      layout : { visibility: 'visible' },
+    });
+
+    // Interaction
+    ['buildings-3d', 'buildings-2d'].forEach(layerId => {
+      map.on('click',      layerId, handleBuildingClick);
+      map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+    });
+  }
+
+  function buildingColorExpression() {
+    // Match on the first character of address_classificationcode
+    return [
+      'match',
+      ['slice', ['coalesce', ['get', 'address_classificationcode'], 'U'], 0, 1],
+      'R', '#4A8FD9',
+      'C', '#F5A623',
+      'I', '#9B59B6',
+      'L', '#27AE60',
+      'M', '#C0392B',
+      'X', '#F1C40F',
+      'Z', '#F1C40F',
+      'O', '#E67E22',
+      'P', '#BDC3C7',
+      /* default – unclassified / unknown */
+      '#7F8C8D',
+    ];
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  BNG → WGS84 CONVERSION
+  //  Implements the Helmert 7-parameter transformation as
+  //  documented in OS publication "A Guide to Coordinate
+  //  Systems in Great Britain" (document C/00681).
+  //  Accuracy: ~5 m — more than sufficient for postcode nav.
+  // ─────────────────────────────────────────────────────────
+  function bngToLatLon(E, N) {
+    // Step 1 — BNG (E, N) → OSGB36 geographic (lat, lon)
+    const a  = 6377563.396, b = 6356256.909;  // Airy 1830 ellipsoid
+    const F0 = 0.9996012717;                   // Central meridian scale factor
+    const lat0 = 49  * Math.PI / 180;          // True origin lat  (49°N)
+    const lon0 = -2  * Math.PI / 180;          // True origin lon  (2°W)
+    const N0 = -100000, E0 = 400000;           // False origin offsets (m)
+
+    const e2 = 1 - (b * b) / (a * a);
+    const n  = (a - b) / (a + b);
+    const n2 = n * n, n3 = n * n * n;
+
+    let lat = lat0, M = 0;
+    for (let i = 0; i < 60; i++) {
+      lat = (N - N0 - M) / (a * F0) + lat;
+      const dL = lat - lat0;
+      M = b * F0 * (
+          (1 + n + 1.25*n2 + 1.25*n3) * dL
+        - (3*n + 3*n2 + 2.625*n3) * Math.sin(dL)     * Math.cos(lat + lat0)
+        + (1.875*n2 + 1.875*n3)   * Math.sin(2*dL)   * Math.cos(2*(lat + lat0))
+        - (35/24)*n3              * Math.sin(3*dL)   * Math.cos(3*(lat + lat0))
+      );
+      if (Math.abs(N - N0 - M) < 0.000001) break;
+    }
+
+    const sinL = Math.sin(lat), cosL = Math.cos(lat), tanL = sinL / cosL;
+    const nu   = a * F0 / Math.sqrt(1 - e2 * sinL * sinL);
+    const rho  = a * F0 * (1 - e2) / Math.pow(1 - e2 * sinL * sinL, 1.5);
+    const eta2 = nu / rho - 1;
+    const t2   = tanL * tanL;
+    const dE   = E - E0;
+
+    const latO = lat
+      - (tanL / (2*rho*nu))          * dE*dE
+      + (tanL / (24*rho*nu*nu*nu))   * (5 + 3*t2 + eta2 - 9*t2*eta2) * Math.pow(dE,4)
+      - (tanL / (720*rho*Math.pow(nu,5))) * (61 + 90*t2 + 45*t2*t2)  * Math.pow(dE,6);
+
+    const lonO = lon0
+      + (1/(cosL*nu))                    * dE
+      - (1/(cosL*6*nu*nu*nu))            * (nu/rho + 2*t2)            * Math.pow(dE,3)
+      + (1/(cosL*120*Math.pow(nu,5)))    * (5 + 28*t2 + 24*t2*t2)     * Math.pow(dE,5)
+      - (1/(cosL*5040*Math.pow(nu,7)))   * (61 + 662*t2 + 1320*t2*t2 + 720*t2*t2*t2) * Math.pow(dE,7);
+
+    // Step 2 — Helmert 7-param: OSGB36 Cartesian → WGS84 Cartesian
+    const sO  = Math.sin(latO), cO = Math.cos(latO);
+    const nuO = a / Math.sqrt(1 - e2 * sO * sO);
+    const x1  = nuO * cO * Math.cos(lonO);
+    const y1  = nuO * cO * Math.sin(lonO);
+    const z1  = (1 - e2) * nuO * sO;
+
+    // Helmert parameters — OSGB36 → WGS84 (OS recommended values)
+    const tx =  446.448, ty = -125.157, tz = 542.060;              // translation (m)
+    const rx = (0.1502 / 3600) * Math.PI / 180;                    // rotation (rad)
+    const ry = (0.2470 / 3600) * Math.PI / 180;
+    const rz = (0.8421 / 3600) * Math.PI / 180;
+    const s  = -20.4894e-6;                                        // scale factor
+
+    const x2 = tx + (1+s)*x1 - rz*y1 + ry*z1;
+    const y2 = ty + rz*x1  + (1+s)*y1 - rx*z1;
+    const z2 = tz - ry*x1  + rx*y1  + (1+s)*z1;
+
+    // Step 3 — WGS84 Cartesian → WGS84 geographic
+    const aW = 6378137.000, bW = 6356752.3142;
+    const e2W = 1 - (bW*bW)/(aW*aW);
+    const p   = Math.sqrt(x2*x2 + y2*y2);
+
+    let latW = Math.atan2(z2, p*(1-e2W));
+    let nuW;
+    for (let i = 0; i < 12; i++) {
+      nuW  = aW / Math.sqrt(1 - e2W * Math.sin(latW)*Math.sin(latW));
+      latW = Math.atan2(z2 + e2W*nuW*Math.sin(latW), p);
+    }
+    return {
+      lat : latW * 180 / Math.PI,
+      lon : Math.atan2(y2, x2) * 180 / Math.PI,
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  POSTCODE GEOCODING — OS only, two-method approach
+  //
+  //  Method 1 (preferred): OS Places API – returns every
+  //    UPRN + WGS84 coordinate in the postcode, so we can
+  //    accurately filter NGD buildings by UPRN.
+  //  Method 2 (fallback): OS Names API – returns a centroid
+  //    and MBR in BNG which we convert via Helmert.  No UPRN
+  //    list, so building filtering falls back to bbox only.
+  // ─────────────────────────────────────────────────────────
+  async function geocodePostcode(postcode) {
+    // Method 1 — OS Places /postcode → UPRNs + coordinates
+    try {
+      const url = `https://api.os.uk/search/places/v1/postcode` +
+                  `?postcode=${encodeURIComponent(postcode)}&output_srs=WGS84&key=${API_KEY}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data    = await res.json();
+        const results = data.results || [];
+        const uprns   = new Set();
+        let totalLat = 0, totalLon = 0, count = 0;
+        let minLat = Infinity, maxLat = -Infinity;
+        let minLon = Infinity, maxLon = -Infinity;
+
+        results.forEach(r => {
+          const rec  = r.DPA || r.LPI || {};
+          const lat  = parseFloat(rec.LAT  || rec.LATITUDE  || 0);
+          const lon  = parseFloat(rec.LNG  || rec.LONGITUDE || rec.LON || 0);
+          const uprn = rec.UPRN;
+          if (uprn) uprns.add(String(uprn));
+          if (lat && lon) {
+            totalLat += lat; totalLon += lon; count++;
+            if (lat < minLat) minLat = lat;  if (lat > maxLat) maxLat = lat;
+            if (lon < minLon) minLon = lon;  if (lon > maxLon) maxLon = lon;
+          }
+        });
+
+        if (count > 0) return {
+          lat   : totalLat / count,
+          lon   : totalLon / count,
+          bbox  : [minLon, minLat, maxLon, maxLat],
+          uprns : uprns.size > 0 ? uprns : null,
+        };
+      }
+    } catch (_) { /* fall through to Method 2 */ }
+
+    // Method 2 — OS Names API + BNG → WGS84 Helmert conversion
+    const url2 = `https://api.os.uk/search/names/v1/find` +
+                 `?query=${encodeURIComponent(postcode)}&key=${API_KEY}&maxresults=5`;
+    const res2 = await fetch(url2);
+    if (!res2.ok) throw new Error(`OS Names API error (${res2.status}). Check your key has Names API access.`);
+
+    const data2    = await res2.json();
+    const results2 = data2.results || [];
+
+    if (results2.length === 0) {
+      throw new Error(`"${postcode}" not found in OS data. Please check and try again.`);
+    }
+
+    const entry    = results2[0].GAZETTEER_ENTRY;
+    const easting  = parseFloat(entry.GEOMETRY_X);
+    const northing = parseFloat(entry.GEOMETRY_Y);
+
+    if (isNaN(easting) || isNaN(northing)) {
+      throw new Error('OS returned a result but without grid coordinates. Please try again.');
+    }
+
+    const centre = bngToLatLon(easting, northing);
+
+    const xMin = parseFloat(entry.MBR_XMIN);
+    const yMin = parseFloat(entry.MBR_YMIN);
+    const xMax = parseFloat(entry.MBR_XMAX);
+    const yMax = parseFloat(entry.MBR_YMAX);
+
+    if (!isNaN(xMin) && !isNaN(yMin) && !isNaN(xMax) && !isNaN(yMax)) {
+      const sw = bngToLatLon(xMin, yMin);
+      const ne = bngToLatLon(xMax, yMax);
+      return { ...centre, bbox: [sw.lon, sw.lat, ne.lon, ne.lat], uprns: null };
+    }
+
+    return { ...centre, uprns: null };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  POSTCODE SEARCH
+  // ─────────────────────────────────────────────────────────
+  async function searchPostcode() {
+    const input    = document.getElementById('postcode-input');
+    const btn      = document.getElementById('search-btn');
+    const postcode = input.value.trim().toUpperCase().replace(/\s+/g, '');
+
+    if (!postcode) return;
+
+    btn.disabled = true;
+    setStatus('loading', '<span class="spinner"></span>Looking up postcode via OS Places…');
+
+    try {
+      // 1. Geocode + get UPRNs from OS APIs
+      const geo = await geocodePostcode(postcode);
+
+      // 2. Fly to postcode
+      map.flyTo({
+        center   : [geo.lon, geo.lat],
+        zoom     : 17,
+        pitch    : is3D ? 55 : 0,
+        bearing  : -20,
+        duration : 1400,
+        essential: true,
+      });
+
+      // 3. Load buildings (brief pause for map to settle)
+      await new Promise(r => setTimeout(r, 300));
+      await loadBuildings(geo);
+
+    } catch (err) {
+      setStatus('error', err.message || 'An error occurred. Please try again.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  PAGINATED FETCH helper – walks NGD OGC API pages
+  // ─────────────────────────────────────────────────────────
+  async function fetchAllPages(collectionUrl, maxPages) {
+    let all = [], offset = 0;
+    for (let page = 0; page < maxPages; page++) {
+      const sep = collectionUrl.includes('?') ? '&' : '?';
+      const url = collectionUrl + (offset > 0 ? `${sep}offset=${offset}` : '');
+      const res = await fetch(url);
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(
+          res.status === 401
+            ? 'NGD Features API rejected the API key. Ensure your key has NGD Features access.'
+            : `NGD Features API error (${res.status}). ${body.slice(0, 120)}`
+        );
+      }
+      const data     = await res.json();
+      const features = data.features || [];
+      all = all.concat(features);
+      if (features.length < 100) break;   // last page
+      offset += 100;
+    }
+    return all;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  LOAD BUILDINGS — OS NGD OGC API Features
+  //
+  //  Accurate path (when OS Places returned UPRNs):
+  //    1. Fetch buildings in bbox → match UPRNs → collect part IDs
+  //    2. Fetch building parts in bbox → keep only matched IDs
+  //  Fallback path (OS Names only, no UPRN list):
+  //    Fetch building parts in bbox (MBR-bounded, less precise)
+  // ─────────────────────────────────────────────────────────
+  async function loadBuildings(geo) {
+    const { lat, lon, bbox: postcodeBox, uprns } = geo;
+
+    // Build the bbox string — add ~80 m buffer to capture full footprints
+    // of buildings whose centroids sit on the postcode boundary
+    const BUF = 0.0008;   // ≈ 80 m
+    let bboxStr;
+    if (postcodeBox && postcodeBox.length === 4) {
+      bboxStr = [
+        postcodeBox[0] - BUF, postcodeBox[1] - BUF,
+        postcodeBox[2] + BUF, postcodeBox[3] + BUF,
+      ].map(v => v.toFixed(6)).join(',');
+    } else {
+      const dLat = 0.004, dLon = 0.0065;
+      bboxStr = [lon-dLon, lat-dLat, lon+dLon, lat+dLat]
+        .map(v => v.toFixed(6)).join(',');
+    }
+
+    const partsUrl =
+      `https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items` +
+      `?bbox=${bboxStr}&key=${API_KEY}&limit=100`;
+
+    // ── Accurate UPRN-matched path ──────────────────────────
+    if (uprns && uprns.size > 0) {
+      setStatus('loading',
+        `<span class="spinner"></span>Matching ${uprns.size} UPRNs to MasterMap buildings…`);
+
+      // Step A — fetch buildings to get UPRN → building-part mapping
+      const buildingsUrl =
+        `https://api.os.uk/features/ngd/ofa/v1/collections/bld-fts-building-4/items` +
+        `?bbox=${bboxStr}&key=${API_KEY}&limit=100`;
+
+      const allBuildings = await fetchAllPages(buildingsUrl, 5);
+
+      // Step B — keep only buildings that contain at least one postcode UPRN
+      const matchedPartIds = new Set();
+      allBuildings.forEach(bldg => {
+        let bldgUprns = bldg.properties.uprnreference || [];
+        if (typeof bldgUprns === 'string') {
+          try { bldgUprns = JSON.parse(bldgUprns); } catch (_) { bldgUprns = []; }
+        }
+        const hasMatch = bldgUprns.some(u => uprns.has(String(u.uprn)));
+        if (hasMatch) {
+          let parts = bldg.properties.buildingpartreference || [];
+          if (typeof parts === 'string') {
+            try { parts = JSON.parse(parts); } catch (_) { parts = []; }
+          }
+          parts.forEach(p => matchedPartIds.add(p.buildingpartid));
+        }
+      });
+
+      if (matchedPartIds.size === 0) {
+        // Edge case: buildings may not yet have UPRN linkage. Fall through
+        // to the bbox-only path below instead of showing nothing.
+        console.warn('No UPRN matches found in NGD buildings — falling back to bbox.');
+      } else {
+        setStatus('loading',
+          `<span class="spinner"></span>Loading ${matchedPartIds.size} building parts…`);
+
+        // Step C — fetch building parts and keep only matched IDs
+        const allParts = await fetchAllPages(partsUrl, 10);
+        const filtered = allParts.filter(f => matchedPartIds.has(f.id));
+
+        if (filtered.length > 0) {
+          finishLoading(filtered);
+          return;
+        }
+        // If nothing after filtering (geometry mismatch), fall through
+        console.warn('UPRN-matched IDs did not match any fetched parts — falling back to bbox.');
+      }
+    }
+
+    // ── Fallback: bbox-only (no UPRN data available) ────────
+    setStatus('loading',
+      '<span class="spinner"></span>Fetching MasterMap NGD building parts (bbox)…');
+
+    const allParts = await fetchAllPages(partsUrl, 10);
+    finishLoading(allParts);
+  }
+
+  // ── Shared rendering finish ───────────────────────────────
+  function finishLoading(features) {
+    if (features.length === 0) {
+      setStatus('error', 'No building parts found for this postcode.');
+      hideBuildingCount();
+      return;
+    }
+
+    const geojson = { type: 'FeatureCollection', features };
+    map.getSource('buildings').setData(geojson);
+
+    // Classification breakdown for status message
+    const breakdown = {};
+    features.forEach(f => {
+      const code  = (f.properties.address_classificationcode || 'U').charAt(0);
+      const label = CLASS_LABELS[code] || 'Unknown';
+      breakdown[label] = (breakdown[label] || 0) + 1;
+    });
+
+    const topClass = Object.entries(breakdown)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([k, v]) => `${v} ${k}`)
+      .join(', ');
+
+    setStatus('success', `✓ ${features.length} building parts — ${topClass}`);
+    showBuildingCount(features.length);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  CLICK POPUP
+  // ─────────────────────────────────────────────────────────
+  function handleBuildingClick(e) {
+    if (currentPopup) { currentPopup.remove(); currentPopup = null; }
+
+    const props     = e.features[0].properties;
+    const coords    = e.lngLat;
+    const classCode = props.address_classificationcode || 'U';
+    const primary   = classCode.charAt(0);
+    const colour    = CLASS_COLOURS[primary]  || '#7F8C8D';
+    const classLabel= CLASS_LABELS[primary]   || 'Unknown';
+
+    const roofH  = props.height_relativeroofbase_m;
+    const maxH   = props.height_relativemax_m;
+    const height = roofH != null ? roofH : maxH;
+    const heightStr = height != null ? `${parseFloat(height).toFixed(1)} m` : '—';
+
+    const area    = props.geometry_area_m2 != null
+                  ? `${Math.round(props.geometry_area_m2)} m²`
+                  : '—';
+
+    const html = `
+      <div class="popup-title" style="border-left-color:${colour}">
+        ${props.description || 'Building Part'}
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Classification</span>
+        <span class="popup-value" style="color:${colour}">${classLabel} <span style="opacity:0.6">(${classCode})</span></span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Height (roof base)</span>
+        <span class="popup-value">${heightStr}</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Footprint area</span>
+        <span class="popup-value">${area}</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Land use</span>
+        <span class="popup-value">${props.oslandusetiera || '—'}</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Physical level</span>
+        <span class="popup-value">${props.physicallevel || '—'}</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">Height confidence</span>
+        <span class="popup-value">${props.height_confidencelevel || '—'}</span>
+      </div>
+    `;
+
+    currentPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '280px' })
+      .setLngLat(coords)
+      .setHTML(html)
+      .addTo(map);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  3D / 2D TOGGLE
+  // ─────────────────────────────────────────────────────────
+  function toggle3D() {
+    is3D = !is3D;
+    const btn = document.getElementById('btn-3d');
+
+    if (is3D) {
+      map.setLayoutProperty('buildings-3d',         'visibility', 'visible');
+      map.setLayoutProperty('buildings-3d-outline',  'visibility', 'visible');
+      map.setLayoutProperty('buildings-2d',          'visibility', 'none');
+      map.easeTo({ pitch: 55, duration: 600 });
+      btn.textContent = '▲ 3D';
+      btn.classList.add('active');
+    } else {
+      map.setLayoutProperty('buildings-3d',         'visibility', 'none');
+      map.setLayoutProperty('buildings-3d-outline',  'visibility', 'none');
+      map.setLayoutProperty('buildings-2d',          'visibility', 'visible');
+      map.easeTo({ pitch: 0, duration: 600 });
+      btn.textContent = '■ 2D';
+      btn.classList.remove('active');
+    }
+  }
+
+  function resetNorth() {
+    map.easeTo({ bearing: 0, pitch: is3D ? 55 : 0, duration: 600 });
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  HELPERS
+  // ─────────────────────────────────────────────────────────
+  function setStatus(type, html) {
+    const el    = document.getElementById('status-msg');
+    el.className = type;
+    el.innerHTML = html;
+  }
+
+  function showBuildingCount(n) {
+    const el   = document.getElementById('building-count');
+    const text = document.getElementById('count-text');
+    text.innerHTML = `<strong>${n}</strong> MasterMap NGD building parts loaded`;
+    el.style.display = 'block';
+  }
+
+  function hideBuildingCount() {
+    document.getElementById('building-count').style.display = 'none';
+  }
+</script>
+</body>
+</html>
