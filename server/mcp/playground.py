@@ -115,7 +115,7 @@ async def record_tool_call(request: Request, response: Response):
             content={
                 "isError": True,
                 "code": "INVALID_INPUT",
-                "message": f"Invalid payload: {exc}",
+                "message": "Invalid payload",
             },
             headers=auth_headers,
         )
