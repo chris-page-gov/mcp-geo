@@ -1,6 +1,7 @@
 # LandIS Phase 2 Surfacing Plan
 
 Date: 2026-04-04
+Updated: 2026-04-05
 
 ## Objective
 
@@ -33,8 +34,63 @@ The authenticated Atlas route is also complete:
 - non-feature payloads mirrored: `73`
 - archive root: `/Users/crpage/Data/landis_portal_archive_2026-04-04`
 
+The local release surface is now also complete beyond the portal itself:
+
+- supplementary public/data.gov archive complete: `13` public items, `59`
+  packages, `165` verification checks, `0` failures
+- local backup roots:
+  - `/Users/crpage/Data/landis_portal_archive_2026-04-04`
+  - `/Users/crpage/Data/landis_full_release_archive_2026-04-05`
+
 That means the remaining problem is no longer data acquisition. The remaining
-problem is product design and normalization scope.
+problem is product design, normalization scope, and making the local archive
+the default source of truth for follow-on LandIS work.
+
+## 2026-04-05 Implementation Update
+
+The first phase-2 tranche is now implemented against local data.
+
+New runtime surfaces:
+
+- `landis_archive.list_items`
+- `landis_archive.get_item`
+- `landis_natmap.point`
+- `landis_natmap.area_summary`
+- `landis_natmap.thematic_area_summary`
+- `landis_nsi.nearest_sites`
+- `landis_nsi.within_area`
+- `landis_nsi.profile_summary`
+
+New checked-in resources:
+
+- `resource://mcp-geo/landis-portal-inventory`
+- `resource://mcp-geo/landis-archive-triage`
+- `resource://mcp-geo/landis-full-release-manifest`
+
+New local-data tooling:
+
+- `scripts/landis_archive_triage.py` creates the machine-readable archive
+  triage manifest from the local portal and full-release archives
+- `scripts/landis_phase2_ingest.py` loads the locally mirrored NATMAP and NSI
+  datasets into the LandIS warehouse schema without going back to the portal
+
+What this tranche does:
+
+- makes the local archive discoverable through MCP as archive inventory and
+  manifest resources
+- adds a first NATMAP analytical family for point lookup and area summaries
+- adds a first NSI evidence family with explicit sampling caveats
+- switches phase-2 ingestion assumptions from remote portal access to local
+  archive inputs under `~/Data` by default
+
+What this tranche does not do yet:
+
+- it does not surface NATMAP join-table enrichment (`NATMAPassociations`,
+  `SOILSERIES`, `HORIZON*`) through a first-class MCP contract
+- it does not add AUGER or Soil Catalogue analytical tools
+- it does not assume an always-on local PostGIS sidecar; the local archive is
+  the durable source, and the warehouse remains an operator-started runtime
+  dependency for live spatial queries
 
 ## What The Archive Contains
 
@@ -287,12 +343,16 @@ Recommended curation principles:
 
 ### Phase 2A: archive triage to runnable ingestion plan
 
+Status: done
+
 - define one normalized schema plan for NATMAP core tables
 - define one schema plan for NSI evidence tables
 - pin archive-to-warehouse mappings for the selected services
 - add a machine-readable triage manifest checked into the repo
 
 ### Phase 2B: NATMAP core surfacing
+
+Status: done for the first analytical slice; join-backed enrichment remains next
 
 - ingest `NationalSoilMap` plus join tables
 - ship `landis_natmap.point`
@@ -301,11 +361,15 @@ Recommended curation principles:
 
 ### Phase 2C: thematic NATMAP summaries
 
+Status: done for the selected polygon thematics already mirrored locally
+
 - ingest selected thematic polygon layers
 - ship `landis_natmap.thematic_area_summary`
 - expand metadata/resources and operator docs
 
 ### Phase 2D: NSI evidence surfacing
+
+Status: done for the first evidence slice
 
 - ingest NSI evidence tables
 - ship bounded paged NSI search/summary tools
@@ -313,8 +377,21 @@ Recommended curation principles:
 
 ### Phase 2E: archive browsing resources
 
+Status: done
+
 - expose curated archive inventory/docs resources
 - keep raw archive mirroring as an operator workflow, not a default MCP result
+
+### Phase 2F: join enrichment and deferred families
+
+Status: next
+
+- normalize and surface the NATMAP join model using `NATMAPassociations`,
+  `SOILSERIES`, `HORIZONfundamentals`, and `HORIZONhydraulics`
+- decide whether `NATMAP1000`, `NATMAP2000`, and `NATMAP5000` should become a
+  separate scale-aware family or remain archive-only
+- define whether any AUGER or Soil Catalogue surfaces deserve first-class MCP
+  contracts
 
 ## Acceptance Criteria For Phase 2 Planning
 
@@ -328,22 +405,23 @@ This plan should be treated as complete when the repo has:
 
 ## Immediate Next Steps
 
-1. Create a machine-readable LandIS triage manifest from the authenticated
-   archive.
-2. Design the normalized NATMAP core schema and join model.
-3. Review the current `landis_metadata` and resources contract so it can point
-   callers at archive-backed docs and future NATMAP/NSI families without
-   becoming a portal browser.
-4. Define the first phase-2 public contract around `landis_natmap.point` and
-   `landis_natmap.area_summary`.
+1. Run `scripts/landis_phase2_ingest.py` against the operator’s chosen local
+   PostGIS warehouse whenever a live NATMAP/NSI deployment is needed.
+2. Add the NATMAP join-table enrichment contract so callers can move from map
+   units to series and horizon evidence without using raw archive dumps.
+3. Decide whether scale-specific NATMAP products and AUGER belong in the next
+   MCP tranche or should remain archive-only.
+4. Expand the evaluation harness from the MVP screening cases to the new
+   archive, NATMAP, and NSI families.
 
 ## Bottom Line
 
-The right next move is not “surface everything.” The right next move is:
+The right next move is still not “surface everything.” The right next move is:
 
 - keep the validated MVP screening tools stable
-- normalize the NATMAP core next
-- treat NSI as evidence tools, not screening tools
-- keep AUGER and catalogue layers out of the first phase-2 analytical surface
-- turn the authenticated portal mirror into a governed source of warehouse and
-  resource inputs, not a direct substitute for the MCP runtime
+- use the local archives as the default LandIS source of truth
+- keep extending NATMAP and NSI deliberately, not by dumping raw portal fields
+- keep AUGER and catalogue layers out of the first analytical expansion until a
+  clear user contract exists
+- treat the local archive as a governed source of warehouse and resource inputs,
+  not a direct substitute for the MCP runtime

@@ -435,11 +435,19 @@ manifest, cache status, and local ONS code cache entries).
 - `GET /resources/read?uri=ui://mcp-geo/geography-selector` returns MCP-Apps UI HTML.
 - `GET /resources/read?uri=resource://mcp-geo/landis-products` returns the checked-in LandIS MVP registry.
 
-### LandIS Soil Screening MVP
+### LandIS Local Archive And Phase 2 Surface
 
-The LandIS MVP adds a small, evidence-heavy soil screening surface rather than a
-full UI workbench. The checked-in registry and prompt resources work offline;
-the spatial tools require a normalized PostGIS warehouse.
+LandIS now has two layers in this repo:
+
+- a validated MVP screening surface
+- an additive phase-2 local-archive surface for NATMAP, NSI, and archive
+  discovery
+
+The checked-in registry and prompt resources work offline. The phase-2 archive
+resources also work offline from the local mirror. Spatial queries still
+require a normalized PostGIS warehouse, but the source of truth for follow-on
+LandIS ingestion is now the local archive under `~/Data` rather than a live
+portal session.
 
 Use:
 
@@ -450,6 +458,20 @@ Use:
 - `landis_soilscapes.point` and `landis_soilscapes.area_summary` for generalized
   Soilscapes lookups.
 - `landis_derive.pipe_risk` for caveated corrosion and shrink-swell screening.
+- `landis_archive.list_items` and `landis_archive.get_item` to inspect the
+  locally mirrored LandIS archive and its surfacing classification.
+- `landis_natmap.point`, `landis_natmap.area_summary`, and
+  `landis_natmap.thematic_area_summary` for local-archive-backed NATMAP map-unit
+  and thematic summaries once loaded into PostGIS.
+- `landis_nsi.nearest_sites`, `landis_nsi.within_area`, and
+  `landis_nsi.profile_summary` for explicit evidence-first NSI lookups once
+  loaded into PostGIS.
+
+Additional LandIS resources:
+
+- `resource://mcp-geo/landis-portal-inventory`
+- `resource://mcp-geo/landis-archive-triage`
+- `resource://mcp-geo/landis-full-release-manifest`
 
 Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
 and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with
@@ -464,6 +486,18 @@ To mirror the authenticated portal payloads to local storage, run
 The downloader reuses the Atlas session, stores per-item metadata plus raw item
 payloads, and exports Feature Service layers/tables in chunked GeoJSON/JSON
 files under the destination root without storing the session token itself.
+To classify the local archive for runtime surfacing, run
+`python scripts/landis_archive_triage.py`.
+To ingest the local NATMAP and NSI phase-2 slice from `~/Data` into PostGIS,
+run `python scripts/landis_phase2_ingest.py --dsn ...`.
+The Docker wrapper `scripts/mcp-docker-local` now mounts `~/Data` into the app
+container at `/landis-data` by default and sets `LANDIS_LOCAL_DATA_ROOT` there
+when the host directory exists, so the normal `mcp-geo` + PostGIS container
+workflow can use the local archive directly without copying the raw mirror into
+the image or database volume. The verified phase-2 warehouse load currently
+covers `NationalSoilMap`, eight NATMAP thematic products, `NSIsite`, and six
+mirrored NSI observation datasets from the local archive, plus the existing
+Soilscapes and pipe-risk validation layers.
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources

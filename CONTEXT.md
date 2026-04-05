@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-04
+Last updated: 2026-04-05
 Owner: @chris-page-gov
 
 ## Purpose
@@ -81,7 +81,65 @@ assumptions change.
   screening tools stable, build a machine-readable triage manifest for the
   archive, normalize the NATMAP core into the warehouse next, treat NSI as an
   evidence-first family rather than a generalized screening surface, and defer
-  AUGER/catalogue layers from the first analytical expansion.
+  AUGER/catalogue layers from the first analytical expansion. A further
+  2026-04-05 reconciliation pass in
+  `docs/reports/landis_release_surface_reconciliation_2026-04-05.md` now
+  confirms that the local archive is complete for the authenticated ArcGIS
+  portal route but not for the full released LandIS universe: the public
+  LandIS website still lists additional families/services outside that portal
+  slice (`HOST`, `wetness`, several `Series *` products, `Lowland Peat`,
+  `Soil Alerts`, `CatchIS`, `Leacs`, `Treefit`), and legacy `data.gov.uk`
+  metadata still points to at least some separately licensed LandIS datasets.
+  The follow-on generator `scripts/landis_release_reconciliation.py` plus
+  `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`
+  now provide a machine-readable manifest for those missing public-menu items,
+  including page probes, `data.gov.uk` matches, and conservative approximate
+  size guidance for the dataset-like entries. The same 2026-04-05 workstream
+  now also includes `scripts/landis_full_release_archive.py` plus the checked-
+  in `research/landis-data-source/landis_full_release_manifest_2026-04-05.json`,
+  which supplements the portal mirror by downloading the non-portal public
+  LandIS pages and matched `data.gov.uk` resources to
+  `/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05`. That
+  supplementary archive is now verified complete via its own
+  `verification_manifest.json` (`13` public items, `59` packages,
+  `165` checks, `0` failures). The archive helper now keys cached downloads by
+  full query-bearing URL so `api/file/download?...fileName=...` resources do
+  not collapse onto a shared path, and it treats base `MapServer` locator
+  URLs as satisfied when the same package already includes an archived
+  companion `FeatureServer`/`WMS`/`WFS`/OGC representation. The next step from
+  that archive review is now partially implemented and local-data-first:
+  `scripts/landis_archive_triage.py` generates
+  `research/landis-data-source/landis_archive_triage_2026-04-05.json` from the
+  local portal/full-release mirrors, `server/landis.py` now resolves LandIS
+  archive inputs from `~/Data` before external mounts, and the new phase-2 MCP
+  families `landis_archive.*`, `landis_natmap.*`, and `landis_nsi.*` plus the
+  new resources `resource://mcp-geo/landis-portal-inventory`,
+  `resource://mcp-geo/landis-archive-triage`, and
+  `resource://mcp-geo/landis-full-release-manifest` expose the first additive
+  archive/NATMAP/NSI tranche. The complementary local ingest path
+  `scripts/landis_phase2_ingest.py` now loads NATMAP and NSI data from the
+  local archive into the LandIS warehouse schema, keeping the local archive as
+  the durable source of truth even when no live authenticated portal session or
+  always-on PostGIS sidecar is present. The standard container wrapper
+  `scripts/mcp-docker-local` now also mounts the host `~/Data` tree read-only
+  into the app container at `/landis-data` and sets `LANDIS_LOCAL_DATA_ROOT`
+  there automatically when the directory exists, so the default app-container +
+  PostGIS-container workflow can read the same local LandIS archive directly.
+  A 2026-04-05 verification run then loaded the MVP Soilscapes/pipe-risk
+  layers plus the local NATMAP/NSI phase-2 slice into a fresh PostGIS sidecar
+  (`879` Soilscapes polygons, `1,192` pipe-risk polygons, `42,603` NATMAP
+  polygons, `316,234` NATMAP thematic polygons, `5,706` NSI sites, and
+  `42,402` NSI observations) and confirmed the full current LandIS MCP
+  contract through a containerized stdio server: `landis_catalog.*`,
+  `landis_metadata.get`, `landis_archive.*`, `landis_natmap.*`,
+  `landis_nsi.*`, `landis_soilscapes.*`, and `landis_derive.pipe_risk`.
+  The old default `mcp-geo-postgis` volume is currently corrupted, so the
+  verified LandIS runtime uses a fresh sidecar while the next hardening step
+  addresses safer default PostGIS lifecycle/storage behavior. Remaining
+  phase-2 work is the join-table
+  enrichment model (`NATMAPassociations`, `SOILSERIES`, `HORIZON*`) plus a
+  decision on whether scale-specific NATMAP products, AUGER, or Soil Catalogue
+  layers should remain archive-only or gain first-class MCP contracts.
 - Maintaining the new 2026-03-25 experimental Council Tax pilot under
   `tools/council_tax.py`, `README.md`, `PROGRESS.MD`, and related tests. The
   first implementation is intentionally scoped to England/Wales public band

@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from server.landis import (
+    NATMAP_CAVEATS,
+    NSI_CAVEATS,
     PIPE_RISK_CAVEATS,
     PIPE_RISK_CHECKLIST,
     SOILSCAPE_CAVEATS,
@@ -132,6 +134,63 @@ def pipe_risk_payload(area_input: dict[str, Any], summary: dict[str, Any]) -> di
     }
 
 
+def natmap_point_payload(lat: float, lon: float, row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "location": {"lat": lat, "lon": lon},
+        "mapUnit": row["mapUnit"],
+        "caveats": NATMAP_CAVEATS,
+        "provenance": row["provenance"],
+    }
+
+
+def natmap_area_summary_payload(area_input: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "input": area_input,
+        "areaSqM": summary["areaSqM"],
+        "mapUnits": summary["mapUnits"],
+        "dominantMapUnit": summary["dominantMapUnit"],
+        "caveats": NATMAP_CAVEATS,
+        "provenance": summary["provenance"],
+    }
+
+
+def natmap_thematic_area_summary_payload(
+    area_input: dict[str, Any],
+    summary: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "input": area_input,
+        "productId": summary["productId"],
+        "product": summary["product"],
+        "areaSqM": summary["areaSqM"],
+        "classes": summary["classes"],
+        "dominantClass": summary["dominantClass"],
+        "caveats": NATMAP_CAVEATS,
+        "provenance": summary["provenance"],
+    }
+
+
+def nsi_sites_payload(payload: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        **payload,
+        "sites": summary["sites"],
+        "caveats": NSI_CAVEATS,
+        "provenance": summary["provenance"],
+        **({"totalCount": summary["totalCount"]} if "totalCount" in summary else {}),
+        **({"nextOffset": summary["nextOffset"]} if "nextOffset" in summary else {}),
+    }
+
+
+def nsi_profile_payload(nsi_id: int, summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "nsiId": nsi_id,
+        "site": summary["site"],
+        "datasets": summary["datasets"],
+        "caveats": NSI_CAVEATS,
+        "provenance": summary["provenance"],
+    }
+
+
 def registry_payload() -> dict[str, Any]:
     return landis_registry_meta()
 
@@ -142,6 +201,12 @@ __all__ = [
     "SOILSCAPE_CAVEATS",
     "area_summary_payload",
     "error",
+    "natmap_area_summary_payload",
+    "natmap_point_payload",
+    "natmap_thematic_area_summary_payload",
+    "NSI_CAVEATS",
+    "nsi_profile_payload",
+    "nsi_sites_payload",
     "paginate",
     "parse_limit",
     "parse_offset",

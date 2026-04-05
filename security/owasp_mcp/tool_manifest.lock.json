@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 91,
+  "tool_count": 99,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -61,6 +61,22 @@
       "version": "0.1.0"
     },
     {
+      "description": "Get detail for one locally mirrored LandIS archive item.",
+      "description_sha256": "f4d20f2504ff2070783aaea48bbdd5571c4c1d2bf8f6e3d5262b5093bc9dbf7c",
+      "input_schema_sha256": "8a311fca3831caf8079337aace1df76be37a72a545a13e90e3cfd2feeddb2d2f",
+      "name": "landis_archive.get_item",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List locally mirrored LandIS archive items and their triage classification.",
+      "description_sha256": "dd4589e6f4602eaf8bd48e1501d2b47b48399662d57c27144f741725ec6ddf2d",
+      "input_schema_sha256": "63bb5be6efdf48dccdc354cd1a96d4b8a6db091b47dce51a63703633a365005e",
+      "name": "landis_archive.list_items",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
       "description": "List the LandIS MVP product registry with coverage, access tier, and resource hints.",
       "description_sha256": "0be70aa399a36dda0f680aa81e4e94cc31525ddd97bca87f16417c792b8a310a",
       "input_schema_sha256": "68cbe57f75f3384e2e14f0255637b9ae7b62cbbf990e6ad874b985035c62c208",
@@ -82,6 +98,54 @@
       "input_schema_sha256": "4ba3aad5d897e61caab5978ac354425cfd348327c2884d6ebb57bd18d4e005b6",
       "name": "landis_metadata.get",
       "output_schema_sha256": "f7a9f786216ab9c651add14288ef219dc6f1beb7a9b01398592681dabca064c8",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Summarize NATMAP map units across a bbox or GeoJSON polygon.",
+      "description_sha256": "a9855c6ae90a6ffa4c252e88d65d28d062b7b0b365e68c0653eb9b955a7bfaf1",
+      "input_schema_sha256": "1ca20ffe1902f79ded9f14f6358559eef6bde92a3eb9debbaa5956ed08398aa1",
+      "name": "landis_natmap.area_summary",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Get the NATMAP map unit at a WGS84 lat/lon.",
+      "description_sha256": "63d79a47d7c44d7d7677a27984cb0dfb31cfd5b9184b239c801910bcbd71a354",
+      "input_schema_sha256": "cb20625a899d49ea46be995e14c74dac9e61b1970efc68060d7682464169e531",
+      "name": "landis_natmap.point",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Summarize one NATMAP thematic product across a bbox or GeoJSON polygon.",
+      "description_sha256": "fd4ef980a1c217dfc3d7afb9488c296e5ff3c795ebbbca5441087c45475fe808",
+      "input_schema_sha256": "dd57687131d6d1d7b0acb47bb70bf996e64640e7c9cd17459c111bb65499c71f",
+      "name": "landis_natmap.thematic_area_summary",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Find the nearest LandIS NSI evidence sites to a WGS84 point.",
+      "description_sha256": "cd4192e6930a289e95505650833fdea0f48caba7e4ba7f9357395f7761c8935e",
+      "input_schema_sha256": "dba59527d4dbd7818f83490a97d50c0c1b60589c5f5b89564e793973f46ed4e8",
+      "name": "landis_nsi.nearest_sites",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Get an evidence summary for one LandIS NSI site identifier.",
+      "description_sha256": "e865d0e167fdd309af36870c3843001e4b933449c6858a36d709a01bad2ee7e3",
+      "input_schema_sha256": "9df11fe4376031f9dcb4c9a94977d13285f90e16cbf754d0168917fb29b8d114",
+      "name": "landis_nsi.profile_summary",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "version": "0.1.0"
+    },
+    {
+      "description": "List LandIS NSI evidence sites within a bbox or GeoJSON polygon.",
+      "description_sha256": "7fc964bcf6f22d42c93b303fc8e8c261b9ff99bf4a59f706cb49e87f563945d8",
+      "input_schema_sha256": "6f2fae90ed085be4e20f9d76f020f251faf30c5ee8616f29f4bde04a3dcd2b3a",
+      "name": "landis_nsi.within_area",
+      "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
       "version": "0.1.0"
     },
     {

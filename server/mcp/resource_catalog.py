@@ -22,6 +22,15 @@ LANDIS_PRODUCTS_PATH = ROOT / "resources" / "landis_products.json"
 LANDIS_SOIL_DATA_STRUCTURES_PATH = ROOT / "resources" / "landis" / "soil_data_structures.md"
 LANDIS_SOIL_CLASSIFICATION_PATH = ROOT / "resources" / "landis" / "soil_classification.md"
 LANDIS_LICENCE_CURRENT_PATH = ROOT / "resources" / "landis" / "licence_current.md"
+LANDIS_PORTAL_INVENTORY_PATH = (
+    ROOT / "research" / "landis-data-source" / "landis_portal_inventory_2026-04-04.json"
+)
+LANDIS_ARCHIVE_TRIAGE_PATH = (
+    ROOT / "research" / "landis-data-source" / "landis_archive_triage_2026-04-05.json"
+)
+LANDIS_FULL_RELEASE_MANIFEST_PATH = (
+    ROOT / "research" / "landis-data-source" / "landis_full_release_manifest_2026-04-05.json"
+)
 PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
 PEAT_LAYERS_PATH = ROOT / "resources" / "peat_layers_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
@@ -306,6 +315,33 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": LANDIS_LICENCE_CURRENT_PATH,
         "mimeType": "text/markdown",
         "annotations": {"type": "guide", "domain": "landis"},
+    },
+    {
+        "slug": "landis-portal-inventory",
+        "name": "data_landis_portal_inventory",
+        "title": "LandIS Portal Inventory",
+        "description": "Authenticated inventory of the mirrored LandIS portal catalog.",
+        "path": LANDIS_PORTAL_INVENTORY_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
+    },
+    {
+        "slug": "landis-archive-triage",
+        "name": "data_landis_archive_triage",
+        "title": "LandIS Archive Triage",
+        "description": "Machine-readable triage manifest for the local LandIS archive and release inventory.",
+        "path": LANDIS_ARCHIVE_TRIAGE_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
+    },
+    {
+        "slug": "landis-full-release-manifest",
+        "name": "data_landis_full_release_manifest",
+        "title": "LandIS Full Release Manifest",
+        "description": "Supplementary public/data.gov release manifest captured alongside the portal mirror.",
+        "path": LANDIS_FULL_RELEASE_MANIFEST_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
     },
     {
         "slug": "protected-landscapes-england",
@@ -1102,6 +1138,31 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "landis-licence-current"), None
         return (*_load_text_file(LANDIS_LICENCE_CURRENT_PATH), None)
+    if slug == "landis-portal-inventory":
+        if not LANDIS_PORTAL_INVENTORY_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "LandIS portal inventory not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "landis-portal-inventory"), None
+        return (*_load_json_file(LANDIS_PORTAL_INVENTORY_PATH), None)
+    if slug == "landis-archive-triage":
+        if not LANDIS_ARCHIVE_TRIAGE_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "LandIS archive triage not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "landis-archive-triage"), None
+        return (*_load_json_file(LANDIS_ARCHIVE_TRIAGE_PATH), None)
+    if slug == "landis-full-release-manifest":
+        if not LANDIS_FULL_RELEASE_MANIFEST_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "LandIS full release manifest not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "landis-full-release-manifest"), None
+        return (*_load_json_file(LANDIS_FULL_RELEASE_MANIFEST_PATH), None)
     if slug == "protected-landscapes-england":
         if not PROTECTED_LANDSCAPES_PATH.exists():
             content = json.dumps(

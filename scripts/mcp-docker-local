@@ -10,6 +10,8 @@ POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
 POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
 DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
+LANDIS_HOST_DATA_ROOT="${MCP_GEO_LANDIS_DATA_ROOT:-${LANDIS_LOCAL_DATA_ROOT:-$HOME/Data}}"
+LANDIS_CONTAINER_DATA_ROOT="${MCP_GEO_LANDIS_CONTAINER_DATA_ROOT:-/landis-data}"
 POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-5432}"
 POSTGIS_PGDATA="${MCP_GEO_POSTGIS_PGDATA:-/var/lib/postgresql/data/pgdata}"
 POSTGIS_PLATFORM="${MCP_GEO_POSTGIS_PLATFORM:-linux/amd64}"
@@ -28,6 +30,7 @@ POSTGIS_HOST="${MCP_GEO_POSTGIS_HOST:-postgis}"
 POSTGIS_TARGET_CONTAINER="$POSTGIS_CONTAINER"
 MANAGE_POSTGIS_CONTAINER=true
 PLAN_ONLY="${MCP_GEO_DOCKER_PLAN_ONLY:-0}"
+LANDIS_MOUNT_ENABLED=false
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
@@ -201,6 +204,9 @@ emit_plan() {
   printf 'postgis_storage_mode=%s\n' "$POSTGIS_STORAGE_MODE"
   printf 'postgis_volume=%s\n' "$POSTGIS_VOLUME"
   printf 'postgis_reuse_devcontainer=%s\n' "$POSTGIS_REUSE_DEVCONTAINER"
+  printf 'landis_host_data_root=%s\n' "$LANDIS_HOST_DATA_ROOT"
+  printf 'landis_container_data_root=%s\n' "$LANDIS_CONTAINER_DATA_ROOT"
+  printf 'landis_mount_enabled=%s\n' "$LANDIS_MOUNT_ENABLED"
 }
 
 ensure_postgis_image() {
@@ -275,6 +281,9 @@ if [[ "$POSTGIS_STORAGE_MODE" == "bind" ]]; then
   mkdir -p "$DATA_DIR"
 fi
 mkdir -p "$LOG_DIR"
+if [[ -n "$LANDIS_HOST_DATA_ROOT" && -d "$LANDIS_HOST_DATA_ROOT" ]]; then
+  LANDIS_MOUNT_ENABLED=true
+fi
 
 detect_reusable_devcontainer_postgis || true
 
@@ -379,12 +388,17 @@ env_args=(
   -e "ROUTE_GRAPH_ENABLED=${ROUTE_GRAPH_ENABLED_VALUE}"
   -e "ROUTE_GRAPH_DSN=postgresql://mcp_geo:mcp_geo@${POSTGIS_HOST}:5432/mcp_geo"
   -e "MCP_GEO_LIVE_DB_DSN=postgresql://mcp_geo:mcp_geo@${POSTGIS_HOST}:5432/mcp_geo"
+  -e "LANDIS_WAREHOUSE_DSN=postgresql://mcp_geo:mcp_geo@${POSTGIS_HOST}:5432/mcp_geo"
   -e "MCP_STDIO_FRAMING=${MCP_STDIO_FRAMING:-line}"
   -e "MCP_APPS_RESOURCE_LINK=${MCP_APPS_RESOURCE_LINK:-0}"
   -e "MCP_APPS_CONTENT_MODE=${MCP_APPS_CONTENT_MODE:-embedded}"
   -e "ONS_LIVE_ENABLED=${ONS_LIVE_ENABLED:-true}"
   -e "UI_EVENT_LOG_PATH=${DOCKER_UI_EVENT_LOG_PATH}"
 )
+
+if [[ "$LANDIS_MOUNT_ENABLED" == "true" ]]; then
+  env_args+=(-e "LANDIS_LOCAL_DATA_ROOT=${LANDIS_CONTAINER_DATA_ROOT}")
+fi
 
 for var in \
   OS_API_KEY \
@@ -395,17 +409,40 @@ for var in \
   MCP_TOOLS_DEFAULT_TOOLSET \
   MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS \
   MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS \
-  MCP_STDIO_TOOL_CONTENT_MAX_BYTES; do
+  MCP_STDIO_TOOL_CONTENT_MAX_BYTES \
+  LANDIS_ENABLED \
+  LANDIS_LIVE_ENABLED \
+  LANDIS_PORTAL_BASE \
+  LANDIS_WAREHOUSE_SCHEMA \
+  LANDIS_PRODUCT_REGISTRY_TABLE \
+  LANDIS_PROVENANCE_TABLE \
+  LANDIS_SOILSCAPES_TABLE \
+  LANDIS_PIPE_RISK_TABLE \
+  LANDIS_NATMAP_TABLE \
+  LANDIS_NATMAP_THEMATIC_TABLE \
+  LANDIS_NSI_SITES_TABLE \
+  LANDIS_NSI_OBSERVATIONS_TABLE \
+  LANDIS_HTTP_TIMEOUT_CONNECT_SECONDS \
+  LANDIS_HTTP_TIMEOUT_READ_SECONDS \
+  LANDIS_HTTP_RETRIES; do
   value="${!var:-}"
   if [[ -n "$value" ]]; then
     env_args+=(-e "$var=$value")
   fi
 done
 
+mount_args=(
+  -v "$LOG_DIR:/logs"
+)
+
+if [[ "$LANDIS_MOUNT_ENABLED" == "true" ]]; then
+  mount_args+=(-v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro")
+fi
+
 docker_args=(
   run --rm -i
   --network "$NETWORK"
-  -v "$LOG_DIR:/logs"
+  "${mount_args[@]}"
   "${env_args[@]}"
   "$IMAGE"
 )

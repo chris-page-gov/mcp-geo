@@ -71,6 +71,22 @@
     {
       "data_sensitivity": "public",
       "high_risk_action": false,
+      "name": "landis_archive.get_item",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_archive.list_items",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
       "name": "landis_catalog.list_products",
       "network_write": false,
       "requires_user_context": false,
@@ -88,6 +104,54 @@
       "data_sensitivity": "public",
       "high_risk_action": false,
       "name": "landis_metadata.get",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_natmap.area_summary",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_natmap.point",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_natmap.thematic_area_summary",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_nsi.nearest_sites",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_nsi.profile_summary",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "landis_nsi.within_area",
       "network_write": false,
       "requires_user_context": false,
       "side_effect_level": "none"

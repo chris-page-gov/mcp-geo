@@ -12,6 +12,9 @@ def test_landis_resources_appear_in_catalog() -> None:
     assert "resource://mcp-geo/landis-docs-soil-data-structures" in uris
     assert "resource://mcp-geo/landis-docs-soil-classification" in uris
     assert "resource://mcp-geo/landis-licence-current" in uris
+    assert "resource://mcp-geo/landis-portal-inventory" in uris
+    assert "resource://mcp-geo/landis-archive-triage" in uris
+    assert "resource://mcp-geo/landis-full-release-manifest" in uris
 
 
 def test_landis_resource_content_is_readable_through_resource_catalog() -> None:
@@ -42,7 +45,28 @@ def test_landis_prompts_are_listed_and_fetchable() -> None:
 
 
 def test_landis_tools_are_discoverable_in_tool_search() -> None:
-    results = tool_search.search_tools("landis soil corrosion", mode="token")
-    names = {item["name"] for item in results}
+    names = {item["name"] for item in tool_search.search_tools("landis soil corrosion", mode="token")}
     assert "landis_derive.pipe_risk" in names
     assert "landis_soilscapes.area_summary" in names
+
+    natmap_names = {
+        item["name"] for item in tool_search.search_tools("landis natmap texture", mode="token")
+    }
+    assert "landis_natmap.area_summary" in natmap_names
+
+    nsi_names = {item["name"] for item in tool_search.search_tools("landis nsi evidence", mode="token")}
+    assert "landis_nsi.nearest_sites" in nsi_names
+
+
+def test_landis_archive_resources_are_readable() -> None:
+    for uri in (
+        "resource://mcp-geo/landis-portal-inventory",
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-full-release-manifest",
+    ):
+        entry = resource_catalog.resolve_data_resource(uri)
+        assert entry is not None
+        content, etag, meta = resource_catalog.load_data_content(entry)
+        assert content.startswith("{")
+        assert etag
+        assert meta is None

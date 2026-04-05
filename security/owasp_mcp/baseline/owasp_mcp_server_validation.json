@@ -610,7 +610,7 @@
     "attestation_issues": [],
     "profile": "prod-strict",
     "project": "mcp-geo",
-    "run_at": "2026-04-04T10:32:59Z",
+    "run_at": "2026-04-05T07:54:59Z",
     "source": {
       "accessed": "2026-03-13",
       "pdf_download_url": "https://genai.owasp.org/download/52676/?tmstv=1771286427",

@@ -4,8 +4,8 @@
     ".github/workflows/ci.yml": "3b0d367e45321140a57a51bbeb6f54b1a00938e5a273bbaeced87c02990a6e21",
     "security/owasp_mcp/evidence/github_main_branch_protection_2026-03-13.json": "eb96ead58916290b17215752461a95301ce8aa511ea4e1e04091916f3f57d3d6",
     "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md": "c9d701db3520ddda4794e512ec7489d1712a905d4e243df56552064dfbcb3231",
-    "security/owasp_mcp/tool_manifest.lock.json": "246d1b0132d63a2ae38da5caa546a6c208e1505ebc856455b6a0e5f2150d22d4",
-    "security/owasp_mcp/tool_manifest.lock.json.sig": "52555536466c96b26ea194822f5a3d91a7f8b12d568432ed60b4f6fe98efdb14"
+    "security/owasp_mcp/tool_manifest.lock.json": "18b447be104ac7d9a609d50f14fbdd110e3876bdb165dabe97fc06e181edd377",
+    "security/owasp_mcp/tool_manifest.lock.json.sig": "986c5b5d5bbe2af17632ae6fa40273c5b4941d6e246c2cfe5d9a50b679fc9861"
   },
   "attestation_id": "owasp-mcp-tool-review-and-branch-protection-2026-03-13",
   "control_ids": [

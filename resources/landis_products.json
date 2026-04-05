@@ -1,6 +1,6 @@
 {
-  "version": "2026-04-04-mvp",
-  "updatedAt": "2026-04-04",
+  "version": "2026-04-05-phase2",
+  "updatedAt": "2026-04-05",
   "sources": [
     {
       "title": "LandIS as AI-accessible soil data infrastructure: evidence, use cases, and an MCP access strategy",
@@ -9,6 +9,72 @@
     }
   ],
   "products": [
+    {
+      "id": "natmap-core",
+      "title": "LandIS NATMAP Core",
+      "family": "natmap",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-05",
+      "tags": ["natmap", "soil", "map-units", "classification"],
+      "abstract": "Core NATMAP polygon surface used for point lookup and area summaries against mapped soil units.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and normalized into the local warehouse for additive phase-2 NATMAP tools.",
+      "limitations": [
+        "NATMAP is generalized polygon mapping and should not replace site investigation.",
+        "Mapped soil units remain interpretive and may not reflect recent disturbance or made ground."
+      ],
+      "citations": [
+        {
+          "title": "National Soil Map",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-05"
+    },
+    {
+      "id": "nsi-evidence",
+      "title": "LandIS NSI Evidence",
+      "family": "nsi",
+      "coverage": "England and Wales",
+      "spatialType": "point",
+      "resolution": "sample observations",
+      "scale": "survey evidence",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-05",
+      "tags": ["nsi", "soil", "survey", "evidence", "samples"],
+      "abstract": "National Soil Inventory site and observation layers exposed as evidence-first tools with explicit sampling caveats.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and normalized into the local warehouse for additive phase-2 NSI tools.",
+      "limitations": [
+        "NSI observations are samples and do not represent continuous surface coverage.",
+        "Nearby evidence points should not be extrapolated to a site without field verification."
+      ],
+      "citations": [
+        {
+          "title": "National Soil Inventory",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-full-release-manifest"
+      ],
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-05"
+    },
     {
       "id": "soilscapes",
       "title": "LandIS Soilscapes",
@@ -74,6 +140,39 @@
       "sourceUrl": "https://www.landis.org.uk/",
       "license": "Derived screening output built from LandIS-backed warehouse tables; review LandIS licence terms before redistribution.",
       "lastReviewed": "2026-04-04"
+    },
+    {
+      "id": "landis-archive",
+      "title": "LandIS Archive and Release Inventory",
+      "family": "archive",
+      "coverage": "England and Wales",
+      "spatialType": "index",
+      "resolution": "portal and release metadata",
+      "scale": "archive management",
+      "accessTier": "local archive plus checked-in manifests",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-04-05",
+      "updatedAt": "2026-04-05",
+      "tags": ["archive", "inventory", "portal", "data.gov"],
+      "abstract": "Machine-readable inventory of the local LandIS portal mirror and supplementary public/data.gov release archive.",
+      "lineage": "Combines the authenticated portal inventory/download mirror with the supplementary release reconciliation and archive manifests.",
+      "limitations": [
+        "Archive manifests describe what is mirrored locally, not a guarantee about unpublished or separately licensed datasets elsewhere."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal inventory",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-full-release-manifest",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Archive metadata inherits the licence posture of the mirrored underlying items.",
+      "lastReviewed": "2026-04-05"
     },
     {
       "id": "soil-data-structures",

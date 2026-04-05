@@ -56,6 +56,9 @@ _IMPORT_MODULES = [
     "tools.landis_metadata",
     "tools.landis_soilscapes",
     "tools.landis_derive",
+    "tools.landis_archive",
+    "tools.landis_natmap",
+    "tools.landis_nsi",
     "tools.os_mcp",
     "tools.os_apps",
 ]
@@ -133,6 +136,9 @@ _PREFIX_IMPORTS = {
     "landis_metadata": ["tools.landis_metadata"],
     "landis_soilscapes": ["tools.landis_soilscapes"],
     "landis_derive": ["tools.landis_derive"],
+    "landis_archive": ["tools.landis_archive"],
+    "landis_natmap": ["tools.landis_natmap"],
+    "landis_nsi": ["tools.landis_nsi"],
     "os_mcp": ["tools.os_mcp"],
     "os_apps": ["tools.os_apps"],
 }
