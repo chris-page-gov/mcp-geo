@@ -3,11 +3,11 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${MCP_GEO_IMAGE:-mcp-geo-server}"
-NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo}"
-POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis}"
+NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-sidecar}"
+POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-sidecar}"
 POSTGIS_IMAGE="${MCP_GEO_POSTGIS_IMAGE:-mcp-geo-postgis-pgrouting:16-3.4}"
 POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
-POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
+POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-sidecar}"
 DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
 LANDIS_HOST_DATA_ROOT="${MCP_GEO_LANDIS_DATA_ROOT:-${LANDIS_LOCAL_DATA_ROOT:-$HOME/Data}}"
@@ -143,6 +143,29 @@ wait_for_postgis() {
     sleep 1
   done
   return 1
+}
+
+diagnose_postgis_failure() {
+  [[ "$MANAGE_POSTGIS_CONTAINER" == "true" ]] || return 0
+  "$DOCKER_BIN" container inspect "$POSTGIS_TARGET_CONTAINER" >/dev/null 2>&1 || return 0
+  local recent_logs=""
+  recent_logs="$("$DOCKER_BIN" logs --tail 80 "$POSTGIS_TARGET_CONTAINER" 2>&1 || true)"
+  if [[ -z "$recent_logs" ]]; then
+    return 0
+  fi
+  if printf "%s" "$recent_logs" | rg -qi \
+    'invalid checkpoint record|could not locate a valid checkpoint record'; then
+    log "PostGIS volume appears checkpoint-corrupted for container: $POSTGIS_TARGET_CONTAINER"
+    log "If this sidecar cache is disposable, recreate it with:"
+    log "  docker rm -f $POSTGIS_TARGET_CONTAINER"
+    if [[ "$POSTGIS_STORAGE_MODE" == "volume" ]]; then
+      log "  docker volume rm $POSTGIS_VOLUME"
+    fi
+    log "The wrapper now defaults to per-surface sidecar names to avoid cross-client volume reuse."
+    return 0
+  fi
+  log "Recent PostGIS logs from $POSTGIS_TARGET_CONTAINER:"
+  printf "%s\n" "$recent_logs" >&2
 }
 
 bootstrap_postgis_sql() {
@@ -356,6 +379,7 @@ if wait_for_postgis; then
   fi
 else
   log "PostGIS did not become ready in time."
+  diagnose_postgis_failure
 fi
 
 should_build=false

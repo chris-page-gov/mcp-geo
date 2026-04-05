@@ -68,6 +68,13 @@ All notable changes to this project will be documented in this file.
   directory exists, and forwards the LandIS warehouse/schema toggles so the
   standard app-container + PostGIS-container workflow can use the local archive
   without baking raw archives into the image.
+- Added PostGIS lifecycle hardening across the Docker/devcontainer entrypoints:
+  `.devcontainer/docker-compose.yml` now defaults to its own
+  `mcp-geo-postgis-devcontainer` volume, `scripts/claude-mcp-local` and
+  `scripts/codex-mcp-local` now use dedicated fallback container/network/volume
+  names, and `scripts/mcp-docker-local` now inspects recent Postgres logs to
+  call out checkpoint-corrupted volumes explicitly when a wrapper-managed
+  sidecar does not become ready.
 - Added the full repository review report
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
   reports catalog, recorded the remediation baseline in `PROGRESS.MD` and

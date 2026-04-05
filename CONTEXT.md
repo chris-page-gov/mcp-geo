@@ -133,9 +133,15 @@ assumptions change.
   contract through a containerized stdio server: `landis_catalog.*`,
   `landis_metadata.get`, `landis_archive.*`, `landis_natmap.*`,
   `landis_nsi.*`, `landis_soilscapes.*`, and `landis_derive.pipe_risk`.
-  The old default `mcp-geo-postgis` volume is currently corrupted, so the
-  verified LandIS runtime uses a fresh sidecar while the next hardening step
-  addresses safer default PostGIS lifecycle/storage behavior. Remaining
+  The follow-on Docker hardening pass on 2026-04-05 now separates the default
+  PostGIS identities across the devcontainer and host-side wrappers
+  (`mcp-geo-postgis-devcontainer`, `mcp-geo-postgis-claude`,
+  `mcp-geo-postgis-codex`, and the generic `mcp-geo-postgis-sidecar`) so local
+  archive workflows no longer share one fallback volume by default. The wrapper
+  also now inspects recent Postgres logs and flags checkpoint-corrupted sidecar
+  volumes explicitly when startup fails. An older legacy `mcp-geo-postgis`
+  volume is still known-corrupted from earlier shared-default runs, but it is
+  no longer the default path. Remaining
   phase-2 work is the join-table
   enrichment model (`NATMAPassociations`, `SOILSERIES`, `HORIZON*`) plus a
   decision on whether scale-specific NATMAP products, AUGER, or Soil Catalogue

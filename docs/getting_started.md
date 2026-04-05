@@ -74,7 +74,7 @@ Devcontainer note:
 - PostGIS data now uses a Docker named volume by default (not a repo bind
   mount), so corruption/isolation issues do not spill across git worktrees.
   Override the volume names if needed:
-  - `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis`)
+  - `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis-devcontainer`)
   - `MCP_GEO_RUNTIME_DATA_VOLUME` (default `mcp-geo-runtime-data`)
   Set distinct values per worktree if you want fully isolated local state.
   For CLI compose runs, copy `.devcontainer/.env.example` to
@@ -501,7 +501,8 @@ The wrapper starts PostGIS in Docker, builds the image if needed, and uses
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 By default it stores PostGIS data in a Docker named volume
-(`mcp-geo-postgis-claude`) rather than a repo bind mount.
+(`mcp-geo-postgis-claude`) and uses dedicated Claude sidecar names
+(`mcp-geo-postgis-claude` on `mcp-geo-claude`) rather than a repo bind mount.
 
 Control rebuilds with `MCP_GEO_DOCKER_BUILD`:
 - `missing` (default): build only when the image is absent.
@@ -537,12 +538,23 @@ Storage controls for the wrapper:
 - `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER` defaults to `auto` for Docker-backed
   wrappers, so host-side clients reuse the running repo devcontainer PostGIS
   container by default.
+- `scripts/codex-mcp-local` now uses dedicated fallback names
+  `mcp-geo-postgis-codex` on network `mcp-geo-codex`; the generic
+  `scripts/mcp-docker-local` fallback uses `mcp-geo-postgis-sidecar` on
+  `mcp-geo-sidecar`.
+- The devcontainer keeps its own named volume by default
+  (`mcp-geo-postgis-devcontainer`) so the host-side wrappers no longer share
+  database storage with the devcontainer unless you override the volume name
+  explicitly.
 - `scripts/claude-mcp-local` now prefers the running repo devcontainer PostGIS
   container (`mcp-geo_devcontainer-postgis-1`) when available; otherwise it
   falls back to its own Docker sidecar.
 - The wrapper now sets `PGDATA=/var/lib/postgresql/data/pgdata` to match the
   devcontainer layout and bootstraps the boundary-cache/route-graph schema
   files after the PostGIS sidecar becomes ready.
+- If a wrapper-managed sidecar does not become ready, `scripts/mcp-docker-local`
+  now inspects recent Postgres logs and explicitly flags checkpoint-corrupted
+  volumes before suggesting the `docker rm` / `docker volume rm` recovery path.
 
 Benchmarking note:
 - Before comparing Codex, Claude, or other Docker-backed clients, run

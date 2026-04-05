@@ -14,7 +14,8 @@ cache is the repo devcontainer PostGIS service:
 - service hostname inside that network: `postgis`
 
 Do not benchmark one client against `mcp-geo_devcontainer-postgis-1` and
-another against a fallback `mcp-geo-postgis` sidecar. That invalidates
+another against a fallback sidecar such as `mcp-geo-postgis-claude`,
+`mcp-geo-postgis-codex`, or `mcp-geo-postgis-sidecar`. That invalidates
 cache-comparison claims.
 
 ## Exact Startup Procedure
@@ -45,7 +46,7 @@ The preflight verifies that:
 - the shared PostGIS container is running
 - `postgis` and `pgrouting` are installed
 - Claude and Codex wrappers both target the same devcontainer PostGIS container
-- neither wrapper would start a separate `mcp-geo-postgis` fallback container
+- neither wrapper would start a separate fallback PostGIS sidecar
 
 If the preflight fails, do not benchmark until the Docker state is corrected.
 

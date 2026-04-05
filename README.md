@@ -305,7 +305,10 @@ Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
 By default it now stores PostGIS data in a Docker named volume
-(`mcp-geo-postgis-claude`) so raw database files are not written into the repo.
+(`mcp-geo-postgis-claude`) and uses the dedicated sidecar container/network
+names `mcp-geo-postgis-claude` / `mcp-geo-claude`, so raw database files are
+not written into the repo and Claude no longer shares a fallback volume with
+other host-side wrappers.
 Set `MCP_GEO_POSTGIS_STORAGE_MODE=bind` only if you explicitly want a host path
 mount (`MCP_GEO_POSTGIS_DATA_DIR`).
 Set `MCP_GEO_POSTGIS_VOLUME` differently per worktree if you want isolated
@@ -314,6 +317,13 @@ Override `MCP_GEO_POSTGIS_IMAGE` only if you need a different pgRouting-capable
 tag. The repo-local image currently builds on `postgis/postgis:16-3.4`, which
 is upstream-amd64-only for this tag, so Apple Silicon still runs the sidecar as
 `linux/amd64` under Docker emulation.
+The generic `scripts/mcp-docker-local` fallback now uses its own default
+sidecar identity (`mcp-geo-postgis-sidecar` on network `mcp-geo-sidecar`), and
+the devcontainer defaults to a separate named volume
+`mcp-geo-postgis-devcontainer`, so the normal host wrappers no longer collide
+with the devcontainer cache by default. If a sidecar fails to become ready, the
+wrapper now inspects the recent Postgres logs and calls out checkpoint-corrupted
+volumes explicitly instead of only timing out.
 For benchmark parity across clients, start the repo devcontainer PostGIS first
 and run `./scripts/check_shared_benchmark_cache.sh` before launching Codex or
 Claude so both wrappers are confirmed to reuse the same cache.
