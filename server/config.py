@@ -150,9 +150,14 @@ class Settings(_PydanticBaseSettings):
 
 
 _ENV_PLACEHOLDER_RE = re.compile(r"^\$\{(?:env:)?([A-Z0-9_]+)\}$")
+_NO_DEFAULT = object()
 
 
-def _coerce_fallback_setting_value(value: Any, annotation: Any) -> Any:
+def _coerce_fallback_setting_value(
+    value: Any,
+    annotation: Any,
+    default: Any = _NO_DEFAULT,
+) -> Any:
     if not isinstance(value, str):
         return value
 
@@ -167,16 +172,22 @@ def _coerce_fallback_setting_value(value: Any, annotation: Any) -> Any:
             return True
         if lowered in {"0", "false", "no", "off"}:
             return False
+        if default is not _NO_DEFAULT:
+            return default
         return value
     if target is int:
         try:
             return int(candidate)
         except ValueError:
+            if default is not _NO_DEFAULT:
+                return default
             return value
     if target is float:
         try:
             return float(candidate)
         except ValueError:
+            if default is not _NO_DEFAULT:
+                return default
             return value
     return value
 
@@ -201,7 +212,7 @@ def _populate_fallback_settings(
                 value = default
             else:
                 value = env_value
-        setattr(instance, key, _coerce_fallback_setting_value(value, annotation))
+        setattr(instance, key, _coerce_fallback_setting_value(value, annotation, default))
     for key, value in overrides.items():
         if key not in annotations:
             setattr(instance, key, value)
