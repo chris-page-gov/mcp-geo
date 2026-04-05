@@ -123,8 +123,20 @@ def test_call_tool_display_style_alias_routes_to_os_tool(monkeypatch):
     assert call.get("isError") is True
     data = call.get("data", {})
     assert data.get("code") == "NO_API_KEY"
-    structured = call.get("structuredContent", {})
-    assert structured.get("code") == "NO_API_KEY"
+    assert "structuredContent" not in call
+
+
+def test_call_tool_omits_structured_content_for_postcode_errors(monkeypatch):
+    from tools import os_common
+
+    monkeypatch.setattr(settings, "OS_API_KEY", "", raising=False)
+    monkeypatch.setattr(os_common.client, "api_key", "")
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_places_by_postcode", "arguments": {"postcode": "EC2V 8RT"}}
+    )
+    assert call.get("isError") is True
+    assert call.get("data", {}).get("code") == "NO_API_KEY"
+    assert "structuredContent" not in call
 
 
 def test_ui_tools_emit_resource_content(monkeypatch):
