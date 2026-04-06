@@ -68,7 +68,9 @@ class Settings(_PydanticBaseSettings):
     LANDIS_LOCAL_DATA_ROOT: str = ""
     LANDIS_PORTAL_ARCHIVE_DIR: str = ""
     LANDIS_FULL_RELEASE_ARCHIVE_DIR: str = ""
-    LANDIS_ARCHIVE_TRIAGE_PATH: str = "research/landis-data-source/landis_archive_triage_2026-04-05.json"
+    LANDIS_ARCHIVE_TRIAGE_PATH: str = (
+        "research/landis-data-source/landis_archive_triage_2026-04-05.json"
+    )
     LANDIS_FULL_RELEASE_MANIFEST_PATH: str = (
         "research/landis-data-source/landis_full_release_manifest_2026-04-05.json"
     )
