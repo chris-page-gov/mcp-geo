@@ -1249,37 +1249,43 @@ class LandisWarehouse:
         self._require_enabled()
         table_ident = self._table_identifier(self._nsi_sites_table)
         geojson = json.dumps(geometry, ensure_ascii=True, separators=(",", ":"))
-        query = sql.SQL(
+        count_query = sql.SQL(
             """
             WITH input_geom AS (
                 SELECT ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326) AS geom
-            ),
-            matches AS (
-                SELECT
-                    nsi_id,
-                    series_name,
-                    variant,
-                    subgroup,
-                    landuse,
-                    madeground,
-                    rocktype,
-                    survey_date,
-                    altitude,
-                    slope,
-                    aspect,
-                    easting,
-                    northing,
-                    dataset_version,
-                    source_url,
-                    license_name,
-                    updated_at,
-                    ST_Y(geom) AS lat,
-                    ST_X(geom) AS lon
-                FROM {table}
-                WHERE ST_Intersects(geom, (SELECT geom FROM input_geom))
             )
-            SELECT *, (SELECT COUNT(*) FROM matches) AS total_count
-            FROM matches
+            SELECT COUNT(*) AS total_count
+            FROM {table}
+            WHERE ST_Intersects(geom, (SELECT geom FROM input_geom));
+            """
+        ).format(table=table_ident)
+        page_query = sql.SQL(
+            """
+            WITH input_geom AS (
+                SELECT ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326) AS geom
+            )
+            SELECT
+                nsi_id,
+                series_name,
+                variant,
+                subgroup,
+                landuse,
+                madeground,
+                rocktype,
+                survey_date,
+                altitude,
+                slope,
+                aspect,
+                easting,
+                northing,
+                dataset_version,
+                source_url,
+                license_name,
+                updated_at,
+                ST_Y(geom) AS lat,
+                ST_X(geom) AS lon
+            FROM {table}
+            WHERE ST_Intersects(geom, (SELECT geom FROM input_geom))
             ORDER BY nsi_id ASC
             OFFSET %s
             LIMIT %s;
@@ -1288,14 +1294,16 @@ class LandisWarehouse:
         try:
             with self._connect() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(query, (geojson, offset, limit))
+                    cur.execute(count_query, (geojson,))
+                    count_row = cur.fetchone() or {}
+                    total_count = _int(count_row.get("total_count")) or 0
+                    cur.execute(page_query, (geojson, offset, limit))
                     rows = cur.fetchall() or []
         except LandisWarehouseUnavailable:
             raise
         except Exception as exc:  # pragma: no cover - defensive runtime path
             self._log_error(str(exc))
             raise LandisWarehouseUnavailable(str(exc)) from exc
-        total_count = _int(rows[0].get("total_count")) if rows else 0
         results: list[dict[str, Any]] = []
         dataset_version: str | None = None
         source_url: str | None = None

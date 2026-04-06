@@ -666,13 +666,26 @@ def test_landis_warehouse_nsi_queries(monkeypatch: pytest.MonkeyPatch) -> None:
             "total_count": 1,
         }
     ]
-    within = _TestWarehouse(_FakeConn(_FakeCursor(rows=within_rows))).nsi_sites_within_area(
+    within = _TestWarehouse(
+        _FakeConn(_FakeCursor(row={"total_count": 1}, rows=within_rows))
+    ).nsi_sites_within_area(
         geometry={"type": "Polygon", "coordinates": []},
         limit=25,
         offset=0,
     )
     assert within["sites"][0]["seriesName"] == "Wickham"
     assert within["totalCount"] == 1
+
+    empty_page_cursor = _FakeCursor(row={"total_count": 2}, rows=[])
+    empty_page = _TestWarehouse(_FakeConn(empty_page_cursor)).nsi_sites_within_area(
+        geometry={"type": "Polygon", "coordinates": []},
+        limit=25,
+        offset=50,
+    )
+    assert empty_page["sites"] == []
+    assert empty_page["totalCount"] == 2
+    assert empty_page["nextOffset"] is None
+    assert len(empty_page_cursor.execute_calls) == 2
 
     profile = _TestWarehouse(
         _FakeConn(
