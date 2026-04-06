@@ -9,7 +9,9 @@ from server.landis import (
     PIPE_RISK_CHECKLIST,
     SOILSCAPE_CAVEATS,
     landis_registry_meta,
+    landis_runtime_status,
     resolve_area_input,
+    supported_natmap_thematic_products,
 )
 from tools.registry import ToolResult
 from tools.typing_utils import is_strict_int
@@ -18,8 +20,17 @@ _DEFAULT_LIMIT = 25
 _MAX_LIMIT = 100
 
 
-def error(message: str, *, code: str = "INVALID_INPUT", status: int = 400) -> ToolResult:
-    return status, {"isError": True, "code": code, "message": message}
+def error(
+    message: str,
+    *,
+    code: str = "INVALID_INPUT",
+    status: int = 400,
+    details: dict[str, Any] | None = None,
+) -> ToolResult:
+    payload: dict[str, Any] = {"isError": True, "code": code, "message": message}
+    if details:
+        payload["details"] = details
+    return status, payload
 
 
 def parse_limit(value: Any) -> int | None:
@@ -56,7 +67,7 @@ def paginate(
 
 
 def product_summary(product: dict[str, Any]) -> dict[str, Any]:
-    return {
+    summary = {
         "id": product.get("id"),
         "title": product.get("title"),
         "family": product.get("family"),
@@ -70,10 +81,14 @@ def product_summary(product: dict[str, Any]) -> dict[str, Any]:
         "updatedAt": product.get("updatedAt"),
         "tags": product.get("tags", []),
     }
+    tooling = product.get("tooling")
+    if isinstance(tooling, dict):
+        summary["tooling"] = tooling
+    return summary
 
 
 def product_metadata(product: dict[str, Any]) -> dict[str, Any]:
-    return {
+    metadata = {
         "abstract": product.get("abstract"),
         "lineage": product.get("lineage"),
         "limitations": product.get("limitations", []),
@@ -83,6 +98,13 @@ def product_metadata(product: dict[str, Any]) -> dict[str, Any]:
         "license": product.get("license"),
         "lastReviewed": product.get("lastReviewed"),
     }
+    aliases = product.get("aliases")
+    if isinstance(aliases, list):
+        metadata["aliases"] = aliases
+    tooling = product.get("tooling")
+    if isinstance(tooling, dict):
+        metadata["tooling"] = tooling
+    return metadata
 
 
 def pipe_risk_explanation(risk_band: str, scores: dict[str, Any]) -> str:
@@ -143,7 +165,10 @@ def natmap_point_payload(lat: float, lon: float, row: dict[str, Any]) -> dict[st
     }
 
 
-def natmap_area_summary_payload(area_input: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
+def natmap_area_summary_payload(
+    area_input: dict[str, Any],
+    summary: dict[str, Any],
+) -> dict[str, Any]:
     return {
         "input": area_input,
         "areaSqM": summary["areaSqM"],
@@ -195,7 +220,29 @@ def registry_payload() -> dict[str, Any]:
     return landis_registry_meta()
 
 
+def live_query_details(*, error_reason: str | None = None) -> dict[str, Any]:
+    return {
+        "registry": registry_payload(),
+        "runtime": landis_runtime_status(error_reason=error_reason),
+        "fallbackTools": [
+            "landis_catalog.list_products",
+            "landis_metadata.get",
+            "landis_archive.list_items",
+        ],
+    }
+
+
+def thematic_product_details() -> dict[str, Any]:
+    products = supported_natmap_thematic_products()
+    return {
+        **live_query_details(),
+        "supportedProducts": products,
+        "supportedProductIds": [product["id"] for product in products],
+    }
+
+
 __all__ = [
+    "NSI_CAVEATS",
     "PIPE_RISK_CAVEATS",
     "PIPE_RISK_CHECKLIST",
     "SOILSCAPE_CAVEATS",
@@ -204,7 +251,6 @@ __all__ = [
     "natmap_area_summary_payload",
     "natmap_point_payload",
     "natmap_thematic_area_summary_payload",
-    "NSI_CAVEATS",
     "nsi_profile_payload",
     "nsi_sites_payload",
     "paginate",

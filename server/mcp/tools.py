@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from server.landis import landis_tool_meta
 from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
 from server.mcp.resource_handoff import decorate_resource_handoff
 from server.mcp.tool_search import (
@@ -526,6 +527,9 @@ def _describe_tool(tool: Tool, original_to_sanitized: dict[str, str]) -> dict[st
         internal_meta["keywords"] = meta.get("keywords", [])
     if meta.get("defer_loading") is not None:
         internal_meta["deferLoading"] = meta.get("defer_loading")
+    landis_meta = landis_tool_meta(original_name)
+    if landis_meta:
+        internal_meta["landis"] = landis_meta
     if ui_meta or internal_meta:
         merged: dict[str, Any] = {}
         if ui_meta:

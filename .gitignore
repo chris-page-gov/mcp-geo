@@ -60,6 +60,9 @@ data/benchmarking/*
 !data/benchmarking/stakeholder_eval/
 data/benchmarking/stakeholder_eval/*
 !data/benchmarking/stakeholder_eval/live_run_latest.json
+!data/knowledge_base/
+data/knowledge_base/*
+!data/knowledge_base/obsidian_kb_manifest.json
 
 # Playground build artifacts
 playground/node_modules/
@@ -246,3 +249,7 @@ research/Archive/
 ~$*.ppt
 ~$*.pptx
 ~$*.pptm
+
+# Obsidian knowledge-base local overlay (canonical vault remains tracked)
+Obsidian/MCP Geo Knowledge Base/98 Local Overlay/
+data/knowledge_base/obsidian_kb_overlay_manifest.json

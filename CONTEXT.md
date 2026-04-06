@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-05
+Last updated: 2026-04-06
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,25 @@ assumptions change.
 
 ## Current Focus
 
+- Maintaining the new 2026-04-06 repo-wide Obsidian knowledge base under
+  `Obsidian/MCP Geo Knowledge Base/`, `scripts/obsidian_kb_common.py`,
+  `scripts/build_obsidian_kb.py`, `scripts/validate_obsidian_kb.py`, the
+  canonical manifest `data/knowledge_base/obsidian_kb_manifest.json`, and the
+  maintenance skill `skills/mcp-geo-obsidian-kb/SKILL.md`. The canonical vault
+  is now generated from tracked repo content with `Obsidian/**` hard-excluded
+  from source scanning to avoid recursion, every generated note records source
+  hashes plus commit-pinned GitHub links, and local session/log evidence is
+  explicitly split into the ignored overlay subtree
+  `Obsidian/MCP Geo Knowledge Base/98 Local Overlay/` plus the transient
+  overlay manifest `data/knowledge_base/obsidian_kb_overlay_manifest.json`.
+  The current maintenance contract is: rebuild the canonical vault from
+  tracked sources, generate local overlay notes only on demand, and use the
+  validator to detect drift, missing coverage, recursion regressions, and
+  orphaned note files before treating the knowledge base as current. A
+  2026-04-06 follow-up also reformatted note-level `source_hashes` into
+  chunked `sha256:` strings so the checked-in vault preserves provenance
+  without tripping the repo `gitleaks` gate, and the regenerated canonical
+  vault now includes dedicated notes for the KB build/validate scripts.
 - Maintaining the new 2026-04-04 LandIS soil-screening MVP under
   `server/landis.py`, `tools/landis_*.py`, `resources/landis*`, and the new
   ingestion assets in `scripts/landis_*`. The first delivery adds a checked-in
@@ -125,6 +144,21 @@ assumptions change.
   into the app container at `/landis-data` and sets `LANDIS_LOCAL_DATA_ROOT`
   there automatically when the directory exists, so the default app-container +
   PostGIS-container workflow can read the same local LandIS archive directly.
+  A 2026-04-06 follow-up closed the remaining fresh-sidecar gap: the wrapper
+  now auto-detects missing or empty LandIS tables in a new Docker PostGIS
+  sidecar, bootstraps `scripts/landis_schema.sql`, runs
+  `scripts/landis_phase2_ingest.py` against the mounted `/landis-data`
+  archive, and then loads the Warwickshire Soilscapes/pipe-risk validation
+  layers with `scripts/landis_ingest.py`. The same fix also made
+  `scripts/landis_phase2_ingest.py` remap host archive paths correctly when the
+  archive is mounted inside the container, and made `scripts/landis_ingest.py`
+  execute schema SQL statement-by-statement so repeated bootstrap passes are
+  safe. A same-day review/CI hardening pass now also validates candidate
+  `landis_portal_archive_*` roots before phase-2 ingest and falls back to the
+  newest complete archive instead of hard-failing on the newest partial
+  mirror. First startup on a fresh sidecar is therefore intentionally slower
+  than a warm restart because it now performs the real NATMAP/NSI warehouse
+  load instead of failing immediately on an empty database.
   A 2026-04-05 verification run then loaded the MVP Soilscapes/pipe-risk
   layers plus the local NATMAP/NSI phase-2 slice into a fresh PostGIS sidecar
   (`879` Soilscapes polygons, `1,192` pipe-risk polygons, `42,603` NATMAP
@@ -145,7 +179,19 @@ assumptions change.
   also now inspects recent Postgres logs and flags checkpoint-corrupted sidecar
   volumes explicitly when startup fails. An older legacy `mcp-geo-postgis`
   volume is still known-corrupted from earlier shared-default runs, but it is
-  no longer the default path. Remaining
+  no longer the default path. A 2026-04-06 discovery/availability alignment
+  follow-up now also makes the exact callable NATMAP thematic `productId`
+  values visible through `landis_catalog.list_products` and `/tools/describe`,
+  and extends `landis_archive.*` beyond the portal mirror to include the
+  supplementary full-release/public-menu plus matched `data.gov.uk` package
+  slice so use-case inputs such as `HOST`, `wetness`, `Series Hydrology`, and
+  `Series Leacs` are discoverable through MCP instead of only in raw manifests.
+  The same 2026-04-06 wrapper-bootstrap verification reran the previously
+  failing Warwickshire offline queries against the Docker-network runtime and
+  confirmed `200` responses for `landis_natmap.point`,
+  `landis_soilscapes.point`, `landis_natmap.area_summary`,
+  `landis_derive.pipe_risk`, and `landis_nsi.nearest_sites`.
+  Remaining
   phase-2 work is the join-table
   enrichment model (`NATMAPassociations`, `SOILSERIES`, `HORIZON*`) plus a
   decision on whether scale-specific NATMAP products, AUGER, or Soil Catalogue

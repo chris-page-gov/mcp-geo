@@ -119,7 +119,7 @@
     {
       "description": "Summarize one NATMAP thematic product across a bbox or GeoJSON polygon.",
       "description_sha256": "fd4ef980a1c217dfc3d7afb9488c296e5ff3c795ebbbca5441087c45475fe808",
-      "input_schema_sha256": "dd57687131d6d1d7b0acb47bb70bf996e64640e7c9cd17459c111bb65499c71f",
+      "input_schema_sha256": "f7653072ca0eac8f81fea5fc6e33c3fc2696c148b989e8ff58947fcf871243e3",
       "name": "landis_natmap.thematic_area_summary",
       "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
       "version": "0.1.0"

@@ -180,6 +180,204 @@ bootstrap_postgis_sql() {
   return 1
 }
 
+postgres_scalar() {
+  local statement="$1"
+  "$DOCKER_BIN" exec "$POSTGIS_TARGET_CONTAINER" \
+    psql -U mcp_geo -d mcp_geo -tAc "$statement" 2>/dev/null || true
+}
+
+host_path_to_container() {
+  local host_path="$1"
+  printf "%s" "${host_path/#$LANDIS_HOST_DATA_ROOT/$LANDIS_CONTAINER_DATA_ROOT}"
+}
+
+first_existing_path() {
+  local candidate
+  for candidate in "$@"; do
+    if [[ -e "$candidate" ]]; then
+      printf "%s" "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+latest_matching_dir() {
+  local root="$1"
+  local prefix="$2"
+  local mode="${3:-}"
+  local matches=()
+  local candidate
+  for candidate in "$root"/"$prefix"*; do
+    [[ -d "$candidate" ]] || continue
+    if [[ "$mode" == "exclude_smoke" && "$(basename "$candidate")" == *-smoke* ]]; then
+      continue
+    fi
+    matches+=("$candidate")
+  done
+  if [[ "${#matches[@]}" -eq 0 ]]; then
+    return 1
+  fi
+  printf "%s\n" "${matches[@]}" | LC_ALL=C sort | tail -n 1 | tr -d '\n'
+}
+
+matching_dirs() {
+  local root="$1"
+  local prefix="$2"
+  local mode="${3:-}"
+  local matches=()
+  local candidate
+  for candidate in "$root"/"$prefix"*; do
+    [[ -d "$candidate" ]] || continue
+    if [[ "$mode" == "exclude_smoke" && "$(basename "$candidate")" == *-smoke* ]]; then
+      continue
+    fi
+    matches+=("$candidate")
+  done
+  if [[ "${#matches[@]}" -eq 0 ]]; then
+    return 1
+  fi
+  printf "%s\n" "${matches[@]}" | LC_ALL=C sort
+}
+
+portal_archive_is_complete() {
+  local host_path="$1"
+  "$DOCKER_BIN" run --rm \
+    --network "$NETWORK" \
+    -v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro" \
+    --entrypoint python \
+    "$IMAGE" \
+    scripts/landis_phase2_ingest.py \
+    --validate-archive-root \
+    --portal-archive-root "$(host_path_to_container "$host_path")" >/dev/null 2>&1
+}
+
+select_complete_matching_dir() {
+  local root="$1"
+  local prefix="$2"
+  local mode="${3:-}"
+  local candidates=()
+  local candidate
+  local idx
+
+  while IFS= read -r candidate; do
+    [[ -n "$candidate" ]] || continue
+    candidates+=("$candidate")
+  done < <(matching_dirs "$root" "$prefix" "$mode" || true)
+
+  if [[ "${#candidates[@]}" -eq 0 ]]; then
+    return 1
+  fi
+
+  for ((idx=${#candidates[@]} - 1; idx>=0; idx--)); do
+    candidate="${candidates[$idx]}"
+    if portal_archive_is_complete "$candidate"; then
+      printf "%s" "$candidate"
+      return 0
+    fi
+    log "Skipping incomplete LandIS portal archive: $candidate"
+  done
+  return 1
+}
+
+bootstrap_landis_runtime() {
+  if [[ "$LANDIS_MOUNT_ENABLED" != "true" ]]; then
+    return 0
+  fi
+  if ! is_truthy "${LANDIS_ENABLED:-true}"; then
+    return 0
+  fi
+  if ! is_truthy "${LANDIS_LIVE_ENABLED:-true}"; then
+    return 0
+  fi
+
+  local dsn="postgresql://mcp_geo:mcp_geo@${POSTGIS_HOST}:5432/mcp_geo"
+  local product_count
+  local natmap_count
+  local nsi_site_count
+  local soilscapes_count
+  local pipe_risk_count
+  product_count="$(trim_space "$(postgres_scalar "SELECT CASE WHEN to_regclass('landis.product_registry') IS NULL THEN '-1' ELSE (SELECT COUNT(*)::text FROM landis.product_registry) END;")")"
+  natmap_count="$(trim_space "$(postgres_scalar "SELECT CASE WHEN to_regclass('landis.natmap_polygons') IS NULL THEN '-1' ELSE (SELECT COUNT(*)::text FROM landis.natmap_polygons) END;")")"
+  nsi_site_count="$(trim_space "$(postgres_scalar "SELECT CASE WHEN to_regclass('landis.nsi_sites') IS NULL THEN '-1' ELSE (SELECT COUNT(*)::text FROM landis.nsi_sites) END;")")"
+  soilscapes_count="$(trim_space "$(postgres_scalar "SELECT CASE WHEN to_regclass('landis.soilscapes_polygons') IS NULL THEN '-1' ELSE (SELECT COUNT(*)::text FROM landis.soilscapes_polygons) END;")")"
+  pipe_risk_count="$(trim_space "$(postgres_scalar "SELECT CASE WHEN to_regclass('landis.pipe_risk_polygons') IS NULL THEN '-1' ELSE (SELECT COUNT(*)::text FROM landis.pipe_risk_polygons) END;")")"
+
+  local need_phase2=false
+  local need_validation=false
+  if [[ -z "$product_count" || "$product_count" == "-1" || "$product_count" == "0" || "$natmap_count" == "-1" || "$natmap_count" == "0" || "$nsi_site_count" == "-1" || "$nsi_site_count" == "0" ]]; then
+    need_phase2=true
+  fi
+  if [[ -z "$product_count" || "$product_count" == "-1" || "$product_count" == "0" || "$soilscapes_count" == "-1" || "$soilscapes_count" == "0" || "$pipe_risk_count" == "-1" || "$pipe_risk_count" == "0" ]]; then
+    need_validation=true
+  fi
+  if [[ "$need_phase2" != "true" && "$need_validation" != "true" ]]; then
+    return 0
+  fi
+
+  bootstrap_postgis_sql "$REPO_ROOT/scripts/landis_schema.sql" "landis" || true
+
+  local mount_args=(-v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro")
+  if [[ "$need_phase2" == "true" ]]; then
+    local portal_archive_host=""
+    portal_archive_host="$(select_complete_matching_dir \
+      "$LANDIS_HOST_DATA_ROOT" \
+      "landis_portal_archive_" \
+      "exclude_smoke")" || true
+    if [[ -z "$portal_archive_host" ]]; then
+      portal_archive_host="$(select_complete_matching_dir \
+        "$LANDIS_HOST_DATA_ROOT" \
+        "landis_portal_archive_")" || true
+    fi
+    if [[ -n "$portal_archive_host" ]]; then
+      log "bootstrapping LandIS NATMAP and NSI archive tables"
+      "$DOCKER_BIN" run --rm \
+        --network "$NETWORK" \
+        "${mount_args[@]}" \
+        --entrypoint python \
+        "$IMAGE" \
+        scripts/landis_phase2_ingest.py \
+        --dsn "$dsn" \
+        --portal-archive-root "$(host_path_to_container "$portal_archive_host")" >&2
+    else
+      log "LandIS portal archive not found under $LANDIS_HOST_DATA_ROOT; skipping NATMAP/NSI bootstrap."
+    fi
+  fi
+
+  if [[ "$need_validation" == "true" ]]; then
+    local soilscapes_host=""
+    local pipe_risk_host=""
+    local ingest_args=()
+    soilscapes_host="$(first_existing_path \
+      "$LANDIS_HOST_DATA_ROOT/landis_warwickshire_validation/soilscapes_warwickshire_normalized.geojson" \
+      "$LANDIS_HOST_DATA_ROOT/landis_warwickshire_validation/official/landis_official_soilscapes_warwickshire.geojson")" || true
+    pipe_risk_host="$(first_existing_path \
+      "$LANDIS_HOST_DATA_ROOT/landis_warwickshire_validation/official/landis_official_pipe_risk_warwickshire.geojson")" || true
+    if [[ -n "$soilscapes_host" ]]; then
+      ingest_args+=(--soilscapes "$(host_path_to_container "$soilscapes_host")")
+    fi
+    if [[ -n "$pipe_risk_host" ]]; then
+      ingest_args+=(--pipe-risk "$(host_path_to_container "$pipe_risk_host")")
+    fi
+    if [[ "${#ingest_args[@]}" -gt 0 ]]; then
+      log "bootstrapping LandIS Soilscapes and validation pipe-risk layers"
+      "$DOCKER_BIN" run --rm \
+        --network "$NETWORK" \
+        "${mount_args[@]}" \
+        --entrypoint python \
+        "$IMAGE" \
+        scripts/landis_ingest.py \
+        --dsn "$dsn" \
+        "${ingest_args[@]}" \
+        --dataset-version 2026-warwickshire-validation \
+        --source-url https://www.landis.org.uk/soilscapes/ \
+        --license-name "LandIS validation extract" >&2
+    else
+      log "LandIS Soilscapes/pipe-risk validation files not found under $LANDIS_HOST_DATA_ROOT; skipping validation bootstrap."
+    fi
+  fi
+}
+
 detect_reusable_devcontainer_postgis() {
   local network_name=""
   local mode
@@ -438,6 +636,10 @@ esac
 if [[ "$should_build" == "true" ]]; then
   log "building image: $IMAGE"
   "$DOCKER_BIN" build -t "$IMAGE" "$REPO_ROOT" >&2
+fi
+
+if wait_for_postgis; then
+  bootstrap_landis_runtime
 fi
 
 env_args=(
