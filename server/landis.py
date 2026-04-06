@@ -1148,9 +1148,15 @@ class LandisWarehouse:
         self._require_enabled()
         table_ident = self._table_identifier(self._nsi_sites_table)
         distance_clause = ""
-        params: list[Any] = []
+        params: list[Any] = [lon, lat]
         if max_distance_km is not None:
-            distance_clause = "WHERE ST_DWithin(geom::geography, ST_SetSRID(ST_Point(%s, %s), 4326)::geography, %s)"
+            distance_clause = """
+            WHERE ST_DWithin(
+                geom::geography,
+                ST_SetSRID(ST_Point(%s, %s), 4326)::geography,
+                %s
+            )
+            """
             params.extend([lon, lat, max_distance_km * 1000.0])
         query = sql.SQL(
             f"""
@@ -1181,7 +1187,7 @@ class LandisWarehouse:
             LIMIT %s;
             """
         ).format(table=table_ident)
-        params.extend([lon, lat, limit])
+        params.append(limit)
         try:
             with self._connect() as conn:
                 with conn.cursor() as cur:

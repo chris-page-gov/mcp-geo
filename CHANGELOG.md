@@ -103,6 +103,11 @@ All notable changes to this project will be documented in this file.
   the standard `INVALID_INPUT` response instead of leaking a `TypeError` from
   Pydantic construction, and the config fallback shim now has explicit
   regression coverage for the overrides path the daily bug scan flagged.
+- LandIS release-surface HTML stripping now tolerates malformed closing
+  `script`/`style` tags across both the reconciliation helper and the
+  script-free vendor snapshot helper, and `landis_nsi.nearest_sites` now binds
+  filtered-distance SQL parameters in placeholder order when `maxDistanceKm`
+  is supplied.
 
 ### Changed
 - Tool/resource discovery now includes the LandIS namespace and resources, and

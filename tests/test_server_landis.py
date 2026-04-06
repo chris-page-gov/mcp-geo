@@ -626,7 +626,8 @@ def test_landis_warehouse_nsi_queries(monkeypatch: pytest.MonkeyPatch) -> None:
             "distance_km": 0.321,
         }
     ]
-    nearest = _TestWarehouse(_FakeConn(_FakeCursor(rows=nearest_rows))).nsi_nearest_sites(
+    nearest_cursor = _FakeCursor(rows=nearest_rows)
+    nearest = _TestWarehouse(_FakeConn(nearest_cursor)).nsi_nearest_sites(
         lat=52.2,
         lon=-1.5,
         limit=5,
@@ -634,6 +635,12 @@ def test_landis_warehouse_nsi_queries(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     assert nearest["sites"][0]["nsiId"] == 101
     assert nearest["provenance"]["productId"] == "nsi-evidence"
+    assert nearest_cursor.execute_calls == [
+        (
+            nearest_cursor.execute_calls[0][0],
+            [-1.5, 52.2, -1.5, 52.2, 3000.0, 5],
+        )
+    ]
 
     within_rows = [
         {

@@ -42,8 +42,8 @@ DEFAULT_ARCHIVE_MANIFEST_PATH = Path(
     "/Users/crpage/Data/landis_portal_archive_2026-04-04/download_manifest.json"
 )
 USER_AGENT = "Mozilla/5.0 (compatible; mcp-geo landis release reconciliation)"
-SCRIPT_TAG_RE = re.compile(r"<script\b[^>]*>.*?</script\s*>", re.IGNORECASE | re.DOTALL)
-STYLE_TAG_RE = re.compile(r"<style\b[^>]*>.*?</style\s*>", re.IGNORECASE | re.DOTALL)
+SCRIPT_TAG_RE = re.compile(r"<script\b[^>]*>.*?</script\b[^>]*>", re.IGNORECASE | re.DOTALL)
+STYLE_TAG_RE = re.compile(r"<style\b[^>]*>.*?</style\b[^>]*>", re.IGNORECASE | re.DOTALL)
 
 
 @dataclass(frozen=True)
