@@ -232,6 +232,24 @@ def test_path_and_area_helpers_cover_supported_and_invalid_inputs(
     )
     assert resolved == archived_file
 
+    host_root = tmp_path / "HostData"
+    ext_root = tmp_path / "ExtData"
+    host_root.mkdir()
+    ext_portal_dir = ext_root / "landis_portal_archive_2026-04-06"
+    ext_portal_dir.mkdir(parents=True)
+    monkeypatch.setattr(landis.settings, "LANDIS_LOCAL_DATA_ROOT", "", raising=False)
+    monkeypatch.setattr(landis, "_LANDIS_LOCAL_DATA_CANDIDATES", (host_root, ext_root))
+    assert landis.landis_local_data_root() == host_root
+    assert landis.landis_portal_archive_dir() == ext_portal_dir
+
+    ext_archived_file = ext_portal_dir / "data_source" / "def" / "item_detail.json"
+    ext_archived_file.parent.mkdir(parents=True)
+    ext_archived_file.write_text("{}", encoding="utf-8")
+    ext_resolved = landis.resolve_landis_archive_file(
+        "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-06/data_source/def/item_detail.json"
+    )
+    assert ext_resolved == ext_archived_file
+
 
 def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     triage_payload = {

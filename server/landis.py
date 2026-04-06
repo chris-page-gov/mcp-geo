@@ -171,15 +171,21 @@ def landis_full_release_manifest_path() -> Path:
     )
 
 
-def landis_local_data_root() -> Path | None:
+def _landis_data_roots() -> list[Path]:
     configured = str(getattr(settings, "LANDIS_LOCAL_DATA_ROOT", "") or "").strip()
+    roots: list[Path] = []
     if configured:
         path = Path(configured).expanduser()
-        return path if path.exists() else None
+        if path.exists():
+            roots.append(path)
     for candidate in _LANDIS_LOCAL_DATA_CANDIDATES:
-        if candidate.exists():
-            return candidate
-    return None
+        if candidate.exists() and candidate not in roots:
+            roots.append(candidate)
+    return roots
+
+
+def landis_local_data_root() -> Path | None:
+    return _landis_data_roots()[0] if _landis_data_roots() else None
 
 
 def _latest_archive_dir(prefix: str, *, configured: str) -> Path | None:
@@ -187,14 +193,13 @@ def _latest_archive_dir(prefix: str, *, configured: str) -> Path | None:
     if raw:
         path = Path(raw).expanduser()
         return path if path.exists() else None
-    root = landis_local_data_root()
-    if root is None or not root.exists():
-        return None
-    matches = [
-        path
-        for path in root.glob(f"{prefix}*")
-        if path.is_dir() and "-smoke" not in path.name
-    ]
+    matches: list[Path] = []
+    for root in _landis_data_roots():
+        matches.extend(
+            path
+            for path in root.glob(f"{prefix}*")
+            if path.is_dir() and "-smoke" not in path.name
+        )
     return sorted(matches)[-1] if matches else None
 
 
@@ -215,17 +220,18 @@ def resolve_landis_archive_file(raw_path: str | None) -> Path | None:
     path = Path(raw_path)
     if path.exists():
         return path
-    root = landis_local_data_root()
-    if root is None:
-        return None
     archive_prefixes = (
         "landis_portal_archive_",
         "landis_full_release_archive_",
     )
     for index, part in enumerate(path.parts):
         if any(part.startswith(prefix) for prefix in archive_prefixes):
-            candidate = root / Path(*path.parts[index:])
-            return candidate if candidate.exists() else None
+            suffix = Path(*path.parts[index:])
+            for root in _landis_data_roots():
+                candidate = root / suffix
+                if candidate.exists():
+                    return candidate
+            return None
     return None
 
 
