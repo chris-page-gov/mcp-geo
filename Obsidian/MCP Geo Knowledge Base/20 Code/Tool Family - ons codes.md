@@ -3,16 +3,16 @@ title: "Tool Family - ons codes"
 kb_kind: "code_family"
 source_paths:
   - "tools/ons_codes.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/ons_codes.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/ons_codes.py"
 source_hashes:
-  tools/ons_codes.py: "663eec1b4aded6778bb1bb6a3d6714430bc725c4ffe9c702b4dc0a3e075ef6f8"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/ons_codes.py: "sha256:663eec1b-4aded677-8bb1bb6a-3d671443-0bc725c4-ffe9c702-b4dc0a3e-075ef6f8"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-11-03"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - ons codes
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/ons_codes.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/ons_codes.py)
+- [`tools/ons_codes.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/ons_codes.py)

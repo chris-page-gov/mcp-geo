@@ -3,16 +3,16 @@ title: "Script Family - docx"
 kb_kind: "code_family"
 source_paths:
   - "scripts/docx_hygiene.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/docx_hygiene.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/docx_hygiene.py"
 source_hashes:
-  scripts/docx_hygiene.py: "dd99b2ec99ef57d442ba81ed4df93bb41dcea40b113b7a00a8da6c26e6072afe"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/docx_hygiene.py: "sha256:dd99b2ec-99ef57d4-42ba81ed-4df93bb4-1dcea40b-113b7a00-a8da6c26-e6072afe"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-16"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - docx
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/docx_hygiene.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/docx_hygiene.py)
+- [`scripts/docx_hygiene.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/docx_hygiene.py)

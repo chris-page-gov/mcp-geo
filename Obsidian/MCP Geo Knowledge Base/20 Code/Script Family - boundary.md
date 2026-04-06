@@ -9,28 +9,28 @@ source_paths:
   - "scripts/boundary_run_tracker.py"
   - "scripts/boundary_status_ticker.py"
   - "scripts/boundary_triage.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_autofix.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_cache_ingest.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_cache_schema.sql"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_pipeline.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_run_tracker.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_status_ticker.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_triage.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_autofix.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_cache_ingest.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_cache_schema.sql"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_pipeline.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_run_tracker.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_status_ticker.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_triage.py"
 source_hashes:
-  scripts/boundary_autofix.py: "c92ce606ceaf38611529240aafbb0eb7ec5271f246160d200578e311898d7026"
-  scripts/boundary_cache_ingest.py: "30bb50508dab71812f757520c50ebe4a3f642ba1d1f50c3ff73991c297453e65"
-  scripts/boundary_cache_schema.sql: "c68af9338b0e6c9d28eff06ed5620b8b3cd49bee716137f43be9501d2ee2ff55"
-  scripts/boundary_pipeline.py: "b775fb35f21c11bcf36601ac68bc24e2cc3930ce1604e85b2c44f1f17e1e6616"
-  scripts/boundary_run_tracker.py: "47d8bbbf7f866eb28b36dfa8dbb043e3013dc8671e8406157717702654751e68"
-  scripts/boundary_status_ticker.py: "a760772d0e942dc0996bf94a10ded00f95d0cacf3a0796216f8c99341e2a5cc8"
-  scripts/boundary_triage.py: "d0e6d105ac53d2052a104714236c74c98d703b55942ac64e610acf0c76fc7803"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/boundary_autofix.py: "sha256:c92ce606-ceaf3861-1529240a-afbb0eb7-ec5271f2-46160d20-0578e311-898d7026"
+  scripts/boundary_cache_ingest.py: "sha256:30bb5050-8dab7181-2f757520-c50ebe4a-3f642ba1-d1f50c3f-f73991c2-97453e65"
+  scripts/boundary_cache_schema.sql: "sha256:c68af933-8b0e6c9d-28eff06e-d5620b8b-3cd49bee-716137f4-3be9501d-2ee2ff55"
+  scripts/boundary_pipeline.py: "sha256:b775fb35-f21c11bc-f36601ac-68bc24e2-cc3930ce-1604e85b-2c44f1f1-7e1e6616"
+  scripts/boundary_run_tracker.py: "sha256:47d8bbbf-7f866eb2-8b36dfa8-dbb043e3-013dc867-1e840615-77177026-54751e68"
+  scripts/boundary_status_ticker.py: "sha256:a760772d-0e942dc0-996bf94a-10ded00f-95d0cacf-3a079621-6f8c9934-1e2a5cc8"
+  scripts/boundary_triage.py: "sha256:d0e6d105-ac53d205-2a104714-236c74c9-8d703b55-942ac64e-610acf0c-76fc7803"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-01-30"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - boundary
 
@@ -53,10 +53,10 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/boundary_autofix.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_autofix.py)
-- [`scripts/boundary_cache_ingest.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_cache_ingest.py)
-- [`scripts/boundary_cache_schema.sql`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_cache_schema.sql)
-- [`scripts/boundary_pipeline.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_pipeline.py)
-- [`scripts/boundary_run_tracker.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_run_tracker.py)
-- [`scripts/boundary_status_ticker.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_status_ticker.py)
-- [`scripts/boundary_triage.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/boundary_triage.py)
+- [`scripts/boundary_autofix.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_autofix.py)
+- [`scripts/boundary_cache_ingest.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_cache_ingest.py)
+- [`scripts/boundary_cache_schema.sql`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_cache_schema.sql)
+- [`scripts/boundary_pipeline.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_pipeline.py)
+- [`scripts/boundary_run_tracker.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_run_tracker.py)
+- [`scripts/boundary_status_ticker.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_status_ticker.py)
+- [`scripts/boundary_triage.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/boundary_triage.py)

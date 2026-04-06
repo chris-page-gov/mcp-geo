@@ -10,30 +10,30 @@ source_paths:
   - "tools/landis_natmap.py"
   - "tools/landis_nsi.py"
   - "tools/landis_soilscapes.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_archive.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_catalog.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_common.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_derive.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_metadata.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_natmap.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_nsi.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_soilscapes.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_archive.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_catalog.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_common.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_derive.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_metadata.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_natmap.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_nsi.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_soilscapes.py"
 source_hashes:
-  tools/landis_archive.py: "ef8c9c37b7e20045c77223854b61b5499a1d676e6b0c7b63ba35e5fbb46b17ac"
-  tools/landis_catalog.py: "1389f1d7b47ca493dbc357a12a550617b17430a73dba5ad7297df933b4641731"
-  tools/landis_common.py: "87db9e286fb87cc7e8ddc3097ec669206f183560ed6b366574d73866e76e426d"
-  tools/landis_derive.py: "071214849f6cce5f19a0aafad8315d753387eaab48d4dc54e57eca8e54511d58"
-  tools/landis_metadata.py: "6c8fca9f239fd42e6bf104e7ab10b8488cb65158ce0af09c167bee1b75a692d7"
-  tools/landis_natmap.py: "a8959b0d87f04afb4f5c01abf78ce995f61b16fad5a56f7db3bc13c7e6f033e4"
-  tools/landis_nsi.py: "a17af25c56e4b834c230a32f570baf79824b2cbe4ec61b61c3c95374e77efe25"
-  tools/landis_soilscapes.py: "a21774435b081b012d6dfd676095f0c3635b76ecee29d35032c8587208f7be3e"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/landis_archive.py: "sha256:ef8c9c37-b7e20045-c7722385-4b61b549-9a1d676e-6b0c7b63-ba35e5fb-b46b17ac"
+  tools/landis_catalog.py: "sha256:1389f1d7-b47ca493-dbc357a1-2a550617-b17430a7-3dba5ad7-297df933-b4641731"
+  tools/landis_common.py: "sha256:1cbce687-0d037a19-e9a05b9a-bdbe4ea8-434e43da-fce22748-452976f5-0b8b395f"
+  tools/landis_derive.py: "sha256:e5194a1c-0dd3ce10-75cc98ac-33cb0d76-69c28c67-b260f822-756ed24d-eac7dff1"
+  tools/landis_metadata.py: "sha256:6c8fca9f-239fd42e-6bf104e7-ab10b848-8cb65158-ce0af09c-167bee1b-75a692d7"
+  tools/landis_natmap.py: "sha256:f9a2013b-570fee90-acdd39cd-a4288715-dacb7946-92587be8-6faabd94-06ba4e69"
+  tools/landis_nsi.py: "sha256:f88d01ab-29e04c73-571039df-df38e77e-87a18692-4044f6a2-3fa1daca-dde9843c"
+  tools/landis_soilscapes.py: "sha256:d2df8ee2-54af30f4-362a9b65-3dd909d1-73e65084-0098a570-40e49287-8fd00736"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-04-04"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - landis
 
@@ -47,21 +47,21 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
 | `tools/landis_archive.py` | from __future__ import annotations | 2026-04-05 | 2026-04-05 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_ingest.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
-| `tools/landis_catalog.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_tools.py` |
-| `tools/landis_common.py` | from __future__ import annotations | 2026-04-04 | 2026-04-05 | - |
-| `tools/landis_derive.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
+| `tools/landis_catalog.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_tools.py`, `tests/test_obsidian_kb.py` |
+| `tools/landis_common.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
+| `tools/landis_derive.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
 | `tools/landis_metadata.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_tools.py` |
-| `tools/landis_natmap.py` | from __future__ import annotations | 2026-04-05 | 2026-04-05 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
-| `tools/landis_nsi.py` | from __future__ import annotations | 2026-04-05 | 2026-04-05 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
-| `tools/landis_soilscapes.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
+| `tools/landis_natmap.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py`, `tests/test_server_landis.py` |
+| `tools/landis_nsi.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
+| `tools/landis_soilscapes.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
 
 ## Pinned Sources
 
-- [`tools/landis_archive.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_archive.py)
-- [`tools/landis_catalog.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_catalog.py)
-- [`tools/landis_common.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_common.py)
-- [`tools/landis_derive.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_derive.py)
-- [`tools/landis_metadata.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_metadata.py)
-- [`tools/landis_natmap.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_natmap.py)
-- [`tools/landis_nsi.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_nsi.py)
-- [`tools/landis_soilscapes.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/landis_soilscapes.py)
+- [`tools/landis_archive.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_archive.py)
+- [`tools/landis_catalog.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_catalog.py)
+- [`tools/landis_common.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_common.py)
+- [`tools/landis_derive.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_derive.py)
+- [`tools/landis_metadata.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_metadata.py)
+- [`tools/landis_natmap.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_natmap.py)
+- [`tools/landis_nsi.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_nsi.py)
+- [`tools/landis_soilscapes.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/landis_soilscapes.py)

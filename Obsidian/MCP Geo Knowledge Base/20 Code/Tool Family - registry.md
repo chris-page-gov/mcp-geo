@@ -3,16 +3,16 @@ title: "Tool Family - registry"
 kb_kind: "code_family"
 source_paths:
   - "tools/registry.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/registry.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/registry.py"
 source_hashes:
-  tools/registry.py: "3b58fcc5f9202edad3cdb4be504f7c15d9a4f1bfcb6775c6f853a3c715d64755"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/registry.py: "sha256:3b58fcc5-f9202eda-d3cdb4be-504f7c15-d9a4f1bf-cb6775c6-f853a3c7-15d64755"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - registry
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/registry.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/registry.py)
+- [`tools/registry.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/registry.py)

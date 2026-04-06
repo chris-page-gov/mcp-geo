@@ -3,16 +3,16 @@ title: "Tool Family - os net"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_net.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_net.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_net.py"
 source_hashes:
-  tools/os_net.py: "5bd0d8f34d35d8ff019f7b9c72b7ad99389f707ef579465a73720e76c71b7ecb"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/os_net.py: "sha256:5bd0d8f3-4d35d8ff-019f7b9c-72b7ad99-389f707e-f579465a-73720e76-c71b7ecb"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-13"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - os net
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/os_net.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_net.py)
+- [`tools/os_net.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_net.py)

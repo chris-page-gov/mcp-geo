@@ -4,18 +4,18 @@ kb_kind: "artifact_catalog"
 source_paths:
   - "mcp.json"
   - "pytest.ini"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/mcp.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/pytest.ini"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/mcp.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/pytest.ini"
 source_hashes:
-  mcp.json: "4d9e45e15b76916cb61131c38ebeaffabe7c3b5c18326f260fa9b978c7bb8ffb"
-  pytest.ini: "b2b09012939f45bbb88dde0f101c47e19f7eb8828ded72e0724b3bdf9e3a73b2"
-generated_at: "2026-04-06T09:00:35Z"
+  mcp.json: "sha256:4d9e45e1-5b76916c-b61131c3-8ebeaffa-be7c3b5c-18326f26-0fa9b978-c7bb8ffb"
+  pytest.ini: "sha256:b2b09012-939f45bb-b88dde0f-101c47e1-9f7eb882-8ded72e0-724b3bdf-9e3a73b2"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Miscellaneous Tracked Surface
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`mcp.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/mcp.json)
-- [`pytest.ini`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/pytest.ini)
+- [`mcp.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/mcp.json)
+- [`pytest.ini`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/pytest.ini)

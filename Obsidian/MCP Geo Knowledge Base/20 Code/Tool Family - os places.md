@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "tools/os_places.py"
   - "tools/os_places_extra.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_places.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_places_extra.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_places.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_places_extra.py"
 source_hashes:
-  tools/os_places.py: "c67771ad19c7b5c68b0fc928fa68d0a6f4150dc7c3a2780cb5d7d52d1b9f084d"
-  tools/os_places_extra.py: "18c7980ffd6f962b909e82036c2151c249978a0f763ee3566619bb2cd20d5f57"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/os_places.py: "sha256:c67771ad-19c7b5c6-8b0fc928-fa68d0a6-f4150dc7-c3a2780c-b5d7d52d-1b9f084d"
+  tools/os_places_extra.py: "sha256:18c7980f-fd6f962b-909e8203-6c2151c2-49978a0f-763ee356-6619bb2c-d20d5f57"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - os places
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/os_places.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_places.py)
-- [`tools/os_places_extra.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_places_extra.py)
+- [`tools/os_places.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_places.py)
+- [`tools/os_places_extra.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_places_extra.py)

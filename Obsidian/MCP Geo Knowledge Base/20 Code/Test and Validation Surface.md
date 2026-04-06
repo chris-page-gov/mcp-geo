@@ -150,6 +150,7 @@ source_paths:
   - "tests/test_middleware_exception.py"
   - "tests/test_nomis_common.py"
   - "tests/test_nomis_data.py"
+  - "tests/test_obsidian_kb.py"
   - "tests/test_ons_catalog_snapshot.py"
   - "tests/test_ons_catalog_validate_script.py"
   - "tests/test_ons_catalog_validator.py"
@@ -251,85 +252,85 @@ source_paths:
   - "tests/test_typing_utils.py"
   - "tests/test_unknown_tool.py"
   - "tests/test_validation.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/audit_test_utils.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/conftest.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/audit_logger.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/evaluation_results.audit.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/evaluation_results.benchmark.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/evaluation_results.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/harness.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/live_capture.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/047c3949.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/08eea8b1.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/13ad9383.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/15cb80c1.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/172ff2f7.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/19f40194.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/1f415869.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/2692a326.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/271c9a92.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/328c0257.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/3628f5d1.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/393a6d69.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/3d3c1f52.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/464a7d6a.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/49e6e04e.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4e4bc6a9.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4f7c55c0.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4fc811e8.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4ffd83a6.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/52a9f148.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/53b72503.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/5671006d.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/audit_test_utils.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/conftest.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/audit_logger.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/evaluation_results.audit.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/evaluation_results.benchmark.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/evaluation_results.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/harness.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/live_capture.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/047c3949.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/08eea8b1.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/13ad9383.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/15cb80c1.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/172ff2f7.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/19f40194.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/1f415869.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/2692a326.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/271c9a92.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/328c0257.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/3628f5d1.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/393a6d69.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/3d3c1f52.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/464a7d6a.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/49e6e04e.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4e4bc6a9.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4f7c55c0.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4fc811e8.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4ffd83a6.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/52a9f148.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/53b72503.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/5671006d.txt"
 source_hashes:
-  tests/__init__.py: "90c1c0862b10341eea2bdb1a0caf307b6a4c8b7a7b9db6086cfbf4d3257bda88"
-  tests/audit_test_utils.py: "c78f8d013c67cfbfac8146492016214b886627f6aaccf83d69c85ea7d58cd40e"
-  tests/conftest.py: "134e1d72938838162f5643ae5a1d305d21665e91434595812b45d179e72f01b0"
-  tests/evaluation/__init__.py: "083df5cd20bdb002668fa0e8614a164873e06aab47afa892b976f2aa719cd21d"
-  tests/evaluation/audit_logger.py: "b534afcb2cf15fe46ad6650da2c8394b9377c69d1e8c4fe488c11e2077b20441"
-  tests/evaluation/evaluation_results.audit.txt: "5f0e926a26e4a708f671dd84ed87fc6ef02b75a06c7981ba371bf6ef7593a8da"
-  tests/evaluation/evaluation_results.benchmark.txt: "395199f9f9fa902128200f6885cc487f94c95cbb711bb2844e99074d59b116ba"
-  tests/evaluation/evaluation_results.json: "10becc74bfa7f9e74d6bb3567cc5df891097c86665416495c60967069c2bc667"
-  tests/evaluation/harness.py: "743f226233bdbc97b71dc7b86d268c90c1ab4d0a7bb98f44a935a5a4e13309b1"
-  tests/evaluation/live_capture.py: "35bce5245d52aea3e3a9f7a24d51b156293a667fdd1ebc2d17e9e870d26aaee7"
-  tests/evaluation/logs/audit/047c3949.txt: "64cd184c4fcbf99e7e475ad91632f32a9b3548acf6b1bf1e656a1caa6c2179db"
-  tests/evaluation/logs/audit/08eea8b1.txt: "04c55fc725024e82a6b949618fde42e645c62b4d310c6f1122a2af3c5e3cfddd"
-  tests/evaluation/logs/audit/13ad9383.txt: "2b269de0fc9bc9fa57d62719e95f067155fb5cc1ce7b27c8a3f81362ab7d8046"
-  tests/evaluation/logs/audit/15cb80c1.txt: "db0c2fe5d0c7369b21743c9a430b42e8df203fc2079c3cd5c3423bd2fd484f53"
-  tests/evaluation/logs/audit/172ff2f7.txt: "dc541b9f233767fcd216f0dc4a82dfbc0e1ffadd20aa5f9e2a145a53dda4cbdb"
-  tests/evaluation/logs/audit/19f40194.txt: "faaeffe30ad43a9bee0aeccea557818a4220b37a12130bbb2d834840c6d79d57"
-  tests/evaluation/logs/audit/1f415869.txt: "1f8b85c404b063045b17dc20d454b0f92ab95f7ceb177b1bd4c7c69f654f4445"
-  tests/evaluation/logs/audit/2692a326.txt: "483c880d83930785460b9f2b5a309dc114528ee13039a07b5cef11f7a6c58184"
-  tests/evaluation/logs/audit/271c9a92.txt: "89aa5bdfd683d9f587f5e620586ec16f3570389cc016a41880d30dc95166463a"
-  tests/evaluation/logs/audit/328c0257.txt: "f491a0fa1b7370c0d6f26ba5a2d4932ee3ec391041f41122a8d3c3911331866f"
-  tests/evaluation/logs/audit/3628f5d1.txt: "eb746b3031338228f53b03a0f03f4c56bf0e158732b606cca164ed2bb41356b7"
-  tests/evaluation/logs/audit/393a6d69.txt: "807171a5f04645817e05c43ed03e6380a93e334962085b55c798f37fcf796eba"
-  tests/evaluation/logs/audit/3d3c1f52.txt: "8ab8e303f7426c985eef1d724ca39e66e8a89ee714f9a024adf5cc603d3c07ff"
-  tests/evaluation/logs/audit/464a7d6a.txt: "7d93f9eaaf75f4acc7ca83527147f3069be98d493f5acece9b2041c2d4751210"
-  tests/evaluation/logs/audit/49e6e04e.txt: "5af282bfc9282fce1dffc3d7f651317de5f60a21e8f9ed90443f05740cc4b2de"
-  tests/evaluation/logs/audit/4e4bc6a9.txt: "f79608d1513862d87693b8af627a0f6009c7e96205454e2458e659a8c6528d52"
-  tests/evaluation/logs/audit/4f7c55c0.txt: "62204f40f76df7723df7b85a14800fd62be90fb3453b5a38fdea62d438ae6ae9"
-  tests/evaluation/logs/audit/4fc811e8.txt: "6d9687b6bfef36229edd692ca7ca9fe3451ad153d7d52459f57196c443ef2015"
-  tests/evaluation/logs/audit/4ffd83a6.txt: "110b3cb9c05f9c73d519e240e86b864cd2914028365e2a6d405ad47859b7b8a6"
-  tests/evaluation/logs/audit/52a9f148.txt: "5afa7bba78d2b308ae9375610aab6644f2f61852f91d02fa316fa0e67fc6c536"
-  tests/evaluation/logs/audit/53b72503.txt: "2eb1db480b8247a79c5c37df1c6dff012e35ac208fc7ad0e82b28c87da601d5c"
-  tests/evaluation/logs/audit/5671006d.txt: "8272b0a98fde148362432bc2363bf93f52819d462c18dd5f990f11bdce13972a"
-generated_at: "2026-04-06T09:00:35Z"
+  tests/__init__.py: "sha256:90c1c086-2b10341e-ea2bdb1a-0caf307b-6a4c8b7a-7b9db608-6cfbf4d3-257bda88"
+  tests/audit_test_utils.py: "sha256:c78f8d01-3c67cfbf-ac814649-2016214b-886627f6-aaccf83d-69c85ea7-d58cd40e"
+  tests/conftest.py: "sha256:134e1d72-93883816-2f5643ae-5a1d305d-21665e91-43459581-2b45d179-e72f01b0"
+  tests/evaluation/__init__.py: "sha256:083df5cd-20bdb002-668fa0e8-614a1648-73e06aab-47afa892-b976f2aa-719cd21d"
+  tests/evaluation/audit_logger.py: "sha256:b534afcb-2cf15fe4-6ad6650d-a2c8394b-9377c69d-1e8c4fe4-88c11e20-77b20441"
+  tests/evaluation/evaluation_results.audit.txt: "sha256:5f0e926a-26e4a708-f671dd84-ed87fc6e-f02b75a0-6c7981ba-371bf6ef-7593a8da"
+  tests/evaluation/evaluation_results.benchmark.txt: "sha256:395199f9-f9fa9021-28200f68-85cc487f-94c95cbb-711bb284-4e99074d-59b116ba"
+  tests/evaluation/evaluation_results.json: "sha256:10becc74-bfa7f9e7-4d6bb356-7cc5df89-1097c866-65416495-c6096706-9c2bc667"
+  tests/evaluation/harness.py: "sha256:743f2262-33bdbc97-b71dc7b8-6d268c90-c1ab4d0a-7bb98f44-a935a5a4-e13309b1"
+  tests/evaluation/live_capture.py: "sha256:35bce524-5d52aea3-e3a9f7a2-4d51b156-293a667f-dd1ebc2d-17e9e870-d26aaee7"
+  tests/evaluation/logs/audit/047c3949.txt: "sha256:64cd184c-4fcbf99e-7e475ad9-1632f32a-9b3548ac-f6b1bf1e-656a1caa-6c2179db"
+  tests/evaluation/logs/audit/08eea8b1.txt: "sha256:04c55fc7-25024e82-a6b94961-8fde42e6-45c62b4d-310c6f11-22a2af3c-5e3cfddd"
+  tests/evaluation/logs/audit/13ad9383.txt: "sha256:2b269de0-fc9bc9fa-57d62719-e95f0671-55fb5cc1-ce7b27c8-a3f81362-ab7d8046"
+  tests/evaluation/logs/audit/15cb80c1.txt: "sha256:db0c2fe5-d0c7369b-21743c9a-430b42e8-df203fc2-079c3cd5-c3423bd2-fd484f53"
+  tests/evaluation/logs/audit/172ff2f7.txt: "sha256:dc541b9f-233767fc-d216f0dc-4a82dfbc-0e1ffadd-20aa5f9e-2a145a53-dda4cbdb"
+  tests/evaluation/logs/audit/19f40194.txt: "sha256:faaeffe3-0ad43a9b-ee0aecce-a557818a-4220b37a-12130bbb-2d834840-c6d79d57"
+  tests/evaluation/logs/audit/1f415869.txt: "sha256:1f8b85c4-04b06304-5b17dc20-d454b0f9-2ab95f7c-eb177b1b-d4c7c69f-654f4445"
+  tests/evaluation/logs/audit/2692a326.txt: "sha256:483c880d-83930785-460b9f2b-5a309dc1-14528ee1-3039a07b-5cef11f7-a6c58184"
+  tests/evaluation/logs/audit/271c9a92.txt: "sha256:89aa5bdf-d683d9f5-87f5e620-586ec16f-3570389c-c016a418-80d30dc9-5166463a"
+  tests/evaluation/logs/audit/328c0257.txt: "sha256:f491a0fa-1b7370c0-d6f26ba5-a2d4932e-e3ec3910-41f41122-a8d3c391-1331866f"
+  tests/evaluation/logs/audit/3628f5d1.txt: "sha256:eb746b30-31338228-f53b03a0-f03f4c56-bf0e1587-32b606cc-a164ed2b-b41356b7"
+  tests/evaluation/logs/audit/393a6d69.txt: "sha256:807171a5-f0464581-7e05c43e-d03e6380-a93e3349-62085b55-c798f37f-cf796eba"
+  tests/evaluation/logs/audit/3d3c1f52.txt: "sha256:8ab8e303-f7426c98-5eef1d72-4ca39e66-e8a89ee7-14f9a024-adf5cc60-3d3c07ff"
+  tests/evaluation/logs/audit/464a7d6a.txt: "sha256:7d93f9ea-af75f4ac-c7ca8352-7147f306-9be98d49-3f5acece-9b2041c2-d4751210"
+  tests/evaluation/logs/audit/49e6e04e.txt: "sha256:5af282bf-c9282fce-1dffc3d7-f651317d-e5f60a21-e8f9ed90-443f0574-0cc4b2de"
+  tests/evaluation/logs/audit/4e4bc6a9.txt: "sha256:f79608d1-513862d8-7693b8af-627a0f60-09c7e962-05454e24-58e659a8-c6528d52"
+  tests/evaluation/logs/audit/4f7c55c0.txt: "sha256:62204f40-f76df772-3df7b85a-14800fd6-2be90fb3-453b5a38-fdea62d4-38ae6ae9"
+  tests/evaluation/logs/audit/4fc811e8.txt: "sha256:6d9687b6-bfef3622-9edd692c-a7ca9fe3-451ad153-d7d52459-f57196c4-43ef2015"
+  tests/evaluation/logs/audit/4ffd83a6.txt: "sha256:110b3cb9-c05f9c73-d519e240-e86b864c-d2914028-365e2a6d-405ad478-59b7b8a6"
+  tests/evaluation/logs/audit/52a9f148.txt: "sha256:5afa7bba-78d2b308-ae937561-0aab6644-f2f61852-f91d02fa-316fa0e6-7fc6c536"
+  tests/evaluation/logs/audit/53b72503.txt: "sha256:2eb1db48-0b8247a7-9c5c37df-1c6dff01-2e35ac20-8fc7ad0e-82b28c87-da601d5c"
+  tests/evaluation/logs/audit/5671006d.txt: "sha256:8272b0a9-8fde1483-62432bc2-363bf93f-52819d46-2c18dd5f-990f11bd-ce13972a"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Test and Validation Surface
 
 ## Evidence Scope
 
 - Categories: `code_runtime`
-- Source file count: 249
+- Source file count: 250
 
 ## Source Inventory
 
@@ -462,10 +463,10 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `tests/test_host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | `tests/test_host_benchmark.py` |
 | `tests/test_http_endpoint_matrix.py` | from fastapi.testclient import TestClient | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_http_transport_coverage_more.py` | import base64 | 2026-02-07 | 2026-03-13 | - |
-| `tests/test_landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-05 | - |
+| `tests/test_landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
 | `tests/test_landis_release_reconciliation.py` | from scripts.landis_release_reconciliation import strip_html | 2026-04-06 | 2026-04-06 | - |
 | `tests/test_landis_resources.py` | from __future__ import annotations | 2026-04-04 | 2026-04-05 | `tests/test_landis_resources.py` |
-| `tests/test_landis_tools.py` | from __future__ import annotations | 2026-04-04 | 2026-04-05 | `tests/test_landis_resources.py` |
+| `tests/test_landis_tools.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_landis_resources.py` |
 | `tests/test_live_missing_tools_probe.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
 | `tests/test_logging_redaction.py` | from __future__ import annotations | 2026-02-21 | 2026-03-24 | - |
 | `tests/test_main_observability_branches.py` | from __future__ import annotations | 2026-02-11 | 2026-03-24 | - |
@@ -483,6 +484,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `tests/test_middleware_exception.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | - |
 | `tests/test_nomis_common.py` | import json | 2026-02-06 | 2026-02-06 | - |
 | `tests/test_nomis_data.py` | from typing import Any, Dict, Tuple | 2026-02-05 | 2026-03-16 | `tests/test_nomis_data.py` |
+| `tests/test_obsidian_kb.py` | from __future__ import annotations | 2026-04-06 | 2026-04-06 | - |
 | `tests/test_ons_catalog_snapshot.py` | import json | 2026-02-07 | 2026-02-07 | - |
 | `tests/test_ons_catalog_validate_script.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | `tests/test_ons_catalog_validate_script.py` |
 | `tests/test_ons_catalog_validator.py` | import json | 2026-02-11 | 2026-02-27 | - |
@@ -573,7 +575,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `tests/test_tool_naming_aliases.py` | from server.tool_naming import resolve_tool_name | 2026-02-14 | 2026-02-14 | - |
 | `tests/test_tool_search.py` | from server.mcp.tool_search import STARTER_TOOLS, get_tool_search_config, search_tools | 2026-01-27 | 2026-04-04 | - |
 | `tests/test_tool_upstream_endpoint_contracts.py` | from __future__ import annotations | 2026-02-11 | 2026-02-25 | - |
-| `tests/test_tools_describe.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-04 | `tests/test_tools_describe.py` |
+| `tests/test_tools_describe.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-06 | `tests/test_tools_describe.py` |
 | `tests/test_tools_search.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-15 | `tests/test_coverage_guardrails.py`, `tests/test_tools_describe.py`, `tests/test_tools_search.py`, `tests/test_tools_search_validation.py` |
 | `tests/test_tools_search_validation.py` | def test_tools_search_invalid_mode(client): | 2026-01-29 | 2026-03-14 | - |
 | `tests/test_tools_validation_branches.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
@@ -587,43 +589,43 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tests/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/__init__.py)
-- [`tests/audit_test_utils.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/audit_test_utils.py)
-- [`tests/conftest.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/conftest.py)
-- [`tests/evaluation/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/__init__.py)
-- [`tests/evaluation/audit_logger.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/audit_logger.py)
-- [`tests/evaluation/evaluation_results.audit.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/evaluation_results.audit.txt)
-- [`tests/evaluation/evaluation_results.benchmark.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/evaluation_results.benchmark.txt)
-- [`tests/evaluation/evaluation_results.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/evaluation_results.json)
-- [`tests/evaluation/harness.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/harness.py)
-- [`tests/evaluation/live_capture.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/live_capture.py)
-- [`tests/evaluation/logs/audit/047c3949.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/047c3949.txt)
-- [`tests/evaluation/logs/audit/08eea8b1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/08eea8b1.txt)
-- [`tests/evaluation/logs/audit/13ad9383.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/13ad9383.txt)
-- [`tests/evaluation/logs/audit/15cb80c1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/15cb80c1.txt)
-- [`tests/evaluation/logs/audit/172ff2f7.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/172ff2f7.txt)
-- [`tests/evaluation/logs/audit/19f40194.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/19f40194.txt)
-- [`tests/evaluation/logs/audit/1f415869.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/1f415869.txt)
-- [`tests/evaluation/logs/audit/2692a326.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/2692a326.txt)
-- [`tests/evaluation/logs/audit/271c9a92.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/271c9a92.txt)
-- [`tests/evaluation/logs/audit/328c0257.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/328c0257.txt)
-- [`tests/evaluation/logs/audit/3628f5d1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/3628f5d1.txt)
-- [`tests/evaluation/logs/audit/393a6d69.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/393a6d69.txt)
-- [`tests/evaluation/logs/audit/3d3c1f52.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/3d3c1f52.txt)
-- [`tests/evaluation/logs/audit/464a7d6a.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/464a7d6a.txt)
-- [`tests/evaluation/logs/audit/49e6e04e.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/49e6e04e.txt)
-- [`tests/evaluation/logs/audit/4e4bc6a9.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4e4bc6a9.txt)
-- [`tests/evaluation/logs/audit/4f7c55c0.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4f7c55c0.txt)
-- [`tests/evaluation/logs/audit/4fc811e8.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4fc811e8.txt)
-- [`tests/evaluation/logs/audit/4ffd83a6.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/4ffd83a6.txt)
-- [`tests/evaluation/logs/audit/52a9f148.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/52a9f148.txt)
-- [`tests/evaluation/logs/audit/53b72503.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/53b72503.txt)
-- [`tests/evaluation/logs/audit/5671006d.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/5671006d.txt)
-- [`tests/evaluation/logs/audit/58f6acfe.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/58f6acfe.txt)
-- [`tests/evaluation/logs/audit/5d58b670.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/5d58b670.txt)
-- [`tests/evaluation/logs/audit/612fbdcf.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/612fbdcf.txt)
-- [`tests/evaluation/logs/audit/6a554f33.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/6a554f33.txt)
-- [`tests/evaluation/logs/audit/70b26fc5.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/70b26fc5.txt)
-- [`tests/evaluation/logs/audit/73f6a027.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/73f6a027.txt)
-- [`tests/evaluation/logs/audit/7c2d3745.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/7c2d3745.txt)
-- [`tests/evaluation/logs/audit/90599991.txt`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tests/evaluation/logs/audit/90599991.txt)
+- [`tests/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/__init__.py)
+- [`tests/audit_test_utils.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/audit_test_utils.py)
+- [`tests/conftest.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/conftest.py)
+- [`tests/evaluation/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/__init__.py)
+- [`tests/evaluation/audit_logger.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/audit_logger.py)
+- [`tests/evaluation/evaluation_results.audit.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/evaluation_results.audit.txt)
+- [`tests/evaluation/evaluation_results.benchmark.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/evaluation_results.benchmark.txt)
+- [`tests/evaluation/evaluation_results.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/evaluation_results.json)
+- [`tests/evaluation/harness.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/harness.py)
+- [`tests/evaluation/live_capture.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/live_capture.py)
+- [`tests/evaluation/logs/audit/047c3949.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/047c3949.txt)
+- [`tests/evaluation/logs/audit/08eea8b1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/08eea8b1.txt)
+- [`tests/evaluation/logs/audit/13ad9383.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/13ad9383.txt)
+- [`tests/evaluation/logs/audit/15cb80c1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/15cb80c1.txt)
+- [`tests/evaluation/logs/audit/172ff2f7.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/172ff2f7.txt)
+- [`tests/evaluation/logs/audit/19f40194.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/19f40194.txt)
+- [`tests/evaluation/logs/audit/1f415869.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/1f415869.txt)
+- [`tests/evaluation/logs/audit/2692a326.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/2692a326.txt)
+- [`tests/evaluation/logs/audit/271c9a92.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/271c9a92.txt)
+- [`tests/evaluation/logs/audit/328c0257.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/328c0257.txt)
+- [`tests/evaluation/logs/audit/3628f5d1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/3628f5d1.txt)
+- [`tests/evaluation/logs/audit/393a6d69.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/393a6d69.txt)
+- [`tests/evaluation/logs/audit/3d3c1f52.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/3d3c1f52.txt)
+- [`tests/evaluation/logs/audit/464a7d6a.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/464a7d6a.txt)
+- [`tests/evaluation/logs/audit/49e6e04e.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/49e6e04e.txt)
+- [`tests/evaluation/logs/audit/4e4bc6a9.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4e4bc6a9.txt)
+- [`tests/evaluation/logs/audit/4f7c55c0.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4f7c55c0.txt)
+- [`tests/evaluation/logs/audit/4fc811e8.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4fc811e8.txt)
+- [`tests/evaluation/logs/audit/4ffd83a6.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/4ffd83a6.txt)
+- [`tests/evaluation/logs/audit/52a9f148.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/52a9f148.txt)
+- [`tests/evaluation/logs/audit/53b72503.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/53b72503.txt)
+- [`tests/evaluation/logs/audit/5671006d.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/5671006d.txt)
+- [`tests/evaluation/logs/audit/58f6acfe.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/58f6acfe.txt)
+- [`tests/evaluation/logs/audit/5d58b670.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/5d58b670.txt)
+- [`tests/evaluation/logs/audit/612fbdcf.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/612fbdcf.txt)
+- [`tests/evaluation/logs/audit/6a554f33.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/6a554f33.txt)
+- [`tests/evaluation/logs/audit/70b26fc5.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/70b26fc5.txt)
+- [`tests/evaluation/logs/audit/73f6a027.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/73f6a027.txt)
+- [`tests/evaluation/logs/audit/7c2d3745.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/7c2d3745.txt)
+- [`tests/evaluation/logs/audit/90599991.txt`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tests/evaluation/logs/audit/90599991.txt)

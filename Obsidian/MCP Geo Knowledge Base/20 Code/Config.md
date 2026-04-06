@@ -3,16 +3,16 @@ title: "Config"
 kb_kind: "code_module"
 source_paths:
   - "server/config.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/config.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/config.py"
 source_hashes:
-  server/config.py: "5f48696942b3a0c40294857b58947efaf9118e02a58260cb60584eb1897c72b3"
-generated_at: "2026-04-06T09:00:35Z"
+  server/config.py: "sha256:5f486969-42b3a0c4-0294857b-58947efa-f9118e02-a58260cb-60584eb1-897c72b3"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Config
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`server/config.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/config.py)
+- [`server/config.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/config.py)

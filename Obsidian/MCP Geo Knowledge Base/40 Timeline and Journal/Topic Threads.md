@@ -5,20 +5,20 @@ source_paths:
   - "CHANGELOG.md"
   - "CONTEXT.md"
   - "PROGRESS.MD"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/PROGRESS.MD"
 source_hashes:
-  CHANGELOG.md: "9f8a72a8b1f9f4d8480398e9ea1002aa504c97bce87633cdf88c3f9b61132334"
-  CONTEXT.md: "84fc74b172fc3fdd6b3cceb4ee7e5b77f3785b252ad0b3670de07b61671ce055"
-  PROGRESS.MD: "4f33a28d5b0311dd173afe1b2a33d1b58a5f3c49eab1fea8a251ee3d3c3afe5b"
-generated_at: "2026-04-06T09:00:35Z"
+  CHANGELOG.md: "sha256:252eed1f-fb15f22a-3e8565c7-6b106cd0-8ff2b9ee-5283fcb5-b57b1589-9c309984"
+  CONTEXT.md: "sha256:7491e909-2b856e35-9845b0e1-b1810012-38af25c8-c53f46e6-03d769d6-e84157de"
+  PROGRESS.MD: "sha256:36e56707-408a87b1-1d7424ba-f7865265-90fb6b64-77910634-ed261080-5fa6bafd"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Topic Threads
 
@@ -46,26 +46,26 @@ guessing why the work happened.
 
 ## LandIS
 
+- `2026-04-06` `troubleshooting/Landis/failure_data_availability.md`: "The key use case for all of this is the resilience of our buried infrastructure and also the transport infrastructure. So road rail, all the pipes and cables, the pylons Energy System - to future climate change-induced
+- `2026-04-06` `tools/landis_soilscapes.py`: from __future__ import annotations
+- `2026-04-06` `tools/landis_nsi.py`: from __future__ import annotations
+- `2026-04-06` `tools/landis_natmap.py`: from __future__ import annotations
+- `2026-04-06` `tools/landis_derive.py`: from __future__ import annotations
+- `2026-04-06` `tools/landis_common.py`: from __future__ import annotations
 - `2026-04-06` `tests/test_server_landis.py`: from __future__ import annotations
+- `2026-04-06` `tests/test_landis_tools.py`: from __future__ import annotations
 - `2026-04-06` `tests/test_landis_release_reconciliation.py`: from scripts.landis_release_reconciliation import strip_html
+- `2026-04-06` `tests/test_landis_ingest.py`: from __future__ import annotations
 - `2026-04-06` `server/landis.py`: from __future__ import annotations
 - `2026-04-06` `scripts/landis_release_reconciliation.py`: Generate a LandIS release-surface reconciliation manifest. This compares three public-facing surfaces: 1. The authenticated ArcGIS portal inventory already captured in-repo. 2. Public LandIS website dataset/service pages that are linked from the current navigation but are not present in the mirrored ArcGIS portal slice. 3. Matching `data.gov.uk` package metadata where it exists. The output is a machine-readable JSON manifest that records: - public page reachability and page size - whether each item appears in the current portal inventory - likely related portal datasets, where known - candidate `data.gov.uk` package matches - a conservative approximate size estimate when a public page is dataset-like and there is a defensible analogue in the portal inventory
-- `2026-04-05` `tools/landis_nsi.py`: from __future__ import annotations
-- `2026-04-05` `tools/landis_natmap.py`: from __future__ import annotations
-- `2026-04-05` `tools/landis_common.py`: from __future__ import annotations
+- `2026-04-06` `scripts/landis_phase2_ingest.py`: from __future__ import annotations
+- `2026-04-06` `scripts/landis_ingest.py`: from __future__ import annotations
+- `2026-04-06` `resources/landis_products.json`: JSON object keys: products, sources, updatedAt, version
 - `2026-04-05` `tools/landis_archive.py`: from __future__ import annotations
-- `2026-04-05` `tests/test_landis_tools.py`: from __future__ import annotations
-- `2026-04-05` `tests/test_landis_resources.py`: from __future__ import annotations
-- `2026-04-05` `tests/test_landis_ingest.py`: from __future__ import annotations
-- `2026-04-05` `scripts/landis_schema.sql`: CREATE SCHEMA IF NOT EXISTS landis;
-- `2026-04-05` `scripts/landis_phase2_ingest.py`: from __future__ import annotations
-- `2026-04-05` `scripts/landis_full_release_archive.py`: Create and verify a full LandIS release archive on local storage. This script treats the existing authenticated ArcGIS portal archive as one verified component and then mirrors the remaining public LandIS release surfaces: 1. Public LandIS website dataset/service pages that are linked from the current official navigation but absent from the mirrored portal slice. 2. Relevant `data.gov.uk` Cranfield/LandIS package metadata and their published resource URLs. The script writes a machine-readable release manifest plus a completion verification manifest. It is designed to be rerunnable and resumable.
-- `2026-04-05` `scripts/landis_archive_triage.py`: from __future__ import annotations
-- `2026-04-05` `resources/landis_products.json`: JSON object keys: products, sources, updatedAt, version
 
 ## Map Delivery
 
-- `2026-04-05` `tools/landis_natmap.py`: from __future__ import annotations
+- `2026-04-06` `tools/landis_natmap.py`: from __future__ import annotations
 - `2026-04-05` `docs/benchmarking/codex_vs_claude_host_benchmark.md`: This runbook adds Codex as a first-class MCP host benchmark target for `mcp-geo` alongside Claude Desktop. For any cross-client benchmark or comparison, all clients must hit the same PostGIS-backed cache and route-graph
 - `2026-04-04` `troubleshooting/Meeth North Devon/meeth_3d_buildings.html`: OS MasterMap · 3D Buildings
 - `2026-04-04` `troubleshooting/Meeth North Devon/Start Meeth 3D Map.command`: ── Meeth 3D Buildings Viewer ──────────────────────────────────────
@@ -122,4 +122,9 @@ guessing why the work happened.
 
 ## Knowledge Base
 
+- `2026-04-06` `tests/test_obsidian_kb.py`: from __future__ import annotations
+- `2026-04-06` `skills/mcp-geo-obsidian-kb/SKILL.md`: Use this skill when you need to refresh or validate the repo knowledge base under `Obsidian/MCP Geo Knowledge Base/`. - Canonical tier: checked-in markdown generated from tracked repo content. - Local overlay tier: ignor
+- `2026-04-06` `scripts/validate_obsidian_kb.py`: from __future__ import annotations
+- `2026-04-06` `scripts/obsidian_kb_common.py`: from __future__ import annotations
+- `2026-04-06` `scripts/build_obsidian_kb.py`: from __future__ import annotations
 - `2026-04-06` `CHANGELOG.md`: All notable changes to this project will be documented in this file. - Added a repo-wide generated Obsidian knowledge base under `Obsidian/MCP Geo Knowledge Base/`, backed by `scripts/obsidian_kb_common.py`, `scripts/bui

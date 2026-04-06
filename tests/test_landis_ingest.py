@@ -6,6 +6,48 @@ from pathlib import Path
 from scripts import landis_archive_triage, landis_ingest, landis_phase2_ingest
 
 
+def _write_phase2_dataset(portal_root: Path, dataset_name: str) -> None:
+    item_dir = portal_root / "data_source" / f"abc_{dataset_name}"
+    feature_dir = item_dir / "feature_service"
+    layers_dir = feature_dir / "layers" / dataset_name
+    layers_dir.mkdir(parents=True)
+    records_path = layers_dir / "records_batch_0001.geojson"
+    records_path.write_text(
+        json.dumps(
+            {
+                "type": "FeatureCollection",
+                "features": [],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (item_dir / "inventory_record.json").write_text(
+        json.dumps({"id": "abc", "title": dataset_name}) + "\n",
+        encoding="utf-8",
+    )
+    (item_dir / "item_detail.json").write_text(
+        json.dumps({"licenseInfo": "test"}) + "\n",
+        encoding="utf-8",
+    )
+    (feature_dir / "download_summary.json").write_text(
+        json.dumps(
+            {
+                "serviceUrl": f"https://example.test/{dataset_name}",
+                "layers": [{"files": [str(records_path)]}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_complete_portal_archive(portal_root: Path) -> None:
+    portal_root.mkdir(parents=True, exist_ok=True)
+    for dataset_name in landis_phase2_ingest._required_portal_dataset_names():
+        _write_phase2_dataset(portal_root, dataset_name)
+
+
 def test_normalize_soilscapes_feature_maps_expected_fields() -> None:
     row = landis_ingest._normalize_soilscapes_feature(
         {
@@ -230,9 +272,28 @@ def test_localize_archive_path_maps_container_mount_from_host_archive() -> None:
 
 
 def test_latest_portal_archive_dir_prefers_newest_non_smoke(tmp_path: Path) -> None:
-    (tmp_path / "landis_portal_archive_2026-04-04").mkdir()
+    _write_complete_portal_archive(tmp_path / "landis_portal_archive_2026-04-04")
     (tmp_path / "landis_portal_archive_2026-05-01-smoke").mkdir()
     newest = tmp_path / "landis_portal_archive_2026-05-01"
-    newest.mkdir()
+    _write_complete_portal_archive(newest)
 
     assert landis_phase2_ingest._latest_portal_archive_dir(tmp_path) == newest
+
+
+def test_latest_portal_archive_dir_skips_incomplete_newer_archive(tmp_path: Path) -> None:
+    older_complete = tmp_path / "landis_portal_archive_2026-04-04"
+    _write_complete_portal_archive(older_complete)
+    newer_incomplete = tmp_path / "landis_portal_archive_2026-05-01"
+    newer_incomplete.mkdir()
+
+    assert landis_phase2_ingest._latest_portal_archive_dir(tmp_path) == older_complete
+
+
+def test_portal_archive_validation_errors_report_missing_required_datasets(tmp_path: Path) -> None:
+    portal_root = tmp_path / "landis_portal_archive_2026-04-04"
+    portal_root.mkdir()
+    _write_phase2_dataset(portal_root, "NationalSoilMap")
+
+    errors = landis_phase2_ingest._portal_archive_validation_errors(portal_root)
+
+    assert any("NATMAPsoilscapes" in error for error in errors)

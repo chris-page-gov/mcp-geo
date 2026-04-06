@@ -9,28 +9,28 @@ source_paths:
   - "research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx"
   - "research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md"
   - "research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/20260225-slides-that-have-demo-scripts.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Apps_to_Answers.pptx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/20260225-slides-that-have-demo-scripts.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Apps_to_Answers.pptx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf"
 source_hashes:
-  research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx: "5d836b9d3d69c587a262b44d5359f492ad8bb544c88b962e2b210dc8c60067f4"
-  research/Deep Research Report/20260225-slides-that-have-demo-scripts.md: "f12d62a5243a03a016072118f1c96715772f098ab79bf81f1ba09441d34982ca"
-  research/Deep Research Report/Apps_to_Answers.pptx: "acd8a846cf41895a627cc8020d19c75dfddea8b259f1d72819da82a3d83a1c43"
-  research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md: "4a0dd1606f4ff3f9703ec244de6fac0e0d6ff31c63000f4ac5a8c94426a4af74"
-  research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx: "7f539fff2403c301d5235e6273811be424308563bd226b8b0c196efab32a28b5"
-  research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md: "d522ee89e6f1a40e2916e3c283c79f0fc3b6327b70b5ee7f5f7c32bcac02fc55"
-  research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf: "1b9ae67acf3f1d6f33bdce05807d0382dc25af44fdc5541c8ab7562f1bd5420f"
-generated_at: "2026-04-06T09:00:35Z"
+  research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx: "sha256:5d836b9d-3d69c587-a262b44d-5359f492-ad8bb544-c88b962e-2b210dc8-c60067f4"
+  research/Deep Research Report/20260225-slides-that-have-demo-scripts.md: "sha256:f12d62a5-243a03a0-16072118-f1c96715-772f098a-b79bf81f-1ba09441-d34982ca"
+  research/Deep Research Report/Apps_to_Answers.pptx: "sha256:acd8a846-cf41895a-627cc802-0d19c75d-fddea8b2-59f1d728-19da82a3-d83a1c43"
+  research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md: "sha256:4a0dd160-6f4ff3f9-703ec244-de6fac0e-0d6ff31c-63000f4a-c5a8c944-26a4af74"
+  research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx: "sha256:7f539fff-2403c301-d5235e62-73811be4-24308563-bd226b8b-0c196efa-b32a28b5"
+  research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md: "sha256:d522ee89-e6f1a40e-2916e3c2-83c79f0f-c3b6327b-70b5ee7f-5f7c32bc-ac02fc55"
+  research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf: "sha256:1b9ae67a-cf3f1d6f-33bdce05-807d0382-dc25af44-fdc5541c-8ab7562f-1bd5420f"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-08"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Research Pack - Deep Research Report
 
@@ -59,17 +59,17 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Binary Artifacts
 
-- `research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx` (42.3 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx)
-- `research/Deep Research Report/Apps_to_Answers.pptx` (17.8 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Apps_to_Answers.pptx)
-- `research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx` (59.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx)
-- `research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf` (153.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf)
+- `research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx` (42.3 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx)
+- `research/Deep Research Report/Apps_to_Answers.pptx` (17.8 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Apps_to_Answers.pptx)
+- `research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx` (59.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx)
+- `research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf` (153.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf)
 
 ## Pinned Sources
 
-- [`research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx)
-- [`research/Deep Research Report/20260225-slides-that-have-demo-scripts.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/20260225-slides-that-have-demo-scripts.md)
-- [`research/Deep Research Report/Apps_to_Answers.pptx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Apps_to_Answers.pptx)
-- [`research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md)
-- [`research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx)
-- [`research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md)
-- [`research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf)
+- [`research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx)
+- [`research/Deep Research Report/20260225-slides-that-have-demo-scripts.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/20260225-slides-that-have-demo-scripts.md)
+- [`research/Deep Research Report/Apps_to_Answers.pptx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Apps_to_Answers.pptx)
+- [`research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Apps_to_Answers_MCP_Government_Alignment_Slides.md)
+- [`research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.docx)
+- [`research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.md)
+- [`research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/research/Deep Research Report/Research Apps to Answers_ Connecting Public Sector Data to AI with MCP.pdf)

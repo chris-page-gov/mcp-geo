@@ -3,16 +3,16 @@ title: "Tool Family - os offline"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_offline.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_offline.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_offline.py"
 source_hashes:
-  tools/os_offline.py: "9cb4f219dba1c46f42fd4bce541d640d504514d92746187dc00e26e997e83cb6"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/os_offline.py: "sha256:9cb4f219-dba1c46f-42fd4bce-541d640d-504514d9-2746187d-c00e26e9-97e83cb6"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-14"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - os offline
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/os_offline.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_offline.py)
+- [`tools/os_offline.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_offline.py)

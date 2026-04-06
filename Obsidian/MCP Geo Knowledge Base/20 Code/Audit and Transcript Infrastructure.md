@@ -18,46 +18,46 @@ source_paths:
   - "server/audit/schemas/integrity_manifest.schema.json"
   - "server/audit/schemas/source_access.schema.json"
   - "server/audit/source_register.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/api.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/decision_record.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/disclosure.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/episode_builder.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/integrity.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/normalise.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/pack_builder.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/redaction.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/retention.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/audit_card.schema.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/decision_record.schema.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/event.schema.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/integrity_manifest.schema.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/source_access.schema.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/source_register.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/api.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/decision_record.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/disclosure.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/episode_builder.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/integrity.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/normalise.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/pack_builder.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/redaction.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/retention.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/audit_card.schema.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/decision_record.schema.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/event.schema.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/integrity_manifest.schema.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/source_access.schema.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/source_register.py"
 source_hashes:
-  server/audit/__init__.py: "dc3756840ac30e42dc4cfece73aacf27fa82f40284d0e74c519f14e735e39924"
-  server/audit/api.py: "e6ee3a30f0a56b152a6a2a1a97df665b2c1cc32132af6a6f3fa49d2a0d707b20"
-  server/audit/decision_record.py: "1706bcf0051b277417837e4d78716533d51126f7b1493599f7e597236a6b45cb"
-  server/audit/disclosure.py: "313b6424ed144a2e878318ff56b1003b0a9b54de95f933c4f7087d8c503abd50"
-  server/audit/episode_builder.py: "5a04ab325290214d5d65120c3f12e0d84279d3dec02799df50b4ae813b483a17"
-  server/audit/integrity.py: "f6072aa536b86c185d9b3f65d8cf5663fd3f95a455aa05681b5abe41a9aaab3e"
-  server/audit/normalise.py: "3ddf24ab977fd54d9050b69e6e1840cd808ab1538f7850334ead9e316212ed6d"
-  server/audit/pack_builder.py: "a7a18f8b08ef8e0dae0e18ce6baf8072f6e5efaaf76d3f27111769f907c54802"
-  server/audit/redaction.py: "7f8181881a4cb9571fd9337062e972c657bcd8a9d1ad34ccea414488f3425c22"
-  server/audit/retention.py: "60fb69e612e4b713d4799bbf6e4d0eee938fe791f499cec6c72ea7259d33b2bf"
-  server/audit/schemas/audit_card.schema.json: "9942ea61740bfb72081f4ea0917990fd5cef45810a470b0590739fd66fadaf4d"
-  server/audit/schemas/decision_record.schema.json: "2aaa1b0dc887912c429bd341277e89250ce6f98124d8661c044e82ab5dc45d02"
-  server/audit/schemas/event.schema.json: "d75fa9cca91ee84ca9eb703a4d8ec197582b6d4b075c4b40e9453cd4c54c7bde"
-  server/audit/schemas/integrity_manifest.schema.json: "1fb257344a35410a1f5623fd1e3d3fa6b96c5e247b5ddb3b264ffe9ae8b200f3"
-  server/audit/schemas/source_access.schema.json: "5b8f348a496f9e07b29f499673db27ad6c4ed41b15a0f3ac71217d6185abedc6"
-  server/audit/source_register.py: "7698be79f4aed2265a3229e894ec36c0ded3a06487373b58e36dea4407878d67"
-generated_at: "2026-04-06T09:00:35Z"
+  server/audit/__init__.py: "sha256:dc375684-0ac30e42-dc4cfece-73aacf27-fa82f402-84d0e74c-519f14e7-35e39924"
+  server/audit/api.py: "sha256:e6ee3a30-f0a56b15-2a6a2a1a-97df665b-2c1cc321-32af6a6f-3fa49d2a-0d707b20"
+  server/audit/decision_record.py: "sha256:1706bcf0-051b2774-17837e4d-78716533-d51126f7-b1493599-f7e59723-6a6b45cb"
+  server/audit/disclosure.py: "sha256:313b6424-ed144a2e-878318ff-56b1003b-0a9b54de-95f933c4-f7087d8c-503abd50"
+  server/audit/episode_builder.py: "sha256:5a04ab32-5290214d-5d65120c-3f12e0d8-4279d3de-c02799df-50b4ae81-3b483a17"
+  server/audit/integrity.py: "sha256:f6072aa5-36b86c18-5d9b3f65-d8cf5663-fd3f95a4-55aa0568-1b5abe41-a9aaab3e"
+  server/audit/normalise.py: "sha256:3ddf24ab-977fd54d-9050b69e-6e1840cd-808ab153-8f785033-4ead9e31-6212ed6d"
+  server/audit/pack_builder.py: "sha256:a7a18f8b-08ef8e0d-ae0e18ce-6baf8072-f6e5efaa-f76d3f27-111769f9-07c54802"
+  server/audit/redaction.py: "sha256:7f818188-1a4cb957-1fd93370-62e972c6-57bcd8a9-d1ad34cc-ea414488-f3425c22"
+  server/audit/retention.py: "sha256:60fb69e6-12e4b713-d4799bbf-6e4d0eee-938fe791-f499cec6-c72ea725-9d33b2bf"
+  server/audit/schemas/audit_card.schema.json: "sha256:9942ea61-740bfb72-081f4ea0-917990fd-5cef4581-0a470b05-90739fd6-6fadaf4d"
+  server/audit/schemas/decision_record.schema.json: "sha256:2aaa1b0d-c887912c-429bd341-277e8925-0ce6f981-24d8661c-044e82ab-5dc45d02"
+  server/audit/schemas/event.schema.json: "sha256:d75fa9cc-a91ee84c-a9eb703a-4d8ec197-582b6d4b-075c4b40-e9453cd4-c54c7bde"
+  server/audit/schemas/integrity_manifest.schema.json: "sha256:1fb25734-4a35410a-1f5623fd-1e3d3fa6-b96c5e24-7b5ddb3b-264ffe9a-e8b200f3"
+  server/audit/schemas/source_access.schema.json: "sha256:5b8f348a-496f9e07-b29f4996-73db27ad-6c4ed41b-15a0f3ac-71217d61-85abedc6"
+  server/audit/source_register.py: "sha256:7698be79-f4aed226-5a3229e8-94ec36c0-ded3a064-87373b58-e36dea44-07878d67"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-10"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Audit and Transcript Infrastructure
 
@@ -89,19 +89,19 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`server/audit/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/__init__.py)
-- [`server/audit/api.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/api.py)
-- [`server/audit/decision_record.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/decision_record.py)
-- [`server/audit/disclosure.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/disclosure.py)
-- [`server/audit/episode_builder.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/episode_builder.py)
-- [`server/audit/integrity.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/integrity.py)
-- [`server/audit/normalise.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/normalise.py)
-- [`server/audit/pack_builder.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/pack_builder.py)
-- [`server/audit/redaction.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/redaction.py)
-- [`server/audit/retention.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/retention.py)
-- [`server/audit/schemas/audit_card.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/audit_card.schema.json)
-- [`server/audit/schemas/decision_record.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/decision_record.schema.json)
-- [`server/audit/schemas/event.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/event.schema.json)
-- [`server/audit/schemas/integrity_manifest.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/integrity_manifest.schema.json)
-- [`server/audit/schemas/source_access.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/schemas/source_access.schema.json)
-- [`server/audit/source_register.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/audit/source_register.py)
+- [`server/audit/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/__init__.py)
+- [`server/audit/api.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/api.py)
+- [`server/audit/decision_record.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/decision_record.py)
+- [`server/audit/disclosure.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/disclosure.py)
+- [`server/audit/episode_builder.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/episode_builder.py)
+- [`server/audit/integrity.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/integrity.py)
+- [`server/audit/normalise.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/normalise.py)
+- [`server/audit/pack_builder.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/pack_builder.py)
+- [`server/audit/redaction.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/redaction.py)
+- [`server/audit/retention.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/retention.py)
+- [`server/audit/schemas/audit_card.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/audit_card.schema.json)
+- [`server/audit/schemas/decision_record.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/decision_record.schema.json)
+- [`server/audit/schemas/event.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/event.schema.json)
+- [`server/audit/schemas/integrity_manifest.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/integrity_manifest.schema.json)
+- [`server/audit/schemas/source_access.schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/schemas/source_access.schema.json)
+- [`server/audit/source_register.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/audit/source_register.py)

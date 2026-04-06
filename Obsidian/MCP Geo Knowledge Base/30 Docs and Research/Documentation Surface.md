@@ -117,78 +117,78 @@ source_paths:
   - "docs/troubleshooting.md"
   - "docs/tutorial.md"
   - "docs/vscode.md"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Boundaries.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Boundaries.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Build.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/ChatGPT_setup_chat.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude Conversations on MCP-Geo.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude Conversations on MCP-Geo.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude failed conversation.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude failed conversation.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude_failed_conversation.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude_opus_4-6_failed_convo_1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude_success_conversation.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Documentation collection task.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/UK Geographies Datapack Spec.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/api-endpoints.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MasterMap from Claude.jpg"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MasterMap from Claude.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Working with MCP Servers.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/benchmarking/codex_vs_claude_host_benchmark.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/benchmarking/codex_vs_claude_host_scenarios_v1.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/boundaries_completion_checklist.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/boundary_cache.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/build_initial_version.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/claude_opus_4-6_failed_convo_2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Boundaries.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Boundaries.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Build.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/ChatGPT_setup_chat.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude Conversations on MCP-Geo.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude Conversations on MCP-Geo.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude failed conversation.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude failed conversation.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude_failed_conversation.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude_opus_4-6_failed_convo_1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude_success_conversation.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Documentation collection task.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/UK Geographies Datapack Spec.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/api-endpoints.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MasterMap from Claude.jpg"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MasterMap from Claude.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Working with MCP Servers.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/benchmarking/codex_vs_claude_host_benchmark.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/benchmarking/codex_vs_claude_host_scenarios_v1.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/boundaries_completion_checklist.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/boundary_cache.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/build_initial_version.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/claude_opus_4-6_failed_convo_2.md"
 source_hashes:
-  docs/Boundaries.json: "07019cd29b2685078eb24fe5012df2d1de01901e3cc8ed09a465d27937104f9c"
-  docs/Boundaries.md: "790ea04b305563b08a75b57e3e54f278f34ff0a560b9949987ffc2dabe959ef3"
-  docs/Build.md: "63a7a062acf02bea28b42cc76bf585166862a26026350cf6f3d49745a02f058a"
-  docs/ChatGPT_setup_chat.md: "a5788145afa9e38351e8e87a273f1d48de9b79c4d7fd8a5f2bc9158dc68c08b3"
-  docs/Claude Conversations on MCP-Geo.docx: "b9409827575ed8d0101ecda09657c1a078db07c443e39eca186b5e459d5c6288"
-  docs/Claude Conversations on MCP-Geo.md: "93c0cac33545189a84554e436fee6e5beaed45391b9ea1a11cdf16efad146972"
-  docs/Claude failed conversation.docx: "ce29a7202d740e54beef838e6578445f09603a58b8c195b9797c93891c38b25e"
-  docs/Claude failed conversation.pdf: "8631071f5307ceb3607917cbff08bd1baed3c811fbe2ae2360fd6f684bf8b958"
-  docs/Claude_failed_conversation.md: "c0397cc62d10a87b770129b60d959ca7da193447509152889f2e90b8afa5eea8"
-  docs/Claude_opus_4-6_failed_convo_1.md: "619b8af6431eba0767c0a4a680aa74e9446371deec009143f6f31df7445a748c"
-  docs/Claude_success_conversation.md: "e676b4b6d8bb0d7b8aed1d99c4a55653fec7f45afc0f6a03fb360117dc0ad649"
-  docs/Documentation collection task.docx: "e640c9444ee4bdfe83a65b6b8750bdf5e8739329c113624dff1facc663e51cb1"
-  docs/Geography/UK Geographies Datapack Spec.pdf: "38c9e31f1e1cc1cb9784a3b15685e59f957c2647f3f133bd9546e137b66f993f"
-  docs/Geography/api-endpoints.md: "e48218c503977ce86b2d9989cecb4898de4e2e256515cf9ded3df00a04e56568"
-  docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf: "3f30e39f9345e8499b599da3c635b006a28bdb77741efb6fdc289cb686df9d9f"
-  docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx: "d27c63037eaffdcfd6148410dcd4eba9063924b45ef7605c65422d09791cd02d"
-  docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md: "0f2d0e62422498f4c41e6f7544624d2185f1e3958099a4a247020b2a924ec897"
-  docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx: "da1bcc1dacec3e9c174b6a207ae6e0453d937c3dab1f3ae50f29060694c715f3"
-  docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md: "92132bcf9898067c544f284e8b2dfd56150582f61a0a0aab191cac1103ec17c8"
-  docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx: "71537d56394dd8740fd4afa5a7b30f29aad1639ea05752903c9ccde98373ba42"
-  docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md: "6364ef850af176bdd115465a6885647a92432b54eecdd9008c1917ba4693291c"
-  docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx: "1105f555ee5e0c13138f8eab40a9492d2061cfd8705e629f09b354165e13bafc"
-  docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf: "7702e4f67b3073f55f021dd791fd2d2e5efa26004f85ff4f4ffc4b6403b350d4"
-  docs/MasterMap from Claude.jpg: "bbaf80c394380247539b757488e098fcd2033d2335dcc584df70b937040bb839"
-  docs/MasterMap from Claude.png: "434d4a64a0f609c7062b1953d618cc023193720617b89549d1a046f7877a881c"
-  docs/Working with MCP Servers.docx: "4f4039d82618568bf462f67d47692e73e84032aa3006fa8750cb447f6ce320a6"
-  docs/benchmarking/codex_vs_claude_host_benchmark.md: "1285123fb7abcaf5be4a1ff6d036cfb22190fb7f4bc5339c8f3d5f156aab9c1a"
-  docs/benchmarking/codex_vs_claude_host_scenarios_v1.json: "9bbda13fbadeb6b163d8cec7865d6cfd6ed38b52625245c2edc087281c3ccd60"
-  docs/boundaries_completion_checklist.json: "b6fbe5d64bb3265e8d8d4be3e9b17bc221bab44f1100039814363f8e621a3cb7"
-  docs/boundary_cache.md: "23e33114576c0d7d300e16fc7fd838ec70c2a56bf03ab75aed2f3cbbb86ea8e6"
-  docs/build_initial_version.md: "2f7c4666fc1ba9343e0263c971bb85cad5b1c011056982c4b60a3180e84563b9"
-  docs/claude_opus_4-6_failed_convo_2.md: "ca2dcfa3ba6819bffb41af45cb746355ec6507d6277438621dfb2d4e26b885a2"
-generated_at: "2026-04-06T09:00:35Z"
+  docs/Boundaries.json: "sha256:07019cd2-9b268507-8eb24fe5-012df2d1-de01901e-3cc8ed09-a465d279-37104f9c"
+  docs/Boundaries.md: "sha256:790ea04b-305563b0-8a75b57e-3e54f278-f34ff0a5-60b99499-87ffc2da-be959ef3"
+  docs/Build.md: "sha256:63a7a062-acf02bea-28b42cc7-6bf58516-6862a260-26350cf6-f3d49745-a02f058a"
+  docs/ChatGPT_setup_chat.md: "sha256:a5788145-afa9e383-51e8e87a-273f1d48-de9b79c4-d7fd8a5f-2bc9158d-c68c08b3"
+  docs/Claude Conversations on MCP-Geo.docx: "sha256:b9409827-575ed8d0-101ecda0-9657c1a0-78db07c4-43e39eca-186b5e45-9d5c6288"
+  docs/Claude Conversations on MCP-Geo.md: "sha256:93c0cac3-3545189a-84554e43-6fee6e5b-eaed4539-1b9ea1a1-1cdf16ef-ad146972"
+  docs/Claude failed conversation.docx: "sha256:ce29a720-2d740e54-beef838e-6578445f-09603a58-b8c195b9-797c9389-1c38b25e"
+  docs/Claude failed conversation.pdf: "sha256:8631071f-5307ceb3-607917cb-ff08bd1b-aed3c811-fbe2ae23-60fd6f68-4bf8b958"
+  docs/Claude_failed_conversation.md: "sha256:c0397cc6-2d10a87b-770129b6-0d959ca7-da193447-50915288-9f2e90b8-afa5eea8"
+  docs/Claude_opus_4-6_failed_convo_1.md: "sha256:619b8af6-431eba07-67c0a4a6-80aa74e9-446371de-ec009143-f6f31df7-445a748c"
+  docs/Claude_success_conversation.md: "sha256:e676b4b6-d8bb0d7b-8aed1d99-c4a55653-fec7f45a-fc0f6a03-fb360117-dc0ad649"
+  docs/Documentation collection task.docx: "sha256:e640c944-4ee4bdfe-83a65b6b-8750bdf5-e8739329-c113624d-ff1facc6-63e51cb1"
+  docs/Geography/UK Geographies Datapack Spec.pdf: "sha256:38c9e31f-1e1cc1cb-9784a3b1-5685e59f-957c2647-f3f133bd-9546e137-b66f993f"
+  docs/Geography/api-endpoints.md: "sha256:e48218c5-03977ce8-6b2d9989-cecb4898-de4e2e25-6515cf9d-ed3df00a-04e56568"
+  docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf: "sha256:3f30e39f-9345e849-9b599da3-c635b006-a28bdb77-741efb6f-dc289cb6-86df9d9f"
+  docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx: "sha256:d27c6303-7eaffdcf-d6148410-dcd4eba9-063924b4-5ef7605c-65422d09-791cd02d"
+  docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md: "sha256:0f2d0e62-422498f4-c41e6f75-44624d21-85f1e395-8099a4a2-47020b2a-924ec897"
+  docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx: "sha256:da1bcc1d-acec3e9c-174b6a20-7ae6e045-3d937c3d-ab1f3ae5-0f290606-94c715f3"
+  docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md: "sha256:92132bcf-9898067c-544f284e-8b2dfd56-150582f6-1a0a0aab-191cac11-03ec17c8"
+  docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx: "sha256:71537d56-394dd874-0fd4afa5-a7b30f29-aad1639e-a0575290-3c9ccde9-8373ba42"
+  docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md: "sha256:6364ef85-0af176bd-d115465a-6885647a-92432b54-eecdd900-8c1917ba-4693291c"
+  docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx: "sha256:1105f555-ee5e0c13-138f8eab-40a9492d-2061cfd8-705e629f-09b35416-5e13bafc"
+  docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf: "sha256:7702e4f6-7b3073f5-5f021dd7-91fd2d2e-5efa2600-4f85ff4f-4ffc4b64-03b350d4"
+  docs/MasterMap from Claude.jpg: "sha256:bbaf80c3-94380247-539b7574-88e098fc-d2033d23-35dcc584-df70b937-040bb839"
+  docs/MasterMap from Claude.png: "sha256:434d4a64-a0f609c7-062b1953-d618cc02-31937206-17b89549-d1a046f7-877a881c"
+  docs/Working with MCP Servers.docx: "sha256:4f4039d8-2618568b-f462f67d-47692e73-e84032aa-3006fa87-50cb447f-6ce320a6"
+  docs/benchmarking/codex_vs_claude_host_benchmark.md: "sha256:1285123f-b7abcaf5-be4a1ff6-d036cfb2-2190fb7f-4bc5339c-8f3d5f15-6aab9c1a"
+  docs/benchmarking/codex_vs_claude_host_scenarios_v1.json: "sha256:9bbda13f-badeb6b1-63d8cec7-865d6cfd-6ed38b52-625245c2-edc08728-1c3ccd60"
+  docs/boundaries_completion_checklist.json: "sha256:b6fbe5d6-4bb3265e-8d8d4be3-e9b17bc2-21bab44f-11000398-14363f8e-621a3cb7"
+  docs/boundary_cache.md: "sha256:23e33114-576c0d7d-300e16fc-7fd838ec-70c2a56b-f03ab75a-ed2f3cbb-b86ea8e6"
+  docs/build_initial_version.md: "sha256:2f7c4666-fc1ba934-3e0263c9-71bb85ca-d5b1c011-056982c4-b60a3180-e84563b9"
+  docs/claude_opus_4-6_failed_convo_2.md: "sha256:ca2dcfa3-ba6819bf-fb41af45-cb746355-ec6507d6-27743862-1dfb2d4e-26b885a2"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Documentation Surface
 
@@ -236,7 +236,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `docs/client_trace_strategy.md` | This strategy captures enough signal to answer questions like: - "Is the client using tool search or only the always-loa | 2026-01-21 | 2026-03-06 | - |
 | `docs/codex_usage_examples.md` | Generated: `2026-03-01` This document captures practical examples of how Codex has been used on the `mcp-geo` repository | 2026-03-01 | 2026-03-01 | - |
 | `docs/decision_support_audit_pack.md` | Codex should start DSAP work by reading `AGENTS.md`, `CONTEXT.md`, `PROGRESS.MD`, and `docs/client_trace_strategy.md`. T | 2026-03-10 | 2026-03-10 | - |
-| `docs/design/figma/README.md` | This folder contains a Figma-importable wireframe file designed for the strictest cross-host inline budget. - Base frame | 2026-03-01 | 2026-03-01 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py` |
+| `docs/design/figma/README.md` | This folder contains a Figma-importable wireframe file designed for the strictest cross-host inline budget. - Base frame | 2026-03-01 | 2026-03-01 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/design/figma/compact_ui_proposals.html` | MCP Geo Compact UI Proposals | 2026-03-01 | 2026-03-01 | - |
 | `docs/design/figma/compact_ui_proposals_native.html` | MCP Geo Compact UI Proposals (Native) | 2026-03-01 | 2026-03-01 | - |
 | `docs/design/figma/mcp_apps_small_window_wireframes.svg` | Binary artifact | 2026-03-01 | 2026-03-01 | - |
@@ -254,7 +254,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `docs/maps-vector-vts-resources-styles.json` | JSON object keys: glyphs, layers, sources, sprite, version | 2026-01-27 | 2026-01-27 | - |
 | `docs/mcp_apps_alignment.md` | This note summarizes how the repo aligns with the finalized MCP Apps spec and removes legacy OpenAI Apps (skybridge) com | 2026-01-24 | 2026-02-14 | - |
 | `docs/mcp_geo_a452_high_street_intelligence_1.md` | **Source:** [Warwickshire County Council News](https://www.warwickshire.gov.uk/news/article/7391/a452-high-street-leamin | 2026-03-03 | 2026-03-03 | - |
-| `docs/mcp_geo_prism_bundle/README.md` | This bundle is generated from `docs/reports/mcp_geo_analytical_index_2026-03-11.md` and pinned to commit `fe862910da246c | 2026-03-11 | 2026-03-11 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py` |
+| `docs/mcp_geo_prism_bundle/README.md` | This bundle is generated from `docs/reports/mcp_geo_analytical_index_2026-03-11.md` and pinned to commit `fe862910da246c | 2026-03-11 | 2026-03-11 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png` | Binary artifact | 2026-03-11 | 2026-03-11 | - |
 | `docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png` | Binary artifact | 2026-03-11 | 2026-03-11 | - |
 | `docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png` | Binary artifact | 2026-03-11 | 2026-03-11 | - |
@@ -336,86 +336,86 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Binary Artifacts
 
-- `docs/Claude Conversations on MCP-Geo.docx` (899.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude Conversations on MCP-Geo.docx)
-- `docs/Claude failed conversation.docx` (76.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude failed conversation.docx)
-- `docs/Claude failed conversation.pdf` (460.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude failed conversation.pdf)
-- `docs/Documentation collection task.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Documentation collection task.docx)
-- `docs/Geography/UK Geographies Datapack Spec.pdf` (188.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/UK Geographies Datapack Spec.pdf)
-- `docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf` (4.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf)
-- `docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx)
-- `docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx` (109.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx)
-- `docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx` (1.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx)
-- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx` (63.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx)
-- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf` (207.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf)
-- `docs/MasterMap from Claude.jpg` (261.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MasterMap from Claude.jpg)
-- `docs/MasterMap from Claude.png` (1014.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MasterMap from Claude.png)
-- `docs/Working with MCP Servers.docx` (3.5 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Working with MCP Servers.docx)
-- `docs/design/figma/mcp_apps_small_window_wireframes.svg` (6.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/design/figma/mcp_apps_small_window_wireframes.svg)
-- `docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png)
-- `docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png` (58.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png)
-- `docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png` (52.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png)
-- `docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png` (62.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png)
-- `docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png` (81.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png)
-- `docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png` (67.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png)
-- `docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png` (64.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png)
-- `docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png` (66.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png)
-- `docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png` (85.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png)
-- `docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png` (85.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png)
-- `docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png` (118.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png)
-- `docs/mcp_geo_prism_bundle/figures/slide_01.jpg` (285.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_01.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_02.jpg` (185.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_02.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_03.jpg` (376.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_03.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_04.jpg` (180.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_04.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_05.jpg` (360.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_05.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_06.jpg` (295.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_06.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_07.jpg` (214.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_07.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_08.jpg` (182.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_08.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_09.jpg` (256.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_09.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_10.jpg` (244.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_10.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_11.jpg` (316.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_11.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_12.jpg` (235.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_12.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_13.jpg` (208.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_13.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_14.jpg` (189.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/mcp_geo_prism_bundle/figures/slide_14.jpg)
+- `docs/Claude Conversations on MCP-Geo.docx` (899.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude Conversations on MCP-Geo.docx)
+- `docs/Claude failed conversation.docx` (76.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude failed conversation.docx)
+- `docs/Claude failed conversation.pdf` (460.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude failed conversation.pdf)
+- `docs/Documentation collection task.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Documentation collection task.docx)
+- `docs/Geography/UK Geographies Datapack Spec.pdf` (188.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/UK Geographies Datapack Spec.pdf)
+- `docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf` (4.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf)
+- `docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx)
+- `docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx` (109.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx)
+- `docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx` (1.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx)
+- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx` (63.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx)
+- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf` (207.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf)
+- `docs/MasterMap from Claude.jpg` (261.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MasterMap from Claude.jpg)
+- `docs/MasterMap from Claude.png` (1014.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MasterMap from Claude.png)
+- `docs/Working with MCP Servers.docx` (3.5 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Working with MCP Servers.docx)
+- `docs/design/figma/mcp_apps_small_window_wireframes.svg` (6.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/design/figma/mcp_apps_small_window_wireframes.svg)
+- `docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png)
+- `docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png` (58.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png)
+- `docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png` (52.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png)
+- `docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png` (62.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png)
+- `docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png` (81.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png)
+- `docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png` (67.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png)
+- `docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png` (64.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png)
+- `docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png` (66.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png)
+- `docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png` (85.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png)
+- `docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png` (85.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png)
+- `docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png` (118.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png)
+- `docs/mcp_geo_prism_bundle/figures/slide_01.jpg` (285.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_01.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_02.jpg` (185.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_02.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_03.jpg` (376.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_03.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_04.jpg` (180.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_04.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_05.jpg` (360.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_05.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_06.jpg` (295.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_06.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_07.jpg` (214.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_07.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_08.jpg` (182.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_08.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_09.jpg` (256.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_09.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_10.jpg` (244.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_10.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_11.jpg` (316.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_11.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_12.jpg` (235.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_12.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_13.jpg` (208.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_13.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_14.jpg` (189.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/mcp_geo_prism_bundle/figures/slide_14.jpg)
 
 ## Pinned Sources
 
-- [`docs/Boundaries.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Boundaries.json)
-- [`docs/Boundaries.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Boundaries.md)
-- [`docs/Build.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Build.md)
-- [`docs/ChatGPT_setup_chat.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/ChatGPT_setup_chat.md)
-- [`docs/Claude Conversations on MCP-Geo.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude Conversations on MCP-Geo.docx)
-- [`docs/Claude Conversations on MCP-Geo.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude Conversations on MCP-Geo.md)
-- [`docs/Claude failed conversation.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude failed conversation.docx)
-- [`docs/Claude failed conversation.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude failed conversation.pdf)
-- [`docs/Claude_failed_conversation.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude_failed_conversation.md)
-- [`docs/Claude_opus_4-6_failed_convo_1.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude_opus_4-6_failed_convo_1.md)
-- [`docs/Claude_success_conversation.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Claude_success_conversation.md)
-- [`docs/Documentation collection task.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Documentation collection task.docx)
-- [`docs/Geography/UK Geographies Datapack Spec.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/UK Geographies Datapack Spec.pdf)
-- [`docs/Geography/api-endpoints.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/api-endpoints.md)
-- [`docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf)
-- [`docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx)
-- [`docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md)
-- [`docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx)
-- [`docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md)
-- [`docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx)
-- [`docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md)
-- [`docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx)
-- [`docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf)
-- [`docs/MasterMap from Claude.jpg`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MasterMap from Claude.jpg)
-- [`docs/MasterMap from Claude.png`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/MasterMap from Claude.png)
-- [`docs/Working with MCP Servers.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/Working with MCP Servers.docx)
-- [`docs/benchmarking/codex_vs_claude_host_benchmark.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/benchmarking/codex_vs_claude_host_benchmark.md)
-- [`docs/benchmarking/codex_vs_claude_host_scenarios_v1.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/benchmarking/codex_vs_claude_host_scenarios_v1.json)
-- [`docs/boundaries_completion_checklist.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/boundaries_completion_checklist.json)
-- [`docs/boundary_cache.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/boundary_cache.md)
-- [`docs/build_initial_version.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/build_initial_version.md)
-- [`docs/claude_opus_4-6_failed_convo_2.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/claude_opus_4-6_failed_convo_2.md)
-- [`docs/client_trace_strategy.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/client_trace_strategy.md)
-- [`docs/codex_usage_examples.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/codex_usage_examples.md)
-- [`docs/decision_support_audit_pack.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/decision_support_audit_pack.md)
-- [`docs/design/figma/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/design/figma/README.md)
-- [`docs/design/figma/compact_ui_proposals.html`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/design/figma/compact_ui_proposals.html)
-- [`docs/design/figma/compact_ui_proposals_native.html`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/design/figma/compact_ui_proposals_native.html)
-- [`docs/design/figma/mcp_apps_small_window_wireframes.svg`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/design/figma/mcp_apps_small_window_wireframes.svg)
-- [`docs/design/figma/mcp_figma_setup_and_capture_runbook.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/design/figma/mcp_figma_setup_and_capture_runbook.md)
+- [`docs/Boundaries.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Boundaries.json)
+- [`docs/Boundaries.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Boundaries.md)
+- [`docs/Build.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Build.md)
+- [`docs/ChatGPT_setup_chat.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/ChatGPT_setup_chat.md)
+- [`docs/Claude Conversations on MCP-Geo.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude Conversations on MCP-Geo.docx)
+- [`docs/Claude Conversations on MCP-Geo.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude Conversations on MCP-Geo.md)
+- [`docs/Claude failed conversation.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude failed conversation.docx)
+- [`docs/Claude failed conversation.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude failed conversation.pdf)
+- [`docs/Claude_failed_conversation.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude_failed_conversation.md)
+- [`docs/Claude_opus_4-6_failed_convo_1.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude_opus_4-6_failed_convo_1.md)
+- [`docs/Claude_success_conversation.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Claude_success_conversation.md)
+- [`docs/Documentation collection task.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Documentation collection task.docx)
+- [`docs/Geography/UK Geographies Datapack Spec.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/UK Geographies Datapack Spec.pdf)
+- [`docs/Geography/api-endpoints.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/api-endpoints.md)
+- [`docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf)
+- [`docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx)
+- [`docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.md)
+- [`docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx)
+- [`docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.md)
+- [`docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx)
+- [`docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.md)
+- [`docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx)
+- [`docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf)
+- [`docs/MasterMap from Claude.jpg`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MasterMap from Claude.jpg)
+- [`docs/MasterMap from Claude.png`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/MasterMap from Claude.png)
+- [`docs/Working with MCP Servers.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/Working with MCP Servers.docx)
+- [`docs/benchmarking/codex_vs_claude_host_benchmark.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/benchmarking/codex_vs_claude_host_benchmark.md)
+- [`docs/benchmarking/codex_vs_claude_host_scenarios_v1.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/benchmarking/codex_vs_claude_host_scenarios_v1.json)
+- [`docs/boundaries_completion_checklist.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/boundaries_completion_checklist.json)
+- [`docs/boundary_cache.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/boundary_cache.md)
+- [`docs/build_initial_version.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/build_initial_version.md)
+- [`docs/claude_opus_4-6_failed_convo_2.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/claude_opus_4-6_failed_convo_2.md)
+- [`docs/client_trace_strategy.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/client_trace_strategy.md)
+- [`docs/codex_usage_examples.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/codex_usage_examples.md)
+- [`docs/decision_support_audit_pack.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/decision_support_audit_pack.md)
+- [`docs/design/figma/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/design/figma/README.md)
+- [`docs/design/figma/compact_ui_proposals.html`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/design/figma/compact_ui_proposals.html)
+- [`docs/design/figma/compact_ui_proposals_native.html`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/design/figma/compact_ui_proposals_native.html)
+- [`docs/design/figma/mcp_apps_small_window_wireframes.svg`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/design/figma/mcp_apps_small_window_wireframes.svg)
+- [`docs/design/figma/mcp_figma_setup_and_capture_runbook.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/design/figma/mcp_figma_setup_and_capture_runbook.md)

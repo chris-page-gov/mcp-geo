@@ -3,16 +3,16 @@ title: "Script Family - start"
 kb_kind: "code_family"
 source_paths:
   - "scripts/start_https_proxy.sh"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/start_https_proxy.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/start_https_proxy.sh"
 source_hashes:
-  scripts/start_https_proxy.sh: "d3fb3769d877c681b3f9783e73362a0f976bc2c943fbfb1757fea3f1168fda97"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/start_https_proxy.sh: "sha256:d3fb3769-d877c681-b3f9783e-73362a0f-976bc2c9-43fbfb17-57fea3f1-168fda97"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-01-24"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - start
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/start_https_proxy.sh`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/start_https_proxy.sh)
+- [`scripts/start_https_proxy.sh`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/start_https_proxy.sh)

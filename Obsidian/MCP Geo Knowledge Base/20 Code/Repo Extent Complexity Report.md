@@ -3,16 +3,16 @@ title: "Repo Extent Complexity Report"
 kb_kind: "code_module"
 source_paths:
   - "scripts/repo_extent_complexity_report.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/repo_extent_complexity_report.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/repo_extent_complexity_report.py"
 source_hashes:
-  scripts/repo_extent_complexity_report.py: "d57a385df119f18a194c27d4b8b6a83d62f25b8bdce0092b1ce4876a47db47b8"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/repo_extent_complexity_report.py: "sha256:d57a385d-f119f18a-194c27d4-b8b6a83d-62f25b8b-dce0092b-1ce4876a-47db47b8"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-25"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Repo Extent Complexity Report
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/repo_extent_complexity_report.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/repo_extent_complexity_report.py)
+- [`scripts/repo_extent_complexity_report.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/repo_extent_complexity_report.py)

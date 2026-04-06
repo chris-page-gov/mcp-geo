@@ -1,4 +1,4 @@
-# OWASP MCP Server Validation (2026-04-05)
+# OWASP MCP Server Validation (2026-04-06)
 
 - Project: `mcp-geo`
 - Profile: `prod-strict`

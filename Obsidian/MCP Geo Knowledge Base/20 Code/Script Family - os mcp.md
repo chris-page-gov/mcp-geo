@@ -3,16 +3,16 @@ title: "Script Family - os mcp"
 kb_kind: "code_family"
 source_paths:
   - "scripts/os-mcp"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/os-mcp"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/os-mcp"
 source_hashes:
-  scripts/os-mcp: "d45737704f6d242037c2c76d9d141d3d6f9dbe961c96f05a43df500e7ea74986"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/os-mcp: "sha256:d4573770-4f6d2420-37c2c76d-9d141d3d-6f9dbe96-1c96f05a-43df500e-7ea74986"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-17"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - os mcp
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/os-mcp`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/os-mcp)
+- [`scripts/os-mcp`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/os-mcp)

@@ -3,16 +3,16 @@ title: "Tool Family - ons search"
 kb_kind: "code_family"
 source_paths:
   - "tools/ons_search.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/ons_search.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/ons_search.py"
 source_hashes:
-  tools/ons_search.py: "7f4d7ce761ebaad0aa24204dbbbc58697e4593a00a34b08692eb5cf02f665d11"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/ons_search.py: "sha256:7f4d7ce7-61ebaad0-aa24204d-bbbc5869-7e4593a0-0a34b086-92eb5cf0-2f665d11"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-11-03"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - ons search
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/ons_search.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/ons_search.py)
+- [`tools/ons_search.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/ons_search.py)

@@ -3,16 +3,16 @@ title: "Trace Report"
 kb_kind: "code_module"
 source_paths:
   - "scripts/trace_report.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/trace_report.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/trace_report.py"
 source_hashes:
-  scripts/trace_report.py: "b25d78e27a65d416e7a5766e23aa32e67e3756e47897d7c89b452dfa2063578c"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/trace_report.py: "sha256:b25d78e2-7a65d416-e7a5766e-23aa32e6-7e3756e4-7897d7c8-9b452dfa-2063578c"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-04"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Trace Report
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/trace_report.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/trace_report.py)
+- [`scripts/trace_report.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/trace_report.py)

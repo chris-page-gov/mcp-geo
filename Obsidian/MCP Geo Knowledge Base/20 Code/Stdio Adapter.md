@@ -3,16 +3,16 @@ title: "Stdio Adapter"
 kb_kind: "code_module"
 source_paths:
   - "server/stdio_adapter.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/stdio_adapter.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/stdio_adapter.py"
 source_hashes:
-  server/stdio_adapter.py: "7dd5badf22473b6869562ecbc3a658b99b8d09a8abc92191c5910b06ec194c12"
-generated_at: "2026-04-06T09:00:35Z"
+  server/stdio_adapter.py: "sha256:7dd5badf-22473b68-69562ecb-c3a658b9-9b8d09a8-abc92191-c5910b06-ec194c12"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-17"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Stdio Adapter
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`server/stdio_adapter.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/stdio_adapter.py)
+- [`server/stdio_adapter.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/stdio_adapter.py)

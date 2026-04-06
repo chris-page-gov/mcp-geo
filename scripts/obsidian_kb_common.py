@@ -711,7 +711,11 @@ def render_frontmatter(frontmatter: dict[str, Any]) -> str:
         elif isinstance(value, dict):
             lines.append(f"{key}:")
             for sub_key, sub_value in value.items():
-                lines.append(f"  {sub_key}: {json.dumps(sub_value, ensure_ascii=True)}")
+                if key == "source_hashes" and isinstance(sub_value, str):
+                    rendered_value = json.dumps(_format_hash_for_frontmatter(sub_value))
+                else:
+                    rendered_value = json.dumps(sub_value, ensure_ascii=True)
+                lines.append(f"  {sub_key}: {rendered_value}")
         elif isinstance(value, bool):
             lines.append(f"{key}: {'true' if value else 'false'}")
         elif value is None:
@@ -720,6 +724,12 @@ def render_frontmatter(frontmatter: dict[str, Any]) -> str:
             lines.append(f"{key}: {json.dumps(value, ensure_ascii=True)}")
     lines.append("---")
     return "\n".join(lines)
+
+
+def _format_hash_for_frontmatter(value: str) -> str:
+    if re.fullmatch(r"[0-9a-f]{64}", value):
+        return "sha256:" + "-".join(value[idx : idx + 8] for idx in range(0, len(value), 8))
+    return value
 
 
 def note_link(note_path: str) -> str:

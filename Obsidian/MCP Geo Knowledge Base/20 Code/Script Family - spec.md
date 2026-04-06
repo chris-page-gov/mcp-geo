@@ -3,16 +3,16 @@ title: "Script Family - spec"
 kb_kind: "code_family"
 source_paths:
   - "scripts/spec_tool_operability_coverage.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/spec_tool_operability_coverage.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/spec_tool_operability_coverage.py"
 source_hashes:
-  scripts/spec_tool_operability_coverage.py: "1858676938f0a4e6b132e83cfea730cba23377ad98ec17ce992b92e78f000341"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/spec_tool_operability_coverage.py: "sha256:18586769-38f0a4e6-b132e83c-fea730cb-a23377ad-98ec17ce-992b92e7-8f000341"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-22"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - spec
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/spec_tool_operability_coverage.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/spec_tool_operability_coverage.py)
+- [`scripts/spec_tool_operability_coverage.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/spec_tool_operability_coverage.py)

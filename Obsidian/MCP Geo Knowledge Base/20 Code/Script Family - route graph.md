@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "scripts/route_graph_pipeline.py"
   - "scripts/route_graph_schema.sql"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/route_graph_pipeline.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/route_graph_schema.sql"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/route_graph_pipeline.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/route_graph_schema.sql"
 source_hashes:
-  scripts/route_graph_pipeline.py: "ec09f292a14dee10128b2cf7d7e472a1a49ce468049475e3f6e137ec64a82f44"
-  scripts/route_graph_schema.sql: "0268e25e27327e7522bcea0a2050efe04a62de6f52a3121b8bc2843fdfb8e4ec"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/route_graph_pipeline.py: "sha256:ec09f292-a14dee10-128b2cf7-d7e472a1-a49ce468-049475e3-f6e137ec-64a82f44"
+  scripts/route_graph_schema.sql: "sha256:0268e25e-27327e75-22bcea0a-2050efe0-4a62de6f-52a3121b-8bc2843f-dfb8e4ec"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-10"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - route graph
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/route_graph_pipeline.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/route_graph_pipeline.py)
-- [`scripts/route_graph_schema.sql`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/route_graph_schema.sql)
+- [`scripts/route_graph_pipeline.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/route_graph_pipeline.py)
+- [`scripts/route_graph_schema.sql`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/route_graph_schema.sql)

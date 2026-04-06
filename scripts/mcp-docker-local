@@ -221,6 +221,65 @@ latest_matching_dir() {
   printf "%s\n" "${matches[@]}" | LC_ALL=C sort | tail -n 1 | tr -d '\n'
 }
 
+matching_dirs() {
+  local root="$1"
+  local prefix="$2"
+  local mode="${3:-}"
+  local matches=()
+  local candidate
+  for candidate in "$root"/"$prefix"*; do
+    [[ -d "$candidate" ]] || continue
+    if [[ "$mode" == "exclude_smoke" && "$(basename "$candidate")" == *-smoke* ]]; then
+      continue
+    fi
+    matches+=("$candidate")
+  done
+  if [[ "${#matches[@]}" -eq 0 ]]; then
+    return 1
+  fi
+  printf "%s\n" "${matches[@]}" | LC_ALL=C sort
+}
+
+portal_archive_is_complete() {
+  local host_path="$1"
+  "$DOCKER_BIN" run --rm \
+    --network "$NETWORK" \
+    -v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro" \
+    --entrypoint python \
+    "$IMAGE" \
+    scripts/landis_phase2_ingest.py \
+    --validate-archive-root \
+    --portal-archive-root "$(host_path_to_container "$host_path")" >/dev/null 2>&1
+}
+
+select_complete_matching_dir() {
+  local root="$1"
+  local prefix="$2"
+  local mode="${3:-}"
+  local candidates=()
+  local candidate
+  local idx
+
+  while IFS= read -r candidate; do
+    [[ -n "$candidate" ]] || continue
+    candidates+=("$candidate")
+  done < <(matching_dirs "$root" "$prefix" "$mode" || true)
+
+  if [[ "${#candidates[@]}" -eq 0 ]]; then
+    return 1
+  fi
+
+  for ((idx=${#candidates[@]} - 1; idx>=0; idx--)); do
+    candidate="${candidates[$idx]}"
+    if portal_archive_is_complete "$candidate"; then
+      printf "%s" "$candidate"
+      return 0
+    fi
+    log "Skipping incomplete LandIS portal archive: $candidate"
+  done
+  return 1
+}
+
 bootstrap_landis_runtime() {
   if [[ "$LANDIS_MOUNT_ENABLED" != "true" ]]; then
     return 0
@@ -261,12 +320,12 @@ bootstrap_landis_runtime() {
   local mount_args=(-v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro")
   if [[ "$need_phase2" == "true" ]]; then
     local portal_archive_host=""
-    portal_archive_host="$(latest_matching_dir \
+    portal_archive_host="$(select_complete_matching_dir \
       "$LANDIS_HOST_DATA_ROOT" \
       "landis_portal_archive_" \
       "exclude_smoke")" || true
     if [[ -z "$portal_archive_host" ]]; then
-      portal_archive_host="$(latest_matching_dir \
+      portal_archive_host="$(select_complete_matching_dir \
         "$LANDIS_HOST_DATA_ROOT" \
         "landis_portal_archive_")" || true
     fi

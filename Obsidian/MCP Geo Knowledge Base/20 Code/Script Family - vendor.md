@@ -6,22 +6,22 @@ source_paths:
   - "scripts/vendor_html_nojs.py"
   - "scripts/vendor_package.sh"
   - "scripts/vendor_submodules.sh"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_fetch.sh"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_html_nojs.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_package.sh"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_submodules.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_fetch.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_html_nojs.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_package.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_submodules.sh"
 source_hashes:
-  scripts/vendor_fetch.sh: "50293e784a8791feffe608303290a452a78af05635cacf05237f5e64f6f22ac4"
-  scripts/vendor_html_nojs.py: "fd0bf02415d17178a015e56ab071640f5458d13ecca157efa2d729a5b8653e57"
-  scripts/vendor_package.sh: "285cb093d62e8ee80e4df1362855a0732a36d3653c7e111650561b7abedaec9e"
-  scripts/vendor_submodules.sh: "aa7273213439fdb373a7d98f102db64dfbc9117b89a1f27cc6deaf1110eac627"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/vendor_fetch.sh: "sha256:50293e78-4a8791fe-ffe60830-3290a452-a78af056-35cacf05-237f5e64-f6f22ac4"
+  scripts/vendor_html_nojs.py: "sha256:fd0bf024-15d17178-a015e56a-b071640f-5458d13e-cca157ef-a2d729a5-b8653e57"
+  scripts/vendor_package.sh: "sha256:285cb093-d62e8ee8-0e4df136-2855a073-2a36d365-3c7e1116-50561b7a-bedaec9e"
+  scripts/vendor_submodules.sh: "sha256:aa727321-3439fdb3-73a7d98f-102db64d-fbc9117b-89a1f27c-c6deaf11-10eac627"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-01-21"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - vendor
 
@@ -41,7 +41,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/vendor_fetch.sh`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_fetch.sh)
-- [`scripts/vendor_html_nojs.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_html_nojs.py)
-- [`scripts/vendor_package.sh`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_package.sh)
-- [`scripts/vendor_submodules.sh`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/vendor_submodules.sh)
+- [`scripts/vendor_fetch.sh`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_fetch.sh)
+- [`scripts/vendor_html_nojs.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_html_nojs.py)
+- [`scripts/vendor_package.sh`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_package.sh)
+- [`scripts/vendor_submodules.sh`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vendor_submodules.sh)

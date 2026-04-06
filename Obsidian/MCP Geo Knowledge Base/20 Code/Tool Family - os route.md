@@ -3,16 +3,16 @@ title: "Tool Family - os route"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_route.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_route.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_route.py"
 source_hashes:
-  tools/os_route.py: "31a14a10d4fc480e1ebc8d2b9afca8ab9d0edba114204c5599b844cac9ad5911"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/os_route.py: "sha256:31a14a10-d4fc480e-1ebc8d2b-9afca8ab-9d0edba1-14204c55-99b844ca-c9ad5911"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-10"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - os route
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/os_route.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_route.py)
+- [`tools/os_route.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_route.py)

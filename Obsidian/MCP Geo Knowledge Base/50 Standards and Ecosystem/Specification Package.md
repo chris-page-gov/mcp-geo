@@ -22,54 +22,54 @@ source_paths:
   - "docs/spec_package/export.md"
   - "docs/spec_package/images/.gitkeep"
   - "docs/spec_package/screenshots.md"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/01_aims_objectives.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/02_personas_user_stories.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/03_architecture.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/04_system_design.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/05_data_flow_and_cache.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/06_api_contracts.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/06a_map_delivery_fallback_contracts.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/07_security_privacy.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/08_observability_ops.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/09_testing_quality.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/10_mcp_apps_ui.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/11_walkthroughs.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/12_backlog_and_plan.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/13_sequence_diagrams.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/14_tool_operability.feature"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/14_tool_operability_coverage.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/export.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/images/.gitkeep"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/screenshots.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/01_aims_objectives.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/02_personas_user_stories.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/03_architecture.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/04_system_design.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/05_data_flow_and_cache.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/06_api_contracts.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/06a_map_delivery_fallback_contracts.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/07_security_privacy.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/08_observability_ops.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/09_testing_quality.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/10_mcp_apps_ui.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/11_walkthroughs.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/12_backlog_and_plan.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/13_sequence_diagrams.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/14_tool_operability.feature"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/14_tool_operability_coverage.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/export.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/images/.gitkeep"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/screenshots.md"
 source_hashes:
-  docs/spec_package/01_aims_objectives.md: "23919ae9762a1b49e5935406c0feb29d088c30a94a8331e68ee806ee6b8a37e7"
-  docs/spec_package/02_personas_user_stories.md: "5cfa95bc249955b953a9ba96a5e5bdcf7c1bc71ab7d10f31c15bebefb005bc49"
-  docs/spec_package/03_architecture.md: "6a8607b53fabd5fbbb86f767b86258ebef03a80e3efcb959c7108bdafc0e4117"
-  docs/spec_package/04_system_design.md: "547a030712495c2f9ba30f0b3d2df5cbe517c5eccd88e5b2d7cf549c53fb902e"
-  docs/spec_package/05_data_flow_and_cache.md: "a9ae8470aaa29f3d7457df4f5d2987aa8763e0276d1892a96f4598422cb60400"
-  docs/spec_package/06_api_contracts.md: "2ef3f2c49cae0237eaf113ebc998d6d50176f5fad7c31b37d1af019c2c17b40a"
-  docs/spec_package/06a_map_delivery_fallback_contracts.md: "fc38037c38b25bff9c124f8de7897c96d1f7701b51ea2befcdd994d43cab8bd5"
-  docs/spec_package/07_security_privacy.md: "dd9aea1dfaf032816ee43f95fd47a288c9bdffc3451419b56cfe37dd442d30f4"
-  docs/spec_package/08_observability_ops.md: "9af883a739b5525b57fd68f64637b5694c996307a18558849803cf74b5787853"
-  docs/spec_package/09_testing_quality.md: "d96665e3a553a5e8acd8a7c8269b57c471c291a7f3dc9566fbcf6e8b4e8c7871"
-  docs/spec_package/10_mcp_apps_ui.md: "d8dfb3ada15bed37a657dc45c543073f9f75a20960bd0eaa54ee28fca803ea9a"
-  docs/spec_package/11_walkthroughs.md: "45423167d95506ae36115f558b85af2a41df28ec25418c57ad606ec2defac469"
-  docs/spec_package/12_backlog_and_plan.md: "1a1a2bc02a1ef8b56cff115edf6271665de1587114b2e88da2af683bbc39bdee"
-  docs/spec_package/13_sequence_diagrams.md: "f3479a90701e1937bb0b60c50817b6e7129017ef6a4f7c6ac49ad98faaac61b8"
-  docs/spec_package/14_tool_operability.feature: "309d60a693234cc6c414d15367fced1e17db7c430db2d06e8400a9986de1cbd0"
-  docs/spec_package/14_tool_operability_coverage.md: "5d15c8476298f5e3461274cb5a11751a060fd41a63b0c79396673cf46f48c7c2"
-  docs/spec_package/README.md: "a64def5fe2d05ad3f75a6bf7571aea9d2f3ed421c3de9e34d269c061cf805267"
-  docs/spec_package/export.md: "e7e98c9141d9692a9c061f4fbe8eb86e43c7f1c0ad5a9bb1418a52ef28d287f8"
-  docs/spec_package/images/.gitkeep: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  docs/spec_package/screenshots.md: "2689231c11d69eaa950227e4671666ee538dd464e52613c8dca9086f2166faf1"
-generated_at: "2026-04-06T09:00:35Z"
+  docs/spec_package/01_aims_objectives.md: "sha256:23919ae9-762a1b49-e5935406-c0feb29d-088c30a9-4a8331e6-8ee806ee-6b8a37e7"
+  docs/spec_package/02_personas_user_stories.md: "sha256:5cfa95bc-249955b9-53a9ba96-a5e5bdcf-7c1bc71a-b7d10f31-c15bebef-b005bc49"
+  docs/spec_package/03_architecture.md: "sha256:6a8607b5-3fabd5fb-bb86f767-b86258eb-ef03a80e-3efcb959-c7108bda-fc0e4117"
+  docs/spec_package/04_system_design.md: "sha256:547a0307-12495c2f-9ba30f0b-3d2df5cb-e517c5ec-cd88e5b2-d7cf549c-53fb902e"
+  docs/spec_package/05_data_flow_and_cache.md: "sha256:a9ae8470-aaa29f3d-7457df4f-5d2987aa-8763e027-6d1892a9-6f459842-2cb60400"
+  docs/spec_package/06_api_contracts.md: "sha256:2ef3f2c4-9cae0237-eaf113eb-c998d6d5-0176f5fa-d7c31b37-d1af019c-2c17b40a"
+  docs/spec_package/06a_map_delivery_fallback_contracts.md: "sha256:fc38037c-38b25bff-9c124f8d-e7897c96-d1f7701b-51ea2bef-cdd994d4-3cab8bd5"
+  docs/spec_package/07_security_privacy.md: "sha256:dd9aea1d-faf03281-6ee43f95-fd47a288-c9bdffc3-451419b5-6cfe37dd-442d30f4"
+  docs/spec_package/08_observability_ops.md: "sha256:9af883a7-39b5525b-57fd68f6-4637b569-4c996307-a1855884-9803cf74-b5787853"
+  docs/spec_package/09_testing_quality.md: "sha256:d96665e3-a553a5e8-acd8a7c8-269b57c4-71c291a7-f3dc9566-fbcf6e8b-4e8c7871"
+  docs/spec_package/10_mcp_apps_ui.md: "sha256:d8dfb3ad-a15bed37-a657dc45-c543073f-9f75a209-60bd0eaa-54ee28fc-a803ea9a"
+  docs/spec_package/11_walkthroughs.md: "sha256:45423167-d95506ae-36115f55-8b85af2a-41df28ec-25418c57-ad606ec2-defac469"
+  docs/spec_package/12_backlog_and_plan.md: "sha256:1a1a2bc0-2a1ef8b5-6cff115e-df627166-5de15871-14b2e88d-a2af683b-bc39bdee"
+  docs/spec_package/13_sequence_diagrams.md: "sha256:f3479a90-701e1937-bb0b60c5-0817b6e7-129017ef-6a4f7c6a-c49ad98f-aaac61b8"
+  docs/spec_package/14_tool_operability.feature: "sha256:309d60a6-93234cc6-c414d153-67fced1e-17db7c43-0db2d06e-8400a998-6de1cbd0"
+  docs/spec_package/14_tool_operability_coverage.md: "sha256:5d15c847-6298f5e3-461274cb-5a11751a-060fd41a-63b0c793-96673cf4-6f48c7c2"
+  docs/spec_package/README.md: "sha256:a64def5f-e2d05ad3-f75a6bf7-571aea9d-2f3ed421-c3de9e34-d269c061-cf805267"
+  docs/spec_package/export.md: "sha256:e7e98c91-41d9692a-9c061f4f-be8eb86e-43c7f1c0-ad5a9bb1-418a52ef-28d287f8"
+  docs/spec_package/images/.gitkeep: "sha256:e3b0c442-98fc1c14-9afbf4c8-996fb924-27ae41e4-649b934c-a495991b-7852b855"
+  docs/spec_package/screenshots.md: "sha256:2689231c-11d69eaa-950227e4-671666ee-538dd464-e52613c8-dca9086f-2166faf1"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Specification Package
 
@@ -98,7 +98,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `docs/spec_package/13_sequence_diagrams.md` | This section provides sequence diagrams for the critical end-to-end flows. Diagrams are expressed in Mermaid so they can | 2026-02-02 | 2026-03-10 | - |
 | `docs/spec_package/14_tool_operability.feature` | Feature: MCP Geo Live Tool Operability | 2026-02-22 | 2026-02-22 | - |
 | `docs/spec_package/14_tool_operability_coverage.md` | This chapter defines measurable coverage for live tool operability using a Gherkin requirement set (`14_tool_operability | 2026-02-22 | 2026-02-22 | - |
-| `docs/spec_package/README.md` | This package documents the current MCP Geo prototype as a reasoned, end-to-end specification. It is designed for test re | 2026-02-02 | 2026-02-22 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py` |
+| `docs/spec_package/README.md` | This package documents the current MCP Geo prototype as a reasoned, end-to-end specification. It is designed for test re | 2026-02-02 | 2026-02-22 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/spec_package/export.md` | This package is authored in Markdown. You can export it into a more presentable format (DOCX or PDF) using Pandoc. The r | 2026-02-02 | 2026-02-02 | `tests/evaluation/questions.py`, `tests/test_evaluation_harness_full.py`, `tests/test_live_missing_tools_probe.py`, `tests/test_map_trials_export_notebook_scenario_pack.py` |
 | `docs/spec_package/images/.gitkeep` |  | 2025-09-16 | 2026-02-02 | - |
 | `docs/spec_package/screenshots.md` | This package references screenshots that should be captured during testing. Existing images are included where available | 2026-02-02 | 2026-02-02 | `tests/test_map_trials_verify.py` |
@@ -126,23 +126,23 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`docs/spec_package/01_aims_objectives.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/01_aims_objectives.md)
-- [`docs/spec_package/02_personas_user_stories.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/02_personas_user_stories.md)
-- [`docs/spec_package/03_architecture.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/03_architecture.md)
-- [`docs/spec_package/04_system_design.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/04_system_design.md)
-- [`docs/spec_package/05_data_flow_and_cache.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/05_data_flow_and_cache.md)
-- [`docs/spec_package/06_api_contracts.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/06_api_contracts.md)
-- [`docs/spec_package/06a_map_delivery_fallback_contracts.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/06a_map_delivery_fallback_contracts.md)
-- [`docs/spec_package/07_security_privacy.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/07_security_privacy.md)
-- [`docs/spec_package/08_observability_ops.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/08_observability_ops.md)
-- [`docs/spec_package/09_testing_quality.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/09_testing_quality.md)
-- [`docs/spec_package/10_mcp_apps_ui.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/10_mcp_apps_ui.md)
-- [`docs/spec_package/11_walkthroughs.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/11_walkthroughs.md)
-- [`docs/spec_package/12_backlog_and_plan.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/12_backlog_and_plan.md)
-- [`docs/spec_package/13_sequence_diagrams.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/13_sequence_diagrams.md)
-- [`docs/spec_package/14_tool_operability.feature`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/14_tool_operability.feature)
-- [`docs/spec_package/14_tool_operability_coverage.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/14_tool_operability_coverage.md)
-- [`docs/spec_package/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/README.md)
-- [`docs/spec_package/export.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/export.md)
-- [`docs/spec_package/images/.gitkeep`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/images/.gitkeep)
-- [`docs/spec_package/screenshots.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/spec_package/screenshots.md)
+- [`docs/spec_package/01_aims_objectives.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/01_aims_objectives.md)
+- [`docs/spec_package/02_personas_user_stories.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/02_personas_user_stories.md)
+- [`docs/spec_package/03_architecture.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/03_architecture.md)
+- [`docs/spec_package/04_system_design.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/04_system_design.md)
+- [`docs/spec_package/05_data_flow_and_cache.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/05_data_flow_and_cache.md)
+- [`docs/spec_package/06_api_contracts.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/06_api_contracts.md)
+- [`docs/spec_package/06a_map_delivery_fallback_contracts.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/06a_map_delivery_fallback_contracts.md)
+- [`docs/spec_package/07_security_privacy.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/07_security_privacy.md)
+- [`docs/spec_package/08_observability_ops.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/08_observability_ops.md)
+- [`docs/spec_package/09_testing_quality.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/09_testing_quality.md)
+- [`docs/spec_package/10_mcp_apps_ui.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/10_mcp_apps_ui.md)
+- [`docs/spec_package/11_walkthroughs.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/11_walkthroughs.md)
+- [`docs/spec_package/12_backlog_and_plan.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/12_backlog_and_plan.md)
+- [`docs/spec_package/13_sequence_diagrams.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/13_sequence_diagrams.md)
+- [`docs/spec_package/14_tool_operability.feature`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/14_tool_operability.feature)
+- [`docs/spec_package/14_tool_operability_coverage.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/14_tool_operability_coverage.md)
+- [`docs/spec_package/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/README.md)
+- [`docs/spec_package/export.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/export.md)
+- [`docs/spec_package/images/.gitkeep`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/images/.gitkeep)
+- [`docs/spec_package/screenshots.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/spec_package/screenshots.md)

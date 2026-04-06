@@ -7,24 +7,24 @@ source_paths:
   - "docs/reports/peatland-case-study/assurance-checklist.md"
   - "docs/reports/peatland-case-study/evidence-register.csv"
   - "docs/reports/peatland-case-study/terminology-map.md"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/adoption-path.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/annotated-bibliography.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/assurance-checklist.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/evidence-register.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/terminology-map.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/adoption-path.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/annotated-bibliography.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/assurance-checklist.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/evidence-register.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/terminology-map.md"
 source_hashes:
-  docs/reports/peatland-case-study/adoption-path.md: "f1fe6fb19bc1e5cb1ec031ea9994bf091c6141e2cbbab439c4ead74c523f4cd1"
-  docs/reports/peatland-case-study/annotated-bibliography.md: "6a1521bed6c623a31bbc881e661574b5bfe5a2bfae389fc1e37619287830ac92"
-  docs/reports/peatland-case-study/assurance-checklist.md: "150f67b031215038c6cf6ad693bb1ab9e9aad834ab90c40b0ca3eb9f6243b028"
-  docs/reports/peatland-case-study/evidence-register.csv: "66ac6c070f356bf66ae2f7cd3bf71cb5fb011222485590b8ce4e56ed1927ec1c"
-  docs/reports/peatland-case-study/terminology-map.md: "2325dfb4d77ed640535dfb31694954aa0e7878c57bb67dffb7c82e4a3ac7c3a2"
-generated_at: "2026-04-06T09:00:35Z"
+  docs/reports/peatland-case-study/adoption-path.md: "sha256:f1fe6fb1-9bc1e5cb-1ec031ea-9994bf09-1c6141e2-cbbab439-c4ead74c-523f4cd1"
+  docs/reports/peatland-case-study/annotated-bibliography.md: "sha256:6a1521be-d6c623a3-1bbc881e-661574b5-bfe5a2bf-ae389fc1-e3761928-7830ac92"
+  docs/reports/peatland-case-study/assurance-checklist.md: "sha256:150f67b0-31215038-c6cf6ad6-93bb1ab9-e9aad834-ab90c40b-0ca3eb9f-6243b028"
+  docs/reports/peatland-case-study/evidence-register.csv: "sha256:66ac6c07-0f356bf6-6ae2f7cd-3bf71cb5-fb011222-485590b8-ce4e56ed-1927ec1c"
+  docs/reports/peatland-case-study/terminology-map.md: "sha256:2325dfb4-d77ed640-535dfb31-694954aa-0e7878c5-7bb67dff-b7c82e4a-3ac7c3a2"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-21"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Peatland Case Study
 
@@ -52,8 +52,8 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`docs/reports/peatland-case-study/adoption-path.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/adoption-path.md)
-- [`docs/reports/peatland-case-study/annotated-bibliography.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/annotated-bibliography.md)
-- [`docs/reports/peatland-case-study/assurance-checklist.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/assurance-checklist.md)
-- [`docs/reports/peatland-case-study/evidence-register.csv`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/evidence-register.csv)
-- [`docs/reports/peatland-case-study/terminology-map.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/peatland-case-study/terminology-map.md)
+- [`docs/reports/peatland-case-study/adoption-path.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/adoption-path.md)
+- [`docs/reports/peatland-case-study/annotated-bibliography.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/annotated-bibliography.md)
+- [`docs/reports/peatland-case-study/assurance-checklist.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/assurance-checklist.md)
+- [`docs/reports/peatland-case-study/evidence-register.csv`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/evidence-register.csv)
+- [`docs/reports/peatland-case-study/terminology-map.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/peatland-case-study/terminology-map.md)

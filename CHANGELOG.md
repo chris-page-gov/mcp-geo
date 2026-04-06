@@ -127,6 +127,18 @@ All notable changes to this project will be documented in this file.
   now remaps mounted `/landis-data/...` archive paths correctly inside the
   container, and `scripts/landis_ingest.py` now executes schema SQL
   statement-by-statement so repeated bootstrap passes remain safe.
+- LandIS wrapper bootstrap now rejects incomplete portal archive roots before
+  phase-2 ingest. `scripts/mcp-docker-local` now falls back to the newest
+  complete `landis_portal_archive_*` directory instead of hard-failing on the
+  newest partial mirror, and `scripts/landis_phase2_ingest.py` now exposes the
+  same archive-completeness validation for both direct invocation and wrapper
+  selection.
+- The checked-in Obsidian knowledge base no longer trips the OWASP secret-scan
+  gate on frontmatter provenance hashes. `scripts/obsidian_kb_common.py` now
+  renders note-level `source_hashes` in a chunked `sha256:` format that
+  preserves provenance while avoiding `gitleaks` false positives, and the
+  regenerated vault now includes canonical notes for the KB build/validate
+  scripts themselves.
 - Playground transcript endpoints now normalize non-object JSON payloads back to
   the standard `INVALID_INPUT` response instead of leaking a `TypeError` from
   Pydantic construction, and the config fallback shim now has explicit

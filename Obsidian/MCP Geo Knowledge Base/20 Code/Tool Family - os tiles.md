@@ -3,16 +3,16 @@ title: "Tool Family - os tiles"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_tiles_ota.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_tiles_ota.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_tiles_ota.py"
 source_hashes:
-  tools/os_tiles_ota.py: "da10e714087f483d78fe4f6e82b4a863e44e510f2bab1f865ead7677cbd7d143"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/os_tiles_ota.py: "sha256:da10e714-087f483d-78fe4f6e-82b4a863-e44e510f-2bab1f86-5ead7677-cbd7d143"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-13"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - os tiles
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/os_tiles_ota.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/os_tiles_ota.py)
+- [`tools/os_tiles_ota.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/os_tiles_ota.py)

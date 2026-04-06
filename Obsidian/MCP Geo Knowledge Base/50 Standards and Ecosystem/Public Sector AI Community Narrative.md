@@ -33,76 +33,76 @@ source_paths:
   - "docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex"
   - "docs/public_sector_ai_community/prism/sections/10-future-direction.tex"
   - "docs/public_sector_ai_community/prism/sections/11-evidence-index.tex"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/00_delivery_plan.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/01_overview_for_novices.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/03_architecture_and_components.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/05_reproducible_development_environment.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/09_effectiveness_evaluation.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/14_evidence_and_report_index.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/main.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/main.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/references.bib"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/01-introduction.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/03-system-and-components.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/04-timeline.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/05-environment.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/08-evaluation.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/10-future-direction.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/11-evidence-index.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/00_delivery_plan.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/01_overview_for_novices.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/03_architecture_and_components.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/05_reproducible_development_environment.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/09_effectiveness_evaluation.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/14_evidence_and_report_index.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/main.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/main.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/references.bib"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/01-introduction.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/03-system-and-components.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/04-timeline.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/05-environment.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/08-evaluation.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/10-future-direction.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/11-evidence-index.tex"
 source_hashes:
-  docs/public_sector_ai_community/00_delivery_plan.md: "2c7dc4673e4da528e125bad0a842ab13b45cbd227ed8f8e31466407ebf4c7c8b"
-  docs/public_sector_ai_community/01_overview_for_novices.md: "cbb3ccedd1e6ab60f29868302307723de1cf8f55ff095ff185e4c9fa69db0819"
-  docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md: "8ef6ba857d72fee08debc90e66ce6083e9e015b1ee259a1dbfa41896007cfcad"
-  docs/public_sector_ai_community/03_architecture_and_components.md: "736a92a86408ded3f8763bc68df662666e0fe7d7bd43bcd8dbaefbec94a87293"
-  docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md: "1aa8a8e9c98f345d437fe5f0966558a9e56e5d6b5d704cc461b1a147b067260e"
-  docs/public_sector_ai_community/05_reproducible_development_environment.md: "509b2a73256c919ffb27b3247901aec4b6ad55c397b64b912cf74386a2ddaf9e"
-  docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md: "04c710400ef35383cb721c50ebc3be612171e6f01c6b666243be17ede5088067"
-  docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md: "28fc9063b14b5c48d4723a63237d217c42df89643ffebf643c0d338a5032ff6f"
-  docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md: "a843e9be30f2bd13d2235b5b83cb5fabfee777b7039710480447ff88d7757aed"
-  docs/public_sector_ai_community/09_effectiveness_evaluation.md: "0c73f09cc24cf45037da91bc85537c7a5713c2577e22532084c07514d3687e60"
-  docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md: "61117f3683eefb268c34b6491e9cdeb306882c4081ddae3e332e58551ef32f11"
-  docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md: "86ca378846c9bf90f8169dd9a7667f05bb4253d779311f9c08bc71f11d4d21b3"
-  docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md: "5d72ca850944e24552853276ef6cbbfeb0463cfa9b9b94faf999c4f11efa4aa3"
-  docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md: "618aa5c098d576b269c565829f285f8336ce664c4469b43ba7f1c33120c1a82f"
-  docs/public_sector_ai_community/14_evidence_and_report_index.md: "2862bb999c8ad3d50383f2ea0b7720a9439ffb3073d3d880f721ffaa39fd6ff7"
-  docs/public_sector_ai_community/README.md: "2feca3c6f8f118d5364fddc3b443b93f2a7ea9fd50a6d3497b5a6938965207db"
-  docs/public_sector_ai_community/prism/README.md: "55961a3dfde07e6a0e95ec6df016f5a0e2bea16edc243508dfa5dbb612c24af3"
-  docs/public_sector_ai_community/prism/main.pdf: "dcf9d5a8f63f4e44ac23cee6157a60fdb1027ff3d31cf091a8178f82a6093628"
-  docs/public_sector_ai_community/prism/main.tex: "d27aba0a22ff7565aad41bb4733d7befb0570c962a53afa916b9069dea435d8b"
-  docs/public_sector_ai_community/prism/references.bib: "ad25ff6c28f8e0e4cacf32c598756860b6e009458b114e9f1dec37eef20b2f6c"
-  docs/public_sector_ai_community/prism/sections/01-introduction.tex: "7709bd951911a4b0351d1bfc4339d37aa4fd9ce7e5856ec5c35b31fb48a3e7a1"
-  docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex: "9a2359269bf78c22edde26e350d6d687e1dd012da8b69f2a9f933fa22cb4eccb"
-  docs/public_sector_ai_community/prism/sections/03-system-and-components.tex: "33f03ecde009e058fadfa0e1bc3a362bc11107fc4d7acb8ffe00eeab3504f5cc"
-  docs/public_sector_ai_community/prism/sections/04-timeline.tex: "1bcbf73dcdf7374f4d3b3ff63b1a1e6b6fdb3c544f5d37f1c74320e3b8f7255c"
-  docs/public_sector_ai_community/prism/sections/05-environment.tex: "1e10a8f0398ccdb4ed814ef482a55dcda0ef245394f238371f83cef5fbf9ef21"
-  docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex: "84b7be203eddf2c2146a5395060bd10084f8c116b40876c4319d602b449806e4"
-  docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex: "3175e7de5fd8c45090a9148a51eff53dcee6d07f4f7c434b7730847ef5ebd304"
-  docs/public_sector_ai_community/prism/sections/08-evaluation.tex: "a11a1a1de5bbeecdb2cd5441fff9000860254d9a14e59901331c7245a2652b9a"
-  docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex: "95953b4f50f92c2fad5949cd8fb9e562c2dc5c008108b3e83105b9fba3e637fc"
-  docs/public_sector_ai_community/prism/sections/10-future-direction.tex: "b4c4cec3bf9dc82c4b4706bdf4fee61729b8c2377791029b62da1ace6d47c9d3"
-  docs/public_sector_ai_community/prism/sections/11-evidence-index.tex: "4add42056031e85e422fdade572d66c3cc39937d392a5fd8aaceae1de69b3b70"
-generated_at: "2026-04-06T09:00:35Z"
+  docs/public_sector_ai_community/00_delivery_plan.md: "sha256:2c7dc467-3e4da528-e125bad0-a842ab13-b45cbd22-7ed8f8e3-1466407e-bf4c7c8b"
+  docs/public_sector_ai_community/01_overview_for_novices.md: "sha256:cbb3cced-d1e6ab60-f2986830-2307723d-e1cf8f55-ff095ff1-85e4c9fa-69db0819"
+  docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md: "sha256:8ef6ba85-7d72fee0-8debc90e-66ce6083-e9e015b1-ee259a1d-bfa41896-007cfcad"
+  docs/public_sector_ai_community/03_architecture_and_components.md: "sha256:736a92a8-6408ded3-f8763bc6-8df66266-6e0fe7d7-bd43bcd8-dbaefbec-94a87293"
+  docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md: "sha256:1aa8a8e9-c98f345d-437fe5f0-966558a9-e56e5d6b-5d704cc4-61b1a147-b067260e"
+  docs/public_sector_ai_community/05_reproducible_development_environment.md: "sha256:509b2a73-256c919f-fb27b324-7901aec4-b6ad55c3-97b64b91-2cf74386-a2ddaf9e"
+  docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md: "sha256:04c71040-0ef35383-cb721c50-ebc3be61-2171e6f0-1c6b6662-43be17ed-e5088067"
+  docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md: "sha256:28fc9063-b14b5c48-d4723a63-237d217c-42df8964-3ffebf64-3c0d338a-5032ff6f"
+  docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md: "sha256:a843e9be-30f2bd13-d2235b5b-83cb5fab-fee777b7-03971048-0447ff88-d7757aed"
+  docs/public_sector_ai_community/09_effectiveness_evaluation.md: "sha256:0c73f09c-c24cf450-37da91bc-85537c7a-5713c257-7e225320-84c07514-d3687e60"
+  docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md: "sha256:61117f36-83eefb26-8c34b649-1e9cdeb3-06882c40-81ddae3e-332e5855-1ef32f11"
+  docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md: "sha256:86ca3788-46c9bf90-f8169dd9-a7667f05-bb4253d7-79311f9c-08bc71f1-1d4d21b3"
+  docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md: "sha256:5d72ca85-0944e245-52853276-ef6cbbfe-b0463cfa-9b9b94fa-f999c4f1-1efa4aa3"
+  docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md: "sha256:618aa5c0-98d576b2-69c56582-9f285f83-36ce664c-4469b43b-a7f1c331-20c1a82f"
+  docs/public_sector_ai_community/14_evidence_and_report_index.md: "sha256:2862bb99-9c8ad3d5-0383f2ea-0b7720a9-439ffb30-73d3d880-f721ffaa-39fd6ff7"
+  docs/public_sector_ai_community/README.md: "sha256:2feca3c6-f8f118d5-364fddc3-b443b93f-2a7ea9fd-50a6d349-7b5a6938-965207db"
+  docs/public_sector_ai_community/prism/README.md: "sha256:55961a3d-fde07e6a-0e95ec6d-f016f5a0-e2bea16e-dc243508-dfa5dbb6-12c24af3"
+  docs/public_sector_ai_community/prism/main.pdf: "sha256:dcf9d5a8-f63f4e44-ac23cee6-157a60fd-b1027ff3-d31cf091-a8178f82-a6093628"
+  docs/public_sector_ai_community/prism/main.tex: "sha256:d27aba0a-22ff7565-aad41bb4-733d7bef-b0570c96-2a53afa9-16b9069d-ea435d8b"
+  docs/public_sector_ai_community/prism/references.bib: "sha256:ad25ff6c-28f8e0e4-cacf32c5-98756860-b6e00945-8b114e9f-1dec37ee-f20b2f6c"
+  docs/public_sector_ai_community/prism/sections/01-introduction.tex: "sha256:7709bd95-1911a4b0-351d1bfc-4339d37a-a4fd9ce7-e5856ec5-c35b31fb-48a3e7a1"
+  docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex: "sha256:9a235926-9bf78c22-edde26e3-50d6d687-e1dd012d-a8b69f2a-9f933fa2-2cb4eccb"
+  docs/public_sector_ai_community/prism/sections/03-system-and-components.tex: "sha256:33f03ecd-e009e058-fadfa0e1-bc3a362b-c11107fc-4d7acb8f-fe00eeab-3504f5cc"
+  docs/public_sector_ai_community/prism/sections/04-timeline.tex: "sha256:1bcbf73d-cdf7374f-4d3b3ff6-3b1a1e6b-6fdb3c54-4f5d37f1-c74320e3-b8f7255c"
+  docs/public_sector_ai_community/prism/sections/05-environment.tex: "sha256:1e10a8f0-398ccdb4-ed814ef4-82a55dcd-a0ef2453-94f23837-1f83cef5-fbf9ef21"
+  docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex: "sha256:84b7be20-3eddf2c2-146a5395-060bd100-84f8c116-b40876c4-319d602b-449806e4"
+  docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex: "sha256:3175e7de-5fd8c450-90a9148a-51eff53d-cee6d07f-4f7c434b-7730847e-f5ebd304"
+  docs/public_sector_ai_community/prism/sections/08-evaluation.tex: "sha256:a11a1a1d-e5bbeecd-b2cd5441-fff90008-60254d9a-14e59901-331c7245-a2652b9a"
+  docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex: "sha256:95953b4f-50f92c2f-ad5949cd-8fb9e562-c2dc5c00-8108b3e8-3105b9fb-a3e637fc"
+  docs/public_sector_ai_community/prism/sections/10-future-direction.tex: "sha256:b4c4cec3-bf9dc82c-4b4706bd-f4fee617-29b8c237-7791029b-62da1ace-6d47c9d3"
+  docs/public_sector_ai_community/prism/sections/11-evidence-index.tex: "sha256:4add4205-6031e85e-422fdade-572d66c3-cc39937d-392a5fd8-aaceae1d-e69b3b70"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-04"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Public Sector AI Community Narrative
 
@@ -130,8 +130,8 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md` | Current implementation emphasis is broad read-only access and deterministic troubleshooting for low-to-moderate sensitiv | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md` | From repository and standards tracking evidence, current direction includes: - movement toward stable multi-version MCP  | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/14_evidence_and_report_index.md` | This index maps major claims in this documentation set to repository evidence artifacts. - `CONTEXT.md` - `PROGRESS.MD`  | 2026-03-04 | 2026-03-11 | - |
-| `docs/public_sector_ai_community/README.md` | This documentation set explains what was discovered and delivered in `mcp-geo`, in language suitable for: - novice users | 2026-03-04 | 2026-03-04 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py` |
-| `docs/public_sector_ai_community/prism/README.md` | - `main.tex` - `references.bib` - `sections/*.tex` ```bash cd docs/public_sector_ai_community/prism pdflatex main.tex bi | 2026-03-04 | 2026-03-04 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py` |
+| `docs/public_sector_ai_community/README.md` | This documentation set explains what was discovered and delivered in `mcp-geo`, in language suitable for: - novice users | 2026-03-04 | 2026-03-04 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/public_sector_ai_community/prism/README.md` | - `main.tex` - `references.bib` - `sections/*.tex` ```bash cd docs/public_sector_ai_community/prism pdflatex main.tex bi | 2026-03-04 | 2026-03-04 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/public_sector_ai_community/prism/main.pdf` | Binary artifact | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/prism/main.tex` | \documentclass[11pt,a4paper]{report} | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/prism/references.bib` | @misc{readme_main, | 2026-03-04 | 2026-03-04 | - |
@@ -169,38 +169,38 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Binary Artifacts
 
-- `docs/public_sector_ai_community/prism/main.pdf` (213.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/main.pdf)
+- `docs/public_sector_ai_community/prism/main.pdf` (213.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/main.pdf)
 
 ## Pinned Sources
 
-- [`docs/public_sector_ai_community/00_delivery_plan.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/00_delivery_plan.md)
-- [`docs/public_sector_ai_community/01_overview_for_novices.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/01_overview_for_novices.md)
-- [`docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md)
-- [`docs/public_sector_ai_community/03_architecture_and_components.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/03_architecture_and_components.md)
-- [`docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md)
-- [`docs/public_sector_ai_community/05_reproducible_development_environment.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/05_reproducible_development_environment.md)
-- [`docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md)
-- [`docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md)
-- [`docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md)
-- [`docs/public_sector_ai_community/09_effectiveness_evaluation.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/09_effectiveness_evaluation.md)
-- [`docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md)
-- [`docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md)
-- [`docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md)
-- [`docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md)
-- [`docs/public_sector_ai_community/14_evidence_and_report_index.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/14_evidence_and_report_index.md)
-- [`docs/public_sector_ai_community/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/README.md)
-- [`docs/public_sector_ai_community/prism/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/README.md)
-- [`docs/public_sector_ai_community/prism/main.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/main.pdf)
-- [`docs/public_sector_ai_community/prism/main.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/main.tex)
-- [`docs/public_sector_ai_community/prism/references.bib`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/references.bib)
-- [`docs/public_sector_ai_community/prism/sections/01-introduction.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/01-introduction.tex)
-- [`docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex)
-- [`docs/public_sector_ai_community/prism/sections/03-system-and-components.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/03-system-and-components.tex)
-- [`docs/public_sector_ai_community/prism/sections/04-timeline.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/04-timeline.tex)
-- [`docs/public_sector_ai_community/prism/sections/05-environment.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/05-environment.tex)
-- [`docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex)
-- [`docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex)
-- [`docs/public_sector_ai_community/prism/sections/08-evaluation.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/08-evaluation.tex)
-- [`docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex)
-- [`docs/public_sector_ai_community/prism/sections/10-future-direction.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/10-future-direction.tex)
-- [`docs/public_sector_ai_community/prism/sections/11-evidence-index.tex`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/public_sector_ai_community/prism/sections/11-evidence-index.tex)
+- [`docs/public_sector_ai_community/00_delivery_plan.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/00_delivery_plan.md)
+- [`docs/public_sector_ai_community/01_overview_for_novices.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/01_overview_for_novices.md)
+- [`docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/02_origin_story_and_acknowledgements.md)
+- [`docs/public_sector_ai_community/03_architecture_and_components.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/03_architecture_and_components.md)
+- [`docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/04_detailed_timeline_repo_and_ecosystem.md)
+- [`docs/public_sector_ai_community/05_reproducible_development_environment.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/05_reproducible_development_environment.md)
+- [`docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/06_standards_clients_and_tooling_evolution.md)
+- [`docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/07_harness_permissions_and_debugging_journey.md)
+- [`docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/08_user_question_patterns_and_solution_progress.md)
+- [`docs/public_sector_ai_community/09_effectiveness_evaluation.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/09_effectiveness_evaluation.md)
+- [`docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/10_codex_usage_time_and_token_statistics.md)
+- [`docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/11_bduk_pilot_extension_requirements.md)
+- [`docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md)
+- [`docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md)
+- [`docs/public_sector_ai_community/14_evidence_and_report_index.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/14_evidence_and_report_index.md)
+- [`docs/public_sector_ai_community/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/README.md)
+- [`docs/public_sector_ai_community/prism/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/README.md)
+- [`docs/public_sector_ai_community/prism/main.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/main.pdf)
+- [`docs/public_sector_ai_community/prism/main.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/main.tex)
+- [`docs/public_sector_ai_community/prism/references.bib`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/references.bib)
+- [`docs/public_sector_ai_community/prism/sections/01-introduction.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/01-introduction.tex)
+- [`docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/02-origin-and-scope.tex)
+- [`docs/public_sector_ai_community/prism/sections/03-system-and-components.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/03-system-and-components.tex)
+- [`docs/public_sector_ai_community/prism/sections/04-timeline.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/04-timeline.tex)
+- [`docs/public_sector_ai_community/prism/sections/05-environment.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/05-environment.tex)
+- [`docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/06-standards-clients-and-tooling.tex)
+- [`docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/07-harness-and-diagnostics.tex)
+- [`docs/public_sector_ai_community/prism/sections/08-evaluation.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/08-evaluation.tex)
+- [`docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/09-bduk-rbac-abac.tex)
+- [`docs/public_sector_ai_community/prism/sections/10-future-direction.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/10-future-direction.tex)
+- [`docs/public_sector_ai_community/prism/sections/11-evidence-index.tex`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/public_sector_ai_community/prism/sections/11-evidence-index.tex)

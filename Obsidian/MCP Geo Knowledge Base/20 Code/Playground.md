@@ -3,16 +3,16 @@ title: "Playground"
 kb_kind: "code_module"
 source_paths:
   - "server/mcp/playground.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/mcp/playground.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/playground.py"
 source_hashes:
-  server/mcp/playground.py: "4738bbdd0dc1a58ce7cb79cb6d2accbc4ce2bd1c0324525c85d6e19d627bddd9"
-generated_at: "2026-04-06T09:00:35Z"
+  server/mcp/playground.py: "sha256:4738bbdd-0dc1a58c-e7cb79cb-6d2accbc-4ce2bd1c-0324525c-85d6e19d-627bddd9"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Playground
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`server/mcp/playground.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/mcp/playground.py)
+- [`server/mcp/playground.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/playground.py)

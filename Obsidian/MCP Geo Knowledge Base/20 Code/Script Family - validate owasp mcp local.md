@@ -3,16 +3,16 @@ title: "Script Family - validate owasp mcp local"
 kb_kind: "code_family"
 source_paths:
   - "scripts/validate-owasp-mcp-local"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/validate-owasp-mcp-local"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/validate-owasp-mcp-local"
 source_hashes:
-  scripts/validate-owasp-mcp-local: "70f917cc68bbeeffbfd5350c3a0c3677b8f37445f8d6de350374b990535dc4e7"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/validate-owasp-mcp-local: "sha256:70f917cc-68bbeeff-bfd5350c-3a0c3677-b8f37445-f8d6de35-0374b990-535dc4e7"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-13"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - validate owasp mcp local
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/validate-owasp-mcp-local`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/validate-owasp-mcp-local)
+- [`scripts/validate-owasp-mcp-local`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/validate-owasp-mcp-local)

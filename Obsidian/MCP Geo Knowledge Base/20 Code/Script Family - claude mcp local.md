@@ -3,16 +3,16 @@ title: "Script Family - claude mcp local"
 kb_kind: "code_family"
 source_paths:
   - "scripts/claude-mcp-local"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/claude-mcp-local"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/claude-mcp-local"
 source_hashes:
-  scripts/claude-mcp-local: "bd96994f0a6ad8ee8a4e3d95bd874d89e664d32c69284381d9973dd62122c617"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/claude-mcp-local: "sha256:bd96994f-0a6ad8ee-8a4e3d95-bd874d89-e664d32c-69284381-d9973dd6-2122c617"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-04"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - claude mcp local
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/claude-mcp-local`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/claude-mcp-local)
+- [`scripts/claude-mcp-local`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/claude-mcp-local)

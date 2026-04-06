@@ -3,16 +3,16 @@ title: "Script Family - live"
 kb_kind: "code_family"
 source_paths:
   - "scripts/live_missing_tools_probe.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/live_missing_tools_probe.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/live_missing_tools_probe.py"
 source_hashes:
-  scripts/live_missing_tools_probe.py: "5c7efae0e31aa2a0de89da407468d84dc9dde2ce49d9c3e9445a50cd49c4caae"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/live_missing_tools_probe.py: "sha256:5c7efae0-e31aa2a0-de89da40-7468d84d-c9dde2ce-49d9c3e9-445a50cd-49c4caae"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-22"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - live
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/live_missing_tools_probe.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/live_missing_tools_probe.py)
+- [`scripts/live_missing_tools_probe.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/live_missing_tools_probe.py)

@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from scripts.obsidian_kb_common import build_vault, validate_manifest
+from scripts.obsidian_kb_common import build_vault, render_frontmatter, validate_manifest
 
 
 def _run_git(repo: Path, *args: str) -> str:
@@ -138,3 +138,19 @@ def test_build_vault_overlay_mode_generates_local_session_notes(tmp_path: Path) 
 
     overlay_manifest = json.loads(overlay_manifest_path.read_text(encoding="utf-8"))
     assert overlay_manifest["overlay"]["log_files"] == 1
+
+
+def test_render_frontmatter_formats_source_hashes_for_secret_scan_safety() -> None:
+    rendered = render_frontmatter(
+        {
+            "title": "Example",
+            "source_hashes": {
+                "server/main.py": "a" * 64,
+            },
+        }
+    )
+
+    expected = (
+        '"sha256:aaaaaaaa-aaaaaaaa-aaaaaaaa-aaaaaaaa-aaaaaaaa-aaaaaaaa-aaaaaaaa-aaaaaaaa"'
+    )
+    assert expected in rendered

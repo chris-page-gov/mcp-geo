@@ -3,16 +3,16 @@ title: "Script Family - pack cache"
 kb_kind: "code_family"
 source_paths:
   - "scripts/pack_cache_refresh.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/pack_cache_refresh.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/pack_cache_refresh.py"
 source_hashes:
-  scripts/pack_cache_refresh.py: "ddeceb6f9f0a97aed7b3c1fd81749f3dd4506b51977ce235683b1cdce6b56c38"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/pack_cache_refresh.py: "sha256:ddeceb6f-9f0a97ae-d7b3c1fd-81749f3d-d4506b51-977ce235-683b1cdc-e6b56c38"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-11"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - pack cache
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/pack_cache_refresh.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/pack_cache_refresh.py)
+- [`scripts/pack_cache_refresh.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/pack_cache_refresh.py)

@@ -3,16 +3,16 @@ title: "Tool Family - accessors"
 kb_kind: "code_family"
 source_paths:
   - "tools/accessors.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/accessors.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/accessors.py"
 source_hashes:
-  tools/accessors.py: "6ac90dddabce5d0bf0f71b30367df0b72324d8baaf575045457735608759efa7"
-generated_at: "2026-04-06T09:00:35Z"
+  tools/accessors.py: "sha256:6ac90ddd-abce5d0b-f0f71b30-367df0b7-2324d8ba-af575045-45773560-8759efa7"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Tool Family - accessors
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`tools/accessors.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/tools/accessors.py)
+- [`tools/accessors.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/tools/accessors.py)

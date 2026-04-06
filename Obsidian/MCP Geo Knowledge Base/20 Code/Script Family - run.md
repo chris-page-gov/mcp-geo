@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "scripts/run_claude_tutorial_demo.sh"
   - "scripts/run_map_delivery_trials.sh"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/run_claude_tutorial_demo.sh"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/run_map_delivery_trials.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/run_claude_tutorial_demo.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/run_map_delivery_trials.sh"
 source_hashes:
-  scripts/run_claude_tutorial_demo.sh: "4fda0053de6633efdb44b863b902d23d4d9e5c277b0921c7f14d2de7bb9d5270"
-  scripts/run_map_delivery_trials.sh: "29e999c513fbabee8bd4149f83145fd8e19829e816aeb7a1d4053f697c82fd80"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/run_claude_tutorial_demo.sh: "sha256:4fda0053-de6633ef-db44b863-b902d23d-4d9e5c27-7b0921c7-f14d2de7-bb9d5270"
+  scripts/run_map_delivery_trials.sh: "sha256:29e999c5-13fbabee-8bd4149f-83145fd8-e19829e8-16aeb7a1-d4053f69-7c82fd80"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-13"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - run
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/run_claude_tutorial_demo.sh`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/run_claude_tutorial_demo.sh)
-- [`scripts/run_map_delivery_trials.sh`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/run_map_delivery_trials.sh)
+- [`scripts/run_claude_tutorial_demo.sh`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/run_claude_tutorial_demo.sh)
+- [`scripts/run_map_delivery_trials.sh`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/run_map_delivery_trials.sh)

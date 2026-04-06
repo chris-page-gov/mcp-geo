@@ -82,78 +82,78 @@ source_paths:
   - "docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html"
   - "docs/reports/teignmouth_wheelchair_access_map_2026-03-07.md"
   - "docs/reports/uprn-data-cards.md"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo_Strategic_Briefing.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo_evaluation_questions.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/Succinct information pack by GPT-5.4.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/UPRN Data Cards.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/Working with Codex redacted.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/boundary_variant_coverage_gap_2026-02-23.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/compact_windows_acceptance_checklist_2026-03-01.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/docx_hygiene_audit_2026-03-16.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/docx_hygiene_audit_2026-03-16.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/exmouth_wheelchair_access_map_2026-03-07.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/exmouth_wheelchair_access_map_2026-03-07.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/gRPC Native Transport for MCP.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/landis_portal_inventory_2026-04-04.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/landis_release_surface_reconciliation_2026-04-05.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/log_usage_error_report_2026-02-19.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/map_lab_help_resources_2026-02-28.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_apps_ui_redesign_review_form.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo_Strategic_Briefing.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo_evaluation_questions.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/Succinct information pack by GPT-5.4.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/UPRN Data Cards.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/Working with Codex redacted.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/boundary_variant_coverage_gap_2026-02-23.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/compact_windows_acceptance_checklist_2026-03-01.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/docx_hygiene_audit_2026-03-16.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/docx_hygiene_audit_2026-03-16.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/exmouth_wheelchair_access_map_2026-03-07.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/exmouth_wheelchair_access_map_2026-03-07.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/gRPC Native Transport for MCP.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/landis_portal_inventory_2026-04-04.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/landis_release_surface_reconciliation_2026-04-05.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/log_usage_error_report_2026-02-19.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/map_lab_help_resources_2026-02-28.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_apps_ui_redesign_review_form.md"
 source_hashes:
-  docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx: "d057c8a7d67acaf0ba48f74baa2187ded0d4f1a84ce20562758f7a6aae2ae293"
-  docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md: "c903629aabdd648978b0dbc7dcefac27006e86f42b3191e024229bb47fc6e91a"
-  docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf: "0d5e668b66e1e2902f6543911c974928b0d0e8c7a2cd269707478d6ec757148a"
-  docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx: "5267e600f113e9d5d86b95766172c276c0b35c4adfe7b271534ee685c8b3fad2"
-  docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md: "1976957a8f47d9f46752c801becf138c2b534c99d074dfc90dd70da878b1f1bb"
-  docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf: "fd3a937f5a768ba25a4e29ad19f0ed3c6a3bb3775ef8800ed29ea4629607fa07"
-  docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx: "c502db289e4a560098704696cbe5064cfe2a677fe172031d0a3d88723f9e0ebd"
-  docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf: "f64e95507d8637677d9892a50e5612cf4a347d685b6ba38b0542bdf12c1958b0"
-  docs/reports/MCP-Geo_Strategic_Briefing.pdf: "b2eea7d6d0dfec4316546347acabaaee472a318f60c8f38bbf874f7a57c57954"
-  docs/reports/MCP-Geo_evaluation_questions.md: "9c1ad46c9ae7163e0d65d965642bb1a0e17e7e4a8ce53723aedf3b0539e84e5d"
-  docs/reports/README.md: "97b0b5590de3b01632cba06eabbe86f267ed5e809f6b4a2a77559b562ef01809"
-  docs/reports/Succinct information pack by GPT-5.4.docx: "5c3ecdaae6d8299b310c8f03c44f9a14487ef5f84c0f16e82edba1fe63b6f53b"
-  docs/reports/UPRN Data Cards.docx: "cd2cf516318864caa0505c6d64403d888528d962236b896d36f43e4787e77883"
-  docs/reports/Working with Codex redacted.docx: "fe86f19b67ebfacb31b45406a777d3eb0775a044dce615caa768505c7e235b9e"
-  docs/reports/boundary_variant_coverage_gap_2026-02-23.md: "f9532b9974bdc616324d876f9fe1b6a57a1b9eecc5b9fbd5d6e770c69299123c"
-  docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json: "fa42a567789d70bc8198ff612f4dcbd92e7ab7b044817f7b0c08d36ef07052c2"
-  docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md: "74169c9921b90014c9034f0e5a585fee9d83bb090738921201c3ad62c6d1e06f"
-  docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md: "72f08ae3b0a866dff2796c6e6935fb8782cdfc15b6fb1f0193da124be88ec510"
-  docs/reports/compact_windows_acceptance_checklist_2026-03-01.json: "f823498bfe98e330818317030b5defc5d85ac6ffd5ece0b754cfae23614fc4e6"
-  docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md: "1ab4608d3a20cd6e83b89f91f1282740ed17a8f90c7025b2f9df8fe88c04057b"
-  docs/reports/docx_hygiene_audit_2026-03-16.json: "c018cd6ae3a1f5eb54fc1010146c3fd6d9a003d908e1b700dc3c0ad9e0dec9e2"
-  docs/reports/docx_hygiene_audit_2026-03-16.md: "f6ee2aa36381a8c644792d704d579a0c7fab21c556aa8f25f18be7b0bc670ef7"
-  docs/reports/exmouth_wheelchair_access_map_2026-03-07.html: "175911a1d68edb3a8527fc8810640bb3cf407da2f06b00e32cb1b8902870c0b3"
-  docs/reports/exmouth_wheelchair_access_map_2026-03-07.md: "7c85af8ba5f18284d89171f224549e785b1fe9f4257d188a37a30b9adc237ed3"
-  docs/reports/gRPC Native Transport for MCP.png: "9853cafeac639e466c40c8d2e9362d82dd6caa322f064a63a198bad56a2bf6db"
-  docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md: "f8013c74a34f62d001769a2b4418670dbb6a0ac6c2b1468a425be96dc0cb9bde"
-  docs/reports/landis_portal_inventory_2026-04-04.md: "c7e9f7a2e3aeaad0d0ece126d33a117c50ad05b6fac384f2c9690573d50631ba"
-  docs/reports/landis_release_surface_reconciliation_2026-04-05.md: "33214a50b20eaf2d37005ea3ea5a009b7f36cde46f5ec34556bc9e1b27442db7"
-  docs/reports/log_usage_error_report_2026-02-19.md: "38faadd151bc710ca1f017e316d1c5e889f208b92d643d12f61386a982eb15d6"
-  docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md: "63baa90a269191695814e11c110762e8604332237fa2c866b348fbe3564ff26e"
-  docs/reports/map_lab_help_resources_2026-02-28.md: "935af285b405eeff1234c451b9a1d5c934a4ceab011dda47e8297f133f596717"
-  docs/reports/mcp_apps_ui_redesign_review_form.md: "c755fc9effc5da0b9c6739652ffc2eae0acf1c2e5df6ee553b7806a0faabed36"
-generated_at: "2026-04-06T09:00:35Z"
+  docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx: "sha256:d057c8a7-d67acaf0-ba48f74b-aa2187de-d0d4f1a8-4ce20562-758f7a6a-ae2ae293"
+  docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md: "sha256:c903629a-abdd6489-78b0dbc7-dcefac27-006e86f4-2b3191e0-24229bb4-7fc6e91a"
+  docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf: "sha256:0d5e668b-66e1e290-2f654391-1c974928-b0d0e8c7-a2cd2697-07478d6e-c757148a"
+  docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx: "sha256:5267e600-f113e9d5-d86b9576-6172c276-c0b35c4a-dfe7b271-534ee685-c8b3fad2"
+  docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md: "sha256:1976957a-8f47d9f4-6752c801-becf138c-2b534c99-d074dfc9-0dd70da8-78b1f1bb"
+  docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf: "sha256:fd3a937f-5a768ba2-5a4e29ad-19f0ed3c-6a3bb377-5ef8800e-d29ea462-9607fa07"
+  docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx: "sha256:c502db28-9e4a5600-98704696-cbe5064c-fe2a677f-e172031d-0a3d8872-3f9e0ebd"
+  docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf: "sha256:f64e9550-7d863767-7d9892a5-0e5612cf-4a347d68-5b6ba38b-0542bdf1-2c1958b0"
+  docs/reports/MCP-Geo_Strategic_Briefing.pdf: "sha256:b2eea7d6-d0dfec43-16546347-acabaaee-472a318f-60c8f38b-bf874f7a-57c57954"
+  docs/reports/MCP-Geo_evaluation_questions.md: "sha256:9c1ad46c-9ae7163e-0d65d965-642bb1a0-e17e7e4a-8ce53723-aedf3b05-39e84e5d"
+  docs/reports/README.md: "sha256:97b0b559-0de3b016-32cba06e-abbe86f2-67ed5e80-9f6b4a2a-77559b56-2ef01809"
+  docs/reports/Succinct information pack by GPT-5.4.docx: "sha256:5c3ecdaa-e6d8299b-310c8f03-c44f9a14-487ef5f8-4c0f16e8-2edba1fe-63b6f53b"
+  docs/reports/UPRN Data Cards.docx: "sha256:cd2cf516-318864ca-a0505c6d-64403d88-8528d962-236b896d-36f43e47-87e77883"
+  docs/reports/Working with Codex redacted.docx: "sha256:fe86f19b-67ebfacb-31b45406-a777d3eb-0775a044-dce615ca-a768505c-7e235b9e"
+  docs/reports/boundary_variant_coverage_gap_2026-02-23.md: "sha256:f9532b99-74bdc616-324d876f-9fe1b6a5-7a1b9eec-c5b9fbd5-d6e770c6-9299123c"
+  docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json: "sha256:fa42a567-789d70bc-8198ff61-2f4dcbd9-2e7ab7b0-44817f7b-0c08d36e-f07052c2"
+  docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md: "sha256:74169c99-21b90014-c9034f0e-5a585fee-9d83bb09-07389212-01c3ad62-c6d1e06f"
+  docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md: "sha256:72f08ae3-b0a866df-f2796c6e-6935fb87-82cdfc15-b6fb1f01-93da124b-e88ec510"
+  docs/reports/compact_windows_acceptance_checklist_2026-03-01.json: "sha256:f823498b-fe98e330-81831703-0b5defc5-d85ac6ff-d5ece0b7-54cfae23-614fc4e6"
+  docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md: "sha256:1ab4608d-3a20cd6e-83b89f91-f1282740-ed17a8f9-0c7025b2-f9df8fe8-8c04057b"
+  docs/reports/docx_hygiene_audit_2026-03-16.json: "sha256:c018cd6a-e3a1f5eb-54fc1010-146c3fd6-d9a003d9-08e1b700-dc3c0ad9-e0dec9e2"
+  docs/reports/docx_hygiene_audit_2026-03-16.md: "sha256:f6ee2aa3-6381a8c6-44792d70-4d579a0c-7fab21c5-56aa8f25-f18be7b0-bc670ef7"
+  docs/reports/exmouth_wheelchair_access_map_2026-03-07.html: "sha256:175911a1-d68edb3a-8527fc88-10640bb3-cf407da2-f06b00e3-2cb1b890-2870c0b3"
+  docs/reports/exmouth_wheelchair_access_map_2026-03-07.md: "sha256:7c85af8b-a5f18284-d89171f2-24549e78-5b1fe9f4-257d188a-37a30b9a-dc237ed3"
+  docs/reports/gRPC Native Transport for MCP.png: "sha256:9853cafe-ac639e46-6c40c8d2-e9362d82-dd6caa32-2f064a63-a198bad5-6a2bf6db"
+  docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md: "sha256:f8013c74-a34f62d0-01769a2b-4418670d-bb6a0ac6-c2b1468a-425be96d-c0cb9bde"
+  docs/reports/landis_portal_inventory_2026-04-04.md: "sha256:c7e9f7a2-e3aeaad0-d0ece126-d33a117c-50ad05b6-fac384f2-c9690573-d50631ba"
+  docs/reports/landis_release_surface_reconciliation_2026-04-05.md: "sha256:33214a50-b20eaf2d-37005ea3-ea5a009b-7f36cde4-6f5ec345-56bc9e1b-27442db7"
+  docs/reports/log_usage_error_report_2026-02-19.md: "sha256:38faadd1-51bc710c-a1f017e3-16d1c5e8-89f208b9-2d643d12-f61386a9-82eb15d6"
+  docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md: "sha256:63baa90a-26919169-5814e11c-110762e8-60433223-7fa2c866-b348fbe3-564ff26e"
+  docs/reports/map_lab_help_resources_2026-02-28.md: "sha256:935af285-b405eeff-1234c451-b9a1d5c9-34a4ceab-011dda47-e8297f13-3f596717"
+  docs/reports/mcp_apps_ui_redesign_review_form.md: "sha256:c755fc9e-ffc5da0b-9c673965-2ffc2eae-0acf1c2e-5df6ee55-3b7806a0-faabed36"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-07"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Reports Catalog
 
@@ -176,7 +176,7 @@ last_validated_at: "2026-04-06T09:00:35Z"
 | `docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf` | Binary artifact | 2026-03-10 | 2026-03-10 | - |
 | `docs/reports/MCP-Geo_Strategic_Briefing.pdf` | Binary artifact | 2026-02-08 | 2026-03-10 | - |
 | `docs/reports/MCP-Geo_evaluation_questions.md` | Generated: 2026-03-10 This pack turns the Phase 3 prompt bank into a run-ready benchmark for stakeholder evaluation. Sce | 2026-03-09 | 2026-03-11 | `tests/test_stakeholder_benchmark_pack.py` |
-| `docs/reports/README.md` | This folder contains human-readable run reports and investigation summaries. - 2026-03-11: [MCP-Geo Analytical Index](mc | 2026-02-07 | 2026-04-05 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py` |
+| `docs/reports/README.md` | This folder contains human-readable run reports and investigation summaries. - 2026-03-11: [MCP-Geo Analytical Index](mc | 2026-02-07 | 2026-04-05 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/reports/Succinct information pack by GPT-5.4.docx` | Binary artifact | 2026-03-11 | 2026-03-16 | - |
 | `docs/reports/UPRN Data Cards.docx` | Binary artifact | 2026-02-25 | 2026-03-16 | - |
 | `docs/reports/Working with Codex redacted.docx` | Binary artifact | 2026-03-16 | 2026-03-16 | - |
@@ -270,64 +270,64 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Binary Artifacts
 
-- `docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx` (23.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx)
-- `docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf` (76.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf)
-- `docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx` (54.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx)
-- `docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf` (212.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf)
-- `docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx` (96.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx)
-- `docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf` (288.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf)
-- `docs/reports/MCP-Geo_Strategic_Briefing.pdf` (12.6 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo_Strategic_Briefing.pdf)
-- `docs/reports/Succinct information pack by GPT-5.4.docx` (31.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/Succinct information pack by GPT-5.4.docx)
-- `docs/reports/UPRN Data Cards.docx` (41.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/UPRN Data Cards.docx)
-- `docs/reports/Working with Codex redacted.docx` (36.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/Working with Codex redacted.docx)
-- `docs/reports/gRPC Native Transport for MCP.png` (5.8 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/gRPC Native Transport for MCP.png)
-- `docs/reports/mcp_geo_ai_community_event_record.docx` (7.0 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_ai_community_event_record.docx)
-- `docs/reports/mcp_geo_analytical_index_2026-03-11.pdf` (603.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_analytical_index_2026-03-11.pdf)
-- `docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.svg` (4.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.svg)
-- `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-01.svg` (4.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-01.svg)
-- `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.svg` (4.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.svg)
-- `docs/reports/mcp_geo_functionality_showcase_2026-03-07.docx` (2.9 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_functionality_showcase_2026-03-07.docx)
-- `docs/reports/mcp_geo_functionality_showcase_2026-03-07.pdf` (1.6 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_functionality_showcase_2026-03-07.pdf)
+- `docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx` (23.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx)
+- `docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf` (76.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf)
+- `docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx` (54.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx)
+- `docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf` (212.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf)
+- `docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx` (96.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx)
+- `docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf` (288.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf)
+- `docs/reports/MCP-Geo_Strategic_Briefing.pdf` (12.6 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo_Strategic_Briefing.pdf)
+- `docs/reports/Succinct information pack by GPT-5.4.docx` (31.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/Succinct information pack by GPT-5.4.docx)
+- `docs/reports/UPRN Data Cards.docx` (41.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/UPRN Data Cards.docx)
+- `docs/reports/Working with Codex redacted.docx` (36.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/Working with Codex redacted.docx)
+- `docs/reports/gRPC Native Transport for MCP.png` (5.8 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/gRPC Native Transport for MCP.png)
+- `docs/reports/mcp_geo_ai_community_event_record.docx` (7.0 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_ai_community_event_record.docx)
+- `docs/reports/mcp_geo_analytical_index_2026-03-11.pdf` (603.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_analytical_index_2026-03-11.pdf)
+- `docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.svg` (4.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.svg)
+- `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-01.svg` (4.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-01.svg)
+- `docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.svg` (4.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_codex_long_horizon_summary_2026-03-04.svg)
+- `docs/reports/mcp_geo_functionality_showcase_2026-03-07.docx` (2.9 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_functionality_showcase_2026-03-07.docx)
+- `docs/reports/mcp_geo_functionality_showcase_2026-03-07.pdf` (1.6 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_functionality_showcase_2026-03-07.pdf)
 
 ## Pinned Sources
 
-- [`docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx)
-- [`docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md)
-- [`docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf)
-- [`docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx)
-- [`docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md)
-- [`docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf)
-- [`docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx)
-- [`docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf)
-- [`docs/reports/MCP-Geo_Strategic_Briefing.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo_Strategic_Briefing.pdf)
-- [`docs/reports/MCP-Geo_evaluation_questions.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/MCP-Geo_evaluation_questions.md)
-- [`docs/reports/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/README.md)
-- [`docs/reports/Succinct information pack by GPT-5.4.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/Succinct information pack by GPT-5.4.docx)
-- [`docs/reports/UPRN Data Cards.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/UPRN Data Cards.docx)
-- [`docs/reports/Working with Codex redacted.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/Working with Codex redacted.docx)
-- [`docs/reports/boundary_variant_coverage_gap_2026-02-23.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/boundary_variant_coverage_gap_2026-02-23.md)
-- [`docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json)
-- [`docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md)
-- [`docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md)
-- [`docs/reports/compact_windows_acceptance_checklist_2026-03-01.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/compact_windows_acceptance_checklist_2026-03-01.json)
-- [`docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md)
-- [`docs/reports/docx_hygiene_audit_2026-03-16.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/docx_hygiene_audit_2026-03-16.json)
-- [`docs/reports/docx_hygiene_audit_2026-03-16.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/docx_hygiene_audit_2026-03-16.md)
-- [`docs/reports/exmouth_wheelchair_access_map_2026-03-07.html`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/exmouth_wheelchair_access_map_2026-03-07.html)
-- [`docs/reports/exmouth_wheelchair_access_map_2026-03-07.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/exmouth_wheelchair_access_map_2026-03-07.md)
-- [`docs/reports/gRPC Native Transport for MCP.png`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/gRPC Native Transport for MCP.png)
-- [`docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md)
-- [`docs/reports/landis_portal_inventory_2026-04-04.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/landis_portal_inventory_2026-04-04.md)
-- [`docs/reports/landis_release_surface_reconciliation_2026-04-05.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/landis_release_surface_reconciliation_2026-04-05.md)
-- [`docs/reports/log_usage_error_report_2026-02-19.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/log_usage_error_report_2026-02-19.md)
-- [`docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md)
-- [`docs/reports/map_lab_help_resources_2026-02-28.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/map_lab_help_resources_2026-02-28.md)
-- [`docs/reports/mcp_apps_ui_redesign_review_form.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_apps_ui_redesign_review_form.md)
-- [`docs/reports/mcp_apps_window_constraints_review_2026-03-01.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_apps_window_constraints_review_2026-03-01.md)
-- [`docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md)
-- [`docs/reports/mcp_geo_ai_community_event_record.docx`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_ai_community_event_record.docx)
-- [`docs/reports/mcp_geo_analytical_index_2026-03-11.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_analytical_index_2026-03-11.md)
-- [`docs/reports/mcp_geo_analytical_index_2026-03-11.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_analytical_index_2026-03-11.pdf)
-- [`docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md)
-- [`docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.json`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.json)
-- [`docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.md`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.md)
+- [`docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.docx)
+- [`docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.md)
+- [`docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 1 evidence-backed benchmark and positioning framework for answered OS Questions.pdf)
+- [`docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.docx)
+- [`docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.md)
+- [`docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Phase 2 evidence-backed benchmark and positioning framework for blocked and hard-to-answer U.pdf)
+- [`docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.docx)
+- [`docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf)
+- [`docs/reports/MCP-Geo_Strategic_Briefing.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo_Strategic_Briefing.pdf)
+- [`docs/reports/MCP-Geo_evaluation_questions.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/MCP-Geo_evaluation_questions.md)
+- [`docs/reports/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/README.md)
+- [`docs/reports/Succinct information pack by GPT-5.4.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/Succinct information pack by GPT-5.4.docx)
+- [`docs/reports/UPRN Data Cards.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/UPRN Data Cards.docx)
+- [`docs/reports/Working with Codex redacted.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/Working with Codex redacted.docx)
+- [`docs/reports/boundary_variant_coverage_gap_2026-02-23.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/boundary_variant_coverage_gap_2026-02-23.md)
+- [`docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json)
+- [`docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md)
+- [`docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md)
+- [`docs/reports/compact_windows_acceptance_checklist_2026-03-01.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/compact_windows_acceptance_checklist_2026-03-01.json)
+- [`docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md)
+- [`docs/reports/docx_hygiene_audit_2026-03-16.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/docx_hygiene_audit_2026-03-16.json)
+- [`docs/reports/docx_hygiene_audit_2026-03-16.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/docx_hygiene_audit_2026-03-16.md)
+- [`docs/reports/exmouth_wheelchair_access_map_2026-03-07.html`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/exmouth_wheelchair_access_map_2026-03-07.html)
+- [`docs/reports/exmouth_wheelchair_access_map_2026-03-07.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/exmouth_wheelchair_access_map_2026-03-07.md)
+- [`docs/reports/gRPC Native Transport for MCP.png`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/gRPC Native Transport for MCP.png)
+- [`docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md)
+- [`docs/reports/landis_portal_inventory_2026-04-04.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/landis_portal_inventory_2026-04-04.md)
+- [`docs/reports/landis_release_surface_reconciliation_2026-04-05.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/landis_release_surface_reconciliation_2026-04-05.md)
+- [`docs/reports/log_usage_error_report_2026-02-19.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/log_usage_error_report_2026-02-19.md)
+- [`docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/map_delivery_recommendations_implementation_plan_2026-02-14.md)
+- [`docs/reports/map_lab_help_resources_2026-02-28.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/map_lab_help_resources_2026-02-28.md)
+- [`docs/reports/mcp_apps_ui_redesign_review_form.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_apps_ui_redesign_review_form.md)
+- [`docs/reports/mcp_apps_window_constraints_review_2026-03-01.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_apps_window_constraints_review_2026-03-01.md)
+- [`docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_ai_community_appendix_a_replacement_2026-03-11.md)
+- [`docs/reports/mcp_geo_ai_community_event_record.docx`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_ai_community_event_record.docx)
+- [`docs/reports/mcp_geo_analytical_index_2026-03-11.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_analytical_index_2026-03-11.md)
+- [`docs/reports/mcp_geo_analytical_index_2026-03-11.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_analytical_index_2026-03-11.pdf)
+- [`docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_analytical_index_gap_audit_2026-03-11.md)
+- [`docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.json)
+- [`docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/reports/mcp_geo_codex_long_horizon_summary_2026-02-25.md)

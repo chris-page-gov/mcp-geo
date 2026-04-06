@@ -3,16 +3,16 @@ title: "Script Family - ons"
 kb_kind: "code_family"
 source_paths:
   - "scripts/ons_geo_cache_refresh.py"
-source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/ons_geo_cache_refresh.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/ons_geo_cache_refresh.py"
 source_hashes:
-  scripts/ons_geo_cache_refresh.py: "e82b8dc001397599d3f5f9c8d35c6b8a6746a1ed4b18032892ec4a5328c9cb9c"
-generated_at: "2026-04-06T09:00:35Z"
+  scripts/ons_geo_cache_refresh.py: "sha256:e82b8dc0-01397599-d3f5f9c8-d35c6b8a-6746a1ed-4b180328-92ec4a53-28c9cb9c"
+generated_at: "2026-04-06T13:09:04Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-22"
-last_validated_at: "2026-04-06T09:00:35Z"
+last_validated_at: "2026-04-06T13:09:04Z"
 ---
 # Script Family - ons
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T09:00:35Z"
 
 ## Pinned Sources
 
-- [`scripts/ons_geo_cache_refresh.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/scripts/ons_geo_cache_refresh.py)
+- [`scripts/ons_geo_cache_refresh.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/ons_geo_cache_refresh.py)
