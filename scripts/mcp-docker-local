@@ -202,6 +202,25 @@ first_existing_path() {
   return 1
 }
 
+latest_matching_dir() {
+  local root="$1"
+  local prefix="$2"
+  local mode="${3:-}"
+  local matches=()
+  local candidate
+  for candidate in "$root"/"$prefix"*; do
+    [[ -d "$candidate" ]] || continue
+    if [[ "$mode" == "exclude_smoke" && "$(basename "$candidate")" == *-smoke* ]]; then
+      continue
+    fi
+    matches+=("$candidate")
+  done
+  if [[ "${#matches[@]}" -eq 0 ]]; then
+    return 1
+  fi
+  printf "%s\n" "${matches[@]}" | LC_ALL=C sort | tail -n 1 | tr -d '\n'
+}
+
 bootstrap_landis_runtime() {
   if [[ "$LANDIS_MOUNT_ENABLED" != "true" ]]; then
     return 0
@@ -242,10 +261,15 @@ bootstrap_landis_runtime() {
   local mount_args=(-v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro")
   if [[ "$need_phase2" == "true" ]]; then
     local portal_archive_host=""
-    portal_archive_host="$(first_existing_path \
-      "$LANDIS_HOST_DATA_ROOT/landis_portal_archive_2026-04-04" \
-      "$LANDIS_HOST_DATA_ROOT/landis_portal_archive_2026-04-04-smoke2" \
-      "$LANDIS_HOST_DATA_ROOT/landis_portal_archive_2026-04-04-smoke")" || true
+    portal_archive_host="$(latest_matching_dir \
+      "$LANDIS_HOST_DATA_ROOT" \
+      "landis_portal_archive_" \
+      "exclude_smoke")" || true
+    if [[ -z "$portal_archive_host" ]]; then
+      portal_archive_host="$(latest_matching_dir \
+        "$LANDIS_HOST_DATA_ROOT" \
+        "landis_portal_archive_")" || true
+    fi
     if [[ -n "$portal_archive_host" ]]; then
       log "bootstrapping LandIS NATMAP and NSI archive tables"
       "$DOCKER_BIN" run --rm \

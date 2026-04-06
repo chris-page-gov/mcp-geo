@@ -227,3 +227,12 @@ def test_localize_archive_path_maps_container_mount_from_host_archive() -> None:
         / "data_source/abc_NationalSoilMap/feature_service/layers/00_National_Soil_Map/"
         "records_batch_0001.geojson"
     )
+
+
+def test_latest_portal_archive_dir_prefers_newest_non_smoke(tmp_path: Path) -> None:
+    (tmp_path / "landis_portal_archive_2026-04-04").mkdir()
+    (tmp_path / "landis_portal_archive_2026-05-01-smoke").mkdir()
+    newest = tmp_path / "landis_portal_archive_2026-05-01"
+    newest.mkdir()
+
+    assert landis_phase2_ingest._latest_portal_archive_dir(tmp_path) == newest

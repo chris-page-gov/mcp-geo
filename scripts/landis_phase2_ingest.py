@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 from scripts import landis_ingest
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_PORTAL_ARCHIVE = Path.home() / "Data" / "landis_portal_archive_2026-04-04"
+DEFAULT_PORTAL_ARCHIVE_ROOT = Path.home() / "Data"
 _EXTERNAL_PREFIX = "/Volumes/ExtSSD-Data/Data/"
 _LOCAL_PREFIX = f"{Path.home()}/Data/"
 
@@ -69,6 +69,17 @@ _NSI_OBSERVATION_DATASETS = (
     "NSItopsoil2",
     "NSImagnetic",
 )
+
+
+def _latest_portal_archive_dir(root: Path = DEFAULT_PORTAL_ARCHIVE_ROOT) -> Path:
+    matches = sorted(
+        path
+        for path in root.glob("landis_portal_archive_*")
+        if path.is_dir() and "-smoke" not in path.name
+    )
+    if matches:
+        return matches[-1]
+    return root / "landis_portal_archive_2026-04-04"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -346,7 +357,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--schema", default="landis", help="Target schema name")
     parser.add_argument(
         "--portal-archive-root",
-        default=str(DEFAULT_PORTAL_ARCHIVE),
+        default=str(_latest_portal_archive_dir()),
         help="Local portal archive root to ingest from",
     )
     parser.add_argument(
