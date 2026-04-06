@@ -31,7 +31,6 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PORTAL_INVENTORY_PATH = (
     REPO_ROOT / "research" / "landis-data-source" / "landis_portal_inventory_2026-04-04.json"
@@ -43,6 +42,8 @@ DEFAULT_ARCHIVE_MANIFEST_PATH = Path(
     "/Users/crpage/Data/landis_portal_archive_2026-04-04/download_manifest.json"
 )
 USER_AGENT = "Mozilla/5.0 (compatible; mcp-geo landis release reconciliation)"
+SCRIPT_TAG_RE = re.compile(r"<script\b[^>]*>.*?</script\s*>", re.IGNORECASE | re.DOTALL)
+STYLE_TAG_RE = re.compile(r"<style\b[^>]*>.*?</style\s*>", re.IGNORECASE | re.DOTALL)
 
 
 @dataclass(frozen=True)
@@ -225,8 +226,8 @@ def fetch_text(url: str) -> tuple[int | str, str, str | None]:
 
 
 def strip_html(source: str) -> str:
-    cleaned = re.sub(r"<script.*?</script>", " ", source, flags=re.IGNORECASE | re.DOTALL)
-    cleaned = re.sub(r"<style.*?</style>", " ", cleaned, flags=re.IGNORECASE | re.DOTALL)
+    cleaned = SCRIPT_TAG_RE.sub(" ", source)
+    cleaned = STYLE_TAG_RE.sub(" ", cleaned)
     cleaned = re.sub(r"<[^>]+>", " ", cleaned)
     cleaned = html.unescape(cleaned)
     return " ".join(cleaned.split())
@@ -246,30 +247,6 @@ def page_probe(item: PublicItem) -> dict[str, Any]:
         "mentionsFeatureServer": bool(re.search(r"FeatureServer|ArcGIS", html_text, re.I)),
         "mentionsPublicData": bool(re.search(r"open access|open licence|public data", text, re.I)),
         "textSample": text[:600],
-    }
-
-
-def data_gov_probe(query: str) -> dict[str, Any]:
-    url = f"https://www.data.gov.uk/api/3/action/package_search?rows=10&q={quote(query)}"
-    status, payload, error = fetch_text(url)
-    if not payload:
-        return {"status": status, "error": error}
-    data = json.loads(payload)
-    results = data["result"]["results"]
-    return {
-        "status": status,
-        "query": query,
-        "count": data["result"]["count"],
-        "matches": [
-            {
-                "title": result.get("title"),
-                "name": result.get("name"),
-                "licenseTitle": result.get("license_title"),
-                "metadataModified": result.get("metadata_modified"),
-                "url": f"https://www.data.gov.uk/dataset/{result.get('name')}",
-            }
-            for result in results
-        ],
     }
 
 
@@ -437,17 +414,22 @@ def build_manifest(archive_manifest_path: Path | None = None) -> dict[str, Any]:
         )
 
     return {
-        "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "generatedAt": dt.datetime.now(dt.UTC).isoformat(),
         "portalInventoryPath": str(PORTAL_INVENTORY_PATH),
         "archiveManifestPath": str(archive_manifest_path) if archive_manifest_path else None,
         "portalSummary": {
             "totalItems": len(portal_items),
-            "dataSources": sum(1 for item in portal_items if item.get("classification") == "data_source"),
-            "nonDataItems": sum(1 for item in portal_items if item.get("classification") != "data_source"),
+            "dataSources": sum(
+                1 for item in portal_items if item.get("classification") == "data_source"
+            ),
+            "nonDataItems": sum(
+                1 for item in portal_items if item.get("classification") != "data_source"
+            ),
         },
         "scopeNote": (
             "This manifest focuses on public LandIS website items that are currently linked in the "
-            "official navigation but are not present as exact titles in the mirrored ArcGIS portal slice."
+            "official navigation but are not present as exact titles in the mirrored ArcGIS "
+            "portal slice."
         ),
         "entries": entries,
     }
