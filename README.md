@@ -410,7 +410,7 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
 | council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
-| landis_catalog.list_products        | LandIS MVP product registry and access tiers                                  |
+| landis_catalog.list_products        | LandIS callable product registry, exact thematic IDs, and access tiers        |
 | landis_metadata.get                | LandIS product metadata, provenance, and linked resources                     |
 | landis_soilscapes.point            | LandIS Soilscapes class lookup for a WGS84 point                              |
 | landis_soilscapes.area_summary     | LandIS Soilscapes area composition summary                                    |
@@ -464,15 +464,19 @@ portal session.
 
 Use:
 
-- `landis_catalog.list_products` to discover the supported MVP products and
-  linked resources.
+- `landis_catalog.list_products` to discover the supported callable products,
+  including the exact NATMAP thematic `productId` values accepted by
+  `landis_natmap.thematic_area_summary`, plus linked resources and tool
+  bindings.
 - `landis_metadata.get` to retrieve provenance and limitations for a specific
   LandIS product.
 - `landis_soilscapes.point` and `landis_soilscapes.area_summary` for generalized
   Soilscapes lookups.
 - `landis_derive.pipe_risk` for caveated corrosion and shrink-swell screening.
 - `landis_archive.list_items` and `landis_archive.get_item` to inspect the
-  locally mirrored LandIS archive and its surfacing classification.
+  locally mirrored LandIS archive and its surfacing classification, including
+  supplementary full-release items such as `HOST`, `wetness`, `Series
+  Hydrology`, `Series Leacs`, and matched `data.gov.uk` package metadata.
 - `landis_natmap.point`, `landis_natmap.area_summary`, and
   `landis_natmap.thematic_area_summary` for local-archive-backed NATMAP map-unit
   and thematic summaries once loaded into PostGIS.
@@ -491,6 +495,31 @@ now checked in as an Obsidian vault under
 `Obsidian/LandIS Knowledge Base/`, including the strategy PDF, dataset notes,
 use-case summaries, reference pages, and the MCP architecture roadmap in a
 form that can be browsed directly in Obsidian or as Markdown in the repo.
+
+The repo now also carries a generated, repo-wide Obsidian knowledge base under
+`Obsidian/MCP Geo Knowledge Base/`. Unlike the LandIS example vault, this
+surface is built automatically from tracked repo content, excludes `Obsidian/**`
+ from source scanning to avoid recursion, records commit-pinned GitHub links and
+ source hashes in note frontmatter, and supports an ignored `98 Local Overlay/`
+ subtree for machine-local trace/session evidence.
+
+Refresh the canonical vault with:
+
+```bash
+python3 scripts/build_obsidian_kb.py \
+  --mode canon \
+  --git-ref WORKTREE \
+  --output-root "Obsidian/MCP Geo Knowledge Base" \
+  --manifest-out data/knowledge_base/obsidian_kb_manifest.json
+```
+
+Validate it with:
+
+```bash
+python3 scripts/validate_obsidian_kb.py \
+  --manifest data/knowledge_base/obsidian_kb_manifest.json \
+  --fail-on drift coverage recursion orphan
+```
 
 Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
 and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with
@@ -513,10 +542,16 @@ The Docker wrapper `scripts/mcp-docker-local` now mounts `~/Data` into the app
 container at `/landis-data` by default and sets `LANDIS_LOCAL_DATA_ROOT` there
 when the host directory exists, so the normal `mcp-geo` + PostGIS container
 workflow can use the local archive directly without copying the raw mirror into
-the image or database volume. The verified phase-2 warehouse load currently
-covers `NationalSoilMap`, eight NATMAP thematic products, `NSIsite`, and six
-mirrored NSI observation datasets from the local archive, plus the existing
-Soilscapes and pipe-risk validation layers.
+the image or database volume. On a fresh sidecar, the wrapper now also
+auto-bootstraps the LandIS warehouse tables from that mounted data before it
+starts the stdio server: it runs `scripts/landis_phase2_ingest.py` for the
+portal-archive NATMAP/NSI slice and `scripts/landis_ingest.py` for the
+Warwickshire Soilscapes and pipe-risk validation layers. Expect the first start
+to take materially longer than a warm restart because this load is large. The
+verified phase-2 warehouse load currently covers `NationalSoilMap`, eight
+NATMAP thematic products, `NSIsite`, and six mirrored NSI observation datasets
+from the local archive, plus the existing Soilscapes and pipe-risk validation
+layers.
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources

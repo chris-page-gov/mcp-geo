@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from server.landis import LandisWarehouseDisabled, LandisWarehouseUnavailable, get_landis_warehouse
-from tools.landis_common import error, pipe_risk_payload, resolve_area_input
+from tools.landis_common import error, live_query_details, pipe_risk_payload, resolve_area_input
 from tools.registry import Tool, ToolResult, register
 
 
@@ -24,12 +24,14 @@ def _pipe_risk(payload: dict[str, object]) -> ToolResult:
             "isError": True,
             "code": "LIVE_DISABLED",
             "message": _live_disabled_message(str(exc)),
+            "details": live_query_details(error_reason=str(exc)),
         }
     except LandisWarehouseUnavailable:
         return 502, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
             "message": "LandIS warehouse is unavailable.",
+            "details": live_query_details(error_reason="upstream_connect_error"),
         }
     if summary is None:
         return error(

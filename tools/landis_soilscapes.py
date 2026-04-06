@@ -10,6 +10,7 @@ from server.landis import (
 from tools.landis_common import (
     area_summary_payload,
     error,
+    live_query_details,
     resolve_area_input,
     soilscape_response_payload,
 )
@@ -38,12 +39,14 @@ def _point(payload: dict[str, Any]) -> ToolResult:
             "isError": True,
             "code": "LIVE_DISABLED",
             "message": _live_disabled_message(str(exc)),
+            "details": live_query_details(error_reason=str(exc)),
         }
     except LandisWarehouseUnavailable:
         return 502, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
             "message": "LandIS warehouse is unavailable.",
+            "details": live_query_details(error_reason="upstream_connect_error"),
         }
     if result is None:
         return error(
@@ -68,12 +71,14 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
             "isError": True,
             "code": "LIVE_DISABLED",
             "message": _live_disabled_message(str(exc)),
+            "details": live_query_details(error_reason=str(exc)),
         }
     except LandisWarehouseUnavailable:
         return 502, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
             "message": "LandIS warehouse is unavailable.",
+            "details": live_query_details(error_reason="upstream_connect_error"),
         }
     if summary is None:
         return error(

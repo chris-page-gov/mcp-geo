@@ -38,9 +38,361 @@
         "resource://mcp-geo/landis-archive-triage",
         "resource://mcp-geo/landis-portal-inventory"
       ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.point",
+          "landis_natmap.area_summary"
+        ],
+        "requiresWarehouse": true
+      },
       "sourceUrl": "https://portal.landis.org.uk/",
       "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
       "lastReviewed": "2026-04-05"
+    },
+    {
+      "id": "natmap-available-water",
+      "title": "LandIS NATMAP Available Water",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "water", "available-water", "screening"],
+      "abstract": "NATMAP thematic polygon surface for crop-adjusted available water capacity summaries.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP available water product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-available-water"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-carbon",
+      "title": "LandIS NATMAP Carbon",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "carbon", "soil-carbon", "screening"],
+      "abstract": "NATMAP thematic polygon surface for summarized soil-carbon classes.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP carbon product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-carbon"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-regions",
+      "title": "LandIS NATMAP Regions",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "regional polygons",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "regions", "classification"],
+      "abstract": "NATMAP thematic polygon surface for high-level regional classes.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP regions product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-regions"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-soilscapes",
+      "title": "LandIS NATMAP Soilscapes",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "soilscapes", "classification"],
+      "abstract": "NATMAP thematic polygon surface for Soilscapes-linked classes inside the NATMAP family.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP Soilscapes product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-soilscapes"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-subsoil-texture",
+      "title": "LandIS NATMAP Subsoil Texture",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "texture", "subsoil"],
+      "abstract": "NATMAP thematic polygon surface for subsoil texture summaries.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP subsoil texture product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-subsoil-texture"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-substrate-texture",
+      "title": "LandIS NATMAP Substrate Texture",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "texture", "substrate"],
+      "abstract": "NATMAP thematic polygon surface for substrate texture summaries.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP substrate texture product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-substrate-texture"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-topsoil-texture",
+      "title": "LandIS NATMAP Topsoil Texture",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "mapped soil units",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "texture", "topsoil"],
+      "abstract": "NATMAP thematic polygon surface for topsoil texture summaries.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP topsoil texture product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-topsoil-texture"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
+    },
+    {
+      "id": "natmap-wrb2006",
+      "title": "LandIS NATMAP WRB 2006",
+      "family": "natmap-thematic",
+      "coverage": "England and Wales",
+      "spatialType": "polygon",
+      "resolution": "classification polygons",
+      "scale": "national soil map interpretation",
+      "accessTier": "local archive plus warehouse",
+      "resourceUri": "resource://mcp-geo/landis-archive-triage",
+      "datasetVersion": "2026-03-31-portal",
+      "updatedAt": "2026-04-06",
+      "tags": ["natmap", "thematic", "wrb", "classification"],
+      "abstract": "NATMAP thematic polygon surface for WRB 2006 class summaries.",
+      "lineage": "Derived from the authenticated local LandIS portal archive and exposed through the NATMAP thematic area-summary tool.",
+      "limitations": [
+        "Generalized polygon summaries do not replace local site investigation.",
+        "Outputs depend on the warehouse-backed normalized NATMAP thematic polygons."
+      ],
+      "citations": [
+        {
+          "title": "LandIS portal NATMAP WRB 2006 product",
+          "url": "https://portal.landis.org.uk/"
+        }
+      ],
+      "availableResources": [
+        "resource://mcp-geo/landis-archive-triage",
+        "resource://mcp-geo/landis-portal-inventory"
+      ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_natmap.thematic_area_summary"
+        ],
+        "defaultParameters": {
+          "productId": "natmap-wrb2006"
+        },
+        "requiresWarehouse": true
+      },
+      "sourceUrl": "https://portal.landis.org.uk/",
+      "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
+      "lastReviewed": "2026-04-06"
     },
     {
       "id": "nsi-evidence",
@@ -71,6 +423,15 @@
         "resource://mcp-geo/landis-archive-triage",
         "resource://mcp-geo/landis-full-release-manifest"
       ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_nsi.nearest_sites",
+          "landis_nsi.within_area",
+          "landis_nsi.profile_summary"
+        ],
+        "requiresWarehouse": true
+      },
       "sourceUrl": "https://portal.landis.org.uk/",
       "license": "Portal-hosted LandIS access and licence terms apply; validate redistribution assumptions before wider publication.",
       "lastReviewed": "2026-04-05"
@@ -104,6 +465,14 @@
         "resource://mcp-geo/landis-docs-soil-classification",
         "resource://mcp-geo/landis-licence-current"
       ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_soilscapes.point",
+          "landis_soilscapes.area_summary"
+        ],
+        "requiresWarehouse": true
+      },
       "sourceUrl": "https://www.landis.org.uk/",
       "license": "Open-access portal terms still require operator validation for redistribution specifics.",
       "lastReviewed": "2026-04-04"
@@ -137,6 +506,13 @@
         "resource://mcp-geo/landis-licence-current",
         "resource://mcp-geo/landis-docs-soil-data-structures"
       ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_derive.pipe_risk"
+        ],
+        "requiresWarehouse": true
+      },
       "sourceUrl": "https://www.landis.org.uk/",
       "license": "Derived screening output built from LandIS-backed warehouse tables; review LandIS licence terms before redistribution.",
       "lastReviewed": "2026-04-04"
@@ -170,6 +546,14 @@
         "resource://mcp-geo/landis-full-release-manifest",
         "resource://mcp-geo/landis-portal-inventory"
       ],
+      "tooling": {
+        "callable": true,
+        "toolNames": [
+          "landis_archive.list_items",
+          "landis_archive.get_item"
+        ],
+        "requiresWarehouse": false
+      },
       "sourceUrl": "https://portal.landis.org.uk/",
       "license": "Archive metadata inherits the licence posture of the mirrored underlying items.",
       "lastReviewed": "2026-04-05"

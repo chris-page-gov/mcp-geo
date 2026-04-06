@@ -13,14 +13,17 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 
 from scripts import landis_ingest
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PORTAL_ARCHIVE = Path.home() / "Data" / "landis_portal_archive_2026-04-04"
 _EXTERNAL_PREFIX = "/Volumes/ExtSSD-Data/Data/"
 _LOCAL_PREFIX = f"{Path.home()}/Data/"
 
 _THEMATIC_DATASETS: dict[str, dict[str, str]] = {
-    "NATMAPsoilscapes": {"productId": "natmap-soilscapes", "codeKey": "SS_ID", "labelKey": "SOILSCAPE"},
+    "NATMAPsoilscapes": {
+        "productId": "natmap-soilscapes",
+        "codeKey": "SS_ID",
+        "labelKey": "SOILSCAPE",
+    },
     "NATMAPtopsoiltexture": {
         "productId": "natmap-topsoil-texture",
         "codeKey": "TEXTURE",
@@ -41,9 +44,21 @@ _THEMATIC_DATASETS: dict[str, dict[str, str]] = {
         "codeKey": "AWC",
         "labelKey": "AWC",
     },
-    "NATMAPcarbon": {"productId": "natmap-carbon", "codeKey": "TOPOCCLASS", "labelKey": "TOPOCCLASS"},
-    "NATMAPwrb2006": {"productId": "natmap-wrb2006", "codeKey": "WRBCODE", "labelKey": "WRB06"},
-    "NATMAPregions": {"productId": "natmap-regions", "codeKey": "REGION", "labelKey": "NAME"},
+    "NATMAPcarbon": {
+        "productId": "natmap-carbon",
+        "codeKey": "TOPOCCLASS",
+        "labelKey": "TOPOCCLASS",
+    },
+    "NATMAPwrb2006": {
+        "productId": "natmap-wrb2006",
+        "codeKey": "WRBCODE",
+        "labelKey": "WRB06",
+    },
+    "NATMAPregions": {
+        "productId": "natmap-regions",
+        "codeKey": "REGION",
+        "labelKey": "NAME",
+    },
 }
 
 _NSI_OBSERVATION_DATASETS = (
@@ -60,9 +75,26 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _localize_archive_path(raw_path: str) -> Path:
+def _localize_archive_path(raw_path: str, *, portal_root: Path) -> Path:
+    candidate = Path(raw_path).expanduser()
+    if candidate.exists():
+        return candidate
+
     localized = raw_path.replace(_EXTERNAL_PREFIX, _LOCAL_PREFIX, 1)
-    return Path(localized).expanduser()
+    candidate = Path(localized).expanduser()
+    if candidate.exists():
+        return candidate
+
+    raw_candidate = Path(raw_path)
+    if portal_root.name in raw_candidate.parts:
+        suffix = raw_candidate.parts[raw_candidate.parts.index(portal_root.name) + 1 :]
+        return portal_root.joinpath(*suffix)
+
+    if raw_path.startswith(_EXTERNAL_PREFIX):
+        return portal_root.parent / raw_path.removeprefix(_EXTERNAL_PREFIX)
+    if raw_path.startswith(_LOCAL_PREFIX):
+        return portal_root.parent / raw_path.removeprefix(_LOCAL_PREFIX)
+    return candidate
 
 
 def _dataset_dir(portal_root: Path, dataset_name: str) -> Path:
@@ -83,7 +115,7 @@ def _dataset_context(portal_root: Path, dataset_name: str) -> dict[str, Any]:
             continue
         for raw_path in layer.get("files", []):
             if isinstance(raw_path, str):
-                files.append(_localize_archive_path(raw_path))
+                files.append(_localize_archive_path(raw_path, portal_root=portal_root))
     return {
         "datasetName": dataset_name,
         "itemDir": item_dir,
@@ -107,7 +139,7 @@ def _iso_from_millis(value: Any) -> str | None:
         return None
     if millis <= 0:
         return None
-    return dt.datetime.fromtimestamp(millis / 1000.0, tz=dt.timezone.utc).isoformat()
+    return dt.datetime.fromtimestamp(millis / 1000.0, tz=dt.UTC).isoformat()
 
 
 def _iter_features(files: list[Path]) -> list[dict[str, Any]]:
@@ -258,7 +290,8 @@ def _normalize_nsi_observation_feature(
     summary = {
         key: value
         for key, value in properties.items()
-        if key not in {"OBJECTID", "NSI_ID", "EAST_NSI", "NORTH_NSI", "Shape__Area", "Shape__Length"}
+        if key
+        not in {"OBJECTID", "NSI_ID", "EAST_NSI", "NORTH_NSI", "Shape__Area", "Shape__Length"}
     }
     return {
         "dataset_id": dataset_id,
@@ -306,7 +339,9 @@ def _replace_json_rows(
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Load LandIS phase-2 NATMAP and NSI datasets from the local archive.")
+    parser = argparse.ArgumentParser(
+        description="Load LandIS phase-2 NATMAP and NSI datasets from the local archive."
+    )
     parser.add_argument("--dsn", required=True, help="PostgreSQL/PostGIS DSN")
     parser.add_argument("--schema", default="landis", help="Target schema name")
     parser.add_argument(

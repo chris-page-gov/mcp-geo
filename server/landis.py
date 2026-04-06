@@ -55,14 +55,26 @@ PIPE_RISK_CHECKLIST = [
 
 NATMAP_CAVEATS = [
     "NATMAP outputs are generalized polygon interpretations, not parcel-scale ground truth.",
-    "Use site investigation before relying on NATMAP outputs for engineering, planning, or regulatory decisions.",
-    "Recent disturbance, made ground, and drainage change may not be reflected in the map unit surface.",
+    (
+        "Use site investigation before relying on NATMAP outputs for engineering, "
+        "planning, or regulatory decisions."
+    ),
+    (
+        "Recent disturbance, made ground, and drainage change may not be reflected "
+        "in the map unit surface."
+    ),
 ]
 
 NSI_CAVEATS = [
     "NSI outputs are sampled observations, not wall-to-wall area coverage.",
-    "Nearby NSI sites indicate evidence points and should not be treated as complete local condition mapping.",
-    "Use field verification before extrapolating NSI evidence to a development parcel or utility corridor.",
+    (
+        "Nearby NSI sites indicate evidence points and should not be treated as "
+        "complete local condition mapping."
+    ),
+    (
+        "Use field verification before extrapolating NSI evidence to a "
+        "development parcel or utility corridor."
+    ),
 ]
 
 _LANDIS_LOCAL_DATA_CANDIDATES = (
@@ -72,7 +84,11 @@ _LANDIS_LOCAL_DATA_CANDIDATES = (
 )
 
 _THEMATIC_PRODUCT_CONFIG: dict[str, dict[str, str]] = {
-    "natmap-soilscapes": {"title": "NATMAP Soilscapes", "labelKey": "SOILSCAPE", "codeKey": "SS_ID"},
+    "natmap-soilscapes": {
+        "title": "NATMAP Soilscapes",
+        "labelKey": "SOILSCAPE",
+        "codeKey": "SS_ID",
+    },
     "natmap-topsoil-texture": {
         "title": "NATMAP Topsoil Texture",
         "labelKey": "TEXTURE",
@@ -101,6 +117,8 @@ _THEMATIC_PRODUCT_CONFIG: dict[str, dict[str, str]] = {
     "natmap-wrb2006": {"title": "NATMAP WRB 2006", "labelKey": "WRB06", "codeKey": "WRBCODE"},
     "natmap-regions": {"title": "NATMAP Regions", "labelKey": "NAME", "codeKey": "REGION"},
 }
+
+SUPPORTED_NATMAP_THEMATIC_PRODUCT_IDS: tuple[str, ...] = tuple(sorted(_THEMATIC_PRODUCT_CONFIG))
 
 _OBSERVATION_DATASET_TITLES: dict[str, str] = {
     "NSIfeatures": "National Soil Inventory Features",
@@ -280,6 +298,13 @@ def get_landis_product(product_id: str) -> dict[str, Any] | None:
     return None
 
 
+def supported_natmap_thematic_products() -> list[dict[str, str]]:
+    return [
+        {"id": product_id, **_THEMATIC_PRODUCT_CONFIG[product_id]}
+        for product_id in SUPPORTED_NATMAP_THEMATIC_PRODUCT_IDS
+    ]
+
+
 @lru_cache(maxsize=1)
 def load_landis_archive_triage() -> dict[str, Any]:
     fallback: dict[str, Any] = {
@@ -326,18 +351,121 @@ def load_landis_full_release_manifest() -> dict[str, Any]:
     return payload
 
 
+def _archive_id_fragment(value: str) -> str:
+    cleaned = [
+        ch.lower() if ch.isalnum() else "-"
+        for ch in value.strip()
+    ]
+    return "".join(cleaned).strip("-") or "item"
+
+
+def _supplementary_family(item: dict[str, Any]) -> str:
+    explicit = str(item.get("family") or "").strip().lower()
+    if explicit:
+        return explicit
+    haystack = " ".join(
+        str(item.get(key) or "")
+        for key in ("name", "title", "pageUrl", "url")
+    ).lower()
+    if "host" in haystack or "wetness" in haystack or "available water" in haystack:
+        return "natmap"
+    if (
+        "horizon" in haystack
+        or "soilseries" in haystack
+        or "series " in haystack
+        or "leacs" in haystack
+    ):
+        return "soilseries"
+    if "peat" in haystack:
+        return "peat"
+    return "archive"
+
+
+def _build_supplementary_public_item(item: dict[str, Any]) -> dict[str, Any]:
+    title = str(item.get("name") or item.get("title") or "Supplementary public item")
+    kind = str(item.get("kind") or "supplementary-public")
+    family = _supplementary_family(item)
+    tags = [family, "supplementary-public", kind]
+    return {
+        "archiveId": f"public-{_archive_id_fragment(title)}",
+        "title": title,
+        "itemType": kind,
+        "runtimeFamily": family,
+        "surfacingClass": "supplementary_public",
+        "recordCount": None,
+        "geometryType": None,
+        "serviceUrl": item.get("finalUrl") or item.get("url"),
+        "tags": sorted({tag for tag in tags if tag}),
+        "sourceKind": "supplementary_public",
+        "url": item.get("url"),
+        "finalUrl": item.get("finalUrl"),
+        "status": item.get("status"),
+        "contentType": item.get("contentType"),
+        "bytes": item.get("bytes"),
+        "pagePath": item.get("pagePath"),
+    }
+
+
+def _build_supplementary_package_item(item: dict[str, Any]) -> dict[str, Any]:
+    package_name = str(item.get("name") or "supplementary-package")
+    title = str(item.get("title") or package_name)
+    family = _supplementary_family(item)
+    tags = [family, "supplementary-datagov", "data.gov.uk"]
+    return {
+        "archiveId": f"datagov-{_archive_id_fragment(package_name)}",
+        "title": title,
+        "itemType": "data.gov.uk package",
+        "runtimeFamily": family,
+        "surfacingClass": "supplementary_datagov",
+        "recordCount": None,
+        "geometryType": None,
+        "serviceUrl": item.get("finalPageUrl") or item.get("pageUrl"),
+        "tags": sorted({tag for tag in tags if tag}),
+        "sourceKind": "supplementary_datagov",
+        "name": package_name,
+        "pageUrl": item.get("pageUrl"),
+        "finalPageUrl": item.get("finalPageUrl"),
+        "status": item.get("status"),
+        "licenseTitle": item.get("licenseTitle"),
+        "pagePath": item.get("pagePath"),
+        "resources": item.get("resources", []),
+    }
+
+
 def list_landis_archive_items() -> list[dict[str, Any]]:
     triage = load_landis_archive_triage()
-    raw = triage.get("portalItems")
-    if not isinstance(raw, list):
-        return []
-    return [item for item in raw if isinstance(item, dict)]
+    items: list[dict[str, Any]] = []
+
+    portal_items = triage.get("portalItems")
+    if isinstance(portal_items, list):
+        items.extend(item for item in portal_items if isinstance(item, dict))
+
+    supplementary_public = triage.get("supplementaryPublicItems")
+    if isinstance(supplementary_public, list):
+        items.extend(
+            _build_supplementary_public_item(item)
+            for item in supplementary_public
+            if isinstance(item, dict)
+        )
+
+    supplementary_packages = triage.get("supplementaryDataGovPackages")
+    if isinstance(supplementary_packages, list):
+        items.extend(
+            _build_supplementary_package_item(item)
+            for item in supplementary_packages
+            if isinstance(item, dict)
+        )
+    return items
 
 
 def get_landis_archive_item(archive_id: str) -> dict[str, Any] | None:
     target = _normalize_text(archive_id)
     for item in list_landis_archive_items():
-        candidates = [str(item.get("archiveId") or ""), str(item.get("title") or "")]
+        candidates = [
+            str(item.get("archiveId") or ""),
+            str(item.get("title") or ""),
+            str(item.get("name") or ""),
+        ]
         aliases = item.get("aliases")
         if isinstance(aliases, list):
             candidates.extend(str(alias) for alias in aliases if isinstance(alias, str))
@@ -357,12 +485,58 @@ def archive_item_detail(item: dict[str, Any]) -> dict[str, Any]:
         "geometryType": item.get("geometryType"),
         "serviceUrl": item.get("serviceUrl"),
         "tags": item.get("tags", []),
+        "sourceKind": item.get("sourceKind", "portal_archive"),
         "localPaths": {},
     }
-    for key in ("itemPath", "inventoryPath", "downloadSummaryPath", "metadataPath"):
+    for key in (
+        "itemPath",
+        "inventoryPath",
+        "downloadSummaryPath",
+        "metadataPath",
+        "pagePath",
+    ):
         resolved = resolve_landis_archive_file(item.get(key))
         if resolved is not None:
             detail["localPaths"][key] = str(resolved)
+    for key in (
+        "url",
+        "finalUrl",
+        "pageUrl",
+        "finalPageUrl",
+        "status",
+        "contentType",
+        "bytes",
+        "licenseTitle",
+        "name",
+    ):
+        if item.get(key) is not None:
+            detail[key] = item.get(key)
+    resources = item.get("resources")
+    if isinstance(resources, list):
+        detail["resources"] = []
+        for resource in resources:
+            if not isinstance(resource, dict):
+                continue
+            resource_detail = {
+                key: resource.get(key)
+                for key in (
+                    "name",
+                    "format",
+                    "description",
+                    "status",
+                    "url",
+                    "requestedUrl",
+                    "finalUrl",
+                    "bytes",
+                    "sha256",
+                    "contentType",
+                )
+                if resource.get(key) is not None
+            }
+            resolved = resolve_landis_archive_file(resource.get("path"))
+            if resolved is not None:
+                resource_detail["localPath"] = str(resolved)
+            detail["resources"].append(resource_detail)
     return detail
 
 
@@ -379,6 +553,38 @@ def landis_registry_meta() -> dict[str, Any]:
         "localDataRoot": str(landis_local_data_root()) if landis_local_data_root() else None,
         "sources": payload.get("sources", []),
     }
+
+
+def landis_runtime_status(*, error_reason: str | None = None) -> dict[str, Any]:
+    warehouse = get_landis_warehouse()
+    disabled_reason = None if warehouse.enabled() else warehouse.disabled_reason()
+    status = "ready" if disabled_reason is None else "disabled"
+    if error_reason is not None:
+        status = "error"
+    return {
+        "status": status,
+        "reason": error_reason or disabled_reason,
+        "landisEnabled": bool(getattr(settings, "LANDIS_ENABLED", True)),
+        "liveEnabled": bool(getattr(settings, "LANDIS_LIVE_ENABLED", True)),
+        "warehouseConfigured": bool(getattr(warehouse, "_dsn", "")),
+        "localDataRoot": str(landis_local_data_root()) if landis_local_data_root() else None,
+    }
+
+
+def landis_tool_meta(tool_name: str) -> dict[str, Any] | None:
+    if not tool_name.startswith("landis_"):
+        return None
+    offline_safe = tool_name.startswith(
+        ("landis_catalog.", "landis_metadata.", "landis_archive.")
+    )
+    meta: dict[str, Any] = {
+        "offlineSafe": offline_safe,
+        "localArchiveAware": True,
+        "warehouseRequired": not offline_safe,
+    }
+    if tool_name == "landis_natmap.thematic_area_summary":
+        meta["supportedProducts"] = supported_natmap_thematic_products()
+    return meta
 
 
 def parse_bbox(value: Any) -> list[float] | None:
@@ -1341,7 +1547,11 @@ class LandisWarehouse:
         return {
             "sites": results,
             "totalCount": total_count or 0,
-            "nextOffset": (offset + limit) if total_count and (offset + limit) < total_count else None,
+            "nextOffset": (
+                offset + limit
+                if total_count and (offset + limit) < total_count
+                else None
+            ),
             "provenance": build_provenance(
                 product_id="nsi-evidence",
                 dataset_version=dataset_version,
@@ -1425,7 +1635,12 @@ class LandisWarehouse:
             dataset_id = str(row.get("dataset_id") or "unknown")
             bucket = grouped.setdefault(
                 dataset_id,
-                {"datasetId": dataset_id, "title": _OBSERVATION_DATASET_TITLES.get(dataset_id, dataset_id), "count": 0, "samples": []},
+                {
+                    "datasetId": dataset_id,
+                    "title": _OBSERVATION_DATASET_TITLES.get(dataset_id, dataset_id),
+                    "count": 0,
+                    "samples": [],
+                },
             )
             bucket["count"] += 1
             if len(bucket["samples"]) < 5:
@@ -1434,7 +1649,11 @@ class LandisWarehouse:
                         "label": row.get("observation_label"),
                         "topDepthCm": _float(row.get("top_depth_cm")),
                         "lowerDepthCm": _float(row.get("lower_depth_cm")),
-                        "summary": row.get("summary") if isinstance(row.get("summary"), dict) else {},
+                        "summary": (
+                            row.get("summary")
+                            if isinstance(row.get("summary"), dict)
+                            else {}
+                        ),
                     }
                 )
             dataset_version = dataset_version or str(row.get("dataset_version") or "") or None

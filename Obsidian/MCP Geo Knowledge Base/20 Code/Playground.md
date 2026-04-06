@@ -1,0 +1,32 @@
+---
+title: "Playground"
+kb_kind: "code_module"
+source_paths:
+  - "server/mcp/playground.py"
+source_commit: "bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851"
+source_commit_dirty: true
+source_urls:
+  - "https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/mcp/playground.py"
+source_hashes:
+  server/mcp/playground.py: "4738bbdd0dc1a58ce7cb79cb6d2accbc4ce2bd1c0324525c85d6e19d627bddd9"
+generated_at: "2026-04-06T09:00:35Z"
+evidence_scope: "canon"
+first_seen_date: "2025-08-20"
+last_validated_at: "2026-04-06T09:00:35Z"
+---
+# Playground
+
+## Evidence Scope
+
+- Categories: `code_runtime`
+- Source file count: 1
+
+## Source Inventory
+
+| Path | Summary | First Seen | Last Commit | Related Tests |
+| --- | --- | --- | --- | --- |
+| `server/mcp/playground.py` | import json | 2025-08-20 | 2026-04-06 | `tests/test_check_lmr_host4.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_http_endpoint_matrix.py`, `tests/test_map_trials_host_simulation_profiles.py` |
+
+## Pinned Sources
+
+- [`server/mcp/playground.py`](https://github.com/chris-page-gov/mcp-geo/blob/bc8b6be29df0d1dcecd755e6f2e6e0cedcb5f851/server/mcp/playground.py)

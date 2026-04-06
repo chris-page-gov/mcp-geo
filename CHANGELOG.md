@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a repo-wide generated Obsidian knowledge base under
+  `Obsidian/MCP Geo Knowledge Base/`, backed by
+  `scripts/obsidian_kb_common.py`, `scripts/build_obsidian_kb.py`,
+  `scripts/validate_obsidian_kb.py`, the canonical manifest
+  `data/knowledge_base/obsidian_kb_manifest.json`, and the maintenance skill
+  `skills/mcp-geo-obsidian-kb/SKILL.md`. The canonical build is evidence-first,
+  excludes `Obsidian/**` from source scanning to avoid recursion, records
+  source hashes and commit-pinned GitHub URLs in note frontmatter, and keeps
+  local trace/session notes in an ignored `98 Local Overlay/` subtree.
 - Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
@@ -103,6 +112,21 @@ All notable changes to this project will be documented in this file.
   results, preventing clients such as Claude from validating error payloads
   against success-only output schemas. Added focused postcode-tool regressions
   covering the `NO_API_KEY` path across both transports.
+- LandIS discovery and archive coverage now better match the resilience-use-case
+  data already mirrored locally: the callable registry exposes the exact
+  NATMAP thematic `productId` values accepted by
+  `landis_natmap.thematic_area_summary`, LandIS live-query errors now return
+  structured fallback guidance, and `landis_archive.*` includes the
+  supplementary full-release/public-menu plus matched `data.gov.uk` package
+  slice so `HOST`, `wetness`, `Series Hydrology`, `Series Leacs`, and similar
+  supplementary references are discoverable through MCP.
+- Fresh Docker PostGIS sidecars no longer expose empty LandIS live-query
+  surfaces by default. `scripts/mcp-docker-local` now detects missing or empty
+  LandIS tables and auto-bootstraps the mounted local archive plus validation
+  layers before starting the stdio server, `scripts/landis_phase2_ingest.py`
+  now remaps mounted `/landis-data/...` archive paths correctly inside the
+  container, and `scripts/landis_ingest.py` now executes schema SQL
+  statement-by-statement so repeated bootstrap passes remain safe.
 - Playground transcript endpoints now normalize non-object JSON payloads back to
   the standard `INVALID_INPUT` response instead of leaking a `TypeError` from
   Pydantic construction, and the config fallback shim now has explicit

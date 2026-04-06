@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
-from scripts import landis_ingest
-from scripts import landis_archive_triage, landis_phase2_ingest
+from scripts import landis_archive_triage, landis_ingest, landis_phase2_ingest
 
 
 def test_normalize_soilscapes_feature_maps_expected_fields() -> None:
@@ -146,7 +146,10 @@ def test_landis_archive_triage_build_manifest(tmp_path) -> None:
         json.dumps({"id": "abc", "title": "NationalSoilMap", "type": "Feature Service"}) + "\n",
         encoding="utf-8",
     )
-    (item_dir / "item_detail.json").write_text(json.dumps({"tags": ["natmap"]}) + "\n", encoding="utf-8")
+    (item_dir / "item_detail.json").write_text(
+        json.dumps({"tags": ["natmap"]}) + "\n",
+        encoding="utf-8",
+    )
     (feature_dir / "download_summary.json").write_text(
         json.dumps(
             {
@@ -161,7 +164,8 @@ def test_landis_archive_triage_build_manifest(tmp_path) -> None:
     release_root = tmp_path / "release"
     release_root.mkdir()
     (release_root / "full_release_manifest.json").write_text(
-        json.dumps({"publicItems": [{"slug": "host"}], "dataGovPackages": [{"name": "pkg"}]}) + "\n",
+        json.dumps({"publicItems": [{"slug": "host"}], "dataGovPackages": [{"name": "pkg"}]})
+        + "\n",
         encoding="utf-8",
     )
 
@@ -169,3 +173,57 @@ def test_landis_archive_triage_build_manifest(tmp_path) -> None:
     assert manifest["summary"]["portalItems"] == 1
     assert manifest["portalItems"][0]["runtimeFamily"] == "natmap"
     assert manifest["portalItems"][0]["recordCount"] == 42
+
+
+def test_execute_schema_splits_sql_into_individual_statements(tmp_path) -> None:
+    schema_sql = tmp_path / "landis_schema.sql"
+    schema_sql.write_text(
+        "\n".join(
+            [
+                "CREATE SCHEMA IF NOT EXISTS landis;",
+                "CREATE TABLE IF NOT EXISTS landis.sample (id integer);",
+                "CREATE INDEX IF NOT EXISTS sample_idx ON landis.sample (id);",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    statements: list[str] = []
+
+    class _Cursor:
+        def __enter__(self) -> _Cursor:
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            return None
+
+        def execute(self, statement: str) -> None:
+            statements.append(statement)
+
+    class _Conn:
+        def cursor(self) -> _Cursor:
+            return _Cursor()
+
+    landis_ingest._execute_schema(_Conn(), schema_sql, "landis_test")
+
+    assert statements == [
+        "CREATE SCHEMA IF NOT EXISTS landis_test;",
+        "CREATE TABLE IF NOT EXISTS landis_test.sample (id integer);",
+        "CREATE INDEX IF NOT EXISTS sample_idx ON landis_test.sample (id);",
+    ]
+
+
+def test_localize_archive_path_maps_container_mount_from_host_archive() -> None:
+    portal_root = Path("/landis-data/landis_portal_archive_2026-04-04")
+    raw_path = (
+        "/Users/crpage/Data/landis_portal_archive_2026-04-04/data_source/"
+        "abc_NationalSoilMap/feature_service/layers/00_National_Soil_Map/records_batch_0001.geojson"
+    )
+
+    localized = landis_phase2_ingest._localize_archive_path(raw_path, portal_root=portal_root)
+
+    assert localized == (
+        portal_root
+        / "data_source/abc_NationalSoilMap/feature_service/layers/00_National_Soil_Map/"
+        "records_batch_0001.geojson"
+    )
