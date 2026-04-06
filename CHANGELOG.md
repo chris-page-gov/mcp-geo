@@ -95,6 +95,10 @@ All notable changes to this project will be documented in this file.
   results, preventing clients such as Claude from validating error payloads
   against success-only output schemas. Added focused postcode-tool regressions
   covering the `NO_API_KEY` path across both transports.
+- Playground transcript endpoints now normalize non-object JSON payloads back to
+  the standard `INVALID_INPUT` response instead of leaking a `TypeError` from
+  Pydantic construction, and the config fallback shim now has explicit
+  regression coverage for the overrides path the daily bug scan flagged.
 
 ### Changed
 - Tool/resource discovery now includes the LandIS namespace and resources, and
