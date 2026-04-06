@@ -138,6 +138,10 @@ assumptions change.
   (`mcp-geo-postgis-devcontainer`, `mcp-geo-postgis-claude`,
   `mcp-geo-postgis-codex`, and the generic `mcp-geo-postgis-sidecar`) so local
   archive workflows no longer share one fallback volume by default. The wrapper
+  workstream now also has a checked-in companion Obsidian vault at
+  `Obsidian/LandIS Knowledge Base/`, packaging the strategy PDF, dataset notes,
+  reference pages, use-case summaries, and MCP architecture roadmap as a local
+  browsable knowledge base that travels with the repo. The wrapper
   also now inspects recent Postgres logs and flags checkpoint-corrupted sidecar
   volumes explicitly when startup fails. An older legacy `mcp-geo-postgis`
   volume is still known-corrupted from earlier shared-default runs, but it is

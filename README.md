@@ -486,6 +486,12 @@ Additional LandIS resources:
 - `resource://mcp-geo/landis-archive-triage`
 - `resource://mcp-geo/landis-full-release-manifest`
 
+Reference documentation for the LandIS strategy and dataset surface is also
+now checked in as an Obsidian vault under
+`Obsidian/LandIS Knowledge Base/`, including the strategy PDF, dataset notes,
+use-case summaries, reference pages, and the MCP architecture roadmap in a
+form that can be browsed directly in Obsidian or as Markdown in the repo.
+
 Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
 and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with
 `python scripts/landis_ingest.py --dsn ... --soilscapes <file> --pipe-risk <file>`.
