@@ -3,16 +3,16 @@ title: "Script Family - rate limit"
 kb_kind: "code_family"
 source_paths:
   - "scripts/rate_limit_assessor.py"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/rate_limit_assessor.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/rate_limit_assessor.py"
 source_hashes:
   scripts/rate_limit_assessor.py: "sha256:468d4c80-6a502c10-47dbe8ee-25ad3686-57f07c2d-553b42e7-6062f053-7fda191c"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-11"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # Script Family - rate limit
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`scripts/rate_limit_assessor.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/rate_limit_assessor.py)
+- [`scripts/rate_limit_assessor.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/rate_limit_assessor.py)

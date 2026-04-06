@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "scripts/vscode_mcp_stdio.py"
   - "scripts/vscode_trace_snapshot.py"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vscode_mcp_stdio.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vscode_trace_snapshot.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/vscode_mcp_stdio.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/vscode_trace_snapshot.py"
 source_hashes:
   scripts/vscode_mcp_stdio.py: "sha256:cdfa829f-550c2bf6-544485e3-5d051a75-a7b7d554-f095f4a6-b7bfe16d-cf12d350"
   scripts/vscode_trace_snapshot.py: "sha256:2542c37b-1260b418-ac80748d-668d2473-2d2c7c0b-50ca56d9-a8006044-d9a83791"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-09"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # Script Family - vscode
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`scripts/vscode_mcp_stdio.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vscode_mcp_stdio.py)
-- [`scripts/vscode_trace_snapshot.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/vscode_trace_snapshot.py)
+- [`scripts/vscode_mcp_stdio.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/vscode_mcp_stdio.py)
+- [`scripts/vscode_trace_snapshot.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/vscode_trace_snapshot.py)

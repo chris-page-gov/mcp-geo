@@ -16,23 +16,23 @@ source_paths:
   - "docs/vendor/openai/mcp_platform_docs.md"
   - "docs/vendor/openai/mcp_transport_streamable_http.md"
   - "docs/vendor/openai/repos/openai-apps-sdk-examples"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/agentskills"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/ext-apps"
-  - "https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/ext-auth"
-  - "https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/inspector"
-  - "https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/modelcontextprotocol"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/apps_sdk_mcp_apps_ui.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/chatgpt_connectors_developer_mode.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/mcp_inspector.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/mcp_platform_docs.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/mcp_transport_streamable_http.md"
-  - "https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/repos/openai-apps-sdk-examples"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/agentskills"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/ext-apps"
+  - "https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/ext-auth"
+  - "https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/inspector"
+  - "https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/modelcontextprotocol"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/apps_sdk_mcp_apps_ui.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/chatgpt_connectors_developer_mode.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/mcp_inspector.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/mcp_platform_docs.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/mcp_transport_streamable_http.md"
+  - "https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/repos/openai-apps-sdk-examples"
 source_hashes:
   docs/vendor/README.md: "sha256:d40558ff-8bcd8a93-b9a8f574-083712eb-78b50253-48d579d4-398631ba-9909fb95"
   docs/vendor/agentskills: "sha256:fcd0fb97-1956f839-6087945a-e619ea17-262863fb-cd0d1d3e-7d59dd17-37065353"
@@ -48,10 +48,10 @@ source_hashes:
   docs/vendor/openai/mcp_platform_docs.md: "sha256:33f91c6c-e5db761b-94449c3b-70e22718-62eaa06c-03d19cfe-b196dd8a-a9289b5d"
   docs/vendor/openai/mcp_transport_streamable_http.md: "sha256:19a353c6-7e0d01d3-ea72c78b-2b54aa49-f6e3e898-2da16fca-1834137a-aac4ede1"
   docs/vendor/openai/repos/openai-apps-sdk-examples: "sha256:4240596e-b5822823-67d8bf9e-76b0a8a6-c133aa11-ea3ff5bd-bc20ba77-f0a0fc6c"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2026-01-21"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # External Mirrors and Submodules
 
@@ -92,17 +92,17 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`docs/vendor/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/README.md)
-- [`docs/vendor/agentskills`](https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/agentskills)
-- [`docs/vendor/mcp/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/README.md)
-- [`docs/vendor/mcp/repos/ext-apps`](https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/ext-apps)
-- [`docs/vendor/mcp/repos/ext-auth`](https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/ext-auth)
-- [`docs/vendor/mcp/repos/inspector`](https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/inspector)
-- [`docs/vendor/mcp/repos/modelcontextprotocol`](https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/mcp/repos/modelcontextprotocol)
-- [`docs/vendor/openai/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/README.md)
-- [`docs/vendor/openai/apps_sdk_mcp_apps_ui.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/apps_sdk_mcp_apps_ui.md)
-- [`docs/vendor/openai/chatgpt_connectors_developer_mode.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/chatgpt_connectors_developer_mode.md)
-- [`docs/vendor/openai/mcp_inspector.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/mcp_inspector.md)
-- [`docs/vendor/openai/mcp_platform_docs.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/mcp_platform_docs.md)
-- [`docs/vendor/openai/mcp_transport_streamable_http.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/mcp_transport_streamable_http.md)
-- [`docs/vendor/openai/repos/openai-apps-sdk-examples`](https://github.com/chris-page-gov/mcp-geo/tree/b279fe5fde6669d57955890996cd6fa6ddca76fb/docs/vendor/openai/repos/openai-apps-sdk-examples)
+- [`docs/vendor/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/README.md)
+- [`docs/vendor/agentskills`](https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/agentskills)
+- [`docs/vendor/mcp/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/README.md)
+- [`docs/vendor/mcp/repos/ext-apps`](https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/ext-apps)
+- [`docs/vendor/mcp/repos/ext-auth`](https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/ext-auth)
+- [`docs/vendor/mcp/repos/inspector`](https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/inspector)
+- [`docs/vendor/mcp/repos/modelcontextprotocol`](https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/mcp/repos/modelcontextprotocol)
+- [`docs/vendor/openai/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/README.md)
+- [`docs/vendor/openai/apps_sdk_mcp_apps_ui.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/apps_sdk_mcp_apps_ui.md)
+- [`docs/vendor/openai/chatgpt_connectors_developer_mode.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/chatgpt_connectors_developer_mode.md)
+- [`docs/vendor/openai/mcp_inspector.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/mcp_inspector.md)
+- [`docs/vendor/openai/mcp_platform_docs.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/mcp_platform_docs.md)
+- [`docs/vendor/openai/mcp_transport_streamable_http.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/mcp_transport_streamable_http.md)
+- [`docs/vendor/openai/repos/openai-apps-sdk-examples`](https://github.com/chris-page-gov/mcp-geo/tree/004e7d4748422b44133399279803c8cb2b766a1c/docs/vendor/openai/repos/openai-apps-sdk-examples)

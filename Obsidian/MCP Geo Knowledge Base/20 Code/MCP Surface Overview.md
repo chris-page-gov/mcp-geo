@@ -12,19 +12,19 @@ source_paths:
   - "server/mcp/resource_catalog.py"
   - "server/mcp/resource_handoff.py"
   - "server/mcp/tool_search.py"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/client_capabilities.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/elicitation_forms.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/http_route_auth.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/http_transport.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/prompts.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/resource_access.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/resource_catalog.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/resource_handoff.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/tool_search.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/client_capabilities.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/elicitation_forms.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/http_route_auth.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/http_transport.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/prompts.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/resource_access.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/resource_catalog.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/resource_handoff.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/tool_search.py"
 source_hashes:
   server/mcp/__init__.py: "sha256:7aa7f241-ce31acfd-1f1aab2a-7d0c35ef-cdc8b75e-0d80ae7a-5ef51be8-3545d725"
   server/mcp/client_capabilities.py: "sha256:567e95af-24d447ac-d5925249-c82520db-574af3ca-4ce9066f-e4e803da-0f0b4281"
@@ -36,10 +36,10 @@ source_hashes:
   server/mcp/resource_catalog.py: "sha256:56df19c7-78d79eab-058c7749-9df6cc03-241dc933-1a651909-1d033c86-99d2e06d"
   server/mcp/resource_handoff.py: "sha256:2d7d9348-46c49e1e-d3cede8c-1bcc94f5-e9cee75e-65994333-938b5b2c-6998d26a"
   server/mcp/tool_search.py: "sha256:8bf72136-91487212-3db37937-7166288c-2fdc85d6-a9965175-da2671d7-5e22c815"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # MCP Surface Overview
 
@@ -65,13 +65,13 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`server/mcp/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/__init__.py)
-- [`server/mcp/client_capabilities.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/client_capabilities.py)
-- [`server/mcp/elicitation_forms.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/elicitation_forms.py)
-- [`server/mcp/http_route_auth.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/http_route_auth.py)
-- [`server/mcp/http_transport.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/http_transport.py)
-- [`server/mcp/prompts.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/prompts.py)
-- [`server/mcp/resource_access.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/resource_access.py)
-- [`server/mcp/resource_catalog.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/resource_catalog.py)
-- [`server/mcp/resource_handoff.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/resource_handoff.py)
-- [`server/mcp/tool_search.py`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/server/mcp/tool_search.py)
+- [`server/mcp/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/__init__.py)
+- [`server/mcp/client_capabilities.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/client_capabilities.py)
+- [`server/mcp/elicitation_forms.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/elicitation_forms.py)
+- [`server/mcp/http_route_auth.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/http_route_auth.py)
+- [`server/mcp/http_transport.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/http_transport.py)
+- [`server/mcp/prompts.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/prompts.py)
+- [`server/mcp/resource_access.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/resource_access.py)
+- [`server/mcp/resource_catalog.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/resource_catalog.py)
+- [`server/mcp/resource_handoff.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/resource_handoff.py)
+- [`server/mcp/tool_search.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/mcp/tool_search.py)

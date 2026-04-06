@@ -4,18 +4,18 @@ kb_kind: "artifact_catalog"
 source_paths:
   - "mcp.json"
   - "pytest.ini"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/mcp.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/pytest.ini"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/mcp.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/pytest.ini"
 source_hashes:
   mcp.json: "sha256:4d9e45e1-5b76916c-b61131c3-8ebeaffa-be7c3b5c-18326f26-0fa9b978-c7bb8ffb"
   pytest.ini: "sha256:b2b09012-939f45bb-b88dde0f-101c47e1-9f7eb882-8ded72e0-724b3bdf-9e3a73b2"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # Miscellaneous Tracked Surface
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`mcp.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/mcp.json)
-- [`pytest.ini`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/pytest.ini)
+- [`mcp.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/mcp.json)
+- [`pytest.ini`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/pytest.ini)

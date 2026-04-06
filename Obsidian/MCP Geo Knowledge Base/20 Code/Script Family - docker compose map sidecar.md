@@ -3,16 +3,16 @@ title: "Script Family - docker compose map sidecar"
 kb_kind: "code_family"
 source_paths:
   - "scripts/sidecar/docker-compose.map-sidecar.yml"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/sidecar/docker-compose.map-sidecar.yml"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/sidecar/docker-compose.map-sidecar.yml"
 source_hashes:
   scripts/sidecar/docker-compose.map-sidecar.yml: "sha256:e915d706-0ead486b-0d0ff888-0d0a2905-51d09d53-a29d128d-b2a7c65b-6a2a8a95"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-14"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # Script Family - docker compose map sidecar
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`scripts/sidecar/docker-compose.map-sidecar.yml`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/sidecar/docker-compose.map-sidecar.yml)
+- [`scripts/sidecar/docker-compose.map-sidecar.yml`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/sidecar/docker-compose.map-sidecar.yml)

@@ -3,16 +3,16 @@ title: "Script Family - mcp docker local"
 kb_kind: "code_family"
 source_paths:
   - "scripts/mcp-docker-local"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/mcp-docker-local"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/mcp-docker-local"
 source_hashes:
   scripts/mcp-docker-local: "sha256:cb1037e2-89abcc5e-38668393-88b6fc0e-28bf21e1-ea3aa30b-b9ffaf7c-2febe640"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-04"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # Script Family - mcp docker local
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Pinned Sources
 
-- [`scripts/mcp-docker-local`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/scripts/mcp-docker-local)
+- [`scripts/mcp-docker-local`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/mcp-docker-local)

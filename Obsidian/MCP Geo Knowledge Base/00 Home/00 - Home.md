@@ -1044,6 +1044,7 @@ source_paths:
   - "troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf"
   - "troubleshooting/Fourth Harold Wood, after updates.docx"
   - "troubleshooting/Fourth Harold Wood, after updates.md"
+  - "troubleshooting/Landis/check_real_sites.md"
   - "troubleshooting/Landis/failure_data_availability.md"
   - "troubleshooting/MCP-Geo view of Harold Wood Essex.docx"
   - "troubleshooting/MCP-Geo view of Harold Wood Essex.md"
@@ -1095,41 +1096,41 @@ source_paths:
   - "ui/vendor/maplibre-gl.css"
   - "ui/vendor/maplibre-gl.js"
   - "ui/vendor/shp.min.js"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/.github/workflows/ci.yml"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/AGENTS.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/GEMINI.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/Gemini-Code-Review.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/PROGRESS.MD"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.10.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.11.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.12.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.3.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.4.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.5.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.6.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.7.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.8.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.2.9.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.3.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.3.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.3.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.4.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.5.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.6.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/RELEASE_NOTES/0.7.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/.github/workflows/ci.yml"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/AGENTS.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/GEMINI.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/Gemini-Code-Review.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.10.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.11.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.12.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.3.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.4.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.5.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.6.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.7.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.8.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.9.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.4.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.5.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.6.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.7.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv"
 source_hashes:
   .github/workflows/ci.yml: "sha256:f6034ee7-a1bfa23f-85ef7d26-e49db85c-1e5cd1c5-388664c8-3bedee5c-02af4060"
   AGENTS.md: "sha256:6a1a5b80-1f795ef4-3d36948d-16d041ef-e437fea0-06cdefad-da59c0f0-3e17de30"
@@ -1163,10 +1164,10 @@ source_hashes:
   data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt: "sha256:049b6282-185b37ca-39f55776-1b8f8061-2b88b4c3-202b4d6c-578c5ac3-7d0a8d99"
   data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv: "sha256:c3c4ca8f-ccf98d1d-49aab504-5d2fdf3c-08034f8e-04ba0908-b9709913-d99148d1"
   data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv: "sha256:b3709946-8f802551-f845be6f-2bef3c99-26c3955a-496faf8a-cf321263-ae6849a5"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # MCP Geo Knowledge Base
 
@@ -1174,7 +1175,7 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 - Deterministic canonical vault generated from repo sources while excluding `Obsidian/**`.
 - Evidence-first notes record source files, hashes, dates, and commit-pinned GitHub links.
-- Generated from `b279fe5fde6669d57955890996cd6fa6ddca76fb` (dirty worktree).
+- Generated from `004e7d4748422b44133399279803c8cb2b766a1c` (dirty worktree).
 
 ## Navigation
 
@@ -1191,7 +1192,7 @@ last_validated_at: "2026-04-06T13:09:04Z"
 | Category | Count | Notes |
 | --- | ---: | --- |
 | `code_runtime` | 537 | [[Audit and Transcript Infrastructure]], [[Build Obsidian Kb]], [[Codex Long Horizon Summary]], [[Config]], [[Generate Mcp Geo Analytical Index]], [[MCP Surface Overview]], [[Main]], [[Playground and Browser Tests]], [[Playground]], [[Repo Extent Complexity Report]], [[Resources and Data Assets]], [[Resources]], [[Script Family - boundary]], [[Script Family - check]], [[Script Family - claude mcp local]], [[Script Family - claude]], [[Script Family - codex mcp local]], [[Script Family - devcontainer]], [[Script Family - docker compose map sidecar]], [[Script Family - docx]], [[Script Family - export]], [[Script Family - generate]], [[Script Family - host benchmark]], [[Script Family - landis]], [[Script Family - latest]], [[Script Family - live]], [[Script Family - map trials]], [[Script Family - mcp docker local]], [[Script Family - mcp]], [[Script Family - mypy local]], [[Script Family - obsidian]], [[Script Family - ons catalog]], [[Script Family - ons]], [[Script Family - os catalog]], [[Script Family - os mcp]], [[Script Family - os]], [[Script Family - pack cache]], [[Script Family - pytest local]], [[Script Family - rate limit]], [[Script Family - replicate]], [[Script Family - route graph]], [[Script Family - ruff local]], [[Script Family - run local tool]], [[Script Family - run playground demo]], [[Script Family - run]], [[Script Family - scripts package]], [[Script Family - seed]], [[Script Family - smoke]], [[Script Family - spec]], [[Script Family - stakeholder]], [[Script Family - start]], [[Script Family - trace]], [[Script Family - validate owasp mcp local]], [[Script Family - validate]], [[Script Family - vendor]], [[Script Family - vscode]], [[Server Runtime Overview]], [[Stdio Adapter]], [[Test and Validation Surface]], [[Tool Family - accessors]], [[Tool Family - admin lookup]], [[Tool Family - council tax]], [[Tool Family - landis]], [[Tool Family - nomis]], [[Tool Family - ons catalog]], [[Tool Family - ons codes]], [[Tool Family - ons common]], [[Tool Family - ons data]], [[Tool Family - ons geo]], [[Tool Family - ons search]], [[Tool Family - ons select]], [[Tool Family - os apps]], [[Tool Family - os common]], [[Tool Family - os delivery]], [[Tool Family - os downloads]], [[Tool Family - os features]], [[Tool Family - os landscape]], [[Tool Family - os linked ids]], [[Tool Family - os map]], [[Tool Family - os maps]], [[Tool Family - os mcp]], [[Tool Family - os names]], [[Tool Family - os net]], [[Tool Family - os offline]], [[Tool Family - os peat]], [[Tool Family - os places]], [[Tool Family - os poi]], [[Tool Family - os qgis]], [[Tool Family - os resources]], [[Tool Family - os route]], [[Tool Family - os tiles]], [[Tool Family - os vector tiles]], [[Tool Family - py]], [[Tool Family - registry]], [[Tool Family - tools package]], [[Tool Family - types]], [[Tool Family - typing utils]], [[Tools]], [[Trace Report]], [[Trace Session]], [[UI Surfaces]], [[Validate Obsidian Kb]] |
-| `docs_research` | 454 | [[Miscellaneous Tracked Surface]], [[Data Manifests]], [[Documentation Surface]], [[Peatland Case Study]], [[Report Assets]], [[Reports Catalog]], [[Research Pack - Deep Research Report]], [[Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP zip]], [[Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP]], [[Research Pack - landis data source]], [[Research Pack - map delivery research 2026 02]], [[Research Pack - ons dataset selection]], [[Research Pack - os dataset selection]], [[Troubleshooting and Case Notes]] |
+| `docs_research` | 455 | [[Miscellaneous Tracked Surface]], [[Data Manifests]], [[Documentation Surface]], [[Peatland Case Study]], [[Report Assets]], [[Reports Catalog]], [[Research Pack - Deep Research Report]], [[Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP zip]], [[Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP]], [[Research Pack - landis data source]], [[Research Pack - map delivery research 2026 02]], [[Research Pack - ons dataset selection]], [[Research Pack - os dataset selection]], [[Troubleshooting and Case Notes]] |
 | `external_context` | 14 | [[External Mirrors and Submodules]] |
 | `skills_maintenance` | 8 | [[Repository Skills]] |
 | `standards_ecosystem` | 51 | [[Public Sector AI Community Narrative]], [[Specification Package]] |

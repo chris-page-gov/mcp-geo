@@ -27,34 +27,34 @@ source_paths:
   - "resources/peat_layers_england.json"
   - "resources/prompts/evaluation_prompts.json"
   - "resources/protected_landscapes_england.json"
-source_commit: "b279fe5fde6669d57955890996cd6fa6ddca76fb"
+source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/address_classification_codes.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/admin_boundaries.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/boundaries_wards.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/boundary_pack_sources.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/boundary_packs_index.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/code_list_pack_sources.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/code_list_packs_index.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/custodian_codes.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis/licence_current.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis/soil_classification.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis/soil_data_structures.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis_products.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/layers_catalog.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/map_embedding_style_profiles.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/mcp-geo.jpg"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/nomis_workflows.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/offline_map_catalog.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_catalog.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_geo_cache_index.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_geo_sources.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_observations.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/os_catalog.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/peat_layers_england.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/prompts/evaluation_prompts.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/protected_landscapes_england.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/address_classification_codes.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/admin_boundaries.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/boundaries_wards.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/boundary_pack_sources.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/boundary_packs_index.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/code_list_pack_sources.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/code_list_packs_index.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/custodian_codes.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis/licence_current.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis/soil_classification.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis/soil_data_structures.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis_products.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/layers_catalog.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/map_embedding_style_profiles.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/mcp-geo.jpg"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/nomis_workflows.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/offline_map_catalog.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_catalog.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_geo_cache_index.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_geo_sources.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_observations.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/os_catalog.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/peat_layers_england.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/prompts/evaluation_prompts.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/protected_landscapes_england.json"
 source_hashes:
   resources/address_classification_codes.json: "sha256:adf00ff6-68ab096b-c1e2d507-43fe3956-1cb53dc2-ca19b2ef-a257b1a8-c6faa938"
   resources/admin_boundaries.json: "sha256:c21e26dc-8e485936-55eb7b30-49dc6706-f795c3de-25801c39-2f32eaaa-dfa8c9e2"
@@ -81,10 +81,10 @@ source_hashes:
   resources/peat_layers_england.json: "sha256:24509c7a-f881f78c-612ffefd-8d99cd3e-1d269e2b-e3795a5f-5c3fdcda-6961ba6d"
   resources/prompts/evaluation_prompts.json: "sha256:ddd95ef5-8909f885-067ebe6a-1b20f69a-839bbff3-77198c67-6c5aab99-1dd47784"
   resources/protected_landscapes_england.json: "sha256:e49312fc-9d4c8a6b-a7d61f98-c79e7546-0522357a-26afca9f-d0198dc6-aa517609"
-generated_at: "2026-04-06T13:09:04Z"
+generated_at: "2026-04-06T14:09:00Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-17"
-last_validated_at: "2026-04-06T13:09:04Z"
+last_validated_at: "2026-04-06T14:09:00Z"
 ---
 # Resources and Data Assets
 
@@ -131,32 +131,32 @@ last_validated_at: "2026-04-06T13:09:04Z"
 
 ## Binary Artifacts
 
-- `resources/mcp-geo.jpg` (228.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/mcp-geo.jpg)
+- `resources/mcp-geo.jpg` (228.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/mcp-geo.jpg)
 
 ## Pinned Sources
 
-- [`resources/address_classification_codes.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/address_classification_codes.json)
-- [`resources/admin_boundaries.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/admin_boundaries.json)
-- [`resources/boundaries_wards.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/boundaries_wards.json)
-- [`resources/boundary_pack_sources.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/boundary_pack_sources.json)
-- [`resources/boundary_packs_index.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/boundary_packs_index.json)
-- [`resources/code_list_pack_sources.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/code_list_pack_sources.json)
-- [`resources/code_list_packs_index.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/code_list_packs_index.json)
-- [`resources/custodian_codes.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/custodian_codes.json)
-- [`resources/landis/licence_current.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis/licence_current.md)
-- [`resources/landis/soil_classification.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis/soil_classification.md)
-- [`resources/landis/soil_data_structures.md`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis/soil_data_structures.md)
-- [`resources/landis_products.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/landis_products.json)
-- [`resources/layers_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/layers_catalog.json)
-- [`resources/map_embedding_style_profiles.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/map_embedding_style_profiles.json)
-- [`resources/mcp-geo.jpg`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/mcp-geo.jpg)
-- [`resources/nomis_workflows.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/nomis_workflows.json)
-- [`resources/offline_map_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/offline_map_catalog.json)
-- [`resources/ons_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_catalog.json)
-- [`resources/ons_geo_cache_index.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_geo_cache_index.json)
-- [`resources/ons_geo_sources.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_geo_sources.json)
-- [`resources/ons_observations.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/ons_observations.json)
-- [`resources/os_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/os_catalog.json)
-- [`resources/peat_layers_england.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/peat_layers_england.json)
-- [`resources/prompts/evaluation_prompts.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/prompts/evaluation_prompts.json)
-- [`resources/protected_landscapes_england.json`](https://github.com/chris-page-gov/mcp-geo/blob/b279fe5fde6669d57955890996cd6fa6ddca76fb/resources/protected_landscapes_england.json)
+- [`resources/address_classification_codes.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/address_classification_codes.json)
+- [`resources/admin_boundaries.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/admin_boundaries.json)
+- [`resources/boundaries_wards.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/boundaries_wards.json)
+- [`resources/boundary_pack_sources.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/boundary_pack_sources.json)
+- [`resources/boundary_packs_index.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/boundary_packs_index.json)
+- [`resources/code_list_pack_sources.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/code_list_pack_sources.json)
+- [`resources/code_list_packs_index.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/code_list_packs_index.json)
+- [`resources/custodian_codes.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/custodian_codes.json)
+- [`resources/landis/licence_current.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis/licence_current.md)
+- [`resources/landis/soil_classification.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis/soil_classification.md)
+- [`resources/landis/soil_data_structures.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis/soil_data_structures.md)
+- [`resources/landis_products.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/landis_products.json)
+- [`resources/layers_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/layers_catalog.json)
+- [`resources/map_embedding_style_profiles.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/map_embedding_style_profiles.json)
+- [`resources/mcp-geo.jpg`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/mcp-geo.jpg)
+- [`resources/nomis_workflows.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/nomis_workflows.json)
+- [`resources/offline_map_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/offline_map_catalog.json)
+- [`resources/ons_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_catalog.json)
+- [`resources/ons_geo_cache_index.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_geo_cache_index.json)
+- [`resources/ons_geo_sources.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_geo_sources.json)
+- [`resources/ons_observations.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/ons_observations.json)
+- [`resources/os_catalog.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/os_catalog.json)
+- [`resources/peat_layers_england.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/peat_layers_england.json)
+- [`resources/prompts/evaluation_prompts.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/prompts/evaluation_prompts.json)
+- [`resources/protected_landscapes_england.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/resources/protected_landscapes_england.json)
