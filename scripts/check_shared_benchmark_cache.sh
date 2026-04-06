@@ -86,9 +86,11 @@ shared_network="$(printf "%s\n" "$claude_plan" | plan_value network)"
 [[ "$claude_manage" == "false" ]] || fail "Claude wrapper would start its own PostGIS container"
 [[ "$codex_manage" == "false" ]] || fail "Codex wrapper would start its own PostGIS container"
 
-if "$DOCKER_BIN" container inspect mcp-geo-postgis >/dev/null 2>&1; then
-  fail "fallback PostGIS container mcp-geo-postgis still exists; remove it before benchmarking"
-fi
+for fallback in mcp-geo-postgis-sidecar mcp-geo-postgis-claude mcp-geo-postgis-codex; do
+  if "$DOCKER_BIN" container inspect "$fallback" >/dev/null 2>&1; then
+    fail "fallback PostGIS container $fallback still exists; remove it before benchmarking"
+  fi
+done
 
 info "PASS: shared benchmark cache is ready"
 info "shared_postgis_container=$POSTGIS_CONTAINER"

@@ -77,6 +77,6 @@ services:
 
 volumes:
   postgis-data:
-    name: "${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis}"
+    name: "${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-devcontainer}"
   runtime-data:
     name: "${MCP_GEO_RUNTIME_DATA_VOLUME:-mcp-geo-runtime-data}"

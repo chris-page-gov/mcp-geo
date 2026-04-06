@@ -1,0 +1,2252 @@
+{
+  "generatedAt": "2026-04-05T07:16:21.883681+00:00",
+  "destination": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05",
+  "portalComponent": {
+    "status": "ok",
+    "path": "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/download_manifest.json",
+    "archiveRoot": "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04",
+    "results": 106,
+    "errors": 0,
+    "errorTitles": []
+  },
+  "repoPublicReconciliationManifest": "/Users/crpage/repos/mcp-geo/research/landis-data-source/landis_release_reconciliation_2026-04-05.json",
+  "repoPublicReconciliationGeneratedAt": "2026-04-05T06:48:24.463846+00:00",
+  "publicItems": [
+    {
+      "name": "NATMAP HOST",
+      "kind": "dataset",
+      "family": "natmap",
+      "url": "https://www.landis.org.uk/data/nmhost.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/nmhost.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/NATMAP_HOST/page.html",
+      "bytes": 25500,
+      "sha256": "dbd82895de7a6beb622a2bfc122e167919c247d61c7968d37280ac206272b2d9",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "NATMAP wetness",
+      "kind": "dataset",
+      "family": "natmap",
+      "url": "https://www.landis.org.uk/data/nmwetness.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/nmwetness.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/NATMAP_wetness/page.html",
+      "bytes": 20560,
+      "sha256": "eab2bdb6959dc8dd9a5ca186ca97f7e24da57c0b1abc67285e8e608b284f5720",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Series Hydrology",
+      "kind": "dataset",
+      "family": "soilseries",
+      "url": "https://www.landis.org.uk/data/sshydrology.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/sshydrology.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Series_Hydrology/page.html",
+      "bytes": 19745,
+      "sha256": "34b41398094de3df1cf4f652e486e36ca9eeff5dd9d60e32b9f2b2faa26d2a81",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Series Agronomy",
+      "kind": "dataset",
+      "family": "soilseries",
+      "url": "https://www.landis.org.uk/data/ssagronomy.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/ssagronomy.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Series_Agronomy/page.html",
+      "bytes": 18732,
+      "sha256": "0ec6743d8711e9c8c7f206bffa951c4f2cfec84652c017d881d70c68fadaa249",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Series Pesticides",
+      "kind": "dataset",
+      "family": "soilseries",
+      "url": "https://www.landis.org.uk/data/sspesticides.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/sspesticides.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Series_Pesticides/page.html",
+      "bytes": 18488,
+      "sha256": "096b0117009c46aa2f1a1808acb3bbdf713281de432f3e868c10aab98d277d3e",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Series Leacs",
+      "kind": "dataset",
+      "family": "soilseries",
+      "url": "https://www.landis.org.uk/data/ssleacs.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/ssleacs.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Series_Leacs/page.html",
+      "bytes": 18464,
+      "sha256": "4fc57b8086f717c95433d007ddcd41aa738f2dc6fc6e694f2ad8db2a1cc1c52b",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Lowland Peat",
+      "kind": "dataset",
+      "family": "peat",
+      "url": "https://www.landis.org.uk/data/lowlandpeat.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/data/lowlandpeat.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Lowland_Peat/page.html",
+      "bytes": 32380,
+      "sha256": "ef4ae0da02a96f173adf8eac7b4b90c8f6d23f56d91137347b4c7f86b82701c1",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Soilscapes Viewer",
+      "kind": "service",
+      "family": "service",
+      "url": "https://www.landis.org.uk/services/soilscapes.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/services/soilscapes.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Soilscapes_Viewer/page.html",
+      "bytes": 21482,
+      "sha256": "999b62503e01dd06e383467e787a9b38d0006061ae1701772e64c045ab245717",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Soils Guide",
+      "kind": "service",
+      "family": "service",
+      "url": "https://www.landis.org.uk/soilsguide/index.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/soilsguide/index.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Soils_Guide/page.html",
+      "bytes": 21792,
+      "sha256": "1a960593efcb8da5357bf5ddc112c685553d2a69b06e76e3081325b8cb592500",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Soil Alerts",
+      "kind": "service",
+      "family": "service",
+      "url": "https://www.landis.org.uk/soilsguide/soil_alerts.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/soilsguide/soil_alerts.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Soil_Alerts/page.html",
+      "bytes": 28449,
+      "sha256": "e6d8d9f076845ab3095242f87391ce37139a25e32dd26c508776d4632327f0c6",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "CatchIS",
+      "kind": "service",
+      "family": "service",
+      "url": "https://www.landis.org.uk/services/catchis.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/services/catchis.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/CatchIS/page.html",
+      "bytes": 21935,
+      "sha256": "f91b52d37d9fe167d9796f95fbb715a60f9e4540118e89ed67962f0a3af10e19",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Leacs",
+      "kind": "service",
+      "family": "service",
+      "url": "https://www.landis.org.uk/services/leacs.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/services/leacs.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Leacs/page.html",
+      "bytes": 25437,
+      "sha256": "e1163fd7de8dec227b2ab83c905dccf70174fc32242d23a41438e192bf7e0229",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "name": "Treefit",
+      "kind": "service",
+      "family": "service",
+      "url": "https://www.landis.org.uk/services/treefit.cfm",
+      "status": "ok",
+      "finalUrl": "https://www.landis.org.uk/services/treefit.cfm",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/public_site/Treefit/page.html",
+      "bytes": 24460,
+      "sha256": "deecd1f5f7c55958a6223e998a628cee6c744144decef9f4622ce07351b77d17",
+      "contentType": "text/html;charset=UTF-8"
+    }
+  ],
+  "dataGovPackages": [
+    {
+      "name": "horizon-fundamentals-arable1",
+      "title": "Horizon Fundamentals (Arable)",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-fundamentals-arable1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:17.468230",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-fundamentals-arable1/package_page.html",
+      "pageBytes": 20882,
+      "pageSha256": "7ac4d5728bf6a8f8f38efdb751217d75dc6a2d205934148454dcfa463e4f25c1",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/6ea08237-ddf5-4250-9ef8-27bcb77c4a81/horizon-fundamentals-arable1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizon-fundamentals-pg1",
+      "title": "Horizon Fundamentals (PG)",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-fundamentals-pg1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:17.982544",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-fundamentals-pg1/package_page.html",
+      "pageBytes": 20862,
+      "pageSha256": "907bba5587c4e489e857d05396f80c112ad07b33f93c512e6e9a16436045e282",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/37d4a841-7a60-4f93-a2be-5aedf729c345/horizon-fundamentals-pg1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizon-fundamentals1",
+      "title": "Horizon Fundamentals",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-fundamentals1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:18.489890",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-fundamentals1/package_page.html",
+      "pageBytes": 20777,
+      "pageSha256": "883b426758fd2e3a3f8eadaea8039c618911d24e5224625f49f6e67dd6b90f26",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/c7181324-7c1a-4da2-965f-4a7ea1aa0504/horizon-fundamentals1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizon-hydraulics-arable1",
+      "title": "Horizon Hydraulics (Arable)",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-hydraulics-arable1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:19.017172",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-hydraulics-arable1/package_page.html",
+      "pageBytes": 20949,
+      "pageSha256": "e0cf56b5d701692e12c4142d93f4d214f25cd1c3101dbc898991a126071056a5",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/c312de54-e3c8-484d-a102-8dad3337ba1a/horizon-hydraulics-arable1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizon-hydraulics-pg1",
+      "title": "Horizon Hydraulics (PG)",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-hydraulics-pg1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:19.525847",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-hydraulics-pg1/package_page.html",
+      "pageBytes": 20929,
+      "pageSha256": "d186c65161a62b4d31dfb51ebd0ca0cab9613a1efa98639c170a65414b87bbdc",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/7b63328f-a254-4152-aec5-d317eeac5dca/horizon-hydraulics-pg1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizon-hydraulics1",
+      "title": "Horizon Hydraulics",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-hydraulics1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:20.030322",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-hydraulics1/package_page.html",
+      "pageBytes": 20844,
+      "pageSha256": "4762890689c982ee5469ead3726bb599e4c655167f229c59a96da0042e51f0aa",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/2ddc1170-a1e5-4963-9b08-f841cd1e2077/horizon-hydraulics1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizon-structure1",
+      "title": "Horizon Structure",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizon-structure1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:20.550099",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizon-structure1/package_page.html",
+      "pageBytes": 20626,
+      "pageSha256": "b5778cd8bdbbe7d93fba9b5baf435436c546dac7de8dbd821c94061e667d17c6",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/09f43309-f879-4aaf-a1bb-c577ca42f49a/horizon-structure1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "horizons1",
+      "title": "Horizons",
+      "pageUrl": "https://www.data.gov.uk/dataset/horizons1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:21.046307",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/horizons1/package_page.html",
+      "pageBytes": 20528,
+      "pageSha256": "a0128af25eb45ce29030b3ddd38932fef5f6027ab219beb8a86f7d133142208c",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/bc4c31fd-81aa-41ec-9158-7464cd63a8a7/horizons1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "host-class-by-soil-association1",
+      "title": "Host Class by Soil Association",
+      "pageUrl": "https://www.data.gov.uk/dataset/host-class-by-soil-association1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T16:48:34.839720",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/host-class-by-soil-association1/package_page.html",
+      "pageBytes": 20509,
+      "pageSha256": "e29265d0eb2f82803893fb504800d39d6fba2d79d41cad869d9aee20403f4f9c",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/37026595-cf84-49c3-b4c0-c968a45a4568/host-class-by-soil-association1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "host-class1",
+      "title": "Host Class",
+      "pageUrl": "https://www.data.gov.uk/dataset/host-class1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:12:22.068553",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/host-class1/package_page.html",
+      "pageBytes": 20387,
+      "pageSha256": "d9acf0342c784eb00af8564ac77a705feb1b4cc1aedd5606b8a333ea22096644",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/44800071-fbab-4c49-ab30-a76913c372c3/host-class1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "leacs-by-soil-association1",
+      "title": "LEACS by Soil Association",
+      "pageUrl": "https://www.data.gov.uk/dataset/leacs-by-soil-association1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:14:28.687858",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/leacs-by-soil-association1/package_page.html",
+      "pageBytes": 20508,
+      "pageSha256": "c0e3bb11e70c3caff07573f86ce0fa3e13afd9749d6fa4e6ffd25d90f84f38c1",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/48f74257-b732-41db-abb1-c48ff7f1c57c/leacs-by-soil-association1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "mapunit-gwpp1",
+      "title": "Mapunit GWPP",
+      "pageUrl": "https://www.data.gov.uk/dataset/mapunit-gwpp1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:15:54.362227",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/mapunit-gwpp1/package_page.html",
+      "pageBytes": 20307,
+      "pageSha256": "868ffab0ba8abd826a2245193e28e6183375ec5d0e27cb2a7325fe2d5c3926c7",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/8bb06448-0b4c-45c2-8ebc-98811cdd1ce1/mapunit-gwpp1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "mapunit-leaching1",
+      "title": "Mapunit Leaching",
+      "pageUrl": "https://www.data.gov.uk/dataset/mapunit-leaching1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:18:41.580830",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/mapunit-leaching1/package_page.html",
+      "pageBytes": 20447,
+      "pageSha256": "2fad2ea9b5d4f494c580a4721202744dd6012d70b9201185f7f1cfe260e90658",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/49a4b4c8-7e8a-429e-97ec-53d623b878e4/mapunit-leaching1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "mapunit-runoff1",
+      "title": "Mapunit runoff",
+      "pageUrl": "https://www.data.gov.uk/dataset/mapunit-runoff1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:18:42.069096",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/mapunit-runoff1/package_page.html",
+      "pageBytes": 20443,
+      "pageSha256": "4ddbb48e14a8cbd16c18424c861a099148983326cdf996c1e62fbcfe4187d289",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/25a06397-0db7-49ea-8863-b75ea87ca940/mapunit-runoff1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "mapunit-soilscapes1",
+      "title": "Mapunit Soilscapes",
+      "pageUrl": "https://www.data.gov.uk/dataset/mapunit-soilscapes1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:18:42.565706",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/mapunit-soilscapes1/package_page.html",
+      "pageBytes": 20470,
+      "pageSha256": "a7c899154c735234c06ddbea68a9cb171616230efdc451ad3453e09ba8ee3512",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/eee5a1a9-66fb-48c3-8e2f-5bd8d3f5f515/mapunit-soilscapes1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "modern-correlatives-for-old-soil-series1",
+      "title": "Modern Correlatives for Old Soil Series",
+      "pageUrl": "https://www.data.gov.uk/dataset/modern-correlatives-for-old-soil-series1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:26.748175",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/modern-correlatives-for-old-soil-series1/package_page.html",
+      "pageBytes": 20519,
+      "pageSha256": "2b3276f29208645363ec49fcc0d8a1187d997363c4eee70981a27a8271f12ddb",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/a2bf1369-0510-4ee0-be91-11c9c8a8f242/modern-correlatives-for-old-soil-series1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "moorland-deep-peat-ap-status1",
+      "title": "Moorland Deep Peat AP Status",
+      "pageUrl": "https://www.data.gov.uk/dataset/moorland-deep-peat-ap-status1",
+      "licenseTitle": null,
+      "metadataModified": "2025-10-09T16:07:48.865959",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/moorland-deep-peat-ap-status1/package_page.html",
+      "pageBytes": 37114,
+      "pageSha256": "d51f980b350f943722e2c1abc91da62cf6ea9798f5ce13708beb8df655128773",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/b12f420a-d9f1-4966-aa3e-0f6e680e3875/moorland-deep-peat-ap-status1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "England's peatlands carbon storage and greenhouse gases.url",
+          "format": "",
+          "description": "England's peatlands carbon storage and greenhouse gases.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=England's peatlands carbon storage and greenhouse gases.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=England's peatlands carbon storage and greenhouse gases.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=England%27s%20peatlands%20carbon%20storage%20and%20greenhouse%20gases.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_2926552c73204d53.bin",
+          "bytes": 148,
+          "sha256": "50d3cd97f0dbee4f650b91a2c3618c20547f2beeb5e0f1d36741762e794d0e4e",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Mapping the status of upland peat using aerial photographs.url",
+          "format": "",
+          "description": "Mapping the status of upland peat using aerial photographs.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Mapping the status of upland peat using aerial photographs.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Mapping the status of upland peat using aerial photographs.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Mapping%20the%20status%20of%20upland%20peat%20using%20aerial%20photographs.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_f926f6b9aead4ddf.bin",
+          "bytes": 149,
+          "sha256": "84b74951521e0e27782612e788bf7f62941b03ef7eb5240ec87c27e5158d91c3",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Moorland_Deep_Peat_AP_Status.gdb.zip",
+          "format": "ZIP",
+          "description": "Moorland_Deep_Peat_AP_Status.gdb.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.gdb.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.gdb.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.gdb.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_7c5972f95d7bc979.bin",
+          "bytes": 3165696,
+          "sha256": "514c72b9899ac9c137f2d01462d210d1d5ee60c891031194fbf742a2de0bb171",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Moorland_Deep_Peat_AP_Status.geojson.zip",
+          "format": "ZIP",
+          "description": "Moorland_Deep_Peat_AP_Status.geojson.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.geojson.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.geojson.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.geojson.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_25ac9b30b9875b48.bin",
+          "bytes": 7364548,
+          "sha256": "60aa943992effa4db901a3a673a837d64075e318271794973827b53ab14246f2",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Moorland_Deep_Peat_AP_Status.gpkg.zip",
+          "format": "ZIP",
+          "description": "Moorland_Deep_Peat_AP_Status.gpkg.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.gpkg.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.gpkg.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.gpkg.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_5ce68c25446ddf39.bin",
+          "bytes": 5547821,
+          "sha256": "51852fbfa3f9ffc58d55a45455f89f18ccc7bc5364bbc559d31cc79c8f4f5b8b",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Moorland_Deep_Peat_AP_Status.shp.zip",
+          "format": "ZIP",
+          "description": "Moorland_Deep_Peat_AP_Status.shp.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.shp.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.shp.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status.shp.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_cad33e18d2235048.bin",
+          "bytes": 5258569,
+          "sha256": "50e86dc723b3c8dc12bec1fd3b6b9480c864afb2cf04208f480f5bdaf6095854",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Moorland_Deep_Peat_AP_Status_England.lyr",
+          "format": "",
+          "description": "Moorland_Deep_Peat_AP_Status_England.lyr download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status_England.lyr",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status_England.lyr",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Moorland_Deep_Peat_AP_Status_England.lyr",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_0e8519c5eb4e5e55.bin",
+          "bytes": 9216,
+          "sha256": "104588ceaf0f28cd31c49dd735e3ce62f32fb268f164dc79739944fe3a6a58d4",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "National Soils map.url",
+          "format": "",
+          "description": "National Soils map.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=National Soils map.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=National Soils map.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=National%20Soils%20map.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_14854b1375ee1d96.bin",
+          "bytes": 123,
+          "sha256": "fa0124b0acf12d45d6269972caba77eb0f741666025c45a3cfd8be3d59134ce2",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Non-Commercial Government Licence.url",
+          "format": "",
+          "description": "Non-Commercial Government Licence.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Non-Commercial Government Licence.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Non-Commercial Government Licence.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=c878dbca-978e-405c-a5e2-9ce5369ceb3b&fileName=Non-Commercial%20Government%20Licence.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_3887218b04ebfcda.bin",
+          "bytes": 242,
+          "sha256": "9d12e85d1d2824d97567a3aa8f1d4e399789594cfc206f0e3fce96ad7db094d0",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Natural England Access to Evidence Catalogue",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "http://publications.naturalengland.org.uk/publication/369581",
+          "requestedUrl": "http://publications.naturalengland.org.uk/publication/369581",
+          "finalUrl": "https://publications.naturalengland.org.uk/publication/369581",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/369581_a501ecd391fa1358.bin",
+          "bytes": 12264,
+          "sha256": "4d3303d21fb289ac467ebb4132feca8db508a8f945177428936e1aecc5787eb2",
+          "contentType": ""
+        },
+        {
+          "name": "Moorland-deep-peat-ap-status-england_WMS",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/wms",
+          "requestedUrl": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/wms",
+          "finalUrl": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/wms",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/wms_c1b29dc87cfd44b5.xml",
+          "bytes": 531,
+          "sha256": "65b986680e6ac5f21686c63e874f456dd65e210953ed78bfef8f52a1df2d0e4f",
+          "contentType": "text/xml;charset=UTF-8"
+        },
+        {
+          "name": "Moorland-deep-peat-ap-status-england_WFS",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/wfs",
+          "requestedUrl": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/wfs?service=WFS&request=GetCapabilities",
+          "finalUrl": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/wfs?service=WFS&request=GetCapabilities",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/wfs_387a1fca78d3a73f.xml",
+          "bytes": 97283,
+          "sha256": "a16459960d9656767ede29ed714b4325c1c35b9559226d7f2616d5e2a54dc379",
+          "contentType": "application/xml"
+        },
+        {
+          "name": "Moorland Deep Peat AP Status England Download",
+          "format": "",
+          "description": "Download data by area of interest",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/explore/413cb082-53c5-4487-ae58-1f67ab89def7?download=true",
+          "requestedUrl": "https://environment.data.gov.uk/explore/413cb082-53c5-4487-ae58-1f67ab89def7?download=true",
+          "finalUrl": "https://environment.data.gov.uk/explore/413cb082-53c5-4487-ae58-1f67ab89def7?download=true",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/413cb082-53c5-4487-ae58-1f67ab89def7_7e2a2fecedbe8c22.html",
+          "bytes": 37088,
+          "sha256": "c463790fa8dbd8d05e0e58b86e60ab53ed20f07cb813f9d2f5dc791f3a44a3eb",
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "name": "MoorlandDeepPeatAPStatusEngland_REST",
+          "format": "",
+          "description": "REST URL",
+          "status": 500,
+          "url": "https://environment.data.gov.uk/arcgis/rest/services/NE/MoorlandDeepPeatAPStatusEngland/MapServer",
+          "error": "download failed with status 500"
+        },
+        {
+          "name": "Moorland_Deep_Peat_AP_Status_ESRI_REST_Feature_Server_Endpoint",
+          "format": "",
+          "description": "Moorland Deep Peat AP Status ESRI REST Feature Server Endpoint",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/arcgis/rest/services/NE/MoorlandDeepPeatAPStatusEngland/FeatureServer",
+          "requestedUrl": "https://environment.data.gov.uk/arcgis/rest/services/NE/MoorlandDeepPeatAPStatusEngland/FeatureServer",
+          "finalUrl": "https://environment.data.gov.uk/arcgis/rest/services/NE/MoorlandDeepPeatAPStatusEngland/FeatureServer",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/FeatureServer_5055b5c3dea4b2f9.html",
+          "bytes": 1128,
+          "sha256": "29242f273beadb5bfa9eab91cd1fd3258c003bf59ed1e40033cc6f64916f565b",
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "name": "ArcGIS Open Dataset record page",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::moorland-deep-peat-ap-status-england/about",
+          "requestedUrl": "https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::moorland-deep-peat-ap-status-england/about",
+          "finalUrl": "https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::moorland-deep-peat-ap-status-england/about",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/about_102b3b1125219b62.html",
+          "bytes": 60275,
+          "sha256": "e09b3da06764301f93316e94ddc751f6ca9ca2d247fb22b8381965b4c53f2523",
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "name": "OGC API - Features service",
+          "format": "",
+          "description": "OGC API - Features service",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/ogc/features/v1",
+          "requestedUrl": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/ogc/features/v1",
+          "finalUrl": "https://environment.data.gov.uk/spatialdata/moorland-deep-peat-ap-status-england/ogc/features/v1",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/v1_adc55b5b0b12c168.json",
+          "bytes": 3852,
+          "sha256": "102582fbc4f3536cd516752c6b21bd99a683d31f4461d126e8b7a70034ed1c30",
+          "contentType": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap-1k-version-31",
+      "title": "NATMAP 1K (version 3)",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap-1k-version-31",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:46.221646",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap-1k-version-31/package_page.html",
+      "pageBytes": 20488,
+      "pageSha256": "f56a057d39581091b66c7e9545621e2e84e729b27fd44408744e5f7e1ee8b86b",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/73f1f0e0-40c1-46bc-b36d-680b36149485/natmap-1k-version-31",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap-associations-version-31",
+      "title": "NATMAP Associations (version 3)",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap-associations-version-31",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:46.710866",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap-associations-version-31/package_page.html",
+      "pageBytes": 20432,
+      "pageSha256": "4180098a358147161896ab67367342b33b2122b12227e5d9aa94f16259d9b187",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/0dfb4b8b-1fca-409f-9737-fd9daf957aa4/natmap-associations-version-31",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap-legend-version-31",
+      "title": "NATMAP  Legend (version 3)",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap-legend-version-31",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:47.196182",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap-legend-version-31/package_page.html",
+      "pageBytes": 20456,
+      "pageSha256": "e389ba11f7f6c68ca407dbc1d21bfb728010d7886807b45789a42b44f233ed40",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/dad3bd41-b822-4981-999e-1b0da235692b/natmap-legend-version-31",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap-national-soil-map1",
+      "title": "NATMAP - National Soil Map",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap-national-soil-map1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T16:46:13.243969",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap-national-soil-map1/package_page.html",
+      "pageBytes": 20562,
+      "pageSha256": "c685fb08f47b836238d4b5e815c64d285b0e53f9dbef571b5e9dab35dbb09e28",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/ea1442bf-ba77-42cc-80e7-2ea339ccb28a/natmap-national-soil-map1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap1000",
+      "title": "NATMAP1000",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap1000",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:07:07.333075",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap1000/package_page.html",
+      "pageBytes": 20408,
+      "pageSha256": "811d40f3bdaf47951cf0479abe618afd0883acd52c347fe1359abf252a3bf8c1",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/a72dc44a-c28a-45aa-bed4-a8a42169c372/natmap1000",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap10001",
+      "title": "NATMAP1000",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap10001",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:47.617029",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap10001/package_page.html",
+      "pageBytes": 20424,
+      "pageSha256": "6c90afbdc61bb6de8eda807633cbec1dd10796927c4968e3df15e495a8d2e60f",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/b0506343-46e0-4697-b50b-4066ffeddfcc/natmap10001",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap1000db1",
+      "title": "NATMAP1000DB",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap1000db1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:48.119149",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap1000db1/package_page.html",
+      "pageBytes": 20400,
+      "pageSha256": "36193d8e0591c8c6fe54ac6e1c48faf07308de0c3342fbdbe218b982f9b65e2b",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/bca7984e-f98e-4322-81ba-1944ad5acd79/natmap1000db1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap20001",
+      "title": "NATMAP2000",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap20001",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:48.629361",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap20001/package_page.html",
+      "pageBytes": 20424,
+      "pageSha256": "e4b40c9977c0bcf3bf39c8c80d4460be0444bf735524002a4dd3f3cf8306def4",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/294e10d1-485c-43ee-b857-a479da86c89a/natmap20001",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap2000db1",
+      "title": "NATMAP2000DB",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap2000db1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:49.138344",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap2000db1/package_page.html",
+      "pageBytes": 20402,
+      "pageSha256": "8f4766eb7c840a6b222d75c5b792165ac1f7f80662c7d47004b37cd3c513ae68",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/53e14d04-a5d4-4bd0-9ab4-879e677a18ab/natmap2000db1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap50001",
+      "title": "NATMAP5000",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap50001",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:49.638920",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap50001/package_page.html",
+      "pageBytes": 20424,
+      "pageSha256": "2cbe16c953374b61e07281b9c6631d72bb32aa911795ec0c5422c394e63a2b7d",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/5165b963-e6ff-4a0f-991b-284bc7757815/natmap50001",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmap5000db1",
+      "title": "NATMAP5000DB",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmap5000db1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:50.145864",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmap5000db1/package_page.html",
+      "pageBytes": 20402,
+      "pageSha256": "073a966cfcffbe97f5982054ed229e492b4774e012989251f7ffa775601458e3",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/ca605be4-797e-4ad2-82a9-73edb49e8080/natmap5000db1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "natmapsoilscapes1",
+      "title": "NATMAPSOILSCAPES",
+      "pageUrl": "https://www.data.gov.uk/dataset/natmapsoilscapes1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:20:50.684273",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/natmapsoilscapes1/package_page.html",
+      "pageBytes": 20677,
+      "pageSha256": "b5583be2f654f136bf92ac9bb1b4c402f72d18fd7e0c31afc1ee54378ff684ad",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/9f598c27-3ac8-4d47-96fd-3b794f20c771/natmapsoilscapes1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-features",
+      "title": "NSI Features",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-features",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:25.541625",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-features/package_page.html",
+      "pageBytes": 20732,
+      "pageSha256": "f6f9d69a39da8fd8d5aedb3aac255da888d4fa6af33f8de3561f8ce009a9f1c7",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/6f472c89-55c4-466a-a16a-f5ccaf495cfa/nsi-features",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-magnetic",
+      "title": "NSI Magnetic",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-magnetic",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:26.011177",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-magnetic/package_page.html",
+      "pageBytes": 20277,
+      "pageSha256": "6c3843b198e84d877ff551e07a6908893e0b2891b17be4c4d79b008a22a3af18",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/5c079cc3-ba1d-47af-9a8c-81688bfcb9b2/nsi-magnetic",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-profile",
+      "title": "NSI profile",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-profile",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:26.526078",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-profile/package_page.html",
+      "pageBytes": 20852,
+      "pageSha256": "cdffc1a91f620630f3d54c894bb85c08aa3e2c74b6e94541888c4ebb876cc01e",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/8211f60b-6c4b-4ec3-9e0f-a137d7be70b5/nsi-profile",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-profile-raw",
+      "title": "NSI Profile (raw)",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-profile-raw",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:07:12.329555",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-profile-raw/package_page.html",
+      "pageBytes": 20886,
+      "pageSha256": "b203afac97842b67bbc63b3d4c4fbae7316be08fc81323b01973030c16433128",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/1bbf030b-3d86-49be-814a-93a52b6796a9/nsi-profile-raw",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-site",
+      "title": "NSI Site",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-site",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:27.016444",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-site/package_page.html",
+      "pageBytes": 20799,
+      "pageSha256": "19ebdae1fd38f2ae3800f86ddd05cbb0885ee6065c8318527e8c568256ac57b3",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/b6b11e77-fcd0-43dc-a1a5-9b1d92c59d64/nsi-site",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-site-raw",
+      "title": "NSI Site (raw)",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-site-raw",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:27.511224",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-site-raw/package_page.html",
+      "pageBytes": 20833,
+      "pageSha256": "0ca891b96b9bd4062700f313a130d59c752a2d3c4365da0c90e1ba4f243e37a2",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/bba0caea-5b37-4ea3-a204-a7fa3257540b/nsi-site-raw",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-soil-structure",
+      "title": "NSI Soil Structure",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-soil-structure",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:11:11.590525",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-soil-structure/package_page.html",
+      "pageBytes": 20397,
+      "pageSha256": "8f05ad4daf824c3a13eabfb2a18f235e5e032930a1b395f3f9d845969a99a6ea",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/271d2a3e-0a46-4026-9db1-92d9e045048d/nsi-soil-structure",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-texture-groups",
+      "title": "NSI texture groups",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-texture-groups",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:27.986882",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-texture-groups/package_page.html",
+      "pageBytes": 20372,
+      "pageSha256": "92590abdb3180d759a70180d155d00b878dbe5376079d061780f354b21b11d12",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/c2e2b92b-bbe5-4339-bc50-f8e1d16b7c30/nsi-texture-groups",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-textures",
+      "title": "NSI textures",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-textures",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:30.738408",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-textures/package_page.html",
+      "pageBytes": 20334,
+      "pageSha256": "0450820b2e8dcfb14f8cc3e37080fd26bb3a1e8da101404c78e30008d421c47f",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/230e7927-4aeb-4e7f-ae3b-7cb9bfad1d55/nsi-textures",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-topsoil-analyses-original",
+      "title": "NSI topsoil analyses (original)",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-topsoil-analyses-original",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:22:31.245031",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-topsoil-analyses-original/package_page.html",
+      "pageBytes": 20737,
+      "pageSha256": "9a66baf02ab01f286026b72c6767fe4e269b4e402f197b7098d1010da1be0440",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/1be058a3-a102-4e71-9735-3d3d5698a3bd/nsi-topsoil-analyses-original",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "nsi-topsoil-analyses-resample",
+      "title": "NSI topsoil analyses (resample)",
+      "pageUrl": "https://www.data.gov.uk/dataset/nsi-topsoil-analyses-resample",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:11:11.987746",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/nsi-topsoil-analyses-resample/package_page.html",
+      "pageBytes": 20687,
+      "pageSha256": "0c48bede5acba13f659d028508fc2719c0acbd116f7e84901df979f4a0cb4e6a",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/a3f90af1-6203-4f2e-8562-fbc27909d4ca/nsi-topsoil-analyses-resample",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "peaty-soils-location1",
+      "title": "Peaty Soils Location",
+      "pageUrl": "https://www.data.gov.uk/dataset/peaty-soils-location1",
+      "licenseTitle": null,
+      "metadataModified": "2025-10-09T16:08:22.231851",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/peaty-soils-location1/package_page.html",
+      "pageBytes": 37809,
+      "pageSha256": "4e13bd0aa79eea3dec9eeca130d3b4da72cce4f4cd8e54c8195002d05d92c985",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/9d494f48-f0d7-4333-96f0-8b736ac8fb18/peaty-soils-location1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "080908 Peat Location Map Verification and Recommendations.doc",
+          "format": "DOC",
+          "description": "080908 Peat Location Map Verification and Recommendations.doc download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=080908 Peat Location Map Verification and Recommendations.doc",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=080908 Peat Location Map Verification and Recommendations.doc",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=080908%20Peat%20Location%20Map%20Verification%20and%20Recommendations.doc",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_81520ab222ab4395.bin",
+          "bytes": 932352,
+          "sha256": "ff851bf985e8f20ae37e3ec42267cce327ba75b80e136f774594b37540584740",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "England's peatlands carbon storage and greenhouse gases.url",
+          "format": "",
+          "description": "England's peatlands carbon storage and greenhouse gases.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=England's peatlands carbon storage and greenhouse gases.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=England's peatlands carbon storage and greenhouse gases.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=England%27s%20peatlands%20carbon%20storage%20and%20greenhouse%20gases.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_b0fda5aa778cc3a4.bin",
+          "bytes": 148,
+          "sha256": "50d3cd97f0dbee4f650b91a2c3618c20547f2beeb5e0f1d36741762e794d0e4e",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Mapping the status of upland peat using aerial photographs.url",
+          "format": "",
+          "description": "Mapping the status of upland peat using aerial photographs.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Mapping the status of upland peat using aerial photographs.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Mapping the status of upland peat using aerial photographs.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Mapping%20the%20status%20of%20upland%20peat%20using%20aerial%20photographs.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_d1e190e7ef04eaf0.bin",
+          "bytes": 149,
+          "sha256": "84b74951521e0e27782612e788bf7f62941b03ef7eb5240ec87c27e5158d91c3",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "National Soils map.url",
+          "format": "",
+          "description": "National Soils map.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=National Soils map.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=National Soils map.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=National%20Soils%20map.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_64ac729b50daf40d.bin",
+          "bytes": 123,
+          "sha256": "fa0124b0acf12d45d6269972caba77eb0f741666025c45a3cfd8be3d59134ce2",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Non-Commercial Government Licence.url",
+          "format": "",
+          "description": "Non-Commercial Government Licence.url download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Non-Commercial Government Licence.url",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Non-Commercial Government Licence.url",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Non-Commercial%20Government%20Licence.url",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_ad8f35ae010d2655.bin",
+          "bytes": 242,
+          "sha256": "9d12e85d1d2824d97567a3aa8f1d4e399789594cfc206f0e3fce96ad7db094d0",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Peaty_Soils_Location.gdb.zip",
+          "format": "ZIP",
+          "description": "Peaty_Soils_Location.gdb.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.gdb.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.gdb.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.gdb.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_afe59eb642fb57cc.bin",
+          "bytes": 7167180,
+          "sha256": "f78966747ade0629d960b97d4e5e4d85af1f2c53696ce798004e628a740cc91a",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Peaty_Soils_Location.geojson.zip",
+          "format": "ZIP",
+          "description": "Peaty_Soils_Location.geojson.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.geojson.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.geojson.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.geojson.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_083d5b7871dbcf7e.bin",
+          "bytes": 15848654,
+          "sha256": "e6899276b2de6b590be905d76ac16b8a9b53ae8e6a74b6902c7e31905f8cd3a2",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Peaty_Soils_Location.gpkg.zip",
+          "format": "ZIP",
+          "description": "Peaty_Soils_Location.gpkg.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.gpkg.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.gpkg.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.gpkg.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_1c55191b54036a3b.bin",
+          "bytes": 12123710,
+          "sha256": "8372feb98724d498757f0cf6da821434ab65f047143c0610084dbe1891296b6f",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Peaty_Soils_Location.shp.zip",
+          "format": "ZIP",
+          "description": "Peaty_Soils_Location.shp.zip download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.shp.zip",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.shp.zip",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location.shp.zip",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_4af7c3f7008f92a8.bin",
+          "bytes": 11692545,
+          "sha256": "8c280080f4943ca38982856d3369cc305016a92cefd7a3133875e527e3ce1ac2",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Peaty_Soils_Location_England.lyr",
+          "format": "",
+          "description": "Peaty_Soils_Location_England.lyr download on Defra Data Services Platform",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location_England.lyr",
+          "requestedUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location_England.lyr",
+          "finalUrl": "https://environment.data.gov.uk/api/file/download?fileDataSetId=889342dd-ceba-48f7-a4bd-497e3f0c1807&fileName=Peaty_Soils_Location_England.lyr",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/download_d1d0f64060209009.bin",
+          "bytes": 7680,
+          "sha256": "d33333e46b129fbe238a2b927ac934db3bc6cd9a2e0804867c29d8e6223612a8",
+          "contentType": "application/octet-stream"
+        },
+        {
+          "name": "Natural England Access to Evidence Catalogue",
+          "format": "",
+          "description": "Natural England Access to Evidence Catalogue",
+          "status": "ok",
+          "url": "http://publications.naturalengland.org.uk/publication/30021",
+          "requestedUrl": "http://publications.naturalengland.org.uk/publication/30021",
+          "finalUrl": "https://publications.naturalengland.org.uk/publication/30021",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/30021_4f3ffbdc722e5eaa.bin",
+          "bytes": 13443,
+          "sha256": "1c681cf6db7cffacb33a8cf001bd4b84ee41e366e39123f946b7522dc0a7c87c",
+          "contentType": ""
+        },
+        {
+          "name": "Peaty Soils Location (England)",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::peaty-soils-location-england/about",
+          "requestedUrl": "https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::peaty-soils-location-england/about",
+          "finalUrl": "https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::peaty-soils-location-england/about",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/about_b983492a208bdfce.html",
+          "bytes": 60217,
+          "sha256": "8331439bdda34c6ad2842b81f98d9a47ac012fb85ae4c247dd4c6b8729151ef5",
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "name": "Peaty-soils-location-england_WMS",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/wms",
+          "requestedUrl": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/wms",
+          "finalUrl": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/wms",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/wms_a6e1540f1ebf6f40.xml",
+          "bytes": 531,
+          "sha256": "9e9a5668a5d4d0f9e601d61ac104d74c9b75f9302f1e529cd7551239949a6a77",
+          "contentType": "text/xml;charset=UTF-8"
+        },
+        {
+          "name": "Peaty-soils-location-england_WFS",
+          "format": "",
+          "description": "Resource locator",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/wfs",
+          "requestedUrl": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/wfs?service=WFS&request=GetCapabilities",
+          "finalUrl": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/wfs?service=WFS&request=GetCapabilities",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/wfs_2cbe4628552057c6.xml",
+          "bytes": 97255,
+          "sha256": "7ba116df6cd5baf4413f94d6fb7731e569a408451567e8dba3ef309306eae481",
+          "contentType": "application/xml"
+        },
+        {
+          "name": "Peaty Soils Location England Download",
+          "format": "",
+          "description": "Download data by area of interest",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/explore/55e74635-e65d-4997-8e6e-46bb76c6a0e0?download=true",
+          "requestedUrl": "https://environment.data.gov.uk/explore/55e74635-e65d-4997-8e6e-46bb76c6a0e0?download=true",
+          "finalUrl": "https://environment.data.gov.uk/explore/55e74635-e65d-4997-8e6e-46bb76c6a0e0?download=true",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/55e74635-e65d-4997-8e6e-46bb76c6a0e0_810ec5f0167e32ca.html",
+          "bytes": 37088,
+          "sha256": "bc9bab996122b8e31ce2be8f04d96e73015d9343d85d6ab423b70b9625ce15d8",
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "name": "PeatySoilsLocationEngland_REST",
+          "format": "",
+          "description": "REST URL",
+          "status": 500,
+          "url": "https://environment.data.gov.uk/arcgis/rest/services/NE/PeatySoilsLocationEngland/MapServer",
+          "error": "download failed with status 500"
+        },
+        {
+          "name": "Peaty_Soils_Location_ESRI_REST_Feature_Server_Endpoint",
+          "format": "",
+          "description": "Peaty Soils Location ESRI REST Feature Server Endpoint",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/arcgis/rest/services/NE/PeatySoilsLocationEngland/FeatureServer",
+          "requestedUrl": "https://environment.data.gov.uk/arcgis/rest/services/NE/PeatySoilsLocationEngland/FeatureServer",
+          "finalUrl": "https://environment.data.gov.uk/arcgis/rest/services/NE/PeatySoilsLocationEngland/FeatureServer",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/FeatureServer_04ab5218fa70017a.html",
+          "bytes": 1128,
+          "sha256": "29242f273beadb5bfa9eab91cd1fd3258c003bf59ed1e40033cc6f64916f565b",
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "name": "OGC API - Features service",
+          "format": "",
+          "description": "OGC API - Features service",
+          "status": "ok",
+          "url": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/ogc/features/v1",
+          "requestedUrl": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/ogc/features/v1",
+          "finalUrl": "https://environment.data.gov.uk/spatialdata/peaty-soils-location-england/ogc/features/v1",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/v1_17a1fffa612a6d3a.json",
+          "bytes": 3852,
+          "sha256": "fc8bff732ebfc6252132aecb00b0922f972452eb29bd5158bd66c8fb3e3319d5",
+          "contentType": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "name": "profile-horizon-properties-of-auger-bores",
+      "title": "Profile horizon properties of auger bores",
+      "pageUrl": "https://www.data.gov.uk/dataset/profile-horizon-properties-of-auger-bores",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-11T16:41:06.220121",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/profile-horizon-properties-of-auger-bores/package_page.html",
+      "pageBytes": 20623,
+      "pageSha256": "a94011e1ca22f8a1254a6170507ca728771403adbbe0c2de64c20efed9f95bd4",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/7faab82e-f09d-4705-8793-af7976cdefda/profile-horizon-properties-of-auger-bores",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "site-properties-of-auger-bores",
+      "title": "Site properties of auger bores",
+      "pageUrl": "https://www.data.gov.uk/dataset/site-properties-of-auger-bores",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:29:45.944995",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/site-properties-of-auger-bores/package_page.html",
+      "pageBytes": 20561,
+      "pageSha256": "95abf3b3084ee2d91cece804213f3cdcfe73cc2095901be4305932f95bcceff2",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/512a3f7c-7a31-4a6d-bcc3-e99f224e0638/site-properties-of-auger-bores",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-pits",
+      "title": "Soil Pits",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-pits",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:30:08.352044",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-pits/package_page.html",
+      "pageBytes": 20363,
+      "pageSha256": "ce5e0d3b8ca0ebf83fc142fc89dbbeb939307d56132a149de061c459a5a02f4c",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/ea1b5043-5cf7-4fac-b28a-8b0d984bb7b2/soil-pits",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-agronomy1",
+      "title": "Soil Series Agronomy",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-agronomy1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T16:59:45.590265",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-agronomy1/package_page.html",
+      "pageBytes": 20600,
+      "pageSha256": "ece2eca0e4acf1543bcab7a0eef9559c9752a08d0f8d3e9e75c63beb7682fabc",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/0f6d8cf9-6b8d-4ae3-9532-9772b47e4577/soil-series-agronomy1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-brief-profile-description-horizon-details1",
+      "title": "Soil Series brief profile description - horizon details",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description-horizon-details1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:12:06.355949",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-brief-profile-description-horizon-details1/package_page.html",
+      "pageBytes": 20603,
+      "pageSha256": "17c3cf32ae3df06bd5eb638ac70860fc9a0768480b815fc0e2afb993e5b2958d",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/bea1287e-4691-462d-ace4-359ae3acab35/soil-series-brief-profile-description-horizon-details1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-brief-profile-description1",
+      "title": "Soil Series brief profile description",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:30:10.968938",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-brief-profile-description1/package_page.html",
+      "pageBytes": 20510,
+      "pageSha256": "dfaa45aca9df5b07c37deeb56f6c2aa8bb23c7d7c00b1be9176e42a3f62e9792",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/b62e3c35-b91b-4c98-9648-c1a5487fbe04/soil-series-brief-profile-description1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-definition1",
+      "title": "Soil Series Definition",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-definition1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T16:59:46.170547",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-definition1/package_page.html",
+      "pageBytes": 20504,
+      "pageSha256": "986098c9c532fc8c05619553d5a284901bd60a8ef1f837dfd2dd8e19620da10c",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/24e52187-b35a-41be-b33e-88b401404b7b/soil-series-definition1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-hydrology1",
+      "title": "Soil Series Hydrology",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-hydrology1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:30:11.498538",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-hydrology1/package_page.html",
+      "pageBytes": 20539,
+      "pageSha256": "9e0ff7a1a6ebcfd572e1103f9bb2f93d37e4614c630fd329461ae413944106a5",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/7a939125-cdb0-4fa3-b888-73322bd0ecbe/soil-series-hydrology1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-information1",
+      "title": "Soil Series Information",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-information1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T16:59:46.637275",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-information1/package_page.html",
+      "pageBytes": 20424,
+      "pageSha256": "2f5aeafe880c15b8cc13ec6d355d2c88b3436f258a4ffbefd7c10e6815943e4d",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/c87e771a-d08c-4958-b15e-237c494bb98d/soil-series-information1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-leacs1",
+      "title": "Soil Series LEACS",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-leacs1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:30:12.162265",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-leacs1/package_page.html",
+      "pageBytes": 20382,
+      "pageSha256": "036e2f455266c1e0a678f5bca7ac2fd2970f22b0368bcdeb50bf19988cb3cfb2",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/430086d9-d677-4a71-a0b7-f9abfd774517/soil-series-leacs1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-occurrence-within-landuse-types1",
+      "title": "Soil Series occurrence within Landuse types",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-occurrence-within-landuse-types1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-11T16:40:36.333780",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-occurrence-within-landuse-types1/package_page.html",
+      "pageBytes": 20526,
+      "pageSha256": "1cb85881144ce4d226ba6945575e23c16c234df1b6d9feb4d2fc14168cdbec64",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/a6aa275b-9a14-468c-952e-0a798a659f50/soil-series-occurrence-within-landuse-types1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-pesticide1",
+      "title": "Soil Series Pesticide",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-pesticide1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:04:00.271390",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-pesticide1/package_page.html",
+      "pageBytes": 20582,
+      "pageSha256": "4f7f59b48f62f227aafc5d51a2a6a5d62367fef0fd74a5e970d68e7ad47d6a43",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/6925f47d-b794-4fec-8cbb-b1dc7a3b400f/soil-series-pesticide1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-properties-within-field-capacity-zones1",
+      "title": "Soil Series properties within Field Capacity Zones",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-properties-within-field-capacity-zones1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:12:06.768023",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-properties-within-field-capacity-zones1/package_page.html",
+      "pageBytes": 20558,
+      "pageSha256": "30b57eb941286b6ed76d6e898f4475c4d68f835aa86bf74fc011a341c2ff89ba",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/53fdd946-6d2e-4cbf-8ef6-6824b965d966/soil-series-properties-within-field-capacity-zones1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series-stone-properties1",
+      "title": "Soil Series stone properties",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series-stone-properties1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:30:12.660462",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series-stone-properties1/package_page.html",
+      "pageBytes": 20383,
+      "pageSha256": "aad5013f0af556bb51d0f8debf81b60dbb7395f30468b17b6f88a707e521a172",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/218bb731-9d5a-4ee3-814a-eea051beb383/soil-series-stone-properties1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soil-series1",
+      "title": "Soil Series",
+      "pageUrl": "https://www.data.gov.uk/dataset/soil-series1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T16:51:08.009078",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soil-series1/package_page.html",
+      "pageBytes": 20500,
+      "pageSha256": "84e25a87b6110223d1b79095934dec52713925b1316dd50ca1895f686e1e3460",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/b3b0951e-35c0-4f4d-af5b-070492727e86/soil-series1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "soilscapes1",
+      "title": "Soilscapes",
+      "pageUrl": "https://www.data.gov.uk/dataset/soilscapes1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-11T16:38:48.888405",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/soilscapes1/package_page.html",
+      "pageBytes": 20641,
+      "pageSha256": "fbb7f34e6695694148ebe95ce9f063327b226adf57e83fdc5011ee47162efcbb",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/26d61739-e05b-420d-8fd0-d11edffa8b27/soilscapes1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "standard-horizons-used-in-classified-soil-pits",
+      "title": "Standard Horizons used in Classified Soil Pits",
+      "pageUrl": "https://www.data.gov.uk/dataset/standard-horizons-used-in-classified-soil-pits",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T18:34:27.500384",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/standard-horizons-used-in-classified-soil-pits/package_page.html",
+      "pageBytes": 20509,
+      "pageSha256": "671203b356d35ba428b86d18b335fd708b07221c724e9f6aecb192abe0e8bd15",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/ff1f3721-6f68-406e-9b0c-faca13261460/standard-horizons-used-in-classified-soil-pits",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    },
+    {
+      "name": "texture-group1",
+      "title": "Texture Group",
+      "pageUrl": "https://www.data.gov.uk/dataset/texture-group1",
+      "licenseTitle": "",
+      "metadataModified": "2016-02-10T17:15:58.161072",
+      "status": "ok",
+      "pagePath": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/data_gov/texture-group1/package_page.html",
+      "pageBytes": 20396,
+      "pageSha256": "50a223e980c744160b8d7a692dba7eba520d5af331f149e72844e536e227dcc9",
+      "finalPageUrl": "https://www.data.gov.uk/dataset/1407e0a9-34a7-4720-a42f-cd5f441b0879/texture-group1",
+      "pageContentType": "text/html; charset=utf-8",
+      "resources": [
+        {
+          "name": "LandIS website",
+          "format": "HTML",
+          "description": "LandIS website",
+          "status": "ok",
+          "url": "http://www.landis.org.uk/",
+          "requestedUrl": "http://www.landis.org.uk/",
+          "finalUrl": "http://www.landis.org.uk/",
+          "path": "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/shared_url_fetches/index_964537e6602bc931.html",
+          "bytes": 43752,
+          "sha256": "77aa752c1d95a7ef21f01f960d8a8f410fb7d6b9b096628e6909e1089cb5bacb",
+          "contentType": "text/html;charset=UTF-8"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "publicItems": 13,
+    "publicItemErrors": 0,
+    "dataGovPackages": 59,
+    "dataGovPackageErrors": 0,
+    "dataGovResourceErrors": 0
+  }
+}

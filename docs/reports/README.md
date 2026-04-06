@@ -31,6 +31,18 @@ This folder contains human-readable run reports and investigation summaries.
 
 - 2026-03-16: [Road Stat USRN integration task brief](road_stat_usrn_integration_task_brief_2026-03-16.md)
 
+## LandIS Portal Inventory
+
+- 2026-04-04: [LandIS portal inventory](landis_portal_inventory_2026-04-04.md)
+- 2026-04-04: [LandIS phase 2 surfacing plan](landis_phase_2_surfacing_plan_2026-04-04.md)
+- 2026-04-05: [LandIS release surface reconciliation](landis_release_surface_reconciliation_2026-04-05.md)
+  This report now also records the completed supplementary full-release
+  archive on `ExtSSD-Data` and the `verification_manifest.json` no-touch
+  completion check for the non-portal public/data.gov slice.
+  The linked phase-2 plan was updated on 2026-04-05 to reflect the implemented
+  local-archive tranche: archive discovery, NATMAP summaries, NSI evidence
+  tools, and the local `~/Data` ingest path.
+
 ## Place Profiling
 
 Wheelchair-access HTML reports now include an optional browser-side `OS Detailed`

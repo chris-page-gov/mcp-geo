@@ -60,6 +60,33 @@ class Settings(_PydanticBaseSettings):
     NOMIS_API_BASE: str = "https://www.nomisweb.co.uk/api/v01"
     NOMIS_UID: str = ""
     NOMIS_SIGNATURE: str = ""
+    LANDIS_ENABLED: bool = True
+    LANDIS_LIVE_ENABLED: bool = True
+    LANDIS_PORTAL_BASE: str = "https://portal.landis.org.uk"
+    LANDIS_REGISTRY_PATH: str = "resources/landis_products.json"
+    LANDIS_DOCS_DIR: str = "resources/landis"
+    LANDIS_LOCAL_DATA_ROOT: str = ""
+    LANDIS_PORTAL_ARCHIVE_DIR: str = ""
+    LANDIS_FULL_RELEASE_ARCHIVE_DIR: str = ""
+    LANDIS_ARCHIVE_TRIAGE_PATH: str = (
+        "research/landis-data-source/landis_archive_triage_2026-04-05.json"
+    )
+    LANDIS_FULL_RELEASE_MANIFEST_PATH: str = (
+        "research/landis-data-source/landis_full_release_manifest_2026-04-05.json"
+    )
+    LANDIS_WAREHOUSE_DSN: str = ""
+    LANDIS_WAREHOUSE_SCHEMA: str = "landis"
+    LANDIS_PRODUCT_REGISTRY_TABLE: str = "product_registry"
+    LANDIS_PROVENANCE_TABLE: str = "dataset_provenance"
+    LANDIS_SOILSCAPES_TABLE: str = "soilscapes_polygons"
+    LANDIS_PIPE_RISK_TABLE: str = "pipe_risk_polygons"
+    LANDIS_NATMAP_TABLE: str = "natmap_polygons"
+    LANDIS_NATMAP_THEMATIC_TABLE: str = "natmap_thematic_polygons"
+    LANDIS_NSI_SITES_TABLE: str = "nsi_sites"
+    LANDIS_NSI_OBSERVATIONS_TABLE: str = "nsi_observations"
+    LANDIS_HTTP_TIMEOUT_CONNECT_SECONDS: float = 2.0
+    LANDIS_HTTP_TIMEOUT_READ_SECONDS: float = 10.0
+    LANDIS_HTTP_RETRIES: int = 2
     ONS_DATASET_CACHE_ENABLED: bool = True
     ONS_DATASET_CACHE_DIR: str = "data/cache/ons"
     ONS_GEO_CACHE_DIR: str = "data/cache/ons_geo"
@@ -150,6 +177,7 @@ class Settings(_PydanticBaseSettings):
 
 
 _ENV_PLACEHOLDER_RE = re.compile(r"^\$\{(?:env:)?([A-Z0-9_]+)\}$")
+
 _NO_DEFAULT = object()
 
 
@@ -201,10 +229,10 @@ def _populate_fallback_settings(
     for key, annotation in annotations.items():
         if get_origin(annotation) is ClassVar:
             continue
+        default = getattr(type(instance), key, None)
         if key in overrides:
             value = overrides[key]
         else:
-            default = getattr(type(instance), key, None)
             env_value = environ.get(key)
             if env_value in {None, ""} or (
                 isinstance(env_value, str) and _is_placeholder_secret_value(key, env_value)

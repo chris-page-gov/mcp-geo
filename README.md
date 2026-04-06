@@ -305,7 +305,10 @@ Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
 By default it now stores PostGIS data in a Docker named volume
-(`mcp-geo-postgis-claude`) so raw database files are not written into the repo.
+(`mcp-geo-postgis-claude`) and uses the dedicated sidecar container/network
+names `mcp-geo-postgis-claude` / `mcp-geo-claude`, so raw database files are
+not written into the repo and Claude no longer shares a fallback volume with
+other host-side wrappers.
 Set `MCP_GEO_POSTGIS_STORAGE_MODE=bind` only if you explicitly want a host path
 mount (`MCP_GEO_POSTGIS_DATA_DIR`).
 Set `MCP_GEO_POSTGIS_VOLUME` differently per worktree if you want isolated
@@ -314,6 +317,16 @@ Override `MCP_GEO_POSTGIS_IMAGE` only if you need a different pgRouting-capable
 tag. The repo-local image currently builds on `postgis/postgis:16-3.4`, which
 is upstream-amd64-only for this tag, so Apple Silicon still runs the sidecar as
 `linux/amd64` under Docker emulation.
+The generic `scripts/mcp-docker-local` fallback now uses its own default
+sidecar identity (`mcp-geo-postgis-sidecar` on network `mcp-geo-sidecar`), and
+the devcontainer defaults to a separate named volume
+`mcp-geo-postgis-devcontainer`, so the normal host wrappers no longer collide
+with the devcontainer cache by default. If a sidecar fails to become ready, the
+wrapper now inspects the recent Postgres logs and calls out checkpoint-corrupted
+volumes explicitly instead of only timing out.
+Wrapper-managed PostGIS sidecars no longer publish `5432` to the host by
+default; set `MCP_GEO_POSTGIS_PUBLISH_PORT` only when you explicitly need host
+access to that sidecar database.
 For benchmark parity across clients, start the repo devcontainer PostGIS first
 and run `./scripts/check_shared_benchmark_cache.sh` before launching Codex or
 Claude so both wrappers are confirmed to reuse the same cache.
@@ -397,6 +410,11 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
 | council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
+| landis_catalog.list_products        | LandIS MVP product registry and access tiers                                  |
+| landis_metadata.get                | LandIS product metadata, provenance, and linked resources                     |
+| landis_soilscapes.point            | LandIS Soilscapes class lookup for a WGS84 point                              |
+| landis_soilscapes.area_summary     | LandIS Soilscapes area composition summary                                    |
+| landis_derive.pipe_risk            | LandIS-derived corrosion and shrink-swell pipe risk screening                 |
 | ons_data.query                      | Query live ONS observations (dataset/edition/version or term)                 |
 | ons_data.dimensions                 | List ONS observation dimensions for a live dataset                            |
 | ons_data.get_observation            | Retrieve a single live observation                                            |
@@ -428,6 +446,71 @@ manifest, cache status, and local ONS code cache entries).
 - `GET /resources/list` returns skill, UI, and data resource descriptors (with provenance metadata).
 - `GET /resources/read?uri=skills://mcp-geo/getting-started` returns skills guidance.
 - `GET /resources/read?uri=ui://mcp-geo/geography-selector` returns MCP-Apps UI HTML.
+- `GET /resources/read?uri=resource://mcp-geo/landis-products` returns the checked-in LandIS MVP registry.
+
+### LandIS Local Archive And Phase 2 Surface
+
+LandIS now has two layers in this repo:
+
+- a validated MVP screening surface
+- an additive phase-2 local-archive surface for NATMAP, NSI, and archive
+  discovery
+
+The checked-in registry and prompt resources work offline. The phase-2 archive
+resources also work offline from the local mirror. Spatial queries still
+require a normalized PostGIS warehouse, but the source of truth for follow-on
+LandIS ingestion is now the local archive under `~/Data` rather than a live
+portal session.
+
+Use:
+
+- `landis_catalog.list_products` to discover the supported MVP products and
+  linked resources.
+- `landis_metadata.get` to retrieve provenance and limitations for a specific
+  LandIS product.
+- `landis_soilscapes.point` and `landis_soilscapes.area_summary` for generalized
+  Soilscapes lookups.
+- `landis_derive.pipe_risk` for caveated corrosion and shrink-swell screening.
+- `landis_archive.list_items` and `landis_archive.get_item` to inspect the
+  locally mirrored LandIS archive and its surfacing classification.
+- `landis_natmap.point`, `landis_natmap.area_summary`, and
+  `landis_natmap.thematic_area_summary` for local-archive-backed NATMAP map-unit
+  and thematic summaries once loaded into PostGIS.
+- `landis_nsi.nearest_sites`, `landis_nsi.within_area`, and
+  `landis_nsi.profile_summary` for explicit evidence-first NSI lookups once
+  loaded into PostGIS.
+
+Additional LandIS resources:
+
+- `resource://mcp-geo/landis-portal-inventory`
+- `resource://mcp-geo/landis-archive-triage`
+- `resource://mcp-geo/landis-full-release-manifest`
+
+Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
+and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with
+`python scripts/landis_ingest.py --dsn ... --soilscapes <file> --pipe-risk <file>`.
+To inventory the authenticated LandIS portal itself from a local Atlas sign-in,
+run `python scripts/landis_portal_inventory.py`. The generated machine-readable
+catalog lands in `research/landis-data-source/landis_portal_inventory_2026-04-04.json`
+and the human-readable index lands in
+`docs/reports/landis_portal_inventory_2026-04-04.md`.
+To mirror the authenticated portal payloads to local storage, run
+`python scripts/landis_portal_download.py --destination /Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04`.
+The downloader reuses the Atlas session, stores per-item metadata plus raw item
+payloads, and exports Feature Service layers/tables in chunked GeoJSON/JSON
+files under the destination root without storing the session token itself.
+To classify the local archive for runtime surfacing, run
+`python scripts/landis_archive_triage.py`.
+To ingest the local NATMAP and NSI phase-2 slice from `~/Data` into PostGIS,
+run `python scripts/landis_phase2_ingest.py --dsn ...`.
+The Docker wrapper `scripts/mcp-docker-local` now mounts `~/Data` into the app
+container at `/landis-data` by default and sets `LANDIS_LOCAL_DATA_ROOT` there
+when the host directory exists, so the normal `mcp-geo` + PostGIS container
+workflow can use the local archive directly without copying the raw mirror into
+the image or database volume. The verified phase-2 warehouse load currently
+covers `NationalSoilMap`, eight NATMAP thematic products, `NSIsite`, and six
+mirrored NSI observation datasets from the local archive, plus the existing
+Soilscapes and pipe-risk validation layers.
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources

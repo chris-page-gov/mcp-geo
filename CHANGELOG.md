@@ -9,6 +9,76 @@ All notable changes to this project will be documented in this file.
 - Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
+- Added the LandIS MVP namespace, including `landis_catalog.list_products`,
+  `landis_metadata.get`, `landis_soilscapes.point`,
+  `landis_soilscapes.area_summary`, and `landis_derive.pipe_risk`, backed by
+  the new LandIS runtime helpers in `server/landis.py`.
+- Added LandIS product and guidance resources:
+  `resource://mcp-geo/landis-products`,
+  `resource://mcp-geo/landis-docs-soil-data-structures`,
+  `resource://mcp-geo/landis-docs-soil-classification`, and
+  `resource://mcp-geo/landis-licence-current`, plus three LandIS prompt
+  templates for planner, water-utility, and catchment soil briefings.
+- Added LandIS warehouse scaffolding via `scripts/landis_schema.sql` and
+  `scripts/landis_ingest.py`, defining the minimum PostGIS ingestion contract
+  for the Soilscapes and pipe-risk MVP datasets with explicit provenance
+  tables.
+- Added `scripts/landis_portal_inventory.py` plus generated LandIS catalog
+  inventories at `research/landis-data-source/landis_portal_inventory_2026-04-04.json`
+  and `docs/reports/landis_portal_inventory_2026-04-04.md`, documenting the
+  authenticated Atlas-visible portal datasets, documentation pages, maps,
+  applications, and supporting assets.
+- Added `scripts/landis_portal_download.py` to mirror the authenticated LandIS
+  portal to local storage, including raw item payload capture for docs/media
+  and chunked layer/table exports for Feature Services.
+- Added the follow-on LandIS phase-2 architecture report
+  `docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md`, documenting how
+  the completed authenticated archive (`106` mirrored items with `0` manifest
+  errors) should evolve into the next MCP surface: keep the validated MVP
+  stable, normalize NATMAP next, treat NSI as evidence-first, and defer AUGER
+  plus catalogue/reference layers from the first analytical expansion.
+- Added the follow-on LandIS release reconciliation report
+  `docs/reports/landis_release_surface_reconciliation_2026-04-05.md`,
+  confirming that the local archive is complete for the current authenticated
+  ArcGIS portal route while also recording additional LandIS families/services
+  still listed on the public LandIS website and separately licensed metadata
+  pages that sit outside the mirrored portal slice.
+- Added `scripts/landis_release_reconciliation.py` plus generated manifest
+  `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`
+  to probe the missing public-menu LandIS items, capture `data.gov.uk`
+  metadata matches, and attach conservative size guidance for dataset-like
+  items that are still outside the mirrored portal slice.
+- Added `scripts/landis_full_release_archive.py` plus generated manifest
+  `research/landis-data-source/landis_full_release_manifest_2026-04-05.json`
+  to build a rerunnable supplementary LandIS release archive on
+  `ExtSSD-Data`, covering the missing public-site pages plus matched
+  `data.gov.uk` packages/resources beyond the authenticated ArcGIS portal
+  mirror and writing a separate `verification_manifest.json` completion test.
+- Added the first local-archive-driven LandIS phase-2 tranche:
+  `scripts/landis_archive_triage.py`,
+  `research/landis-data-source/landis_archive_triage_2026-04-05.json`,
+  `scripts/landis_phase2_ingest.py`, and the new MCP tool families
+  `landis_archive.*`, `landis_natmap.*`, and `landis_nsi.*`, plus the
+  archive-backed resources `resource://mcp-geo/landis-portal-inventory`,
+  `resource://mcp-geo/landis-archive-triage`, and
+  `resource://mcp-geo/landis-full-release-manifest`.
+- Added direct LandIS archive support to `scripts/mcp-docker-local`, which now
+  mounts the host `~/Data` tree read-only into the app container at
+  `/landis-data`, sets `LANDIS_LOCAL_DATA_ROOT` automatically when that host
+  directory exists, and forwards the LandIS warehouse/schema toggles so the
+  standard app-container + PostGIS-container workflow can use the local archive
+  without baking raw archives into the image.
+- Added PostGIS lifecycle hardening across the Docker/devcontainer entrypoints:
+  `.devcontainer/docker-compose.yml` now defaults to its own
+  `mcp-geo-postgis-devcontainer` volume, `scripts/claude-mcp-local` and
+  `scripts/codex-mcp-local` now use dedicated fallback container/network/volume
+  names, and `scripts/mcp-docker-local` now inspects recent Postgres logs to
+  call out checkpoint-corrupted volumes explicitly when a wrapper-managed
+  sidecar does not become ready.
+- Added Docker wrapper startup hardening so wrapper-managed PostGIS sidecars no
+  longer publish host port `5432` by default, and stale sidecars with the wrong
+  port-binding state are now called out for recreation instead of silently
+  colliding with another wrapper's PostGIS container.
 - Added the full repository review report
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
   reports catalog, recorded the remediation baseline in `PROGRESS.MD` and
@@ -29,8 +99,40 @@ All notable changes to this project will be documented in this file.
   results, preventing clients such as Claude from validating error payloads
   against success-only output schemas. Added focused postcode-tool regressions
   covering the `NO_API_KEY` path across both transports.
+- Playground transcript endpoints now normalize non-object JSON payloads back to
+  the standard `INVALID_INPUT` response instead of leaking a `TypeError` from
+  Pydantic construction, and the config fallback shim now has explicit
+  regression coverage for the overrides path the daily bug scan flagged.
+- LandIS release-surface HTML stripping now tolerates malformed closing
+  `script`/`style` tags across both the reconciliation helper and the
+  script-free vendor snapshot helper, and `landis_nsi.nearest_sites` now binds
+  filtered-distance SQL parameters in placeholder order when `maxDistanceKm`
+  is supplied.
 
 ### Changed
+- Tool/resource discovery now includes the LandIS namespace and resources, and
+  the full evaluation harness treats the initial LandIS tool set as specialist
+  surfaces until the canonical question bank expands to cover them directly.
+- LandIS phase-2 work is now local-data-first: the repo defaults to the local
+  archive roots under `~/Data` when resolving the mirrored LandIS portal and
+  supplementary full-release archive, and the new phase-2 ingest path loads
+  NATMAP and NSI data from those local archives rather than depending on a
+  fresh authenticated portal session.
+- The LandIS release-reconciliation/archive tooling now treats query-string
+  download URLs as distinct cached resources instead of collapsing them onto a
+  single path, and the full-release verifier now accepts base `MapServer`
+  locator URLs when the same package already includes an archived companion
+  `FeatureServer`/`WMS`/`WFS`/OGC representation. The recorded 2026-04-05
+  supplementary archive therefore completes with `0` manifest errors and `0`
+  verification failures.
+- The normal Docker wrapper path is back in sync with the LandIS phase-2
+  runtime: `mcp-geo-server:latest` has been refreshed, `scripts/mcp-docker-local`
+  now exposes the local archive under `/landis-data`, and the containerized
+  LandIS surface has been revalidated against a fresh PostGIS sidecar using the
+  local archive plus validation warehouse layers.
+- `scripts/landis_phase2_ingest.py` now writes real portal-derived `updated_at`
+  timestamps into the NATMAP/NSI warehouse tables instead of incorrectly
+  inserting dataset-version labels into timestamp columns.
 - GitHub Actions CI now skips the `supply-chain-posture` OpenSSF Scorecard job
   on release-tag pushes, limiting it to pull requests and the default branch so
   `v*` release tags do not fail on the action's unsupported tag-push path. The

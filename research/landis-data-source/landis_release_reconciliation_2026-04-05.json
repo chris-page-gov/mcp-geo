@@ -1,0 +1,1242 @@
+{
+  "generatedAt": "2026-04-05T06:48:24.463846+00:00",
+  "portalInventoryPath": "/Users/crpage/repos/mcp-geo/research/landis-data-source/landis_portal_inventory_2026-04-04.json",
+  "archiveManifestPath": "/Users/crpage/Data/landis_portal_archive_2026-04-04/download_manifest.json",
+  "portalSummary": {
+    "totalItems": 106,
+    "dataSources": 33,
+    "nonDataItems": 73
+  },
+  "scopeNote": "This manifest focuses on public LandIS website items that are currently linked in the official navigation but are not present as exact titles in the mirrored ArcGIS portal slice.",
+  "entries": [
+    {
+      "family": "natmap",
+      "kind": "dataset",
+      "name": "NATMAP HOST",
+      "publicUrl": "https://www.landis.org.uk/data/nmhost.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 25500,
+        "pageTitle": "LandIS - Land Information System - National Soil Map - NATMAP host",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - National Soil Map - NATMAP host LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "NationalSoilMap",
+            "exists": true,
+            "recordCount": 42603
+          },
+          {
+            "title": "NATMAPtopsoiltexture",
+            "exists": true,
+            "recordCount": 38102
+          },
+          {
+            "title": "NATMAPavailablewater",
+            "exists": true,
+            "recordCount": 38097
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield natmap host",
+        "count": 21,
+        "matches": [
+          {
+            "title": "Host Class",
+            "name": "host-class1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:12:22.068553",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/host-class1"
+          },
+          {
+            "title": "Host Class by Soil Association",
+            "name": "host-class-by-soil-association1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:48:34.839720",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/host-class-by-soil-association1"
+          },
+          {
+            "title": "NATMAP  Legend (version 3)",
+            "name": "natmap-legend-version-31",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:47.196182",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-legend-version-31"
+          },
+          {
+            "title": "NATMAP - National Soil Map",
+            "name": "natmap-national-soil-map1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:46:13.243969",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-national-soil-map1"
+          },
+          {
+            "title": "NATMAP 1K (version 3)",
+            "name": "natmap-1k-version-31",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:46.221646",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-1k-version-31"
+          },
+          {
+            "title": "NATMAP Associations (version 3)",
+            "name": "natmap-associations-version-31",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:46.710866",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-associations-version-31"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "inferred",
+        "approximateRecordCount": [
+          38102,
+          42603
+        ],
+        "approximateOrderOfMagnitude": "10^4 polygons",
+        "basis": "Public page says this is derived from the National Soil Map; use the current portal thematic NATMAP polygon layers as the nearest size analogue.",
+        "relatedPortalDatasets": [
+          {
+            "title": "NationalSoilMap",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 42603
+          },
+          {
+            "title": "NATMAPtopsoiltexture",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 38102
+          },
+          {
+            "title": "NATMAPavailablewater",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 38097
+          }
+        ]
+      }
+    },
+    {
+      "family": "natmap",
+      "kind": "dataset",
+      "name": "NATMAP wetness",
+      "publicUrl": "https://www.landis.org.uk/data/nmwetness.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 20560,
+        "pageTitle": "LandIS - Land Information System - National Soil Map - NATMAP wetness",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - National Soil Map - NATMAP wetness LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "NationalSoilMap",
+            "exists": true,
+            "recordCount": 42603
+          },
+          {
+            "title": "NATMAPtopsoiltexture",
+            "exists": true,
+            "recordCount": 38102
+          },
+          {
+            "title": "NATMAPavailablewater",
+            "exists": true,
+            "recordCount": 38097
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield natmap wetness",
+        "count": 25,
+        "matches": [
+          {
+            "title": "NATMAP  Legend (version 3)",
+            "name": "natmap-legend-version-31",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:47.196182",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-legend-version-31"
+          },
+          {
+            "title": "NATMAP - National Soil Map",
+            "name": "natmap-national-soil-map1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:46:13.243969",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-national-soil-map1"
+          },
+          {
+            "title": "NATMAP 1K (version 3)",
+            "name": "natmap-1k-version-31",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:46.221646",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-1k-version-31"
+          },
+          {
+            "title": "NATMAP Associations (version 3)",
+            "name": "natmap-associations-version-31",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:46.710866",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-associations-version-31"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "inferred",
+        "approximateRecordCount": [
+          38102,
+          42603
+        ],
+        "approximateOrderOfMagnitude": "10^4 polygons",
+        "basis": "Public page says this is derived from the National Soil Map; use the current portal thematic NATMAP polygon layers as the nearest size analogue.",
+        "relatedPortalDatasets": [
+          {
+            "title": "NationalSoilMap",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 42603
+          },
+          {
+            "title": "NATMAPtopsoiltexture",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 38102
+          },
+          {
+            "title": "NATMAPavailablewater",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 38097
+          }
+        ]
+      }
+    },
+    {
+      "family": "soilseries",
+      "kind": "dataset",
+      "name": "Series Hydrology",
+      "publicUrl": "https://www.landis.org.uk/data/sshydrology.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 19745,
+        "pageTitle": "LandIS - Land Information System - SERIES Hydrology",
+        "mentionsDownload": true,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - SERIES Hydrology LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and util"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "exists": true,
+            "recordCount": 1343
+          },
+          {
+            "title": "HORIZONhydraulics",
+            "exists": true,
+            "recordCount": 6591
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soil series hydrology",
+        "count": 153,
+        "matches": [
+          {
+            "title": "Soil Series Hydrology",
+            "name": "soil-series-hydrology1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:11.498538",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/soil-series-hydrology1"
+          },
+          {
+            "title": "Modern Correlatives for Old Soil Series",
+            "name": "modern-correlatives-for-old-soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:26.748175",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/modern-correlatives-for-old-soil-series1"
+          },
+          {
+            "title": "Soil Series",
+            "name": "soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:51:08.009078",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series1"
+          },
+          {
+            "title": "Soil Series Agronomy",
+            "name": "soil-series-agronomy1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:45.590265",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-agronomy1"
+          },
+          {
+            "title": "Soil Series Definition",
+            "name": "soil-series-definition1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.170547",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-definition1"
+          },
+          {
+            "title": "Soil Series Information",
+            "name": "soil-series-information1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.637275",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-information1"
+          },
+          {
+            "title": "Soil Series LEACS",
+            "name": "soil-series-leacs1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:12.162265",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-leacs1"
+          },
+          {
+            "title": "Soil Series Pesticide",
+            "name": "soil-series-pesticide1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:04:00.271390",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-pesticide1"
+          },
+          {
+            "title": "Soil Series brief profile description",
+            "name": "soil-series-brief-profile-description1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:10.968938",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description1"
+          },
+          {
+            "title": "Soil Series brief profile description - horizon details",
+            "name": "soil-series-brief-profile-description-horizon-details1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:12:06.355949",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description-horizon-details1"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "inferred",
+        "approximateRecordCount": [
+          1343,
+          6591
+        ],
+        "approximateOrderOfMagnitude": "10^3 rows",
+        "basis": "Public page describes series-level tabular data; use SOILSERIES rather than the larger horizon tables as the nearest size analogue.",
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 1343
+          },
+          {
+            "title": "HORIZONhydraulics",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 6591
+          }
+        ]
+      }
+    },
+    {
+      "family": "soilseries",
+      "kind": "dataset",
+      "name": "Series Agronomy",
+      "publicUrl": "https://www.landis.org.uk/data/ssagronomy.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 18732,
+        "pageTitle": "LandIS - Land Information System - SERIES Agronomy",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - SERIES Agronomy LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and utili"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "exists": true,
+            "recordCount": 1343
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soil series agronomy",
+        "count": 51,
+        "matches": [
+          {
+            "title": "Soil Series Agronomy",
+            "name": "soil-series-agronomy1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:45.590265",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/soil-series-agronomy1"
+          },
+          {
+            "title": "Modern Correlatives for Old Soil Series",
+            "name": "modern-correlatives-for-old-soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:26.748175",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/modern-correlatives-for-old-soil-series1"
+          },
+          {
+            "title": "Soil Series",
+            "name": "soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:51:08.009078",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series1"
+          },
+          {
+            "title": "Soil Series Definition",
+            "name": "soil-series-definition1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.170547",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-definition1"
+          },
+          {
+            "title": "Soil Series Hydrology",
+            "name": "soil-series-hydrology1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:11.498538",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-hydrology1"
+          },
+          {
+            "title": "Soil Series Information",
+            "name": "soil-series-information1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.637275",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-information1"
+          },
+          {
+            "title": "Soil Series LEACS",
+            "name": "soil-series-leacs1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:12.162265",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-leacs1"
+          },
+          {
+            "title": "Soil Series Pesticide",
+            "name": "soil-series-pesticide1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:04:00.271390",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-pesticide1"
+          },
+          {
+            "title": "Soil Series brief profile description",
+            "name": "soil-series-brief-profile-description1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:10.968938",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description1"
+          },
+          {
+            "title": "Soil Series brief profile description - horizon details",
+            "name": "soil-series-brief-profile-description-horizon-details1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:12:06.355949",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description-horizon-details1"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "inferred",
+        "approximateRecordCount": [
+          1343
+        ],
+        "approximateOrderOfMagnitude": "10^3 rows",
+        "basis": "Public page describes series-level tabular data; use SOILSERIES as the nearest size analogue.",
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 1343
+          }
+        ]
+      }
+    },
+    {
+      "family": "soilseries",
+      "kind": "dataset",
+      "name": "Series Pesticides",
+      "publicUrl": "https://www.landis.org.uk/data/sspesticides.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 18488,
+        "pageTitle": "LandIS - Land Information System - SERIES Pesticide",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - SERIES Pesticide LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and util"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "exists": true,
+            "recordCount": 1343
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soil series pesticide",
+        "count": 51,
+        "matches": [
+          {
+            "title": "Modern Correlatives for Old Soil Series",
+            "name": "modern-correlatives-for-old-soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:26.748175",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/modern-correlatives-for-old-soil-series1"
+          },
+          {
+            "title": "Soil Series",
+            "name": "soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:51:08.009078",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series1"
+          },
+          {
+            "title": "Soil Series Agronomy",
+            "name": "soil-series-agronomy1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:45.590265",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-agronomy1"
+          },
+          {
+            "title": "Soil Series Definition",
+            "name": "soil-series-definition1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.170547",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-definition1"
+          },
+          {
+            "title": "Soil Series Hydrology",
+            "name": "soil-series-hydrology1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:11.498538",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-hydrology1"
+          },
+          {
+            "title": "Soil Series Information",
+            "name": "soil-series-information1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.637275",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-information1"
+          },
+          {
+            "title": "Soil Series LEACS",
+            "name": "soil-series-leacs1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:12.162265",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-leacs1"
+          },
+          {
+            "title": "Soil Series Pesticide",
+            "name": "soil-series-pesticide1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:04:00.271390",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-pesticide1"
+          },
+          {
+            "title": "Soil Series brief profile description",
+            "name": "soil-series-brief-profile-description1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:10.968938",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description1"
+          },
+          {
+            "title": "Soil Series brief profile description - horizon details",
+            "name": "soil-series-brief-profile-description-horizon-details1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:12:06.355949",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description-horizon-details1"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "inferred",
+        "approximateRecordCount": [
+          1343
+        ],
+        "approximateOrderOfMagnitude": "10^3 rows",
+        "basis": "Public page describes series-level tabular data; use SOILSERIES as the nearest size analogue.",
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 1343
+          }
+        ]
+      }
+    },
+    {
+      "family": "soilseries",
+      "kind": "dataset",
+      "name": "Series Leacs",
+      "publicUrl": "https://www.landis.org.uk/data/ssleacs.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 18464,
+        "pageTitle": "LandIS - Land Information System - SERIES Leacs",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - SERIES Leacs LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and utilitie"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "exists": true,
+            "recordCount": 1343
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soil series leacs",
+        "count": 51,
+        "matches": [
+          {
+            "title": "Soil Series LEACS",
+            "name": "soil-series-leacs1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:12.162265",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/soil-series-leacs1"
+          },
+          {
+            "title": "LEACS by Soil Association",
+            "name": "leacs-by-soil-association1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:14:28.687858",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/leacs-by-soil-association1"
+          },
+          {
+            "title": "Modern Correlatives for Old Soil Series",
+            "name": "modern-correlatives-for-old-soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:20:26.748175",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/modern-correlatives-for-old-soil-series1"
+          },
+          {
+            "title": "Soil Series",
+            "name": "soil-series1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:51:08.009078",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series1"
+          },
+          {
+            "title": "Soil Series Agronomy",
+            "name": "soil-series-agronomy1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:45.590265",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-agronomy1"
+          },
+          {
+            "title": "Soil Series Definition",
+            "name": "soil-series-definition1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.170547",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-definition1"
+          },
+          {
+            "title": "Soil Series Hydrology",
+            "name": "soil-series-hydrology1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:11.498538",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-hydrology1"
+          },
+          {
+            "title": "Soil Series Information",
+            "name": "soil-series-information1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:46.637275",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-information1"
+          },
+          {
+            "title": "Soil Series Pesticide",
+            "name": "soil-series-pesticide1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:04:00.271390",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-pesticide1"
+          },
+          {
+            "title": "Soil Series brief profile description",
+            "name": "soil-series-brief-profile-description1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:10.968938",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-series-brief-profile-description1"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "inferred",
+        "approximateRecordCount": [
+          1343
+        ],
+        "approximateOrderOfMagnitude": "10^3 rows",
+        "basis": "Public page describes series-level tabular data; use SOILSERIES as the nearest size analogue.",
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 1343
+          }
+        ]
+      }
+    },
+    {
+      "family": "peat",
+      "kind": "dataset",
+      "name": "Lowland Peat",
+      "publicUrl": "https://www.landis.org.uk/data/lowlandpeat.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 32380,
+        "pageTitle": "LandIS - Land Information System - National Soil Map - Lowland Peat",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - National Soil Map - Lowland Peat LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Ne"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "NATMAPcarbon",
+            "exists": true,
+            "recordCount": 165982
+          },
+          {
+            "title": "NATMAPsoilscapes",
+            "exists": true,
+            "recordCount": 34178
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield peat lowland",
+        "count": 23,
+        "matches": [
+          {
+            "title": "Eddy Covariance measurements of carbon dioxide, energy and water flux at an intensively cultivated lowland deep peat soil, East Anglia, UK, 2012 to 2020",
+            "name": "eddy-covariance-measurements-of-carbon-dioxide-energy-and-water-flux-at-an-intensively-cul-2020",
+            "licenseTitle": null,
+            "metadataModified": "2026-04-02T08:40:45.372760",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/eddy-covariance-measurements-of-carbon-dioxide-energy-and-water-flux-at-an-intensively-cul-2020"
+          },
+          {
+            "title": "Eddy covariance measurements of carbon dioxide, energy and water fluxes at a cropland and a grassland on lowland peat soils, East Anglia, UK, 2016-2019",
+            "name": "eddy-covariance-measurements-of-carbon-dioxide-energy-and-water-fluxes-at-a-cropland-2016-2019",
+            "licenseTitle": null,
+            "metadataModified": "2026-04-02T08:38:49.151292",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/eddy-covariance-measurements-of-carbon-dioxide-energy-and-water-fluxes-at-a-cropland-2016-2019"
+          },
+          {
+            "title": "Monthly precise levelling data of peat surface motion from upland and lowland blanket peatland in the Flow Country, Scotland, 2017-2019",
+            "name": "monthly-precise-levelling-data-of-peat-surface-motion-from-upland-and-lowland-blanket-2017-2019",
+            "licenseTitle": null,
+            "metadataModified": "2026-03-11T23:37:33.468951",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/monthly-precise-levelling-data-of-peat-surface-motion-from-upland-and-lowland-blanket-2017-2019"
+          },
+          {
+            "title": "England Peat Status GHG and C storage",
+            "name": "england-peat-status-ghg-and-c-storage",
+            "licenseTitle": null,
+            "metadataModified": "2025-10-09T16:05:12.716691",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/england-peat-status-ghg-and-c-storage"
+          },
+          {
+            "title": "Moorland Deep Peat AP Status",
+            "name": "moorland-deep-peat-ap-status1",
+            "licenseTitle": null,
+            "metadataModified": "2025-10-09T16:07:48.865959",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/moorland-deep-peat-ap-status1"
+          },
+          {
+            "title": "Peat characteristic data from Blanket Peatland in the Flow Country, Caithness and Sutherland, 2018",
+            "name": "peat-characteristic-data-from-blanket-peatland-in-the-flow-country-caithness-and-sutherlan-2018",
+            "licenseTitle": null,
+            "metadataModified": "2026-04-02T08:36:34.273588",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/peat-characteristic-data-from-blanket-peatland-in-the-flow-country-caithness-and-sutherlan-2018"
+          },
+          {
+            "title": "Peatland distribution maps for lowland Peruvian Amazonia, 2022",
+            "name": "peatland-distribution-maps-for-lowland-peruvian-amazonia-2022",
+            "licenseTitle": null,
+            "metadataModified": "2026-03-11T23:41:14.263191",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/peatland-distribution-maps-for-lowland-peruvian-amazonia-2022"
+          },
+          {
+            "title": "Spatial masks for calcareous, coastal, upland and lowland heath landscapes in England [Key Habitats 1992-93]",
+            "name": "spatial-masks-for-calcareous-coastal-upland-and-lowland-heath-landscapes-in-england-key-1992-93",
+            "licenseTitle": null,
+            "metadataModified": "2026-03-11T23:36:10.529722",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/spatial-masks-for-calcareous-coastal-upland-and-lowland-heath-landscapes-in-england-key-1992-93"
+          },
+          {
+            "title": "Unified peat map for Wales",
+            "name": "unified-peat-map-for-wales",
+            "licenseTitle": null,
+            "metadataModified": "2026-04-02T08:42:04.321902",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/unified-peat-map-for-wales"
+          },
+          {
+            "title": "Welsh Lowland Raised Bog Inventory",
+            "name": "welsh-lowland-raised-bog-inventory2",
+            "licenseTitle": null,
+            "metadataModified": "2025-10-14T11:10:34.554573",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/welsh-lowland-raised-bog-inventory2"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "unknown",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Public page confirms a dedicated lowland peat project, but the current sources do not provide a defensible machine-size estimate.",
+        "relatedPortalDatasets": [
+          {
+            "title": "NATMAPcarbon",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 165982
+          },
+          {
+            "title": "NATMAPsoilscapes",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 34178
+          }
+        ]
+      }
+    },
+    {
+      "family": "service",
+      "kind": "service",
+      "name": "Soilscapes Viewer",
+      "publicUrl": "https://www.landis.org.uk/services/soilscapes.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 21482,
+        "pageTitle": "LandIS - Land Information System - Soilscapes Viewer",
+        "mentionsDownload": true,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - Soilscapes Viewer LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and uti"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "NATMAPsoilscapes",
+            "exists": true,
+            "recordCount": 34178
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soilscapes",
+        "count": 7,
+        "matches": [
+          {
+            "title": "Mapunit Soilscapes",
+            "name": "mapunit-soilscapes1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:18:42.565706",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/mapunit-soilscapes1"
+          },
+          {
+            "title": "Soilscapes",
+            "name": "soilscapes1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-11T16:38:48.888405",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soilscapes1"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "not_applicable",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Interactive/public service page rather than a directly sized dataset.",
+        "relatedPortalDatasets": [
+          {
+            "title": "NATMAPsoilscapes",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 34178
+          }
+        ]
+      }
+    },
+    {
+      "family": "service",
+      "kind": "service",
+      "name": "Soils Guide",
+      "publicUrl": "https://www.landis.org.uk/soilsguide/index.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 21792,
+        "pageTitle": "LandIS - Land Information System - Soils guide",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - Soils guide LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and utilities"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": []
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soils guide landis",
+        "count": 80,
+        "matches": []
+      },
+      "approximateSize": {
+        "classification": "not_applicable",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Documentation/service page rather than a directly sized dataset.",
+        "relatedPortalDatasets": []
+      }
+    },
+    {
+      "family": "service",
+      "kind": "service",
+      "name": "Soil Alerts",
+      "publicUrl": "https://www.landis.org.uk/soilsguide/soil_alerts.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 28449,
+        "pageTitle": "LandIS - Land Information System - Soil Alerts",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - Soil Alerts LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and utilities"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": []
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield soil alerts landis",
+        "count": 69,
+        "matches": [
+          {
+            "title": "Higher Categories for Soil Classification",
+            "name": "higher-categories-for-soil-classification1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:06:46.288048",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/higher-categories-for-soil-classification1"
+          },
+          {
+            "title": "Host Class by Soil Association",
+            "name": "host-class-by-soil-association1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:48:34.839720",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/host-class-by-soil-association1"
+          },
+          {
+            "title": "LEACS by Soil Association",
+            "name": "leacs-by-soil-association1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:14:28.687858",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/leacs-by-soil-association1"
+          },
+          {
+            "title": "NATMAP - National Soil Map",
+            "name": "natmap-national-soil-map1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:46:13.243969",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/natmap-national-soil-map1"
+          },
+          {
+            "title": "NSI Soil Structure",
+            "name": "nsi-soil-structure",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T17:11:11.590525",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/nsi-soil-structure"
+          },
+          {
+            "title": "Other Soil Pit Analyses",
+            "name": "other-soil-pit-analyses",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:23:09.657817",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/other-soil-pit-analyses"
+          },
+          {
+            "title": "Raw Soil Pit Site Information",
+            "name": "raw-soil-pit-site-information",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:25:50.394524",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/raw-soil-pit-site-information"
+          },
+          {
+            "title": "Soil Pit Analytical Data",
+            "name": "soil-pit-analytical-data",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:07.831719",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-pit-analytical-data"
+          },
+          {
+            "title": "Soil Pit Hydrological Data",
+            "name": "soil-pit-hydrological-data",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T16:59:45.098662",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-pit-hydrological-data"
+          },
+          {
+            "title": "Soil Pits",
+            "name": "soil-pits",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:08.352044",
+            "score": 0.5,
+            "url": "https://www.data.gov.uk/dataset/soil-pits"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "not_applicable",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Decision-support service page rather than a directly sized dataset.",
+        "relatedPortalDatasets": []
+      }
+    },
+    {
+      "family": "service",
+      "kind": "service",
+      "name": "CatchIS",
+      "publicUrl": "https://www.landis.org.uk/services/catchis.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 21935,
+        "pageTitle": "LandIS - Land Information System - CatchIS",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": true,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - CatchIS LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and utilities Abo"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": []
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield catchis",
+        "count": 0,
+        "matches": []
+      },
+      "approximateSize": {
+        "classification": "not_applicable",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Toolkit/service page rather than a directly sized dataset.",
+        "relatedPortalDatasets": []
+      }
+    },
+    {
+      "family": "service",
+      "kind": "service",
+      "name": "Leacs",
+      "publicUrl": "https://www.landis.org.uk/services/leacs.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 25437,
+        "pageTitle": "LandIS - Land Information System - Land Evaluation for Corrosivity and Shrinkage - LEACS",
+        "mentionsDownload": false,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - Land Evaluation for Corrosivity and Shrinkage - LEACS LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil "
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "exists": true,
+            "recordCount": 1343
+          }
+        ]
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield leacs",
+        "count": 2,
+        "matches": [
+          {
+            "title": "LEACS by Soil Association",
+            "name": "leacs-by-soil-association1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:14:28.687858",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/leacs-by-soil-association1"
+          },
+          {
+            "title": "Soil Series LEACS",
+            "name": "soil-series-leacs1",
+            "licenseTitle": "",
+            "metadataModified": "2016-02-10T18:30:12.162265",
+            "score": 1.0,
+            "url": "https://www.data.gov.uk/dataset/soil-series-leacs1"
+          }
+        ]
+      },
+      "approximateSize": {
+        "classification": "not_applicable",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Application/service page; not a directly sized release package.",
+        "relatedPortalDatasets": [
+          {
+            "title": "SOILSERIES",
+            "classification": "data_source",
+            "serviceType": "Feature Service",
+            "recordCount": 1343
+          }
+        ]
+      }
+    },
+    {
+      "family": "service",
+      "kind": "service",
+      "name": "Treefit",
+      "publicUrl": "https://www.landis.org.uk/services/treefit.cfm",
+      "publicProbe": {
+        "status": 200,
+        "pageBytes": 24460,
+        "pageTitle": "LandIS - Land Information System - Treefit",
+        "mentionsDownload": true,
+        "mentionsFeatureServer": false,
+        "mentionsPublicData": false,
+        "textSample": "LandIS - Land Information System - Treefit LandIS \u00ae Home Overview LandIS in use Soil reference centre Applications Case studies Data Data families National Soil Map \u00bb NATMAP Vector NATMAP 1000 NATMAP 2000 NATMAP 5000 NATMAP carbon NATMAP Soilscapes NATMAP subsoil texture NATMAP topsoil texture NATMAP available water NATMAP WRB Soil properties \u00bb Series Info Horizon Fundamentals Horizon Hydraulics National Soils Inventory \u00bb NSI Site NSI Profile NSI Topsoil NSI Textures NSI Features Auger Bores Lowland Peat Services Soilscapes Viewer Soils Guide Soil Alerts WOSSAC Soil-Net Tools and utilities Abo"
+      },
+      "portalPresence": {
+        "exactTitlePresent": false,
+        "exactTitle": null,
+        "relatedPortalDatasets": []
+      },
+      "dataGovProbe": {
+        "status": 200,
+        "query": "cranfield treefit",
+        "count": 0,
+        "matches": []
+      },
+      "approximateSize": {
+        "classification": "not_applicable",
+        "approximateRecordCount": null,
+        "approximateOrderOfMagnitude": null,
+        "basis": "Service/database page rather than a directly sized dataset.",
+        "relatedPortalDatasets": []
+      }
+    }
+  ]
+}

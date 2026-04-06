@@ -164,3 +164,20 @@ def test_populate_fallback_settings_ignores_placeholder_env_values():
     assert dummy.RATE_LIMIT_PER_MIN == 207
     assert dummy.RATE_LIMIT_BYPASS is False
     assert dummy.ONS_DATASET_API_BASE == "https://api.beta.ons.gov.uk/v1"
+
+
+def test_populate_fallback_settings_honors_overrides_without_crashing():
+    class DummySettings:
+        RATE_LIMIT_PER_MIN: int = 207
+        RATE_LIMIT_BYPASS: bool = False
+
+    dummy = DummySettings()
+
+    _populate_fallback_settings(
+        dummy,
+        {"RATE_LIMIT_PER_MIN": "123", "RATE_LIMIT_BYPASS": "true"},
+        {},
+    )
+
+    assert dummy.RATE_LIMIT_PER_MIN == 123
+    assert dummy.RATE_LIMIT_BYPASS is True

@@ -84,3 +84,41 @@ printf 'docker-wrapper\\n'
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert proc.stdout.strip() == "docker-wrapper"
+
+
+def test_codex_launcher_sets_dedicated_docker_sidecar_defaults(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "codex-mcp-local"
+    fake_docker_wrapper = tmp_path / "fake-docker-wrapper.sh"
+
+    _write_executable(
+        fake_docker_wrapper,
+        """#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "${MCP_GEO_DOCKER_NETWORK:-}"
+printf '%s\\n' "${MCP_GEO_POSTGIS_CONTAINER:-}"
+printf '%s\\n' "${MCP_GEO_POSTGIS_VOLUME:-}"
+printf '%s\\n' "${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-}"
+""",
+    )
+
+    env = os.environ.copy()
+    env["MCP_GEO_CODEX_DOCKER_WRAPPER"] = str(fake_docker_wrapper)
+    env["MCP_GEO_CODEX_LAUNCHER"] = "docker"
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert proc.stdout.splitlines() == [
+        "mcp-geo-codex",
+        "mcp-geo-postgis-codex",
+        "mcp-geo-postgis-codex",
+        "auto",
+    ]

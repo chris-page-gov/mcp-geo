@@ -15,6 +15,11 @@ case "$LAUNCHER_MODE" in
     exec "$LOCAL_WRAPPER"
     ;;
   docker)
+    export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-codex}"
+    export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-codex}"
+    export MCP_GEO_POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
+    export MCP_GEO_POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-codex}"
+    export MCP_GEO_POSTGIS_REUSE_DEVCONTAINER="${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-auto}"
     exec "$DOCKER_WRAPPER"
     ;;
   auto)
@@ -36,6 +41,11 @@ if [[ -z "$DOCKER_BIN" ]] && command -v docker >/dev/null 2>&1; then
 fi
 
 if [[ -n "$DOCKER_BIN" ]] && "$DOCKER_BIN" info >/dev/null 2>&1; then
+  export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-codex}"
+  export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-codex}"
+  export MCP_GEO_POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
+  export MCP_GEO_POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-codex}"
+  export MCP_GEO_POSTGIS_REUSE_DEVCONTAINER="${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-auto}"
   exec "$DOCKER_WRAPPER"
 fi
 

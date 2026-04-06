@@ -27,11 +27,14 @@ def sanitize_resource_meta(meta: dict[str, Any] | None) -> dict[str, Any] | None
     return sanitized or None
 
 
-def resource_mime_from_meta(meta: dict[str, Any] | None) -> str:
+def resource_mime_from_entry(entry: dict[str, Any], meta: dict[str, Any] | None) -> str:
     if isinstance(meta, dict):
         value = meta.get("mimeType")
         if isinstance(value, str) and value.strip():
             return value
+    entry_mime = entry.get("mimeType")
+    if isinstance(entry_mime, str) and entry_mime.strip():
+        return entry_mime
     return "application/json"
 
 
@@ -55,7 +58,7 @@ def read_resource_content(
                 content, etag, meta = load_data_content(entry)
                 return {
                     "uri": uri,
-                    "mimeType": resource_mime_from_meta(meta),
+                    "mimeType": resource_mime_from_entry(entry, meta),
                     "text": content,
                     "etag": etag,
                     "_meta": sanitize_resource_meta(meta),
@@ -121,7 +124,7 @@ def read_resource_content(
             )
             return {
                 "uri": resolved_uri,
-                "mimeType": resource_mime_from_meta(meta),
+                "mimeType": resource_mime_from_entry(entry, meta),
                 "text": content,
                 "etag": etag,
                 "_meta": sanitize_resource_meta(meta),

@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 
-SCRIPT_TAG_RE = re.compile(r"<script\b[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL)
+SCRIPT_TAG_RE = re.compile(r"<script\b[^>]*>.*?</script\b[^>]*>", re.IGNORECASE | re.DOTALL)
 
 
 def strip_scripts(html: str) -> str:

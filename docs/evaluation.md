@@ -94,7 +94,7 @@ docker run --rm -p 5432:5432 \\
   -e POSTGRES_USER=mcp_geo \\
   -e POSTGRES_PASSWORD=mcp_geo \\
   -e PGDATA=/var/lib/postgresql/data/pgdata \\
-  -v mcp-geo-postgis:/var/lib/postgresql/data \\
+  -v mcp-geo-postgis-sidecar:/var/lib/postgresql/data \\
   mcp-geo-postgis-pgrouting:16-3.4
 ```
 

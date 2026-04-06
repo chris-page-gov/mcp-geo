@@ -58,6 +58,22 @@ def test_playground_events_invalid_payload_uses_generic_message():
     assert body.get("message") == "Invalid payload"
 
 
+def test_playground_tool_call_rejects_non_object_payload():
+    resp = client.post("/playground/tool_call", json=[])
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+    assert body.get("message") == "Invalid payload"
+
+
+def test_playground_events_reject_non_object_payload():
+    resp = client.post("/playground/events", json=[])
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body.get("code") == "INVALID_INPUT"
+    assert body.get("message") == "Invalid payload"
+
+
 def test_playground_record_and_prune():
     _reset_orchestration()
     # Add more than MAX_TRANSCRIPT entries to trigger prune branch

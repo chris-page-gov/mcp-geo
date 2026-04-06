@@ -121,7 +121,7 @@ async def record_tool_call(request: Request, response: Response):
         )
     try:
         model = PlaygroundToolCall(**data_raw)
-    except ValidationError:
+    except (TypeError, ValidationError):
         return _invalid_payload_response(auth_headers)
     entry = {
         "tool": model.tool,
@@ -168,7 +168,7 @@ async def record_event(request: Request, response: Response):
         )
     try:
         model = PlaygroundEvent(**data_raw)
-    except ValidationError:
+    except (TypeError, ValidationError):
         return _invalid_payload_response(auth_headers)
     entry = {
         "eventType": model.eventType,

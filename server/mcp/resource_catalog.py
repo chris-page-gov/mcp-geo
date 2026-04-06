@@ -18,6 +18,19 @@ BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
+LANDIS_PRODUCTS_PATH = ROOT / "resources" / "landis_products.json"
+LANDIS_SOIL_DATA_STRUCTURES_PATH = ROOT / "resources" / "landis" / "soil_data_structures.md"
+LANDIS_SOIL_CLASSIFICATION_PATH = ROOT / "resources" / "landis" / "soil_classification.md"
+LANDIS_LICENCE_CURRENT_PATH = ROOT / "resources" / "landis" / "licence_current.md"
+LANDIS_PORTAL_INVENTORY_PATH = (
+    ROOT / "research" / "landis-data-source" / "landis_portal_inventory_2026-04-04.json"
+)
+LANDIS_ARCHIVE_TRIAGE_PATH = (
+    ROOT / "research" / "landis-data-source" / "landis_archive_triage_2026-04-05.json"
+)
+LANDIS_FULL_RELEASE_MANIFEST_PATH = (
+    ROOT / "research" / "landis-data-source" / "landis_full_release_manifest_2026-04-05.json"
+)
 PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
 PEAT_LAYERS_PATH = ROOT / "resources" / "peat_layers_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
@@ -266,6 +279,69 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": LAYERS_CATALOG_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "index", "domain": "maps"},
+    },
+    {
+        "slug": "landis-products",
+        "name": "data_landis_products",
+        "title": "LandIS Product Registry",
+        "description": "Checked-in registry for the LandIS MVP product, metadata, and provenance surface.",
+        "path": LANDIS_PRODUCTS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
+    },
+    {
+        "slug": "landis-docs-soil-data-structures",
+        "name": "data_landis_docs_soil_data_structures",
+        "title": "LandIS Soil Data Structures",
+        "description": "Operational join guidance for LandIS association, series, and horizon data.",
+        "path": LANDIS_SOIL_DATA_STRUCTURES_PATH,
+        "mimeType": "text/markdown",
+        "annotations": {"type": "guide", "domain": "landis"},
+    },
+    {
+        "slug": "landis-docs-soil-classification",
+        "name": "data_landis_docs_soil_classification",
+        "title": "LandIS Soil Classification Guidance",
+        "description": "Operational classification and caveat guidance for LandIS-derived outputs.",
+        "path": LANDIS_SOIL_CLASSIFICATION_PATH,
+        "mimeType": "text/markdown",
+        "annotations": {"type": "guide", "domain": "landis"},
+    },
+    {
+        "slug": "landis-licence-current",
+        "name": "data_landis_licence_current",
+        "title": "LandIS Licence and Open Access Status",
+        "description": "Current LandIS open-access and licence validation note for the MVP.",
+        "path": LANDIS_LICENCE_CURRENT_PATH,
+        "mimeType": "text/markdown",
+        "annotations": {"type": "guide", "domain": "landis"},
+    },
+    {
+        "slug": "landis-portal-inventory",
+        "name": "data_landis_portal_inventory",
+        "title": "LandIS Portal Inventory",
+        "description": "Authenticated inventory of the mirrored LandIS portal catalog.",
+        "path": LANDIS_PORTAL_INVENTORY_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
+    },
+    {
+        "slug": "landis-archive-triage",
+        "name": "data_landis_archive_triage",
+        "title": "LandIS Archive Triage",
+        "description": "Machine-readable triage manifest for the local LandIS archive and release inventory.",
+        "path": LANDIS_ARCHIVE_TRIAGE_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
+    },
+    {
+        "slug": "landis-full-release-manifest",
+        "name": "data_landis_full_release_manifest",
+        "title": "LandIS Full Release Manifest",
+        "description": "Supplementary public/data.gov release manifest captured alongside the portal mirror.",
+        "path": LANDIS_FULL_RELEASE_MANIFEST_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "landis"},
     },
     {
         "slug": "protected-landscapes-england",
@@ -914,6 +990,12 @@ def _load_json_file(path: Path) -> tuple[str, str]:
     return content, etag
 
 
+def _load_text_file(path: Path) -> tuple[str, str]:
+    content = path.read_text(encoding="utf-8")
+    etag = _etag_from_bytes(content.encode("utf-8"), str(path))
+    return content, etag
+
+
 def _load_benchmark_live_alias(path: Path) -> tuple[str, str, dict[str, Any] | None]:
     if not path.exists():
         content = json.dumps(
@@ -1016,6 +1098,71 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "layers-catalog"), None
         return (*_load_json_file(LAYERS_CATALOG_PATH), None)
+    if slug == "landis-products":
+        if not LANDIS_PRODUCTS_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "LandIS product registry not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "landis-products"), None
+        return (*_load_json_file(LANDIS_PRODUCTS_PATH), None)
+    if slug == "landis-docs-soil-data-structures":
+        if not LANDIS_SOIL_DATA_STRUCTURES_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "LandIS soil data structures resource not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "landis-docs-soil-data-structures"), None
+        return (*_load_text_file(LANDIS_SOIL_DATA_STRUCTURES_PATH), None)
+    if slug == "landis-docs-soil-classification":
+        if not LANDIS_SOIL_CLASSIFICATION_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "LandIS soil classification resource not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "landis-docs-soil-classification"), None
+        return (*_load_text_file(LANDIS_SOIL_CLASSIFICATION_PATH), None)
+    if slug == "landis-licence-current":
+        if not LANDIS_LICENCE_CURRENT_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "LandIS licence resource not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "landis-licence-current"), None
+        return (*_load_text_file(LANDIS_LICENCE_CURRENT_PATH), None)
+    if slug == "landis-portal-inventory":
+        if not LANDIS_PORTAL_INVENTORY_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "LandIS portal inventory not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "landis-portal-inventory"), None
+        return (*_load_json_file(LANDIS_PORTAL_INVENTORY_PATH), None)
+    if slug == "landis-archive-triage":
+        if not LANDIS_ARCHIVE_TRIAGE_PATH.exists():
+            content = json.dumps(
+                {"isError": True, "code": "NOT_FOUND", "message": "LandIS archive triage not found."}
+            )
+            return content, _etag_from_bytes(b"missing", "landis-archive-triage"), None
+        return (*_load_json_file(LANDIS_ARCHIVE_TRIAGE_PATH), None)
+    if slug == "landis-full-release-manifest":
+        if not LANDIS_FULL_RELEASE_MANIFEST_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "LandIS full release manifest not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "landis-full-release-manifest"), None
+        return (*_load_json_file(LANDIS_FULL_RELEASE_MANIFEST_PATH), None)
     if slug == "protected-landscapes-england":
         if not PROTECTED_LANDSCAPES_PATH.exists():
             content = json.dumps(
