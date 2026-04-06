@@ -155,6 +155,10 @@ All notable changes to this project will be documented in this file.
   (`./scripts/ruff-local`) as equivalent to inline `ruff check`, so the
   committed compliant baseline remains valid after the wrapper-based CI
   cleanup.
+- Hardened secret loading in `server/config.py` so placeholder-style values
+  such as `${env:OS_API_KEY}` are treated as unset, `*_FILE` fallbacks can
+  still hydrate the real secret, and minimal runtimes without
+  `pydantic-settings` still read environment-backed settings.
 - Added explicit MIT package metadata to `pyproject.toml`, OCI image labels to
   `Dockerfile`, and aligned active Docker-facing docs and wrappers on
   `OS_API_KEY` as the required live credential. `NOMIS_UID` and

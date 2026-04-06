@@ -74,6 +74,12 @@ def test_coerce_fallback_setting_value_handles_basic_typed_env_values():
     assert _coerce_fallback_setting_value("30.5", float) == 30.5
 
 
+def test_coerce_fallback_setting_value_preserves_default_on_invalid_typed_value():
+    assert _coerce_fallback_setting_value("flase", bool, False) is False
+    assert _coerce_fallback_setting_value("abc", int, 207) == 207
+    assert _coerce_fallback_setting_value("oops", float, 60.0) == 60.0
+
+
 def test_populate_fallback_settings_coerces_env_backed_defaults():
     class DummySettings:
         RATE_LIMIT_PER_MIN: int = 207
@@ -98,6 +104,26 @@ def test_populate_fallback_settings_coerces_env_backed_defaults():
     assert dummy.ONS_CACHE_TTL == 30.5
     assert dummy.LOG_JSON is True
     assert dummy.OS_API_KEY == "env-key"
+
+
+def test_populate_fallback_settings_preserves_defaults_for_invalid_typed_env_values():
+    class DummySettings:
+        RATE_LIMIT_PER_MIN: int = 207
+        RATE_LIMIT_BYPASS: bool = False
+        ONS_CACHE_TTL: float = 60.0
+
+    dummy = DummySettings()
+    env = {
+        "RATE_LIMIT_PER_MIN": "abc",
+        "RATE_LIMIT_BYPASS": "flase",
+        "ONS_CACHE_TTL": "oops",
+    }
+
+    _populate_fallback_settings(dummy, {}, env)
+
+    assert dummy.RATE_LIMIT_PER_MIN == 207
+    assert dummy.RATE_LIMIT_BYPASS is False
+    assert dummy.ONS_CACHE_TTL == 60.0
 
 
 def test_populate_fallback_settings_ignores_empty_env_values():
