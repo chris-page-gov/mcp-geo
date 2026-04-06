@@ -525,12 +525,16 @@ PATH), set the Docker binary explicitly:
 }
 ```
 
-If port `5432` is already in use, set `MCP_GEO_POSTGIS_PUBLISH_PORT` to another
-port or `0` to disable host publishing.
+Wrapper-managed sidecars no longer publish `5432` to the host by default. Set
+`MCP_GEO_POSTGIS_PUBLISH_PORT` to a port number only if you explicitly need
+host access to that wrapper-owned database, or to `0` to disable publishing.
 
 Storage controls for the wrapper:
 - `MCP_GEO_POSTGIS_STORAGE_MODE=volume` (default) uses Docker volume
   `MCP_GEO_POSTGIS_VOLUME` (default `mcp-geo-postgis-claude`).
+- `MCP_GEO_POSTGIS_PUBLISH_PORT` defaults to `0`, so the wrapper-owned PostGIS
+  sidecar is reachable only on the Docker network unless you opt into a host
+  port mapping.
 - `MCP_GEO_POSTGIS_STORAGE_MODE=bind` uses
   `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
 - `MCP_GEO_POSTGIS_IMAGE` defaults to `mcp-geo-postgis-pgrouting:16-3.4`.

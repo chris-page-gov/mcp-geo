@@ -75,6 +75,10 @@ All notable changes to this project will be documented in this file.
   names, and `scripts/mcp-docker-local` now inspects recent Postgres logs to
   call out checkpoint-corrupted volumes explicitly when a wrapper-managed
   sidecar does not become ready.
+- Added Docker wrapper startup hardening so wrapper-managed PostGIS sidecars no
+  longer publish host port `5432` by default, and stale sidecars with the wrong
+  port-binding state are now called out for recreation instead of silently
+  colliding with another wrapper's PostGIS container.
 - Added the full repository review report
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
   reports catalog, recorded the remediation baseline in `PROGRESS.MD` and

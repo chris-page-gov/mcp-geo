@@ -130,3 +130,4 @@ exit 1
     assert _plan_value(proc.stdout, "network") == "mcp-geo-sidecar"
     assert _plan_value(proc.stdout, "postgis_container_name") == "mcp-geo-postgis-sidecar"
     assert _plan_value(proc.stdout, "postgis_volume") == "mcp-geo-postgis-sidecar"
+    assert _plan_value(proc.stdout, "postgis_publish_port") == "0"

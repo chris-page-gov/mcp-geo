@@ -324,6 +324,9 @@ the devcontainer defaults to a separate named volume
 with the devcontainer cache by default. If a sidecar fails to become ready, the
 wrapper now inspects the recent Postgres logs and calls out checkpoint-corrupted
 volumes explicitly instead of only timing out.
+Wrapper-managed PostGIS sidecars no longer publish `5432` to the host by
+default; set `MCP_GEO_POSTGIS_PUBLISH_PORT` only when you explicitly need host
+access to that sidecar database.
 For benchmark parity across clients, start the repo devcontainer PostGIS first
 and run `./scripts/check_shared_benchmark_cache.sh` before launching Codex or
 Claude so both wrappers are confirmed to reuse the same cache.
