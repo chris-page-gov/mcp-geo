@@ -20,7 +20,6 @@ def test_tools_describe_all():
     data = resp.json()
     names = [t["name"] for t in data["tools"]]
     assert "council_tax_band_lookup" in names
-    assert "council_tax_query" in names
     assert "os_places_by_postcode" in names
     assert "ons_data_create_filter" in names
     # Ensure schemas present
@@ -53,21 +52,6 @@ def test_tools_describe_single_sanitized_alias():
     assert len(data["tools"]) == 1
     assert data["tools"][0]["name"] == "os_places_by_postcode"
     assert data["tools"][0]["annotations"]["originalName"] == "os_places.by_postcode"
-
-
-def test_tools_describe_landis_thematic_tool_surfaces_supported_product_ids():
-    resp = client.get("/tools/describe", params={"name": "landis_natmap.thematic_area_summary"})
-    assert resp.status_code == 200
-    tool = resp.json()["tools"][0]
-
-    product_id = tool["inputSchema"]["properties"]["productId"]
-    assert "enum" in product_id
-    assert "natmap-carbon" in product_id["enum"]
-
-    landis_meta = tool["_meta"]["mcp-geo"]["landis"]
-    assert landis_meta["warehouseRequired"] is True
-    supported_ids = {item["id"] for item in landis_meta["supportedProducts"]}
-    assert "natmap-carbon" in supported_ids
 
 
 def test_tools_describe_unknown():

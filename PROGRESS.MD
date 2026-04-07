@@ -5,15 +5,6 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-04-07
 
-## Council Tax UPRN cross-reference tool (2026-04-07)
-
-Legend: pending, in_progress, done, blocked
-
-| Workstream | Status | Dependencies | Notes |
-| --- | --- | --- | --- |
-| CT-UPRN-1 AddressBase Premium Type 23 UPRN tax-status query | done | none | Added `council_tax.query` to stream-scan the configured AddressBase Premium Application Cross Reference CSV for a batch of UPRNs, classify current `7666VC` Council Tax and `7666VN` non-domestic-rates flags, surface inactive historical matches separately when `activeOnly=true`, and document the updated OS Docs links that replace the dead legacy PDF URL. Focused regressions cover missing config, invalid CSV shape, directory/file resolution, active-only behavior, and ended-record inclusion. |
-| CT-UPRN-2 Real ABP delivery example fixture and analyst workbook | done | CT-UPRN-1 | Preserved the first real 100-UPRN run from the extSSD ABP GML delivery as `tests/fixtures/council_tax_uprn_abp_example.json` and generated `output/spreadsheet/uprns_council_tax_status.xlsx` with `Summary` and `Results` sheets so the sample output is reusable outside raw JSON. |
-
 ## Claude/LandIS map-export research (2026-04-07)
 
 Legend: pending, in_progress, done, blocked
