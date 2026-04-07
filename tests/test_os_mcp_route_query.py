@@ -118,6 +118,19 @@ def test_route_query_map_render():
     assert body["recommended_tool"] == "os_maps.render"
 
 
+def test_route_query_road_overlay_prefers_export_roads_tool():
+    body = _route("Replace broken Overpass road geometry with a Leaflet overlay for A444 and B4101")
+    assert body["intent"] == "map_render"
+    assert body["recommended_tool"] == "os_map.export_roads"
+    assert body["recommended_parameters"]["outputFormat"] == "leaflet_snippet"
+    roads = body["recommended_parameters"]["roads"]
+    assert roads == [
+        {"label": "A444", "roadClassificationNumber": "A444"},
+        {"label": "B4101", "roadClassificationNumber": "B4101"},
+    ]
+    assert body["workflow_steps"] == ["os_map.export_roads"]
+
+
 def test_route_query_sg03_style_prompt_prefers_os_route_tool():
     body = _route(
         "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "

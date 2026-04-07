@@ -3,7 +3,33 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-06
+Last updated: 2026-04-07
+
+## Council Tax UPRN cross-reference tool (2026-04-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CT-UPRN-1 AddressBase Premium Type 23 UPRN tax-status query | done | none | Added `council_tax.query` to stream-scan the configured AddressBase Premium Application Cross Reference CSV for a batch of UPRNs, classify current `7666VC` Council Tax and `7666VN` non-domestic-rates flags, surface inactive historical matches separately when `activeOnly=true`, and document the updated OS Docs links that replace the dead legacy PDF URL. Focused regressions cover missing config, invalid CSV shape, directory/file resolution, active-only behavior, and ended-record inclusion. |
+| CT-UPRN-2 Real ABP delivery example fixture and analyst workbook | done | CT-UPRN-1 | Preserved the first real 100-UPRN run from the extSSD ABP GML delivery as `tests/fixtures/council_tax_uprn_abp_example.json` and generated `output/spreadsheet/uprns_council_tax_status.xlsx` with `Summary` and `Results` sheets so the sample output is reusable outside raw JSON. |
+
+## Claude/LandIS map-export research (2026-04-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CLAUDE-LANDIS-2 Draw-roads-on-map contract analysis | done | CLAUDE-LANDIS-1 | Added `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, concluding that the main issue is architectural rather than prompt-level: the server currently makes the model handle paged feature export, byte-chunk resource recovery, JSON reassembly, and host-side ETL. Recommended direction is a task-shaped road-overlay export tool plus durable semantic export manifests, with `os_mcp.route_query` steering map-building prompts to that higher-level contract. |
+| CLAUDE-LANDIS-3 Road-overlay export implementation | done | CLAUDE-LANDIS-2 | Implemented `os_map.export_roads` in `tools/os_map.py` as the task-shaped fix recommended by the analysis. The new tool fetches all required `os_features.query` pages server-side, writes deterministic semantic exports under `data/os_exports/road-overlays/<request-hash>/`, emits per-road GeoJSON parts plus optional JavaScript/Leaflet artifacts, and reports completeness/count metadata so clients no longer have to reconstruct chunked JSON resources by hand. Follow-on wiring updated `os_mcp.route_query`, tool-search stateful classifications, and `resource://mcp-geo/os-exports/*` MIME handling. Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_os_map_tools.py tests/test_os_mcp_route_query.py tests/test_tools_describe.py` (`94 passed`). |
+
+## Claude troubleshooting hardening (2026-04-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CLAUDE-LANDIS-1 OS feature-queryable normalization for RoadLink troubleshooting | done | none | Hardened `tools/os_features.py` so `os_features.query` now fetches collection queryables when a CQL filter is supplied and rewrites case-mismatched property identifiers to the canonical upstream field ids before calling OS NGD. This closes the repeated Claude failure captured in `troubleshooting/Landis/mapping_landis_results.md`, where `roadClassificationNumber` was rejected even though the collection exposes the lowercase queryable `roadclassificationnumber`. Added focused regressions in `tests/test_os_features_collections.py` and `tests/test_os_features_helpers.py`. |
 
 ## Repo-wide Obsidian knowledge base (2026-04-06)
 

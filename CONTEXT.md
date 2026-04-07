@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-06
+Last updated: 2026-04-07
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,48 @@ assumptions change.
 
 ## Current Focus
 
+- The 2026-04-07 Council Tax UPRN follow-up is now implemented. The
+  `council_tax.query` tool in `tools/council_tax.py` reads AddressBase Premium
+  Type 23 Application Cross Reference CSV data from the configured
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, stream-scans only the requested UPRNs, and
+  classifies current `SOURCE=7666VC` as Council Tax and `SOURCE=7666VN` as
+  non-domestic rates. The implementation defaults to `activeOnly=true`, which
+  treats blank `END_DATE` as the current-liability filter and reports inactive
+  historical source codes separately so ended cross references are visible
+  without being misreported as current. Provenance now uses the current OS Docs
+  technical-specification pages rather than the dead legacy PDF URL.
+- A first real ABP GML example run from the extSSD delivery is now preserved in
+  the repo as `tests/fixtures/council_tax_uprn_abp_example.json`, with the
+  matching analyst workbook at `output/spreadsheet/uprns_council_tax_status.xlsx`.
+  That sample covers 100 workbook-supplied UPRNs and currently yields 22
+  Council Tax matches, 0 non-domestic-rates matches, and 78 with neither flag
+  present in the scanned Type 23 records.
+- The 2026-04-07 `draw_roads_on_map` architecture review in
+  `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md` is now
+  implemented in the server runtime. `tools/os_map.py` now exposes
+  `os_map.export_roads`, a task-shaped road-overlay export tool that fetches
+  all upstream NGD pages server-side, writes deterministic semantic bundles
+  under `data/os_exports/road-overlays/<request-hash>/`, and returns complete
+  per-road part metadata (`featureCounts`, `sourcePagesFetched`, `complete`,
+  and semantic `parts`) instead of making clients recover byte-chunked JSON by
+  hand. Supported artifact formats are `geojson_bundle`,
+  `javascript_overlay`, and `leaflet_snippet`.
+- `tools/os_mcp.py` now routes road-overlay/map-repair prompts toward
+  `os_map.export_roads` rather than low-level `os_features.query` calls when
+  the user intent is to draw/replace/embed road geometry on a map. This keeps
+  route-query guidance aligned with the new high-level contract.
+- `server/mcp/resource_catalog.py` now returns richer MIME metadata for
+  `resource://mcp-geo/os-exports/*` artifacts such as `.geojson` and `.js`,
+  which matters for the new semantic road-export parts and generated overlay
+  scripts.
+- Closing the 2026-04-07 Claude troubleshooting follow-up captured in
+  `troubleshooting/Landis/mapping_landis_results.md`. `tools/os_features.py`
+  now treats mixed-case CQL property names as an agent-ergonomics issue rather
+  than surfacing raw OS NGD queryable-property errors, by normalizing supplied
+  CQL identifiers against the collection queryables schema before the upstream
+  request. Focused regressions live in
+  `tests/test_os_features_collections.py` and
+  `tests/test_os_features_helpers.py`.
 - Maintaining the new 2026-04-06 repo-wide Obsidian knowledge base under
   `Obsidian/MCP Geo Knowledge Base/`, `scripts/obsidian_kb_common.py`,
   `scripts/build_obsidian_kb.py`, `scripts/validate_obsidian_kb.py`, the

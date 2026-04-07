@@ -20,6 +20,7 @@ def test_tools_describe_all():
     data = resp.json()
     names = [t["name"] for t in data["tools"]]
     assert "council_tax_band_lookup" in names
+    assert "council_tax_query" in names
     assert "os_places_by_postcode" in names
     assert "ons_data_create_filter" in names
     # Ensure schemas present
@@ -194,6 +195,14 @@ def test_os_map_export_layers_schema_uses_explicit_union() -> None:
     tool = resp.json()["tools"][0]
     layers = tool["inputSchema"]["properties"]["layers"]
     _assert_os_map_layers_schema(layers)
+
+
+def test_os_map_export_roads_describe_lists_supported_output_formats() -> None:
+    resp = client.get("/tools/describe", params={"name": "os_map.export_roads"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    output_format = tool["inputSchema"]["properties"]["outputFormat"]
+    assert output_format["enum"] == ["geojson_bundle", "javascript_overlay", "leaflet_snippet"]
 
 
 def test_select_toolsets_schema_uses_explicit_union_with_array_items() -> None:
