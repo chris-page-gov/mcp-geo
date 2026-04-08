@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the grounded troubleshooting analysis
+  `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, which
+  documents why AI clients struggle when map-building tasks are forced through
+  low-level paged feature queries plus byte-chunk resource recovery, and
+  recommends a task-shaped road-overlay export contract as the preferred fix.
+- Added the new task-shaped road-overlay exporter `os_map.export_roads` in
+  `tools/os_map.py`. It now fetches all required `os_features.query` pages
+  server-side, assembles complete per-road GeoJSON parts, writes durable
+  semantic export bundles under `resource://mcp-geo/os-exports/road-overlays/`,
+  and can emit either `geojson_bundle`, `javascript_overlay`, or
+  `leaflet_snippet` artifacts from a deterministic request hash rather than
+  forcing clients to recover byte-chunked resources by hand.
 - Added a repo-wide generated Obsidian knowledge base under
   `Obsidian/MCP Geo Knowledge Base/`, backed by
   `scripts/obsidian_kb_common.py`, `scripts/build_obsidian_kb.py`,
@@ -101,6 +113,24 @@ All notable changes to this project will be documented in this file.
   premise-level Council Tax band searches, including the GOV.UK HTML client,
   discovery wiring, focused mocked regressions, and the initial config/docs
   surface for the new Council Tax namespace.
+- Added `council_tax.query`, an AddressBase Premium-backed batch UPRN check for
+  Council Tax and non-domestic-rates status. The new tool stream-scans the
+  configured Type 23 Application Cross Reference CSV, treats `7666VC` as
+  Council Tax and `7666VN` as non-domestic rates, defaults to current records
+  with blank `END_DATE`, and returns historical inactive source flags
+  separately for traceability. The docs/config surface now points to the
+  current OS Docs specification pages instead of the dead legacy PDF URL.
+
+### Changed
+- Clarified the repo guidance for tool-surface changes so agents now treat
+  tool additions and contract edits as OWASP maintenance work as well:
+  update `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed
+  manifest artifacts, and rerun the strict validator in the same change.
+- Added the first real-delivery Council Tax UPRN example artifact set from the
+  2026-04-07 ABP GML delivery: the repo now keeps
+  `tests/fixtures/council_tax_uprn_abp_example.json` as a stable example
+  output fixture, and the matching analyst-friendly workbook is generated at
+  `output/spreadsheet/uprns_council_tax_status.xlsx`.
 - Added a deterministic gold evaluation fixture pack for
   `council_tax.band_lookup` under `tests/fixtures/council_tax*` and
   `tests/test_council_tax_gold_eval.py`, using curated public GOV.UK search
@@ -108,6 +138,20 @@ All notable changes to this project will be documented in this file.
   York examples.
 
 ### Fixed
+- `os_mcp.route_query` now recognizes road-overlay/map-repair prompts such as
+  replacing broken Overpass fetches with OS road geometry and recommends
+  `os_map.export_roads` directly, including extracted road numbers plus
+  output-format hints for Leaflet/JavaScript-oriented requests.
+- `resource://mcp-geo/os-exports/*` reads now return content-type-aware MIME
+  metadata for `.geojson`, `.js`, and `.html` artifacts, so semantic road
+  export parts are advertised as `application/geo+json` /
+  `application/javascript` instead of generic plain text.
+- `os_features.query` now normalizes CQL property identifiers against the
+  collection queryables schema before sending upstream NGD requests, so agents
+  using mixed-case field names like `roadClassificationNumber` on RoadLink no
+  longer fail on OS's lowercase-only queryable contract. Added focused
+  regressions for the normalization path and preserved the rewritten CQL in the
+  tool response for traceability.
 - MCP HTTP and STDIO tool responses now omit `structuredContent` for error
   results, preventing clients such as Claude from validating error payloads
   against success-only output schemas. Added focused postcode-tool regressions

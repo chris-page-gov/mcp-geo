@@ -296,6 +296,171 @@ def test_os_map_export_writes_file_and_is_readable_via_resource_uri(
     assert traversal_payload.get("code") == "INVALID_INPUT"
 
 
+def test_os_map_export_roads_writes_semantic_parts_and_manifest(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    class DummyTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            cql = args.get("cql")
+            page_token = str(args.get("pageToken") or "")
+            if cql == "roadclassificationnumber = 'A444'" and not page_token:
+                return 200, {
+                    "features": [
+                        {
+                            "id": "a444-1",
+                            "properties": {"roadclassificationnumber": "A444"},
+                            "geometry": {"type": "LineString", "coordinates": [[-1.5, 52.4], [-1.49, 52.41]]},
+                        },
+                        {
+                            "id": "a444-2",
+                            "properties": {"roadclassificationnumber": "A444"},
+                            "geometry": {"type": "LineString", "coordinates": [[-1.49, 52.41], [-1.48, 52.42]]},
+                        },
+                    ],
+                    "offset": 0,
+                    "nextPageToken": "2",
+                    "hints": {"warnings": []},
+                }
+            if cql == "roadclassificationnumber = 'A444'" and page_token == "2":
+                return 200, {
+                    "features": [
+                        {
+                            "id": "a444-3",
+                            "properties": {"roadclassificationnumber": "A444"},
+                            "geometry": {"type": "LineString", "coordinates": [[-1.48, 52.42], [-1.47, 52.43]]},
+                        }
+                    ],
+                    "offset": 2,
+                    "nextPageToken": None,
+                    "hints": {"warnings": []},
+                }
+            if cql == "roadclassificationnumber = 'A5'":
+                return 200, {
+                    "features": [
+                        {
+                            "id": "a5-1",
+                            "properties": {"roadclassificationnumber": "A5"},
+                            "geometry": {"type": "LineString", "coordinates": [[-1.6, 52.45], [-1.59, 52.46]]},
+                        }
+                    ],
+                    "offset": 0,
+                    "nextPageToken": None,
+                    "hints": {"warnings": []},
+                }
+            raise AssertionError(f"Unexpected args: {args}")
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda name: DummyTool() if name == "os_features.query" else None,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "collection": "trn-ntwk-roadlink-5",
+            "bbox": [-1.65, 52.35, -1.4, 52.58],
+            "roads": [
+                {"label": "A444", "roadClassificationNumber": "A444"},
+                {"label": "A5", "roadClassificationNumber": "A5"},
+            ],
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["format"] == "geojson_bundle"
+    assert body["featureCounts"] == {"A444": 3, "A5": 1}
+    assert body["complete"] is True
+    assert body["sourcePagesFetched"] == 3
+    assert body["cached"] is False
+
+    manifest_read = client.get("/resources/read", params={"uri": body["resourceUri"]})
+    assert manifest_read.status_code == 200
+    manifest_contents = manifest_read.json()["contents"][0]
+    manifest = json.loads(manifest_contents["text"])
+    assert manifest["featureCounts"]["A444"] == 3
+    assert any(part["name"] == "a444.geojson" for part in manifest["parts"])
+
+    a444_part = next(part for part in body["parts"] if part["name"] == "a444.geojson")
+    part_read = client.get("/resources/read", params={"uri": a444_part["uri"]})
+    assert part_read.status_code == 200
+    part_contents = part_read.json()["contents"][0]
+    assert part_contents["mimeType"] == "application/geo+json"
+    feature_collection = json.loads(part_contents["text"])
+    assert feature_collection["type"] == "FeatureCollection"
+    assert len(feature_collection["features"]) == 3
+
+
+def test_os_map_export_roads_uses_cached_manifest_for_repeat_requests(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    call_count = {"value": 0}
+
+    class DummyTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            call_count["value"] += 1
+            assert args["cql"] == "roadclassificationnumber = 'B4101'"
+            return 200, {
+                "features": [
+                    {
+                        "id": "b4101-1",
+                        "properties": {"roadclassificationnumber": "B4101"},
+                        "geometry": {"type": "LineString", "coordinates": [[-1.8, 52.4], [-1.79, 52.41]]},
+                    }
+                ],
+                "offset": 0,
+                "nextPageToken": None,
+                "hints": {"warnings": []},
+            }
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda name: DummyTool() if name == "os_features.query" else None,
+    )
+
+    request = {
+        "tool": "os_map.export_roads",
+        "collection": "trn-ntwk-roadlink-5",
+        "bbox": [-1.87, 52.34, -1.6, 52.56],
+        "outputFormat": "javascript_overlay",
+        "roads": [{"label": "B4101", "roadClassificationNumber": "B4101"}],
+    }
+    first = client.post("/tools/call", json=request)
+    assert first.status_code == 200
+    first_body = first.json()
+    assert first_body["cached"] is False
+    assert call_count["value"] == 1
+
+    monkeypatch.setattr(os_map, "get_tool", lambda _name: None)
+
+    second = client.post("/tools/call", json=request)
+    assert second.status_code == 200
+    second_body = second.json()
+    assert second_body["cached"] is True
+    assert second_body["resourceUri"] == first_body["resourceUri"]
+    assert second_body["primaryUri"] == first_body["primaryUri"]
+
+    primary_read = client.get("/resources/read", params={"uri": second_body["primaryUri"]})
+    assert primary_read.status_code == 200
+    primary_contents = primary_read.json()["contents"][0]
+    assert primary_contents["mimeType"] == "application/javascript"
+    assert "roadOverlayData" in primary_contents["text"]
+
+
 def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
     from server.ons_geo_cache import ensure_schema
 

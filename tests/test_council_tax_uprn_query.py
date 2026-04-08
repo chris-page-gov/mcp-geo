@@ -1,0 +1,185 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from fastapi.testclient import TestClient
+
+from server.main import app
+from tools import council_tax
+
+
+def _write_xref_csv(path: Path) -> None:
+    path.write_text(
+        "\n".join(
+            [
+                "UPRN,XREF_KEY,CROSS_REFERENCE,VERSION,SOURCE,START_DATE,END_DATE,LAST_UPDATE_DATE,ENTRY_DATE",
+                "100000000001,X1,CT-1,1,7666VC,2024-01-01,,2024-02-01,2024-01-01",
+                "100000000002,X2,NDR-1,1,7666VN,2024-01-01,,2024-02-01,2024-01-01",
+                "100000000003,X3,OLD-CT,1,7666VC,2020-01-01,2023-12-31,2023-12-31,2020-01-01",
+                "100000000004,X4,MIX-CT,1,7666VC,2024-01-01,,2024-02-01,2024-01-01",
+                "100000000004,X5,MIX-NDR,1,7666VN,2024-01-01,,2024-02-01,2024-01-01",
+                "100000000005,X6,WARD-1,1,7666OW,2024-01-01,,2024-02-01,2024-01-01",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def test_council_tax_uprn_query_requires_uprns(client: TestClient) -> None:
+    response = client.post("/tools/call", json={"tool": "council_tax.query"})
+    assert response.status_code == 400
+    assert response.json()["code"] == "INVALID_INPUT"
+
+
+def test_council_tax_uprn_query_rejects_invalid_uprn(client: TestClient) -> None:
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["not-a-uprn"]},
+    )
+    assert response.status_code == 400
+    assert response.json()["code"] == "INVALID_INPUT"
+
+
+def test_council_tax_uprn_query_requires_configured_source(monkeypatch) -> None:
+    monkeypatch.setattr(council_tax.settings, "ADDRESSBASE_PREMIUM_XREF_PATH", "", raising=False)
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 501
+    assert response.json()["code"] == "NO_ADDRESSBASE_PREMIUM_DATA"
+
+
+def test_council_tax_uprn_query_classifies_active_sources(tmp_path: Path, monkeypatch) -> None:
+    csv_path = tmp_path / "ID23_ApplicationCrossReference.csv"
+    _write_xref_csv(csv_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(csv_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={
+            "tool": "council_tax.query",
+            "uprns": [
+                "100000000001",
+                "100000000002",
+                "100000000003",
+                "100000000004",
+                "100000000005",
+            ],
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"] == {
+        "queriedCount": 5,
+        "councilTaxCount": 2,
+        "businessRatesCount": 2,
+        "bothCount": 1,
+        "noneCount": 2,
+        "activeOnly": True,
+    }
+    results = {item["uprn"]: item for item in body["results"]}
+
+    assert results["100000000001"]["status"] == "council_tax"
+    assert results["100000000001"]["paysCouncilTax"] is True
+    assert results["100000000001"]["sourceCodes"] == ["7666VC"]
+
+    assert results["100000000002"]["status"] == "non_domestic_rates"
+    assert results["100000000002"]["paysBusinessRates"] is True
+    assert results["100000000002"]["sourceCodes"] == ["7666VN"]
+
+    assert results["100000000003"]["status"] == "none"
+    assert results["100000000003"]["sourceCodes"] == []
+    assert results["100000000003"]["inactiveSourceCodes"] == ["7666VC"]
+    assert results["100000000003"]["inactiveRelevantRecordCount"] == 1
+
+    assert results["100000000004"]["status"] == "both"
+    assert results["100000000004"]["sourceCodes"] == ["7666VC", "7666VN"]
+
+    assert results["100000000005"]["status"] == "none"
+    assert results["100000000005"]["matchedRecordCount"] == 0
+
+    provenance = body["provenance"]
+    assert provenance["source"] == "addressbase_premium_application_cross_reference"
+    assert provenance["documentation"]["product"] == council_tax.ADDRESSBASE_PREMIUM_DOC_URL
+    assert (
+        provenance["documentation"]["applicationCrossReference"]
+        == council_tax.ADDRESSBASE_PREMIUM_XREF_DOC_URL
+    )
+
+
+def test_council_tax_uprn_query_supports_directory_config(tmp_path: Path, monkeypatch) -> None:
+    data_dir = tmp_path / "epoch"
+    data_dir.mkdir()
+    csv_path = data_dir / "my_ID23_xref_extract.csv"
+    _write_xref_csv(csv_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(data_dir),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["status"] == "council_tax"
+    assert body["provenance"]["configuredPath"].endswith("my_ID23_xref_extract.csv")
+
+
+def test_council_tax_uprn_query_can_include_ended_records(tmp_path: Path, monkeypatch) -> None:
+    csv_path = tmp_path / "ID23_ApplicationCrossReference.csv"
+    _write_xref_csv(csv_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(csv_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={
+            "tool": "council_tax.query",
+            "uprns": ["100000000003"],
+            "activeOnly": False,
+        },
+    )
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    assert result["status"] == "council_tax"
+    assert result["paysCouncilTax"] is True
+    assert result["matches"][0]["active"] is False
+    assert result["matches"][0]["endDate"] == "2023-12-31"
+
+
+def test_council_tax_uprn_query_rejects_invalid_csv_shape(tmp_path: Path, monkeypatch) -> None:
+    csv_path = tmp_path / "bad.csv"
+    csv_path.write_text("UPRN,XREF_KEY\n100000000001,X1\n", encoding="utf-8")
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(csv_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 502
+    assert response.json()["code"] == "INVALID_DATA_SOURCE"
