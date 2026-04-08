@@ -108,6 +108,29 @@ Will the portal impose any use restrictions or mandatory disclaimers?
 
 ---
 
+---
+
+## Infrastructure Resilience Skill — Additional Open Questions
+
+These emerged from the live test validation against the Warwickshire M40/rail corridor (April 2026). See [[Infrastructure Resilience]] and [[Ground Resilience Skill Design]].
+
+**Q11: Why are NATMAP Wetness and HOST absent from the thematic productId list?**
+The valid thematic productIds confirmed from live testing are: `natmap-available-water`, `natmap-carbon`, `natmap-regions`, `natmap-soilscapes`, `natmap-subsoil-texture`, `natmap-substrate-texture`, `natmap-topsoil-texture`, `natmap-wrb2006`. Wetness and HOST — the two most critical layers for drainage and slope stability — are missing. Are they planned? Can they be added from the archive ArcGIS Feature Services (NATMAP2000 + NATMAPassociations join)?
+
+**Q12: What is the current LandIS warehouse availability SLA?**
+The warehouse was offline during validation testing (April 2026), causing all `landis_natmap_point`, `landis_soilscapes_point`, and `landis_natmap_thematic_area_summary` calls to fail. The archive ArcGIS REST endpoints were available as fallback. What is the expected uptime, and is there a status page?
+
+**Q13: Can BGS GeoSure be wrapped as an MCP tool?**
+BGS GeoSure provides dedicated shrink-swell, landslide, compressible ground, and collapsible deposits hazard layers via `ogcapi.bgs.ac.uk`. A `bgs_geosure_area_summary(geometry)` MCP tool would significantly enhance the infrastructure resilience skill. Is there appetite to add this to mcp-geo?
+
+**Q14: How should NATMAP Wetness and HOST be accessed from the archive?**
+The archive contains NATMAP2000 (39k polygons) and NATMAPassociations (linking table). What is the recommended approach for querying wetness class and HOST from the archive ArcGIS REST endpoints for a given bbox, given the join complexity?
+
+**Q15: Is there a tile pre-computation service for the UK-wide risk index?**
+See [[UK Ground Risk Strategy]] for the proposed 10km × 10km tile approach. Is there infrastructure to support pre-computed tile caching that MCP tools could query instead of performing live geospatial joins on every request?
+
+---
+
 ## Status Tracking
 
 | Question | Status | Last Checked |
@@ -122,6 +145,11 @@ Will the portal impose any use restrictions or mandatory disclaimers?
 | Q8: OS attribution | ❓ Unknown | April 2026 |
 | Q9: Misuse safeguards | ❓ Unknown | April 2026 |
 | Q10: Versioning policy | ❓ Unknown | April 2026 |
+| Q11: Wetness/HOST absent from thematic API | ❌ Gap confirmed in live test — still absent from productId enum | April 6, 2026 |
+| Q12: Warehouse availability SLA | ✅ **Resolved** — mcp-geo now routes through ArcGIS archive directly; all tools live | April 6, 2026 |
+| Q13: BGS GeoSure MCP tool | ❓ Not yet built — direct HTTP calls to `ogcapi.bgs.ac.uk` work as interim | April 2026 |
+| Q14: Archive wetness/HOST access pattern | ❓ Unknown — NATMAP2000 → NATMAPassociations → SOILSERIES join required | April 2026 |
+| Q15: Tile pre-computation service | ❓ Unknown | April 2026 |
 
 *Update this table as answers are confirmed from portal.landis.org.uk.*
 
