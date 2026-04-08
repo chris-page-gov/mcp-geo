@@ -1498,7 +1498,16 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             }
         content = path.read_text(encoding="utf-8")
         etag = _etag_from_bytes(content.encode("utf-8"), slug)
-        mime_type = "text/csv" if suffix == ".csv" else "text/plain"
+        if suffix == ".csv":
+            mime_type = "text/csv"
+        elif suffix == ".geojson":
+            mime_type = "application/geo+json"
+        elif suffix == ".js":
+            mime_type = "application/javascript"
+        elif suffix == ".html":
+            mime_type = "text/html"
+        else:
+            mime_type = "text/plain"
         return content, etag, {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "path": str(path),

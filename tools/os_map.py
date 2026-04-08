@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
+import re
 import sqlite3
 import threading
 import time
@@ -74,6 +76,8 @@ _CSV_COLUMNS_DEFAULT = [
 ]
 
 _EXPORT_JOB_LOCK = threading.Lock()
+_ROAD_EXPORT_FORMATS = {"geojson_bundle", "javascript_overlay", "leaflet_snippet"}
+_DEFAULT_ROAD_EXPORT_LIMIT = 100
 
 
 def _now_iso() -> str:
@@ -97,6 +101,19 @@ def _normalize_export_id(value: Any) -> str | None:
         return str(uuid.UUID(candidate))
     except ValueError:
         return None
+
+
+def _stable_json_dumps(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+
+
+def _slugify_name(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return slug or "road"
+
+
+def _escape_cql_literal(value: str) -> str:
+    return value.replace("'", "''")
 
 
 def _parse_bbox(value: Any) -> list[float] | None:
@@ -241,6 +258,25 @@ def _normalize_export_format(value: Any) -> str:
     return "csv" if norm != "json" else "json"
 
 
+def _normalize_road_export_format(value: Any) -> str | None:
+    if value is None:
+        return "geojson_bundle"
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    if normalized not in _ROAD_EXPORT_FORMATS:
+        return None
+    return normalized
+
+
+def _normalize_force_refresh(value: Any) -> bool | None:
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    return None
+
+
 def _normalize_derivation_mode(value: Any) -> str:
     if not isinstance(value, str):
         return "exact"
@@ -280,6 +316,554 @@ def _sort_uprns(values: Iterable[str]) -> list[str]:
         return (0, f"{int(value):020d}") if value.isdigit() else (1, value)
 
     return sorted(set(values), key=_key)
+
+
+def _parse_simplify_tolerance(value: Any) -> float | None:
+    if value is None:
+        return 0.0
+    if isinstance(value, bool):
+        return None
+    try:
+        tolerance = float(value)
+    except (TypeError, ValueError):
+        return None
+    if tolerance < 0.0:
+        return None
+    return tolerance
+
+
+def _meters_to_degrees(tolerance_meters: float) -> float:
+    if tolerance_meters <= 0.0:
+        return 0.0
+    return tolerance_meters / 111_320.0
+
+
+def _point_segment_distance_sq(
+    point: tuple[float, float],
+    start: tuple[float, float],
+    end: tuple[float, float],
+) -> float:
+    px, py = point
+    sx, sy = start
+    ex, ey = end
+    dx = ex - sx
+    dy = ey - sy
+    if dx == 0.0 and dy == 0.0:
+        return (px - sx) ** 2 + (py - sy) ** 2
+    t = ((px - sx) * dx + (py - sy) * dy) / (dx * dx + dy * dy)
+    t = max(0.0, min(1.0, t))
+    proj_x = sx + t * dx
+    proj_y = sy + t * dy
+    return (px - proj_x) ** 2 + (py - proj_y) ** 2
+
+
+def _simplify_line_coords(coords: list[list[float]], tolerance_degrees: float) -> list[list[float]]:
+    if tolerance_degrees <= 0.0 or len(coords) <= 2:
+        return coords
+    normalized: list[list[float]] = []
+    for coord in coords:
+        if not (
+            isinstance(coord, list)
+            and len(coord) >= 2
+            and isinstance(coord[0], (int, float))
+            and isinstance(coord[1], (int, float))
+        ):
+            return coords
+        normalized.append([float(coord[0]), float(coord[1]), *coord[2:]])
+    keep = [False] * len(normalized)
+    keep[0] = True
+    keep[-1] = True
+    stack: list[tuple[int, int]] = [(0, len(normalized) - 1)]
+    tolerance_sq = tolerance_degrees * tolerance_degrees
+
+    while stack:
+        first, last = stack.pop()
+        start = (normalized[first][0], normalized[first][1])
+        end = (normalized[last][0], normalized[last][1])
+        max_dist = -1.0
+        max_index = -1
+        for index in range(first + 1, last):
+            point = (normalized[index][0], normalized[index][1])
+            dist_sq = _point_segment_distance_sq(point, start, end)
+            if dist_sq > max_dist:
+                max_dist = dist_sq
+                max_index = index
+        if max_index > 0 and max_dist > tolerance_sq:
+            keep[max_index] = True
+            stack.append((first, max_index))
+            stack.append((max_index, last))
+    return [coord for index, coord in enumerate(normalized) if keep[index]]
+
+
+def _simplify_geometry(geometry: dict[str, Any] | None, tolerance_meters: float) -> dict[str, Any] | None:
+    if not isinstance(geometry, dict):
+        return geometry
+    tolerance_degrees = _meters_to_degrees(tolerance_meters)
+    if tolerance_degrees <= 0.0:
+        return geometry
+    geom_type = geometry.get("type")
+    coords = geometry.get("coordinates")
+    if geom_type == "LineString" and isinstance(coords, list):
+        return {**geometry, "coordinates": _simplify_line_coords(coords, tolerance_degrees)}
+    if geom_type == "MultiLineString" and isinstance(coords, list):
+        simplified: list[list[list[float]]] = []
+        for line in coords:
+            if not isinstance(line, list):
+                return geometry
+            simplified.append(_simplify_line_coords(line, tolerance_degrees))
+        return {**geometry, "coordinates": simplified}
+    return geometry
+
+
+def _parse_roads_export_specs(
+    value: Any,
+    *,
+    default_bbox: list[float] | None,
+    default_collection: str,
+) -> tuple[list[dict[str, Any]] | None, str | None]:
+    if not isinstance(value, list) or not value:
+        return None, "roads must be a non-empty array"
+    slug_counts: dict[str, int] = {}
+    out: list[dict[str, Any]] = []
+    for index, raw in enumerate(value, start=1):
+        if not isinstance(raw, dict):
+            return None, f"roads[{index}] must be an object"
+        label = raw.get("label")
+        if not isinstance(label, str) or not label.strip():
+            return None, f"roads[{index}].label must be a non-empty string"
+        road_bbox = _parse_bbox(raw.get("bbox")) if raw.get("bbox") is not None else default_bbox
+        if road_bbox is None:
+            return None, f"roads[{index}] requires bbox or a top-level bbox"
+        collection_raw = raw.get("collection", default_collection)
+        if not isinstance(collection_raw, str) or not collection_raw.strip():
+            return None, f"roads[{index}].collection must be a non-empty string when provided"
+        road_number = raw.get("roadClassificationNumber")
+        if road_number is not None and (not isinstance(road_number, str) or not road_number.strip()):
+            return None, (
+                f"roads[{index}].roadClassificationNumber must be a non-empty string or null"
+            )
+        cql_raw = raw.get("cql")
+        if cql_raw is not None and (not isinstance(cql_raw, str) or not cql_raw.strip()):
+            return None, f"roads[{index}].cql must be a non-empty string when provided"
+        cql = cql_raw.strip() if isinstance(cql_raw, str) else None
+        if cql is None and isinstance(road_number, str) and road_number.strip():
+            cql = f"roadclassificationnumber = '{_escape_cql_literal(road_number.strip())}'"
+        slug_base = _slugify_name(label.strip())
+        count = slug_counts.get(slug_base, 0) + 1
+        slug_counts[slug_base] = count
+        slug = slug_base if count == 1 else f"{slug_base}-{count}"
+        out.append(
+            {
+                "label": label.strip(),
+                "slug": slug,
+                "bbox": list(road_bbox),
+                "collection": collection_raw.strip(),
+                "roadClassificationNumber": road_number.strip()
+                if isinstance(road_number, str)
+                else None,
+                "cql": cql,
+            }
+        )
+    return out, None
+
+
+def _road_feature_collection(
+    road: dict[str, Any],
+    *,
+    features: list[dict[str, Any]],
+    complete: bool,
+    source_pages: list[dict[str, Any]],
+    warnings: list[str],
+    error: dict[str, Any] | None,
+) -> dict[str, Any]:
+    metadata: dict[str, Any] = {
+        "label": road["label"],
+        "collection": road["collection"],
+        "bbox": list(road["bbox"]),
+        "featureCount": len(features),
+        "complete": complete,
+        "sourcePagesFetched": source_pages,
+        "warnings": warnings,
+    }
+    if road.get("roadClassificationNumber") is not None:
+        metadata["roadClassificationNumber"] = road["roadClassificationNumber"]
+    if road.get("cql") is not None:
+        metadata["cql"] = road["cql"]
+    if error is not None:
+        metadata["error"] = error
+    return {
+        "type": "FeatureCollection",
+        "name": road["label"],
+        "bbox": list(road["bbox"]),
+        "features": features,
+        "metadata": metadata,
+    }
+
+
+def _build_js_overlay_text(road_collections: dict[str, dict[str, Any]]) -> str:
+    payload = json.dumps(road_collections, ensure_ascii=True, separators=(",", ":"))
+    return (
+        "/* Generated by os_map.export_roads */\n"
+        f"const roadOverlayData = {payload};\n"
+        "if (typeof globalThis !== 'undefined') {\n"
+        "  globalThis.roadOverlayData = roadOverlayData;\n"
+        "}\n"
+        "if (typeof module !== 'undefined' && module.exports) {\n"
+        "  module.exports = { roadOverlayData };\n"
+        "}\n"
+    )
+
+
+def _build_leaflet_snippet_text(road_collections: dict[str, dict[str, Any]]) -> str:
+    payload = json.dumps(road_collections, ensure_ascii=True, separators=(",", ":"))
+    return (
+        "/* Generated by os_map.export_roads */\n"
+        f"const roadOverlayData = {payload};\n"
+        "function createRoadOverlayLayers(L, options = {}) {\n"
+        "  const palette = options.palette || {};\n"
+        "  const defaultColors = ['#c2410c', '#0369a1', '#15803d', '#7c3aed', '#b45309'];\n"
+        "  const group = L.layerGroup();\n"
+        "  const layersByRoad = {};\n"
+        "  let colorIndex = 0;\n"
+        "  for (const [label, featureCollection] of Object.entries(roadOverlayData)) {\n"
+        "    const color = palette[label] || defaultColors[colorIndex % defaultColors.length];\n"
+        "    colorIndex += 1;\n"
+        "    const layer = L.geoJSON(featureCollection, {\n"
+        "      pane: options.pane,\n"
+        "      style: () => ({ color, weight: 4, opacity: 0.92 }),\n"
+        "    });\n"
+        "    layersByRoad[label] = layer;\n"
+        "    group.addLayer(layer);\n"
+        "  }\n"
+        "  return { group, layersByRoad, data: roadOverlayData };\n"
+        "}\n"
+        "if (typeof globalThis !== 'undefined') {\n"
+        "  globalThis.roadOverlayData = roadOverlayData;\n"
+        "  globalThis.createRoadOverlayLayers = createRoadOverlayLayers;\n"
+        "}\n"
+        "if (typeof module !== 'undefined' && module.exports) {\n"
+        "  module.exports = { roadOverlayData, createRoadOverlayLayers };\n"
+        "}\n"
+    )
+
+
+def _write_road_export_artifact(path: Path, content: str) -> str:
+    _atomic_write_text(path, content)
+    return _os_export_uri(path.relative_to(_OS_EXPORTS_DIR).as_posix())
+
+
+def _load_cached_roads_export(manifest_path: Path) -> dict[str, Any] | None:
+    if not manifest_path.exists() or not manifest_path.is_file():
+        return None
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload
+
+
+def _fetch_road_export_features(
+    road: dict[str, Any],
+    *,
+    simplify_tolerance_meters: float,
+) -> dict[str, Any]:
+    tool = get_tool("os_features.query")
+    if not tool:
+        return {
+            "complete": False,
+            "features": [],
+            "warnings": ["MISSING_TOOL"],
+            "error": {
+                "code": "MISSING_TOOL",
+                "message": "os_features.query not registered",
+            },
+            "sourcePagesFetched": [],
+        }
+
+    features: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    source_pages: list[dict[str, Any]] = []
+    page_token: str | None = None
+    error: dict[str, Any] | None = None
+
+    while True:
+        request: dict[str, Any] = {
+            "tool": "os_features.query",
+            "collection": road["collection"],
+            "bbox": list(road["bbox"]),
+            "limit": _DEFAULT_ROAD_EXPORT_LIMIT,
+            "includeGeometry": True,
+            "includeFields": ["roadclassificationnumber", "roadclassification"],
+            "delivery": "inline",
+        }
+        if road.get("cql"):
+            request["cql"] = road["cql"]
+        if page_token:
+            request["pageToken"] = page_token
+        status, data = tool.call(request)
+        if status != 200 or not isinstance(data, dict):
+            error_body = data if isinstance(data, dict) else {}
+            error = {
+                "status": status,
+                "code": str(error_body.get("code") or "INTEGRATION_ERROR"),
+                "message": str(error_body.get("message") or "Road export page fetch failed"),
+            }
+            break
+        page_warnings = ((data.get("hints") or {}).get("warnings") if isinstance(data, dict) else None)
+        if isinstance(page_warnings, list):
+            for warning in page_warnings:
+                if isinstance(warning, str) and warning not in warnings:
+                    warnings.append(warning)
+        page_features = data.get("features")
+        if not isinstance(page_features, list):
+            error = {
+                "status": 500,
+                "code": "INTEGRATION_ERROR",
+                "message": "Expected features array from os_features.query",
+            }
+            break
+        next_page_token = data.get("nextPageToken")
+        source_pages.append(
+            {
+                "offset": int(data.get("offset", 0) or 0),
+                "returned": len(page_features),
+                "nextPageToken": next_page_token if isinstance(next_page_token, str) else None,
+            }
+        )
+        for feature in page_features:
+            if not isinstance(feature, dict):
+                continue
+            geometry = _simplify_geometry(feature.get("geometry"), simplify_tolerance_meters)
+            if not isinstance(geometry, dict):
+                if "GEOMETRY_MISSING_FILTERED" not in warnings:
+                    warnings.append("GEOMETRY_MISSING_FILTERED")
+                continue
+            properties = feature.get("properties")
+            features.append(
+                {
+                    "type": "Feature",
+                    "id": feature.get("id"),
+                    "properties": properties if isinstance(properties, dict) else {},
+                    "geometry": geometry,
+                }
+            )
+        if isinstance(next_page_token, str) and next_page_token:
+            page_token = next_page_token
+            continue
+        break
+
+    return {
+        "complete": error is None,
+        "features": features,
+        "warnings": warnings,
+        "error": error,
+        "sourcePagesFetched": source_pages,
+    }
+
+
+def _roads_export_response_from_manifest(manifest: dict[str, Any], *, cached: bool) -> ToolResult:
+    response = {
+        "exportId": manifest.get("exportId"),
+        "requestHash": manifest.get("requestHash"),
+        "delivery": "resource",
+        "resourceUri": manifest.get("resourceUri"),
+        "primaryUri": manifest.get("primaryUri"),
+        "format": manifest.get("format"),
+        "collection": manifest.get("collection"),
+        "bbox": manifest.get("bbox"),
+        "featureCounts": manifest.get("featureCounts", {}),
+        "roads": manifest.get("roads", []),
+        "parts": manifest.get("parts", []),
+        "complete": bool(manifest.get("complete")),
+        "sourcePagesFetched": int(manifest.get("sourcePagesFetched", 0) or 0),
+        "createdAt": manifest.get("createdAt"),
+        "cached": cached,
+    }
+    return 200, response
+
+
+def _export_roads(payload: dict[str, Any]) -> ToolResult:
+    bbox = _parse_bbox(payload.get("bbox")) if payload.get("bbox") is not None else None
+    output_format = _normalize_road_export_format(payload.get("outputFormat"))
+    if output_format is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": (
+                "outputFormat must be one of: geojson_bundle, javascript_overlay, "
+                "leaflet_snippet"
+            ),
+        }
+    simplify_tolerance = _parse_simplify_tolerance(payload.get("simplifyToleranceMeters"))
+    if simplify_tolerance is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "simplifyToleranceMeters must be a number >= 0 when provided",
+        }
+    force_refresh = _normalize_force_refresh(payload.get("forceRefresh"))
+    if force_refresh is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "forceRefresh must be a boolean when provided",
+        }
+    top_level_collection_raw = payload.get("collection")
+    if top_level_collection_raw is not None and (
+        not isinstance(top_level_collection_raw, str) or not top_level_collection_raw.strip()
+    ):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "collection must be a non-empty string when provided",
+        }
+    default_collection = (
+        top_level_collection_raw.strip()
+        if isinstance(top_level_collection_raw, str)
+        else (_resolve_collection_id("road_links", {}) or "trn-ntwk-roadlink")
+    )
+    road_specs, roads_error = _parse_roads_export_specs(
+        payload.get("roads"),
+        default_bbox=bbox,
+        default_collection=default_collection,
+    )
+    if road_specs is None:
+        return 400, {"isError": True, "code": "INVALID_INPUT", "message": roads_error or "Invalid roads"}
+
+    request_fingerprint = {
+        "bbox": bbox,
+        "collection": default_collection,
+        "outputFormat": output_format,
+        "simplifyToleranceMeters": simplify_tolerance,
+        "roads": road_specs,
+    }
+    request_hash = hashlib.sha256(_stable_json_dumps(request_fingerprint).encode("utf-8")).hexdigest()[:16]
+    export_dir = _OS_EXPORTS_DIR / "road-overlays" / request_hash
+    manifest_path = export_dir / "manifest.json"
+    if not force_refresh:
+        cached_manifest = _load_cached_roads_export(manifest_path)
+        if cached_manifest is not None:
+            return _roads_export_response_from_manifest(cached_manifest, cached=True)
+
+    export_dir.mkdir(parents=True, exist_ok=True)
+
+    roads_summary: list[dict[str, Any]] = []
+    parts: list[dict[str, Any]] = []
+    road_collections: dict[str, dict[str, Any]] = {}
+    feature_counts: dict[str, int] = {}
+    total_pages_fetched = 0
+    complete = True
+
+    for road in road_specs:
+        fetched = _fetch_road_export_features(
+            road,
+            simplify_tolerance_meters=float(simplify_tolerance or 0.0),
+        )
+        total_pages_fetched += len(fetched["sourcePagesFetched"])
+        road_complete = bool(fetched["complete"])
+        complete = complete and road_complete
+        feature_collection = _road_feature_collection(
+            road,
+            features=fetched["features"],
+            complete=road_complete,
+            source_pages=fetched["sourcePagesFetched"],
+            warnings=fetched["warnings"],
+            error=fetched["error"],
+        )
+        road_collections[road["label"]] = feature_collection
+        feature_counts[road["label"]] = len(fetched["features"])
+        geojson_filename = f"{road['slug']}.geojson"
+        geojson_path = export_dir / geojson_filename
+        geojson_uri = _write_road_export_artifact(
+            geojson_path,
+            json.dumps(feature_collection, ensure_ascii=True, indent=2) + "\n",
+        )
+        parts.append(
+            {
+                "name": geojson_filename,
+                "uri": geojson_uri,
+                "mimeType": "application/geo+json",
+                "label": road["label"],
+                "featureCount": len(fetched["features"]),
+                "complete": road_complete,
+            }
+        )
+        road_summary: dict[str, Any] = {
+            "label": road["label"],
+            "collection": road["collection"],
+            "bbox": list(road["bbox"]),
+            "featureCount": len(fetched["features"]),
+            "pagesFetched": len(fetched["sourcePagesFetched"]),
+            "sourcePagesFetched": fetched["sourcePagesFetched"],
+            "complete": road_complete,
+            "warnings": fetched["warnings"],
+            "partUri": geojson_uri,
+            "partName": geojson_filename,
+        }
+        if road.get("roadClassificationNumber") is not None:
+            road_summary["roadClassificationNumber"] = road["roadClassificationNumber"]
+        if road.get("cql") is not None:
+            road_summary["cql"] = road["cql"]
+        if fetched["error"] is not None:
+            road_summary["error"] = fetched["error"]
+        roads_summary.append(road_summary)
+
+    if not any(feature_counts.values()):
+        return 502, {
+            "isError": True,
+            "code": "UPSTREAM_FETCH_FAILED",
+            "message": "Road export returned no geometry for any requested road.",
+            "roads": roads_summary,
+        }
+
+    primary_uri = _os_export_uri(manifest_path.relative_to(_OS_EXPORTS_DIR).as_posix())
+    if output_format == "javascript_overlay":
+        js_path = export_dir / "roads-overlay.js"
+        primary_uri = _write_road_export_artifact(js_path, _build_js_overlay_text(road_collections))
+        parts.append(
+            {
+                "name": js_path.name,
+                "uri": primary_uri,
+                "mimeType": "application/javascript",
+                "kind": "primary",
+            }
+        )
+    elif output_format == "leaflet_snippet":
+        snippet_path = export_dir / "roads-leaflet.js"
+        primary_uri = _write_road_export_artifact(
+            snippet_path,
+            _build_leaflet_snippet_text(road_collections),
+        )
+        parts.append(
+            {
+                "name": snippet_path.name,
+                "uri": primary_uri,
+                "mimeType": "application/javascript",
+                "kind": "primary",
+            }
+        )
+
+    manifest_uri = _os_export_uri(manifest_path.relative_to(_OS_EXPORTS_DIR).as_posix())
+    manifest = {
+        "exportId": request_hash,
+        "requestHash": request_hash,
+        "createdAt": _now_iso(),
+        "delivery": "resource",
+        "resourceUri": manifest_uri,
+        "primaryUri": primary_uri,
+        "format": output_format,
+        "collection": default_collection,
+        "bbox": bbox,
+        "featureCounts": feature_counts,
+        "roads": roads_summary,
+        "parts": parts,
+        "complete": complete,
+        "sourcePagesFetched": total_pages_fetched,
+    }
+    _atomic_write_text(manifest_path, json.dumps(manifest, ensure_ascii=True, indent=2) + "\n")
+    return _roads_export_response_from_manifest(manifest, cached=False)
 
 
 def _get_latest_ngd_collection_ids() -> dict[str, str]:
@@ -1013,6 +1597,87 @@ def _get_export(payload: dict[str, Any]) -> ToolResult:
     job.setdefault("statusUri", _job_status_uri(normalized))
     return 200, job
 
+
+register(
+    Tool(
+        name="os_map.export_roads",
+        description=(
+            "Export complete road overlay artifacts server-side, including all upstream pages "
+            "and semantic per-road parts."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "os_map.export_roads"},
+                "bbox": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "description": "Optional default WGS84 bbox [minLon,minLat,maxLon,maxLat].",
+                },
+                "collection": {"type": "string", "description": "Optional default NGD collection id."},
+                "roads": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "label": {"type": "string"},
+                            "bbox": {
+                                "type": "array",
+                                "items": {"type": "number"},
+                                "minItems": 4,
+                                "maxItems": 4,
+                            },
+                            "collection": {"type": "string"},
+                            "roadClassificationNumber": {"type": ["string", "null"]},
+                            "cql": {"type": "string"},
+                        },
+                        "required": ["label"],
+                        "additionalProperties": False,
+                    },
+                },
+                "outputFormat": {
+                    "type": "string",
+                    "enum": ["geojson_bundle", "javascript_overlay", "leaflet_snippet"],
+                    "default": "geojson_bundle",
+                },
+                "simplifyToleranceMeters": {"type": "number", "minimum": 0},
+                "forceRefresh": {"type": "boolean"},
+            },
+            "required": ["roads"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "exportId": {"type": "string"},
+                "requestHash": {"type": "string"},
+                "delivery": {"type": "string"},
+                "resourceUri": {"type": "string"},
+                "primaryUri": {"type": "string"},
+                "format": {"type": "string"},
+                "collection": {"type": ["string", "null"]},
+                "bbox": {
+                    "type": ["array", "null"],
+                    "items": {"type": "number"},
+                    "minItems": 4,
+                    "maxItems": 4,
+                },
+                "featureCounts": {"type": "object"},
+                "roads": {"type": "array", "items": {"type": "object"}},
+                "parts": {"type": "array", "items": {"type": "object"}},
+                "complete": {"type": "boolean"},
+                "sourcePagesFetched": {"type": "integer"},
+                "cached": {"type": "boolean"},
+            },
+            "required": ["exportId", "delivery", "resourceUri", "format", "featureCounts", "complete"],
+            "additionalProperties": True,
+        },
+        handler=_export_roads,
+    )
+)
 
 register(
     Tool(

@@ -92,8 +92,22 @@ _UNSUPPORTED_COLLECTION_RE = re.compile(
     r"Collection ['\"](?P<collection>[^'\"]+)['\"] is not a supported Collection\.",
     re.IGNORECASE,
 )
+_CQL_IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _COLLECTION_TOKEN_SPLIT_RE = re.compile(r"[^a-z0-9]+")
 _COLLECTION_TOKEN_STOPWORDS = {"os", "fts", "ntwk", "rami", "v", "items"}
+_CQL_RESERVED_WORDS = {
+    "and",
+    "between",
+    "false",
+    "ilike",
+    "in",
+    "is",
+    "like",
+    "not",
+    "null",
+    "or",
+    "true",
+}
 
 _HINT_MESSAGES = [
     "This uses OS NGD OGC API Features (collections/{collection}/items).",
@@ -260,6 +274,101 @@ def _augment_unsupported_collection_error(
         "'roadlink' or 'path') and use latestByBaseId to select a valid version."
     )
     return enriched
+
+
+def _load_queryables(
+    *,
+    collection: str,
+    policy: dict[str, Any],
+) -> tuple[int, dict[str, Any] | None]:
+    timeout = (
+        float(policy["connectTimeoutSeconds"]),
+        float(policy["readTimeoutSeconds"]),
+    )
+    queryables_url = f"{client.base_ngd_features}/collections/{collection}/queryables"
+    status, body = _client_get_json(
+        queryables_url,
+        None,
+        timeout=timeout,
+        retries=int(policy["retries"]),
+    )
+    if status == 200 and isinstance(body, dict):
+        return status, body
+    return status, None
+
+
+def _queryables_property_map(queryables: dict[str, Any] | None) -> dict[str, str]:
+    if not isinstance(queryables, dict):
+        return {}
+    properties = queryables.get("properties")
+    if not isinstance(properties, dict):
+        return {}
+    return {
+        str(name).strip().lower(): str(name).strip()
+        for name in properties
+        if str(name).strip()
+    }
+
+
+def _normalize_cql_queryable_fields(
+    cql_text: str,
+    *,
+    queryables: dict[str, Any] | None,
+) -> tuple[str, bool]:
+    property_map = _queryables_property_map(queryables)
+    if not property_map:
+        return cql_text, False
+
+    result: list[str] = []
+    cursor = 0
+    changed = False
+    in_single_quote = False
+    in_double_quote = False
+    length = len(cql_text)
+
+    while cursor < length:
+        char = cql_text[cursor]
+        if char == "'" and not in_double_quote:
+            if in_single_quote and cursor + 1 < length and cql_text[cursor + 1] == "'":
+                result.append("''")
+                cursor += 2
+                continue
+            in_single_quote = not in_single_quote
+            result.append(char)
+            cursor += 1
+            continue
+        if char == '"' and not in_single_quote:
+            in_double_quote = not in_double_quote
+            result.append(char)
+            cursor += 1
+            continue
+        if in_single_quote or in_double_quote:
+            result.append(char)
+            cursor += 1
+            continue
+
+        matched = _CQL_IDENTIFIER_RE.match(cql_text, cursor)
+        if matched is None:
+            result.append(char)
+            cursor += 1
+            continue
+
+        token = matched.group(0)
+        replacement = token
+        lower_token = token.lower()
+        next_non_space = matched.end()
+        while next_non_space < length and cql_text[next_non_space].isspace():
+            next_non_space += 1
+        is_function_name = next_non_space < length and cql_text[next_non_space] == "("
+        if not is_function_name and lower_token not in _CQL_RESERVED_WORDS:
+            canonical = property_map.get(lower_token)
+            if canonical and canonical != token:
+                replacement = canonical
+                changed = True
+        result.append(replacement)
+        cursor = matched.end()
+
+    return "".join(result), changed
 
 
 def _parse_bbox(value: Any) -> tuple[float, float, float, float] | None:
@@ -447,7 +556,7 @@ def _parse_polygon(
     if points[0] != points[-1]:
         return None, "polygon ring must be closed (first coordinate must equal last)"
 
-    unique_vertices = {vertex for vertex in points[:-1]}
+    unique_vertices = set(points[:-1])
     if len(unique_vertices) < 3:
         return None, "polygon ring must include at least 3 distinct vertices"
     return points, None
@@ -474,7 +583,10 @@ def _point_in_polygon(point: tuple[float, float], polygon: list[tuple[float, flo
     return inside
 
 
-def _feature_intersects_polygon(feature: dict[str, Any], polygon: list[tuple[float, float]]) -> bool:
+def _feature_intersects_polygon(
+    feature: dict[str, Any],
+    polygon: list[tuple[float, float]],
+) -> bool:
     geometry = feature.get("geometry")
     if not isinstance(geometry, dict):
         return False
@@ -850,7 +962,20 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
 
     local_filtering = polygon is not None or isinstance(filter_spec, dict)
     filter_applied = "local" if local_filtering else "none"
+    policy = features_request_policy()
+    loaded_queryables_status: int | None = None
+    loaded_queryables: dict[str, Any] | None = None
     if isinstance(cql_text, str) and cql_text.strip():
+        loaded_queryables_status, loaded_queryables = _load_queryables(
+            collection=collection,
+            policy=policy,
+        )
+        cql_text, cql_normalized = _normalize_cql_queryable_fields(
+            cql_text.strip(),
+            queryables=loaded_queryables,
+        )
+        if cql_normalized:
+            add_warning(warnings, "CQL_QUERYABLES_NORMALIZED")
         if local_filtering:
             add_warning(warnings, "MIXED_FILTERING_LOCAL_POST")
         else:
@@ -863,9 +988,8 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
     if offset:
         params["offset"] = offset
     if isinstance(cql_text, str) and cql_text.strip():
-        params["filter"] = cql_text.strip()
+        params["filter"] = cql_text
 
-    policy = features_request_policy()
     url = f"{client.base_ngd_features}/collections/{collection}/items"
     status, body, fetch_warnings, degraded = _fetch_feature_page(
         url=url,
@@ -917,7 +1041,11 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         limit=limit,
     )
     scan = {
-        "mode": "local" if local_filtering else ("upstream" if filter_applied == "upstream" else "none"),
+        "mode": (
+            "local"
+            if local_filtering
+            else ("upstream" if filter_applied == "upstream" else "none")
+        ),
         "pagesScanned": 1,
         "pageBudget": scan_page_budget if local_filtering else 0,
         "partial": False,
@@ -955,7 +1083,10 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
                     continue
                 if polygon is not None and not _feature_intersects_polygon(feature, polygon):
                     continue
-                if isinstance(filter_spec, dict) and not _feature_matches_filter(feature, filter_spec):
+                if isinstance(filter_spec, dict) and not _feature_matches_filter(
+                    feature,
+                    filter_spec,
+                ):
                     continue
                 local_hit_total += 1
             scan_incomplete = _upstream_has_more(
@@ -1008,26 +1139,22 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
 
     queryables: dict[str, Any] | None = None
     if include_queryables:
-        timeout = (
-            float(policy["connectTimeoutSeconds"]),
-            float(policy["readTimeoutSeconds"]),
-        )
-        queryables_url = f"{client.base_ngd_features}/collections/{collection}/queryables"
-        queryables_status, queryables_body = _client_get_json(
-            queryables_url,
-            None,
-            timeout=timeout,
-            retries=int(policy["retries"]),
-        )
-        if queryables_status == 200 and isinstance(queryables_body, dict):
-            queryables = queryables_body
+        if loaded_queryables_status == 200 and isinstance(loaded_queryables, dict):
+            queryables = loaded_queryables
         else:
-            queryables = {
-                "isError": True,
-                "status": queryables_status,
-                "message": "Queryables metadata unavailable for this collection.",
-            }
-            add_warning(warnings, "QUERYABLES_UNAVAILABLE")
+            queryables_status, queryables_body = _load_queryables(
+                collection=collection,
+                policy=policy,
+            )
+            if queryables_status == 200 and isinstance(queryables_body, dict):
+                queryables = queryables_body
+            else:
+                queryables = {
+                    "isError": True,
+                    "status": queryables_status,
+                    "message": "Queryables metadata unavailable for this collection.",
+                }
+                add_warning(warnings, "QUERYABLES_UNAVAILABLE")
 
     number_returned = len(features_out)
     count = number_returned
@@ -1078,6 +1205,8 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         response["polygon"] = [[lon, lat] for lon, lat in polygon]
     if isinstance(filter_spec, dict):
         response["filter"] = filter_spec
+    if isinstance(cql_text, str) and cql_text:
+        response["cql"] = cql_text
     if sort_by:
         response["sortBy"] = [
             f"-{field}" if descending else field for field, descending in sort_by
@@ -1150,16 +1279,22 @@ register(
                 "limit": {"type": "integer", "minimum": 1, "maximum": _MAX_LIMIT},
                 "pageToken": {
                     "type": ["string", "integer", "null"],
-                    "description": "Offset for paging (use nextPageToken from the previous response).",
+                    "description": (
+                        "Offset for paging (use nextPageToken from the previous response)."
+                    ),
                 },
                 "includeGeometry": {
                     "type": "boolean",
-                    "description": "When true, include GeoJSON geometry per feature (larger payloads).",
+                    "description": (
+                        "When true, include GeoJSON geometry per feature (larger payloads)."
+                    ),
                     "default": _DEFAULT_INCLUDE_GEOMETRY,
                 },
                 "thinMode": {
                     "type": "boolean",
-                    "description": "When true, project properties to a bounded field set by default.",
+                    "description": (
+                        "When true, project properties to a bounded field set by default."
+                    ),
                     "default": _DEFAULT_THIN_MODE,
                 },
                 "allowLargeBbox": {
@@ -1358,10 +1493,15 @@ def _wfs_capabilities_common(path: str, payload: dict[str, Any]) -> ToolResult:
     selected_mode = select_delivery_mode(
         requested_delivery=delivery or "auto",
         payload_bytes=payload_bytes(response_payload),
-        inline_max_bytes=inline_max_bytes or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
+        inline_max_bytes=inline_max_bytes
+        or int(getattr(settings, "OS_EXPORT_INLINE_MAX_BYTES", 200_000)),
     )
     if selected_mode == "resource":
-        prefix = "os-features-wfs-archive-capabilities" if "archive" in path else "os-features-wfs-capabilities"
+        prefix = (
+            "os-features-wfs-archive-capabilities"
+            if "archive" in path
+            else "os-features-wfs-capabilities"
+        )
         meta = write_resource_payload(prefix=prefix, payload=response_payload)
         return 200, {
             "delivery": "resource",

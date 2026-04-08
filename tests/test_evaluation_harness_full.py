@@ -203,6 +203,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
     # and can be folded into evaluation questions in a later expansion pass.
     specialist_tools = {
         "council_tax.band_lookup",
+        "council_tax.query",
         "landis_archive.get_item",
         "landis_archive.list_items",
         "landis_catalog.list_products",
@@ -231,6 +232,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
         "os_maps.raster_tile",
         "os_offline.descriptor",
         "os_offline.get",
+        "os_map.export_roads",
         "os_qgis.vector_tile_profile",
         "os_qgis.export_geopackage_descriptor",
         "os_net.rinex_years",

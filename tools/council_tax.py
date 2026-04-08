@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import csv
 import re
 import time
 from dataclasses import dataclass, field
 from html import unescape
 from html.parser import HTMLParser
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlsplit
 
@@ -33,9 +35,34 @@ DEFAULT_RETRIES = 2
 DEFAULT_BASE_URL = "https://www.tax.service.gov.uk/check-council-tax-band"
 SEARCH_PATH = "/search-council-tax-advanced"
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
+UPRN_REGEX = re.compile(r"^[0-9]{1,12}$")
 CSRF_TOKEN_PATTERN = re.compile(r'name="csrfToken"\s+value="([^"]+)"')
 PAGE_PATTERN = re.compile(r'name="page"\s+value="([^"]+)"')
 SERVICE_PROBLEM_PATTERN = re.compile(r"Sorry, there is a problem with the service", re.I)
+ADDRESSBASE_PREMIUM_DOC_URL = (
+    "https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/"
+    "addressbase-premium/addressbase-premium-technical-specification"
+)
+ADDRESSBASE_PREMIUM_XREF_DOC_URL = (
+    "https://docs.os.uk/os-downloads/addressing-and-location/addressbase-premium-islands/"
+    "addressbase-premium-islands-technical-specification/structured-data-types/"
+    "application-cross-reference-type-23-record"
+)
+ADDRESSBASE_RELEVANT_SOURCES = {
+    "7666VC": "Centrally created Council Tax.",
+    "7666VN": "Centrally created non-domestic rates.",
+}
+ADDRESSBASE_XREF_REQUIRED_COLUMNS = {"UPRN", "SOURCE"}
+ADDRESSBASE_XREF_OPTIONAL_COLUMNS = (
+    "XREF_KEY",
+    "CROSS_REFERENCE",
+    "VERSION",
+    "START_DATE",
+    "END_DATE",
+    "LAST_UPDATE_DATE",
+    "ENTRY_DATE",
+)
+ADDRESSBASE_XREF_SCAN_MAX_UPRNS = 5000
 
 _NO_RESULTS_PATTERNS = (
     "no results - check and challenge your council tax band",
@@ -182,7 +209,7 @@ class _DefinitionListParser(HTMLParser):
         self,
         tag: str,
         attrs: list[tuple[str, str | None]],
-    ) -> None:  # noqa: ARG002
+    ) -> None:
         if tag in {"dt", "dd"}:
             self._current_tag = tag
             self._current_parts = []
@@ -252,6 +279,203 @@ def _origin_from_base_url(base_url: str) -> str | None:
     if not parts.scheme or not parts.netloc:
         return None
     return f"{parts.scheme}://{parts.netloc}"
+
+
+def _normalize_uprn(value: Any) -> str | None:
+    text = re.sub(r"\s+", "", str(value or ""))
+    if not text or not UPRN_REGEX.fullmatch(text):
+        return None
+    return text
+
+
+def _resolve_addressbase_xref_path() -> Path | None:
+    configured = str(getattr(settings, "ADDRESSBASE_PREMIUM_XREF_PATH", "") or "").strip()
+    if not configured:
+        return None
+    path = Path(configured).expanduser()
+    if path.is_file():
+        return path
+    if not path.is_dir():
+        return None
+
+    candidates: list[tuple[int, str, Path]] = []
+    for candidate in path.rglob("*.csv"):
+        name = candidate.name.lower()
+        score = 0
+        if "application" in name and "cross" in name and "reference" in name:
+            score += 50
+        if "id23" in name:
+            score += 40
+        if "type" in name and "23" in name:
+            score += 20
+        if "xref" in name:
+            score += 10
+        if score > 0:
+            candidates.append((score, str(candidate), candidate))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: (-item[0], item[1]))
+    return candidates[0][2]
+
+
+def _derive_uprn_tax_status(*, pays_council_tax: bool, pays_business_rates: bool) -> str:
+    if pays_council_tax and pays_business_rates:
+        return "both"
+    if pays_council_tax:
+        return "council_tax"
+    if pays_business_rates:
+        return "non_domestic_rates"
+    return "none"
+
+
+def _validate_uprn_query(
+    payload: dict[str, Any],
+) -> tuple[int, dict[str, Any] | dict[str, str | bool | list[str]]]:
+    raw_uprns = payload.get("uprns")
+    if not isinstance(raw_uprns, list) or not raw_uprns:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "uprns must be a non-empty array of UPRN strings",
+        }
+    if len(raw_uprns) > ADDRESSBASE_XREF_SCAN_MAX_UPRNS:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": f"uprns must contain {ADDRESSBASE_XREF_SCAN_MAX_UPRNS} items or fewer",
+        }
+
+    active_only = payload.get("activeOnly", True)
+    if not isinstance(active_only, bool):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "activeOnly must be a boolean",
+        }
+
+    normalized_uprns: list[str] = []
+    seen: set[str] = set()
+    for value in raw_uprns:
+        uprn = _normalize_uprn(value)
+        if uprn is None:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Each UPRN must be 1 to 12 digits",
+            }
+        if uprn in seen:
+            continue
+        seen.add(uprn)
+        normalized_uprns.append(uprn)
+    return 200, {"uprns": normalized_uprns, "activeOnly": active_only}
+
+
+def _scan_addressbase_xref_csv(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    requested = set(uprns)
+    accumulators: dict[str, dict[str, Any]] = {
+        uprn: {
+            "matches": [],
+            "activeSources": set(),
+            "allSources": set(),
+            "inactiveSources": set(),
+            "inactiveRelevantRecordCount": 0,
+        }
+        for uprn in uprns
+    }
+
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = set(reader.fieldnames or [])
+            missing = sorted(ADDRESSBASE_XREF_REQUIRED_COLUMNS - fieldnames)
+            if missing:
+                return 502, {
+                    "isError": True,
+                    "code": "INVALID_DATA_SOURCE",
+                    "message": (
+                        "AddressBase Premium Application Cross Reference CSV is missing "
+                        f"required columns: {', '.join(missing)}"
+                    ),
+                }
+
+            for row in reader:
+                if not isinstance(row, dict):
+                    continue
+                uprn = _normalize_uprn(row.get("UPRN"))
+                if uprn is None or uprn not in requested:
+                    continue
+                source = _normalize_space(str(row.get("SOURCE") or "")).upper()
+                if source not in ADDRESSBASE_RELEVANT_SOURCES:
+                    continue
+
+                accumulator = accumulators[uprn]
+                accumulator["allSources"].add(source)
+                end_date = _normalize_space(str(row.get("END_DATE") or ""))
+                is_active = not end_date
+                if not is_active:
+                    accumulator["inactiveSources"].add(source)
+                    accumulator["inactiveRelevantRecordCount"] += 1
+                    if active_only:
+                        continue
+
+                record = {
+                    "xrefKey": _clean_optional_text(row.get("XREF_KEY"), max_length=64),
+                    "crossReference": _clean_optional_text(
+                        row.get("CROSS_REFERENCE"),
+                        max_length=128,
+                    ),
+                    "version": _clean_optional_text(row.get("VERSION"), max_length=16),
+                    "source": source,
+                    "sourceDescription": ADDRESSBASE_RELEVANT_SOURCES[source],
+                    "startDate": _clean_optional_text(row.get("START_DATE"), max_length=32),
+                    "endDate": _clean_optional_text(row.get("END_DATE"), max_length=32),
+                    "lastUpdateDate": _clean_optional_text(
+                        row.get("LAST_UPDATE_DATE"),
+                        max_length=32,
+                    ),
+                    "entryDate": _clean_optional_text(row.get("ENTRY_DATE"), max_length=32),
+                    "active": is_active,
+                }
+                accumulator["matches"].append(record)
+                if is_active:
+                    accumulator["activeSources"].add(source)
+    except OSError as exc:
+        return 502, {
+            "isError": True,
+            "code": "INVALID_DATA_SOURCE",
+            "message": f"Unable to read AddressBase Premium xref CSV: {exc}",
+        }
+
+    results: list[dict[str, Any]] = []
+    for uprn in uprns:
+        accumulator = accumulators[uprn]
+        relevant_sources = (
+            sorted(accumulator["activeSources"])
+            if active_only
+            else sorted(accumulator["allSources"])
+        )
+        pays_council_tax = "7666VC" in relevant_sources
+        pays_business_rates = "7666VN" in relevant_sources
+        results.append({
+            "uprn": uprn,
+            "paysCouncilTax": pays_council_tax,
+            "paysBusinessRates": pays_business_rates,
+            "status": _derive_uprn_tax_status(
+                pays_council_tax=pays_council_tax,
+                pays_business_rates=pays_business_rates,
+            ),
+            "sourceCodes": relevant_sources,
+            "inactiveSourceCodes": sorted(accumulator["inactiveSources"]),
+            "matchedRecordCount": len(accumulator["matches"]),
+            "inactiveRelevantRecordCount": int(accumulator["inactiveRelevantRecordCount"]),
+            "matches": accumulator["matches"],
+        })
+    return 200, results
 
 
 def _build_address(match: dict[str, Any]) -> str | None:
@@ -337,7 +561,7 @@ def _parse_definition_list_match(html_text: str, *, base_url: str) -> list[dict[
     parser.feed(html_text)
     if not parser.entries:
         return []
-    record = {label: value for label, value in parser.entries}
+    record = dict(parser.entries)
     match = _normalize_result_record(record, hrefs=[], base_url=base_url)
     if match is None or not match.get("band"):
         return []
@@ -575,15 +799,15 @@ def _validate_and_build_query(
         "propertyUse": 64,
     }
     validated_fields: dict[str, str | None] = {}
-    for field, max_length in field_specs.items():
+    for field_name, max_length in field_specs.items():
         field_status, field_value = _validate_optional_text(
             payload,
-            field,
+            field_name,
             max_length=max_length,
         )
         if field_status != 200:
             return field_status, field_value
-        validated_fields[field] = field_value
+        validated_fields[field_name] = field_value
 
     query = {
         "propertyName": validated_fields["propertyName"],
@@ -691,6 +915,60 @@ def _band_lookup(payload: dict[str, Any]) -> ToolResult:
     }
 
 
+def _uprn_query(payload: dict[str, Any]) -> ToolResult:
+    status, validated = _validate_uprn_query(payload)
+    if status != 200:
+        return status, validated
+
+    uprns = list(validated["uprns"])
+    active_only = bool(validated["activeOnly"])
+    xref_path = _resolve_addressbase_xref_path()
+    if xref_path is None:
+        return 501, {
+            "isError": True,
+            "code": "NO_ADDRESSBASE_PREMIUM_DATA",
+            "message": (
+                "AddressBase Premium Application Cross Reference data is not configured. "
+                "Set ADDRESSBASE_PREMIUM_XREF_PATH to the Type 23 CSV file or to a directory "
+                "containing it."
+            ),
+        }
+
+    scan_status, results_or_error = _scan_addressbase_xref_csv(
+        path=xref_path,
+        uprns=uprns,
+        active_only=active_only,
+    )
+    if scan_status != 200:
+        assert isinstance(results_or_error, dict)
+        return scan_status, results_or_error
+
+    results = list(results_or_error)
+    summary = {
+        "queriedCount": len(results),
+        "councilTaxCount": sum(1 for item in results if item["paysCouncilTax"]),
+        "businessRatesCount": sum(1 for item in results if item["paysBusinessRates"]),
+        "bothCount": sum(1 for item in results if item["status"] == "both"),
+        "noneCount": sum(1 for item in results if item["status"] == "none"),
+        "activeOnly": active_only,
+    }
+    return 200, {
+        "results": results,
+        "summary": summary,
+        "provenance": {
+            "source": "addressbase_premium_application_cross_reference",
+            "method": "streaming_csv_scan",
+            "configuredPath": str(xref_path),
+            "documentation": {
+                "product": ADDRESSBASE_PREMIUM_DOC_URL,
+                "applicationCrossReference": ADDRESSBASE_PREMIUM_XREF_DOC_URL,
+            },
+            "sourceValues": ADDRESSBASE_RELEVANT_SOURCES,
+            "timestamp": time.time(),
+        },
+    }
+
+
 register(
     Tool(
         name="council_tax.band_lookup",
@@ -754,5 +1032,110 @@ register(
             "additionalProperties": True,
         },
         handler=_band_lookup,
+    )
+)
+
+
+register(
+    Tool(
+        name="council_tax.query",
+        description=(
+            "Query AddressBase Premium Application Cross Reference records by UPRN to "
+            "identify Council Tax and non-domestic rates flags."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "council_tax.query"},
+                "uprns": {
+                    "type": "array",
+                    "items": {"type": "string", "pattern": "^[0-9]{1,12}$"},
+                    "minItems": 1,
+                    "maxItems": ADDRESSBASE_XREF_SCAN_MAX_UPRNS,
+                    "description": "One or more UPRNs to inspect in AddressBase Premium.",
+                },
+                "activeOnly": {
+                    "type": "boolean",
+                    "description": (
+                        "When true, only treat Type 23 cross references with a blank END_DATE "
+                        "as current. Defaults to true."
+                    ),
+                },
+            },
+            "required": ["uprns"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "uprn": {"type": "string"},
+                            "paysCouncilTax": {"type": "boolean"},
+                            "paysBusinessRates": {"type": "boolean"},
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "none",
+                                    "council_tax",
+                                    "non_domestic_rates",
+                                    "both",
+                                ],
+                            },
+                            "sourceCodes": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "inactiveSourceCodes": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "matchedRecordCount": {"type": "integer"},
+                            "inactiveRelevantRecordCount": {"type": "integer"},
+                            "matches": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "xrefKey": {"type": ["string", "null"]},
+                                        "crossReference": {"type": ["string", "null"]},
+                                        "version": {"type": ["string", "null"]},
+                                        "source": {"type": "string"},
+                                        "sourceDescription": {"type": "string"},
+                                        "startDate": {"type": ["string", "null"]},
+                                        "endDate": {"type": ["string", "null"]},
+                                        "lastUpdateDate": {"type": ["string", "null"]},
+                                        "entryDate": {"type": ["string", "null"]},
+                                        "active": {"type": "boolean"},
+                                    },
+                                    "required": ["source", "sourceDescription", "active"],
+                                    "additionalProperties": False,
+                                },
+                            },
+                        },
+                        "required": [
+                            "uprn",
+                            "paysCouncilTax",
+                            "paysBusinessRates",
+                            "status",
+                            "sourceCodes",
+                            "inactiveSourceCodes",
+                            "matchedRecordCount",
+                            "inactiveRelevantRecordCount",
+                            "matches",
+                        ],
+                        "additionalProperties": False,
+                    },
+                },
+                "summary": {"type": "object"},
+                "provenance": {"type": "object"},
+            },
+            "required": ["results", "summary", "provenance"],
+            "additionalProperties": False,
+        },
+        handler=_uprn_query,
     )
 )

@@ -93,6 +93,12 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 - Pytest with coverage gate (≥90%). Current suite covers success + validation + upstream error paths.
 - When adding a tool: include validation tests, success path (mocked upstream), and at least one upstream error normalization test.
+- When adding or changing a tool contract: update
+  `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed tool
+  manifest artifacts (`tool_manifest.lock.json`, `.sig`, and `tool_manifest.pub.pem`)
+  with `scripts/generate_owasp_mcp_tool_manifest.py`, and rerun the strict
+  validator via `./scripts/validate-owasp-mcp-local` so OWASP CI stays aligned
+  with the registered tool set.
 - When fixing a bug or review finding: search for structurally similar code paths
   across the repo, patch every confirmed sibling instance in the same change,
   and add regression coverage for both the reported case and at least one
@@ -149,6 +155,10 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 - Do not introduce new dependencies without updating `pyproject.toml` and rationale in PR.
 - Prefer incremental refactors (extract functions before rewriting blocks).
 - If adding a tool: include JSON schema for request/response in docstring.
+- If adding or renaming a tool, or changing its description/schema: treat that
+  as an OWASP manifest change as well as a runtime change. Refresh the tool
+  risk inventory and signed manifest artifacts in `security/owasp_mcp/` in the
+  same change rather than leaving the validator to catch drift later.
 - Keep the implementation plan in `PROGRESS.MD` updated as plan items move from
   pending to in progress to done. Update `CHANGELOG.md` when a plan item is
   completed and adjust related docs in the same change.
@@ -242,4 +252,4 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 
 ---
 
-Last updated: 2026-02-22
+Last updated: 2026-04-08

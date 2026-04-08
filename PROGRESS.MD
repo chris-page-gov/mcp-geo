@@ -3,7 +3,24 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-06
+Last updated: 2026-04-07
+
+## Claude/LandIS map-export research (2026-04-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CLAUDE-LANDIS-2 Draw-roads-on-map contract analysis | done | CLAUDE-LANDIS-1 | Added `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, concluding that the main issue is architectural rather than prompt-level: the server currently makes the model handle paged feature export, byte-chunk resource recovery, JSON reassembly, and host-side ETL. Recommended direction is a task-shaped road-overlay export tool plus durable semantic export manifests, with `os_mcp.route_query` steering map-building prompts to that higher-level contract. |
+| CLAUDE-LANDIS-3 Road-overlay export implementation | done | CLAUDE-LANDIS-2 | Implemented `os_map.export_roads` in `tools/os_map.py` as the task-shaped fix recommended by the analysis. The new tool fetches all required `os_features.query` pages server-side, writes deterministic semantic exports under `data/os_exports/road-overlays/<request-hash>/`, emits per-road GeoJSON parts plus optional JavaScript/Leaflet artifacts, and reports completeness/count metadata so clients no longer have to reconstruct chunked JSON resources by hand. Follow-on wiring updated `os_mcp.route_query`, tool-search stateful classifications, and `resource://mcp-geo/os-exports/*` MIME handling. Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_os_map_tools.py tests/test_os_mcp_route_query.py tests/test_tools_describe.py` (`94 passed`). |
+
+## Claude troubleshooting hardening (2026-04-07)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| CLAUDE-LANDIS-1 OS feature-queryable normalization for RoadLink troubleshooting | done | none | Hardened `tools/os_features.py` so `os_features.query` now fetches collection queryables when a CQL filter is supplied and rewrites case-mismatched property identifiers to the canonical upstream field ids before calling OS NGD. This closes the repeated Claude failure captured in `troubleshooting/Landis/mapping_landis_results.md`, where `roadClassificationNumber` was rejected even though the collection exposes the lowercase queryable `roadclassificationnumber`. Added focused regressions in `tests/test_os_features_collections.py` and `tests/test_os_features_helpers.py`. |
 
 ## Repo-wide Obsidian knowledge base (2026-04-06)
 

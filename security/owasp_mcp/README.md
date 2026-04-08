@@ -15,6 +15,20 @@ Run the strict validator with the repo-local wrapper:
 The default wrapper run writes artifacts to `output/owasp-mcp-validation/` and
 fails when any `minimum_bar` or `required` control fails.
 
+## Tool contract maintenance
+
+Any tool addition, removal, rename, or schema/description change must update
+the OWASP MCP inputs in the same change:
+
+1. Update `tool_risk_inventory.json` for the affected tool names.
+2. Regenerate `tool_manifest.lock.json`, `tool_manifest.lock.json.sig`, and
+   `tool_manifest.pub.pem` with `scripts/generate_owasp_mcp_tool_manifest.py`.
+3. Rerun `./scripts/validate-owasp-mcp-local` and commit any baseline refresh
+   that the change requires.
+
+If these files drift from the registered tool set, `OMCP-TOOL-001`,
+`OMCP-TOOL-002`, and the minimum-bar gate can fail in CI.
+
 ## Contents
 
 - `control_catalog.json`: locked OWASP-MCP control set and pass criteria.

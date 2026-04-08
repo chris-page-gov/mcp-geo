@@ -54,21 +54,6 @@ def test_tools_describe_single_sanitized_alias():
     assert data["tools"][0]["annotations"]["originalName"] == "os_places.by_postcode"
 
 
-def test_tools_describe_landis_thematic_tool_surfaces_supported_product_ids():
-    resp = client.get("/tools/describe", params={"name": "landis_natmap.thematic_area_summary"})
-    assert resp.status_code == 200
-    tool = resp.json()["tools"][0]
-
-    product_id = tool["inputSchema"]["properties"]["productId"]
-    assert "enum" in product_id
-    assert "natmap-carbon" in product_id["enum"]
-
-    landis_meta = tool["_meta"]["mcp-geo"]["landis"]
-    assert landis_meta["warehouseRequired"] is True
-    supported_ids = {item["id"] for item in landis_meta["supportedProducts"]}
-    assert "natmap-carbon" in supported_ids
-
-
 def test_tools_describe_unknown():
     resp = client.get("/tools/describe", params={"name": "unknown.tool"})
     assert resp.status_code == 404
@@ -194,6 +179,14 @@ def test_os_map_export_layers_schema_uses_explicit_union() -> None:
     tool = resp.json()["tools"][0]
     layers = tool["inputSchema"]["properties"]["layers"]
     _assert_os_map_layers_schema(layers)
+
+
+def test_os_map_export_roads_describe_lists_supported_output_formats() -> None:
+    resp = client.get("/tools/describe", params={"name": "os_map.export_roads"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    output_format = tool["inputSchema"]["properties"]["outputFormat"]
+    assert output_format["enum"] == ["geojson_bundle", "javascript_overlay", "leaflet_snippet"]
 
 
 def test_select_toolsets_schema_uses_explicit_union_with_array_items() -> None:

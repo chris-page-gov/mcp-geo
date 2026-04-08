@@ -9,7 +9,7 @@ def test_os_features_collections_latest_by_base(client, monkeypatch, mock_os_cli
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def ngd_collections_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def ngd_collections_handler(url: str, params: dict[str, Any]):
         return 200, {
             "collections": [
                 {
@@ -49,7 +49,7 @@ def test_os_features_collections_q_filter(client, monkeypatch, mock_os_client) -
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def ngd_collections_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def ngd_collections_handler(url: str, params: dict[str, Any]):
         return 200, {
             "collections": [
                 {"id": "trn-ntwk-roadlink-5", "title": "RoadLink", "description": "v5"},
@@ -98,11 +98,13 @@ def test_os_features_query_polygon_filter_projection_sort_and_queryables(
             ],
         }
 
-    def queryables_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def queryables_handler(url: str, params: dict[str, Any]):
         return 200, {"type": "object", "properties": {"status": {"type": "string"}}}
 
     mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
-    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/queryables"] = queryables_handler
+    mock_os_client[
+        "features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/queryables"
+    ] = queryables_handler
 
     resp = client.post(
         "/tools/call",
@@ -133,7 +135,7 @@ def test_os_features_query_result_type_hits(client, monkeypatch, mock_os_client)
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def items_handler(url: str, params: dict[str, Any]):
         return 200, {
             "features": [
                 {
@@ -173,7 +175,7 @@ def test_os_features_query_hits_without_numbermatched_uses_feature_count(
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def items_handler(url: str, params: dict[str, Any]):
         return 200, {
             "features": [
                 {
@@ -211,7 +213,7 @@ def test_os_features_query_aliases_legacy_transport_collection(
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def items_handler(url: str, params: dict[str, Any]):
         return 200, {
             "numberMatched": 1,
             "features": [
@@ -240,6 +242,66 @@ def test_os_features_query_aliases_legacy_transport_collection(
     assert "COLLECTION_ALIAS_APPLIED" in body["hints"]["warnings"]
 
 
+def test_os_features_query_normalizes_cql_queryable_field_names(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_common, os_features
+
+    fake_client = os_common.client
+    monkeypatch.setattr(os_features, "client", fake_client)
+
+    seen_filters: list[str] = []
+
+    def items_handler(url: str, params: dict[str, Any]):
+        seen_filters.append(str(params.get("filter")))
+        return 200, {
+            "numberMatched": 1,
+            "features": [
+                {
+                    "id": "r1",
+                    "geometry": {"type": "LineString", "coordinates": [[0.0, 0.0], [0.1, 0.1]]},
+                    "properties": {
+                        "roadclassificationnumber": "A444",
+                        "roadclassification": "A Road",
+                    },
+                }
+            ],
+        }
+
+    def queryables_handler(url: str, params: dict[str, Any]):
+        return 200, {
+            "type": "object",
+            "properties": {
+                "roadclassificationnumber": {"type": "string"},
+                "roadclassification": {"type": "string"},
+            },
+        }
+
+    mock_os_client["features/ngd/ofa/v1/collections/trn-ntwk-roadlink-5/items"] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections/trn-ntwk-roadlink-5/queryables"] = (
+        queryables_handler
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "trn-ntwk-roadlink-5",
+            "bbox": [-1.52, 52.38, -1.43, 52.55],
+            "cql": "roadClassificationNumber = 'A444' AND roadClassification = 'A Road'",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert seen_filters == [
+        "roadclassificationnumber = 'A444' AND roadclassification = 'A Road'"
+    ]
+    assert body["cql"] == (
+        "roadclassificationnumber = 'A444' AND roadclassification = 'A Road'"
+    )
+    assert "CQL_QUERYABLES_NORMALIZED" in body["hints"]["warnings"]
+
+
 def test_os_features_query_unsupported_collection_returns_suggestions(
     client, monkeypatch, mock_os_client
 ) -> None:  # type: ignore[no-untyped-def]
@@ -248,7 +310,7 @@ def test_os_features_query_unsupported_collection_returns_suggestions(
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def bad_items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def bad_items_handler(url: str, params: dict[str, Any]):
         return 404, {
             "isError": True,
             "code": "OS_API_ERROR",
@@ -259,7 +321,7 @@ def test_os_features_query_unsupported_collection_returns_suggestions(
             ),
         }
 
-    def collections_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def collections_handler(url: str, params: dict[str, Any]):
         return 200, {
             "collections": [
                 {"id": "trn-ntwk-roadlink-5", "title": "RoadLink", "description": "latest"},
@@ -329,7 +391,7 @@ def test_os_features_query_number_returned_matches_feature_length(
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def items_handler(url: str, params: dict[str, Any]):
         return 200, {
             "numberMatched": 5,
             "numberReturned": 999,
@@ -368,7 +430,7 @@ def test_os_features_query_local_filter_reports_partial_scan(
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def items_handler(url: str, params: dict[str, Any]):
         return 200, {
             "numberMatched": 200,
             "features": [
@@ -407,7 +469,7 @@ def test_os_features_query_resource_delivery(
     fake_client = os_common.client
     monkeypatch.setattr(os_features, "client", fake_client)
 
-    def items_handler(url: str, params: dict[str, Any]):  # noqa: ARG001
+    def items_handler(url: str, params: dict[str, Any]):
         return 200, {
             "numberMatched": 1,
             "features": [
