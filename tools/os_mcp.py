@@ -187,7 +187,10 @@ DATASET_PATTERNS = [
     r"\blist.*datasets?\b",
     r"\bavailable.*data\b",
     r"\bdatasets?\b",
-    r"\b(list|search|find|show)\b.*\b(dimensions?|codes?|editions?|versions?|codelists?|concepts?)\b",
+    (
+        r"\b(list|search|find|show)\b.*\b"
+        r"(dimensions?|codes?|editions?|versions?|codelists?|concepts?)\b"
+    ),
     r"\bons\b.*\b(dimensions?|codes?|editions?|versions?)\b",
     r"\bnomis\b.*\b(datasets?|codelists?|concepts?|workflow)\b",
     r"\bworkflow profiles?\b",
@@ -1379,7 +1382,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_maps.render",
         ],
         QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
-        QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor", "os_features.query", "os_maps.render"],
+        QueryIntent.MAP_RENDER: [
+            "os_vector_tiles.descriptor",
+            "os_features.query",
+            "os_maps.render",
+        ],
         QueryIntent.VECTOR_TILES: ["os_maps.render"],
         QueryIntent.UNKNOWN: ["os_mcp.descriptor", "admin_lookup.find_by_name"],
     }
@@ -1718,7 +1725,11 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
             "Use os_map.export_roads for road-overlay work so the server handles NGD paging, "
             "geometry assembly, and semantic export parts instead of manual resource chunking."
         )
-        response["alternative_tools"] = ["os_features.query", "os_maps.render", "os_vector_tiles.descriptor"]
+        response["alternative_tools"] = [
+            "os_features.query",
+            "os_maps.render",
+            "os_vector_tiles.descriptor",
+        ]
     if str(context.get("unknown_mode") or "") == "resource_bridge":
         resource_guidance = (
             "When a tool returns delivery='resource' or a resource:// URI, do not search the "

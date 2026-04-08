@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 99,
+  "tool_count": 100,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -498,6 +498,14 @@
       "input_schema_sha256": "4d2240a6b55d4cb78a66b7cad96eca6fa0b5f9b04aadde4078855dd19081efb2",
       "name": "os_map.export",
       "output_schema_sha256": "05342964c01cc86e59daaaac4fbc893bef8de0679e99dfe431a95fbf081fda2e",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Export complete road overlay artifacts server-side, including all upstream pages and semantic per-road parts.",
+      "description_sha256": "2bd245a07dec80ff18e527a065f9401526730e1dc30ef7a183d98729a6630727",
+      "input_schema_sha256": "519c58d7738e99a2affc844be98418bf5f23f32a71e8905bd57b01d4f5a4b96a",
+      "name": "os_map.export_roads",
+      "output_schema_sha256": "c1dffb37cb3ddf538970cabbebc1415d294a4f9d1897c0713a246129c56d137e",
       "version": "0.1.0"
     },
     {
