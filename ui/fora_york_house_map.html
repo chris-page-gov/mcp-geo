@@ -773,6 +773,22 @@
         return `${safe.slice(0, 4)}...${safe.slice(-4)}`;
       }
 
+      function redactSensitiveText(value) {
+        return String(value || "").replace(/([?&]key=)[^&\s"'`]+/gi, "$1***");
+      }
+
+      function redactUrl(rawUrl) {
+        try {
+          const parsed = new URL(String(rawUrl || ""), currentBase() || window.location.origin);
+          if (parsed.searchParams.has("key")) {
+            parsed.searchParams.set("key", "***");
+          }
+          return parsed.toString();
+        } catch (_err) {
+          return redactSensitiveText(rawUrl);
+        }
+      }
+
       function normalizeStyleName(rawStyleName) {
         const name = String(rawStyleName || VECTOR_STYLE_NAME).trim();
         if (!name) {
@@ -807,20 +823,21 @@
         if (key) {
           styleUrl.searchParams.set("key", key);
         }
-        pushDebug(`Requesting MasterMap style: ${styleUrl}`);
+        pushDebug(`Requesting MasterMap style: ${redactUrl(styleUrl)}`);
         let response;
         try {
           response = await fetch(styleUrl, { cache: "no-store" });
         } catch (err) {
-          pushDebug(`Style probe request failed: ${err}`);
-          throw new Error(`Style probe failed (network): ${err}`);
+          const safeError = redactSensitiveText(err);
+          pushDebug(`Style probe request failed: ${safeError}`);
+          throw new Error(`Style probe failed (network): ${safeError}`);
         }
         pushDebug(`Style probe status: ${response.status} ${response.statusText}`);
         if (!response.ok) {
-          const body = (await response.text().catch(() => "")).slice(0, 220);
+          const body = redactSensitiveText((await response.text().catch(() => "")).slice(0, 220));
           pushDebug(`Style probe failed body: ${body || "No body."}`);
           throw new Error(
-            `Style probe ${response.status} ${response.statusText} at ${styleUrl}. ${body || "No body."}`
+            `Style probe ${response.status} ${response.statusText}. ${body || "No body."}`
           );
         }
         const rawBody = await response.text();
@@ -836,20 +853,22 @@
             : 0;
           pushDebug(`Style sources: ${sourceCount}`);
           if (stylePayload.sprite) {
-            pushDebug(`Style sprite: ${stylePayload.sprite}`);
+            pushDebug(`Style sprite: ${redactUrl(stylePayload.sprite)}`);
           }
           if (stylePayload.glyphs) {
-            pushDebug(`Style glyphs: ${stylePayload.glyphs}`);
+            pushDebug(`Style glyphs: ${redactUrl(stylePayload.glyphs)}`);
           }
           const firstSourceKey = Object.keys(stylePayload.sources || {})[0];
           if (firstSourceKey) {
             const sourceDef = stylePayload.sources[firstSourceKey];
-            pushDebug(`First source (${firstSourceKey}): ${JSON.stringify(sourceDef).slice(0, 420)}`);
+            const redactedSource = redactSensitiveText(JSON.stringify(sourceDef));
+            pushDebug(`First source (${firstSourceKey}): ${redactedSource.slice(0, 420)}`);
           }
           return stylePayload;
         } catch (err) {
-          pushDebug(`Style parse failed: ${err}`);
-          throw new Error(`Style probe JSON parse failed: ${String(err.message || err)}`);
+          const safeError = redactSensitiveText(String(err && err.message ? err.message : err));
+          pushDebug(`Style parse failed: ${safeError}`);
+          throw new Error(`Style probe JSON parse failed: ${safeError}`);
         }
       }
 
