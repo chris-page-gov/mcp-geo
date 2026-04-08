@@ -490,6 +490,27 @@ def test_fetch_feature_page_timeout_degrade_and_retry_paths(monkeypatch) -> None
     assert observed_params[1]["limit"] == 10
 
 
+def test_normalize_cql_queryable_fields_skips_strings_and_functions() -> None:  # type: ignore[no-untyped-def]
+    from tools import os_features
+
+    normalized, changed = os_features._normalize_cql_queryable_fields(
+        "UPPER(roadClassification) = 'roadClassificationNumber' "
+        "AND roadClassificationNumber = 'A444'",
+        queryables={
+            "type": "object",
+            "properties": {
+                "roadclassification": {"type": "string"},
+                "roadclassificationnumber": {"type": "string"},
+            },
+        },
+    )
+    assert changed
+    assert normalized == (
+        "UPPER(roadclassification) = 'roadClassificationNumber' "
+        "AND roadclassificationnumber = 'A444'"
+    )
+
+
 def test_features_collections_error_and_success_paths(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_features
 
