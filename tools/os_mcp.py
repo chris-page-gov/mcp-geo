@@ -858,15 +858,15 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if road_numbers:
             context["road_numbers"] = road_numbers
         context["map_export_mode"] = "roads_overlay"
-        recommended_params: dict[str, Any] = {
+        road_export_params: dict[str, Any] = {
             "outputFormat": _infer_road_export_format(query_lower),
         }
         if road_numbers:
-            recommended_params["roads"] = [
+            road_export_params["roads"] = [
                 {"label": road_number, "roadClassificationNumber": road_number}
                 for road_number in road_numbers
             ]
-        return QueryIntent.MAP_RENDER, 0.93, recommended_params, context
+        return QueryIntent.MAP_RENDER, 0.93, road_export_params, context
 
     if any(re.search(pattern, query_lower) for pattern in VECTOR_TILE_PATTERNS):
         return QueryIntent.VECTOR_TILES, 0.9, {}, context
