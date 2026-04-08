@@ -101,4 +101,4 @@ See [[Primitive Tools]], [[Derived Semantic Tools]], [[Resources and Prompts]].
 > This is consistent with the policy intent to widen access and unlock innovation.
 
 ---
-*← [[00 - Home|Home]]  |  See also: [[Primitive Tools]], [[Derived Semantic Tools]], [[Implementation Roadmap]]*
+*← [[00 - Home|Home]]  |  See also: [[Primitive Tools]], [[Derived Semantic Tools]], [[Implementation Roadmap]], [[LandIS MCP Strategy Slides]]*
