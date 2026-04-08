@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fora - York House Map Viewer</title>
+    <link rel="stylesheet" href="vendor/maplibre-gl.css" />
+    <style>
+      :root {
+        --bg: #0f1620;
+        --panel: #0f1f2b;
+        --panel-2: #132535;
+        --ink: #e5eef6;
+        --muted: #9db0c3;
+        --popup-bg: #f5fbff;
+        --popup-fg: #101f2e;
+        --accent: #4ecdc4;
+        --accent-2: #ff9f1c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 10% -10%, rgba(78, 205, 196, 0.12), transparent 45%),
+          linear-gradient(120deg, #081018, #09131f 55%, #0b1a28);
+        color: var(--ink);
+        font-family: Inter, "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        min-height: 100vh;
+        gap: 14px;
+        padding: 14px;
+      }
+
+      .control {
+        background: color-mix(in srgb, var(--panel) 88%, #fff 12%);
+        border: 1px solid rgba(78, 205, 196, 0.22);
+        border-radius: 16px;
+        box-shadow: 0 26px 42px rgba(0, 0, 0, 0.4);
+        padding: 16px;
+      }
+
+      .control h1 {
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+
+      .control p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: #cfdbe7;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      input,
+      button {
+        width: 100%;
+        border: 1px solid rgba(217, 228, 238, 0.24);
+        background: var(--panel-2);
+        color: var(--ink);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font: inherit;
+      }
+
+      .inline {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      button {
+        border: 0;
+        background: linear-gradient(115deg, var(--accent), #43b7b0);
+        color: #0a1620;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .ghost {
+        background: transparent;
+        border-color: rgba(78, 205, 196, 0.3);
+        color: var(--accent);
+      }
+
+      .status {
+        margin-top: 8px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px dashed rgba(157, 176, 195, 0.3);
+        color: var(--muted);
+        font-size: 12px;
+        min-height: 46px;
+      }
+
+      .debug-log {
+        margin-top: 8px;
+        padding: 10px;
+        min-height: 92px;
+        max-height: 180px;
+        overflow: auto;
+        border-radius: 10px;
+        border: 1px solid rgba(157, 176, 195, 0.3);
+        background: rgba(12, 22, 32, 0.72);
+        color: #9ec6d7;
+        font-size: 11px;
+        line-height: 1.35;
+        white-space: pre-wrap;
+      }
+
+      .maplibregl-popup-content {
+        background: var(--popup-bg);
+        color: var(--popup-fg);
+        border: 1px solid rgba(10, 28, 44, 0.32);
+        border-radius: 10px;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.35;
+        min-width: 260px;
+        max-width: 460px;
+      }
+
+      .maplibregl-popup-content strong {
+        color: #0f3858;
+      }
+
+      .maplibregl-popup-tip {
+        border-top-color: var(--popup-bg) !important;
+      }
+
+      .maplibregl-popup-close-button {
+        color: #102b45;
+        font-size: 16px;
+      }
+
+      .status.ok {
+        border-color: rgba(78, 205, 196, 0.45);
+        color: #d8f4f2;
+      }
+
+      .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .chip {
+        border: 1px solid rgba(255, 159, 28, 0.45);
+        color: #ffd8a6;
+        font-size: 11px;
+        border-radius: 999px;
+        padding: 6px 10px;
+      }
+
+      .layer-toggles {
+        margin-top: 8px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .layer-toggles label {
+        text-transform: none;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0;
+      }
+
+      .map-wrap {
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid rgba(217, 228, 238, 0.2);
+        min-height: calc(100vh - 28px);
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        min-height: calc(100vh - 28px);
+      }
+
+      .legend {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        right: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        z-index: 5;
+      }
+
+      .legend-item {
+        background: rgba(10, 20, 28, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #d2dff0;
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 7px 10px;
+      }
+
+      .hint {
+        margin-top: 14px;
+        color: #b7c8da;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      @media (max-width: 1100px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .map-wrap,
+        #map {
+          min-height: 62vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="control">
+        <h1>Fora - York House map</h1>
+        <p>
+          Host-relative map interface driven by MCP Geo proxies:
+          <strong>/maps/raster/osm</strong> for base tiles and
+          <strong>/maps/static/osm</strong> for a snapshot export.
+        </p>
+        <div class="field">
+          <label for="mcpHost">MCP Geo base URL</label>
+          <input id="mcpHost" value="http://localhost:8000" />
+        </div>
+        <div class="field">
+          <label for="apiKeyInput">OS API key (MasterMap)</label>
+          <input
+            id="apiKeyInput"
+            type="password"
+            placeholder="Enter OS API key to use vector style"
+            autocomplete="off"
+          />
+        </div>
+        <div class="field">
+          <label for="vectorStyle">MasterMap style</label>
+          <select id="vectorStyle"></select>
+        </div>
+        <div class="inline">
+          <div class="field">
+            <label for="centerLng">Longitude</label>
+            <input id="centerLng" value="-0.1171887" />
+          </div>
+          <div class="field">
+            <label for="centerLat">Latitude</label>
+            <input id="centerLat" value="51.530936" />
+          </div>
+        </div>
+        <div class="inline">
+          <div class="field">
+            <label for="zoomInput">Zoom</label>
+            <input id="zoomInput" value="16" />
+          </div>
+          <div class="field">
+            <label for="sizeInput">Snapshot size</label>
+            <input id="sizeInput" value="1024" />
+          </div>
+        </div>
+        <div class="inline">
+          <button id="fitBtn" type="button">Fit target area</button>
+          <button id="refreshBtn" class="ghost" type="button">Reload map</button>
+        </div>
+        <div class="inline">
+          <button id="snapshotBtn" type="button">Open static image</button>
+          <button id="copyBtn" class="ghost" type="button">Copy image URL</button>
+        </div>
+
+        <div class="status" id="status">
+          Set your MCP host URL if running this page outside the API host. Add an OS API key for MasterMap vector mode.
+        </div>
+        <pre class="debug-log" id="debugLog"></pre>
+        <div class="chips">
+          <span class="chip">Buildings (3D, postcode N1 9UZ)</span>
+          <span class="chip">Soil condition (analytical)</span>
+          <span class="chip">Road links (line)</span>
+          <span class="chip">Path links (dashed)</span>
+        </div>
+        <div class="layer-toggles">
+          <label><input type="checkbox" id="toggleBuildings" checked />Show building polygons</label>
+          <label><input type="checkbox" id="toggleSoils" checked />Show soil conditions</label>
+          <label><input type="checkbox" id="toggleRoads" checked />Show road links</label>
+          <label><input type="checkbox" id="togglePaths" checked />Show path links</label>
+        </div>
+        <p class="hint">
+          Overlay data is a small slice fetched earlier from <code>os_maps.render</code> inventory
+          response for the target bbox. You can replace it later with your own GeoJSON source.
+        </p>
+      </aside>
+
+      <main class="map-wrap">
+        <div id="map"></div>
+        <div class="legend">
+          <span class="legend-item">Fora - York House marker (red)</span>
+          <span class="legend-item">Roads = blue</span>
+          <span class="legend-item">Paths = dashed green</span>
+          <span class="legend-item" id="mapInfo">Ready</span>
+        </div>
+      </main>
+    </div>
+
+    <script src="vendor/maplibre-gl.js"></script>
+    <script>
+      const defaults = {
+        center: [-0.1171887, 51.530936],
+        zoom: 17,
+        bounds: [-0.1216887, 51.527936, -0.1126887, 51.533936],
+      };
+
+      const VECTOR_STYLE_NAME = "OS_VTS_3857_Light.json";
+      const VECTOR_STYLE_SRS = "3857";
+      const POPUP_MAX_WIDTH = 460;
+      const POSTCODE = "N1 9UZ";
+      const DEFAULT_BUILDING_HEIGHT = 18;
+      const VECTOR_STYLE_OPTIONS = [
+        { value: "OS_VTS_3857_Light.json", label: "Light (road + labels)" },
+        { value: "OS_VTS_3857_Road.json", label: "Road" },
+        { value: "OS_VTS_3857_No_Labels.json", label: "No labels" },
+        { value: "OS_VTS_3857_Outdoor.json", label: "Outdoor" },
+        { value: "OS_VTS_3857_Black_and_White.json", label: "Black and white" },
+        { value: "OS_VTS_3857_Dark.json", label: "Dark" },
+        { value: "OS_VTS_3857_Greyscale.json", label: "Greyscale" },
+      ];
+
+      const YORK_HOUSE_LAYER = {
+        featureProperty: "isYorkHouse",
+      };
+      const SOIL_LAYER = {
+        featureProperty: "soilCondition",
+      };
+
+      const overlayData = {
+        buildings: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [[
+                  [-0.1181348, 51.5280272],
+                  [-0.1181254, 51.5280099],
+                  [-0.1180846, 51.5279338],
+                  [-0.1180112, 51.5279492],
+                  [-0.1180513, 51.5280254],
+                  [-0.1180992, 51.5280163],
+                  [-0.1181072, 51.528033],
+                  [-0.1181348, 51.5280272],
+                ]],
+              },
+              properties: {
+                description: "York House (3D target)",
+                postcode: POSTCODE,
+                [YORK_HOUSE_LAYER.featureProperty]: true,
+                height: 36,
+              },
+            },
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [[
+                  [-0.1193916, 51.5325653],
+                  [-0.1193179, 51.53257],
+                  [-0.1192738, 51.5325729],
+                  [-0.1192809, 51.5326089],
+                  [-0.119312, 51.5326243],
+                  [-0.119349, 51.5326015],
+                  [-0.1193956, 51.5325914],
+                  [-0.1193985, 51.5326081],
+                  [-0.1194005, 51.5326109],
+                  [-0.119404, 51.5326132],
+                  [-0.1194083, 51.532615],
+                  [-0.1194126, 51.532616],
+                  [-0.1194176, 51.532617],
+                  [-0.1194212, 51.532617],
+                  [-0.1195254, 51.5326084],
+                  [-0.1195108, 51.5325771],
+                  [-0.1195015, 51.5325572],
+                  [-0.1193916, 51.5325653],
+                ]],
+              },
+              properties: {
+                description: "Residential building block",
+                postcode: POSTCODE,
+                height: 24,
+              },
+            },
+          ],
+        },
+        roads: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [-0.1161806, 51.5323865],
+                  [-0.1156995, 51.5324319],
+                ],
+              },
+              properties: { description: "Single carriageway road" },
+            },
+            {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [-0.1207991, 51.5328914],
+                  [-0.1208183, 51.532424],
+                  [-0.1207517, 51.5301928],
+                  [-0.1200779, 51.5293996],
+                ],
+              },
+              properties: { description: "Road segment" },
+            },
+          ],
+        },
+        paths: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [-0.1155696, 51.5330496],
+                  [-0.1155484, 51.5330665],
+                  [-0.1154803, 51.5331953],
+                  [-0.1154615, 51.5332308],
+                ],
+              },
+              properties: { description: "Path" },
+            },
+            {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [-0.1155599, 51.53269],
+                  [-0.1158437, 51.5326586],
+                ],
+              },
+              properties: { description: "Path segment" },
+            },
+          ],
+        },
+        soils: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [-0.11835, 51.52775],
+                    [-0.11755, 51.52775],
+                    [-0.11755, 51.52842],
+                    [-0.11835, 51.52842],
+                    [-0.11835, 51.52775],
+                  ],
+                ],
+              },
+              properties: {
+                name: "York House block perimeter zone",
+                [SOIL_LAYER.featureProperty]: "sandy_loam",
+                drainage: "Moderate",
+                description: "Sandy loam soil around York House footprint; mixed fill, moderate drainage.",
+              },
+            },
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [-0.11967, 51.5322],
+                    [-0.11895, 51.5322],
+                    [-0.11895, 51.5330],
+                    [-0.11967, 51.5330],
+                    [-0.11967, 51.5322],
+                  ],
+                ],
+              },
+              properties: {
+                name: "North-east road verge",
+                [SOIL_LAYER.featureProperty]: "urban_fill",
+                drainage: "Poor",
+                description: "Urban infill around the road corridor; engineered backfill with poor natural drainage.",
+              },
+            },
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [-0.11775, 51.5296],
+                    [-0.11685, 51.5296],
+                    [-0.11685, 51.53042],
+                    [-0.11775, 51.53042],
+                    [-0.11775, 51.5296],
+                  ],
+                ],
+              },
+              properties: {
+                name: "South-west frontage",
+                [SOIL_LAYER.featureProperty]: "clay_loam",
+                drainage: "Variable",
+                description: "Clay loam transition zone adjacent to secondary links; monitor for seasonal moisture retention.",
+              },
+            },
+          ],
+        },
+      };
+
+      const ui = {
+        host: document.getElementById("mcpHost"),
+        apiKey: document.getElementById("apiKeyInput"),
+        styleSelect: document.getElementById("vectorStyle"),
+        debug: document.getElementById("debugLog"),
+        lng: document.getElementById("centerLng"),
+        lat: document.getElementById("centerLat"),
+        zoom: document.getElementById("zoomInput"),
+        size: document.getElementById("sizeInput"),
+        fitBtn: document.getElementById("fitBtn"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        snapshotBtn: document.getElementById("snapshotBtn"),
+        copyBtn: document.getElementById("copyBtn"),
+        status: document.getElementById("status"),
+        info: document.getElementById("mapInfo"),
+        tBuildings: document.getElementById("toggleBuildings"),
+        tSoils: document.getElementById("toggleSoils"),
+        tRoads: document.getElementById("toggleRoads"),
+        tPaths: document.getElementById("togglePaths"),
+      };
+
+      function parseHost(value) {
+        const raw = String(value || "").trim().replace(/\/+$/, "");
+        if (!raw) {
+          return "";
+        }
+        if (raw.startsWith("http://") || raw.startsWith("https://")) {
+          try {
+            return new URL(raw).origin;
+          } catch (_err) {
+            return raw;
+          }
+        }
+        if (raw.startsWith("/")) {
+          try {
+            return new URL(raw, window.location.origin).origin;
+          } catch (_err) {
+            return window.location.origin;
+          }
+        }
+        return `${window.location.protocol}//${raw}`;
+      }
+
+      const targetBounds = defaults.bounds;
+      let map;
+      let marker;
+      let sharedPopup;
+      const POPUP_LAYER_LABELS = {
+        "buildings-fill": "Building",
+        "buildings-line": "Building outline",
+        "postcode-buildings-extrusion": "Building (3D)",
+        "soil-fill": "Soil condition",
+        "soil-line": "Soil boundary",
+        "road-lines": "Road",
+        "path-lines": "Path",
+      };
+      const POPUP_LAYER_IDS = [
+        "buildings-fill",
+        "buildings-line",
+        "postcode-buildings-extrusion",
+        "soil-fill",
+        "soil-line",
+        "road-lines",
+        "path-lines",
+      ];
+
+      function getPopupLayerIds() {
+        return POPUP_LAYER_IDS.filter((layerId) => map && map.getLayer(layerId));
+      }
+
+      function getTopFeatureAt(point) {
+        if (!map) {
+          return null;
+        }
+        const features = map.queryRenderedFeatures(point, {
+          layers: getPopupLayerIds(),
+        });
+        return features && features.length ? features[0] : null;
+      }
+
+      function makePopupHtml(title, props) {
+        const description = props.description || "No details";
+        const postcode = props.postcode;
+        const soil = props[SOIL_LAYER.featureProperty];
+        const drainage = props.drainage;
+        const height = props.height;
+        const lines = [`${description}`];
+        if (postcode) {
+          lines.push(`<strong>Postcode:</strong> ${postcode}`);
+        }
+        if (soil) {
+          lines.push(`<strong>Soil:</strong> ${soil}`);
+        }
+        if (drainage) {
+          lines.push(`<strong>Drainage:</strong> ${drainage}`);
+        }
+        if (typeof height === "number") {
+          lines.push(`<strong>Height:</strong> ${height} m`);
+        }
+        return `<strong>${title}</strong><div>${lines.join("<br/>")}</div>`;
+      }
+
+      function getSharedPopup() {
+        if (!sharedPopup) {
+          sharedPopup = new maplibregl.Popup({
+            closeButton: true,
+            closeOnMove: false,
+            maxWidth: `${POPUP_MAX_WIDTH}px`,
+          });
+        }
+        return sharedPopup;
+      }
+
+      function handlePopupMove(event) {
+        const feature = getTopFeatureAt(event.point);
+        map.getCanvas().style.cursor = feature ? "pointer" : "";
+      }
+
+      function handlePopupClick(event) {
+        const feature = getTopFeatureAt(event.point);
+        if (!feature) {
+          return;
+        }
+        const layerId = feature.layer && feature.layer.id;
+        const title = POPUP_LAYER_LABELS[layerId] || "Feature";
+        const html = makePopupHtml(title, feature.properties || {});
+        getSharedPopup().setLngLat(event.lngLat).setHTML(html).addTo(map);
+      }
+
+      function ensurePopupHandlers() {
+        if (!map) {
+          return;
+        }
+        map.off("mousemove", handlePopupMove);
+        map.off("click", handlePopupClick);
+        map.on("mousemove", handlePopupMove);
+        map.on("click", handlePopupClick);
+      }
+
+      function buildStyle(baseUrl, useMasterMap) {
+        if (!useMasterMap) {
+          return {
+            version: 8,
+            sources: {
+              "osm-proxy": {
+                type: "raster",
+                tiles: [`${baseUrl}/maps/raster/osm/{z}/{x}/{y}.png`],
+                tileSize: 256,
+                attribution: "MCP Geo OSM raster proxy",
+              },
+            },
+            layers: [
+              { id: "basemap", type: "raster", source: "osm-proxy" },
+            ],
+          };
+        }
+        const styleName = normalizeStyleName(currentVectorStyleName());
+        return `${baseUrl}/maps/vector/vts/resources/styles?style=${encodeURIComponent(styleName)}&srs=${encodeURIComponent(VECTOR_STYLE_SRS)}`;
+      }
+
+      function setStatus(text, ok = false) {
+        ui.status.textContent = text;
+        ui.status.classList.toggle("ok", ok);
+      }
+
+      function pushDebug(message) {
+        const ts = new Date().toISOString().slice(11, 23);
+        const line = `[${ts}] ${message}`;
+        console.debug(`[York House map] ${line}`);
+        if (!ui.debug) {
+          return;
+        }
+        const lines = ui.debug.textContent ? ui.debug.textContent.split("\n") : [];
+        lines.push(line);
+        if (lines.length > 120) {
+          lines.splice(0, lines.length - 120);
+        }
+        ui.debug.textContent = lines.join("\n");
+      }
+
+      function currentBase() {
+        return parseHost(ui.host.value || window.location.origin);
+      }
+
+      function signedVectorUrl(url) {
+        const key = currentApiKey();
+        if (!key) {
+          return url;
+        }
+        let parsed;
+        try {
+          parsed = new URL(url, currentBase());
+        } catch (_err) {
+          return url;
+        }
+        if (parsed.pathname.startsWith("/maps/vector/")) {
+          parsed.searchParams.set("key", key);
+          return parsed.toString();
+        }
+        return url;
+      }
+
+      function currentApiKey() {
+        const raw = String(ui.apiKey.value || "").trim();
+        if (!raw || raw.includes(" ") || raw.includes("\n")) {
+          return "";
+        }
+        return raw;
+      }
+
+      function hasValidApiKey() {
+        const key = currentApiKey();
+        return Boolean(key) && key.length >= 10 && key.length <= 256;
+      }
+
+      function redacted(value) {
+        const safe = String(value || "");
+        if (safe.length <= 10) {
+          return "***";
+        }
+        return `${safe.slice(0, 4)}...${safe.slice(-4)}`;
+      }
+
+      function normalizeStyleName(rawStyleName) {
+        const name = String(rawStyleName || VECTOR_STYLE_NAME).trim();
+        if (!name) {
+          return VECTOR_STYLE_NAME;
+        }
+        return name.endsWith(".json") ? name : `${name}.json`;
+      }
+
+      function currentVectorStyleName() {
+        if (!ui.styleSelect) {
+          return VECTOR_STYLE_NAME;
+        }
+        return normalizeStyleName(ui.styleSelect.value);
+      }
+
+      function populateStyleOptions() {
+        if (!ui.styleSelect) {
+          return;
+        }
+        ui.styleSelect.innerHTML = VECTOR_STYLE_OPTIONS.map(
+          (entry) => `<option value="${entry.value}">${entry.label}</option>`
+        ).join("");
+        ui.styleSelect.value = VECTOR_STYLE_NAME;
+      }
+
+      async function loadMasterMapStyle(base, key, styleName) {
+        const styleUrl = new URL(
+          `${base}/maps/vector/vts/resources/styles`
+        );
+        styleUrl.searchParams.set("style", normalizeStyleName(styleName));
+        styleUrl.searchParams.set("srs", VECTOR_STYLE_SRS);
+        if (key) {
+          styleUrl.searchParams.set("key", key);
+        }
+        pushDebug(`Requesting MasterMap style: ${styleUrl}`);
+        let response;
+        try {
+          response = await fetch(styleUrl, { cache: "no-store" });
+        } catch (err) {
+          pushDebug(`Style probe request failed: ${err}`);
+          throw new Error(`Style probe failed (network): ${err}`);
+        }
+        pushDebug(`Style probe status: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+          const body = (await response.text().catch(() => "")).slice(0, 220);
+          pushDebug(`Style probe failed body: ${body || "No body."}`);
+          throw new Error(
+            `Style probe ${response.status} ${response.statusText} at ${styleUrl}. ${body || "No body."}`
+          );
+        }
+        const rawBody = await response.text();
+        pushDebug(`Style body length: ${rawBody.length}`);
+        try {
+          const stylePayload = JSON.parse(rawBody);
+          if (!stylePayload || typeof stylePayload !== "object") {
+            throw new Error("No valid style JSON.");
+          }
+          pushDebug(`Style keys: ${Object.keys(stylePayload).join(", ")}`);
+          const sourceCount = stylePayload.sources
+            ? Object.keys(stylePayload.sources).length
+            : 0;
+          pushDebug(`Style sources: ${sourceCount}`);
+          if (stylePayload.sprite) {
+            pushDebug(`Style sprite: ${stylePayload.sprite}`);
+          }
+          if (stylePayload.glyphs) {
+            pushDebug(`Style glyphs: ${stylePayload.glyphs}`);
+          }
+          const firstSourceKey = Object.keys(stylePayload.sources || {})[0];
+          if (firstSourceKey) {
+            const sourceDef = stylePayload.sources[firstSourceKey];
+            pushDebug(`First source (${firstSourceKey}): ${JSON.stringify(sourceDef).slice(0, 420)}`);
+          }
+          return stylePayload;
+        } catch (err) {
+          pushDebug(`Style parse failed: ${err}`);
+          throw new Error(`Style probe JSON parse failed: ${String(err.message || err)}`);
+        }
+      }
+
+      function applyLayers() {
+        if (!map || !map.isStyleLoaded()) {
+          return;
+        }
+        const buildingVisible = ui.tBuildings.checked;
+        const roadsVisible = ui.tRoads.checked;
+        const pathVisible = ui.tPaths.checked;
+
+        if (!map.getSource("buildings") && buildingVisible) {
+          map.addSource("buildings", { type: "geojson", data: overlayData.buildings });
+        }
+        if (!map.getSource("roads") && roadsVisible) {
+          map.addSource("roads", { type: "geojson", data: overlayData.roads });
+        }
+        if (!map.getSource("paths") && pathVisible) {
+          map.addSource("paths", { type: "geojson", data: overlayData.paths });
+        }
+        if (!map.getSource("soils") && ui.tSoils.checked) {
+          map.addSource("soils", { type: "geojson", data: overlayData.soils });
+        }
+
+        if (buildingVisible) {
+          if (!map.getLayer("buildings-fill")) {
+            map.addLayer({
+              id: "buildings-fill",
+              type: "fill",
+              source: "buildings",
+              filter: ["==", ["get", "postcode"], POSTCODE],
+              paint: {
+                "fill-color": "#d8c3aa",
+                "fill-opacity": 0.84,
+              },
+            });
+          }
+          if (!map.getLayer("buildings-line")) {
+            map.addLayer({
+              id: "buildings-line",
+              type: "line",
+              source: "buildings",
+              filter: ["==", ["get", "postcode"], POSTCODE],
+              paint: {
+                "line-color": "#8a6f58",
+                "line-width": 2,
+              },
+            });
+          }
+          if (!map.getLayer("postcode-buildings-extrusion")) {
+            map.addLayer({
+              id: "postcode-buildings-extrusion",
+              type: "fill-extrusion",
+              source: "buildings",
+              filter: ["==", ["get", "postcode"], POSTCODE],
+              paint: {
+                "fill-extrusion-color": "#d8c3aa",
+                "fill-extrusion-height": [
+                  "coalesce",
+                  ["to-number", ["get", "height"]],
+                  DEFAULT_BUILDING_HEIGHT,
+                ],
+                "fill-extrusion-base": 0,
+                "fill-extrusion-opacity": 0.95,
+              },
+            });
+          }
+        }
+        if (roadsVisible) {
+          if (!map.getLayer("road-lines")) {
+            map.addLayer({
+              id: "road-lines",
+              type: "line",
+              source: "roads",
+              paint: {
+                "line-color": "#2f78b7",
+                "line-width": 3,
+                "line-opacity": 0.95,
+              },
+            });
+          }
+        }
+        if (pathVisible) {
+          if (!map.getLayer("path-lines")) {
+            map.addLayer({
+              id: "path-lines",
+              type: "line",
+              source: "paths",
+              paint: {
+                "line-color": "#26a65b",
+                "line-width": 3,
+                "line-opacity": 0.95,
+                "line-dasharray": [4, 4],
+              },
+            });
+          }
+        }
+        if (ui.tSoils.checked) {
+          if (!map.getLayer("soil-fill")) {
+            map.addLayer({
+              id: "soil-fill",
+              type: "fill",
+              source: "soils",
+              paint: {
+                "fill-color": [
+                  "match",
+                  ["get", "drainage"],
+                  "Good",
+                  "#4fb06a",
+                  "Moderate",
+                  "#f4d166",
+                  "Poor",
+                  "#ce6a52",
+                  "Variable",
+                  "#5b7de8",
+                  "#b6a57f",
+                ],
+                "fill-opacity": 0.24,
+              },
+            });
+          }
+          if (!map.getLayer("soil-line")) {
+            map.addLayer({
+              id: "soil-line",
+              type: "line",
+              source: "soils",
+              paint: {
+                "line-color": [
+                  "match",
+                  ["get", "drainage"],
+                  "Good",
+                  "#7adf8c",
+                  "Moderate",
+                  "#f5dd7c",
+                  "Poor",
+                  "#f29c7d",
+                  "Variable",
+                  "#8ea2f2",
+                  "#ddd3b1",
+                ],
+                "line-width": 2,
+                "line-opacity": 0.8,
+              },
+            });
+          }
+        }
+
+        if (!buildingVisible && map.getLayer("buildings-fill")) {
+          map.removeLayer("buildings-fill");
+        }
+        if (!buildingVisible && map.getLayer("buildings-line")) {
+          map.removeLayer("buildings-line");
+        }
+        if (!buildingVisible && map.getLayer("postcode-buildings-extrusion")) {
+          map.removeLayer("postcode-buildings-extrusion");
+        }
+        if (!ui.tSoils.checked && map.getLayer("soil-fill")) {
+          map.removeLayer("soil-fill");
+        }
+        if (!ui.tSoils.checked && map.getLayer("soil-line")) {
+          map.removeLayer("soil-line");
+        }
+        if (!roadsVisible && map.getLayer("road-lines")) {
+          map.removeLayer("road-lines");
+        }
+        if (!pathVisible && map.getLayer("path-lines")) {
+          map.removeLayer("path-lines");
+        }
+      }
+
+      function bindPopupLayer(id, title) {
+        if (!map || !map.getLayer(id)) {
+          return;
+        }
+        POPUP_LAYER_LABELS[id] = title || POPUP_LAYER_LABELS[id] || "Feature";
+        map.on("mouseenter", id, () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        map.on("mouseleave", id, () => {
+          map.getCanvas().style.cursor = "";
+        });
+      }
+
+      function fitTargetArea() {
+        const [minLon, minLat, maxLon, maxLat] = targetBounds;
+        map.fitBounds(
+          [
+            [minLon, minLat],
+            [maxLon, maxLat],
+          ],
+          { padding: 32, duration: 500 }
+        );
+      }
+
+      function refreshLayers() {
+        if (!map) {
+          return;
+        }
+        if (map.getSource("buildings")) {
+          map.removeSource("buildings");
+        }
+        if (map.getSource("roads")) {
+          map.removeSource("roads");
+        }
+        if (map.getSource("paths")) {
+          map.removeSource("paths");
+        }
+        if (map.getSource("soils")) {
+          map.removeSource("soils");
+        }
+        [
+          "buildings-fill",
+          "buildings-line",
+          "postcode-buildings-extrusion",
+          "soil-fill",
+          "soil-line",
+          "road-lines",
+          "path-lines",
+        ].forEach((layerId) => {
+          if (map.getLayer(layerId)) {
+            map.removeLayer(layerId);
+          }
+        });
+        applyLayers();
+      }
+
+      function snapshotUrl() {
+        const [minLon, minLat, maxLon, maxLat] = targetBounds;
+        const size = Number(ui.size.value || 1024);
+        return `${currentBase()}/maps/static/osm?bbox=${minLon},${minLat},${maxLon},${maxLat}&size=${size}`;
+      }
+
+      async function initMap() {
+        const base = currentBase();
+        pushDebug(`Init map requested. Base=${base || "N/A"}`);
+        if (!base) {
+          setStatus("Set MCP Geo base URL first.");
+          pushDebug("Missing MCP base URL");
+          return;
+        }
+        const hasMasterMap = hasValidApiKey();
+        pushDebug(`hasValidApiKey=${hasMasterMap}`);
+        let useMasterMap = hasMasterMap;
+        const styleChoice = currentVectorStyleName();
+        const detectedKey = currentApiKey();
+        if (ui.styleSelect) {
+          ui.styleSelect.disabled = !hasMasterMap;
+        }
+        if (ui.apiKey.value && !hasMasterMap) {
+          setStatus("Ignoring API key input: expected a non-empty key without spaces/newlines.");
+          pushDebug(`Invalid API key format: ${ui.apiKey.value.length} chars`);
+        }
+        pushDebug(`Style choice=${styleChoice}`);
+        pushDebug(`Key redacted=${redacted(detectedKey)} len=${detectedKey.length}`);
+
+        const lng = Number(ui.lng.value);
+        const lat = Number(ui.lat.value);
+        const zoom = Number(ui.zoom.value || defaults.zoom);
+
+        const mapContainer = document.getElementById("map");
+        if (map) {
+          map.remove();
+        }
+        maplibregl.workerUrl = `${base}/maps/worker/maplibre-gl-csp-worker.js`;
+        let selectedStyle = buildStyle(base, false);
+        if (useMasterMap) {
+          setStatus(`Testing MasterMap style with key ${redacted(detectedKey)}`);
+          try {
+            selectedStyle = await loadMasterMapStyle(base, detectedKey, styleChoice);
+            pushDebug("MasterMap probe succeeded");
+          } catch (err) {
+            useMasterMap = false;
+            selectedStyle = buildStyle(base, false);
+            pushDebug(`MasterMap probe failed, fallback to OSM. ${err instanceof Error ? err.message : String(err)}`);
+            setStatus(`MasterMap probe failed (${err instanceof Error ? err.message : String(err)}). Falling back to OSM.`);
+          }
+        } else {
+          setStatus("No valid OS API key detected. Using OSM raster proxy.");
+          pushDebug("Using OSM fallback: missing/invalid key");
+        }
+        map = new maplibregl.Map({
+          container: mapContainer,
+          style: selectedStyle,
+          center: [lng, lat],
+          zoom,
+          pitch: 52,
+          antialias: true,
+          transformRequest: (url) => ({ url: signedVectorUrl(url) }),
+          hash: false,
+        });
+
+        map.addControl(new maplibregl.NavigationControl(), "top-right");
+        if (sharedPopup) {
+          sharedPopup.remove();
+        }
+        sharedPopup = null;
+        marker = new maplibregl.Marker({ color: "#ff4d4d" })
+          .setLngLat(defaults.center)
+          .setPopup(
+            new maplibregl.Popup({
+              offset: 8,
+              closeButton: true,
+              maxWidth: "320px",
+            }).setHTML(
+              "<strong>Fora - York House</strong><br/>221 Pentonville Rd, London N1 9UZ"
+            )
+          )
+          .addTo(map);
+
+        map.on("load", () => {
+          const styleText = useMasterMap
+            ? `MasterMap vector style (${styleChoice})`
+            : "OSM raster proxy";
+          setStatus(`Map ready using ${styleText}`, true);
+          pushDebug(`Map load complete. Active style: ${useMasterMap ? "MasterMap" : "OSM"}`);
+          applyLayers();
+          bindPopupLayer("buildings-fill", "Building");
+          bindPopupLayer("postcode-buildings-extrusion", "Building (3D)");
+          bindPopupLayer("soil-fill", "Soil condition");
+          bindPopupLayer("road-lines", "Road");
+          bindPopupLayer("path-lines", "Path");
+          ensurePopupHandlers();
+          fitTargetArea();
+          ui.info.textContent = `Zoom: ${map.getZoom().toFixed(2)} | Center: ${defaults.center[1].toFixed(
+            5
+          )}, ${defaults.center[0].toFixed(5)}`;
+        });
+
+        map.on("moveend", () => {
+          const center = map.getCenter();
+          ui.info.textContent = `Zoom: ${map.getZoom().toFixed(
+            2
+          )} | Center: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+        });
+
+        map.on("styledata", () => {
+          if (map.isStyleLoaded()) {
+            setStatus("Style loaded.", true);
+            pushDebug(`Styledata event. map.isStyleLoaded=${map.isStyleLoaded()}`);
+          }
+        });
+
+        map.on("error", (event) => {
+          const sourceUrl =
+            event.error && event.error.target && event.error.target.src
+              ? event.error.target.src
+              : event.tile && event.tile.tileID && event.tile.tileID.canonical
+              ? `${currentBase()}/maps/vector${event.tile.tileID.canonical.z}/${event.tile.tileID.canonical.x}/${event.tile.tileID.canonical.y}.pbf`
+              : "";
+          const message = event.error?.message || event.error?.toString() || "Unknown map error";
+          setStatus(`Map error: ${message}${sourceUrl ? ` (${sourceUrl})` : ""}`);
+          pushDebug(`Map error event: ${message}${sourceUrl ? ` (${sourceUrl})` : ""}`);
+        });
+      }
+
+      function copySnapshotUrl() {
+        const url = snapshotUrl();
+        navigator.clipboard.writeText(url).then(
+          () => setStatus("Snapshot URL copied to clipboard."),
+          () => {
+            window.prompt("Copy this URL:", url);
+          }
+        );
+      }
+
+      ui.fitBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (map) {
+          fitTargetArea();
+          setStatus("Fitted target bbox for Fora area.");
+        }
+      });
+
+      ui.refreshBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        initMap();
+      });
+
+      ui.styleSelect.addEventListener("change", () => {
+        if (!hasValidApiKey()) {
+          if (ui.styleSelect) {
+            ui.styleSelect.value = VECTOR_STYLE_NAME;
+          }
+          setStatus("Enter a valid OS API key to switch MasterMap styles.");
+          return;
+        }
+        initMap();
+      });
+
+      ui.snapshotBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        const url = snapshotUrl();
+        window.open(url, "_blank", "noopener");
+      });
+
+      ui.copyBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        copySnapshotUrl();
+      });
+
+      ui.tBuildings.addEventListener("change", () => {
+        if (!map) {
+          return;
+        }
+        if (!ui.tBuildings.checked && map.getLayer("buildings-fill")) {
+          map.removeLayer("buildings-fill");
+        }
+        if (!ui.tBuildings.checked && map.getLayer("buildings-line")) {
+          map.removeLayer("buildings-line");
+        }
+        if (!ui.tBuildings.checked && map.getLayer("postcode-buildings-extrusion")) {
+          map.removeLayer("postcode-buildings-extrusion");
+        }
+        if (ui.tBuildings.checked) {
+          applyLayers();
+        }
+      });
+      ui.tSoils.addEventListener("change", () => {
+        if (!map) {
+          return;
+        }
+        if (!ui.tSoils.checked && map.getLayer("soil-fill")) {
+          map.removeLayer("soil-fill");
+        }
+        if (!ui.tSoils.checked && map.getLayer("soil-line")) {
+          map.removeLayer("soil-line");
+        }
+        if (ui.tSoils.checked) {
+          applyLayers();
+        }
+      });
+      ui.tRoads.addEventListener("change", () => {
+        if (!map) {
+          return;
+        }
+        if (!ui.tRoads.checked && map.getLayer("road-lines")) {
+          map.removeLayer("road-lines");
+        }
+        if (ui.tRoads.checked) {
+          applyLayers();
+        }
+      });
+      ui.tPaths.addEventListener("change", () => {
+        if (!map) {
+          return;
+        }
+        if (!ui.tPaths.checked && map.getLayer("path-lines")) {
+          map.removeLayer("path-lines");
+        }
+        if (ui.tPaths.checked) {
+          applyLayers();
+        }
+      });
+
+      populateStyleOptions();
+      initMap();
+    </script>
+  </body>
+</html>
