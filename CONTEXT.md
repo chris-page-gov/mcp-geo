@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 Owner: @chris-page-gov
 
 ## Purpose
@@ -78,6 +78,21 @@ assumptions change.
   and semantic `parts`) instead of making clients recover byte-chunked JSON by
   hand. Supported artifact formats are `geojson_bundle`,
   `javascript_overlay`, and `leaflet_snippet`.
+- A 2026-04-08 hardening pass on the same road-export surface now accepts
+  concise selector payloads like `selectionSpec: {"postcode": "CV3 1HB"}` in
+  addition to canonical `selectionSpec.selectors[...]` arrays. The shorthand
+  normalization is shared with selector-driven `os_map.export` jobs because
+  both flows use the same parser. The same pass also normalizes missing or
+  unreadable ONS geo cache failures into explicit `CACHE_UNAVAILABLE` /
+  `CACHE_READ_ERROR` tool errors, and returns `AOI_NOT_RESOLVED` when a valid
+  selector set produces no road-export AOI geometry, instead of bubbling raw
+  SQLite exceptions as generic internal errors.
+- A separate 2026-04-08 polygon-input hardening pass now makes
+  `os_features.query` and `os_places.polygon` tolerant of JSON-encoded polygon
+  strings as well as native JSON arrays/GeoJSON objects. This specifically
+  covers host/client combinations that stringify nested polygon payloads before
+  they reach the server; those requests are now normalized locally instead of
+  failing with `INVALID_INPUT` at the parser boundary.
 - `tools/os_mcp.py` now routes road-overlay/map-repair prompts toward
   `os_map.export_roads` rather than low-level `os_features.query` calls when
   the user intent is to draw/replace/embed road geometry on a map. This keeps

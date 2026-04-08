@@ -461,6 +461,319 @@ def test_os_map_export_roads_uses_cached_manifest_for_repeat_requests(client, mo
     assert "roadOverlayData" in primary_contents["text"]
 
 
+def test_os_map_export_roads_resolves_gss_code_aoi_without_bbox(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    road_requests: list[dict[str, Any]] = []
+
+    class AreaTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            assert args == {
+                "tool": "admin_lookup.area_geometry",
+                "id": "E05000644",
+                "includeGeometry": True,
+            }
+            return 200, {
+                "id": "E05000644",
+                "bbox": [-1.55, 52.38, -1.45, 52.48],
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-1.55, 52.38],
+                            [-1.45, 52.38],
+                            [-1.45, 52.48],
+                            [-1.55, 52.48],
+                            [-1.55, 52.38],
+                        ]
+                    ],
+                },
+            }
+
+    class RoadTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            road_requests.append(dict(args))
+            assert "bbox" not in args
+            assert "polygon" in args
+            return 200, {
+                "features": [
+                    {
+                        "id": "road-1",
+                        "properties": {"roadclassificationnumber": "A444"},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[-1.51, 52.40], [-1.50, 52.41]],
+                        },
+                    }
+                ],
+                "offset": 0,
+                "nextPageToken": None,
+                "hints": {"warnings": []},
+            }
+
+    def _get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return AreaTool()
+        if name == "os_features.query":
+            return RoadTool()
+        return None
+
+    monkeypatch.setattr(os_map, "get_tool", _get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "collection": "trn-ntwk-roadlink-5",
+            "selectionSpec": {
+                "selectors": [{"type": "gss_code", "level": "WARD", "code": "E05000644"}],
+                "uprnOverrides": {"include": [], "exclude": []},
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["featureCounts"] == {"selection": 1}
+    assert body["aoi"]["queryPolygonCount"] == 1
+    assert any(part["name"] == "aoi-limits.geojson" for part in body["parts"])
+    assert len(road_requests) == 1
+
+
+def test_os_map_export_roads_resolves_uprn_anchor_to_building_polygon(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    building_requests: list[dict[str, Any]] = []
+    road_requests: list[dict[str, Any]] = []
+
+    class UprnTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            assert args == {"tool": "os_places.by_uprn", "uprn": "100023336959"}
+            return 200, {"result": {"uprn": "100023336959", "lat": 51.5006, "lon": -0.1102}}
+
+    class FeaturesTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            collection = args.get("collection")
+            if collection == "buildings":
+                building_requests.append(dict(args))
+                assert "bbox" in args
+                return 200, {
+                    "features": [
+                        {
+                            "id": "building-1",
+                            "properties": {"name": "Anchor building"},
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": [
+                                    [
+                                        [-0.11035, 51.50045],
+                                        [-0.11005, 51.50045],
+                                        [-0.11005, 51.50075],
+                                        [-0.11035, 51.50075],
+                                        [-0.11035, 51.50045],
+                                    ]
+                                ],
+                            },
+                        }
+                    ]
+                }
+            road_requests.append(dict(args))
+            assert collection == "trn-ntwk-roadlink-5"
+            assert "polygon" in args
+            assert "bbox" not in args
+            return 200, {
+                "features": [
+                    {
+                        "id": "road-1",
+                        "properties": {"roadclassificationnumber": "A444"},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[-0.1103, 51.5005], [-0.1098, 51.5009]],
+                        },
+                    }
+                ],
+                "offset": 0,
+                "nextPageToken": None,
+                "hints": {"warnings": []},
+            }
+
+    def _get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "os_places.by_uprn":
+            return UprnTool()
+        if name == "os_features.query":
+            return FeaturesTool()
+        return None
+
+    monkeypatch.setattr(os_map, "get_tool", _get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "collection": "trn-ntwk-roadlink-5",
+            "selectionSpec": {
+                "selectors": [{"type": "uprn", "uprn": "100023336959"}],
+                "uprnOverrides": {"include": [], "exclude": []},
+            },
+            "anchorBufferMeters": 15,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["featureCounts"] == {"selection": 1}
+    assert body["aoi"]["anchorPolygonCount"] == 1
+    assert body["aoi"]["addressStats"]["resolvedUprnCount"] == 1
+    assert any(part["name"] == "aoi-anchors.geojson" for part in body["parts"])
+    assert len(building_requests) == 1
+    assert len(road_requests) == 1
+
+
+def test_os_map_export_roads_accepts_postcode_selection_shorthand(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    class UprnTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            assert args == {"tool": "os_places.by_uprn", "uprn": "100023336959"}
+            return 200, {"result": {"uprn": "100023336959", "lat": 51.5006, "lon": -0.1102}}
+
+    class FeaturesTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            if args.get("collection") == "buildings":
+                return 200, {
+                    "features": [
+                        {
+                            "id": "building-1",
+                            "properties": {"name": "Anchor building"},
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": [
+                                    [
+                                        [-0.11035, 51.50045],
+                                        [-0.11005, 51.50045],
+                                        [-0.11005, 51.50075],
+                                        [-0.11035, 51.50075],
+                                        [-0.11035, 51.50045],
+                                    ]
+                                ],
+                            },
+                        }
+                    ]
+                }
+            return 200, {
+                "features": [
+                    {
+                        "id": "road-1",
+                        "properties": {"roadclassificationnumber": "COVENTRY"},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[-0.1103, 51.5005], [-0.1098, 51.5009]],
+                        },
+                    }
+                ],
+                "offset": 0,
+                "nextPageToken": None,
+                "hints": {"warnings": []},
+            }
+
+    def _get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "os_places.by_uprn":
+            return UprnTool()
+        if name == "os_features.query":
+            return FeaturesTool()
+        return None
+
+    monkeypatch.setattr(os_map, "get_tool", _get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "collection": "trn-ntwk-roadlink-5",
+            "selectionSpec": {"postcode": "CV1 2GT"},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["featureCounts"] == {"selection": 1}
+    assert body["aoi"]["addressStats"]["resolvedUprnCount"] == 1
+
+
+def test_os_map_export_roads_selection_cache_failure_is_normalized(client) -> None:  # type: ignore[no-untyped-def]
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "selectionSpec": {"postcode": "CV3 1HB"},
+            "outputFormat": "geojson_bundle",
+        },
+    )
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["code"] in {"CACHE_UNAVAILABLE", "CACHE_READ_ERROR"}
+
+
+def test_os_map_export_roads_unresolved_selection_returns_explicit_error(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+    monkeypatch.setattr(os_map, "get_tool", lambda _name: None)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "selectionSpec": {"postcode": "ZZ1 1ZZ"},
+        },
+    )
+    assert resp.status_code == 404
+    body = resp.json()
+    assert body["code"] == "AOI_NOT_RESOLVED"
+
+
 def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
     from server.ons_geo_cache import ensure_schema
 
@@ -651,6 +964,100 @@ def test_os_map_selection_export_without_membership_columns(client, monkeypatch,
         in csv_text
     )
     assert "selected_by_oa" not in csv_text
+
+
+def test_os_map_selection_export_accepts_postcode_selection_shorthand(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    queued = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export",
+            "exportType": "selection_uprn",
+            "selectionSpec": {"postcode": "CV1 2GT"},
+            "format": "json",
+            "delivery": "resource",
+        },
+    )
+    assert queued.status_code == 200
+    export_id = queued.json()["exportId"]
+
+    terminal = None
+    for _ in range(80):
+        status_resp = client.post(
+            "/tools/call",
+            json={"tool": "os_map.get_export", "exportId": export_id},
+        )
+        assert status_resp.status_code == 200
+        status_body = status_resp.json()
+        if status_body["status"] in {"completed", "failed"}:
+            terminal = status_body
+            break
+        time.sleep(0.05)
+    assert terminal is not None
+    assert terminal["status"] == "completed", terminal
+    assert terminal["rowCount"] == 1
+
+    read = client.get("/resources/read", params={"uri": terminal["resultUri"]})
+    assert read.status_code == 200
+    payload = json.loads(read.json()["contents"][0]["text"])
+    assert payload["rows"][0]["uprn"] == "100023336959"
+
+
+def test_os_map_selection_export_cache_failure_is_reported(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+
+    queued = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export",
+            "exportType": "selection_uprn",
+            "selectionSpec": {"postcode": "CV3 1HB"},
+            "format": "json",
+            "delivery": "resource",
+        },
+    )
+    assert queued.status_code == 200
+    export_id = queued.json()["exportId"]
+
+    terminal = None
+    for _ in range(80):
+        status_resp = client.post(
+            "/tools/call",
+            json={"tool": "os_map.get_export", "exportId": export_id},
+        )
+        assert status_resp.status_code == 200
+        status_body = status_resp.json()
+        if status_body["status"] in {"completed", "failed"}:
+            terminal = status_body
+            break
+        time.sleep(0.05)
+    assert terminal is not None
+    assert terminal["status"] == "failed"
+    assert terminal["error"]["code"] in {"CACHE_UNAVAILABLE", "CACHE_READ_ERROR"}
 
 
 def test_os_map_get_export_not_found(client) -> None:  # type: ignore[no-untyped-def]

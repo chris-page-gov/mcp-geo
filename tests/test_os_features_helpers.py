@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from typing import Any
 
 
@@ -314,6 +316,14 @@ def test_parse_polygon_accepts_valid_ring_and_geojson() -> None:
     points2, error2 = os_features._parse_polygon(geo)
     assert error2 is None
     assert points2 == points
+
+    points3, error3 = os_features._parse_polygon(json.dumps(ring))
+    assert error3 is None
+    assert points3 == points
+
+    points4, error4 = os_features._parse_polygon(json.dumps(geo))
+    assert error4 is None
+    assert points4 == points
 
 
 def test_bbox_from_polygon() -> None:

@@ -138,6 +138,22 @@ All notable changes to this project will be documented in this file.
   York examples.
 
 ### Fixed
+- `os_map.export_roads` now accepts concise selector payloads such as
+  `selectionSpec: {"postcode": "CV3 1HB"}` (plus the same shorthand for
+  `uprn`, `gssCode`+`level`, and `geometry`/`polygon`) instead of requiring
+  callers to always build `selectionSpec.selectors[...]` manually. The same
+  parser is shared with selector-driven `os_map.export` jobs so both flows now
+  accept the shorthand form.
+- `os_features.query` and `os_places.polygon` now accept JSON-encoded polygon
+  strings as well as native JSON arrays/objects, so hosts that stringify nested
+  polygon payloads no longer fail with `INVALID_INPUT` before the upstream OS
+  call is attempted.
+- Selector-driven road exports and selector-driven `os_map.export` jobs now
+  normalize missing or unreadable ONS geo cache failures into explicit
+  `CACHE_UNAVAILABLE` / `CACHE_READ_ERROR` tool errors rather than bubbling
+  raw SQLite exceptions as internal errors. `os_map.export_roads` also now
+  returns `AOI_NOT_RESOLVED` when a syntactically valid `selectionSpec` does
+  not resolve any AOI geometry.
 - `os_mcp.route_query` now recognizes road-overlay/map-repair prompts such as
   replacing broken Overpass fetches with OS road geometry and recommends
   `os_map.export_roads` directly, including extracted road numbers plus

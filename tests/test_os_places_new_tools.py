@@ -83,6 +83,50 @@ def test_os_places_polygon_calls_polygon_endpoint(monkeypatch) -> None:  # type:
     assert geo_body["type"] == "Polygon"
 
 
+def test_os_places_polygon_accepts_stringified_geojson(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    import json
+
+    from tools import os_places_extra
+
+    captured: dict[str, object] = {}
+
+    def fake_post_json(url: str, body=None, params=None):  # noqa: ANN001
+        captured["url"] = url
+        captured["body"] = body
+        captured["params"] = params
+        return 200, {"results": [{"DPA": {"UPRN": "2", "ADDRESS": "B", "LAT": 51.6, "LNG": -0.2}}]}
+
+    fake_client = type(
+        "C",
+        (),
+        {
+            "get_json": staticmethod(lambda *_args, **_kwargs: (500, {})),
+            "post_json": staticmethod(fake_post_json),
+            "base_places": "http://example",
+        },
+    )()
+    monkeypatch.setattr(os_places_extra, "client", fake_client)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_places.polygon",
+            "polygon": json.dumps(
+                {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [[-0.2, 51.5], [-0.1, 51.5], [-0.1, 51.6], [-0.2, 51.6], [-0.2, 51.5]]
+                    ],
+                }
+            ),
+        },
+    )
+    assert resp.status_code == 200
+    geo_body = captured["body"]
+    assert isinstance(geo_body, dict)
+    assert geo_body["type"] == "Polygon"
+
+
 def test_os_places_radius_and_polygon_invalid_inputs() -> None:
     radius = client.post(
         "/tools/call",

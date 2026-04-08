@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import re
 from typing import Any
@@ -515,6 +516,11 @@ def _parse_polygon(
 ) -> tuple[list[tuple[float, float]] | None, str | None]:
     if value is None:
         return None, None
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            return None, "polygon must be a coordinate ring or GeoJSON Polygon object"
     points_raw: Any
     if isinstance(value, dict):
         if str(value.get("type", "")).lower() != "polygon":

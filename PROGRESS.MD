@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 
 ## Claude/LandIS map-export research (2026-04-07)
 
@@ -13,6 +13,8 @@ Legend: pending, in_progress, done, blocked
 | --- | --- | --- | --- |
 | CLAUDE-LANDIS-2 Draw-roads-on-map contract analysis | done | CLAUDE-LANDIS-1 | Added `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, concluding that the main issue is architectural rather than prompt-level: the server currently makes the model handle paged feature export, byte-chunk resource recovery, JSON reassembly, and host-side ETL. Recommended direction is a task-shaped road-overlay export tool plus durable semantic export manifests, with `os_mcp.route_query` steering map-building prompts to that higher-level contract. |
 | CLAUDE-LANDIS-3 Road-overlay export implementation | done | CLAUDE-LANDIS-2 | Implemented `os_map.export_roads` in `tools/os_map.py` as the task-shaped fix recommended by the analysis. The new tool fetches all required `os_features.query` pages server-side, writes deterministic semantic exports under `data/os_exports/road-overlays/<request-hash>/`, emits per-road GeoJSON parts plus optional JavaScript/Leaflet artifacts, and reports completeness/count metadata so clients no longer have to reconstruct chunked JSON resources by hand. Follow-on wiring updated `os_mcp.route_query`, tool-search stateful classifications, and `resource://mcp-geo/os-exports/*` MIME handling. Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_os_map_tools.py tests/test_os_mcp_route_query.py tests/test_tools_describe.py` (`94 passed`). |
+| CLAUDE-LANDIS-4 Selector-driven road export hardening | done | CLAUDE-LANDIS-3 | Hardened `os_map.export_roads` and the shared selector parser so concise client payloads such as `selectionSpec: {"postcode": "CV3 1HB"}` now normalize into the canonical selector form used internally. The same fix applies to selector-driven `os_map.export` jobs because both flows share `_parse_selection_spec`. Follow-on error normalization now turns missing/unreadable ONS geo cache failures into explicit `CACHE_UNAVAILABLE` / `CACHE_READ_ERROR` responses instead of internal errors, and road exports now return `AOI_NOT_RESOLVED` when a valid selector set resolves no geometry. Focused validation passed via `./scripts/pytest-local -q --no-cov tests/test_os_map_tools.py tests/test_os_mcp_route_query.py tests/test_tools_describe.py -k 'export_roads or route_query_road_overlay or selection_export or selection_cache_failure or unresolved_selection'` (`16 passed`). |
+| CLAUDE-LANDIS-5 Polygon payload normalization for stringifying clients | done | CLAUDE-LANDIS-3 | Hardened the polygon parsers in `tools/os_features.py` and `tools/os_places_extra.py` so JSON-encoded polygon strings now normalize to the same internal geometry form as native arrays/GeoJSON objects. This closes the Claude-side failure mode where `polygon` arrived as a serialized JSON string and was rejected before any OS request. Added focused regressions in `tests/test_os_features_helpers.py` and `tests/test_os_places_new_tools.py`; validation passed via `./scripts/pytest-local -q --no-cov tests/test_os_features_helpers.py tests/test_os_places_new_tools.py -k 'parse_polygon or polygon'` (`12 passed`). |
 
 ## Claude troubleshooting hardening (2026-04-07)
 
