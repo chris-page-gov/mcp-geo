@@ -52,6 +52,22 @@ assumptions change.
 
 ## Current Focus
 
+- The 2026-04-07 Council Tax UPRN follow-up is now implemented. The
+  `council_tax.query` tool in `tools/council_tax.py` reads AddressBase Premium
+  Type 23 Application Cross Reference CSV data from the configured
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, stream-scans only the requested UPRNs, and
+  classifies current `SOURCE=7666VC` as Council Tax and `SOURCE=7666VN` as
+  non-domestic rates. The implementation defaults to `activeOnly=true`, which
+  treats blank `END_DATE` as the current-liability filter and reports inactive
+  historical source codes separately so ended cross references are visible
+  without being misreported as current. Provenance now uses the current OS Docs
+  technical-specification pages rather than the dead legacy PDF URL.
+- A first real ABP GML example run from the extSSD delivery is now preserved in
+  the repo as `tests/fixtures/council_tax_uprn_abp_example.json`, with the
+  matching analyst workbook at `output/spreadsheet/uprns_council_tax_status.xlsx`.
+  That sample covers 100 workbook-supplied UPRNs and currently yields 22
+  Council Tax matches, 0 non-domestic-rates matches, and 78 with neither flag
+  present in the scanned Type 23 records.
 - The 2026-04-07 `draw_roads_on_map` architecture review in
   `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md` is now
   implemented in the server runtime. `tools/os_map.py` now exposes
@@ -527,6 +543,10 @@ assumptions change.
 ## Active Work
 
 - Maintain and iterate the OWASP MCP strict validation pack (`server/owasp_mcp_validation.py`, `security/owasp_mcp/`, `.github/workflows/ci.yml`) from the current `compliant` strict baseline, keeping the attestation set fresh and preserving the hardened `/mcp` auth, session, deployment, and governance controls.
+- Treat any tool registration or contract change as OWASP maintenance work as
+  well: refresh `security/owasp_mcp/tool_risk_inventory.json`, regenerate the
+  signed manifest artifacts, and rerun the strict validator so CI metadata does
+  not drift behind the live tool set.
 - Prepare the minor-release integration branch `codex/release-0.6.0-integration`
   by landing `codex/validate-maps` plus the boundary harness follow-up while
   explicitly deferring PRs `#24`, `#29`, and `codex/reporting-2026-03-01`.

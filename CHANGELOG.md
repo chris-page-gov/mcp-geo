@@ -120,6 +120,12 @@ All notable changes to this project will be documented in this file.
   with blank `END_DATE`, and returns historical inactive source flags
   separately for traceability. The docs/config surface now points to the
   current OS Docs specification pages instead of the dead legacy PDF URL.
+
+### Changed
+- Clarified the repo guidance for tool-surface changes so agents now treat
+  tool additions and contract edits as OWASP maintenance work as well:
+  update `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed
+  manifest artifacts, and rerun the strict validator in the same change.
 - Added the first real-delivery Council Tax UPRN example artifact set from the
   2026-04-07 ABP GML delivery: the repo now keeps
   `tests/fixtures/council_tax_uprn_abp_example.json` as a stable example

@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 100,
+  "tool_count": 101,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -58,6 +58,14 @@
       "input_schema_sha256": "487ab47162adc12e4923fb91d69dca4d767b1d5e612d9e6bb1787cca4a34e9fa",
       "name": "council_tax.band_lookup",
       "output_schema_sha256": "be21ad1db9f6d1771576787a2cc38fa230b8f8408f52e687bef8b675c8ca80d7",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Query AddressBase Premium Application Cross Reference records by UPRN to identify Council Tax and non-domestic rates flags.",
+      "description_sha256": "e39fd2e423bb762a9c39f4ef4abad259de598bb634dfb75b10bacce1599582f7",
+      "input_schema_sha256": "69e802cfb97d12fca022e17ea67d37ac3be0f96ff455696c5dd2873a47e15ed4",
+      "name": "council_tax.query",
+      "output_schema_sha256": "20cee96d8b33005057a1874bdf6b9e2cc284dc320e01be7ea4404eded2ae7efa",
       "version": "0.1.0"
     },
     {

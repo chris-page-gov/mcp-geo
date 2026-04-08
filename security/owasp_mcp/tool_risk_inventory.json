@@ -69,6 +69,14 @@
       "side_effect_level": "none"
     },
     {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "council_tax.query",
+      "network_write": false,
+      "requires_user_context": true,
+      "side_effect_level": "none"
+    },
+    {
       "data_sensitivity": "public",
       "high_risk_action": false,
       "name": "landis_archive.get_item",

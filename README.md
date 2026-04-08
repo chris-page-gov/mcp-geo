@@ -410,6 +410,7 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
 | council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
+| council_tax.query                   | AddressBase Premium UPRN check for Council Tax and non-domestic rates         |
 | landis_catalog.list_products        | LandIS callable product registry, exact thematic IDs, and access tiers        |
 | landis_metadata.get                | LandIS product metadata, provenance, and linked resources                     |
 | landis_soilscapes.point            | LandIS Soilscapes class lookup for a WGS84 point                              |
@@ -767,6 +768,23 @@ Supported inputs include `postcode`, `propertyName`, `street`, `town`,
 `billingAuthorityReference`, and optional filters such as `band` and
 `bandStatus`. Set `COUNCIL_TAX_BAND_LIVE_ENABLED=true` to enable the live
 lookup surface.
+
+### AddressBase Premium UPRN Tax Status
+
+`council_tax.query` checks a batch of UPRNs against the AddressBase Premium
+Application Cross Reference Type 23 table. By default it only counts current
+matches with a blank `END_DATE`, so historical cross references do not get
+reported as current liabilities.
+
+Configure `ADDRESSBASE_PREMIUM_XREF_PATH` to either the extracted Type 23 CSV
+file or a directory containing it. The tool classifies `SOURCE=7666VC` as
+Council Tax and `SOURCE=7666VN` as non-domestic rates, based on the current OS
+documentation:
+
+- Product technical specification:
+  [AddressBase Premium Technical Specification](https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/addressbase-premium/addressbase-premium-technical-specification)
+- Type 23 record details and `SOURCE` values:
+  [Application Cross Reference - Type 23 Record](https://docs.os.uk/os-downloads/addressing-and-location/addressbase-premium-islands/addressbase-premium-islands-technical-specification/structured-data-types/application-cross-reference-type-23-record)
 
 ## Error Model
 

@@ -1,0 +1,1408 @@
+{
+  "summary": {
+    "queriedCount": 100,
+    "councilTaxCount": 22,
+    "businessRatesCount": 0,
+    "bothCount": 0,
+    "noneCount": 78
+  },
+  "results": [
+    {
+      "uprn": "10095829776",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_044.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2021-07-28",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005291790767",
+          "version": "1",
+          "lastUpdateDate": "2024-06-03",
+          "entryDate": "2021-07-27",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10095829777",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_044.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2021-07-28",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "13836882000",
+          "version": "1",
+          "lastUpdateDate": "2024-06-03",
+          "entryDate": "2021-07-27",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710725",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_022.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005282756323",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006709731",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_163.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-06-26",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "E05010737",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2013-10-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710706",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_170.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "E05010737",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710733",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_028.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005233965085",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710732",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_028.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "12658755000",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10091720111",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10095310083",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_025.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2023-04-14",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005282153607",
+          "version": "0",
+          "lastUpdateDate": "2023-04-14",
+          "entryDate": "2023-04-13",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10090616093",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_050.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2012-07-20",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb4000000015490283",
+          "version": "11",
+          "lastUpdateDate": "2022-03-23",
+          "entryDate": "2012-07-19",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006626224",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096739863",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_040.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2023-06-28",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "14352740000",
+          "version": "1",
+          "lastUpdateDate": "2023-06-28",
+          "entryDate": "2023-06-27",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10093479318",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863172",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863174",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863173",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863180",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863177",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863170",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863171",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863176",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863178",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863175",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863179",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863186",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863182",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863187",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863188",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863190",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863189",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863183",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863185",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863181",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863184",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863191",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863192",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863144",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863146",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863145",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096861989",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_133.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2024-01-04",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005288949399",
+          "version": "0",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2023-12-07",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10096863168",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863167",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863169",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863142",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863141",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006710728",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_025.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005273061721",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710726",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_023.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005233965333",
+          "version": "0",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710709",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_192.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "E04000080",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710708",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_170.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-02",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005233965328",
+          "version": "1",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2014-12-01",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "10006710723",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756818",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006625584",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756820",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006621891",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756822",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756817",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756816",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756819",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756821",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050756823",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "2007016929",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_208.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2014-12-15",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb5000005128667375",
+          "version": "2",
+          "lastUpdateDate": "2016-02-10",
+          "entryDate": "2014-12-12",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "2007004791",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "2007004792",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050632478",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_170.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2008-01-29",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "10561780000",
+          "version": "2",
+          "lastUpdateDate": "2016-09-07",
+          "entryDate": "2001-04-05",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "100050632479",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_168.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2008-01-29",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb1000000086745481",
+          "version": "5",
+          "lastUpdateDate": "2016-09-07",
+          "entryDate": "2001-04-05",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "2007004795",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_025.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2010-02-10",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "osgb1000002128524115",
+          "version": "16",
+          "lastUpdateDate": "2016-09-07",
+          "entryDate": "2010-02-05",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "100050632477",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10032790835",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "2007004794",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "2007004793",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "2007019691",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050632476",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_147.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2008-01-29",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "10627543000",
+          "version": "2",
+          "lastUpdateDate": "2025-01-02",
+          "entryDate": "2001-04-05",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "100050632473",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_147.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2008-01-29",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "E05000978",
+          "version": "2",
+          "lastUpdateDate": "2016-09-07",
+          "entryDate": "2001-04-05",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "100050632474",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100050632475",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863163",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10096863162",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10095781588",
+      "status": "council_tax",
+      "paysCouncilTax": true,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [
+        "7666VC"
+      ],
+      "allSourceCodes": [
+        "7666VC"
+      ],
+      "recordCount": 1,
+      "records": [
+        {
+          "file": "AddressBasePremium_FULL_2026-03-03_009.gml",
+          "source": "7666VC",
+          "kind": "council_tax",
+          "startDate": "2022-06-24",
+          "endDate": null,
+          "xrefKey": null,
+          "crossReference": "13902205000",
+          "version": "0",
+          "lastUpdateDate": "2025-09-11",
+          "entryDate": "2022-05-03",
+          "active": true
+        }
+      ]
+    },
+    {
+      "uprn": "100051984562",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051985006",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576708",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984997",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576706",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576704",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051985001",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576709",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984571",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984570",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576707",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984630",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051985007",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984622",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984991",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576700",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984623",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576705",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "10006576701",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984563",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051985002",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    },
+    {
+      "uprn": "100051984996",
+      "status": "none",
+      "paysCouncilTax": false,
+      "paysBusinessRates": false,
+      "activeSourceCodes": [],
+      "allSourceCodes": [],
+      "recordCount": 0,
+      "records": []
+    }
+  ],
+  "sourceZip": "/Volumes/ExtSSD-Data/Data/0040178838-6817976-1/AB76GB_GML.zip"
+}
