@@ -229,14 +229,98 @@ def test_ensure_schema_creates_uprn_index_table(tmp_path) -> None:
     conn.commit()
     row = conn.execute(
         """
-        SELECT uprn, lad_code, lad_name, postal_delivery
+        SELECT uprn, lad_code, lad_name, postal_delivery, ward_code, country_code, region_code
         FROM ons_geo_uprn_index
         WHERE uprn = ?
         """,
         ("100023336959",),
     ).fetchone()
+    tables = {
+        item[0]
+        for item in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    }
     conn.close()
-    assert row == ("100023336959", "E08000026", "Coventry", 1)
+    assert row == ("100023336959", "E08000026", "Coventry", 1, None, None, None)
+    assert "ons_geo_code_reference" in tables
+
+
+def test_lookup_decodes_normalized_payload(tmp_path) -> None:
+    cache = ONSGeoCache(
+        cache_dir=tmp_path,
+        db_name="ons_geo_cache.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+    conn = sqlite3.connect(str(cache.db_path))
+    ensure_schema(conn)
+    conn.execute(
+        """
+        INSERT INTO ons_geo_products (
+            product_id,
+            key_type,
+            derivation_mode,
+            release,
+            source_name,
+            source_path,
+            source_sha256,
+            record_count,
+            ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSPD",
+            "postcode",
+            "exact",
+            "2026-02",
+            "ONSPD",
+            "onspd.csv",
+            "hash",
+            1,
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.execute(
+        """
+        INSERT INTO ons_geo_rows (
+            product_id,
+            key_type,
+            key_norm,
+            derivation_mode,
+            release,
+            source_name,
+            product_priority,
+            row_json,
+            normalized_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSPD",
+            "postcode",
+            "SW1A1AA",
+            "exact",
+            "2026-02",
+            "ONSPD",
+            10,
+            json.dumps({"LAD24CD": "E09000033", "LAD24NM": "Westminster"}),
+            json.dumps(
+                {
+                    "semanticFields": {"postcode": "SW1A1AA"},
+                    "geographies": {"lad": {"currentCode": "E09000033", "status": "current"}},
+                    "codeStatusSummary": {"current": 1},
+                }
+            ),
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+    result = cache.lookup(key_type="postcode", key_value="SW1A 1AA", derivation_mode="exact")
+    assert result is not None
+    assert result.normalized["geographies"]["lad"]["currentCode"] == "E09000033"
+    assert result.normalized["codeStatusSummary"]["current"] == 1
 
 
 def test_lookup_raises_cache_read_error_when_schema_is_missing(tmp_path) -> None:

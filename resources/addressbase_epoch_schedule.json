@@ -1,0 +1,27 @@
+{
+  "version": "2026-04-09",
+  "description": "Authoritative AddressBase epoch publication schedule used to assess ONSUD/NSUL freshness.",
+  "epochs": [
+    {
+      "epoch": 123,
+      "publication_date": "2025-11-27"
+    },
+    {
+      "epoch": 124,
+      "publication_date": "2026-01-08"
+    },
+    {
+      "epoch": 125,
+      "publication_date": "2026-02-19"
+    },
+    {
+      "epoch": 126,
+      "publication_date": "2026-04-02"
+    },
+    {
+      "epoch": 127,
+      "publication_date": "2026-05-14",
+      "scheduled": true
+    }
+  ]
+}

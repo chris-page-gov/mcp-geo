@@ -11,6 +11,8 @@ from server.ons_geo_cache import (
     normalize_postcode,
     normalize_uprn,
 )
+from server.ons_geo_catalog import build_release_audit
+from server.ons_geo_freshness import summarize_uprn_dataset_freshness
 from tools.registry import Tool, ToolResult, register
 
 
@@ -38,6 +40,15 @@ def _build_lookup_response(
     include_raw: bool,
 ) -> ToolResult:
     geographies = extract_geography_fields(cache_result.row)
+    normalized = cache_result.normalized if isinstance(cache_result.normalized, dict) else {}
+    normalized_geographies = normalized.get("geographies", {})
+    semantic_fields = normalized.get("semanticFields", {})
+    code_status_summary = normalized.get("codeStatusSummary", {})
+    freshness = summarize_uprn_dataset_freshness(
+        dataset_id=cache_result.product_id,
+        resolved_release=cache_result.resolved_release,
+        resolved_source_url=cache_result.resolved_source_url,
+    )
     payload: dict[str, Any] = {
         "query": {
             lookup_key: normalized_key,
@@ -48,19 +59,35 @@ def _build_lookup_response(
             "product": cache_result.product_id,
             "derivationMode": cache_result.derivation_mode,
             "release": cache_result.release,
+            "resolvedRelease": cache_result.resolved_release,
             "sourceName": cache_result.source_name,
+            "sourceFormat": cache_result.source_format,
+            "schemaFingerprint": cache_result.schema_fingerprint,
+            "resolvedSourceUrl": cache_result.resolved_source_url,
             "cachedAt": cache_result.cached_at,
+            "freshness": freshness,
         },
         "geographies": geographies,
+        "normalizedGeographies": (
+            normalized_geographies if isinstance(normalized_geographies, dict) else {}
+        ),
+        "semanticFields": semantic_fields if isinstance(semantic_fields, dict) else {},
+        "codeStatusSummary": code_status_summary if isinstance(code_status_summary, dict) else {},
         "geographyCount": len(geographies),
         "provenance": {
             "source": "ons_geo_cache",
             "product": cache_result.product_id,
             "derivationMode": cache_result.derivation_mode,
+            "release": cache_result.release,
+            "resolvedRelease": cache_result.resolved_release,
+            "schemaFingerprint": cache_result.schema_fingerprint,
+            "resolvedSourceUrl": cache_result.resolved_source_url,
+            "freshness": freshness,
         },
     }
     if include_raw:
         payload["raw"] = cache_result.row
+        payload["normalizedRaw"] = normalized
     return 200, payload
 
 
@@ -88,6 +115,36 @@ def _cache_performance(*, available: bool, product_count: int) -> dict[str, Any]
         "reason": None,
         "impact": "Cached ONS geography lookup is available.",
     }
+
+
+def _cache_performance_from_index(*, available: bool, index: dict[str, Any]) -> dict[str, Any]:
+    products = index.get("products")
+    health = index.get("health")
+    if isinstance(health, dict):
+        status = str(health.get("status") or "degraded")
+        reasons = health.get("degradedReasons")
+        return {
+            "degraded": status != "ready",
+            "reason": (
+                None
+                if status == "ready"
+                else ",".join(reasons)
+                if isinstance(reasons, list)
+                else "cache_degraded"
+            ),
+            "impact": (
+                "Cached ONS geography lookup is available."
+                if status == "ready"
+                else "Cache is present but one or more primary/support datasets are degraded."
+            ),
+            "exactReady": bool(health.get("exactReady")),
+            "bestFitReady": bool(health.get("bestFitReady")),
+            "supportReady": bool(health.get("supportReady")),
+            "freshnessReady": bool(health.get("freshnessReady", True)),
+            "laggingProducts": health.get("laggingProducts", []),
+        }
+    product_count = len(products) if isinstance(products, list) else 0
+    return _cache_performance(available=available, product_count=product_count)
 
 
 def _by_postcode(payload: dict[str, Any]) -> ToolResult:
@@ -207,9 +264,10 @@ def _cache_status(_payload: dict[str, Any]) -> ToolResult:
     cache = ONSGeoCache.from_settings()
     index = cache.load_index()
     products = index.get("products", [])
+    support_products = index.get("supportProducts", [])
     product_count = len(products) if isinstance(products, list) else 0
     available = cache.available()
-    performance = _cache_performance(available=available, product_count=product_count)
+    performance = _cache_performance_from_index(available=available, index=index)
     status = "degraded" if performance.get("degraded") else "ready"
     return 200, {
         "available": available,
@@ -217,15 +275,42 @@ def _cache_status(_payload: dict[str, Any]) -> ToolResult:
         "cacheDir": str(cache.cache_dir),
         "dbPath": str(cache.db_path),
         "indexPath": str(cache.index_path),
+        "version": index.get("version"),
         "generatedAt": index.get("generatedAt"),
         "productCount": product_count,
         "products": products if isinstance(products, list) else [],
+        "supportProducts": support_products if isinstance(support_products, list) else [],
+        "health": index.get("health", {}),
         "performance": performance,
-        "reloadHint": "Run scripts/ons_geo_cache_refresh.py to populate ONSPD/ONSUD/NSPL/NSUL.",
+        "reloadHint": (
+            "Run scripts/ons_geo_cache_refresh.py to populate ONSPD/ONSUD/NSPL/NSUL "
+            "plus CHD/RGC support datasets."
+        ),
         "primaryDerivationMode": str(
             getattr(settings, "ONS_GEO_PRIMARY_DERIVATION", "exact") or "exact"
         ),
     }
+
+
+def _release_audit(payload: dict[str, Any]) -> ToolResult:
+    if not settings.ONS_LIVE_ENABLED:
+        return _error(
+            "ONS live mode is disabled. Set ONS_LIVE_ENABLED=true.",
+            code="LIVE_DISABLED",
+            status=503,
+        )
+    raw_timeout = payload.get("timeout", 30.0)
+    if not isinstance(raw_timeout, (int, float)) or float(raw_timeout) <= 0:
+        return _error("timeout must be a positive number")
+    try:
+        audit = build_release_audit(timeout=float(raw_timeout))
+    except Exception as exc:
+        return _error(
+            f"ONS release audit failed: {exc}",
+            code="UPSTREAM_ERROR",
+            status=502,
+        )
+    return 200, audit
 
 
 register(
@@ -337,5 +422,36 @@ register(
             "additionalProperties": True,
         },
         handler=_cache_status,
+    )
+)
+
+register(
+    Tool(
+        name="ons_geo.release_audit",
+        description=(
+            "Audit ONS UPRN release freshness by combining AddressBase epoch schedule, "
+            "Geoportal notices, Geoportal dataset discovery, and current package resolution."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "ons_geo.release_audit"},
+                "timeout": {"type": "number", "minimum": 0.1, "default": 30.0},
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "version": {"type": "string"},
+                "addressBaseSchedule": {"type": "object"},
+                "publisherNotices": {"type": "object"},
+                "datasets": {"type": "array"},
+            },
+            "required": ["version", "addressBaseSchedule", "publisherNotices", "datasets"],
+            "additionalProperties": True,
+        },
+        handler=_release_audit,
     )
 )

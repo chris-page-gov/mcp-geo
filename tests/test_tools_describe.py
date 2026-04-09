@@ -189,6 +189,15 @@ def test_os_map_export_roads_describe_lists_supported_output_formats() -> None:
     assert output_format["enum"] == ["geojson_bundle", "javascript_overlay", "leaflet_snippet"]
 
 
+def test_ons_geo_release_audit_describe_lists_timeout_input() -> None:
+    resp = client.get("/tools/describe", params={"name": "ons_geo.release_audit"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    timeout = tool["inputSchema"]["properties"]["timeout"]
+    assert timeout["type"] == "number"
+    assert timeout["minimum"] == 0.1
+
+
 def test_select_toolsets_schema_uses_explicit_union_with_array_items() -> None:
     resp = client.get("/tools/describe", params={"name": "os_mcp.select_toolsets"})
     assert resp.status_code == 200

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,28 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-09 AddressBase Premium local-data follow-up is now in progress.
+  `tools/council_tax.py` supports both CSV and Parquet xref sources via the
+  existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting, including supplier-style
+  uppercase headers plus the repo's extracted camelCase/snake_case variants.
+  When pointed at Parquet, the tool now uses DuckDB as a read-only query
+  engine over the file rather than building a separate indexed database, with
+  `ADDRESSBASE_PREMIUM_DUCKDB_THREADS` and
+  `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT` controlling runtime limits.
+- The new builder `scripts/addressbase_build_xref.py` produces a serving
+  Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
+  Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,
+  preserve the wider VOA/OS-linked cross references for future runtime use,
+  and write a Parquet ordered by `uprn`/`source` so UPRN batch enrichment and
+  future TOID lookups can reuse the same file without a separate DuckDB
+  storage layer.
+- A 2026-04-09 architecture review also evaluated whether DuckDB should
+  replace the repo's PostGIS-backed cache/warehouse surfaces. Decision: no
+  change for now. DuckDB remains the preferred file-backed analytical engine
+  for local AddressBase-style workloads, while PostGIS stays in place for the
+  boundary cache, LandIS warehouse, and route-graph stack because the routing
+  surface depends on `pgrouting` and the existing spatial service layers would
+  require a broader migration to move cleanly.
 - The 2026-04-07 Council Tax UPRN follow-up is now implemented. The
   `council_tax.query` tool in `tools/council_tax.py` reads AddressBase Premium
   Type 23 Application Cross Reference CSV data from the configured
@@ -93,6 +115,51 @@ assumptions change.
   covers host/client combinations that stringify nested polygon payloads before
   they reach the server; those requests are now normalized locally instead of
   failing with `INVALID_INPUT` at the parser boundary.
+- A wider 2026-04-08 ONS geo refresh redesign is now implemented. The tracked
+  source manifest `resources/ons_geo_sources.json` is resolver-driven rather
+  than `downloadUrl`-only, with ArcGIS hosted-table acquisition for ONSPD/NSPL,
+  release-file discovery for ONSUD/NSUL, and mandatory CHD/RGC support
+  sidecars for code-history/current-code validation. `scripts/ons_geo_cache_refresh.py`
+  now resolves sources automatically, caches raw artifacts under
+  `data/cache/ons_geo/raw/<dataset>/<release>/`, records schema fingerprints
+  plus validation summaries in `resources/ons_geo_cache_index.json`, and
+  stores normalized semantic geography payloads alongside raw rows in the
+  SQLite cache.
+- The same 2026-04-08 redesign also updated the ONS read path and downstream
+  consumers. `server/ons_geo_cache.py` now stores richer product metadata plus
+  CHD/RGC-backed code-reference records, `tools/ons_geo.py` returns normalized
+  geography families and resolved-source provenance in addition to the raw row
+  view, `ons_geo.cache_status` surfaces exact/best-fit/support-dataset health,
+  and `tools/os_map.py` now understands ward/country/region-backed selector
+  columns from the expanded ONS UPRN index. The opt-in script
+  `scripts/ons_geo_live_validate.py` now provides metadata-only live
+  source/schema checks outside the default deterministic CI path, avoiding full
+  dataset refreshes during operator validation runs and treating remote
+  archive-only releases as explicit warnings when schema inspection is not
+  practical. The tracked RGC manifest target now points at the direct
+  December 2025 data.gov.uk package instead of a generic geoportal search URL.
+- A 2026-04-09 follow-up added `resources/addressbase_epoch_schedule.json` and
+  `server/ons_geo_freshness.py` so ONSUD/NSUL freshness is validated against
+  the authoritative AddressBase epoch publication schedule rather than inferred
+  from ONS package titles. `scripts/ons_geo_live_validate.py` now reports
+  `freshness` metadata including resolved epoch, latest published epoch, next
+  scheduled epoch, and lag count; `scripts/ons_geo_cache_refresh.py` writes the
+  same freshness summary into the cache index; and `tools/ons_geo.py` surfaces
+  freshness on lookup/cache-status responses so lagging UPRN datasets are
+  flagged explicitly even when the ONS package itself resolves successfully.
+- A further 2026-04-09 operator-facing follow-up added
+  `server/ons_geo_catalog.py` and the live-only `ons_geo.release_audit` tool in
+  `tools/ons_geo.py`. That audit combines the tracked AddressBase epoch
+  schedule, ONS Open Geography Portal RSS notices, ONS Open Geography Portal
+  dataset discovery, and current package resolution so the repo can distinguish
+  between "latest public package currently resolvable" and "fresh against the
+  latest AddressBase publication". The linked operator note
+  `docs/ons_geo_source_resolution.md` now documents the mixed-source model and
+  explains the main abbreviations and standards involved: CKAN/data.gov.uk for
+  dated package catalog history, DCAT for bulk structured metadata, OGC API
+  Records for Geoportal dataset discovery, RSS for pause/correction notices,
+  and CHD/RGC as the code-history/current-code support datasets used during
+  normalization.
 - `tools/os_mcp.py` now routes road-overlay/map-repair prompts toward
   `os_map.export_roads` rather than low-level `os_features.query` calls when
   the user intent is to draw/replace/embed road geometry on a map. This keeps

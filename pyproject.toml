@@ -41,7 +41,7 @@ mcp-geo-stdio = "scripts.os_mcp:main"
 
 mcp-geo-trace = "scripts.mcp_stdio_trace_proxy:cli"
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov", "httpx", "anyio", "psycopg[binary]"]
+test = ["pytest", "pytest-cov", "httpx", "anyio", "psycopg[binary]", "duckdb"]
 dev = [
     "ruff",
     "mypy",
@@ -51,9 +51,11 @@ dev = [
     "httpx",
     "anyio",
     "psycopg[binary]",
+    "duckdb",
 ]
 boundaries = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely", "psycopg[binary]"]
 landis = ["geopandas", "pandas", "pyogrio", "pyproj", "shapely", "psycopg[binary]"]
+addressbase = ["duckdb"]
 
 [tool.ruff]
 line-length = 100

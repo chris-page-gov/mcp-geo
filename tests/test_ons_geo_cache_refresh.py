@@ -6,80 +6,178 @@ import subprocess
 import sys
 from pathlib import Path
 
+import scripts.ons_geo_cache_refresh as refresh
 
-def _write_file(path: Path, content: str) -> Path:
-    path.write_text(content, encoding="utf-8")
+FIXTURES = Path(__file__).resolve().parent / "fixtures" / "ons_geo"
+
+
+class _FakeResponse:
+    def __init__(self, *, json_data=None, text: str | None = None, content: bytes | None = None):
+        self._json_data = json_data
+        self.text = text or ""
+        self.content = content if content is not None else self.text.encode("utf-8")
+        content_type = "application/json" if json_data is not None else "text/html"
+        self.headers = {"content-type": content_type}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def raise_for_status(self) -> None:
+        return None
+
+    def json(self):
+        return self._json_data
+
+    def iter_content(self, chunk_size: int = 1024 * 1024):
+        del chunk_size
+        yield self.content
+
+
+def _write_manifest(tmp_path: Path, payload: dict) -> Path:
+    path = tmp_path / "ons_geo_sources.json"
+    path.write_text(json.dumps(payload, ensure_ascii=True, indent=2), encoding="utf-8")
     return path
 
 
-def test_ons_geo_cache_refresh_ingests_all_products(tmp_path: Path) -> None:
-    sources = _write_file(
-        tmp_path / "ons_geo_sources.json",
-        json.dumps(
+def _static_resolver(path: Path) -> dict[str, object]:
+    return {"type": "static_file", "path": str(path)}
+
+
+def _base_manifest() -> dict[str, object]:
+    return {
+        "version": "2026-04-08",
+        "products": [
             {
-                "version": "2026-02-22",
-                "products": [
-                    {
-                        "id": "ONSPD",
-                        "title": "ONSPD",
-                        "keyType": "postcode",
-                        "derivationMode": "exact",
-                        "priority": 10,
-                        "release": "2026-02",
-                        "fieldCandidates": {"key": ["pcds"]},
-                        "source": {"downloadUrl": ""},
-                    },
-                    {
-                        "id": "NSPL",
-                        "title": "NSPL",
-                        "keyType": "postcode",
-                        "derivationMode": "best_fit",
-                        "priority": 20,
-                        "release": "2026-02",
-                        "fieldCandidates": {"key": ["pcds"]},
-                        "source": {"downloadUrl": ""},
-                    },
-                    {
-                        "id": "ONSUD",
-                        "title": "ONSUD",
-                        "keyType": "uprn",
-                        "derivationMode": "exact",
-                        "priority": 10,
-                        "release": "2026-02",
-                        "fieldCandidates": {"key": ["UPRN"]},
-                        "source": {"downloadUrl": ""},
-                    },
-                    {
-                        "id": "NSUL",
-                        "title": "NSUL",
-                        "keyType": "uprn",
-                        "derivationMode": "best_fit",
-                        "priority": 20,
-                        "release": "2026-02",
-                        "fieldCandidates": {"key": ["UPRN"]},
-                        "source": {"downloadUrl": ""},
-                    },
-                ],
+                "id": "ONSPD",
+                "title": "ONSPD",
+                "keyType": "postcode",
+                "derivationMode": "exact",
+                "priority": 10,
+                "release": "2026-02",
+                "resolver": _static_resolver(FIXTURES / "onspd_modern.csv"),
+                "semanticFields": {
+                    "required": ["postcode", "lad_code"],
+                    "optional": ["ward_code", "country_code", "region_code"],
+                    "aliases": {"postcode": ["pcds"]},
+                },
             },
-            ensure_ascii=True,
-        ),
-    )
-    onspd = _write_file(
-        tmp_path / "onspd.csv",
-        "pcds,LAD24CD,LAD24NM\nSW1A1AA,E09000033,Westminster\n",
-    )
-    nspl = _write_file(
-        tmp_path / "nspl.csv",
-        "pcds,LAD24CD,LAD24NM\nSW1A1AA,E09000001,City of London\n",
-    )
-    onsud = _write_file(
-        tmp_path / "onsud.csv",
-        "UPRN,LAD24CD,LAD24NM\n100023336959,E08000026,Coventry\n",
-    )
-    nsul = _write_file(
-        tmp_path / "nsul.csv",
-        "UPRN,LAD24CD,LAD24NM\n100023336959,E08000026,Coventry\n",
-    )
+            {
+                "id": "NSPL",
+                "title": "NSPL",
+                "keyType": "postcode",
+                "derivationMode": "best_fit",
+                "priority": 20,
+                "release": "2026-02",
+                "resolver": _static_resolver(FIXTURES / "nspl_legacy.csv"),
+                "semanticFields": {
+                    "required": ["postcode", "lad_code"],
+                    "optional": ["ward_code", "country_code", "region_code"],
+                    "aliases": {"postcode": ["pcds"]},
+                },
+            },
+            {
+                "id": "ONSUD",
+                "title": "ONSUD",
+                "keyType": "uprn",
+                "derivationMode": "exact",
+                "priority": 10,
+                "release": "2025-12",
+                "resolver": _static_resolver(FIXTURES / "onsud_sample.csv"),
+                "semanticFields": {
+                    "required": ["uprn", "lad_code"],
+                    "optional": [
+                        "postcode",
+                        "oa_code",
+                        "lsoa_code",
+                        "msoa_code",
+                        "ward_code",
+                        "country_code",
+                        "region_code",
+                        "postal_delivery",
+                    ],
+                    "aliases": {"uprn": ["UPRN"]},
+                },
+            },
+            {
+                "id": "NSUL",
+                "title": "NSUL",
+                "keyType": "uprn",
+                "derivationMode": "best_fit",
+                "priority": 20,
+                "release": "2025-11",
+                "resolver": _static_resolver(FIXTURES / "nsul_sample.csv"),
+                "semanticFields": {
+                    "required": ["uprn", "lad_code"],
+                    "optional": [
+                        "postcode",
+                        "oa_code",
+                        "lsoa_code",
+                        "msoa_code",
+                        "ward_code",
+                        "country_code",
+                        "region_code",
+                        "postal_delivery",
+                    ],
+                    "aliases": {"uprn": ["UPRN"]},
+                },
+            },
+        ],
+        "supportProducts": [
+            {
+                "id": "CHD",
+                "title": "CHD",
+                "priority": 10,
+                "release": "2025-12",
+                "resolver": _static_resolver(FIXTURES / "chd_sample.csv"),
+                "semanticFields": {
+                    "required": ["code", "status"],
+                    "optional": [
+                        "name",
+                        "successor_code",
+                        "successor_name",
+                        "code_family",
+                        "level",
+                    ],
+                    "aliases": {
+                        "code": ["GEOGRAPHY_CODE"],
+                        "name": ["GEOGRAPHY_NAME"],
+                        "status": ["STATUS"],
+                        "successor_code": ["SUCCESSOR_CODE"],
+                        "successor_name": ["SUCCESSOR_NAME"],
+                        "code_family": ["CODE_FAMILY"],
+                        "level": ["LEVEL"],
+                    },
+                    "defaults": {"status": "retired"},
+                },
+            },
+            {
+                "id": "RGC",
+                "title": "RGC",
+                "priority": 20,
+                "release": "2025-12",
+                "resolver": _static_resolver(FIXTURES / "rgc_current_sample.csv"),
+                "semanticFields": {
+                    "required": ["code", "name"],
+                    "optional": ["status", "code_family", "level"],
+                    "aliases": {
+                        "code": ["GEOGRAPHY_CODE"],
+                        "name": ["GEOGRAPHY_NAME"],
+                        "status": ["STATUS"],
+                        "code_family": ["CODE_FAMILY"],
+                        "level": ["LEVEL"],
+                    },
+                    "defaults": {"status": "current"},
+                },
+            },
+        ],
+    }
+
+
+def test_ons_geo_cache_refresh_ingests_products_and_sidecars(tmp_path: Path) -> None:
+    manifest = _write_manifest(tmp_path, _base_manifest())
     cache_dir = tmp_path / "cache"
     index_path = tmp_path / "ons_geo_cache_index.json"
     db_name = "ons_geo_cache.sqlite"
@@ -89,21 +187,13 @@ def test_ons_geo_cache_refresh_ingests_all_products(tmp_path: Path) -> None:
             sys.executable,
             "scripts/ons_geo_cache_refresh.py",
             "--sources",
-            str(sources),
+            str(manifest),
             "--cache-dir",
             str(cache_dir),
             "--index-path",
             str(index_path),
             "--db-name",
             db_name,
-            "--product-file",
-            f"ONSPD={onspd}",
-            "--product-file",
-            f"NSPL={nspl}",
-            "--product-file",
-            f"ONSUD={onsud}",
-            "--product-file",
-            f"NSUL={nsul}",
         ],
         capture_output=True,
         text=True,
@@ -112,40 +202,440 @@ def test_ons_geo_cache_refresh_ingests_all_products(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    statuses = {entry["id"]: entry["status"] for entry in payload["products"]}
-    assert statuses == {
-        "ONSPD": "ingested",
-        "NSPL": "ingested",
-        "ONSUD": "ingested",
-        "NSUL": "ingested",
-    }
-
-    index_payload = json.loads(index_path.read_text(encoding="utf-8"))
-    assert index_payload["version"] == "2026-02-22"
-    assert len(index_payload["products"]) == 4
+    assert payload["health"]["status"] == "ready"
+    assert payload["health"]["exactReady"] is True
+    assert payload["health"]["bestFitReady"] is True
+    assert payload["health"]["supportReady"] is True
+    assert len(payload["supportProducts"]) == 2
+    assert len(payload["products"]) == 4
+    assert all(item["status"] == "ingested" for item in payload["supportProducts"])
+    assert all(item["status"] == "ingested" for item in payload["products"])
+    assert payload["products"][0]["schemaValidation"]["schemaFingerprint"]
 
     conn = sqlite3.connect(str(cache_dir / db_name))
     row_count = conn.execute("SELECT COUNT(*) FROM ons_geo_rows").fetchone()[0]
-    assert row_count == 4
+    code_count = conn.execute("SELECT COUNT(*) FROM ons_geo_code_reference").fetchone()[0]
     uprn_index_count = conn.execute("SELECT COUNT(*) FROM ons_geo_uprn_index").fetchone()[0]
-    assert uprn_index_count == 2
-    indexed = conn.execute(
+    normalized = conn.execute(
+        "SELECT normalized_json FROM ons_geo_rows "
+        "WHERE product_id = 'ONSPD' AND key_norm = 'SW1A1AA'"
+    ).fetchone()
+    uprn_row = conn.execute(
         """
-        SELECT uprn, lad_code, lad_name
+        SELECT lad_code, ward_code, country_code, region_code
         FROM ons_geo_uprn_index
-        WHERE derivation_mode = 'exact'
-        ORDER BY uprn
+        WHERE product_id = 'ONSUD' AND uprn = '100023336959'
         """
-    ).fetchall()
-    assert indexed
-    assert indexed[0][0] == "100023336959"
-    assert indexed[0][1] == "E08000026"
-    assert indexed[0][2] == "Coventry"
-    derivation_modes = {
-        row[0]
-        for row in conn.execute(
-            "SELECT DISTINCT derivation_mode FROM ons_geo_rows"
-        ).fetchall()
-    }
-    assert derivation_modes == {"exact", "best_fit"}
+    ).fetchone()
     conn.close()
+
+    assert row_count == 4
+    assert code_count >= 6
+    assert uprn_index_count == 2
+    assert normalized is not None
+    normalized_payload = json.loads(normalized[0])
+    assert normalized_payload["geographies"]["lad"]["currentCode"] == "E09000033"
+    assert normalized_payload["geographies"]["ward"]["currentCode"] == "E05013806"
+    assert uprn_row == ("E08000026", "E05001111", "E92000001", "E12000005")
+
+
+def test_ons_geo_cache_refresh_reports_partial_failure_for_missing_support_dataset(
+    tmp_path: Path,
+) -> None:
+    manifest_payload = _base_manifest()
+    manifest_payload["supportProducts"][1]["resolver"] = _static_resolver(
+        tmp_path / "missing-rgc.csv"
+    )
+    manifest = _write_manifest(tmp_path, manifest_payload)
+    cache_dir = tmp_path / "cache"
+    index_path = tmp_path / "ons_geo_cache_index.json"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/ons_geo_cache_refresh.py",
+            "--sources",
+            str(manifest),
+            "--cache-dir",
+            str(cache_dir),
+            "--index-path",
+            str(index_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=Path(__file__).resolve().parent.parent,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["health"]["status"] == "degraded"
+    assert "support_datasets_unavailable" in payload["health"]["degradedReasons"]
+    rgc = next(item for item in payload["supportProducts"] if item["id"] == "RGC")
+    assert rgc["status"] == "error"
+    assert rgc["errorCode"] == "RESOLVE_ERROR"
+
+
+def test_resolve_hosted_table_arcgis_pages_rows_and_extracts_schema(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    metadata = json.loads((FIXTURES / "onspd_arcgis_metadata.json").read_text(encoding="utf-8"))
+    page = json.loads((FIXTURES / "onspd_arcgis_page_1.json").read_text(encoding="utf-8"))
+
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream
+        calls.append((url, params or {}))
+        if url.endswith("?f=json"):
+            return _FakeResponse(json_data=metadata)
+        return _FakeResponse(json_data=page)
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, {
+        "version": "2026-04-08",
+        "products": [
+            {
+                "id": "ONSPD",
+                "title": "ONSPD",
+                "keyType": "postcode",
+                "derivationMode": "exact",
+                "priority": 10,
+                "release": "latest",
+                "resolver": {
+                    "type": "hosted_table_arcgis",
+                    "metadataUrl": "https://example.test/FeatureServer/0?f=json",
+                    "queryUrl": "https://example.test/FeatureServer/0/query"
+                },
+                "semanticFields": {
+                    "required": ["postcode", "lad_code"],
+                    "optional": ["ward_code"],
+                    "aliases": {"postcode": ["pcds"]}
+                }
+            }
+        ],
+        "supportProducts": []
+    }))[1][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.source_format == "ndjson"
+    assert resolved.schema_fields[:2] == ["OBJECTID", "pcds"]
+    assert resolved.field_aliases["lad25cd"] == "Local Authority District Code (2025)"
+    content = resolved.source_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(content) == 1
+    assert json.loads(content[0])["pcds"] == "SW1A1AA"
+    assert any(call[0].endswith("/query") for call in calls)
+
+
+def test_resolve_portal_release_file_prefers_discovery_api_and_suffix(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    package_show = json.loads((FIXTURES / "portal_package_show.json").read_text(encoding="utf-8"))
+    landing_html = (FIXTURES / "portal_release_page.html").read_text(encoding="utf-8")
+    zip_content = b"PK\x03\x04fake"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == "https://example.test/landing":
+            return _FakeResponse(text=landing_html)
+        if url.endswith(".zip"):
+            return _FakeResponse(content=zip_content)
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, {
+        "version": "2026-04-08",
+        "products": [],
+        "supportProducts": [
+            {
+                "id": "ONSUD",
+                "title": "ONSUD",
+                "priority": 10,
+                "release": "latest",
+                "resolver": {
+                    "type": "portal_release_file",
+                    "landingUrl": "https://example.test/landing",
+                    "discoveryApiUrl": "https://example.test/api/package_show",
+                    "preferredSuffixes": [".zip"],
+                    "linkPatterns": ["onsud", "zip"],
+                    "releasePatterns": ["Epoch\\s+\\d+"]
+                },
+                "semanticFields": {
+                    "required": ["code"],
+                    "optional": [],
+                    "aliases": {"code": ["GEOGRAPHY_CODE"]}
+                }
+            }
+        ]
+    }))[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == "https://example.test/downloads/onsud-december-2025-epoch-123.zip"
+    assert resolved.resolved_release == "Epoch 123"
+    assert resolved.source_path.exists()
+
+
+def test_resolve_portal_release_file_uses_latest_ckan_search_result(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    search_payload = {
+        "success": True,
+        "result": {
+            "results": [
+                {
+                    "name": "ons-uprn-directory-october-2025-epoch-121",
+                    "title": "ONS UPRN Directory (October 2025) (Epoch 121)",
+                    "metadata_modified": "2026-01-15T12:00:00.000000",
+                    "resources": [
+                        {
+                            "name": "ArcGIS Hub Dataset",
+                            "format": "HTML",
+                            "url": "https://open-geography.example/datasets/ons::ons-uprn-directory-october-2025-epoch-121",
+                        }
+                    ],
+                },
+                {
+                    "name": "ons-uprn-directory-january-2026-epoch-124",
+                    "title": "ONS UPRN Directory (January 2026) (Epoch 124)",
+                    "metadata_modified": "2025-12-20T12:00:00.000000",
+                    "resources": [
+                        {
+                            "name": "ArcGIS Hub Dataset",
+                            "format": "HTML",
+                            "url": "https://open-geography.example/datasets/ons::ons-uprn-directory-january-2026-epoch-124",
+                        }
+                    ],
+                },
+                {
+                    "name": "ons-uprn-directory-december-2025-epoch-123-user-guide",
+                    "title": "ONS UPRN Directory (December 2025) (Epoch 123) User Guide",
+                    "metadata_modified": "2025-12-24T12:00:00.000000",
+                    "resources": [
+                        {
+                            "name": "ArcGIS Hub Dataset",
+                            "format": "HTML",
+                            "url": "https://open-geography.example/datasets/ons::ons-uprn-directory-december-2025-epoch-123-user-guide",
+                        }
+                    ],
+                },
+                {
+                    "name": "ons-uprn-directory-december-2025-epoch-123",
+                    "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+                    "metadata_modified": "2025-12-23T12:00:00.000000",
+                    "resources": [
+                        {
+                            "name": "ArcGIS Hub Dataset",
+                            "format": "HTML",
+                            "url": "https://open-geography.example/datasets/ons::ons-uprn-directory-december-2025-epoch-123",
+                        }
+                    ],
+                },
+            ]
+        },
+    }
+    data_gov_landing = (
+        '<html><body><a href="https://open-geography.example/datasets/'
+        'ons::ons-uprn-directory-january-2026-epoch-124">hub</a></body></html>'
+    )
+    hub_html = (
+        '<html><body><a href="https://downloads.example.test/onsud-january-2026-epoch-124.zip">'
+        "download</a></body></html>"
+    )
+    zip_content = b"PK\x03\x04latest"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_search":
+            return _FakeResponse(json_data=search_payload)
+        if url == "https://www.data.gov.uk/dataset/ons-uprn-directory-january-2026-epoch-124":
+            return _FakeResponse(text=data_gov_landing)
+        if url == "https://open-geography.example/datasets/ons::ons-uprn-directory-january-2026-epoch-124":
+            return _FakeResponse(text=hub_html)
+        if url == "https://downloads.example.test/onsud-january-2026-epoch-124.zip":
+            return _FakeResponse(content=zip_content)
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/latest",
+                            "discoveryApiUrl": "https://example.test/api/package_search",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud", "ons-uprn-directory", "zip"],
+                            "releasePatterns": [
+                                "(January|February|March|April|May|June|July|August|September|"
+                                "October|November|December)\\s+20\\d{2}",
+                                "Epoch\\s+\\d+",
+                            ],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == "https://downloads.example.test/onsud-january-2026-epoch-124.zip"
+    assert resolved.resolved_release == "January 2026"
+    assert resolved.source_path.exists()
+
+
+def test_select_candidate_url_ignores_page_anchors_and_assets() -> None:
+    chosen = refresh._select_candidate_url(
+        candidates=[
+            "https://example.test/dataset/onsud-latest#main-content",
+            "https://hubcdn.arcgis.com/assets/vendor.css",
+            "https://open-geography.example/datasets/onsud-latest",
+            "https://example.test/downloads/onsud-latest.zip",
+        ],
+        link_patterns=["onsud", "zip"],
+        preferred_suffixes=[".zip", ".csv"],
+    )
+    assert chosen == "https://example.test/downloads/onsud-latest.zip"
+
+
+def test_code_reference_normalization_maps_retired_codes_to_current() -> None:
+    store = refresh.CodeReferenceStore()
+    chd_dataset = refresh.DatasetConfig(
+        dataset_id="CHD",
+        dataset_kind="support",
+        title="CHD",
+        key_type=None,
+        derivation_mode=None,
+        priority=10,
+        release="2025-12",
+        resolver=refresh.ResolverConfig("static_file", "", "", "", "", [], [], [], ""),
+        required_fields=["code", "status"],
+        optional_fields=["name", "successor_code", "successor_name", "code_family", "level"],
+        aliases={},
+        defaults={"status": "retired"},
+    )
+    rgc_dataset = refresh.DatasetConfig(
+        dataset_id="RGC",
+        dataset_kind="support",
+        title="RGC",
+        key_type=None,
+        derivation_mode=None,
+        priority=20,
+        release="2025-12",
+        resolver=refresh.ResolverConfig("static_file", "", "", "", "", [], [], [], ""),
+        required_fields=["code", "name"],
+        optional_fields=["status", "code_family", "level"],
+        aliases={},
+        defaults={"status": "current"},
+    )
+
+    chd_mapping = {
+        "code": "GEOGRAPHY_CODE",
+        "name": "GEOGRAPHY_NAME",
+        "status": "STATUS",
+        "successor_code": "SUCCESSOR_CODE",
+        "successor_name": "SUCCESSOR_NAME",
+        "code_family": "CODE_FAMILY",
+        "level": "LEVEL",
+    }
+    rgc_mapping = {
+        "code": "GEOGRAPHY_CODE",
+        "name": "GEOGRAPHY_NAME",
+        "status": "STATUS",
+        "code_family": "CODE_FAMILY",
+        "level": "LEVEL",
+    }
+
+    retired = refresh._normalize_code_reference_row(
+        {
+            "GEOGRAPHY_CODE": "E09000044",
+            "GEOGRAPHY_NAME": "Westminster (old)",
+            "STATUS": "retired",
+            "SUCCESSOR_CODE": "E09000033",
+            "SUCCESSOR_NAME": "Westminster",
+            "CODE_FAMILY": "lad",
+            "LEVEL": "local_authority_district",
+        },
+        dataset=chd_dataset,
+        mapping=chd_mapping,
+    )
+    current = refresh._normalize_code_reference_row(
+        {
+            "GEOGRAPHY_CODE": "E09000033",
+            "GEOGRAPHY_NAME": "Westminster",
+            "STATUS": "current",
+            "CODE_FAMILY": "lad",
+            "LEVEL": "local_authority_district",
+        },
+        dataset=rgc_dataset,
+        mapping=rgc_mapping,
+    )
+    assert retired is not None and current is not None
+    store.add(retired)
+    store.add(current)
+
+    normalized = refresh._build_normalized_row(
+        {"LAD24CD": "E09000044", "LAD24NM": "Westminster (old)"},
+        mapping={"lad_code": "LAD24CD", "lad_name": "LAD24NM"},
+        code_references=store,
+    )
+    assert normalized["geographies"]["lad"]["status"] == "retired"
+    assert normalized["geographies"]["lad"]["currentCode"] == "E09000033"
+    assert normalized["geographies"]["lad"]["currentName"] == "Westminster"
+
+
+def test_code_reference_annotation_flags_family_mismatch() -> None:
+    store = refresh.CodeReferenceStore()
+    record = refresh.CodeReferenceRecord(
+        dataset_id="RGC",
+        code="E05013806",
+        code_family="ward",
+        name="St James's",
+        status="current",
+        successor_code=None,
+        successor_name=None,
+        level="ward",
+        record={},
+    )
+    store.add(record)
+    normalized = refresh._build_normalized_row(
+        {"LAD24CD": "E05013806"},
+        mapping={"lad_code": "LAD24CD"},
+        code_references=store,
+    )
+    assert normalized["geographies"]["lad"]["status"] == "family_mismatch"

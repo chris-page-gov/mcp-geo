@@ -11,6 +11,11 @@ from typing import Any
 from urllib.parse import urljoin, urlsplit
 
 try:
+    import duckdb
+except ImportError:  # pragma: no cover - optional dependency fallback
+    duckdb = None  # type: ignore[assignment]
+
+try:
     import requests
     from requests import exceptions as req_exc
 except ImportError:  # pragma: no cover - optional dependency fallback
@@ -53,6 +58,17 @@ ADDRESSBASE_RELEVANT_SOURCES = {
     "7666VN": "Centrally created non-domestic rates.",
 }
 ADDRESSBASE_XREF_REQUIRED_COLUMNS = {"UPRN", "SOURCE"}
+ADDRESSBASE_XREF_COLUMN_ALIASES = {
+    "UPRN": ("UPRN", "uprn"),
+    "XREF_KEY": ("XREF_KEY", "xRefKey", "xref_key"),
+    "CROSS_REFERENCE": ("CROSS_REFERENCE", "crossReference", "cross_reference"),
+    "SOURCE": ("SOURCE", "source"),
+    "VERSION": ("VERSION", "version"),
+    "START_DATE": ("START_DATE", "startDate", "start_date"),
+    "END_DATE": ("END_DATE", "endDate", "end_date"),
+    "LAST_UPDATE_DATE": ("LAST_UPDATE_DATE", "lastUpdateDate", "last_update_date"),
+    "ENTRY_DATE": ("ENTRY_DATE", "entryDate", "entry_date"),
+}
 ADDRESSBASE_XREF_OPTIONAL_COLUMNS = (
     "XREF_KEY",
     "CROSS_REFERENCE",
@@ -234,6 +250,10 @@ def _normalize_space(value: str) -> str:
     return re.sub(r"\s+", " ", unescape(value or "")).strip()
 
 
+def _normalize_addressbase_column_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.lower())
+
+
 def _normalize_label(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
 
@@ -288,6 +308,51 @@ def _normalize_uprn(value: Any) -> str | None:
     return text
 
 
+def _resolve_addressbase_column_mapping(fieldnames: list[str]) -> tuple[dict[str, str], list[str]]:
+    actual_by_normalized = {
+        _normalize_addressbase_column_name(fieldname): fieldname
+        for fieldname in fieldnames
+        if fieldname
+    }
+    mapping: dict[str, str] = {}
+    missing: list[str] = []
+    for canonical, aliases in ADDRESSBASE_XREF_COLUMN_ALIASES.items():
+        actual = next(
+            (
+                actual_by_normalized.get(_normalize_addressbase_column_name(alias))
+                for alias in aliases
+                if actual_by_normalized.get(_normalize_addressbase_column_name(alias))
+            ),
+            None,
+        )
+        if actual is None:
+            if canonical in ADDRESSBASE_XREF_REQUIRED_COLUMNS:
+                missing.append(canonical)
+            continue
+        mapping[canonical] = actual
+    return mapping, missing
+
+
+def _score_addressbase_xref_candidate(candidate: Path) -> int:
+    name = candidate.name.lower()
+    score = 0
+    if "xref_voa_os" in name:
+        score += 100
+    if "application" in name and "cross" in name and "reference" in name:
+        score += 50
+    if "id23" in name:
+        score += 40
+    if "type" in name and "23" in name:
+        score += 20
+    if "xref" in name:
+        score += 10
+    if candidate.suffix.lower() == ".parquet":
+        score += 5
+    if "test" in name or "sample" in name:
+        score -= 100
+    return score
+
+
 def _resolve_addressbase_xref_path() -> Path | None:
     configured = str(getattr(settings, "ADDRESSBASE_PREMIUM_XREF_PATH", "") or "").strip()
     if not configured:
@@ -299,19 +364,11 @@ def _resolve_addressbase_xref_path() -> Path | None:
         return None
 
     candidates: list[tuple[int, str, Path]] = []
-    for candidate in path.rglob("*.csv"):
-        name = candidate.name.lower()
-        score = 0
-        if "application" in name and "cross" in name and "reference" in name:
-            score += 50
-        if "id23" in name:
-            score += 40
-        if "type" in name and "23" in name:
-            score += 20
-        if "xref" in name:
-            score += 10
-        if score > 0:
-            candidates.append((score, str(candidate), candidate))
+    for pattern in ("*.parquet", "*.csv"):
+        for candidate in path.rglob(pattern):
+            score = _score_addressbase_xref_candidate(candidate)
+            if score > 0:
+                candidates.append((score, str(candidate), candidate))
     if not candidates:
         return None
     candidates.sort(key=lambda item: (-item[0], item[1]))
@@ -370,14 +427,8 @@ def _validate_uprn_query(
     return 200, {"uprns": normalized_uprns, "activeOnly": active_only}
 
 
-def _scan_addressbase_xref_csv(
-    *,
-    path: Path,
-    uprns: list[str],
-    active_only: bool,
-) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
-    requested = set(uprns)
-    accumulators: dict[str, dict[str, Any]] = {
+def _build_addressbase_accumulators(uprns: list[str]) -> dict[str, dict[str, Any]]:
+    return {
         uprn: {
             "matches": [],
             "activeSources": set(),
@@ -388,69 +439,54 @@ def _scan_addressbase_xref_csv(
         for uprn in uprns
     }
 
-    try:
-        with path.open("r", encoding="utf-8-sig", newline="") as handle:
-            reader = csv.DictReader(handle)
-            fieldnames = set(reader.fieldnames or [])
-            missing = sorted(ADDRESSBASE_XREF_REQUIRED_COLUMNS - fieldnames)
-            if missing:
-                return 502, {
-                    "isError": True,
-                    "code": "INVALID_DATA_SOURCE",
-                    "message": (
-                        "AddressBase Premium Application Cross Reference CSV is missing "
-                        f"required columns: {', '.join(missing)}"
-                    ),
-                }
 
-            for row in reader:
-                if not isinstance(row, dict):
-                    continue
-                uprn = _normalize_uprn(row.get("UPRN"))
-                if uprn is None or uprn not in requested:
-                    continue
-                source = _normalize_space(str(row.get("SOURCE") or "")).upper()
-                if source not in ADDRESSBASE_RELEVANT_SOURCES:
-                    continue
+def _append_addressbase_match(
+    *,
+    accumulators: dict[str, dict[str, Any]],
+    uprn: str,
+    source: str,
+    xref_key: Any,
+    cross_reference: Any,
+    version: Any,
+    start_date: Any,
+    end_date: Any,
+    last_update_date: Any,
+    entry_date: Any,
+    active_only: bool,
+) -> None:
+    accumulator = accumulators[uprn]
+    accumulator["allSources"].add(source)
+    normalized_end_date = _normalize_space(str(end_date or ""))
+    is_active = not normalized_end_date
+    if not is_active:
+        accumulator["inactiveSources"].add(source)
+        accumulator["inactiveRelevantRecordCount"] += 1
+        if active_only:
+            return
 
-                accumulator = accumulators[uprn]
-                accumulator["allSources"].add(source)
-                end_date = _normalize_space(str(row.get("END_DATE") or ""))
-                is_active = not end_date
-                if not is_active:
-                    accumulator["inactiveSources"].add(source)
-                    accumulator["inactiveRelevantRecordCount"] += 1
-                    if active_only:
-                        continue
+    record = {
+        "xrefKey": _clean_optional_text(xref_key, max_length=64),
+        "crossReference": _clean_optional_text(cross_reference, max_length=128),
+        "version": _clean_optional_text(version, max_length=16),
+        "source": source,
+        "sourceDescription": ADDRESSBASE_RELEVANT_SOURCES[source],
+        "startDate": _clean_optional_text(start_date, max_length=32),
+        "endDate": _clean_optional_text(end_date, max_length=32),
+        "lastUpdateDate": _clean_optional_text(last_update_date, max_length=32),
+        "entryDate": _clean_optional_text(entry_date, max_length=32),
+        "active": is_active,
+    }
+    accumulator["matches"].append(record)
+    if is_active:
+        accumulator["activeSources"].add(source)
 
-                record = {
-                    "xrefKey": _clean_optional_text(row.get("XREF_KEY"), max_length=64),
-                    "crossReference": _clean_optional_text(
-                        row.get("CROSS_REFERENCE"),
-                        max_length=128,
-                    ),
-                    "version": _clean_optional_text(row.get("VERSION"), max_length=16),
-                    "source": source,
-                    "sourceDescription": ADDRESSBASE_RELEVANT_SOURCES[source],
-                    "startDate": _clean_optional_text(row.get("START_DATE"), max_length=32),
-                    "endDate": _clean_optional_text(row.get("END_DATE"), max_length=32),
-                    "lastUpdateDate": _clean_optional_text(
-                        row.get("LAST_UPDATE_DATE"),
-                        max_length=32,
-                    ),
-                    "entryDate": _clean_optional_text(row.get("ENTRY_DATE"), max_length=32),
-                    "active": is_active,
-                }
-                accumulator["matches"].append(record)
-                if is_active:
-                    accumulator["activeSources"].add(source)
-    except OSError as exc:
-        return 502, {
-            "isError": True,
-            "code": "INVALID_DATA_SOURCE",
-            "message": f"Unable to read AddressBase Premium xref CSV: {exc}",
-        }
 
+def _finalize_addressbase_results(
+    *,
+    uprns: list[str],
+    accumulators: dict[str, dict[str, Any]],
+    active_only: bool,
+) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for uprn in uprns:
         accumulator = accumulators[uprn]
@@ -475,7 +511,268 @@ def _scan_addressbase_xref_csv(
             "inactiveRelevantRecordCount": int(accumulator["inactiveRelevantRecordCount"]),
             "matches": accumulator["matches"],
         })
-    return 200, results
+    return results
+
+
+def _scan_addressbase_xref_csv(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    requested = set(uprns)
+    accumulators = _build_addressbase_accumulators(uprns)
+
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = [
+                fieldname
+                for fieldname in (reader.fieldnames or [])
+                if isinstance(fieldname, str)
+            ]
+            column_mapping, missing = _resolve_addressbase_column_mapping(fieldnames)
+            if missing:
+                return 502, {
+                    "isError": True,
+                    "code": "INVALID_DATA_SOURCE",
+                    "message": (
+                        "AddressBase Premium Application Cross Reference CSV is missing "
+                        f"required columns: {', '.join(missing)}"
+                    ),
+                }
+
+            for row in reader:
+                if not isinstance(row, dict):
+                    continue
+                uprn = _normalize_uprn(row.get(column_mapping["UPRN"]))
+                if uprn is None or uprn not in requested:
+                    continue
+                source = _normalize_space(str(row.get(column_mapping["SOURCE"]) or "")).upper()
+                if source not in ADDRESSBASE_RELEVANT_SOURCES:
+                    continue
+
+                _append_addressbase_match(
+                    accumulators=accumulators,
+                    uprn=uprn,
+                    source=source,
+                    xref_key=row.get(column_mapping.get("XREF_KEY", "")),
+                    cross_reference=row.get(column_mapping.get("CROSS_REFERENCE", "")),
+                    version=row.get(column_mapping.get("VERSION", "")),
+                    start_date=row.get(column_mapping.get("START_DATE", "")),
+                    end_date=row.get(column_mapping.get("END_DATE", "")),
+                    last_update_date=row.get(column_mapping.get("LAST_UPDATE_DATE", "")),
+                    entry_date=row.get(column_mapping.get("ENTRY_DATE", "")),
+                    active_only=active_only,
+                )
+    except OSError as exc:
+        return 502, {
+            "isError": True,
+            "code": "INVALID_DATA_SOURCE",
+            "message": f"Unable to read AddressBase Premium xref CSV: {exc}",
+        }
+
+    return 200, _finalize_addressbase_results(
+        uprns=uprns,
+        accumulators=accumulators,
+        active_only=active_only,
+    )
+
+
+def _duckdb_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
+
+
+def _duckdb_addressbase_expression(
+    column_mapping: dict[str, str],
+    canonical: str,
+    *,
+    relation_alias: str | None = None,
+    normalize_source: bool = False,
+) -> str:
+    actual = column_mapping.get(canonical)
+    if actual is None:
+        return "CAST(NULL AS VARCHAR)"
+    qualified_identifier = _duckdb_identifier(actual)
+    if relation_alias:
+        qualified_identifier = f"{relation_alias}.{qualified_identifier}"
+    expression = f"CAST({qualified_identifier} AS VARCHAR)"
+    if normalize_source:
+        return f"UPPER(TRIM({expression}))"
+    return expression
+
+
+def _configure_addressbase_duckdb_connection(connection: Any) -> None:
+    threads = max(1, int(getattr(settings, "ADDRESSBASE_PREMIUM_DUCKDB_THREADS", 1) or 1))
+    memory_limit = str(
+        getattr(settings, "ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT", "512MB") or ""
+    ).strip()
+    connection.execute(f"PRAGMA threads={threads}")
+    if memory_limit:
+        quoted_memory_limit = memory_limit.replace("'", "''")
+        connection.execute(f"SET memory_limit='{quoted_memory_limit}'")
+
+
+def _scan_addressbase_xref_parquet(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    if duckdb is None:
+        return 501, {
+            "isError": True,
+            "code": "MISSING_DEPENDENCY",
+            "message": "duckdb is required to query AddressBase Premium parquet sources",
+        }
+
+    accumulators = _build_addressbase_accumulators(uprns)
+    connection = duckdb.connect(database=":memory:")  # type: ignore[union-attr]
+    try:
+        _configure_addressbase_duckdb_connection(connection)
+        schema_rows = connection.execute(
+            "DESCRIBE SELECT * FROM read_parquet(?)",
+            [str(path)],
+        ).fetchall()
+        column_mapping, missing = _resolve_addressbase_column_mapping(
+            [str(row[0]) for row in schema_rows if row and row[0]]
+        )
+        if missing:
+            return 502, {
+                "isError": True,
+                "code": "INVALID_DATA_SOURCE",
+                "message": (
+                    "AddressBase Premium parquet is missing required columns: "
+                    f"{', '.join(missing)}"
+                ),
+            }
+
+        connection.execute("CREATE TEMP TABLE requested_uprns (uprn VARCHAR)")
+        connection.executemany(
+            "INSERT INTO requested_uprns VALUES (?)",
+            [(uprn,) for uprn in uprns],
+        )
+
+        source_expr = _duckdb_addressbase_expression(
+            column_mapping,
+            "SOURCE",
+            relation_alias="xref",
+            normalize_source=True,
+        )
+        end_date_expr = _duckdb_addressbase_expression(
+            column_mapping,
+            "END_DATE",
+            relation_alias="xref",
+        )
+        rows = connection.execute(
+            f"""
+            SELECT
+                req.uprn AS requested_uprn,
+                {source_expr} AS source,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "XREF_KEY",
+                    relation_alias="xref",
+                )} AS xref_key,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "CROSS_REFERENCE",
+                    relation_alias="xref",
+                )} AS cross_reference,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "VERSION",
+                    relation_alias="xref",
+                )} AS version,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "START_DATE",
+                    relation_alias="xref",
+                )} AS start_date,
+                {end_date_expr} AS end_date,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "LAST_UPDATE_DATE",
+                    relation_alias="xref",
+                )} AS last_update_date,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "ENTRY_DATE",
+                    relation_alias="xref",
+                )} AS entry_date
+            FROM read_parquet(?) AS xref
+            INNER JOIN requested_uprns AS req
+                ON {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "UPRN",
+                    relation_alias="xref",
+                )} = req.uprn
+            WHERE {source_expr} IN ('7666VC', '7666VN')
+              AND (? = FALSE OR COALESCE(TRIM({end_date_expr}), '') = '')
+            """,
+            [str(path), active_only],
+        ).fetchall()
+    except Exception as exc:
+        return 502, {
+            "isError": True,
+            "code": "INVALID_DATA_SOURCE",
+            "message": f"Unable to query AddressBase Premium parquet: {exc}",
+        }
+    finally:
+        connection.close()
+
+    for (
+        requested_uprn,
+        source,
+        xref_key,
+        cross_reference,
+        version,
+        start_date,
+        end_date,
+        last_update_date,
+        entry_date,
+    ) in rows:
+        normalized_uprn = _normalize_uprn(requested_uprn)
+        normalized_source = _normalize_space(str(source or "")).upper()
+        if normalized_uprn is None or normalized_source not in ADDRESSBASE_RELEVANT_SOURCES:
+            continue
+        _append_addressbase_match(
+            accumulators=accumulators,
+            uprn=normalized_uprn,
+            source=normalized_source,
+            xref_key=xref_key,
+            cross_reference=cross_reference,
+            version=version,
+            start_date=start_date,
+            end_date=end_date,
+            last_update_date=last_update_date,
+            entry_date=entry_date,
+            active_only=active_only,
+        )
+
+    return 200, _finalize_addressbase_results(
+        uprns=uprns,
+        accumulators=accumulators,
+        active_only=active_only,
+    )
+
+
+def _scan_addressbase_xref(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    suffix = path.suffix.lower()
+    if suffix == ".csv":
+        return _scan_addressbase_xref_csv(path=path, uprns=uprns, active_only=active_only)
+    if suffix == ".parquet":
+        return _scan_addressbase_xref_parquet(path=path, uprns=uprns, active_only=active_only)
+    return 502, {
+        "isError": True,
+        "code": "INVALID_DATA_SOURCE",
+        "message": f"Unsupported AddressBase Premium xref file type: {path.suffix or '<none>'}",
+    }
 
 
 def _build_address(match: dict[str, Any]) -> str | None:
@@ -929,12 +1226,12 @@ def _uprn_query(payload: dict[str, Any]) -> ToolResult:
             "code": "NO_ADDRESSBASE_PREMIUM_DATA",
             "message": (
                 "AddressBase Premium Application Cross Reference data is not configured. "
-                "Set ADDRESSBASE_PREMIUM_XREF_PATH to the Type 23 CSV file or to a directory "
-                "containing it."
+                "Set ADDRESSBASE_PREMIUM_XREF_PATH to an AddressBase Premium xref CSV/parquet "
+                "file or to a directory containing one."
             ),
         }
 
-    scan_status, results_or_error = _scan_addressbase_xref_csv(
+    scan_status, results_or_error = _scan_addressbase_xref(
         path=xref_path,
         uprns=uprns,
         active_only=active_only,
@@ -952,12 +1249,17 @@ def _uprn_query(payload: dict[str, Any]) -> ToolResult:
         "noneCount": sum(1 for item in results if item["status"] == "none"),
         "activeOnly": active_only,
     }
+    provenance_method = (
+        "duckdb_parquet_query"
+        if xref_path.suffix.lower() == ".parquet"
+        else "streaming_csv_scan"
+    )
     return 200, {
         "results": results,
         "summary": summary,
         "provenance": {
             "source": "addressbase_premium_application_cross_reference",
-            "method": "streaming_csv_scan",
+            "method": provenance_method,
             "configuredPath": str(xref_path),
             "documentation": {
                 "product": ADDRESSBASE_PREMIUM_DOC_URL,

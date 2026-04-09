@@ -50,6 +50,12 @@ _GSS_LEVEL_TO_COLUMN: dict[str, tuple[str, str | None]] = {
     "LSOA": ("lsoa_code", "selected_by_lsoa"),
     "MSOA": ("msoa_code", "selected_by_msoa"),
     "LAD": ("lad_code", None),
+    "WD": ("ward_code", None),
+    "WARD": ("ward_code", None),
+    "CTRY": ("country_code", None),
+    "COUNTRY": ("country_code", None),
+    "RGN": ("region_code", None),
+    "REGION": ("region_code", None),
 }
 
 _MEMBERSHIP_COLUMNS = [
@@ -1961,7 +1967,8 @@ def _fetch_index_rows_by_column(
         return {}
     placeholders = ",".join("?" for _ in normalized_values)
     sql = (
-        "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, lad_code, lad_name, postal_delivery "
+        "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, lad_code, lad_name, "
+        "ward_code, country_code, region_code, postal_delivery "
         "FROM ons_geo_uprn_index "
         f"WHERE derivation_mode = ? AND {column} IN ({placeholders})"
     )
@@ -1980,6 +1987,9 @@ def _fetch_index_rows_by_column(
                 "msoa_code": row["msoa_code"],
                 "lad_code": row["lad_code"],
                 "lad_name": row["lad_name"],
+                "ward_code": row["ward_code"],
+                "country_code": row["country_code"],
+                "region_code": row["region_code"],
                 "postal_delivery": row["postal_delivery"],
             },
         )
@@ -2002,7 +2012,8 @@ def _fetch_index_rows_for_uprns(
         part = uprn_list[start : start + chunk]
         placeholders = ",".join("?" for _ in part)
         sql = (
-            "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, lad_code, lad_name, postal_delivery "
+            "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, lad_code, lad_name, "
+            "ward_code, country_code, region_code, postal_delivery "
             "FROM ons_geo_uprn_index "
             f"WHERE derivation_mode = ? AND uprn IN ({placeholders})"
         )
@@ -2020,6 +2031,9 @@ def _fetch_index_rows_for_uprns(
                     "msoa_code": row["msoa_code"],
                     "lad_code": row["lad_code"],
                     "lad_name": row["lad_name"],
+                    "ward_code": row["ward_code"],
+                    "country_code": row["country_code"],
+                    "region_code": row["region_code"],
                     "postal_delivery": row["postal_delivery"],
                 },
             )

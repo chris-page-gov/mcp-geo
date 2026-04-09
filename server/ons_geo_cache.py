@@ -13,6 +13,8 @@ KEY_TYPES = {"postcode", "uprn"}
 DERIVATION_MODES = {"exact", "best_fit"}
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
 
+_GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM)$")
+
 
 def _resolve_path(raw: str | None, default: str) -> Path:
     value = str(raw or default)
@@ -50,19 +52,45 @@ def normalize_derivation_mode(value: str) -> str | None:
     return mode if mode in DERIVATION_MODES else None
 
 
+def _table_columns(conn: sqlite3.Connection, table_name: str) -> set[str]:
+    rows = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return {str(row[1]) for row in rows}
+
+
+def _ensure_columns(
+    conn: sqlite3.Connection,
+    table_name: str,
+    required_columns: dict[str, str],
+) -> None:
+    existing = _table_columns(conn, table_name)
+    for column_name, column_sql in required_columns.items():
+        if column_name in existing:
+            continue
+        conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}")
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """
         CREATE TABLE IF NOT EXISTS ons_geo_products (
             product_id TEXT PRIMARY KEY,
-            key_type TEXT NOT NULL,
-            derivation_mode TEXT NOT NULL,
+            dataset_kind TEXT NOT NULL DEFAULT 'product',
+            key_type TEXT,
+            derivation_mode TEXT,
             release TEXT,
+            resolved_release TEXT,
             source_name TEXT,
             source_path TEXT,
+            resolved_source_url TEXT,
+            resolver_type TEXT,
+            source_format TEXT,
             source_sha256 TEXT,
+            schema_fingerprint TEXT,
+            schema_validation_json TEXT,
             record_count INTEGER NOT NULL DEFAULT 0,
-            ingested_at TEXT NOT NULL
+            status TEXT,
+            ingested_at TEXT NOT NULL,
+            retrieved_at TEXT
         );
 
         CREATE TABLE IF NOT EXISTS ons_geo_rows (
@@ -74,6 +102,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             source_name TEXT,
             product_priority INTEGER NOT NULL DEFAULT 100,
             row_json TEXT NOT NULL,
+            normalized_json TEXT,
             cached_at TEXT NOT NULL,
             PRIMARY KEY (product_id, key_norm),
             FOREIGN KEY (product_id) REFERENCES ons_geo_products(product_id)
@@ -92,6 +121,12 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             msoa_code TEXT,
             lad_code TEXT,
             lad_name TEXT,
+            ward_code TEXT,
+            ward_name TEXT,
+            country_code TEXT,
+            country_name TEXT,
+            region_code TEXT,
+            region_name TEXT,
             postal_delivery INTEGER,
             geographies_json TEXT,
             cached_at TEXT NOT NULL,
@@ -116,7 +151,65 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_lad
         ON ons_geo_uprn_index (derivation_mode, lad_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_ward
+        ON ons_geo_uprn_index (derivation_mode, ward_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_country
+        ON ons_geo_uprn_index (derivation_mode, country_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_region
+        ON ons_geo_uprn_index (derivation_mode, region_code);
+
+        CREATE TABLE IF NOT EXISTS ons_geo_code_reference (
+            dataset_id TEXT NOT NULL,
+            code TEXT NOT NULL,
+            code_family TEXT,
+            name TEXT,
+            status TEXT NOT NULL,
+            successor_code TEXT,
+            successor_name TEXT,
+            level TEXT,
+            record_json TEXT NOT NULL,
+            ingested_at TEXT NOT NULL,
+            PRIMARY KEY (dataset_id, code)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_code_reference_code
+        ON ons_geo_code_reference (code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_code_reference_status
+        ON ons_geo_code_reference (status);
         """
+    )
+
+    _ensure_columns(
+        conn,
+        "ons_geo_products",
+        {
+            "dataset_kind": "TEXT NOT NULL DEFAULT 'product'",
+            "resolved_release": "TEXT",
+            "resolved_source_url": "TEXT",
+            "resolver_type": "TEXT",
+            "source_format": "TEXT",
+            "schema_fingerprint": "TEXT",
+            "schema_validation_json": "TEXT",
+            "status": "TEXT",
+            "retrieved_at": "TEXT",
+        },
+    )
+    _ensure_columns(conn, "ons_geo_rows", {"normalized_json": "TEXT"})
+    _ensure_columns(
+        conn,
+        "ons_geo_uprn_index",
+        {
+            "ward_code": "TEXT",
+            "ward_name": "TEXT",
+            "country_code": "TEXT",
+            "country_name": "TEXT",
+            "region_code": "TEXT",
+            "region_name": "TEXT",
+        },
     )
     conn.commit()
 
@@ -127,9 +220,14 @@ class ONSGeoLookup:
     key_type: str
     derivation_mode: str
     release: str | None
+    resolved_release: str | None
     source_name: str | None
+    source_format: str | None
+    schema_fingerprint: str | None
+    resolved_source_url: str | None
     cached_at: str | None
     row: dict[str, Any]
+    normalized: dict[str, Any]
 
 
 class ONSGeoCacheReadError(RuntimeError):
@@ -198,18 +296,25 @@ class ONSGeoCache:
             row = conn.execute(
                 """
                 SELECT
-                    product_id,
-                    key_type,
-                    derivation_mode,
-                    release,
-                    source_name,
-                    cached_at,
-                    row_json
-                FROM ons_geo_rows
-                WHERE key_type = ?
-                  AND derivation_mode = ?
-                  AND key_norm = ?
-                ORDER BY product_priority ASC, product_id ASC
+                    r.product_id,
+                    r.key_type,
+                    r.derivation_mode,
+                    COALESCE(p.release, r.release) AS release,
+                    p.resolved_release,
+                    COALESCE(p.source_name, r.source_name) AS source_name,
+                    p.source_format,
+                    p.schema_fingerprint,
+                    p.resolved_source_url,
+                    r.cached_at,
+                    r.row_json,
+                    r.normalized_json
+                FROM ons_geo_rows AS r
+                LEFT JOIN ons_geo_products AS p
+                  ON p.product_id = r.product_id
+                WHERE r.key_type = ?
+                  AND r.derivation_mode = ?
+                  AND r.key_norm = ?
+                ORDER BY r.product_priority ASC, r.product_id ASC
                 LIMIT 1
                 """,
                 (normalized_key_type, normalized_mode, key_norm),
@@ -225,25 +330,40 @@ class ONSGeoCache:
         if row is None:
             return None
 
-        try:
-            payload = json.loads(str(row["row_json"]))
-        except json.JSONDecodeError:
-            payload = {}
-        if not isinstance(payload, dict):
-            payload = {}
+        payload = _decode_json_object(row["row_json"])
+        normalized = _decode_json_object(row["normalized_json"])
 
         return ONSGeoLookup(
             product_id=str(row["product_id"]),
             key_type=str(row["key_type"]),
             derivation_mode=str(row["derivation_mode"]),
-            release=str(row["release"]) if row["release"] is not None else None,
-            source_name=str(row["source_name"]) if row["source_name"] is not None else None,
-            cached_at=str(row["cached_at"]) if row["cached_at"] is not None else None,
+            release=_optional_text(row["release"]),
+            resolved_release=_optional_text(row["resolved_release"]),
+            source_name=_optional_text(row["source_name"]),
+            source_format=_optional_text(row["source_format"]),
+            schema_fingerprint=_optional_text(row["schema_fingerprint"]),
+            resolved_source_url=_optional_text(row["resolved_source_url"]),
+            cached_at=_optional_text(row["cached_at"]),
             row=payload,
+            normalized=normalized,
         )
 
 
-_GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM)$")
+def _optional_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _decode_json_object(value: Any) -> dict[str, Any]:
+    if value is None:
+        return {}
+    try:
+        payload = json.loads(str(value))
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, dict) else {}
 
 
 def extract_geography_fields(row: dict[str, Any]) -> dict[str, dict[str, str]]:
