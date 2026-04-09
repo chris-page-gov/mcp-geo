@@ -1147,6 +1147,289 @@ def test_os_map_parsers_cover_edge_cases() -> None:
     ]
 
 
+def test_os_map_selection_and_aoi_helpers_cover_error_branches(monkeypatch) -> None:
+    from tools import os_map
+
+    assert os_map._parse_selection_spec("bad") == (None, "selectionSpec must be an object")
+    assert os_map._parse_selection_spec({"selectors": "bad"}) == (
+        None,
+        "selectionSpec.selectors must be an array of objects",
+    )
+    assert os_map._parse_selection_spec({"geometry": []}) == (
+        None,
+        "selectionSpec.geometry must be an object",
+    )
+    assert os_map._parse_selection_spec({"gssCode": "E05000644"}) == (
+        None,
+        "selectionSpec.level is required when selectionSpec.gssCode is provided",
+    )
+    assert os_map._parse_selection_spec({"postcode": ""}) == (
+        None,
+        "selectionSpec.postcode must be a non-empty string",
+    )
+    assert os_map._parse_selection_spec({"uprnOverrides": []}) == (
+        None,
+        "selectionSpec.uprnOverrides must be an object",
+    )
+    assert os_map._parse_selection_spec({"uprnOverrides": {"include": ["bad"]}}) == (
+        None,
+        "selectionSpec.uprnOverrides.include must be an array of numeric strings",
+    )
+    assert os_map._address_selector_spec(
+        {
+            "selectors": [{"type": "gss_code", "level": "WARD", "code": "E05000644"}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+    ) is None
+
+    status, payload = os_map._selection_cache_error(RuntimeError("cache missing"))
+    assert status == 503
+    assert payload["code"] == "CACHE_UNAVAILABLE"
+
+    status, payload = os_map._selection_cache_error(sqlite3.OperationalError("bad db"))
+    assert status == 503
+    assert payload["code"] == "CACHE_READ_ERROR"
+
+    status, payload = os_map._selection_cache_error(ValueError("boom"))
+    assert status == 500
+    assert payload["code"] == "INTEGRATION_ERROR"
+
+    polygons, warnings = os_map._normalize_polygon_geometry(
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [[[-1.0, 52.0], [-0.9, 52.0], [-0.9, 52.1], [-1.0, 52.0]]],
+                [[[-1.1, 52.1], [-1.0, 52.1], [-1.0, 52.2], [-1.1, 52.1]]],
+            ],
+        }
+    )
+    assert len(polygons) == 2
+    assert "AOI_MULTIPOLYGON_SPLIT" in warnings
+
+    polygons, warnings = os_map._normalize_polygon_geometry(
+        {
+            "rings": [
+                [[-1.0, 52.0], [-0.9, 52.0], [-0.9, 52.1], [-1.0, 52.0]],
+                [[-1.2, 52.2], [-1.1, 52.2], [-1.1, 52.3], [-1.2, 52.2]],
+            ]
+        }
+    )
+    assert len(polygons) == 2
+    assert "AOI_ARCGIS_GEOMETRY_NORMALIZED" in warnings
+    assert "AOI_MULTIRING_SPLIT" in warnings
+
+    assert os_map._resolve_export_road_aoi(
+        selection_spec=None,
+        derivation_mode="exact",
+        postal_delivery_only=False,
+        buffer_meters=20.0,
+    ) == (None, None)
+
+
+def test_os_map_area_limit_and_export_aoi_resolution_branches(monkeypatch) -> None:
+    from tools import os_map
+
+    assert os_map._resolve_area_limit_polygons({"selectors": "bad"}) == ([], [], [])
+
+    monkeypatch.setattr(os_map, "get_tool", lambda _name: None)
+    polygons, summaries, warnings = os_map._resolve_area_limit_polygons(
+        {
+            "selectors": [
+                {"type": "gss_code", "level": "WARD", "code": "E05000644"},
+                {"type": "gss_code", "level": "", "code": ""},
+            ]
+        }
+    )
+    assert polygons == []
+    assert summaries == []
+    assert "AREA_GEOMETRY_TOOL_MISSING" in warnings
+    assert any("missing level/code" in warning for warning in warnings)
+
+    class DummyAreaTool:
+        def __init__(self, result: tuple[int, object]) -> None:
+            self.result = result
+
+        def call(self, args: dict[str, Any]) -> tuple[int, object]:
+            return self.result
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda _name: DummyAreaTool((500, {"isError": True})),
+    )
+    _polygons, _summaries, warnings = os_map._resolve_area_limit_polygons(
+        {"selectors": [{"type": "gss_code", "level": "WARD", "code": "E05000644"}]}
+    )
+    assert "AREA_GEOMETRY_LOOKUP_FAILED:E05000644" in warnings
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda _name: DummyAreaTool((200, {"id": "E05000644"})),
+    )
+    _polygons, _summaries, warnings = os_map._resolve_area_limit_polygons(
+        {"selectors": [{"type": "gss_code", "level": "WARD", "code": "E05000644"}]}
+    )
+    assert "AREA_GEOMETRY_MISSING:E05000644" in warnings
+
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_area_limit_polygons",
+        lambda _spec: (
+            [{"type": "Polygon", "coordinates": [[[-1.0, 52.0], [-0.9, 52.0], [-0.9, 52.1], [-1.0, 52.0]]]}],
+            [{"selectorType": "gss_code"}],
+            ["LIMIT"],
+        ),
+    )
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_address_anchor_polygons",
+        lambda **_kwargs: (
+            [{"type": "Polygon", "coordinates": [[[-1.0, 52.0], [-0.8, 52.0], [-0.8, 52.2], [-1.0, 52.0]]]}],
+            [{"anchorType": "building_polygon"}],
+            ["ANCHOR"],
+            {"resolvedUprnCount": 1},
+        ),
+    )
+    resolved, warnings = os_map._resolve_export_road_aoi(
+        selection_spec={"selectors": []},
+        derivation_mode="exact",
+        postal_delivery_only=False,
+        buffer_meters=20.0,
+    )
+    assert resolved is not None
+    assert len(resolved["queryPolygons"]) == 1
+    assert len(resolved["limitPolygons"]) == 1
+    assert warnings == ["LIMIT", "ANCHOR"]
+
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_address_anchor_polygons",
+        lambda **_kwargs: ([], [], [], {"resolvedUprnCount": 0}),
+    )
+    resolved, warnings = os_map._resolve_export_road_aoi(
+        selection_spec={"selectors": []},
+        derivation_mode="exact",
+        postal_delivery_only=False,
+        buffer_meters=20.0,
+    )
+    assert resolved is not None
+    assert resolved["limitPolygons"] is None
+    assert warnings == ["LIMIT"]
+
+
+def test_os_map_polygon_selector_resolution_branches(monkeypatch) -> None:
+    from tools import os_map
+
+    assert os_map._resolve_polygon_selector({}) == (set(), "polygon selector requires geometry")
+
+    monkeypatch.setattr(os_map, "get_tool", lambda _name: None)
+    assert os_map._resolve_polygon_selector({"geometry": {"type": "Polygon"}}) == (
+        set(),
+        "os_places.polygon not available for polygon selector",
+    )
+
+    class DummyPolygonTool:
+        def __init__(self, result: tuple[int, object]) -> None:
+            self.result = result
+
+        def call(self, args: dict[str, Any]) -> tuple[int, object]:
+            return self.result
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda _name: DummyPolygonTool((500, {"message": "upstream failed"})),
+    )
+    assert os_map._resolve_polygon_selector({"geometry": {"type": "Polygon"}}) == (
+        set(),
+        "upstream failed",
+    )
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda _name: DummyPolygonTool((200, {"results": "bad"})),
+    )
+    assert os_map._resolve_polygon_selector({"geometry": {"type": "Polygon"}}) == (set(), None)
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda _name: DummyPolygonTool(
+            (
+                200,
+                {"results": [{"uprn": "100023336959"}, {"uprn": "bad"}, "skip"]},
+            )
+        ),
+    )
+    uprns, error = os_map._resolve_polygon_selector({"geometry": {"type": "Polygon"}})
+    assert error is None
+    assert uprns == {"100023336959"}
+
+
+def test_os_map_address_anchor_resolution_branches(monkeypatch) -> None:
+    from tools import os_map
+
+    empty = os_map._resolve_address_anchor_polygons(
+        selection_spec={"selectors": [{"type": "gss_code", "level": "WARD", "code": "E05000644"}]},
+        derivation_mode="exact",
+        postal_delivery_only=False,
+        buffer_meters=20.0,
+    )
+    assert empty == ([], [], [], {"resolvedUprnCount": 0, "selectorCount": 0, "excludedCount": 0})
+
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_selection_rows",
+        lambda **_kwargs: ([{"uprn": "100023336959"}], {"resolvedUprnCount": 1}, []),
+    )
+    monkeypatch.setattr(os_map, "get_tool", lambda _name: None)
+    polygons, summaries, warnings, stats = os_map._resolve_address_anchor_polygons(
+        selection_spec={"selectors": [{"type": "uprn", "uprn": "100023336959"}]},
+        derivation_mode="exact",
+        postal_delivery_only=False,
+        buffer_meters=20.0,
+    )
+    assert polygons == []
+    assert summaries == []
+    assert warnings == ["UPRN_POINT_LOOKUP_TOOL_MISSING"]
+    assert stats == {"resolvedUprnCount": 1}
+
+    class DummyPointTool:
+        def __init__(self, result: tuple[int, object]) -> None:
+            self.result = result
+
+        def call(self, args: dict[str, Any]) -> tuple[int, object]:
+            return self.result
+
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_selection_rows",
+        lambda **_kwargs: (
+            [{"uprn": "100023336959"}, {"uprn": "100023336960"}, {"uprn": ""}],
+            {"resolvedUprnCount": 2},
+            [],
+        ),
+    )
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda _name: DummyPointTool((200, {"result": {"lat": "bad", "lon": 1}})),
+    )
+    polygons, summaries, warnings, stats = os_map._resolve_address_anchor_polygons(
+        selection_spec={"selectors": [{"type": "uprn", "uprn": "100023336959"}]},
+        derivation_mode="exact",
+        postal_delivery_only=False,
+        buffer_meters=20.0,
+    )
+    assert polygons == []
+    assert summaries == []
+    assert "UPRN_POINT_INVALID:100023336959" in warnings
+    assert "UPRN_POINT_INVALID:100023336960" in warnings
+    assert stats == {"resolvedUprnCount": 2}
+
+
 def test_os_map_latest_ngd_collection_ids_error_branches(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tools import os_map
 

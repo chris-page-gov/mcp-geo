@@ -533,3 +533,116 @@ def test_ons_geo_by_uprn_cache_read_error_returns_503(monkeypatch) -> None:
     body = resp.json()
     assert body["code"] == "CACHE_READ_ERROR"
     assert "unreadable" in body["message"]
+
+
+def test_ons_geo_by_postcode_rejects_invalid_include_raw_type(tmp_path: Path, monkeypatch) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.by_postcode", "postcode": "SW1A 1AA", "includeRaw": "yes"},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "includeRaw must be a boolean"
+
+
+def test_ons_geo_by_postcode_not_found_returns_404(tmp_path: Path, monkeypatch) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.by_postcode", "postcode": "CV1 1ZZ"})
+    assert resp.status_code == 404
+    assert resp.json()["code"] == "NOT_FOUND"
+
+
+def test_ons_geo_by_uprn_invalid_input_paths(tmp_path: Path, monkeypatch) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.by_uprn", "uprn": ""})
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "uprn must be a non-empty string"
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.by_uprn", "uprn": "abc"})
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "uprn must be a numeric string"
+
+
+def test_ons_geo_release_audit_validates_timeout_and_upstream_error(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "ONS_LIVE_ENABLED", True, raising=False)
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.release_audit", "timeout": 0})
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "timeout must be a positive number"
+
+    monkeypatch.setattr(
+        ons_geo_tools,
+        "build_release_audit",
+        lambda timeout: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+    resp = client.post("/tools/call", json={"tool": "ons_geo.release_audit", "timeout": 5})
+    assert resp.status_code == 502
+    assert resp.json()["code"] == "UPSTREAM_ERROR"
+
+
+def test_ons_geo_internal_cache_performance_helpers() -> None:
+    assert ons_geo_tools._cache_performance(available=True, product_count=0)["reason"] == "index_empty"
+    assert ons_geo_tools._cache_performance(available=True, product_count=2)["degraded"] is False
+
+    ready = ons_geo_tools._cache_performance_from_index(
+        available=True,
+        index={"health": {"status": "ready", "exactReady": True, "bestFitReady": True}},
+    )
+    assert ready["degraded"] is False
+    assert ready["impact"] == "Cached ONS geography lookup is available."
+
+    degraded = ons_geo_tools._cache_performance_from_index(
+        available=True,
+        index={"health": {"status": "degraded", "degradedReasons": "bad"}},
+    )
+    assert degraded["degraded"] is True
+    assert degraded["reason"] == "cache_degraded"
+
+
+def test_ons_geo_invalid_postcode_and_uprn_paths(tmp_path: Path, monkeypatch) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.by_postcode", "postcode": "bad"})
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "Invalid UK postcode"
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.by_postcode", "postcode": "SW1A 1AA", "derivationMode": 1},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "derivationMode must be a string"
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.by_uprn", "uprn": "100023336959", "includeRaw": "yes"},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["message"] == "includeRaw must be a boolean"
