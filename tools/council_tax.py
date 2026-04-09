@@ -364,13 +364,17 @@ def _resolve_addressbase_xref_path() -> Path | None:
         return None
 
     candidates: list[tuple[int, str, Path]] = []
-    for pattern in ("*.parquet", "*.csv"):
-        for candidate in path.rglob(pattern):
-            if candidate.suffix.lower() == ".parquet" and duckdb is None:
-                continue
-            score = _score_addressbase_xref_candidate(candidate)
-            if score > 0:
-                candidates.append((score, str(candidate), candidate))
+    for candidate in path.rglob("*"):
+        if not candidate.is_file():
+            continue
+        suffix = candidate.suffix.lower()
+        if suffix not in {".parquet", ".csv"}:
+            continue
+        if suffix == ".parquet" and duckdb is None:
+            continue
+        score = _score_addressbase_xref_candidate(candidate)
+        if score > 0:
+            candidates.append((score, str(candidate), candidate))
     if not candidates:
         return None
     candidates.sort(key=lambda item: (-item[0], item[1]))

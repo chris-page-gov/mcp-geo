@@ -814,6 +814,22 @@ def _probe_stream_url(url: str, *, timeout: float) -> None:
         resp.raise_for_status()
 
 
+def _arcgis_page_signature(
+    rows: list[dict[str, Any]],
+    *,
+    object_id_field: str,
+) -> str:
+    if object_id_field:
+        object_ids = [
+            row.get(object_id_field)
+            for row in rows
+            if row.get(object_id_field) is not None
+        ]
+        if object_ids:
+            return json.dumps(object_ids, ensure_ascii=True, separators=(",", ":"))
+    return json.dumps(rows, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+
+
 def _validate_direct_ingest_suffix(
     chosen_url: str,
     *,
@@ -1097,6 +1113,7 @@ def _resolve_hosted_table_arcgis(
 
     offset = 0
     object_id_field = str(metadata.get("objectIdField") or "").strip()
+    seen_page_signatures: set[str] = set()
     with rows_path.open("w", encoding="utf-8") as handle:
         while True:
             params: dict[str, str | int] = {
@@ -1115,6 +1132,7 @@ def _resolve_hosted_table_arcgis(
             features = page.get("features", [])
             if not isinstance(features, list):
                 raise ValueError("ArcGIS query response did not contain a features list")
+            page_rows: list[dict[str, Any]] = []
             written = 0
             for feature in features:
                 if not isinstance(feature, dict):
@@ -1122,6 +1140,19 @@ def _resolve_hosted_table_arcgis(
                 attributes = feature.get("attributes")
                 if not isinstance(attributes, dict):
                     continue
+                page_rows.append(attributes)
+            if page_rows:
+                page_signature = _arcgis_page_signature(
+                    page_rows,
+                    object_id_field=object_id_field,
+                )
+                if page_signature in seen_page_signatures:
+                    raise ValueError(
+                        "ArcGIS query pagination made no progress; "
+                        "endpoint may be ignoring resultOffset."
+                    )
+                seen_page_signatures.add(page_signature)
+            for attributes in page_rows:
                 handle.write(
                     json.dumps(attributes, ensure_ascii=True, separators=(",", ":")) + "\n"
                 )

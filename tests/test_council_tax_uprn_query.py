@@ -324,6 +324,32 @@ def test_council_tax_uprn_query_supports_directory_config(tmp_path: Path, monkey
     assert body["provenance"]["configuredPath"].endswith("my_ID23_xref_extract.csv")
 
 
+def test_council_tax_uprn_query_supports_directory_config_with_uppercase_csv(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    data_dir = tmp_path / "epoch"
+    data_dir.mkdir()
+    csv_path = data_dir / "ID23_ApplicationCrossReference.CSV"
+    _write_xref_csv(csv_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(data_dir),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["status"] == "council_tax"
+    assert body["provenance"]["configuredPath"].endswith("ID23_ApplicationCrossReference.CSV")
+
+
 def test_council_tax_uprn_query_supports_extracted_csv_headers(
     tmp_path: Path,
     monkeypatch,

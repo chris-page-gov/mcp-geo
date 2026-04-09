@@ -373,6 +373,80 @@ def test_resolve_hosted_table_arcgis_pages_rows_and_extracts_schema(
     assert any(call[0].endswith("/query") for call in calls)
 
 
+def test_resolve_hosted_table_arcgis_rejects_non_progressing_offsets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    metadata_url = "https://example.test/FeatureServer/0?f=json"
+    query_url = "https://example.test/FeatureServer/0/query"
+    repeated_page = {
+        "features": [
+            {"attributes": {"OBJECTID": 1, "UPRN": "100023336959", "LAD24CD": "E08000026"}},
+            {"attributes": {"OBJECTID": 2, "UPRN": "100023336960", "LAD24CD": "E08000026"}},
+        ],
+        "exceededTransferLimit": True,
+    }
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream
+        if url == metadata_url:
+            return _FakeResponse(
+                json_data={
+                    "name": "ArcGIS Hub Dataset",
+                    "maxRecordCount": 2,
+                    "objectIdField": "OBJECTID",
+                    "fields": [
+                        {"name": "OBJECTID", "alias": "Object ID"},
+                        {"name": "UPRN", "alias": "UPRN"},
+                        {"name": "LAD24CD", "alias": "Local authority district code"},
+                    ],
+                }
+            )
+        if url == query_url:
+            assert params is not None
+            return _FakeResponse(json_data=repeated_page)
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, {
+        "version": "2026-04-08",
+        "products": [
+            {
+                "id": "ONSUD",
+                "title": "ONSUD",
+                "keyType": "uprn",
+                "derivationMode": "exact",
+                "priority": 10,
+                "release": "latest",
+                "resolver": {
+                    "type": "hosted_table_arcgis",
+                    "metadataUrl": metadata_url,
+                    "queryUrl": query_url
+                },
+                "semanticFields": {
+                    "required": ["uprn", "lad_code"],
+                    "optional": [],
+                    "aliases": {"uprn": ["UPRN"], "lad_code": ["LAD24CD"]}
+                }
+            }
+        ],
+        "supportProducts": []
+    }))[1][0]
+
+    try:
+        refresh.resolve_dataset_source(
+            dataset,
+            raw_root=tmp_path / "raw",
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={},
+        )
+    except ValueError as exc:
+        assert "pagination made no progress" in str(exc)
+    else:
+        raise AssertionError("Expected non-progressing ArcGIS pagination to be rejected")
+
+
 def test_resolve_portal_release_file_prefers_discovery_api_and_suffix(
     monkeypatch,
     tmp_path: Path,
