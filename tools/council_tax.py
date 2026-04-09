@@ -714,9 +714,8 @@ def _scan_addressbase_xref_parquet(
                     normalize_uprn=True,
                 )} = req.uprn
             WHERE {source_expr} IN ('7666VC', '7666VN')
-              AND (? = FALSE OR COALESCE(TRIM({end_date_expr}), '') = '')
             """,
-            [str(path), active_only],
+            [str(path)],
         ).fetchall()
     except Exception as exc:
         return 502, {

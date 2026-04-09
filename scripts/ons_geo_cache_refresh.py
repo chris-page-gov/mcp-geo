@@ -568,9 +568,7 @@ def _score_ckan_package_result(
 ) -> tuple[int, int, float, str]:
     title = str(package.get("title") or "").strip()
     name = str(package.get("name") or "").strip()
-    combined = " ".join(
-        part for part in (title, name, dataset.dataset_id, dataset.title) if part
-    )
+    combined = " ".join(part for part in (title, name) if part)
     pattern_score = sum(
         1
         for pattern in dataset.resolver.link_patterns
@@ -1303,7 +1301,12 @@ def probe_dataset_source(
 
 
 @contextmanager
-def _open_rows(path: Path) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
+def _open_rows(
+    path: Path,
+    *,
+    dataset: DatasetConfig | None = None,
+    metadata_aliases: dict[str, str] | None = None,
+) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
     suffix = path.suffix.lower()
     if suffix == ".zip":
         with zipfile.ZipFile(path) as archive:
@@ -1320,8 +1323,14 @@ def _open_rows(path: Path) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]
             )
             if not members:
                 raise ValueError(f"No CSV or JSON file found in zip archive: {path}")
-            with archive.open(members[0], "r") as raw:
-                with _rows_from_binary_stream(raw, name=members[0]) as payload:
+            chosen_member = _select_archive_member(
+                archive=archive,
+                members=members,
+                dataset=dataset,
+                metadata_aliases=metadata_aliases or {},
+            )
+            with archive.open(chosen_member, "r") as raw:
+                with _rows_from_binary_stream(raw, name=chosen_member) as payload:
                     yield payload
         return
     if suffix == ".gz":
@@ -1418,6 +1427,36 @@ def _rows_from_json_payload(payload: Any) -> tuple[list[dict[str, Any]], list[st
         rows = [item for item in payload if isinstance(item, dict)]
     fieldnames = _collect_fieldnames(rows)
     return rows, fieldnames
+
+
+def _select_archive_member(
+    *,
+    archive: zipfile.ZipFile,
+    members: list[str],
+    dataset: DatasetConfig | None,
+    metadata_aliases: dict[str, str],
+) -> str:
+    if dataset is None or len(members) == 1:
+        return members[0]
+
+    scored_members: list[tuple[int, int, int, str]] = []
+    for name in members:
+        with archive.open(name, "r") as raw:
+            with _rows_from_binary_stream(raw, name=name) as (_rows_iter, fieldnames):
+                _mapping, validation = _build_field_mapping(
+                    dataset,
+                    fieldnames=fieldnames,
+                    metadata_aliases=metadata_aliases,
+                )
+        required_found = len(validation["requiredFound"])
+        required_missing = len(validation["requiredMissing"])
+        optional_found = len(validation["optionalFound"])
+        scored_members.append(
+            (required_found, -required_missing, optional_found, name)
+        )
+
+    scored_members.sort(reverse=True)
+    return scored_members[0][3]
 
 
 def _collect_fieldnames(rows: Iterable[dict[str, Any]]) -> list[str]:
@@ -1752,7 +1791,11 @@ def _ingest_support_dataset(
 ) -> tuple[int, dict[str, Any]]:
     now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     inserted = 0
-    with _open_rows(resolved.source_path) as (rows_iter, fieldnames):
+    with _open_rows(
+        resolved.source_path,
+        dataset=dataset,
+        metadata_aliases=resolved.field_aliases,
+    ) as (rows_iter, fieldnames):
         metadata_aliases = resolved.field_aliases
         mapping, validation = _build_field_mapping(
             dataset,
@@ -1836,7 +1879,11 @@ def _ingest_main_dataset(
     now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     inserted = 0
     chosen_key_field: str | None = None
-    with _open_rows(resolved.source_path) as (rows_iter, fieldnames):
+    with _open_rows(
+        resolved.source_path,
+        dataset=dataset,
+        metadata_aliases=resolved.field_aliases,
+    ) as (rows_iter, fieldnames):
         metadata_aliases = resolved.field_aliases
         mapping, validation = _build_field_mapping(
             dataset,

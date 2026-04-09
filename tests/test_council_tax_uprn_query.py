@@ -469,6 +469,33 @@ def test_council_tax_uprn_query_normalizes_parquet_uprn_keys_before_join(
     assert results["100000000002"]["status"] == "non_domestic_rates"
 
 
+def test_council_tax_uprn_query_preserves_inactive_parquet_matches_when_active_only(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_xref_parquet(parquet_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(parquet_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000003"]},
+    )
+
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    assert result["status"] == "none"
+    assert result["sourceCodes"] == []
+    assert result["inactiveSourceCodes"] == ["7666VC"]
+    assert result["inactiveRelevantRecordCount"] == 1
+
+
 def test_council_tax_uprn_query_can_include_ended_records(tmp_path: Path, monkeypatch) -> None:
     csv_path = tmp_path / "ID23_ApplicationCrossReference.csv"
     _write_xref_csv(csv_path)

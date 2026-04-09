@@ -85,7 +85,10 @@ def main() -> int:
                     raise ValueError(
                         f"Local probe for {dataset.dataset_id} did not include sourcePath metadata"
                     )
-                with _open_rows(Path(source_path_text)) as (_rows_iter, local_fieldnames):
+                with _open_rows(Path(source_path_text), dataset=dataset) as (
+                    _rows_iter,
+                    local_fieldnames,
+                ):
                     fieldnames = local_fieldnames or fieldnames
 
             if fieldnames:

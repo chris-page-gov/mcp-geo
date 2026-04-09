@@ -519,6 +519,110 @@ def test_resolve_portal_release_file_uses_latest_ckan_search_result(
     assert resolved.source_path.exists()
 
 
+def test_resolve_portal_release_file_ignores_unrelated_newer_ckan_result(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    search_payload = {
+        "success": True,
+        "result": {
+            "results": [
+                {
+                    "name": "register-of-geographic-codes-december-2025-for-the-uk",
+                    "title": "Register of Geographic Codes (December 2025) for the UK",
+                    "metadata_modified": "2026-04-09T12:00:00.000000",
+                    "resources": [
+                        {
+                            "name": "ArcGIS Hub Dataset",
+                            "format": "HTML",
+                            "url": "https://open-geography.example/datasets/ons::register-of-geographic-codes-december-2025-for-the-uk",
+                        }
+                    ],
+                },
+                {
+                    "name": "ons-uprn-directory-december-2025-epoch-123",
+                    "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+                    "metadata_modified": "2025-12-23T12:00:00.000000",
+                    "resources": [
+                        {
+                            "name": "ArcGIS Hub Dataset",
+                            "format": "HTML",
+                            "url": "https://open-geography.example/datasets/ons::ons-uprn-directory-december-2025-epoch-123",
+                        }
+                    ],
+                },
+            ]
+        },
+    }
+    data_gov_landing = (
+        '<html><body><a href="https://open-geography.example/datasets/'
+        'ons::ons-uprn-directory-december-2025-epoch-123">hub</a></body></html>'
+    )
+    hub_html = (
+        '<html><body><a href="https://downloads.example.test/onsud-december-2025-epoch-123.zip">'
+        "download</a></body></html>"
+    )
+    zip_content = b"PK\x03\x04onsud"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_search":
+            return _FakeResponse(json_data=search_payload)
+        if url == "https://www.data.gov.uk/dataset/ons-uprn-directory-december-2025-epoch-123":
+            return _FakeResponse(text=data_gov_landing)
+        if url == "https://open-geography.example/datasets/ons::ons-uprn-directory-december-2025-epoch-123":
+            return _FakeResponse(text=hub_html)
+        if url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip":
+            return _FakeResponse(content=zip_content)
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/latest",
+                            "discoveryApiUrl": "https://example.test/api/package_search",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud", "ons-uprn-directory", "zip"],
+                            "releasePatterns": [
+                                "(January|February|March|April|May|June|July|August|September|"
+                                "October|November|December)\\s+20\\d{2}",
+                                "Epoch\\s+\\d+",
+                            ],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    assert resolved.resolved_release == "December 2025"
+
+
 def test_resolve_portal_release_file_rejects_unsupported_binary_release_assets(
     monkeypatch,
     tmp_path: Path,
@@ -789,6 +893,37 @@ def test_open_rows_supports_jsonl_inside_zip(tmp_path: Path) -> None:
 
     assert fieldnames == ["UPRN", "LAD24CD"]
     assert payload[0]["LAD24CD"] == "E08000026"
+
+
+def test_open_rows_chooses_zip_member_with_matching_schema(tmp_path: Path) -> None:
+    archive_path = tmp_path / "sample.zip"
+    with refresh.zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("README.csv", "note,description\nx,y\n")
+        archive.writestr(
+            "rows.csv",
+            "GEOGRAPHY_CODE,STATUS\nE09000033,current\n",
+        )
+
+    dataset = refresh.DatasetConfig(
+        dataset_id="RGC",
+        dataset_kind="support",
+        title="RGC",
+        key_type=None,
+        derivation_mode=None,
+        priority=20,
+        release="2025-12",
+        resolver=refresh.ResolverConfig("static_file", "", "", "", "", [], [], [], ""),
+        required_fields=["code", "name"],
+        optional_fields=["status", "code_family", "level"],
+        aliases={"name": ["GEOGRAPHY_NAME"], "code": ["GEOGRAPHY_CODE"]},
+        defaults={"status": "current"},
+    )
+
+    with refresh._open_rows(archive_path, dataset=dataset) as (rows, fieldnames):
+        payload = list(rows)
+
+    assert fieldnames == ["GEOGRAPHY_CODE", "STATUS"]
+    assert payload[0]["GEOGRAPHY_CODE"] == "E09000033"
 
 
 def test_select_candidate_url_ignores_page_anchors_and_assets() -> None:
