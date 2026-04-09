@@ -2126,18 +2126,26 @@ def _index_health(
     products: list[dict[str, Any]],
     support_products: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    exact_ready = any(
-        item.get("kind") == "product"
-        and item.get("derivationMode") == "exact"
-        and item.get("status") == "ingested"
-        for item in products
-    )
-    best_fit_ready = any(
-        item.get("kind") == "product"
-        and item.get("derivationMode") == "best_fit"
-        and item.get("status") == "ingested"
-        for item in products
-    )
+    def _mode_ready(mode: str) -> bool:
+        mode_products = [
+            item
+            for item in products
+            if item.get("kind") == "product" and item.get("derivationMode") == mode
+        ]
+        expected_key_types = {
+            str(item.get("keyType") or "").strip()
+            for item in mode_products
+            if str(item.get("keyType") or "").strip()
+        }
+        ingested_key_types = {
+            str(item.get("keyType") or "").strip()
+            for item in mode_products
+            if item.get("status") == "ingested" and str(item.get("keyType") or "").strip()
+        }
+        return not expected_key_types or expected_key_types <= ingested_key_types
+
+    exact_ready = _mode_ready("exact")
+    best_fit_ready = _mode_ready("best_fit")
     support_ready = (
         all(item.get("status") == "ingested" for item in support_products)
         if support_products

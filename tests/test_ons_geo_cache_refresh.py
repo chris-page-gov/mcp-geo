@@ -275,6 +275,46 @@ def test_ons_geo_cache_refresh_reports_partial_failure_for_missing_support_datas
     assert rgc["errorCode"] == "RESOLVE_ERROR"
 
 
+def test_index_health_requires_each_key_type_per_mode() -> None:
+    products = [
+        {
+            "kind": "product",
+            "id": "ONSPD",
+            "keyType": "postcode",
+            "derivationMode": "exact",
+            "status": "ingested",
+        },
+        {
+            "kind": "product",
+            "id": "ONSUD",
+            "keyType": "uprn",
+            "derivationMode": "exact",
+            "status": "error",
+        },
+        {
+            "kind": "product",
+            "id": "NSPL",
+            "keyType": "postcode",
+            "derivationMode": "best_fit",
+            "status": "ingested",
+        },
+        {
+            "kind": "product",
+            "id": "NSUL",
+            "keyType": "uprn",
+            "derivationMode": "best_fit",
+            "status": "ingested",
+        },
+    ]
+
+    health = refresh._index_health(products, [])
+
+    assert health["exactReady"] is False
+    assert health["bestFitReady"] is True
+    assert health["status"] == "degraded"
+    assert "exact_products_unavailable" in health["degradedReasons"]
+
+
 def test_resolve_hosted_table_arcgis_pages_rows_and_extracts_schema(
     monkeypatch,
     tmp_path: Path,

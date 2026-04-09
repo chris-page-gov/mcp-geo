@@ -1565,7 +1565,8 @@ def _export_roads(payload: dict[str, Any]) -> ToolResult:
                 "code": "INVALID_INPUT",
                 "message": roads_error or "Invalid roads",
             }
-    if resolved_aoi is None and bbox is None:
+    has_explicit_road_bbox = any(road.get("bbox") is not None for road in road_specs)
+    if resolved_aoi is None and bbox is None and not has_explicit_road_bbox:
         if selection_spec is not None:
             return 404, {
                 "isError": True,

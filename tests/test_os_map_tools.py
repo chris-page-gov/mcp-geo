@@ -567,6 +567,70 @@ def test_os_map_export_roads_resolves_gss_code_aoi_without_bbox(
     assert len(road_requests) == 1
 
 
+def test_os_map_export_roads_allows_explicit_road_bboxes_when_selection_unresolved(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_export_road_aoi",
+        lambda **_kwargs: (None, ["selector returned no geometry"]),
+    )
+
+    road_requests: list[dict[str, Any]] = []
+
+    class RoadTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            road_requests.append(dict(args))
+            assert args["bbox"] == [-1.55, 52.38, -1.45, 52.48]
+            return 200, {
+                "features": [
+                    {
+                        "id": "road-1",
+                        "properties": {"roadclassificationnumber": "A444"},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[-1.51, 52.40], [-1.50, 52.41]],
+                        },
+                    }
+                ],
+                "offset": 0,
+                "nextPageToken": None,
+                "hints": {"warnings": []},
+            }
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda name: RoadTool() if name == "os_features.query" else None,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "selectionSpec": {"postcode": "ZZ1 1ZZ"},
+            "roads": [
+                {
+                    "label": "A444",
+                    "bbox": [-1.55, 52.38, -1.45, 52.48],
+                    "roadClassificationNumber": "A444",
+                }
+            ],
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["featureCounts"] == {"A444": 1}
+    assert road_requests
+
+
 def test_os_map_export_roads_resolves_uprn_anchor_to_building_polygon(
     client, monkeypatch, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]
