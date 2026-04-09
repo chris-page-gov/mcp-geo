@@ -159,6 +159,58 @@ def _write_xref_parquet(path: Path, *, rows: int = 6) -> None:
         connection.close()
 
 
+def _write_padded_uprn_xref_parquet(path: Path) -> None:
+    duckdb = pytest.importorskip("duckdb")
+    quoted_path = str(path).replace("'", "''")
+    connection = duckdb.connect(database=":memory:")
+    try:
+        connection.execute(
+            """
+            CREATE TABLE input_rows (
+                uprn VARCHAR,
+                xRefKey VARCHAR,
+                crossReference VARCHAR,
+                source VARCHAR,
+                version VARCHAR,
+                startDate VARCHAR,
+                endDate VARCHAR,
+                lastUpdateDate VARCHAR,
+                entryDate VARCHAR
+            )
+            """
+        )
+        connection.executemany(
+            "INSERT INTO input_rows VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    " 100000000001 ",
+                    "X1",
+                    "CT-1",
+                    "7666VC",
+                    "1",
+                    "2024-01-01",
+                    "",
+                    "2024-02-01",
+                    "2024-01-01",
+                ),
+                (
+                    "1000 00000002",
+                    "X2",
+                    "NDR-1",
+                    "7666VN",
+                    "1",
+                    "2024-01-01",
+                    "",
+                    "2024-02-01",
+                    "2024-01-01",
+                ),
+            ],
+        )
+        connection.execute(f"COPY input_rows TO '{quoted_path}' (FORMAT PARQUET)")
+    finally:
+        connection.close()
+
+
 def test_council_tax_uprn_query_requires_uprns(client: TestClient) -> None:
     response = client.post("/tools/call", json={"tool": "council_tax.query"})
     assert response.status_code == 400
@@ -387,6 +439,34 @@ def test_council_tax_uprn_query_supports_large_parquet_batches(
     assert body["provenance"]["method"] == "duckdb_parquet_query"
     assert body["results"][0]["sourceCodes"] == ["7666VC"]
     assert body["results"][-1]["status"] == "council_tax"
+
+
+def test_council_tax_uprn_query_normalizes_parquet_uprn_keys_before_join(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_padded_uprn_xref_parquet(parquet_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(parquet_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001", "100000000002"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"]["councilTaxCount"] == 1
+    assert body["summary"]["businessRatesCount"] == 1
+    results = {item["uprn"]: item for item in body["results"]}
+    assert results["100000000001"]["status"] == "council_tax"
+    assert results["100000000002"]["status"] == "non_domestic_rates"
 
 
 def test_council_tax_uprn_query_can_include_ended_records(tmp_path: Path, monkeypatch) -> None:

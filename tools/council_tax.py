@@ -591,6 +591,7 @@ def _duckdb_addressbase_expression(
     *,
     relation_alias: str | None = None,
     normalize_source: bool = False,
+    normalize_uprn: bool = False,
 ) -> str:
     actual = column_mapping.get(canonical)
     if actual is None:
@@ -601,6 +602,8 @@ def _duckdb_addressbase_expression(
     expression = f"CAST({qualified_identifier} AS VARCHAR)"
     if normalize_source:
         return f"UPPER(TRIM({expression}))"
+    if normalize_uprn:
+        return f"REPLACE(TRIM({expression}), ' ', '')"
     return expression
 
 
@@ -708,6 +711,7 @@ def _scan_addressbase_xref_parquet(
                     column_mapping,
                     "UPRN",
                     relation_alias="xref",
+                    normalize_uprn=True,
                 )} = req.uprn
             WHERE {source_expr} IN ('7666VC', '7666VN')
               AND (? = FALSE OR COALESCE(TRIM({end_date_expr}), '') = '')

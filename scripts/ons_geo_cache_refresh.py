@@ -1321,18 +1321,71 @@ def _open_rows(path: Path) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]
             if not members:
                 raise ValueError(f"No CSV or JSON file found in zip archive: {path}")
             with archive.open(members[0], "r") as raw:
-                content = raw.read()
-        with _rows_from_bytes(content, name=members[0]) as payload:
-            yield payload
+                with _rows_from_binary_stream(raw, name=members[0]) as payload:
+                    yield payload
         return
     if suffix == ".gz":
         with gzip.open(path, "rb") as stream:
-            content = stream.read()
-        with _rows_from_bytes(content, name=path.stem) as payload:
-            yield payload
+            with _rows_from_binary_stream(stream, name=path.stem) as payload:
+                yield payload
         return
-    with _rows_from_bytes(path.read_bytes(), name=path.name) as payload:
-        yield payload
+    with path.open("rb") as stream:
+        with _rows_from_binary_stream(stream, name=path.name) as payload:
+            yield payload
+
+
+@contextmanager
+def _rows_from_binary_stream(
+    stream: Any,
+    *,
+    name: str,
+) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
+    lower_name = name.lower()
+    if lower_name.endswith(".json"):
+        text_stream = io.TextIOWrapper(stream, encoding="utf-8-sig")
+        try:
+            payload = json.load(text_stream)
+        finally:
+            text_stream.detach()
+        rows, fieldnames = _rows_from_json_payload(payload)
+        yield iter(rows), fieldnames
+        return
+    if lower_name.endswith(".ndjson") or lower_name.endswith(".jsonl"):
+        text_stream = io.TextIOWrapper(stream, encoding="utf-8-sig")
+
+        def _iter_json_lines() -> Iterator[dict[str, Any]]:
+            for line in text_stream:
+                if not line.strip():
+                    continue
+                payload = json.loads(line)
+                if isinstance(payload, dict):
+                    yield payload
+
+        try:
+            iterator = _iter_json_lines()
+            try:
+                first_row = next(iterator)
+            except StopIteration:
+                yield iter(()), []
+                return
+            fieldnames = _collect_fieldnames([first_row])
+
+            def _iter_rows() -> Iterator[dict[str, Any]]:
+                yield first_row
+                yield from iterator
+
+            yield _iter_rows(), fieldnames
+        finally:
+            text_stream.detach()
+        return
+
+    text_stream = io.TextIOWrapper(stream, encoding="utf-8-sig", newline="")
+    reader = csv.DictReader(text_stream)
+    fieldnames = list(reader.fieldnames or [])
+    try:
+        yield iter(reader), [str(item) for item in fieldnames if isinstance(item, str)]
+    finally:
+        text_stream.detach()
 
 
 @contextmanager
@@ -1341,22 +1394,8 @@ def _rows_from_bytes(
     *,
     name: str,
 ) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
-    lower_name = name.lower()
-    if lower_name.endswith(".json"):
-        payload = json.loads(content.decode("utf-8-sig"))
-        rows, fieldnames = _rows_from_json_payload(payload)
-        yield iter(rows), fieldnames
-        return
-    if lower_name.endswith(".ndjson") or lower_name.endswith(".jsonl"):
-        text = content.decode("utf-8-sig")
-        rows = [json.loads(line) for line in text.splitlines() if line.strip()]
-        fieldnames = _collect_fieldnames(rows)
-        yield iter(rows), fieldnames
-        return
-    csv_buffer = io.StringIO(content.decode("utf-8-sig"))
-    reader = csv.DictReader(csv_buffer)
-    fieldnames = list(reader.fieldnames or [])
-    yield iter(reader), [str(item) for item in fieldnames if isinstance(item, str)]
+    with _rows_from_binary_stream(io.BytesIO(content), name=name) as payload:
+        yield payload
 
 
 def _rows_from_json_payload(payload: Any) -> tuple[list[dict[str, Any]], list[str]]:
