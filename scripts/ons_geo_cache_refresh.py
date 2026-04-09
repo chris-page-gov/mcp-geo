@@ -738,46 +738,53 @@ def _resolve_portal_release_file(
             landing_url_to_fetch = landing_override
             metadata["resolvedLandingUrl"] = landing_override
 
-    with requests.get(landing_url_to_fetch, timeout=timeout) as resp:
-        resp.raise_for_status()
-        body = _response_text(resp)
-        metadata["landingContentType"] = resp.headers.get("content-type")
-        metadata["landingFetchedUrl"] = landing_url_to_fetch
-
-    html_links = _extract_links_from_html(landing_url_to_fetch, body)
-    chosen_url = _select_candidate_url(
-        candidates=[*discovery_urls, *html_links],
-        link_patterns=dataset.resolver.link_patterns,
-        preferred_suffixes=dataset.resolver.preferred_suffixes,
+    chosen_url, chosen_suffix = _select_direct_discovery_url(
+        dataset=dataset,
+        discovery_urls=discovery_urls,
     )
-    if chosen_url is None:
-        parsed = urlparse(landing_url_to_fetch)
-        if Path(parsed.path).suffix:
-            chosen_url = landing_url_to_fetch
-        else:
-            raise ValueError("Could not resolve a release-file download URL from landing metadata")
-
-    chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
-    preferred_suffixes = set(dataset.resolver.preferred_suffixes)
-    direct_download_suffixes = _DIRECT_INGEST_SUFFIXES
-    if (
-        chosen_suffix not in preferred_suffixes
-        and chosen_suffix not in direct_download_suffixes
-    ):
-        with requests.get(chosen_url, timeout=timeout) as resp:
+    body = ""
+    if chosen_url is None or chosen_suffix is None:
+        with requests.get(landing_url_to_fetch, timeout=timeout) as resp:
             resp.raise_for_status()
-            chosen_body = _response_text(resp)
-        secondary_links = _extract_links_from_html(chosen_url, chosen_body)
-        refined_url = _select_candidate_url(
-            candidates=secondary_links,
+            body = _response_text(resp)
+            metadata["landingContentType"] = resp.headers.get("content-type")
+            metadata["landingFetchedUrl"] = landing_url_to_fetch
+
+        html_links = _extract_links_from_html(landing_url_to_fetch, body)
+        chosen_url = _select_candidate_url(
+            candidates=[*discovery_urls, *html_links],
             link_patterns=dataset.resolver.link_patterns,
             preferred_suffixes=dataset.resolver.preferred_suffixes,
         )
-        if refined_url:
-            chosen_url = refined_url
-            chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+        if chosen_url is None:
+            parsed = urlparse(landing_url_to_fetch)
+            if Path(parsed.path).suffix:
+                chosen_url = landing_url_to_fetch
+            else:
+                raise ValueError(
+                    "Could not resolve a release-file download URL from landing metadata"
+                )
 
-    chosen_suffix = _validate_portal_release_suffix(chosen_url)
+        candidate_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+        preferred_suffixes = set(dataset.resolver.preferred_suffixes)
+        direct_download_suffixes = _DIRECT_INGEST_SUFFIXES
+        if (
+            candidate_suffix not in preferred_suffixes
+            and candidate_suffix not in direct_download_suffixes
+        ):
+            with requests.get(chosen_url, timeout=timeout) as resp:
+                resp.raise_for_status()
+                chosen_body = _response_text(resp)
+            secondary_links = _extract_links_from_html(chosen_url, chosen_body)
+            refined_url = _select_candidate_url(
+                candidates=secondary_links,
+                link_patterns=dataset.resolver.link_patterns,
+                preferred_suffixes=dataset.resolver.preferred_suffixes,
+            )
+            if refined_url:
+                chosen_url = refined_url
+
+        chosen_suffix = _validate_portal_release_suffix(chosen_url)
 
     release = release_hint or _detect_release(
         body + "\n" + chosen_url,
@@ -822,6 +829,25 @@ def _validate_portal_release_suffix(chosen_url: str) -> str:
     return chosen_suffix
 
 
+def _select_direct_discovery_url(
+    *,
+    dataset: DatasetConfig,
+    discovery_urls: list[str],
+) -> tuple[str | None, str | None]:
+    direct_url = _select_candidate_url(
+        candidates=discovery_urls,
+        link_patterns=dataset.resolver.link_patterns,
+        preferred_suffixes=dataset.resolver.preferred_suffixes,
+    )
+    if direct_url is None:
+        return None, None
+    try:
+        direct_suffix = _validate_portal_release_suffix(direct_url)
+    except ValueError:
+        return None, None
+    return direct_url, direct_suffix
+
+
 def _probe_portal_release_file(
     dataset: DatasetConfig,
     *,
@@ -853,46 +879,53 @@ def _probe_portal_release_file(
             landing_url_to_fetch = landing_override
             metadata["resolvedLandingUrl"] = landing_override
 
-    with requests.get(landing_url_to_fetch, timeout=timeout) as resp:
-        resp.raise_for_status()
-        body = _response_text(resp)
-        metadata["landingContentType"] = resp.headers.get("content-type")
-        metadata["landingFetchedUrl"] = landing_url_to_fetch
-
-    html_links = _extract_links_from_html(landing_url_to_fetch, body)
-    chosen_url = _select_candidate_url(
-        candidates=[*discovery_urls, *html_links],
-        link_patterns=dataset.resolver.link_patterns,
-        preferred_suffixes=dataset.resolver.preferred_suffixes,
+    chosen_url, chosen_suffix = _select_direct_discovery_url(
+        dataset=dataset,
+        discovery_urls=discovery_urls,
     )
-    if chosen_url is None:
-        parsed = urlparse(landing_url_to_fetch)
-        if Path(parsed.path).suffix:
-            chosen_url = landing_url_to_fetch
-        else:
-            raise ValueError("Could not resolve a release-file download URL from landing metadata")
-
-    chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
-    preferred_suffixes = set(dataset.resolver.preferred_suffixes)
-    direct_download_suffixes = _DIRECT_INGEST_SUFFIXES
-    if (
-        chosen_suffix not in preferred_suffixes
-        and chosen_suffix not in direct_download_suffixes
-    ):
-        with requests.get(chosen_url, timeout=timeout) as resp:
+    body = ""
+    if chosen_url is None or chosen_suffix is None:
+        with requests.get(landing_url_to_fetch, timeout=timeout) as resp:
             resp.raise_for_status()
-            chosen_body = _response_text(resp)
-        secondary_links = _extract_links_from_html(chosen_url, chosen_body)
-        refined_url = _select_candidate_url(
-            candidates=secondary_links,
+            body = _response_text(resp)
+            metadata["landingContentType"] = resp.headers.get("content-type")
+            metadata["landingFetchedUrl"] = landing_url_to_fetch
+
+        html_links = _extract_links_from_html(landing_url_to_fetch, body)
+        chosen_url = _select_candidate_url(
+            candidates=[*discovery_urls, *html_links],
             link_patterns=dataset.resolver.link_patterns,
             preferred_suffixes=dataset.resolver.preferred_suffixes,
         )
-        if refined_url:
-            chosen_url = refined_url
-            chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+        if chosen_url is None:
+            parsed = urlparse(landing_url_to_fetch)
+            if Path(parsed.path).suffix:
+                chosen_url = landing_url_to_fetch
+            else:
+                raise ValueError(
+                    "Could not resolve a release-file download URL from landing metadata"
+                )
 
-    chosen_suffix = _validate_portal_release_suffix(chosen_url)
+        candidate_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+        preferred_suffixes = set(dataset.resolver.preferred_suffixes)
+        direct_download_suffixes = _DIRECT_INGEST_SUFFIXES
+        if (
+            candidate_suffix not in preferred_suffixes
+            and candidate_suffix not in direct_download_suffixes
+        ):
+            with requests.get(chosen_url, timeout=timeout) as resp:
+                resp.raise_for_status()
+                chosen_body = _response_text(resp)
+            secondary_links = _extract_links_from_html(chosen_url, chosen_body)
+            refined_url = _select_candidate_url(
+                candidates=secondary_links,
+                link_patterns=dataset.resolver.link_patterns,
+                preferred_suffixes=dataset.resolver.preferred_suffixes,
+            )
+            if refined_url:
+                chosen_url = refined_url
+
+        chosen_suffix = _validate_portal_release_suffix(chosen_url)
 
     _probe_stream_url(chosen_url, timeout=timeout)
     release = release_hint or _detect_release(

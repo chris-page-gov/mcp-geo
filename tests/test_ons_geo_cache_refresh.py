@@ -430,6 +430,81 @@ def test_resolve_portal_release_file_prefers_discovery_api_and_suffix(
     assert resolved.source_path.exists()
 
 
+def test_resolve_portal_release_file_skips_failing_landing_when_discovery_has_zip(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {
+                    "name": "ZIP download",
+                    "format": "ZIP",
+                    "url": "https://downloads.example.test/onsud-december-2025-epoch-123.zip",
+                }
+            ],
+        },
+    }
+    zip_content = b"PK\x03\x04direct"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip":
+            return _FakeResponse(content=zip_content)
+        if url == "https://www.data.gov.uk/dataset/ons-uprn-directory-december-2025-epoch-123":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud", "ons-uprn-directory", "zip"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    assert resolved.resolved_release == "Epoch 123"
+
+
 def test_resolve_portal_release_file_uses_latest_ckan_search_result(
     monkeypatch,
     tmp_path: Path,
@@ -780,6 +855,79 @@ def test_probe_portal_release_file_rejects_unsupported_binary_release_assets(
         assert "unsupported format .mdb" in str(exc)
     else:
         raise AssertionError("Expected unsupported MDB release asset to be rejected")
+
+
+def test_probe_portal_release_file_skips_failing_landing_when_discovery_has_zip(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {
+                    "name": "ZIP download",
+                    "format": "ZIP",
+                    "url": "https://downloads.example.test/onsud-december-2025-epoch-123.zip",
+                }
+            ],
+        },
+    }
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip":
+            return _FakeResponse(content=b"PK\x03\x04direct")
+        if url == "https://www.data.gov.uk/dataset/ons-uprn-directory-december-2025-epoch-123":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud", "ons-uprn-directory", "zip"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    probe = refresh.probe_dataset_source(
+        dataset,
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert probe.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    assert probe.resolved_release == "Epoch 123"
 
 
 def test_resolve_portal_release_file_rejects_suffixless_release_assets(
