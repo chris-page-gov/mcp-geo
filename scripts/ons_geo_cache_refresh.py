@@ -71,6 +71,7 @@ _SUPPORTED_RESOLVERS = {
     "static_file",
     "direct_url",
 }
+_DIRECT_INGEST_SUFFIXES = {".zip", ".csv", ".json", ".ndjson", ".jsonl", ".gz"}
 
 _SEMANTIC_FIELD_REGEX: dict[str, re.Pattern[str]] = {
     "postcode": re.compile(r"^(pcds|pcd|postcode|post_code)$", re.IGNORECASE),
@@ -760,7 +761,7 @@ def _resolve_portal_release_file(
 
     chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
     preferred_suffixes = set(dataset.resolver.preferred_suffixes)
-    direct_download_suffixes = {".zip", ".csv", ".xlsx", ".mdb"}
+    direct_download_suffixes = _DIRECT_INGEST_SUFFIXES
     if (
         chosen_suffix not in preferred_suffixes
         and chosen_suffix not in direct_download_suffixes
@@ -776,6 +777,13 @@ def _resolve_portal_release_file(
         )
         if refined_url:
             chosen_url = refined_url
+            chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+
+    if chosen_suffix and chosen_suffix not in _DIRECT_INGEST_SUFFIXES:
+        raise ValueError(
+            f"Resolved release asset uses unsupported format {chosen_suffix}; "
+            "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
+        )
 
     release = release_hint or _detect_release(
         body + "\n" + chosen_url,
@@ -857,7 +865,7 @@ def _probe_portal_release_file(
 
     chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
     preferred_suffixes = set(dataset.resolver.preferred_suffixes)
-    direct_download_suffixes = {".zip", ".csv", ".xlsx", ".mdb"}
+    direct_download_suffixes = _DIRECT_INGEST_SUFFIXES
     if (
         chosen_suffix not in preferred_suffixes
         and chosen_suffix not in direct_download_suffixes
@@ -873,6 +881,13 @@ def _probe_portal_release_file(
         )
         if refined_url:
             chosen_url = refined_url
+            chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+
+    if chosen_suffix and chosen_suffix not in _DIRECT_INGEST_SUFFIXES:
+        raise ValueError(
+            f"Resolved release asset uses unsupported format {chosen_suffix}; "
+            "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
+        )
 
     _probe_stream_url(chosen_url, timeout=timeout)
     release = release_hint or _detect_release(

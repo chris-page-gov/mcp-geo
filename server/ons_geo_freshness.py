@@ -16,7 +16,10 @@ _UPRN_DATASET_IDS = {"ONSUD", "NSUL"}
 def load_addressbase_epoch_schedule(
     path: Path = DEFAULT_ADDRESSBASE_EPOCH_SCHEDULE_PATH,
 ) -> list[dict[str, Any]]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
     entries = payload.get("epochs", [])
     if not isinstance(entries, list):
         return []
@@ -27,6 +30,10 @@ def load_addressbase_epoch_schedule(
         epoch_raw = entry.get("epoch")
         publication_raw = str(entry.get("publication_date") or "").strip()
         if not isinstance(epoch_raw, int) or not publication_raw:
+            continue
+        try:
+            date.fromisoformat(publication_raw)
+        except ValueError:
             continue
         scheduled = bool(entry.get("scheduled", False))
         normalized.append(

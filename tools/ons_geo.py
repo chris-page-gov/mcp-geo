@@ -120,6 +120,16 @@ def _cache_performance(*, available: bool, product_count: int) -> dict[str, Any]
 def _cache_performance_from_index(*, available: bool, index: dict[str, Any]) -> dict[str, Any]:
     products = index.get("products")
     health = index.get("health")
+    if not available:
+        product_count = len(products) if isinstance(products, list) else 0
+        payload = _cache_performance(available=False, product_count=product_count)
+        if isinstance(health, dict):
+            payload["exactReady"] = bool(health.get("exactReady"))
+            payload["bestFitReady"] = bool(health.get("bestFitReady"))
+            payload["supportReady"] = bool(health.get("supportReady"))
+            payload["freshnessReady"] = bool(health.get("freshnessReady", True))
+            payload["laggingProducts"] = health.get("laggingProducts", [])
+        return payload
     if isinstance(health, dict):
         status = str(health.get("status") or "degraded")
         reasons = health.get("degradedReasons")

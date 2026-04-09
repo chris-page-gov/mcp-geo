@@ -458,6 +458,45 @@ def test_ons_geo_cache_status_unavailable_reports_degraded(tmp_path: Path, monke
     assert body["reloadHint"]
 
 
+def test_ons_geo_cache_status_unavailable_overrides_ready_index(
+    tmp_path: Path, monkeypatch
+) -> None:
+    missing_dir = tmp_path / "missing"
+    index_path = tmp_path / "ons_geo_cache_index.json"
+    index_path.write_text(
+        json.dumps(
+            {
+                "version": "2026-04-09",
+                "health": {
+                    "status": "ready",
+                    "exactReady": True,
+                    "bestFitReady": True,
+                    "supportReady": True,
+                    "freshnessReady": True,
+                    "laggingProducts": [],
+                },
+                "products": [{"id": "ONSPD"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=missing_dir,
+        db_name="ons_geo_cache.sqlite",
+        index_path=index_path,
+    )
+
+    resp = client.post("/tools/call", json={"tool": "ons_geo.cache_status"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["available"] is False
+    assert body["status"] == "degraded"
+    assert body["performance"]["degraded"] is True
+    assert body["performance"]["reason"] == "cache_unavailable"
+    assert body["performance"]["exactReady"] is True
+
+
 def test_ons_geo_release_audit_returns_combined_view(monkeypatch) -> None:
     monkeypatch.setattr(settings, "ONS_LIVE_ENABLED", True, raising=False)
     monkeypatch.setattr(
@@ -602,7 +641,8 @@ def test_ons_geo_release_audit_validates_timeout_and_upstream_error(monkeypatch)
 
 
 def test_ons_geo_internal_cache_performance_helpers() -> None:
-    assert ons_geo_tools._cache_performance(available=True, product_count=0)["reason"] == "index_empty"
+    degraded = ons_geo_tools._cache_performance(available=True, product_count=0)
+    assert degraded["reason"] == "index_empty"
     assert ons_geo_tools._cache_performance(available=True, product_count=2)["degraded"] is False
 
     ready = ons_geo_tools._cache_performance_from_index(

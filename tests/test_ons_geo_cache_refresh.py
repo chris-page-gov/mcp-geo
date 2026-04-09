@@ -519,6 +519,125 @@ def test_resolve_portal_release_file_uses_latest_ckan_search_result(
     assert resolved.source_path.exists()
 
 
+def test_resolve_portal_release_file_rejects_unsupported_binary_release_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    landing_html = (
+        '<html><body><a href="https://downloads.example.test/chd-december-2025.xlsx">'
+        "download</a></body></html>"
+    )
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/landing":
+            return _FakeResponse(text=landing_html)
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "CHD",
+                        "title": "CHD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "preferredSuffixes": [".zip", ".csv", ".xlsx", ".mdb"],
+                            "linkPatterns": ["chd"],
+                            "releasePatterns": ["December\\s+2025"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    try:
+        refresh.resolve_dataset_source(
+            dataset,
+            raw_root=tmp_path / "raw",
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={},
+        )
+    except ValueError as exc:
+        assert "unsupported format .xlsx" in str(exc)
+    else:
+        raise AssertionError("Expected unsupported XLSX release asset to be rejected")
+
+
+def test_probe_portal_release_file_rejects_unsupported_binary_release_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    landing_html = (
+        '<html><body><a href="https://downloads.example.test/chd-december-2025.mdb">'
+        "download</a></body></html>"
+    )
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/landing":
+            return _FakeResponse(text=landing_html)
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "CHD",
+                        "title": "CHD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "preferredSuffixes": [".zip", ".csv", ".xlsx", ".mdb"],
+                            "linkPatterns": ["chd"],
+                            "releasePatterns": ["December\\s+2025"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    try:
+        refresh.probe_dataset_source(
+            dataset,
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={},
+        )
+    except ValueError as exc:
+        assert "unsupported format .mdb" in str(exc)
+    else:
+        raise AssertionError("Expected unsupported MDB release asset to be rejected")
+
+
 def test_select_candidate_url_ignores_page_anchors_and_assets() -> None:
     chosen = refresh._select_candidate_url(
         candidates=[

@@ -98,6 +98,15 @@ def test_load_addressbase_epoch_schedule_filters_invalid_entries(tmp_path: Path)
     ]
 
 
+def test_load_addressbase_epoch_schedule_handles_missing_or_invalid_json(tmp_path: Path) -> None:
+    missing = tmp_path / "missing.json"
+    assert load_addressbase_epoch_schedule(missing) == []
+
+    broken = tmp_path / "broken.json"
+    broken.write_text("{not-json", encoding="utf-8")
+    assert load_addressbase_epoch_schedule(broken) == []
+
+
 def test_summarize_uprn_dataset_freshness_handles_schedule_unavailable() -> None:
     freshness = summarize_uprn_dataset_freshness(
         dataset_id="ONSUD",
