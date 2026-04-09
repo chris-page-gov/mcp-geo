@@ -1053,6 +1053,101 @@ def test_probe_portal_release_file_rejects_suffixless_release_assets(
         raise AssertionError("Expected suffixless release asset to be rejected")
 
 
+def test_resolve_direct_url_rejects_suffixless_urls(tmp_path: Path) -> None:
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "direct_url",
+                            "downloadUrl": "https://downloads.example.test/onsud/download",
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    try:
+        refresh.resolve_dataset_source(
+            dataset,
+            raw_root=tmp_path / "raw",
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={},
+        )
+    except ValueError as exc:
+        assert "Direct URL source has no ingestible file suffix" in str(exc)
+    else:
+        raise AssertionError("Expected suffixless direct URL to be rejected")
+
+
+def test_probe_dataset_source_rejects_suffixless_url_overrides(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud", "zip"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    def fail_if_called(*args, **kwargs):
+        del args, kwargs
+        raise AssertionError("Suffixless direct URL override should fail before probing")
+
+    monkeypatch.setattr(refresh, "_probe_stream_url", fail_if_called)
+
+    try:
+        refresh.probe_dataset_source(
+            dataset,
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={"ONSUD": "https://downloads.example.test/onsud/download"},
+        )
+    except ValueError as exc:
+        assert "Direct URL source has no ingestible file suffix" in str(exc)
+    else:
+        raise AssertionError("Expected suffixless direct URL override to be rejected")
+
+
 def test_open_rows_and_rows_from_bytes_support_jsonl(tmp_path: Path) -> None:
     rows_path = tmp_path / "sample.jsonl"
     rows_path.write_text(

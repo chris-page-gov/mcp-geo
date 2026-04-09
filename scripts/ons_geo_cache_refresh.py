@@ -784,7 +784,7 @@ def _resolve_portal_release_file(
             if refined_url:
                 chosen_url = refined_url
 
-        chosen_suffix = _validate_portal_release_suffix(chosen_url)
+        chosen_suffix = _validate_direct_ingest_suffix(chosen_url)
 
     release = release_hint or _detect_release(
         body + "\n" + chosen_url,
@@ -814,16 +814,20 @@ def _probe_stream_url(url: str, *, timeout: float) -> None:
         resp.raise_for_status()
 
 
-def _validate_portal_release_suffix(chosen_url: str) -> str:
+def _validate_direct_ingest_suffix(
+    chosen_url: str,
+    *,
+    label: str = "Resolved release asset",
+) -> str:
     chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
     if not chosen_suffix:
         raise ValueError(
-            "Resolved release asset has no ingestible file suffix; "
+            f"{label} has no ingestible file suffix; "
             "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
         )
     if chosen_suffix not in _DIRECT_INGEST_SUFFIXES:
         raise ValueError(
-            f"Resolved release asset uses unsupported format {chosen_suffix}; "
+            f"{label} uses unsupported format {chosen_suffix}; "
             "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
         )
     return chosen_suffix
@@ -842,7 +846,7 @@ def _select_direct_discovery_url(
     if direct_url is None:
         return None, None
     try:
-        direct_suffix = _validate_portal_release_suffix(direct_url)
+        direct_suffix = _validate_direct_ingest_suffix(direct_url)
     except ValueError:
         return None, None
     return direct_url, direct_suffix
@@ -925,7 +929,7 @@ def _probe_portal_release_file(
             if refined_url:
                 chosen_url = refined_url
 
-        chosen_suffix = _validate_portal_release_suffix(chosen_url)
+        chosen_suffix = _validate_direct_ingest_suffix(chosen_url)
 
     _probe_stream_url(chosen_url, timeout=timeout)
     release = release_hint or _detect_release(
@@ -983,7 +987,7 @@ def _resolve_direct_url(
     if not url:
         raise ValueError("direct_url resolver requires downloadUrl/landingUrl")
     release = dataset.release
-    suffix = Path(urlparse(url).path).suffix or ".csv"
+    suffix = _validate_direct_ingest_suffix(url, label="Direct URL source")
     raw_dir = raw_root / dataset.dataset_id / _safe_release_fragment(release, "latest")
     filename = Path(urlparse(url).path).name or f"{dataset.dataset_id.lower()}{suffix}"
     local_path = raw_dir / filename
@@ -991,7 +995,7 @@ def _resolve_direct_url(
     return ResolvedSource(
         dataset_id=dataset.dataset_id,
         source_path=local_path,
-        source_format=suffix.lstrip(".").lower() or "csv",
+        source_format=suffix.lstrip(".").lower(),
         resolved_source_url=url,
         resolved_release=release,
         retrieved_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -1009,12 +1013,12 @@ def _probe_direct_url(
     url = dataset.resolver.landing_url
     if not url:
         raise ValueError("direct_url resolver requires downloadUrl/landingUrl")
+    suffix = _validate_direct_ingest_suffix(url, label="Direct URL source")
     _probe_stream_url(url, timeout=timeout)
-    suffix = Path(urlparse(url).path).suffix
     return SourceProbe(
         dataset_id=dataset.dataset_id,
         resolver_type=dataset.resolver.resolver_type,
-        source_format=suffix.lstrip(".").lower() if suffix else None,
+        source_format=suffix.lstrip(".").lower(),
         resolved_source_url=url,
         resolved_release=dataset.release,
         retrieved_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
