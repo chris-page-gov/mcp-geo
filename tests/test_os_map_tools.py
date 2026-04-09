@@ -484,6 +484,13 @@ def test_os_map_export_roads_resolves_gss_code_aoi_without_bbox(
     monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
     monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
     monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(
+        os_map,
+        "_resolve_selection_rows",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("gss_code-only AOI should not resolve address selectors")
+        ),
+    )
 
     road_requests: list[dict[str, Any]] = []
 

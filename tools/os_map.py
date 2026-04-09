@@ -946,7 +946,13 @@ def _address_selector_spec(selection_spec: dict[str, Any]) -> dict[str, Any] | N
     uprn_overrides = selection_spec.get("uprnOverrides")
     payload: dict[str, Any] = {"selectors": address_selectors}
     if isinstance(uprn_overrides, dict):
-        payload["uprnOverrides"] = dict(uprn_overrides)
+        normalized_overrides = dict(uprn_overrides)
+        include_values = normalized_overrides.get("include")
+        exclude_values = normalized_overrides.get("exclude")
+        include_non_empty = isinstance(include_values, list) and len(include_values) > 0
+        exclude_non_empty = isinstance(exclude_values, list) and len(exclude_values) > 0
+        if include_non_empty or exclude_non_empty:
+            payload["uprnOverrides"] = normalized_overrides
     if address_selectors or "uprnOverrides" in payload:
         return payload
     return None
