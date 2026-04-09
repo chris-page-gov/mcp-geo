@@ -152,15 +152,6 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_lad
         ON ons_geo_uprn_index (derivation_mode, lad_code);
 
-        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_ward
-        ON ons_geo_uprn_index (derivation_mode, ward_code);
-
-        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_country
-        ON ons_geo_uprn_index (derivation_mode, country_code);
-
-        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_region
-        ON ons_geo_uprn_index (derivation_mode, region_code);
-
         CREATE TABLE IF NOT EXISTS ons_geo_code_reference (
             dataset_id TEXT NOT NULL,
             code TEXT NOT NULL,
@@ -210,6 +201,19 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             "region_code": "TEXT",
             "region_name": "TEXT",
         },
+    )
+    # These indexes depend on migration-added columns for older cache files.
+    conn.executescript(
+        """
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_ward
+        ON ons_geo_uprn_index (derivation_mode, ward_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_country
+        ON ons_geo_uprn_index (derivation_mode, country_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_region
+        ON ons_geo_uprn_index (derivation_mode, region_code);
+        """
     )
     conn.commit()
 

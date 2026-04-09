@@ -246,6 +246,90 @@ def test_ensure_schema_creates_uprn_index_table(tmp_path) -> None:
     assert "ons_geo_code_reference" in tables
 
 
+def test_ensure_schema_migrates_legacy_uprn_index_before_creating_new_indexes(tmp_path) -> None:
+    db_path = tmp_path / "ons_geo_cache.sqlite"
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript(
+        """
+        CREATE TABLE ons_geo_products (
+            product_id TEXT PRIMARY KEY,
+            dataset_kind TEXT NOT NULL DEFAULT 'product',
+            key_type TEXT,
+            derivation_mode TEXT,
+            release TEXT,
+            resolved_release TEXT,
+            source_name TEXT,
+            source_path TEXT,
+            resolved_source_url TEXT,
+            resolver_type TEXT,
+            source_format TEXT,
+            source_sha256 TEXT,
+            schema_fingerprint TEXT,
+            schema_validation_json TEXT,
+            record_count INTEGER NOT NULL DEFAULT 0,
+            status TEXT,
+            ingested_at TEXT NOT NULL,
+            retrieved_at TEXT
+        );
+
+        CREATE TABLE ons_geo_rows (
+            product_id TEXT NOT NULL,
+            key_type TEXT NOT NULL,
+            key_norm TEXT NOT NULL,
+            derivation_mode TEXT NOT NULL,
+            release TEXT,
+            source_name TEXT,
+            product_priority INTEGER NOT NULL DEFAULT 100,
+            row_json TEXT NOT NULL,
+            normalized_json TEXT,
+            cached_at TEXT NOT NULL,
+            PRIMARY KEY (product_id, key_norm)
+        );
+
+        CREATE TABLE ons_geo_uprn_index (
+            product_id TEXT NOT NULL,
+            derivation_mode TEXT NOT NULL,
+            uprn TEXT NOT NULL,
+            postcode TEXT,
+            oa_code TEXT,
+            lsoa_code TEXT,
+            msoa_code TEXT,
+            lad_code TEXT,
+            lad_name TEXT,
+            postal_delivery INTEGER,
+            geographies_json TEXT,
+            cached_at TEXT NOT NULL,
+            PRIMARY KEY (product_id, uprn)
+        );
+        """
+    )
+
+    ensure_schema(conn)
+
+    columns = {
+        row[1]: row[2]
+        for row in conn.execute("PRAGMA table_info(ons_geo_uprn_index)").fetchall()
+    }
+    indexes = {
+        row[1]
+        for row in conn.execute("PRAGMA index_list(ons_geo_uprn_index)").fetchall()
+    }
+    conn.close()
+
+    expected_columns = {
+        "ward_code",
+        "ward_name",
+        "country_code",
+        "country_name",
+        "region_code",
+        "region_name",
+    }
+    assert expected_columns <= set(columns)
+    assert "idx_ons_geo_uprn_by_mode_ward" in indexes
+    assert "idx_ons_geo_uprn_by_mode_country" in indexes
+    assert "idx_ons_geo_uprn_by_mode_region" in indexes
+
+
 def test_lookup_decodes_normalized_payload(tmp_path) -> None:
     cache = ONSGeoCache(
         cache_dir=tmp_path,
