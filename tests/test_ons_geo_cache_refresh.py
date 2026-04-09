@@ -638,6 +638,129 @@ def test_probe_portal_release_file_rejects_unsupported_binary_release_assets(
         raise AssertionError("Expected unsupported MDB release asset to be rejected")
 
 
+def test_resolve_portal_release_file_rejects_suffixless_release_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    landing_html = (
+        '<html><body><a href="https://downloads.example.test/chd/download">'
+        "download</a></body></html>"
+    )
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/landing":
+            return _FakeResponse(text=landing_html)
+        if url == "https://downloads.example.test/chd/download":
+            return _FakeResponse(text="<html><body>No file</body></html>")
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "CHD",
+                        "title": "CHD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "preferredSuffixes": [".zip", ".csv"],
+                            "linkPatterns": ["chd", "download"],
+                            "releasePatterns": ["December\\s+2025"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    try:
+        refresh.resolve_dataset_source(
+            dataset,
+            raw_root=tmp_path / "raw",
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={},
+        )
+    except ValueError as exc:
+        assert "no ingestible file suffix" in str(exc)
+    else:
+        raise AssertionError("Expected suffixless release asset to be rejected")
+
+
+def test_probe_portal_release_file_rejects_suffixless_release_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    landing_html = (
+        '<html><body><a href="https://downloads.example.test/chd/download">'
+        "download</a></body></html>"
+    )
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/landing":
+            return _FakeResponse(text=landing_html)
+        if url == "https://downloads.example.test/chd/download":
+            return _FakeResponse(text="<html><body>No file</body></html>")
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "CHD",
+                        "title": "CHD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "preferredSuffixes": [".zip", ".csv"],
+                            "linkPatterns": ["chd", "download"],
+                            "releasePatterns": ["December\\s+2025"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    try:
+        refresh.probe_dataset_source(
+            dataset,
+            timeout=5.0,
+            file_overrides={},
+            url_overrides={},
+        )
+    except ValueError as exc:
+        assert "no ingestible file suffix" in str(exc)
+    else:
+        raise AssertionError("Expected suffixless release asset to be rejected")
+
+
 def test_open_rows_and_rows_from_bytes_support_jsonl(tmp_path: Path) -> None:
     rows_path = tmp_path / "sample.jsonl"
     rows_path.write_text(

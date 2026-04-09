@@ -779,18 +779,14 @@ def _resolve_portal_release_file(
             chosen_url = refined_url
             chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
 
-    if chosen_suffix and chosen_suffix not in _DIRECT_INGEST_SUFFIXES:
-        raise ValueError(
-            f"Resolved release asset uses unsupported format {chosen_suffix}; "
-            "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
-        )
+    chosen_suffix = _validate_portal_release_suffix(chosen_url)
 
     release = release_hint or _detect_release(
         body + "\n" + chosen_url,
         dataset.resolver.release_patterns,
     )
     release = release or dataset.release
-    suffix = Path(urlparse(chosen_url).path).suffix or ".csv"
+    suffix = Path(urlparse(chosen_url).path).suffix
     raw_dir = raw_root / dataset.dataset_id / _safe_release_fragment(release, "latest")
     filename = Path(urlparse(chosen_url).path).name or f"{dataset.dataset_id.lower()}{suffix}"
     local_path = raw_dir / filename
@@ -798,7 +794,7 @@ def _resolve_portal_release_file(
     return ResolvedSource(
         dataset_id=dataset.dataset_id,
         source_path=local_path,
-        source_format=suffix.lstrip(".").lower() or "csv",
+        source_format=chosen_suffix.lstrip(".").lower(),
         resolved_source_url=chosen_url,
         resolved_release=release,
         retrieved_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -811,6 +807,21 @@ def _resolve_portal_release_file(
 def _probe_stream_url(url: str, *, timeout: float) -> None:
     with requests.get(url, timeout=timeout, stream=True) as resp:
         resp.raise_for_status()
+
+
+def _validate_portal_release_suffix(chosen_url: str) -> str:
+    chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+    if not chosen_suffix:
+        raise ValueError(
+            "Resolved release asset has no ingestible file suffix; "
+            "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
+        )
+    if chosen_suffix not in _DIRECT_INGEST_SUFFIXES:
+        raise ValueError(
+            f"Resolved release asset uses unsupported format {chosen_suffix}; "
+            "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
+        )
+    return chosen_suffix
 
 
 def _probe_portal_release_file(
@@ -883,11 +894,7 @@ def _probe_portal_release_file(
             chosen_url = refined_url
             chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
 
-    if chosen_suffix and chosen_suffix not in _DIRECT_INGEST_SUFFIXES:
-        raise ValueError(
-            f"Resolved release asset uses unsupported format {chosen_suffix}; "
-            "supported direct formats are zip/csv/json/ndjson/jsonl/gz."
-        )
+    chosen_suffix = _validate_portal_release_suffix(chosen_url)
 
     _probe_stream_url(chosen_url, timeout=timeout)
     release = release_hint or _detect_release(
@@ -895,8 +902,7 @@ def _probe_portal_release_file(
         dataset.resolver.release_patterns,
     )
     release = release or dataset.release
-    suffix = Path(urlparse(chosen_url).path).suffix
-    source_format = suffix.lstrip(".").lower() if suffix else None
+    source_format = chosen_suffix.lstrip(".").lower()
     return SourceProbe(
         dataset_id=dataset.dataset_id,
         resolver_type=dataset.resolver.resolver_type,
