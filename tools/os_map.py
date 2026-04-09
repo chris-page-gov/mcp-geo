@@ -515,6 +515,64 @@ def _point_in_polygon(point: tuple[float, float], polygon: list[tuple[float, flo
     return inside
 
 
+def _point_on_segment(
+    point: tuple[float, float],
+    start: tuple[float, float],
+    end: tuple[float, float],
+    *,
+    epsilon: float = 1e-12,
+) -> bool:
+    px, py = point
+    x1, y1 = start
+    x2, y2 = end
+    cross = (px - x1) * (y2 - y1) - (py - y1) * (x2 - x1)
+    if abs(cross) > epsilon:
+        return False
+    return (
+        min(x1, x2) - epsilon <= px <= max(x1, x2) + epsilon
+        and min(y1, y2) - epsilon <= py <= max(y1, y2) + epsilon
+    )
+
+
+def _segments_intersect(
+    first_start: tuple[float, float],
+    first_end: tuple[float, float],
+    second_start: tuple[float, float],
+    second_end: tuple[float, float],
+    *,
+    epsilon: float = 1e-12,
+) -> bool:
+    def _orientation(
+        origin: tuple[float, float],
+        point_a: tuple[float, float],
+        point_b: tuple[float, float],
+    ) -> float:
+        return (
+            (point_a[0] - origin[0]) * (point_b[1] - origin[1])
+            - (point_a[1] - origin[1]) * (point_b[0] - origin[0])
+        )
+
+    o1 = _orientation(first_start, first_end, second_start)
+    o2 = _orientation(first_start, first_end, second_end)
+    o3 = _orientation(second_start, second_end, first_start)
+    o4 = _orientation(second_start, second_end, first_end)
+
+    if ((o1 > epsilon and o2 < -epsilon) or (o1 < -epsilon and o2 > epsilon)) and (
+        (o3 > epsilon and o4 < -epsilon) or (o3 < -epsilon and o4 > epsilon)
+    ):
+        return True
+
+    if abs(o1) <= epsilon and _point_on_segment(second_start, first_start, first_end):
+        return True
+    if abs(o2) <= epsilon and _point_on_segment(second_end, first_start, first_end):
+        return True
+    if abs(o3) <= epsilon and _point_on_segment(first_start, second_start, second_end):
+        return True
+    if abs(o4) <= epsilon and _point_on_segment(first_end, second_start, second_end):
+        return True
+    return False
+
+
 def _feature_intersects_polygon(feature: dict[str, Any], polygon: list[tuple[float, float]]) -> bool:
     geometry = feature.get("geometry")
     if not isinstance(geometry, dict):
@@ -531,9 +589,30 @@ def _feature_intersects_polygon(feature: dict[str, Any], polygon: list[tuple[flo
                 for child in value:
                     yield from _iter_points(child)
 
+    def _iter_line_sequences(value: Any):
+        if not isinstance(value, list):
+            return
+        if value and all(
+            isinstance(entry, list | tuple)
+            and len(entry) >= 2
+            and all(isinstance(v, (int, float)) for v in entry[:2])
+            for entry in value
+        ):
+            yield [(float(entry[0]), float(entry[1])) for entry in value]
+            return
+        for child in value:
+            yield from _iter_line_sequences(child)
+
     for point in _iter_points(coords):
         if _point_in_polygon(point, polygon):
             return True
+
+    polygon_edges = list(zip(polygon, polygon[1:], strict=False))
+    for sequence in _iter_line_sequences(coords):
+        for start, end in zip(sequence, sequence[1:], strict=False):
+            for polygon_start, polygon_end in polygon_edges:
+                if _segments_intersect(start, end, polygon_start, polygon_end):
+                    return True
     return False
 
 

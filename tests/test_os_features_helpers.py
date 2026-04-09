@@ -356,6 +356,14 @@ def test_feature_intersects_polygon_paths() -> None:
     }
     assert os_features._feature_intersects_polygon(feature, poly)
 
+    crossing = {
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [[-1.0, 1.0], [3.0, 1.0]],
+        }
+    }
+    assert os_features._feature_intersects_polygon(crossing, poly)
+
 
 def test_coerce_number_behaviors() -> None:
     from tools import os_features

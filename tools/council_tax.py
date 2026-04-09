@@ -366,6 +366,8 @@ def _resolve_addressbase_xref_path() -> Path | None:
     candidates: list[tuple[int, str, Path]] = []
     for pattern in ("*.parquet", "*.csv"):
         for candidate in path.rglob(pattern):
+            if candidate.suffix.lower() == ".parquet" and duckdb is None:
+                continue
             score = _score_addressbase_xref_candidate(candidate)
             if score > 0:
                 candidates.append((score, str(candidate), candidate))

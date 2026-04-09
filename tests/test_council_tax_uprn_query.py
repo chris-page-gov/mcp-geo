@@ -328,6 +328,33 @@ def test_council_tax_uprn_query_prefers_xref_voa_os_parquet_in_directory(
     assert body["provenance"]["method"] == "duckdb_parquet_query"
 
 
+def test_council_tax_uprn_query_falls_back_to_csv_when_duckdb_missing(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    csv_path = tmp_path / "my_ID23_xref_extract.csv"
+    _write_xref_csv(csv_path)
+    _write_xref_parquet(tmp_path / "xref_voa_os.parquet")
+    monkeypatch.setattr(council_tax, "duckdb", None, raising=False)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(tmp_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["status"] == "council_tax"
+    assert body["provenance"]["configuredPath"].endswith("my_ID23_xref_extract.csv")
+    assert body["provenance"]["method"] == "streaming_csv_scan"
+
+
 def test_council_tax_uprn_query_supports_large_parquet_batches(
     tmp_path: Path,
     monkeypatch,

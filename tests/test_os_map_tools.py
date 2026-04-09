@@ -8,6 +8,19 @@ from pathlib import Path
 from typing import Any
 
 
+def test_os_map_feature_intersects_polygon_detects_crossing_segments() -> None:
+    from tools import os_map
+
+    poly = [(0, 0), (2, 0), (2, 2), (0, 2), (0, 0)]
+    feature = {
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [[-1.0, 1.0], [3.0, 1.0]],
+        }
+    }
+    assert os_map._feature_intersects_polygon(feature, poly)
+
+
 def _install_os_stubs(  # type: ignore[no-untyped-def]
     monkeypatch,
     mock_os_client,
