@@ -1309,6 +1309,7 @@ def _open_rows(path: Path) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]
                     name.lower().endswith(".csv")
                     or name.lower().endswith(".json")
                     or name.lower().endswith(".ndjson")
+                    or name.lower().endswith(".jsonl")
                 )
             )
             if not members:
@@ -1340,7 +1341,7 @@ def _rows_from_bytes(
         rows, fieldnames = _rows_from_json_payload(payload)
         yield iter(rows), fieldnames
         return
-    if lower_name.endswith(".ndjson"):
+    if lower_name.endswith(".ndjson") or lower_name.endswith(".jsonl"):
         text = content.decode("utf-8-sig")
         rows = [json.loads(line) for line in text.splitlines() if line.strip()]
         fieldnames = _collect_fieldnames(rows)

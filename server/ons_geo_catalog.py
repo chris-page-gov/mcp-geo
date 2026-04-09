@@ -10,7 +10,9 @@ import requests
 
 from scripts.ons_geo_cache_refresh import DEFAULT_SOURCES_PATH, load_manifest, probe_dataset_source
 from server.ons_geo_freshness import (
+    latest_published_epoch,
     load_addressbase_epoch_schedule,
+    next_scheduled_epoch,
     summarize_uprn_dataset_freshness,
 )
 
@@ -188,27 +190,8 @@ def build_release_audit(*, timeout: float) -> dict[str, Any]:
             }
         )
 
-    latest_published = None
-    next_scheduled = None
-    if schedule:
-        latest_published = max(
-            (item for item in schedule if not item.get("scheduled")),
-            key=lambda item: int(item["epoch"]),
-            default=None,
-        )
-        next_scheduled = min(
-            (
-                item
-                for item in schedule
-                if item.get("scheduled")
-                or (
-                    latest_published
-                    and int(item["epoch"]) > int(latest_published["epoch"])
-                )
-            ),
-            key=lambda item: int(item["epoch"]),
-            default=None,
-        )
+    latest_published = latest_published_epoch(schedule)
+    next_scheduled = next_scheduled_epoch(schedule)
 
     return {
         "version": version,

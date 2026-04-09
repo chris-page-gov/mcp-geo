@@ -224,3 +224,28 @@ def test_build_release_audit_combines_schedule_probe_and_geoportal(monkeypatch) 
     assert audit["publisherNotices"]["status"] == "paused_by_publisher"
     assert [row["id"] for row in audit["datasets"]] == ["ONSUD", "NSUL"]
     assert audit["datasets"][0]["geoportalRecord"]["title"] == "ONSUD_LATEST"
+
+
+def test_build_release_audit_uses_publication_dates_for_latest_published(monkeypatch) -> None:
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "load_manifest",
+        lambda _path: ("2026-04-09", [], []),
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "load_addressbase_epoch_schedule",
+        lambda: [
+            {"epoch": 126, "publication_date": "2026-04-02", "scheduled": False},
+            {"epoch": 127, "publication_date": "2026-04-08", "scheduled": True},
+        ],
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "fetch_geoportal_rss_status",
+        lambda *, timeout: {"sourceUrl": "x", "status": None, "relevantNotices": []},
+    )
+
+    audit = build_release_audit(timeout=5.0)
+    assert audit["addressBaseSchedule"]["latestPublished"]["epoch"] == 127
+    assert audit["addressBaseSchedule"]["nextScheduled"] is None

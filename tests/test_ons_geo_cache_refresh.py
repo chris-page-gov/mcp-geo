@@ -638,6 +638,36 @@ def test_probe_portal_release_file_rejects_unsupported_binary_release_assets(
         raise AssertionError("Expected unsupported MDB release asset to be rejected")
 
 
+def test_open_rows_and_rows_from_bytes_support_jsonl(tmp_path: Path) -> None:
+    rows_path = tmp_path / "sample.jsonl"
+    rows_path.write_text(
+        '{"UPRN":"100023336959","LAD24CD":"E08000026"}\n'
+        '{"UPRN":"100023336960","LAD24CD":"E08000026"}\n',
+        encoding="utf-8",
+    )
+
+    with refresh._open_rows(rows_path) as (rows, fieldnames):
+        payload = list(rows)
+
+    assert fieldnames == ["UPRN", "LAD24CD"]
+    assert payload[0]["UPRN"] == "100023336959"
+
+
+def test_open_rows_supports_jsonl_inside_zip(tmp_path: Path) -> None:
+    archive_path = tmp_path / "sample.zip"
+    with refresh.zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr(
+            "rows.jsonl",
+            '{"UPRN":"100023336959","LAD24CD":"E08000026"}\n',
+        )
+
+    with refresh._open_rows(archive_path) as (rows, fieldnames):
+        payload = list(rows)
+
+    assert fieldnames == ["UPRN", "LAD24CD"]
+    assert payload[0]["LAD24CD"] == "E08000026"
+
+
 def test_select_candidate_url_ignores_page_anchors_and_assets() -> None:
     chosen = refresh._select_candidate_url(
         candidates=[
