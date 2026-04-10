@@ -3,17 +3,18 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 
-## AddressBase Premium Parquet runtime follow-up (2026-04-09)
+## AddressBase Premium Parquet runtime follow-up (2026-04-10)
 
 Legend: pending, in_progress, done, blocked
 
 | Workstream | Status | Dependencies | Notes |
 | --- | --- | --- | --- |
 | ABP-PARQUET-1 DuckDB Parquet runtime support for `council_tax.query` | done | none | Extended `tools/council_tax.py` so AddressBase Premium xref lookups now accept CSV or Parquet files via the existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting. The runtime now normalizes supplier-style uppercase headers plus extracted camelCase/snake_case variants, prefers `xref_voa_os.parquet` when resolving a configured directory, and queries Parquet sources directly with DuckDB under configurable thread/memory limits instead of requiring a separate indexed DuckDB database. |
-| ABP-PARQUET-2 Serving-file builder and regression coverage | done | ABP-PARQUET-1 | Added `scripts/addressbase_build_xref.py` to build a serving Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts, dropping only `SOURCE=7666OW` and `SOURCE=7666OP` while preserving wider VOA/OS-linked cross references for future UPRN/TOID workflows. Added focused coverage in `tests/test_council_tax_uprn_query.py` and `tests/test_addressbase_build_xref.py` for extracted-header CSV, Parquet directory preference, and large Parquet-backed batch lookups. |
-| ABP-PARQUET-3 DuckDB/PostGIS cache evaluation | done | ABP-PARQUET-1 | Evaluated whether DuckDB should replace the current PostGIS-backed cache/warehouse role now that AddressBase querying uses DuckDB successfully. Decision: no runtime architecture change at this stage. DuckDB remains the preferred local file-backed analytical engine for AddressBase-style workloads, while PostGIS stays in place for the boundary cache, LandIS warehouse, and route-graph stack because routing depends on `pgrouting` and the current spatial service layers would need a broader migration to move cleanly. |
+| ABP-PARQUET-2 Client activation + large-batch readiness | done | ABP-PARQUET-1 | Promoted `council_tax.band_lookup` and `council_tax.query` into the always-loaded MCP tool set so clients can call them without deferred discovery, and raised the Parquet-backed UPRN batch ceiling to `100000` while keeping the legacy CSV ceiling at `5000`. |
+| ABP-PARQUET-3 Serving-file builder and regression coverage | done | ABP-PARQUET-1 | Added `scripts/addressbase_build_xref.py` to build a serving Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts, dropping only `SOURCE=7666OW` and `SOURCE=7666OP` while preserving wider VOA/OS-linked cross references for future UPRN/TOID workflows. Added focused coverage in `tests/test_council_tax_uprn_query.py`, `tests/test_addressbase_build_xref.py`, and `tests/test_os_mcp_descriptor.py` for extracted-header CSV, Parquet directory preference, large Parquet-backed batch lookups, and always-loaded council-tax tools. |
+| ABP-PARQUET-4 DuckDB/PostGIS cache evaluation | done | ABP-PARQUET-1 | Evaluated whether DuckDB should replace the current PostGIS-backed cache/warehouse role now that AddressBase querying uses DuckDB successfully. Decision: no runtime architecture change at this stage. DuckDB remains the preferred local file-backed analytical engine for AddressBase-style workloads, while PostGIS stays in place for the boundary cache, LandIS warehouse, and route-graph stack because routing depends on `pgrouting` and the current spatial service layers would need a broader migration to move cleanly. |
 
 ## Claude/LandIS map-export research (2026-04-07)
 

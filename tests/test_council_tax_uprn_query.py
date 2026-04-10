@@ -211,6 +211,30 @@ def _write_padded_uprn_xref_parquet(path: Path) -> None:
         connection.close()
 
 
+def _write_bad_xref_parquet(path: Path) -> None:
+    duckdb = pytest.importorskip("duckdb")
+    quoted_path = str(path).replace("'", "''")
+    connection = duckdb.connect(database=":memory:")
+    try:
+        connection.execute(
+            """
+            CREATE TABLE bad_input_rows (
+                uprn VARCHAR,
+                xRefKey VARCHAR
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO bad_input_rows VALUES
+                ('100000000001', 'X1')
+            """
+        )
+        connection.execute(f"COPY bad_input_rows TO '{quoted_path}' (FORMAT PARQUET)")
+    finally:
+        connection.close()
+
+
 def test_council_tax_uprn_query_requires_uprns(client: TestClient) -> None:
     response = client.post("/tools/call", json={"tool": "council_tax.query"})
     assert response.status_code == 400
@@ -566,3 +590,154 @@ def test_council_tax_uprn_query_rejects_invalid_csv_shape(tmp_path: Path, monkey
     )
     assert response.status_code == 502
     assert response.json()["code"] == "INVALID_DATA_SOURCE"
+
+
+def test_scan_addressbase_xref_parquet_requires_duckdb(monkeypatch, tmp_path: Path) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_xref_parquet(parquet_path)
+    monkeypatch.setattr(council_tax, "duckdb", None)
+
+    status, body = council_tax._scan_addressbase_xref_parquet(  # noqa: SLF001
+        path=parquet_path,
+        uprns=["100000000001"],
+        active_only=True,
+    )
+
+    assert status == 501
+    assert body["code"] == "MISSING_DEPENDENCY"
+
+
+def test_scan_addressbase_xref_parquet_rejects_missing_columns(tmp_path: Path) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_bad_xref_parquet(parquet_path)
+
+    status, body = council_tax._scan_addressbase_xref_parquet(  # noqa: SLF001
+        path=parquet_path,
+        uprns=["100000000001"],
+        active_only=True,
+    )
+
+    assert status == 502
+    assert body["code"] == "INVALID_DATA_SOURCE"
+    assert "missing required columns" in body["message"]
+
+
+def test_scan_addressbase_xref_parquet_normalizes_query_failures(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_xref_parquet(parquet_path)
+
+    def _boom(_: object) -> None:
+        raise RuntimeError("duckdb exploded")
+
+    monkeypatch.setattr(council_tax, "_configure_addressbase_duckdb_connection", _boom)
+
+    status, body = council_tax._scan_addressbase_xref_parquet(  # noqa: SLF001
+        path=parquet_path,
+        uprns=["100000000001"],
+        active_only=True,
+    )
+
+    assert status == 502
+    assert body["code"] == "INVALID_DATA_SOURCE"
+    assert "duckdb exploded" in body["message"]
+
+
+def test_scan_addressbase_xref_rejects_unsupported_file_type(tmp_path: Path) -> None:
+    bad_path = tmp_path / "xref_voa_os.txt"
+    bad_path.write_text("not used\n", encoding="utf-8")
+
+    status, body = council_tax._scan_addressbase_xref(  # noqa: SLF001
+        path=bad_path,
+        uprns=["100000000001"],
+        active_only=True,
+    )
+
+    assert status == 502
+    assert body["code"] == "INVALID_DATA_SOURCE"
+    assert "Unsupported AddressBase Premium xref file type" in body["message"]
+
+
+def test_duckdb_addressbase_expression_returns_null_for_missing_column() -> None:
+    expression = council_tax._duckdb_addressbase_expression(  # noqa: SLF001
+        {"UPRN": "uprn"},
+        "SOURCE",
+        relation_alias="xref",
+        normalize_source=True,
+    )
+
+    assert expression == "CAST(NULL AS VARCHAR)"
+
+
+def test_uprn_query_allows_parquet_batches_above_legacy_csv_limit(monkeypatch) -> None:
+    monkeypatch.setattr(
+        council_tax,
+        "_validate_uprn_query",
+        lambda payload: (  # noqa: ARG005
+            200,
+            {
+                "uprns": ["100000000001"],
+                "activeOnly": True,
+                "rawCount": council_tax.ADDRESSBASE_XREF_CSV_MAX_UPRNS + 1,
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        council_tax,
+        "_resolve_addressbase_xref_path",
+        lambda: Path("/tmp/xref_voa_os.parquet"),
+    )
+    monkeypatch.setattr(
+        council_tax,
+        "_scan_addressbase_xref",
+        lambda **kwargs: (  # noqa: ARG005
+            200,
+            [
+                {
+                    "uprn": "100000000001",
+                    "paysCouncilTax": True,
+                    "paysBusinessRates": False,
+                    "status": "council_tax",
+                    "sourceCodes": ["7666VC"],
+                    "inactiveSourceCodes": [],
+                    "matchedRecordCount": 1,
+                    "inactiveRelevantRecordCount": 0,
+                    "matches": [],
+                }
+            ],
+        ),
+    )
+
+    status, body = council_tax._uprn_query({})  # noqa: SLF001
+
+    assert status == 200
+    assert body["summary"]["queriedCount"] == 1
+    assert body["provenance"]["method"] == "duckdb_parquet_query"
+
+
+def test_uprn_query_enforces_parquet_batch_limit(monkeypatch) -> None:
+    monkeypatch.setattr(
+        council_tax,
+        "_validate_uprn_query",
+        lambda payload: (  # noqa: ARG005
+            200,
+            {
+                "uprns": ["100000000001"],
+                "activeOnly": True,
+                "rawCount": council_tax.ADDRESSBASE_XREF_PARQUET_MAX_UPRNS + 1,
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        council_tax,
+        "_resolve_addressbase_xref_path",
+        lambda: Path("/tmp/xref_voa_os.parquet"),
+    )
+
+    status, body = council_tax._uprn_query({})  # noqa: SLF001
+
+    assert status == 400
+    assert body["code"] == "INVALID_INPUT"
+    assert str(council_tax.ADDRESSBASE_XREF_PARQUET_MAX_UPRNS) in body["message"]

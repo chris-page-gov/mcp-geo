@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,7 +52,7 @@ assumptions change.
 
 ## Current Focus
 
-- A 2026-04-09 AddressBase Premium local-data follow-up is now in progress.
+- A 2026-04-10 AddressBase Premium local-data follow-up is now in progress.
   `tools/council_tax.py` supports both CSV and Parquet xref sources via the
   existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting, including supplier-style
   uppercase headers plus the repo's extracted camelCase/snake_case variants.
@@ -60,6 +60,12 @@ assumptions change.
   engine over the file rather than building a separate indexed database, with
   `ADDRESSBASE_PREMIUM_DUCKDB_THREADS` and
   `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT` controlling runtime limits.
+- The same 2026-04-10 ABP follow-up now treats `council_tax.band_lookup` and
+  `council_tax.query` as always-loaded MCP tools, so clients do not need a
+  separate property-tax discovery step before using the council-tax surface.
+  The council-tax UPRN query path also now keeps the legacy CSV cap at `5000`
+  items while allowing Parquet-backed batches up to `100000`, reflecting the
+  lower-memory DuckDB-over-Parquet runtime path.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,

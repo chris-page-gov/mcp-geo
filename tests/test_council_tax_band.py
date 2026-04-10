@@ -258,6 +258,62 @@ def test_council_tax_band_lookup_service_problem_page(monkeypatch) -> None:
     assert response.json()["code"] == "COUNCIL_TAX_API_ERROR"
 
 
+def test_council_tax_band_lookup_rejects_missing_csrf_token(monkeypatch) -> None:
+    def fake_get_search_form():
+        return 200, "<html><body><form></form></body></html>"
+
+    monkeypatch.setattr(council_tax.client, "get_search_form", fake_get_search_form)
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.band_lookup", "postcode": "SW1A 1AA"},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["code"] == "UPSTREAM_INVALID_RESPONSE"
+
+
+def test_council_tax_band_lookup_propagates_search_form_errors(monkeypatch) -> None:
+    def fake_get_search_form():
+        return 502, {
+            "isError": True,
+            "code": "COUNCIL_TAX_API_ERROR",
+            "message": "upstream form failed",
+        }
+
+    monkeypatch.setattr(council_tax.client, "get_search_form", fake_get_search_form)
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.band_lookup", "postcode": "SW1A 1AA"},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["code"] == "COUNCIL_TAX_API_ERROR"
+
+
+def test_council_tax_band_lookup_rejects_unparseable_results(monkeypatch) -> None:
+    def fake_get_search_form():
+        return 200, FORM_HTML
+
+    def fake_submit_search(form_data: dict[str, str]):  # noqa: ARG001
+        return 200, "<html><body><main>No usable council tax markup</main></body></html>"
+
+    monkeypatch.setattr(council_tax.client, "get_search_form", fake_get_search_form)
+    monkeypatch.setattr(council_tax.client, "submit_search", fake_submit_search)
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.band_lookup", "postcode": "SW1A 1AA"},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["code"] == "UPSTREAM_INVALID_RESPONSE"
+
+
 def test_council_tax_band_lookup_no_results_page(monkeypatch) -> None:
     def fake_get_search_form():
         return 200, FORM_HTML
@@ -326,6 +382,142 @@ def test_council_tax_band_lookup_endpoint_contract() -> None:
     assert calls[1][1].endswith("/check-council-tax-band/search-council-tax-advanced")
     assert calls[1][3] is not None
     assert calls[1][3]["Origin"] == "https://example.test"
+
+
+def test_council_tax_band_client_request_requires_requests(monkeypatch) -> None:
+    monkeypatch.setattr(council_tax, "requests", None)
+    session_client = council_tax.CouncilTaxBandClient(
+        base_url="https://example.test/check-council-tax-band",
+        session=None,
+    )
+
+    status, body = session_client._request(  # noqa: SLF001
+        "GET",
+        session_client.search_url,
+    )
+
+    assert status == 501
+    assert body["code"] == "MISSING_DEPENDENCY"
+
+
+def test_council_tax_band_client_request_respects_circuit_breaker(monkeypatch) -> None:
+    class _Breaker:
+        def allow(self) -> bool:
+            return False
+
+    session_client = council_tax.CouncilTaxBandClient(
+        base_url="https://example.test/check-council-tax-band",
+        session=object(),
+    )
+    monkeypatch.setattr(session_client, "_breaker", _Breaker())
+
+    status, body = session_client._request(  # noqa: SLF001
+        "GET",
+        session_client.search_url,
+    )
+
+    assert status == 503
+    assert body["code"] == "CIRCUIT_OPEN"
+
+
+def test_council_tax_band_client_request_normalizes_upstream_errors() -> None:
+    class _Response:
+        def __init__(self) -> None:
+            self.status_code = 503
+            self.text = "service unavailable"
+            self.url = "https://example.test/check-council-tax-band/search-council-tax-advanced"
+
+    class _Breaker:
+        def allow(self) -> bool:
+            return True
+
+        def record_failure(self) -> None:
+            return None
+
+        def record_success(self) -> None:
+            return None
+
+    class _Session:
+        def request(self, *args, **kwargs):  # noqa: ANN002, ANN003, ARG002
+            return _Response()
+
+    session_client = council_tax.CouncilTaxBandClient(
+        base_url="https://example.test/check-council-tax-band",
+        session=_Session(),
+    )
+    session_client._breaker = _Breaker()
+
+    status, body = session_client._request(  # noqa: SLF001
+        "GET",
+        session_client.search_url,
+    )
+
+    assert status == 503
+    assert body["code"] == "COUNCIL_TAX_API_ERROR"
+    assert "service unavailable" in body["message"]
+
+
+def test_council_tax_band_client_request_normalizes_tls_errors() -> None:
+    class _Breaker:
+        def allow(self) -> bool:
+            return True
+
+        def record_failure(self) -> None:
+            return None
+
+        def record_success(self) -> None:
+            return None
+
+    class _Session:
+        def request(self, *args, **kwargs):  # noqa: ANN002, ANN003, ARG002
+            raise council_tax.req_exc.SSLError("tls failed")
+
+    session_client = council_tax.CouncilTaxBandClient(
+        base_url="https://example.test/check-council-tax-band",
+        session=_Session(),
+    )
+    session_client._breaker = _Breaker()
+
+    status, body = session_client._request(  # noqa: SLF001
+        "GET",
+        session_client.search_url,
+    )
+
+    assert status == 501
+    assert body["code"] == "UPSTREAM_TLS_ERROR"
+    assert body["message"] == "tls failed"
+
+
+def test_council_tax_band_client_request_normalizes_timeout_errors() -> None:
+    class _Breaker:
+        def allow(self) -> bool:
+            return True
+
+        def record_failure(self) -> None:
+            return None
+
+        def record_success(self) -> None:
+            return None
+
+    class _Session:
+        def request(self, *args, **kwargs):  # noqa: ANN002, ANN003, ARG002
+            raise council_tax.req_exc.Timeout("timed out")
+
+    session_client = council_tax.CouncilTaxBandClient(
+        base_url="https://example.test/check-council-tax-band",
+        session=_Session(),
+        retries=1,
+    )
+    session_client._breaker = _Breaker()
+
+    status, body = session_client._request(  # noqa: SLF001
+        "GET",
+        session_client.search_url,
+    )
+
+    assert status == 501
+    assert body["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert body["message"] == "timed out"
 
 
 def test_council_tax_band_lookup_root_base_url_origin_header() -> None:

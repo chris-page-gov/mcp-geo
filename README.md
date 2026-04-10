@@ -389,6 +389,9 @@ responses by capability groups (for example `ons_selection`, `maps_tiles`, `apps
 For clients that always request `tools/list` with empty params, set
 `MCP_TOOLS_DEFAULT_TOOLSET=starter` (or
 `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>`) to keep initialization payloads small.
+`council_tax.band_lookup` and `council_tax.query` are always loaded by default
+so MCP clients do not need a separate property-tax discovery step before using
+the council-tax surfaces.
 
 | Tool                                | Purpose                                                                       |
 | ----------------------------------- | ----------------------------------------------------------------------------- |
@@ -782,7 +785,24 @@ stream-scanned; Parquet sources are queried directly with DuckDB so large local
 lookup workloads can stay memory-bounded without building a separate indexed
 database. The `council_tax.query` tool still classifies `SOURCE=7666VC` as
 Council Tax and `SOURCE=7666VN` as non-domestic rates, based on the current OS
-documentation:
+documentation.
+
+For local runtime use, the recommended workflow is to keep the licensed source
+extract outside git and build a smaller serving Parquet, for example:
+
+```bash
+python -m scripts.addressbase_build_xref \
+  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
+  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+```
+
+The builder keeps the xref columns used by MCP Geo, drops only
+`SOURCE=7666OW` and `SOURCE=7666OP`, writes a sorted `xref_voa_os.parquet`, and
+leaves the wider VOA/OS-linked cross references available for future
+UPRN/TOID-linked workflows. Optional runtime knobs:
+
+- `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
+- `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
 
 For local runtime use, the recommended workflow is to keep the licensed source
 extract outside git and build a smaller serving Parquet, for example:

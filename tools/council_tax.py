@@ -78,7 +78,8 @@ ADDRESSBASE_XREF_OPTIONAL_COLUMNS = (
     "LAST_UPDATE_DATE",
     "ENTRY_DATE",
 )
-ADDRESSBASE_XREF_SCAN_MAX_UPRNS = 5000
+ADDRESSBASE_XREF_CSV_MAX_UPRNS = 5000
+ADDRESSBASE_XREF_PARQUET_MAX_UPRNS = 100_000
 
 _NO_RESULTS_PATTERNS = (
     "no results - check and challenge your council tax band",
@@ -393,19 +394,13 @@ def _derive_uprn_tax_status(*, pays_council_tax: bool, pays_business_rates: bool
 
 def _validate_uprn_query(
     payload: dict[str, Any],
-) -> tuple[int, dict[str, Any] | dict[str, str | bool | list[str]]]:
+) -> tuple[int, dict[str, Any] | dict[str, str | bool | list[str] | int]]:
     raw_uprns = payload.get("uprns")
     if not isinstance(raw_uprns, list) or not raw_uprns:
         return 400, {
             "isError": True,
             "code": "INVALID_INPUT",
             "message": "uprns must be a non-empty array of UPRN strings",
-        }
-    if len(raw_uprns) > ADDRESSBASE_XREF_SCAN_MAX_UPRNS:
-        return 400, {
-            "isError": True,
-            "code": "INVALID_INPUT",
-            "message": f"uprns must contain {ADDRESSBASE_XREF_SCAN_MAX_UPRNS} items or fewer",
         }
 
     active_only = payload.get("activeOnly", True)
@@ -430,7 +425,11 @@ def _validate_uprn_query(
             continue
         seen.add(uprn)
         normalized_uprns.append(uprn)
-    return 200, {"uprns": normalized_uprns, "activeOnly": active_only}
+    return 200, {
+        "uprns": normalized_uprns,
+        "activeOnly": active_only,
+        "rawCount": len(raw_uprns),
+    }
 
 
 def _build_addressbase_accumulators(uprns: list[str]) -> dict[str, dict[str, Any]]:
@@ -1228,6 +1227,7 @@ def _uprn_query(payload: dict[str, Any]) -> ToolResult:
 
     uprns = list(validated["uprns"])
     active_only = bool(validated["activeOnly"])
+    raw_count = int(validated["rawCount"])
     xref_path = _resolve_addressbase_xref_path()
     if xref_path is None:
         return 501, {
@@ -1238,6 +1238,18 @@ def _uprn_query(payload: dict[str, Any]) -> ToolResult:
                 "Set ADDRESSBASE_PREMIUM_XREF_PATH to an AddressBase Premium xref CSV/parquet "
                 "file or to a directory containing one."
             ),
+        }
+
+    max_uprns = (
+        ADDRESSBASE_XREF_PARQUET_MAX_UPRNS
+        if xref_path.suffix.lower() == ".parquet"
+        else ADDRESSBASE_XREF_CSV_MAX_UPRNS
+    )
+    if raw_count > max_uprns:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": f"uprns must contain {max_uprns} items or fewer",
         }
 
     scan_status, results_or_error = _scan_addressbase_xref(
@@ -1362,7 +1374,7 @@ register(
                     "type": "array",
                     "items": {"type": "string", "pattern": "^[0-9]{1,12}$"},
                     "minItems": 1,
-                    "maxItems": ADDRESSBASE_XREF_SCAN_MAX_UPRNS,
+                    "maxItems": ADDRESSBASE_XREF_PARQUET_MAX_UPRNS,
                     "description": "One or more UPRNs to inspect in AddressBase Premium.",
                 },
                 "activeOnly": {
