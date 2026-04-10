@@ -131,6 +131,39 @@ def test_route_query_road_overlay_prefers_export_roads_tool():
     assert body["workflow_steps"] == ["os_map.export_roads"]
 
 
+def test_route_query_road_overlay_with_postcode_uses_selection_spec():
+    body = _route("Draw roads within postcode SW1A 1AA as a JavaScript overlay")
+    assert body["intent"] == "map_render"
+    assert body["recommended_tool"] == "os_map.export_roads"
+    assert body["recommended_parameters"]["outputFormat"] == "javascript_overlay"
+    assert body["recommended_parameters"]["selectionSpec"] == {
+        "selectors": [{"type": "postcode", "postcode": "SW1A1AA"}],
+        "uprnOverrides": {"include": [], "exclude": []},
+    }
+
+
+def test_route_query_road_overlay_with_uprn_uses_selection_spec():
+    body = _route("Draw roads around UPRN 100023336959 as a Leaflet overlay")
+    assert body["intent"] == "map_render"
+    assert body["recommended_tool"] == "os_map.export_roads"
+    assert body["recommended_parameters"]["outputFormat"] == "leaflet_snippet"
+    assert body["recommended_parameters"]["selectionSpec"] == {
+        "selectors": [{"type": "uprn", "uprn": "100023336959"}],
+        "uprnOverrides": {"include": [], "exclude": []},
+    }
+
+
+def test_route_query_road_overlay_with_gss_code_uses_selection_spec():
+    body = _route("Draw roads within ward E05000644 as GeoJSON")
+    assert body["intent"] == "map_render"
+    assert body["recommended_tool"] == "os_map.export_roads"
+    assert body["recommended_parameters"]["outputFormat"] == "geojson_bundle"
+    assert body["recommended_parameters"]["selectionSpec"] == {
+        "selectors": [{"type": "gss_code", "level": "WARD", "code": "E05000644"}],
+        "uprnOverrides": {"include": [], "exclude": []},
+    }
+
+
 def test_route_query_sg03_style_prompt_prefers_os_route_tool():
     body = _route(
         "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "

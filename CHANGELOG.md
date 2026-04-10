@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added DuckDB-backed AddressBase Premium Parquet support for
+  `council_tax.query`, alongside the new builder
+  `scripts/addressbase_build_xref.py`. The council-tax lookup now accepts
+  supplier-style CSV headers, extracted camelCase headers, or Parquet xref
+  files, prefers `xref_voa_os.parquet` when scanning configured directories,
+  and can query local Parquet extracts directly without creating a separate
+  indexed DuckDB database.
 - Added the grounded troubleshooting analysis
   `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, which
   documents why AI clients struggle when map-building tasks are forced through
@@ -118,10 +125,29 @@ All notable changes to this project will be documented in this file.
   configured Type 23 Application Cross Reference CSV, treats `7666VC` as
   Council Tax and `7666VN` as non-domestic rates, defaults to current records
   with blank `END_DATE`, and returns historical inactive source flags
+  separately so ended records are visible without being misreported as current.
+- Added `ons_geo.release_audit`, which combines the tracked AddressBase epoch
+  schedule, ONS Open Geography Portal RSS notices, ONS Open Geography Portal
+  dataset discovery, and current package resolution so operators can see both
+  the latest resolvable public UPRN dataset and whether it is lagging behind
+  the authoritative AddressBase publication schedule.
+- Added `docs/ons_geo_source_resolution.md`, documenting the ONS geo source
+  model with glossary coverage for abbreviations such as CKAN, DCAT, OGC API
+  Records, ONSPD, NSPL, ONSUD, NSUL, CHD, and RGC, plus cited guidance on why
+  package availability and freshness must be treated separately.
   separately for traceability. The docs/config surface now points to the
   current OS Docs specification pages instead of the dead legacy PDF URL.
 
 ### Changed
+- Documented the 2026-04-09 DuckDB/PostGIS architecture review: DuckDB is the
+  preferred local file-backed query engine for AddressBase-style artifacts,
+  but the repo is not replacing the existing PostGIS-backed cache/warehouse
+  surfaces at this stage because the route graph still depends on
+  pgRouting/PostGIS and the boundary/LandIS stores would require a broader
+  backend migration to change cleanly.
+- `docs/tutorial.md` now documents automatic `ons_geo` source resolution during
+  cache refresh, links to the new ONS source-resolution note, and includes the
+  `ons_geo.release_audit` tool in the ONS geography walkthrough.
 - Clarified the repo guidance for tool-surface changes so agents now treat
   tool additions and contract edits as OWASP maintenance work as well:
   update `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed
@@ -136,8 +162,67 @@ All notable changes to this project will be documented in this file.
   `tests/test_council_tax_gold_eval.py`, using curated public GOV.UK search
   excerpts plus verified property-detail URLs for Westminster, Manchester, and
   York examples.
+- Added a resolver-driven ONS geo source manifest in
+  `resources/ons_geo_sources.json`, replacing the old `downloadUrl`-only shape
+  with explicit resolver metadata for ArcGIS hosted tables (ONSPD/NSPL),
+  release-file discovery (ONSUD/NSUL), and mandatory CHD/RGC support
+  sidecars.
+- Added `scripts/ons_geo_live_validate.py` as an opt-in external validation
+  entrypoint that resolves live/public ONS sources and checks only high-signal
+  invariants such as source reachability and required semantic field families,
+  keeping that validation outside the default deterministic CI gate.
+- Added compact schema-drift and code-history fixtures under
+  `tests/fixtures/ons_geo/` plus focused offline regression coverage in
+  `tests/test_ons_geo_cache_refresh.py`, `tests/test_ons_geo_cache.py`,
+  `tests/test_ons_geo.py`, and `tests/test_ons_geo_live_validate.py`.
+- Added the tracked AddressBase epoch schedule
+  `resources/addressbase_epoch_schedule.json`, which now acts as the
+  authoritative freshness reference for `ONSUD` / `NSUL` validation.
 
 ### Fixed
+- `os_map.export_roads` now accepts concise selector payloads such as
+  `selectionSpec: {"postcode": "CV3 1HB"}` (plus the same shorthand for
+  `uprn`, `gssCode`+`level`, and `geometry`/`polygon`) instead of requiring
+  callers to always build `selectionSpec.selectors[...]` manually. The same
+  parser is shared with selector-driven `os_map.export` jobs so both flows now
+  accept the shorthand form.
+- `os_features.query` and `os_places.polygon` now accept JSON-encoded polygon
+  strings as well as native JSON arrays/objects, so hosts that stringify nested
+  polygon payloads no longer fail with `INVALID_INPUT` before the upstream OS
+  call is attempted.
+- Selector-driven road exports and selector-driven `os_map.export` jobs now
+  normalize missing or unreadable ONS geo cache failures into explicit
+  `CACHE_UNAVAILABLE` / `CACHE_READ_ERROR` tool errors rather than bubbling
+  raw SQLite exceptions as internal errors. `os_map.export_roads` also now
+  returns `AOI_NOT_RESOLVED` when a syntactically valid `selectionSpec` does
+  not resolve any AOI geometry.
+- `scripts/ons_geo_cache_refresh.py` now performs resolver-driven source
+  acquisition, writes raw artifacts under `data/cache/ons_geo/raw/...`,
+  stores schema fingerprints and validation summaries, and enriches the cache
+  with normalized semantic geography payloads plus CHD/RGC-backed code-history
+  annotations instead of depending on exact raw column names.
+- `scripts/ons_geo_live_validate.py` now uses metadata-only source probes
+  rather than full dataset refreshes during live validation, downgrades
+  archive-style remote releases to explicit warnings instead of hanging on
+  large downloads, ignores page-fragment/static-asset false positives when
+  selecting `portal_release_file` candidates, and now points the RGC manifest
+  at the direct December 2025 data.gov.uk package rather than a generic
+  geoportal search page.
+- `scripts/ons_geo_live_validate.py`, `scripts/ons_geo_cache_refresh.py`, and
+  `tools/ons_geo.py` now treat ONSUD/NSUL freshness as an explicit validation
+  concern. The resolver parses dataset epochs, compares them against the
+  tracked AddressBase publication schedule, reports `freshness` metadata, and
+  flags lagging UPRN datasets rather than assuming the newest-looking ONS title
+  is current.
+- `server/ons_geo_cache.py` and `tools/ons_geo.py` now prefer stored normalized
+  geography payloads on lookup, expose richer provenance such as resolved
+  release/source/schema fingerprint, and report exact/best-fit/support-dataset
+  readiness in `ons_geo.cache_status` rather than only checking for a cache
+  file and shallow product list.
+- Selector-driven road exports can now use ward/country/region-backed GSS-code
+  membership columns from the expanded ONS UPRN index, so the normalized cache
+  remains useful to downstream AOI flows without any year-specific header
+  assumptions.
 - `os_mcp.route_query` now recognizes road-overlay/map-repair prompts such as
   replacing broken Overpass fetches with OS road geometry and recommends
   `os_map.export_roads` directly, including extracted road numbers plus

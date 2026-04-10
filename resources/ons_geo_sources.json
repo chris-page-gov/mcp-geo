@@ -1,6 +1,6 @@
 {
-  "version": "2026-02-22",
-  "description": "ONS geography lookup product sources. Exact-mode products are primary; best-fit products run in parallel for statistical comparability.",
+  "version": "2026-04-08",
+  "description": "Resolver-driven ONS geography lookup sources. Exact-mode products are primary, best-fit products run in parallel, and CHD/RGC sidecars validate current and historical geography codes.",
   "products": [
     {
       "id": "ONSPD",
@@ -8,17 +8,40 @@
       "keyType": "postcode",
       "derivationMode": "exact",
       "priority": 10,
-      "release": "unknown",
-      "fieldCandidates": {
-        "key": ["pcds", "pcd", "postcode"]
-      },
-      "source": {
-        "downloadUrl": "",
-        "catalogUrl": "https://www.data.gov.uk/dataset/55f99db8-88f4-4838-b416-b1f94a32781d/ons-postcode-directory-latest-centroids",
-        "notes": [
-          "Primary exact-mode postcode geography product.",
-          "Populate downloadUrl or pass --product-file ONSPD=/path/to/file for refresh runs."
+      "release": "latest",
+      "resolver": {
+        "type": "hosted_table_arcgis",
+        "landingUrl": "https://www.data.gov.uk/dataset/36cf66a7-d570-4ee6-8ea0-f2e241d8b536/ons-postcode-directory-february-2026-for-the-uk-hosted-table",
+        "metadataUrl": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/ONS_Postcode_Directory_%28February_2026%29_for_the_UK_%28Hosted_Table%29/FeatureServer/0?f=json",
+        "queryUrl": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/ONS_Postcode_Directory_%28February_2026%29_for_the_UK_%28Hosted_Table%29/FeatureServer/0/query",
+        "releasePatterns": [
+          "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}"
         ]
+      },
+      "semanticFields": {
+        "required": ["postcode", "lad_code"],
+        "optional": [
+          "oa_code",
+          "lsoa_code",
+          "msoa_code",
+          "ward_code",
+          "country_code",
+          "region_code"
+        ],
+        "aliases": {
+          "postcode": ["pcds", "pcd", "postcode"],
+          "lad_code": ["lad25cd", "lad24cd", "lad23cd", "lad22cd", "lad21cd"],
+          "lad_name": ["lad25nm", "lad24nm", "lad23nm", "lad22nm", "lad21nm"],
+          "oa_code": ["oa21cd", "oa11cd"],
+          "lsoa_code": ["lsoa21cd", "lsoa11cd"],
+          "msoa_code": ["msoa21cd", "msoa11cd"],
+          "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
+          "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
+          "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
+          "country_name": ["ctry25nm", "ctry24nm", "ctry23nm"],
+          "region_code": ["rgn25cd", "rgn24cd", "rgn23cd"],
+          "region_name": ["rgn25nm", "rgn24nm", "rgn23nm"]
+        }
       }
     },
     {
@@ -27,16 +50,40 @@
       "keyType": "postcode",
       "derivationMode": "best_fit",
       "priority": 20,
-      "release": "unknown",
-      "fieldCandidates": {
-        "key": ["pcds", "pcd", "postcode"]
-      },
-      "source": {
-        "downloadUrl": "",
-        "catalogUrl": "https://www.data.gov.uk/dataset/c93f1717-fd4c-47e7-a0d0-77dd6ef61a4c/national-statistics-postcode-lookup-latest-centroids",
-        "notes": [
-          "Parallel best-fit postcode product for statistical workflows."
+      "release": "latest",
+      "resolver": {
+        "type": "hosted_table_arcgis",
+        "landingUrl": "https://www.data.gov.uk/dataset/9fae15ba-3a3b-4889-bd08-36bd869b5480/national-statistics-postcode-lookup-february-2026-for-the-uk-hosted-table",
+        "metadataUrl": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/National_Statistics_Postcode_Lookup_%28February_2026%29_for_the_UK_%28Hosted_Table%29/FeatureServer/0?f=json",
+        "queryUrl": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/National_Statistics_Postcode_Lookup_%28February_2026%29_for_the_UK_%28Hosted_Table%29/FeatureServer/0/query",
+        "releasePatterns": [
+          "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}"
         ]
+      },
+      "semanticFields": {
+        "required": ["postcode", "lad_code"],
+        "optional": [
+          "oa_code",
+          "lsoa_code",
+          "msoa_code",
+          "ward_code",
+          "country_code",
+          "region_code"
+        ],
+        "aliases": {
+          "postcode": ["pcds", "pcd", "postcode"],
+          "lad_code": ["lad25cd", "lad24cd", "lad23cd", "lad22cd", "lad21cd"],
+          "lad_name": ["lad25nm", "lad24nm", "lad23nm", "lad22nm", "lad21nm"],
+          "oa_code": ["oa21cd", "oa11cd"],
+          "lsoa_code": ["lsoa21cd", "lsoa11cd"],
+          "msoa_code": ["msoa21cd", "msoa11cd"],
+          "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
+          "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
+          "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
+          "country_name": ["ctry25nm", "ctry24nm", "ctry23nm"],
+          "region_code": ["rgn25cd", "rgn24cd", "rgn23cd"],
+          "region_name": ["rgn25nm", "rgn24nm", "rgn23nm"]
+        }
       }
     },
     {
@@ -45,16 +92,46 @@
       "keyType": "uprn",
       "derivationMode": "exact",
       "priority": 10,
-      "release": "unknown",
-      "fieldCandidates": {
-        "key": ["UPRN", "uprn"]
-      },
-      "source": {
-        "downloadUrl": "",
-        "catalogUrl": "https://www.data.gov.uk/dataset/23f4d9f2-e6d7-45c4-8f97-a52c6f7adcf0/ons-uprn-directory-onsud-for-the-uk",
-        "notes": [
-          "Primary exact-mode UPRN geography product."
+      "release": "latest",
+      "resolver": {
+        "type": "portal_release_file",
+        "landingUrl": "https://www.data.gov.uk/dataset/2d9fa6fa-5812-455e-807d-e6cc3f624fac/onsud-latest1",
+        "discoveryApiUrl": "https://www.data.gov.uk/api/3/action/package_search?q=%22ONS%20UPRN%20Directory%22&fq=organization%3Aoffice-for-national-statistics&rows=10&sort=metadata_modified%20desc",
+        "preferredSuffixes": [".zip", ".csv"],
+        "linkPatterns": ["ONSUD", "ons-uprn-directory", "csv", "zip"],
+        "releasePatterns": [
+          "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}",
+          "Epoch\\s+\\d+"
         ]
+      },
+      "semanticFields": {
+        "required": ["uprn", "lad_code"],
+        "optional": [
+          "postcode",
+          "oa_code",
+          "lsoa_code",
+          "msoa_code",
+          "ward_code",
+          "country_code",
+          "region_code",
+          "postal_delivery"
+        ],
+        "aliases": {
+          "uprn": ["UPRN", "uprn"],
+          "postcode": ["pcds", "pcd", "postcode", "post_code"],
+          "lad_code": ["lad25cd", "lad24cd", "lad23cd", "lad22cd", "lad21cd"],
+          "lad_name": ["lad25nm", "lad24nm", "lad23nm", "lad22nm", "lad21nm"],
+          "oa_code": ["oa21cd", "oa11cd"],
+          "lsoa_code": ["lsoa21cd", "lsoa11cd"],
+          "msoa_code": ["msoa21cd", "msoa11cd"],
+          "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
+          "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
+          "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
+          "country_name": ["ctry25nm", "ctry24nm", "ctry23nm"],
+          "region_code": ["rgn25cd", "rgn24cd", "rgn23cd"],
+          "region_name": ["rgn25nm", "rgn24nm", "rgn23nm"],
+          "postal_delivery": ["postal_delivery", "postaldelivery", "delivery_point", "receives_post"]
+        }
       }
     },
     {
@@ -63,18 +140,111 @@
       "keyType": "uprn",
       "derivationMode": "best_fit",
       "priority": 20,
-      "release": "unknown",
-      "fieldCandidates": {
-        "key": ["UPRN", "uprn"]
-      },
-      "source": {
-        "downloadUrl": "",
-        "catalogUrl": "https://www.data.gov.uk/dataset/d420af4f-9a12-4cfb-bd2d-75003b114db2/national-statistics-uprn-lookup-nsul-for-the-uk",
-        "notes": [
-          "Parallel best-fit UPRN product for statistical workflows."
+      "release": "latest",
+      "resolver": {
+        "type": "portal_release_file",
+        "landingUrl": "https://www.data.gov.uk/dataset/f8ec001d-49f5-4b24-a2a1-17eb6c4a854f/national-statistics-uprn-lookup-november-2025-epoch-122",
+        "discoveryApiUrl": "https://www.data.gov.uk/api/3/action/package_search?q=%22National%20Statistics%20UPRN%20Lookup%22&fq=organization%3Aoffice-for-national-statistics&rows=10&sort=metadata_modified%20desc",
+        "preferredSuffixes": [".zip", ".csv"],
+        "linkPatterns": ["NSUL", "national-statistics-uprn-lookup", "csv", "zip"],
+        "releasePatterns": [
+          "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}",
+          "Epoch\\s+\\d+"
         ]
+      },
+      "semanticFields": {
+        "required": ["uprn", "lad_code"],
+        "optional": [
+          "postcode",
+          "oa_code",
+          "lsoa_code",
+          "msoa_code",
+          "ward_code",
+          "country_code",
+          "region_code",
+          "postal_delivery"
+        ],
+        "aliases": {
+          "uprn": ["UPRN", "uprn"],
+          "postcode": ["pcds", "pcd", "postcode", "post_code"],
+          "lad_code": ["lad25cd", "lad24cd", "lad23cd", "lad22cd", "lad21cd"],
+          "lad_name": ["lad25nm", "lad24nm", "lad23nm", "lad22nm", "lad21nm"],
+          "oa_code": ["oa21cd", "oa11cd"],
+          "lsoa_code": ["lsoa21cd", "lsoa11cd"],
+          "msoa_code": ["msoa21cd", "msoa11cd"],
+          "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
+          "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
+          "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
+          "country_name": ["ctry25nm", "ctry24nm", "ctry23nm"],
+          "region_code": ["rgn25cd", "rgn24cd", "rgn23cd"],
+          "region_name": ["rgn25nm", "rgn24nm", "rgn23nm"],
+          "postal_delivery": ["postal_delivery", "postaldelivery", "delivery_point", "receives_post"]
+        }
+      }
+    }
+  ],
+  "supportProducts": [
+    {
+      "id": "CHD",
+      "title": "Code History Database",
+      "priority": 10,
+      "release": "latest",
+      "resolver": {
+        "type": "portal_release_file",
+        "landingUrl": "https://www.data.gov.uk/dataset/4ec2169f-1a72-4c2d-be60-a74174902593/code-history-database-december-2025-for-the-uk",
+        "discoveryApiUrl": "https://www.data.gov.uk/api/3/action/package_show?id=4ec2169f-1a72-4c2d-be60-a74174902593",
+        "preferredSuffixes": [".zip", ".csv", ".xlsx", ".mdb"],
+        "linkPatterns": ["code-history", "csv", "zip", "CHD"],
+        "releasePatterns": [
+          "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}"
+        ]
+      },
+      "semanticFields": {
+        "required": ["code", "status"],
+        "optional": ["name", "successor_code", "successor_name", "code_family", "level"],
+        "aliases": {
+          "code": ["GEOGRAPHY_CODE", "code", "CODE", "ENTITYCD"],
+          "name": ["GEOGRAPHY_NAME", "name", "NAME", "ENTITYNM"],
+          "status": ["STATUS", "status", "current_status"],
+          "successor_code": ["SUCCESSOR_CODE", "successor_code", "NEWCODE", "CURRENT_CODE"],
+          "successor_name": ["SUCCESSOR_NAME", "successor_name", "NEWNAME", "CURRENT_NAME"],
+          "code_family": ["CODE_FAMILY", "code_family", "GEOGRAPHY_TYPE"],
+          "level": ["LEVEL", "level", "ENTITYTYPE", "GEOGRAPHY_LEVEL"]
+        },
+        "defaults": {
+          "status": "retired"
+        }
+      }
+    },
+    {
+      "id": "RGC",
+      "title": "Register of Geographic Codes",
+      "priority": 20,
+      "release": "latest",
+      "resolver": {
+        "type": "portal_release_file",
+        "landingUrl": "https://www.data.gov.uk/dataset/register-of-geographic-codes-december-2025-for-the-uk",
+        "discoveryApiUrl": "https://www.data.gov.uk/api/3/action/package_show?id=register-of-geographic-codes-december-2025-for-the-uk",
+        "preferredSuffixes": [".zip", ".csv", ".xlsx"],
+        "linkPatterns": ["register", "geographic", "codes", "csv", "zip"],
+        "releasePatterns": [
+          "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}"
+        ]
+      },
+      "semanticFields": {
+        "required": ["code", "name"],
+        "optional": ["status", "code_family", "level"],
+        "aliases": {
+          "code": ["GEOGRAPHY_CODE", "code", "CODE", "ENTITYCD"],
+          "name": ["GEOGRAPHY_NAME", "name", "NAME", "ENTITYNM"],
+          "status": ["STATUS", "status"],
+          "code_family": ["CODE_FAMILY", "code_family", "GEOGRAPHY_TYPE"],
+          "level": ["LEVEL", "level", "ENTITYTYPE", "GEOGRAPHY_LEVEL"]
+        },
+        "defaults": {
+          "status": "current"
+        }
       }
     }
   ]
 }
-
