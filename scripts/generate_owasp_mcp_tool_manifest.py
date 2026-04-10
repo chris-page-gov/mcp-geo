@@ -2,14 +2,30 @@
 from __future__ import annotations
 
 import argparse
+import importlib
+import os
 import subprocess
+import sys
 from pathlib import Path
 
-from server.owasp_mcp_validation import (
-    build_tool_manifest,
-    pretty_json,
-    tool_snapshots_from_registry,
-)
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+VENV_PYTHON = REPO_ROOT / ".venv" / "bin" / "python"
+if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
+    try:
+        importlib.import_module("fastapi")
+    except ModuleNotFoundError:
+        if VENV_PYTHON.exists() and Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+            env = dict(os.environ)
+            env["MCP_GEO_SKIP_VENV_REEXEC"] = "1"
+            os.execve(str(VENV_PYTHON), [str(VENV_PYTHON), __file__, *sys.argv[1:]], env)
+
+owasp_validation = importlib.import_module("server.owasp_mcp_validation")
+build_tool_manifest = owasp_validation.build_tool_manifest
+pretty_json = owasp_validation.pretty_json
+tool_snapshots_from_registry = owasp_validation.tool_snapshots_from_registry
 
 
 def build_parser() -> argparse.ArgumentParser:
