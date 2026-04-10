@@ -25,14 +25,14 @@
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "vite": "^7.3.1"
+    "vite": "^7.3.2"
   },
   "overrides": {
-    "@hono/node-server": "1.19.11",
+    "@hono/node-server": "1.19.13",
     "ajv": "8.18.0",
     "esbuild": "0.27.3",
     "express-rate-limit": "8.3.1",
-    "hono": "4.12.7",
+    "hono": "4.12.12",
     "rollup": "4.59.0"
   },
   "engines": {

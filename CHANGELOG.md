@@ -180,6 +180,10 @@ All notable changes to this project will be documented in this file.
   authoritative freshness reference for `ONSUD` / `NSUL` validation.
 
 ### Fixed
+- `playground/package.json` now pins the non-vulnerable patch lines for
+  `vite`, `hono`, and `@hono/node-server`, clearing the remaining npm audit
+  findings after the earlier `path-to-regexp` / `picomatch` security refresh
+  without widening the upgrade scope to Vite 8.
 - `os_map.export_roads` now accepts concise selector payloads such as
   `selectionSpec: {"postcode": "CV3 1HB"}` (plus the same shorthand for
   `uprn`, `gssCode`+`level`, and `geometry`/`polygon`) instead of requiring
