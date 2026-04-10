@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 from typing import Any, TypedDict, cast
 
@@ -137,6 +138,11 @@ def _norm_dpa_list(body: PlacesResponse | dict[str, Any]) -> list[NormalizedAddr
 
 
 def _parse_polygon(value: Any) -> dict[str, Any] | None:
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            return None
     if isinstance(value, dict):
         if str(value.get("type", "")).lower() != "polygon":
             return None

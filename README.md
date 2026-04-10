@@ -776,10 +776,30 @@ Application Cross Reference Type 23 table. By default it only counts current
 matches with a blank `END_DATE`, so historical cross references do not get
 reported as current liabilities.
 
-Configure `ADDRESSBASE_PREMIUM_XREF_PATH` to either the extracted Type 23 CSV
-file or a directory containing it. The tool classifies `SOURCE=7666VC` as
+Configure `ADDRESSBASE_PREMIUM_XREF_PATH` to either an extracted AddressBase
+Premium xref CSV/Parquet file or a directory containing one. CSV sources are
+stream-scanned; Parquet sources are queried directly with DuckDB so large local
+lookup workloads can stay memory-bounded without building a separate indexed
+database. The `council_tax.query` tool still classifies `SOURCE=7666VC` as
 Council Tax and `SOURCE=7666VN` as non-domestic rates, based on the current OS
 documentation:
+
+For local runtime use, the recommended workflow is to keep the licensed source
+extract outside git and build a smaller serving Parquet, for example:
+
+```bash
+python -m scripts.addressbase_build_xref \
+  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
+  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+```
+
+The builder keeps the xref columns used by MCP Geo, drops `SOURCE=7666OW` and
+`SOURCE=7666OP`, writes a sorted `xref_voa_os.parquet`, and leaves the wider
+VOA/OS-linked cross references available for future UPRN/TOID workflows.
+Optional runtime knobs:
+
+- `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
+- `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
 
 - Product technical specification:
   [AddressBase Premium Technical Specification](https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/addressbase-premium/addressbase-premium-technical-specification)

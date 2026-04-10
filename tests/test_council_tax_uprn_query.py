@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from server.main import app
@@ -24,6 +25,190 @@ def _write_xref_csv(path: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def _write_extracted_xref_csv(path: Path) -> None:
+    path.write_text(
+        "\n".join(
+            [
+                "uprn,xRefKey,crossReference,source,version,startDate,endDate,lastUpdateDate,entryDate",
+                "100000000001,X1,CT-1,7666VC,1,2024-01-01,,2024-02-01,2024-01-01",
+                "100000000002,X2,NDR-1,7666VN,1,2024-01-01,,2024-02-01,2024-01-01",
+                "100000000003,X3,OLD-CT,7666VC,1,2020-01-01,2023-12-31,2023-12-31,2020-01-01",
+                "100000000004,X4,WARD-1,7666OW,1,2024-01-01,,2024-02-01,2024-01-01",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_xref_parquet(path: Path, *, rows: int = 6) -> None:
+    duckdb = pytest.importorskip("duckdb")
+    quoted_path = str(path).replace("'", "''")
+    connection = duckdb.connect(database=":memory:")
+    try:
+        connection.execute(
+            """
+            CREATE TABLE input_rows (
+                uprn VARCHAR,
+                xRefKey VARCHAR,
+                crossReference VARCHAR,
+                source VARCHAR,
+                version VARCHAR,
+                startDate VARCHAR,
+                endDate VARCHAR,
+                lastUpdateDate VARCHAR,
+                entryDate VARCHAR
+            )
+            """
+        )
+        if rows <= 6:
+            connection.executemany(
+                "INSERT INTO input_rows VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (
+                        "100000000001",
+                        "X1",
+                        "CT-1",
+                        "7666VC",
+                        "1",
+                        "2024-01-01",
+                        "",
+                        "2024-02-01",
+                        "2024-01-01",
+                    ),
+                    (
+                        "100000000002",
+                        "X2",
+                        "NDR-1",
+                        "7666VN",
+                        "1",
+                        "2024-01-01",
+                        "",
+                        "2024-02-01",
+                        "2024-01-01",
+                    ),
+                    (
+                        "100000000003",
+                        "X3",
+                        "OLD-CT",
+                        "7666VC",
+                        "1",
+                        "2020-01-01",
+                        "2023-12-31",
+                        "2023-12-31",
+                        "2020-01-01",
+                    ),
+                    (
+                        "100000000004",
+                        "X4",
+                        "BOTH-CT",
+                        "7666VC",
+                        "1",
+                        "2024-01-01",
+                        "",
+                        "2024-02-01",
+                        "2024-01-01",
+                    ),
+                    (
+                        "100000000004",
+                        "X5",
+                        "BOTH-NDR",
+                        "7666VN",
+                        "1",
+                        "2024-01-01",
+                        "",
+                        "2024-02-01",
+                        "2024-01-01",
+                    ),
+                    (
+                        "100000000005",
+                        "X6",
+                        "WARD-1",
+                        "7666OW",
+                        "1",
+                        "2024-01-01",
+                        "",
+                        "2024-02-01",
+                        "2024-01-01",
+                    ),
+                ],
+            )
+        else:
+            connection.execute(
+                f"""
+                INSERT INTO input_rows
+                SELECT
+                    LPAD(CAST(100000000000 + i AS VARCHAR), 12, '0') AS uprn,
+                    'X' || CAST(i AS VARCHAR) AS xRefKey,
+                    'CT-' || CAST(i AS VARCHAR) AS crossReference,
+                    '7666VC' AS source,
+                    '1' AS version,
+                    '2024-01-01' AS startDate,
+                    '' AS endDate,
+                    '2024-02-01' AS lastUpdateDate,
+                    '2024-01-01' AS entryDate
+                FROM range({rows}) AS t(i)
+                """
+            )
+        connection.execute(
+            f"COPY input_rows TO '{quoted_path}' (FORMAT PARQUET)"
+        )
+    finally:
+        connection.close()
+
+
+def _write_padded_uprn_xref_parquet(path: Path) -> None:
+    duckdb = pytest.importorskip("duckdb")
+    quoted_path = str(path).replace("'", "''")
+    connection = duckdb.connect(database=":memory:")
+    try:
+        connection.execute(
+            """
+            CREATE TABLE input_rows (
+                uprn VARCHAR,
+                xRefKey VARCHAR,
+                crossReference VARCHAR,
+                source VARCHAR,
+                version VARCHAR,
+                startDate VARCHAR,
+                endDate VARCHAR,
+                lastUpdateDate VARCHAR,
+                entryDate VARCHAR
+            )
+            """
+        )
+        connection.executemany(
+            "INSERT INTO input_rows VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    " 100000000001 ",
+                    "X1",
+                    "CT-1",
+                    "7666VC",
+                    "1",
+                    "2024-01-01",
+                    "",
+                    "2024-02-01",
+                    "2024-01-01",
+                ),
+                (
+                    "1000 00000002",
+                    "X2",
+                    "NDR-1",
+                    "7666VN",
+                    "1",
+                    "2024-01-01",
+                    "",
+                    "2024-02-01",
+                    "2024-01-01",
+                ),
+            ],
+        )
+        connection.execute(f"COPY input_rows TO '{quoted_path}' (FORMAT PARQUET)")
+    finally:
+        connection.close()
 
 
 def test_council_tax_uprn_query_requires_uprns(client: TestClient) -> None:
@@ -137,6 +322,204 @@ def test_council_tax_uprn_query_supports_directory_config(tmp_path: Path, monkey
     body = response.json()
     assert body["results"][0]["status"] == "council_tax"
     assert body["provenance"]["configuredPath"].endswith("my_ID23_xref_extract.csv")
+
+
+def test_council_tax_uprn_query_supports_directory_config_with_uppercase_csv(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    data_dir = tmp_path / "epoch"
+    data_dir.mkdir()
+    csv_path = data_dir / "ID23_ApplicationCrossReference.CSV"
+    _write_xref_csv(csv_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(data_dir),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["status"] == "council_tax"
+    assert body["provenance"]["configuredPath"].endswith("ID23_ApplicationCrossReference.CSV")
+
+
+def test_council_tax_uprn_query_supports_extracted_csv_headers(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    csv_path = tmp_path / "xref_full.csv"
+    _write_extracted_xref_csv(csv_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(csv_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={
+            "tool": "council_tax.query",
+            "uprns": ["100000000001", "100000000002", "100000000003", "100000000004"],
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    results = {item["uprn"]: item for item in body["results"]}
+    assert results["100000000001"]["status"] == "council_tax"
+    assert results["100000000002"]["status"] == "non_domestic_rates"
+    assert results["100000000003"]["inactiveSourceCodes"] == ["7666VC"]
+    assert results["100000000004"]["matchedRecordCount"] == 0
+
+
+def test_council_tax_uprn_query_prefers_xref_voa_os_parquet_in_directory(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _write_xref_csv(tmp_path / "xref_test.csv")
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_xref_parquet(parquet_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(tmp_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["status"] == "council_tax"
+    assert body["provenance"]["configuredPath"].endswith("xref_voa_os.parquet")
+    assert body["provenance"]["method"] == "duckdb_parquet_query"
+
+
+def test_council_tax_uprn_query_falls_back_to_csv_when_duckdb_missing(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    csv_path = tmp_path / "my_ID23_xref_extract.csv"
+    _write_xref_csv(csv_path)
+    _write_xref_parquet(tmp_path / "xref_voa_os.parquet")
+    monkeypatch.setattr(council_tax, "duckdb", None, raising=False)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(tmp_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001"]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["status"] == "council_tax"
+    assert body["provenance"]["configuredPath"].endswith("my_ID23_xref_extract.csv")
+    assert body["provenance"]["method"] == "streaming_csv_scan"
+
+
+def test_council_tax_uprn_query_supports_large_parquet_batches(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_xref_parquet(parquet_path, rows=1200)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(parquet_path),
+        raising=False,
+    )
+
+    uprns = [f"{100000000000 + index:012d}" for index in range(1200)]
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": uprns},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"] == {
+        "queriedCount": 1200,
+        "councilTaxCount": 1200,
+        "businessRatesCount": 0,
+        "bothCount": 0,
+        "noneCount": 0,
+        "activeOnly": True,
+    }
+    assert body["provenance"]["method"] == "duckdb_parquet_query"
+    assert body["results"][0]["sourceCodes"] == ["7666VC"]
+    assert body["results"][-1]["status"] == "council_tax"
+
+
+def test_council_tax_uprn_query_normalizes_parquet_uprn_keys_before_join(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_padded_uprn_xref_parquet(parquet_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(parquet_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000001", "100000000002"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"]["councilTaxCount"] == 1
+    assert body["summary"]["businessRatesCount"] == 1
+    results = {item["uprn"]: item for item in body["results"]}
+    assert results["100000000001"]["status"] == "council_tax"
+    assert results["100000000002"]["status"] == "non_domestic_rates"
+
+
+def test_council_tax_uprn_query_preserves_inactive_parquet_matches_when_active_only(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    parquet_path = tmp_path / "xref_voa_os.parquet"
+    _write_xref_parquet(parquet_path)
+    monkeypatch.setattr(
+        council_tax.settings,
+        "ADDRESSBASE_PREMIUM_XREF_PATH",
+        str(parquet_path),
+        raising=False,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={"tool": "council_tax.query", "uprns": ["100000000003"]},
+    )
+
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    assert result["status"] == "none"
+    assert result["sourceCodes"] == []
+    assert result["inactiveSourceCodes"] == ["7666VC"]
+    assert result["inactiveRelevantRecordCount"] == 1
 
 
 def test_council_tax_uprn_query_can_include_ended_records(tmp_path: Path, monkeypatch) -> None:
