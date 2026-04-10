@@ -1,15 +1,33 @@
 from __future__ import annotations
 
-from tools.landis_common import error, nsi_profile_payload, nsi_sites_payload, parse_limit, parse_offset, resolve_area_input
+from server.landis import LandisWarehouseDisabled, LandisWarehouseUnavailable, get_landis_warehouse
+from tools.landis_common import (
+    error,
+    live_query_details,
+    nsi_profile_payload,
+    nsi_sites_payload,
+    parse_limit,
+    parse_offset,
+    resolve_area_input,
+)
 from tools.registry import Tool, ToolResult, register
 from tools.typing_utils import is_strict_int
-from server.landis import LandisWarehouseDisabled, LandisWarehouseUnavailable, get_landis_warehouse
 
 
 def _disabled_error(reason: str) -> ToolResult:
     if reason == "landis_warehouse_unconfigured":
-        return error("LandIS warehouse is not configured", code="LIVE_DISABLED", status=503)
-    return error("LandIS live data access is disabled", code="LIVE_DISABLED", status=503)
+        return error(
+            "LandIS warehouse is not configured",
+            code="LIVE_DISABLED",
+            status=503,
+            details=live_query_details(error_reason=reason),
+        )
+    return error(
+        "LandIS live data access is disabled",
+        code="LIVE_DISABLED",
+        status=503,
+        details=live_query_details(error_reason=reason),
+    )
 
 
 def _parse_distance(value: object) -> float | None:
@@ -44,7 +62,12 @@ def _nearest_sites(payload: dict[str, object]) -> ToolResult:
     except LandisWarehouseDisabled as exc:
         return _disabled_error(str(exc))
     except LandisWarehouseUnavailable:
-        return error("LandIS warehouse is unavailable", code="UPSTREAM_CONNECT_ERROR", status=503)
+        return error(
+            "LandIS warehouse is unavailable",
+            code="UPSTREAM_CONNECT_ERROR",
+            status=503,
+            details=live_query_details(error_reason="upstream_connect_error"),
+        )
     return 200, nsi_sites_payload({"location": {"lat": float(lat), "lon": float(lon)}}, summary)
 
 
@@ -68,7 +91,12 @@ def _within_area(payload: dict[str, object]) -> ToolResult:
     except LandisWarehouseDisabled as exc:
         return _disabled_error(str(exc))
     except LandisWarehouseUnavailable:
-        return error("LandIS warehouse is unavailable", code="UPSTREAM_CONNECT_ERROR", status=503)
+        return error(
+            "LandIS warehouse is unavailable",
+            code="UPSTREAM_CONNECT_ERROR",
+            status=503,
+            details=live_query_details(error_reason="upstream_connect_error"),
+        )
     input_payload: dict[str, object] = {"geometry": area_input.geometry}
     if area_input.bbox is not None:
         input_payload = {"bbox": area_input.bbox, "offset": offset, "limit": limit}
@@ -85,7 +113,12 @@ def _profile_summary(payload: dict[str, object]) -> ToolResult:
     except LandisWarehouseDisabled as exc:
         return _disabled_error(str(exc))
     except LandisWarehouseUnavailable:
-        return error("LandIS warehouse is unavailable", code="UPSTREAM_CONNECT_ERROR", status=503)
+        return error(
+            "LandIS warehouse is unavailable",
+            code="UPSTREAM_CONNECT_ERROR",
+            status=503,
+            details=live_query_details(error_reason="upstream_connect_error"),
+        )
     if summary is None:
         return error("Unknown NSI site identifier", code="NOT_FOUND", status=404)
     return 200, nsi_profile_payload(int(nsi_id), summary)

@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+import csv
 import re
 import time
 from dataclasses import dataclass, field
 from html import unescape
 from html.parser import HTMLParser
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlsplit
+
+try:
+    import duckdb
+except ImportError:  # pragma: no cover - optional dependency fallback
+    duckdb = None  # type: ignore[assignment]
 
 try:
     import requests
@@ -33,9 +40,46 @@ DEFAULT_RETRIES = 2
 DEFAULT_BASE_URL = "https://www.tax.service.gov.uk/check-council-tax-band"
 SEARCH_PATH = "/search-council-tax-advanced"
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
+UPRN_REGEX = re.compile(r"^[0-9]{1,12}$")
 CSRF_TOKEN_PATTERN = re.compile(r'name="csrfToken"\s+value="([^"]+)"')
 PAGE_PATTERN = re.compile(r'name="page"\s+value="([^"]+)"')
 SERVICE_PROBLEM_PATTERN = re.compile(r"Sorry, there is a problem with the service", re.I)
+ADDRESSBASE_PREMIUM_DOC_URL = (
+    "https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/"
+    "addressbase-premium/addressbase-premium-technical-specification"
+)
+ADDRESSBASE_PREMIUM_XREF_DOC_URL = (
+    "https://docs.os.uk/os-downloads/addressing-and-location/addressbase-premium-islands/"
+    "addressbase-premium-islands-technical-specification/structured-data-types/"
+    "application-cross-reference-type-23-record"
+)
+ADDRESSBASE_RELEVANT_SOURCES = {
+    "7666VC": "Centrally created Council Tax.",
+    "7666VN": "Centrally created non-domestic rates.",
+}
+ADDRESSBASE_XREF_REQUIRED_COLUMNS = {"UPRN", "SOURCE"}
+ADDRESSBASE_XREF_COLUMN_ALIASES = {
+    "UPRN": ("UPRN", "uprn"),
+    "XREF_KEY": ("XREF_KEY", "xRefKey", "xref_key"),
+    "CROSS_REFERENCE": ("CROSS_REFERENCE", "crossReference", "cross_reference"),
+    "SOURCE": ("SOURCE", "source"),
+    "VERSION": ("VERSION", "version"),
+    "START_DATE": ("START_DATE", "startDate", "start_date"),
+    "END_DATE": ("END_DATE", "endDate", "end_date"),
+    "LAST_UPDATE_DATE": ("LAST_UPDATE_DATE", "lastUpdateDate", "last_update_date"),
+    "ENTRY_DATE": ("ENTRY_DATE", "entryDate", "entry_date"),
+}
+ADDRESSBASE_XREF_OPTIONAL_COLUMNS = (
+    "XREF_KEY",
+    "CROSS_REFERENCE",
+    "VERSION",
+    "START_DATE",
+    "END_DATE",
+    "LAST_UPDATE_DATE",
+    "ENTRY_DATE",
+)
+ADDRESSBASE_XREF_CSV_MAX_UPRNS = 5000
+ADDRESSBASE_XREF_PARQUET_MAX_UPRNS = 100_000
 
 _NO_RESULTS_PATTERNS = (
     "no results - check and challenge your council tax band",
@@ -182,7 +226,7 @@ class _DefinitionListParser(HTMLParser):
         self,
         tag: str,
         attrs: list[tuple[str, str | None]],
-    ) -> None:  # noqa: ARG002
+    ) -> None:
         if tag in {"dt", "dd"}:
             self._current_tag = tag
             self._current_parts = []
@@ -205,6 +249,10 @@ class _DefinitionListParser(HTMLParser):
 
 def _normalize_space(value: str) -> str:
     return re.sub(r"\s+", " ", unescape(value or "")).strip()
+
+
+def _normalize_addressbase_column_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.lower())
 
 
 def _normalize_label(value: str) -> str:
@@ -252,6 +300,487 @@ def _origin_from_base_url(base_url: str) -> str | None:
     if not parts.scheme or not parts.netloc:
         return None
     return f"{parts.scheme}://{parts.netloc}"
+
+
+def _normalize_uprn(value: Any) -> str | None:
+    text = re.sub(r"\s+", "", str(value or ""))
+    if not text or not UPRN_REGEX.fullmatch(text):
+        return None
+    return text
+
+
+def _resolve_addressbase_column_mapping(fieldnames: list[str]) -> tuple[dict[str, str], list[str]]:
+    actual_by_normalized = {
+        _normalize_addressbase_column_name(fieldname): fieldname
+        for fieldname in fieldnames
+        if fieldname
+    }
+    mapping: dict[str, str] = {}
+    missing: list[str] = []
+    for canonical, aliases in ADDRESSBASE_XREF_COLUMN_ALIASES.items():
+        actual = next(
+            (
+                actual_by_normalized.get(_normalize_addressbase_column_name(alias))
+                for alias in aliases
+                if actual_by_normalized.get(_normalize_addressbase_column_name(alias))
+            ),
+            None,
+        )
+        if actual is None:
+            if canonical in ADDRESSBASE_XREF_REQUIRED_COLUMNS:
+                missing.append(canonical)
+            continue
+        mapping[canonical] = actual
+    return mapping, missing
+
+
+def _score_addressbase_xref_candidate(candidate: Path) -> int:
+    name = candidate.name.lower()
+    score = 0
+    if "xref_voa_os" in name:
+        score += 100
+    if "application" in name and "cross" in name and "reference" in name:
+        score += 50
+    if "id23" in name:
+        score += 40
+    if "type" in name and "23" in name:
+        score += 20
+    if "xref" in name:
+        score += 10
+    if candidate.suffix.lower() == ".parquet":
+        score += 5
+    if "test" in name or "sample" in name:
+        score -= 100
+    return score
+
+
+def _resolve_addressbase_xref_path() -> Path | None:
+    configured = str(getattr(settings, "ADDRESSBASE_PREMIUM_XREF_PATH", "") or "").strip()
+    if not configured:
+        return None
+    path = Path(configured).expanduser()
+    if path.is_file():
+        return path
+    if not path.is_dir():
+        return None
+
+    candidates: list[tuple[int, str, Path]] = []
+    for candidate in path.rglob("*"):
+        if not candidate.is_file():
+            continue
+        suffix = candidate.suffix.lower()
+        if suffix not in {".parquet", ".csv"}:
+            continue
+        if suffix == ".parquet" and duckdb is None:
+            continue
+        score = _score_addressbase_xref_candidate(candidate)
+        if score > 0:
+            candidates.append((score, str(candidate), candidate))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: (-item[0], item[1]))
+    return candidates[0][2]
+
+
+def _derive_uprn_tax_status(*, pays_council_tax: bool, pays_business_rates: bool) -> str:
+    if pays_council_tax and pays_business_rates:
+        return "both"
+    if pays_council_tax:
+        return "council_tax"
+    if pays_business_rates:
+        return "non_domestic_rates"
+    return "none"
+
+
+def _validate_uprn_query(
+    payload: dict[str, Any],
+) -> tuple[int, dict[str, Any] | dict[str, str | bool | list[str] | int]]:
+    raw_uprns = payload.get("uprns")
+    if not isinstance(raw_uprns, list) or not raw_uprns:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "uprns must be a non-empty array of UPRN strings",
+        }
+
+    active_only = payload.get("activeOnly", True)
+    if not isinstance(active_only, bool):
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "activeOnly must be a boolean",
+        }
+
+    normalized_uprns: list[str] = []
+    seen: set[str] = set()
+    for value in raw_uprns:
+        uprn = _normalize_uprn(value)
+        if uprn is None:
+            return 400, {
+                "isError": True,
+                "code": "INVALID_INPUT",
+                "message": "Each UPRN must be 1 to 12 digits",
+            }
+        if uprn in seen:
+            continue
+        seen.add(uprn)
+        normalized_uprns.append(uprn)
+    return 200, {
+        "uprns": normalized_uprns,
+        "activeOnly": active_only,
+        "rawCount": len(raw_uprns),
+    }
+
+
+def _build_addressbase_accumulators(uprns: list[str]) -> dict[str, dict[str, Any]]:
+    return {
+        uprn: {
+            "matches": [],
+            "activeSources": set(),
+            "allSources": set(),
+            "inactiveSources": set(),
+            "inactiveRelevantRecordCount": 0,
+        }
+        for uprn in uprns
+    }
+
+
+def _append_addressbase_match(
+    *,
+    accumulators: dict[str, dict[str, Any]],
+    uprn: str,
+    source: str,
+    xref_key: Any,
+    cross_reference: Any,
+    version: Any,
+    start_date: Any,
+    end_date: Any,
+    last_update_date: Any,
+    entry_date: Any,
+    active_only: bool,
+) -> None:
+    accumulator = accumulators[uprn]
+    accumulator["allSources"].add(source)
+    normalized_end_date = _normalize_space(str(end_date or ""))
+    is_active = not normalized_end_date
+    if not is_active:
+        accumulator["inactiveSources"].add(source)
+        accumulator["inactiveRelevantRecordCount"] += 1
+        if active_only:
+            return
+
+    record = {
+        "xrefKey": _clean_optional_text(xref_key, max_length=64),
+        "crossReference": _clean_optional_text(cross_reference, max_length=128),
+        "version": _clean_optional_text(version, max_length=16),
+        "source": source,
+        "sourceDescription": ADDRESSBASE_RELEVANT_SOURCES[source],
+        "startDate": _clean_optional_text(start_date, max_length=32),
+        "endDate": _clean_optional_text(end_date, max_length=32),
+        "lastUpdateDate": _clean_optional_text(last_update_date, max_length=32),
+        "entryDate": _clean_optional_text(entry_date, max_length=32),
+        "active": is_active,
+    }
+    accumulator["matches"].append(record)
+    if is_active:
+        accumulator["activeSources"].add(source)
+
+
+def _finalize_addressbase_results(
+    *,
+    uprns: list[str],
+    accumulators: dict[str, dict[str, Any]],
+    active_only: bool,
+) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for uprn in uprns:
+        accumulator = accumulators[uprn]
+        relevant_sources = (
+            sorted(accumulator["activeSources"])
+            if active_only
+            else sorted(accumulator["allSources"])
+        )
+        pays_council_tax = "7666VC" in relevant_sources
+        pays_business_rates = "7666VN" in relevant_sources
+        results.append({
+            "uprn": uprn,
+            "paysCouncilTax": pays_council_tax,
+            "paysBusinessRates": pays_business_rates,
+            "status": _derive_uprn_tax_status(
+                pays_council_tax=pays_council_tax,
+                pays_business_rates=pays_business_rates,
+            ),
+            "sourceCodes": relevant_sources,
+            "inactiveSourceCodes": sorted(accumulator["inactiveSources"]),
+            "matchedRecordCount": len(accumulator["matches"]),
+            "inactiveRelevantRecordCount": int(accumulator["inactiveRelevantRecordCount"]),
+            "matches": accumulator["matches"],
+        })
+    return results
+
+
+def _scan_addressbase_xref_csv(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    requested = set(uprns)
+    accumulators = _build_addressbase_accumulators(uprns)
+
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = [
+                fieldname
+                for fieldname in (reader.fieldnames or [])
+                if isinstance(fieldname, str)
+            ]
+            column_mapping, missing = _resolve_addressbase_column_mapping(fieldnames)
+            if missing:
+                return 502, {
+                    "isError": True,
+                    "code": "INVALID_DATA_SOURCE",
+                    "message": (
+                        "AddressBase Premium Application Cross Reference CSV is missing "
+                        f"required columns: {', '.join(missing)}"
+                    ),
+                }
+
+            for row in reader:
+                if not isinstance(row, dict):
+                    continue
+                uprn = _normalize_uprn(row.get(column_mapping["UPRN"]))
+                if uprn is None or uprn not in requested:
+                    continue
+                source = _normalize_space(str(row.get(column_mapping["SOURCE"]) or "")).upper()
+                if source not in ADDRESSBASE_RELEVANT_SOURCES:
+                    continue
+
+                _append_addressbase_match(
+                    accumulators=accumulators,
+                    uprn=uprn,
+                    source=source,
+                    xref_key=row.get(column_mapping.get("XREF_KEY", "")),
+                    cross_reference=row.get(column_mapping.get("CROSS_REFERENCE", "")),
+                    version=row.get(column_mapping.get("VERSION", "")),
+                    start_date=row.get(column_mapping.get("START_DATE", "")),
+                    end_date=row.get(column_mapping.get("END_DATE", "")),
+                    last_update_date=row.get(column_mapping.get("LAST_UPDATE_DATE", "")),
+                    entry_date=row.get(column_mapping.get("ENTRY_DATE", "")),
+                    active_only=active_only,
+                )
+    except OSError as exc:
+        return 502, {
+            "isError": True,
+            "code": "INVALID_DATA_SOURCE",
+            "message": f"Unable to read AddressBase Premium xref CSV: {exc}",
+        }
+
+    return 200, _finalize_addressbase_results(
+        uprns=uprns,
+        accumulators=accumulators,
+        active_only=active_only,
+    )
+
+
+def _duckdb_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
+
+
+def _duckdb_addressbase_expression(
+    column_mapping: dict[str, str],
+    canonical: str,
+    *,
+    relation_alias: str | None = None,
+    normalize_source: bool = False,
+    normalize_uprn: bool = False,
+) -> str:
+    actual = column_mapping.get(canonical)
+    if actual is None:
+        return "CAST(NULL AS VARCHAR)"
+    qualified_identifier = _duckdb_identifier(actual)
+    if relation_alias:
+        qualified_identifier = f"{relation_alias}.{qualified_identifier}"
+    expression = f"CAST({qualified_identifier} AS VARCHAR)"
+    if normalize_source:
+        return f"UPPER(TRIM({expression}))"
+    if normalize_uprn:
+        return f"REPLACE(TRIM({expression}), ' ', '')"
+    return expression
+
+
+def _configure_addressbase_duckdb_connection(connection: Any) -> None:
+    threads = max(1, int(getattr(settings, "ADDRESSBASE_PREMIUM_DUCKDB_THREADS", 1) or 1))
+    memory_limit = str(
+        getattr(settings, "ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT", "512MB") or ""
+    ).strip()
+    connection.execute(f"PRAGMA threads={threads}")
+    if memory_limit:
+        quoted_memory_limit = memory_limit.replace("'", "''")
+        connection.execute(f"SET memory_limit='{quoted_memory_limit}'")
+
+
+def _scan_addressbase_xref_parquet(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    if duckdb is None:
+        return 501, {
+            "isError": True,
+            "code": "MISSING_DEPENDENCY",
+            "message": "duckdb is required to query AddressBase Premium parquet sources",
+        }
+
+    accumulators = _build_addressbase_accumulators(uprns)
+    connection = duckdb.connect(database=":memory:")  # type: ignore[union-attr]
+    try:
+        _configure_addressbase_duckdb_connection(connection)
+        schema_rows = connection.execute(
+            "DESCRIBE SELECT * FROM read_parquet(?)",
+            [str(path)],
+        ).fetchall()
+        column_mapping, missing = _resolve_addressbase_column_mapping(
+            [str(row[0]) for row in schema_rows if row and row[0]]
+        )
+        if missing:
+            return 502, {
+                "isError": True,
+                "code": "INVALID_DATA_SOURCE",
+                "message": (
+                    "AddressBase Premium parquet is missing required columns: "
+                    f"{', '.join(missing)}"
+                ),
+            }
+
+        connection.execute("CREATE TEMP TABLE requested_uprns (uprn VARCHAR)")
+        connection.executemany(
+            "INSERT INTO requested_uprns VALUES (?)",
+            [(uprn,) for uprn in uprns],
+        )
+
+        source_expr = _duckdb_addressbase_expression(
+            column_mapping,
+            "SOURCE",
+            relation_alias="xref",
+            normalize_source=True,
+        )
+        end_date_expr = _duckdb_addressbase_expression(
+            column_mapping,
+            "END_DATE",
+            relation_alias="xref",
+        )
+        rows = connection.execute(
+            f"""
+            SELECT
+                req.uprn AS requested_uprn,
+                {source_expr} AS source,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "XREF_KEY",
+                    relation_alias="xref",
+                )} AS xref_key,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "CROSS_REFERENCE",
+                    relation_alias="xref",
+                )} AS cross_reference,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "VERSION",
+                    relation_alias="xref",
+                )} AS version,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "START_DATE",
+                    relation_alias="xref",
+                )} AS start_date,
+                {end_date_expr} AS end_date,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "LAST_UPDATE_DATE",
+                    relation_alias="xref",
+                )} AS last_update_date,
+                {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "ENTRY_DATE",
+                    relation_alias="xref",
+                )} AS entry_date
+            FROM read_parquet(?) AS xref
+            INNER JOIN requested_uprns AS req
+                ON {_duckdb_addressbase_expression(
+                    column_mapping,
+                    "UPRN",
+                    relation_alias="xref",
+                    normalize_uprn=True,
+                )} = req.uprn
+            WHERE {source_expr} IN ('7666VC', '7666VN')
+            """,
+            [str(path)],
+        ).fetchall()
+    except Exception as exc:
+        return 502, {
+            "isError": True,
+            "code": "INVALID_DATA_SOURCE",
+            "message": f"Unable to query AddressBase Premium parquet: {exc}",
+        }
+    finally:
+        connection.close()
+
+    for (
+        requested_uprn,
+        source,
+        xref_key,
+        cross_reference,
+        version,
+        start_date,
+        end_date,
+        last_update_date,
+        entry_date,
+    ) in rows:
+        normalized_uprn = _normalize_uprn(requested_uprn)
+        normalized_source = _normalize_space(str(source or "")).upper()
+        if normalized_uprn is None or normalized_source not in ADDRESSBASE_RELEVANT_SOURCES:
+            continue
+        _append_addressbase_match(
+            accumulators=accumulators,
+            uprn=normalized_uprn,
+            source=normalized_source,
+            xref_key=xref_key,
+            cross_reference=cross_reference,
+            version=version,
+            start_date=start_date,
+            end_date=end_date,
+            last_update_date=last_update_date,
+            entry_date=entry_date,
+            active_only=active_only,
+        )
+
+    return 200, _finalize_addressbase_results(
+        uprns=uprns,
+        accumulators=accumulators,
+        active_only=active_only,
+    )
+
+
+def _scan_addressbase_xref(
+    *,
+    path: Path,
+    uprns: list[str],
+    active_only: bool,
+) -> tuple[int, dict[str, Any] | list[dict[str, Any]]]:
+    suffix = path.suffix.lower()
+    if suffix == ".csv":
+        return _scan_addressbase_xref_csv(path=path, uprns=uprns, active_only=active_only)
+    if suffix == ".parquet":
+        return _scan_addressbase_xref_parquet(path=path, uprns=uprns, active_only=active_only)
+    return 502, {
+        "isError": True,
+        "code": "INVALID_DATA_SOURCE",
+        "message": f"Unsupported AddressBase Premium xref file type: {path.suffix or '<none>'}",
+    }
 
 
 def _build_address(match: dict[str, Any]) -> str | None:
@@ -337,7 +866,7 @@ def _parse_definition_list_match(html_text: str, *, base_url: str) -> list[dict[
     parser.feed(html_text)
     if not parser.entries:
         return []
-    record = {label: value for label, value in parser.entries}
+    record = dict(parser.entries)
     match = _normalize_result_record(record, hrefs=[], base_url=base_url)
     if match is None or not match.get("band"):
         return []
@@ -575,15 +1104,15 @@ def _validate_and_build_query(
         "propertyUse": 64,
     }
     validated_fields: dict[str, str | None] = {}
-    for field, max_length in field_specs.items():
+    for field_name, max_length in field_specs.items():
         field_status, field_value = _validate_optional_text(
             payload,
-            field,
+            field_name,
             max_length=max_length,
         )
         if field_status != 200:
             return field_status, field_value
-        validated_fields[field] = field_value
+        validated_fields[field_name] = field_value
 
     query = {
         "propertyName": validated_fields["propertyName"],
@@ -691,6 +1220,78 @@ def _band_lookup(payload: dict[str, Any]) -> ToolResult:
     }
 
 
+def _uprn_query(payload: dict[str, Any]) -> ToolResult:
+    status, validated = _validate_uprn_query(payload)
+    if status != 200:
+        return status, validated
+
+    uprns = list(validated["uprns"])
+    active_only = bool(validated["activeOnly"])
+    raw_count = int(validated["rawCount"])
+    xref_path = _resolve_addressbase_xref_path()
+    if xref_path is None:
+        return 501, {
+            "isError": True,
+            "code": "NO_ADDRESSBASE_PREMIUM_DATA",
+            "message": (
+                "AddressBase Premium Application Cross Reference data is not configured. "
+                "Set ADDRESSBASE_PREMIUM_XREF_PATH to an AddressBase Premium xref CSV/parquet "
+                "file or to a directory containing one."
+            ),
+        }
+
+    max_uprns = (
+        ADDRESSBASE_XREF_PARQUET_MAX_UPRNS
+        if xref_path.suffix.lower() == ".parquet"
+        else ADDRESSBASE_XREF_CSV_MAX_UPRNS
+    )
+    if raw_count > max_uprns:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": f"uprns must contain {max_uprns} items or fewer",
+        }
+
+    scan_status, results_or_error = _scan_addressbase_xref(
+        path=xref_path,
+        uprns=uprns,
+        active_only=active_only,
+    )
+    if scan_status != 200:
+        assert isinstance(results_or_error, dict)
+        return scan_status, results_or_error
+
+    results = list(results_or_error)
+    summary = {
+        "queriedCount": len(results),
+        "councilTaxCount": sum(1 for item in results if item["paysCouncilTax"]),
+        "businessRatesCount": sum(1 for item in results if item["paysBusinessRates"]),
+        "bothCount": sum(1 for item in results if item["status"] == "both"),
+        "noneCount": sum(1 for item in results if item["status"] == "none"),
+        "activeOnly": active_only,
+    }
+    provenance_method = (
+        "duckdb_parquet_query"
+        if xref_path.suffix.lower() == ".parquet"
+        else "streaming_csv_scan"
+    )
+    return 200, {
+        "results": results,
+        "summary": summary,
+        "provenance": {
+            "source": "addressbase_premium_application_cross_reference",
+            "method": provenance_method,
+            "configuredPath": str(xref_path),
+            "documentation": {
+                "product": ADDRESSBASE_PREMIUM_DOC_URL,
+                "applicationCrossReference": ADDRESSBASE_PREMIUM_XREF_DOC_URL,
+            },
+            "sourceValues": ADDRESSBASE_RELEVANT_SOURCES,
+            "timestamp": time.time(),
+        },
+    }
+
+
 register(
     Tool(
         name="council_tax.band_lookup",
@@ -754,5 +1355,110 @@ register(
             "additionalProperties": True,
         },
         handler=_band_lookup,
+    )
+)
+
+
+register(
+    Tool(
+        name="council_tax.query",
+        description=(
+            "Query AddressBase Premium Application Cross Reference records by UPRN to "
+            "identify Council Tax and non-domestic rates flags."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {
+                "tool": {"type": "string", "const": "council_tax.query"},
+                "uprns": {
+                    "type": "array",
+                    "items": {"type": "string", "pattern": "^[0-9]{1,12}$"},
+                    "minItems": 1,
+                    "maxItems": ADDRESSBASE_XREF_PARQUET_MAX_UPRNS,
+                    "description": "One or more UPRNs to inspect in AddressBase Premium.",
+                },
+                "activeOnly": {
+                    "type": "boolean",
+                    "description": (
+                        "When true, only treat Type 23 cross references with a blank END_DATE "
+                        "as current. Defaults to true."
+                    ),
+                },
+            },
+            "required": ["uprns"],
+            "additionalProperties": False,
+        },
+        output_schema={
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "uprn": {"type": "string"},
+                            "paysCouncilTax": {"type": "boolean"},
+                            "paysBusinessRates": {"type": "boolean"},
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "none",
+                                    "council_tax",
+                                    "non_domestic_rates",
+                                    "both",
+                                ],
+                            },
+                            "sourceCodes": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "inactiveSourceCodes": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "matchedRecordCount": {"type": "integer"},
+                            "inactiveRelevantRecordCount": {"type": "integer"},
+                            "matches": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "xrefKey": {"type": ["string", "null"]},
+                                        "crossReference": {"type": ["string", "null"]},
+                                        "version": {"type": ["string", "null"]},
+                                        "source": {"type": "string"},
+                                        "sourceDescription": {"type": "string"},
+                                        "startDate": {"type": ["string", "null"]},
+                                        "endDate": {"type": ["string", "null"]},
+                                        "lastUpdateDate": {"type": ["string", "null"]},
+                                        "entryDate": {"type": ["string", "null"]},
+                                        "active": {"type": "boolean"},
+                                    },
+                                    "required": ["source", "sourceDescription", "active"],
+                                    "additionalProperties": False,
+                                },
+                            },
+                        },
+                        "required": [
+                            "uprn",
+                            "paysCouncilTax",
+                            "paysBusinessRates",
+                            "status",
+                            "sourceCodes",
+                            "inactiveSourceCodes",
+                            "matchedRecordCount",
+                            "inactiveRelevantRecordCount",
+                            "matches",
+                        ],
+                        "additionalProperties": False,
+                    },
+                },
+                "summary": {"type": "object"},
+                "provenance": {"type": "object"},
+            },
+            "required": ["results", "summary", "provenance"],
+            "additionalProperties": False,
+        },
+        handler=_uprn_query,
     )
 )

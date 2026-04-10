@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 99,
+  "tool_count": 102,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -58,6 +58,14 @@
       "input_schema_sha256": "487ab47162adc12e4923fb91d69dca4d767b1d5e612d9e6bb1787cca4a34e9fa",
       "name": "council_tax.band_lookup",
       "output_schema_sha256": "be21ad1db9f6d1771576787a2cc38fa230b8f8408f52e687bef8b675c8ca80d7",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Query AddressBase Premium Application Cross Reference records by UPRN to identify Council Tax and non-domestic rates flags.",
+      "description_sha256": "e39fd2e423bb762a9c39f4ef4abad259de598bb634dfb75b10bacce1599582f7",
+      "input_schema_sha256": "4d9b54b32780c2ee50f3922a52a3d832d50180dc2d85b9a67bf3cdddbbe1c3cd",
+      "name": "council_tax.query",
+      "output_schema_sha256": "20cee96d8b33005057a1874bdf6b9e2cc284dc320e01be7ea4404eded2ae7efa",
       "version": "0.1.0"
     },
     {
@@ -119,7 +127,7 @@
     {
       "description": "Summarize one NATMAP thematic product across a bbox or GeoJSON polygon.",
       "description_sha256": "fd4ef980a1c217dfc3d7afb9488c296e5ff3c795ebbbca5441087c45475fe808",
-      "input_schema_sha256": "dd57687131d6d1d7b0acb47bb70bf996e64640e7c9cd17459c111bb65499c71f",
+      "input_schema_sha256": "f7653072ca0eac8f81fea5fc6e33c3fc2696c148b989e8ff58947fcf871243e3",
       "name": "landis_natmap.thematic_area_summary",
       "output_schema_sha256": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
       "version": "0.1.0"
@@ -290,6 +298,14 @@
       "input_schema_sha256": "7fbb88d41cd55abb15b3daba80592399adfbd7162ae11c824bd0b86311167098",
       "name": "ons_geo.cache_status",
       "output_schema_sha256": "02b7fd7eba78e1b63569fb4bf2eec94b54469bb601fe46351d8e809b6b2cf18c",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Audit ONS UPRN release freshness by combining AddressBase epoch schedule, Geoportal notices, Geoportal dataset discovery, and current package resolution.",
+      "description_sha256": "24262a47c67b2a11d950779fbd510ab56182d4c5b17176802ab0fe43ff618885",
+      "input_schema_sha256": "ebfc2013d98b8752e92548a463a8abf2c0d3fa2d2679c5da3f130637d8a46517",
+      "name": "ons_geo.release_audit",
+      "output_schema_sha256": "cd73de629e57ffef593512b01ad2751508716d94a95d5e577a06bdaffe91f556",
       "version": "0.1.0"
     },
     {
@@ -498,6 +514,14 @@
       "input_schema_sha256": "4d2240a6b55d4cb78a66b7cad96eca6fa0b5f9b04aadde4078855dd19081efb2",
       "name": "os_map.export",
       "output_schema_sha256": "05342964c01cc86e59daaaac4fbc893bef8de0679e99dfe431a95fbf081fda2e",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Export complete road overlay artifacts server-side from road numbers and/or selectionSpec-derived AOIs, including all upstream pages and semantic parts.",
+      "description_sha256": "15f6777b2be80b7ead20ae8c4dc39fb08d3d6af3d947fd5c86046c712910c8b3",
+      "input_schema_sha256": "abbfb56a33992aa7f58e9a32ab055b2fd56e41ce1a67b8c984ee866b6492fbdd",
+      "name": "os_map.export_roads",
+      "output_schema_sha256": "da26ea7edef330770563e7a82b68c5a7f8885fe0a9e525ce88b28a6cabca7955",
       "version": "0.1.0"
     },
     {

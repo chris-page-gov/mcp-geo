@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added DuckDB-backed AddressBase Premium Parquet support for
+  `council_tax.query`, alongside the new builder
+  `scripts/addressbase_build_xref.py`. The council-tax lookup now accepts
+  supplier-style CSV headers, extracted camelCase headers, or Parquet xref
+  files, prefers `xref_voa_os.parquet` when scanning configured directories,
+  and can query local Parquet extracts directly without creating a separate
+  indexed DuckDB database.
+- Added the grounded troubleshooting analysis
+  `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, which
+  documents why AI clients struggle when map-building tasks are forced through
+  low-level paged feature queries plus byte-chunk resource recovery, and
+  recommends a task-shaped road-overlay export contract as the preferred fix.
+- Added the new task-shaped road-overlay exporter `os_map.export_roads` in
+  `tools/os_map.py`. It now fetches all required `os_features.query` pages
+  server-side, assembles complete per-road GeoJSON parts, writes durable
+  semantic export bundles under `resource://mcp-geo/os-exports/road-overlays/`,
+  and can emit either `geojson_bundle`, `javascript_overlay`, or
+  `leaflet_snippet` artifacts from a deterministic request hash rather than
+  forcing clients to recover byte-chunked resources by hand.
+- Added a repo-wide generated Obsidian knowledge base under
+  `Obsidian/MCP Geo Knowledge Base/`, backed by
+  `scripts/obsidian_kb_common.py`, `scripts/build_obsidian_kb.py`,
+  `scripts/validate_obsidian_kb.py`, the canonical manifest
+  `data/knowledge_base/obsidian_kb_manifest.json`, and the maintenance skill
+  `skills/mcp-geo-obsidian-kb/SKILL.md`. The canonical build is evidence-first,
+  excludes `Obsidian/**` from source scanning to avoid recursion, records
+  source hashes and commit-pinned GitHub URLs in note frontmatter, and keeps
+  local trace/session notes in an ignored `98 Local Overlay/` subtree.
 - Added a root `LICENSE` file, `SECURITY.md`, and the Docker catalog submission
   note `docs/docker_mcp_catalog_submission.md` so the repo now carries explicit
   licensing, security-reporting, and Docker MCP catalog metadata guidance.
@@ -79,6 +107,10 @@ All notable changes to this project will be documented in this file.
   longer publish host port `5432` by default, and stale sidecars with the wrong
   port-binding state are now called out for recreation instead of silently
   colliding with another wrapper's PostGIS container.
+- Added the checked-in Obsidian vault `Obsidian/LandIS Knowledge Base/`,
+  bundling the LandIS strategy, dataset notes, MCP architecture pages,
+  reference material, and supporting PDF/image assets as a browsable local
+  knowledge base for the LandIS workstream.
 - Added the full repository review report
   `docs/reports/mcp_geo_full_code_review_2026-03-24.md`, indexed it in the
   reports catalog, recorded the remediation baseline in `PROGRESS.MD` and
@@ -88,17 +120,154 @@ All notable changes to this project will be documented in this file.
   premise-level Council Tax band searches, including the GOV.UK HTML client,
   discovery wiring, focused mocked regressions, and the initial config/docs
   surface for the new Council Tax namespace.
+- Added `council_tax.query`, an AddressBase Premium-backed batch UPRN check for
+  Council Tax and non-domestic-rates status. The new tool stream-scans the
+  configured Type 23 Application Cross Reference CSV, treats `7666VC` as
+  Council Tax and `7666VN` as non-domestic rates, defaults to current records
+  with blank `END_DATE`, and returns historical inactive source flags
+  separately so ended records are visible without being misreported as current.
+- Added `ons_geo.release_audit`, which combines the tracked AddressBase epoch
+  schedule, ONS Open Geography Portal RSS notices, ONS Open Geography Portal
+  dataset discovery, and current package resolution so operators can see both
+  the latest resolvable public UPRN dataset and whether it is lagging behind
+  the authoritative AddressBase publication schedule.
+- Added `docs/ons_geo_source_resolution.md`, documenting the ONS geo source
+  model with glossary coverage for abbreviations such as CKAN, DCAT, OGC API
+  Records, ONSPD, NSPL, ONSUD, NSUL, CHD, and RGC, plus cited guidance on why
+  package availability and freshness must be treated separately.
+  separately for traceability. The docs/config surface now points to the
+  current OS Docs specification pages instead of the dead legacy PDF URL.
+
+### Changed
+- Documented the 2026-04-09 DuckDB/PostGIS architecture review: DuckDB is the
+  preferred local file-backed query engine for AddressBase-style artifacts,
+  but the repo is not replacing the existing PostGIS-backed cache/warehouse
+  surfaces at this stage because the route graph still depends on
+  pgRouting/PostGIS and the boundary/LandIS stores would require a broader
+  backend migration to change cleanly.
+- `docs/tutorial.md` now documents automatic `ons_geo` source resolution during
+  cache refresh, links to the new ONS source-resolution note, and includes the
+  `ons_geo.release_audit` tool in the ONS geography walkthrough.
+- Clarified the repo guidance for tool-surface changes so agents now treat
+  tool additions and contract edits as OWASP maintenance work as well:
+  update `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed
+  manifest artifacts, and rerun the strict validator in the same change.
+- Added the first real-delivery Council Tax UPRN example artifact set from the
+  2026-04-07 ABP GML delivery: the repo now keeps
+  `tests/fixtures/council_tax_uprn_abp_example.json` as a stable example
+  output fixture, and the matching analyst-friendly workbook is generated at
+  `output/spreadsheet/uprns_council_tax_status.xlsx`.
 - Added a deterministic gold evaluation fixture pack for
   `council_tax.band_lookup` under `tests/fixtures/council_tax*` and
   `tests/test_council_tax_gold_eval.py`, using curated public GOV.UK search
   excerpts plus verified property-detail URLs for Westminster, Manchester, and
   York examples.
+- Added a resolver-driven ONS geo source manifest in
+  `resources/ons_geo_sources.json`, replacing the old `downloadUrl`-only shape
+  with explicit resolver metadata for ArcGIS hosted tables (ONSPD/NSPL),
+  release-file discovery (ONSUD/NSUL), and mandatory CHD/RGC support
+  sidecars.
+- Added `scripts/ons_geo_live_validate.py` as an opt-in external validation
+  entrypoint that resolves live/public ONS sources and checks only high-signal
+  invariants such as source reachability and required semantic field families,
+  keeping that validation outside the default deterministic CI gate.
+- Added compact schema-drift and code-history fixtures under
+  `tests/fixtures/ons_geo/` plus focused offline regression coverage in
+  `tests/test_ons_geo_cache_refresh.py`, `tests/test_ons_geo_cache.py`,
+  `tests/test_ons_geo.py`, and `tests/test_ons_geo_live_validate.py`.
+- Added the tracked AddressBase epoch schedule
+  `resources/addressbase_epoch_schedule.json`, which now acts as the
+  authoritative freshness reference for `ONSUD` / `NSUL` validation.
 
 ### Fixed
+- `os_map.export_roads` now accepts concise selector payloads such as
+  `selectionSpec: {"postcode": "CV3 1HB"}` (plus the same shorthand for
+  `uprn`, `gssCode`+`level`, and `geometry`/`polygon`) instead of requiring
+  callers to always build `selectionSpec.selectors[...]` manually. The same
+  parser is shared with selector-driven `os_map.export` jobs so both flows now
+  accept the shorthand form.
+- `os_features.query` and `os_places.polygon` now accept JSON-encoded polygon
+  strings as well as native JSON arrays/objects, so hosts that stringify nested
+  polygon payloads no longer fail with `INVALID_INPUT` before the upstream OS
+  call is attempted.
+- Selector-driven road exports and selector-driven `os_map.export` jobs now
+  normalize missing or unreadable ONS geo cache failures into explicit
+  `CACHE_UNAVAILABLE` / `CACHE_READ_ERROR` tool errors rather than bubbling
+  raw SQLite exceptions as internal errors. `os_map.export_roads` also now
+  returns `AOI_NOT_RESOLVED` when a syntactically valid `selectionSpec` does
+  not resolve any AOI geometry.
+- `scripts/ons_geo_cache_refresh.py` now performs resolver-driven source
+  acquisition, writes raw artifacts under `data/cache/ons_geo/raw/...`,
+  stores schema fingerprints and validation summaries, and enriches the cache
+  with normalized semantic geography payloads plus CHD/RGC-backed code-history
+  annotations instead of depending on exact raw column names.
+- `scripts/ons_geo_live_validate.py` now uses metadata-only source probes
+  rather than full dataset refreshes during live validation, downgrades
+  archive-style remote releases to explicit warnings instead of hanging on
+  large downloads, ignores page-fragment/static-asset false positives when
+  selecting `portal_release_file` candidates, and now points the RGC manifest
+  at the direct December 2025 data.gov.uk package rather than a generic
+  geoportal search page.
+- `scripts/ons_geo_live_validate.py`, `scripts/ons_geo_cache_refresh.py`, and
+  `tools/ons_geo.py` now treat ONSUD/NSUL freshness as an explicit validation
+  concern. The resolver parses dataset epochs, compares them against the
+  tracked AddressBase publication schedule, reports `freshness` metadata, and
+  flags lagging UPRN datasets rather than assuming the newest-looking ONS title
+  is current.
+- `server/ons_geo_cache.py` and `tools/ons_geo.py` now prefer stored normalized
+  geography payloads on lookup, expose richer provenance such as resolved
+  release/source/schema fingerprint, and report exact/best-fit/support-dataset
+  readiness in `ons_geo.cache_status` rather than only checking for a cache
+  file and shallow product list.
+- Selector-driven road exports can now use ward/country/region-backed GSS-code
+  membership columns from the expanded ONS UPRN index, so the normalized cache
+  remains useful to downstream AOI flows without any year-specific header
+  assumptions.
+- `os_mcp.route_query` now recognizes road-overlay/map-repair prompts such as
+  replacing broken Overpass fetches with OS road geometry and recommends
+  `os_map.export_roads` directly, including extracted road numbers plus
+  output-format hints for Leaflet/JavaScript-oriented requests.
+- `resource://mcp-geo/os-exports/*` reads now return content-type-aware MIME
+  metadata for `.geojson`, `.js`, and `.html` artifacts, so semantic road
+  export parts are advertised as `application/geo+json` /
+  `application/javascript` instead of generic plain text.
+- `os_features.query` now normalizes CQL property identifiers against the
+  collection queryables schema before sending upstream NGD requests, so agents
+  using mixed-case field names like `roadClassificationNumber` on RoadLink no
+  longer fail on OS's lowercase-only queryable contract. Added focused
+  regressions for the normalization path and preserved the rewritten CQL in the
+  tool response for traceability.
 - MCP HTTP and STDIO tool responses now omit `structuredContent` for error
   results, preventing clients such as Claude from validating error payloads
   against success-only output schemas. Added focused postcode-tool regressions
   covering the `NO_API_KEY` path across both transports.
+- LandIS discovery and archive coverage now better match the resilience-use-case
+  data already mirrored locally: the callable registry exposes the exact
+  NATMAP thematic `productId` values accepted by
+  `landis_natmap.thematic_area_summary`, LandIS live-query errors now return
+  structured fallback guidance, and `landis_archive.*` includes the
+  supplementary full-release/public-menu plus matched `data.gov.uk` package
+  slice so `HOST`, `wetness`, `Series Hydrology`, `Series Leacs`, and similar
+  supplementary references are discoverable through MCP.
+- Fresh Docker PostGIS sidecars no longer expose empty LandIS live-query
+  surfaces by default. `scripts/mcp-docker-local` now detects missing or empty
+  LandIS tables and auto-bootstraps the mounted local archive plus validation
+  layers before starting the stdio server, `scripts/landis_phase2_ingest.py`
+  now remaps mounted `/landis-data/...` archive paths correctly inside the
+  container, and `scripts/landis_ingest.py` now executes schema SQL
+  statement-by-statement so repeated bootstrap passes remain safe.
+- LandIS wrapper bootstrap now rejects incomplete portal archive roots before
+  phase-2 ingest. `scripts/mcp-docker-local` now falls back to the newest
+  complete `landis_portal_archive_*` directory instead of hard-failing on the
+  newest partial mirror, and `scripts/landis_phase2_ingest.py` now exposes the
+  same archive-completeness validation for both direct invocation and wrapper
+  selection.
+- The checked-in Obsidian knowledge base no longer trips the OWASP secret-scan
+  gate on frontmatter provenance hashes. `scripts/obsidian_kb_common.py` now
+  renders note-level `source_hashes` in a chunked `sha256:` format that
+  preserves provenance while avoiding `gitleaks` false positives, and the
+  regenerated vault now includes canonical notes for the KB build/validate
+  scripts themselves.
 - Playground transcript endpoints now normalize non-object JSON payloads back to
   the standard `INVALID_INPUT` response instead of leaking a `TypeError` from
   Pydantic construction, and the config fallback shim now has explicit

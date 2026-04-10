@@ -76,6 +76,12 @@ def test_search_tools_finds_council_tax_keywords():
     assert "council_tax.band_lookup" in names
 
 
+def test_search_tools_finds_addressbase_uprn_keywords():
+    results = search_tools("addressbase uprn business rates council tax", mode="token")
+    names = {item.get("name") for item in results}
+    assert "council_tax.query" in names
+
+
 def test_search_tools_accepts_stats_alias_category():
     results = search_tools("nomis", mode="token", category="stats")
     assert results

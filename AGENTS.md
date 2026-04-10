@@ -93,6 +93,12 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 
 - Pytest with coverage gate (≥90%). Current suite covers success + validation + upstream error paths.
 - When adding a tool: include validation tests, success path (mocked upstream), and at least one upstream error normalization test.
+- When adding or changing a tool contract: update
+  `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed tool
+  manifest artifacts (`tool_manifest.lock.json`, `.sig`, and `tool_manifest.pub.pem`)
+  with `scripts/generate_owasp_mcp_tool_manifest.py`, and rerun the strict
+  validator via `./scripts/validate-owasp-mcp-local` so OWASP CI stays aligned
+  with the registered tool set.
 - When fixing a bug or review finding: search for structurally similar code paths
   across the repo, patch every confirmed sibling instance in the same change,
   and add regression coverage for both the reported case and at least one
@@ -149,6 +155,10 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 - Do not introduce new dependencies without updating `pyproject.toml` and rationale in PR.
 - Prefer incremental refactors (extract functions before rewriting blocks).
 - If adding a tool: include JSON schema for request/response in docstring.
+- If adding or renaming a tool, or changing its description/schema: treat that
+  as an OWASP manifest change as well as a runtime change. Refresh the tool
+  risk inventory and signed manifest artifacts in `security/owasp_mcp/` in the
+  same change rather than leaving the validator to catch drift later.
 - Keep the implementation plan in `PROGRESS.MD` updated as plan items move from
   pending to in progress to done. Update `CHANGELOG.md` when a plan item is
   completed and adjust related docs in the same change.
@@ -198,6 +208,19 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - When creating PRs/comments with markdown that includes backticks, never inline the body directly in a shell command. Write body text to a temp file and use `gh pr create --body-file` / `gh pr edit --body-file` / `gh pr comment --body-file` to avoid shell interpolation and command substitution.
 - In this repo, Codex review is triggered by PR comment (`@codex review`), not by reviewer assignment. If a Codex review is requested, post the trigger comment on the PR and confirm the comment URL.
+- Before requesting review or pushing a batch of review fixes, run a
+  pre-review sweep for the touched area instead of waiting for one comment at
+  a time. Minimum sweep:
+  - cluster open comments by behavior area and fix each cluster in one batch
+  - scan for sibling patterns with `rg` and shared-helper inspection
+  - check transport/runtime variants (`HTTP`, `STDIO`, live probe vs refresh,
+    cache vs direct source, CSV vs Parquet, etc.) when relevant
+  - add regressions for the reported case plus at least one confirmed sibling
+  - rerun the narrowest meaningful validation slice before pushing
+- When several review comments are open, prefer one coordinated fix push per
+  behavior cluster rather than pushing after each individual edit. This reduces
+  drip-feed review passes and makes it more likely that Codex/GitHub sees the
+  full corrected class on the next review.
 - When addressing PR comments, do not stop at the exact line cited by the
   reviewer. Run a same-pattern scan (`rg`, shared-helper inspection, transport
   variant check, and targeted regressions) so the follow-up closes the entire
@@ -242,4 +265,4 @@ Resolved (removed from gaps): baseline tests, dynamic tool registration reliabil
 
 ---
 
-Last updated: 2026-02-22
+Last updated: 2026-04-08

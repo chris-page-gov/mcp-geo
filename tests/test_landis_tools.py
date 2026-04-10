@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import tools.landis_catalog
 import tools.landis_archive
+import tools.landis_catalog
 import tools.landis_derive
 import tools.landis_metadata
 import tools.landis_natmap
@@ -31,9 +31,15 @@ def _tool(name: str):
 def test_landis_catalog_list_products_returns_registry_entries() -> None:
     status, body = _tool("landis_catalog.list_products").call({})
     assert status == 200
-    ids = {entry["id"] for entry in body["products"]}
+    products = {entry["id"]: entry for entry in body["products"]}
+    ids = set(products)
     assert "soilscapes" in ids
     assert "pipe-risk" in ids
+    assert "natmap-carbon" in ids
+    assert (
+        products["natmap-carbon"]["tooling"]["defaultParameters"]["productId"]
+        == "natmap-carbon"
+    )
     assert body["registry"]["registryUri"] == "resource://mcp-geo/landis-products"
 
 
@@ -48,6 +54,12 @@ def test_landis_metadata_get_existing_product() -> None:
     assert status == 200
     assert body["product"]["id"] == "soilscapes"
     assert body["metadata"]["citations"]
+
+
+def test_landis_metadata_get_thematic_product() -> None:
+    status, body = _tool("landis_metadata.get").call({"productId": "natmap-carbon"})
+    assert status == 200
+    assert body["product"]["tooling"]["toolNames"] == ["landis_natmap.thematic_area_summary"]
 
 
 def test_landis_catalog_list_products_validates_and_filters_inputs() -> None:
@@ -67,7 +79,9 @@ def test_landis_catalog_list_products_validates_and_filters_inputs() -> None:
     assert status == 400
     assert body["code"] == "INVALID_INPUT"
 
-    status, body = tools.landis_catalog._list_products({"family": "documentation", "q": "classification"})
+    status, body = tools.landis_catalog._list_products(
+        {"family": "documentation", "q": "classification"}
+    )
     assert status == 200
     assert body["total"] >= 1
     assert all(item["family"] == "documentation" for item in body["products"])
@@ -247,6 +261,7 @@ def test_landis_soilscapes_area_summary_upstream_unavailable(monkeypatch) -> Non
     status, body = _tool("landis_soilscapes.area_summary").call({"bbox": [-1.6, 52.0, -1.4, 52.2]})
     assert status == 502
     assert body["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert "landis_catalog.list_products" in body["details"]["fallbackTools"]
 
 
 def test_landis_derive_pipe_risk_success(monkeypatch) -> None:
@@ -300,6 +315,7 @@ def test_landis_derive_pipe_risk_invalid_and_error_paths(monkeypatch) -> None:
     status, body = tools.landis_derive._pipe_risk({"bbox": [-1.6, 52.0, -1.4, 52.2]})
     assert status == 502
     assert body["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert body["details"]["runtime"]["reason"] == "upstream_connect_error"
 
     monkeypatch.setattr(
         tools.landis_derive,
@@ -477,8 +493,14 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
         lambda: _FakeWarehouse(
             natmap_area={
                 "areaSqM": 100.0,
-                "mapUnits": [{"mapUnitId": "MU1", "name": "Freely draining loams", "percent": 75.0}],
-                "dominantMapUnit": {"mapUnitId": "MU1", "name": "Freely draining loams", "percent": 75.0},
+                "mapUnits": [
+                    {"mapUnitId": "MU1", "name": "Freely draining loams", "percent": 75.0}
+                ],
+                "dominantMapUnit": {
+                    "mapUnitId": "MU1",
+                    "name": "Freely draining loams",
+                    "percent": 75.0,
+                },
                 "provenance": {"productId": "natmap-core", "warehouseBacked": True},
             }
         ),
@@ -495,8 +517,20 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
                 "productId": "natmap-carbon",
                 "product": {"title": "NATMAP Carbon"},
                 "areaSqM": 100.0,
-                "classes": [{"code": "4", "label": "High", "percent": 60.0, "metrics": {"TOPOCC": "4"}}],
-                "dominantClass": {"code": "4", "label": "High", "percent": 60.0, "metrics": {"TOPOCC": "4"}},
+                "classes": [
+                    {
+                        "code": "4",
+                        "label": "High",
+                        "percent": 60.0,
+                        "metrics": {"TOPOCC": "4"},
+                    }
+                ],
+                "dominantClass": {
+                    "code": "4",
+                    "label": "High",
+                    "percent": 60.0,
+                    "metrics": {"TOPOCC": "4"},
+                },
                 "provenance": {"productId": "natmap-core", "warehouseBacked": True},
             }
         ),
@@ -507,9 +541,12 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
     assert status == 200
     assert body["productId"] == "natmap-carbon"
 
-    status, body = tools.landis_natmap._thematic_area_summary({"productId": "bad", "bbox": [-1.6, 52.0, -1.4, 52.2]})
+    status, body = tools.landis_natmap._thematic_area_summary(
+        {"productId": "bad", "bbox": [-1.6, 52.0, -1.4, 52.2]}
+    )
     assert status == 400
     assert body["code"] == "INVALID_INPUT"
+    assert "natmap-carbon" in body["details"]["supportedProductIds"]
 
     status, body = tools.landis_natmap._point({"lat": "52.0", "lon": -1.5})
     assert status == 400
@@ -535,7 +572,9 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
     monkeypatch.setattr(
         tools.landis_natmap,
         "get_landis_warehouse",
-        lambda: _FakeWarehouse(natmap_point=LandisWarehouseDisabled("landis_warehouse_unconfigured")),
+        lambda: _FakeWarehouse(
+            natmap_point=LandisWarehouseDisabled("landis_warehouse_unconfigured")
+        ),
     )
     status, body = tools.landis_natmap._point({"lat": 52.0, "lon": -1.5})
     assert status == 503
@@ -549,6 +588,7 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
     status, body = tools.landis_natmap._point({"lat": 52.0, "lon": -1.5})
     assert status == 503
     assert body["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert body["details"]["runtime"]["reason"] == "upstream_connect_error"
 
     monkeypatch.setattr(
         tools.landis_natmap,
@@ -562,7 +602,9 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
     monkeypatch.setattr(
         tools.landis_natmap,
         "get_landis_warehouse",
-        lambda: _FakeWarehouse(natmap_area=LandisWarehouseDisabled("landis_warehouse_unconfigured")),
+        lambda: _FakeWarehouse(
+            natmap_area=LandisWarehouseDisabled("landis_warehouse_unconfigured")
+        ),
     )
     status, body = tools.landis_natmap._area_summary({"bbox": [-1.6, 52.0, -1.4, 52.2]})
     assert status == 503
@@ -604,6 +646,7 @@ def test_landis_natmap_tool_paths(monkeypatch) -> None:
     )
     assert status == 503
     assert body["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert "natmap-carbon" in body["details"]["supportedProductIds"]
 
     monkeypatch.setattr(
         tools.landis_natmap,
@@ -628,7 +671,9 @@ def test_landis_nsi_tool_paths(monkeypatch) -> None:
             }
         ),
     )
-    status, body = _tool("landis_nsi.nearest_sites").call({"lat": 52.0, "lon": -1.5, "maxDistanceKm": 3})
+    status, body = _tool("landis_nsi.nearest_sites").call(
+        {"lat": 52.0, "lon": -1.5, "maxDistanceKm": 3}
+    )
     assert status == 200
     assert body["sites"][0]["nsiId"] == 101
 
@@ -654,7 +699,12 @@ def test_landis_nsi_tool_paths(monkeypatch) -> None:
         lambda: _FakeWarehouse(
             nsi_profile={
                 "site": {"nsiId": 101},
-                "datasets": [{"datasetId": "NSIprofile", "records": [{"observationLabel": "profile"}]}],
+                "datasets": [
+                    {
+                        "datasetId": "NSIprofile",
+                        "records": [{"observationLabel": "profile"}],
+                    }
+                ],
                 "provenance": {"productId": "nsi-evidence", "warehouseBacked": True},
             }
         ),
@@ -663,7 +713,9 @@ def test_landis_nsi_tool_paths(monkeypatch) -> None:
     assert status == 200
     assert body["site"]["nsiId"] == 101
 
-    status, body = tools.landis_nsi._nearest_sites({"lat": 52.0, "lon": -1.5, "maxDistanceKm": "bad"})
+    status, body = tools.landis_nsi._nearest_sites(
+        {"lat": 52.0, "lon": -1.5, "maxDistanceKm": "bad"}
+    )
     assert status == 400
     assert body["code"] == "INVALID_INPUT"
 
@@ -705,7 +757,9 @@ def test_landis_nsi_tool_paths(monkeypatch) -> None:
     monkeypatch.setattr(
         tools.landis_nsi,
         "get_landis_warehouse",
-        lambda: _FakeWarehouse(nsi_nearest=LandisWarehouseDisabled("landis_warehouse_unconfigured")),
+        lambda: _FakeWarehouse(
+            nsi_nearest=LandisWarehouseDisabled("landis_warehouse_unconfigured")
+        ),
     )
     status, body = tools.landis_nsi._nearest_sites({"lat": 52.0, "lon": -1.5})
     assert status == 503
@@ -719,6 +773,7 @@ def test_landis_nsi_tool_paths(monkeypatch) -> None:
     status, body = tools.landis_nsi._nearest_sites({"lat": 52.0, "lon": -1.5})
     assert status == 503
     assert body["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert "landis_archive.list_items" in body["details"]["fallbackTools"]
 
     monkeypatch.setattr(
         tools.landis_nsi,
@@ -745,7 +800,9 @@ def test_landis_nsi_tool_paths(monkeypatch) -> None:
     monkeypatch.setattr(
         tools.landis_nsi,
         "get_landis_warehouse",
-        lambda: _FakeWarehouse(nsi_profile=LandisWarehouseDisabled("landis_warehouse_unconfigured")),
+        lambda: _FakeWarehouse(
+            nsi_profile=LandisWarehouseDisabled("landis_warehouse_unconfigured")
+        ),
     )
     status, body = tools.landis_nsi._profile_summary({"nsiId": 101})
     assert status == 503

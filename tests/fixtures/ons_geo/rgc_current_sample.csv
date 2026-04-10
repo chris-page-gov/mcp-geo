@@ -1,0 +1,7 @@
+GEOGRAPHY_CODE,GEOGRAPHY_NAME,STATUS,CODE_FAMILY,LEVEL
+E09000033,Westminster,current,lad,local_authority_district
+E05013806,St James's,current,ward,ward
+E92000001,England,current,country,country
+E12000007,London,current,region,region
+E08000026,Coventry,current,lad,local_authority_district
+E05001111,Holbrooks,current,ward,ward

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from typing import Any
 
 
@@ -315,6 +317,14 @@ def test_parse_polygon_accepts_valid_ring_and_geojson() -> None:
     assert error2 is None
     assert points2 == points
 
+    points3, error3 = os_features._parse_polygon(json.dumps(ring))
+    assert error3 is None
+    assert points3 == points
+
+    points4, error4 = os_features._parse_polygon(json.dumps(geo))
+    assert error4 is None
+    assert points4 == points
+
 
 def test_bbox_from_polygon() -> None:
     from tools import os_features
@@ -345,6 +355,14 @@ def test_feature_intersects_polygon_paths() -> None:
         }
     }
     assert os_features._feature_intersects_polygon(feature, poly)
+
+    crossing = {
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [[-1.0, 1.0], [3.0, 1.0]],
+        }
+    }
+    assert os_features._feature_intersects_polygon(crossing, poly)
 
 
 def test_coerce_number_behaviors() -> None:
@@ -488,6 +506,27 @@ def test_fetch_feature_page_timeout_degrade_and_retry_paths(monkeypatch) -> None
     assert "TIMEOUT_LIMIT_REDUCED" in warnings
     assert "TIMEOUT_BBOX_REDUCED" in warnings
     assert observed_params[1]["limit"] == 10
+
+
+def test_normalize_cql_queryable_fields_skips_strings_and_functions() -> None:  # type: ignore[no-untyped-def]
+    from tools import os_features
+
+    normalized, changed = os_features._normalize_cql_queryable_fields(
+        "UPPER(roadClassification) = 'roadClassificationNumber' "
+        "AND roadClassificationNumber = 'A444'",
+        queryables={
+            "type": "object",
+            "properties": {
+                "roadclassification": {"type": "string"},
+                "roadclassificationnumber": {"type": "string"},
+            },
+        },
+    )
+    assert changed
+    assert normalized == (
+        "UPPER(roadclassification) = 'roadClassificationNumber' "
+        "AND roadclassificationnumber = 'A444'"
+    )
 
 
 def test_features_collections_error_and_success_paths(monkeypatch) -> None:  # type: ignore[no-untyped-def]

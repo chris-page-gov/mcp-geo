@@ -86,7 +86,12 @@ class _FakeConn:
 
 
 class _TestWarehouse(landis.LandisWarehouse):
-    def __init__(self, connection: _FakeConn | Exception, *, dsn: str = "postgres://landis") -> None:
+    def __init__(
+        self,
+        connection: _FakeConn | Exception,
+        *,
+        dsn: str = "postgres://landis",
+    ) -> None:
         super().__init__(
             dsn=dsn,
             schema="landis",
@@ -199,7 +204,10 @@ def test_path_and_area_helpers_cover_supported_and_invalid_inputs(
         {
             "geometry": {
                 "type": "Feature",
-                "geometry": {"type": "MultiPolygon", "coordinates": [[[[0, 0], [1, 0], [1, 1], [0, 0]]]]},
+                "geometry": {
+                    "type": "MultiPolygon",
+                    "coordinates": [[[[0, 0], [1, 0], [1, 1], [0, 0]]]],
+                },
             }
         }
     )
@@ -263,13 +271,57 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
                 "itemType": "Feature Service",
                 "runtimeFamily": "natmap",
                 "surfacingClass": "warehouse_next",
-                "itemPath": "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/data_source/svc-1",
-                "inventoryPath": "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/data_source/svc-1/inventory_record.json",
-                "metadataPath": "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/data_source/svc-1/item_detail.json",
+                "itemPath": (
+                    "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/"
+                    "data_source/svc-1"
+                ),
+                "inventoryPath": (
+                    "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/"
+                    "data_source/svc-1/inventory_record.json"
+                ),
+                "metadataPath": (
+                    "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/"
+                    "data_source/svc-1/item_detail.json"
+                ),
             }
         ],
-        "supplementaryPublicItems": [],
-        "supplementaryDataGovPackages": [],
+        "supplementaryPublicItems": [
+            {
+                "name": "NATMAP wetness",
+                "kind": "dataset",
+                "family": "natmap",
+                "url": "https://www.landis.org.uk/data/nmwetness.cfm",
+                "finalUrl": "https://www.landis.org.uk/data/nmwetness.cfm",
+                "status": "ok",
+                "pagePath": (
+                    "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/"
+                    "public_site/NATMAP_wetness/page.html"
+                ),
+            }
+        ],
+        "supplementaryDataGovPackages": [
+            {
+                "name": "host-class1",
+                "title": "Host Class",
+                "pageUrl": "https://www.data.gov.uk/dataset/host-class1",
+                "finalPageUrl": "https://www.data.gov.uk/dataset/host-class1",
+                "status": "ok",
+                "pagePath": (
+                    "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/"
+                    "data_gov/host-class1/package_page.html"
+                ),
+                "resources": [
+                    {
+                        "name": "LandIS website",
+                        "status": "ok",
+                        "path": (
+                            "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/"
+                            "shared_url_fetches/index.html"
+                        ),
+                    }
+                ],
+            }
+        ],
     }
     release_payload = {
         "generatedAt": "2026-04-05T00:00:00Z",
@@ -298,9 +350,41 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
     local_root = tmp_path / "Data"
     local_root.mkdir()
     monkeypatch.setattr(landis.settings, "LANDIS_LOCAL_DATA_ROOT", str(local_root), raising=False)
-    archive_file = local_root / "landis_portal_archive_2026-04-04" / "data_source" / "svc-1" / "item_detail.json"
+    archive_file = (
+        local_root
+        / "landis_portal_archive_2026-04-04"
+        / "data_source"
+        / "svc-1"
+        / "item_detail.json"
+    )
     archive_file.parent.mkdir(parents=True)
     archive_file.write_text("{}", encoding="utf-8")
+    wetness_page = (
+        local_root
+        / "landis_full_release_archive_2026-04-05"
+        / "public_site"
+        / "NATMAP_wetness"
+        / "page.html"
+    )
+    wetness_page.parent.mkdir(parents=True)
+    wetness_page.write_text("<html></html>", encoding="utf-8")
+    host_page = (
+        local_root
+        / "landis_full_release_archive_2026-04-05"
+        / "data_gov"
+        / "host-class1"
+        / "package_page.html"
+    )
+    host_page.parent.mkdir(parents=True)
+    host_page.write_text("<html></html>", encoding="utf-8")
+    shared_fetch = (
+        local_root
+        / "landis_full_release_archive_2026-04-05"
+        / "shared_url_fetches"
+        / "index.html"
+    )
+    shared_fetch.parent.mkdir(parents=True)
+    shared_fetch.write_text("<html></html>", encoding="utf-8")
 
     assert landis.load_landis_archive_triage()["version"] == "2026-04-05-phase2"
     assert landis.load_landis_full_release_manifest()["summary"]["status"] == "ok"
@@ -309,6 +393,16 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
     detail = landis.archive_item_detail(item)
     assert detail["archiveId"] == "svc-1"
     assert detail["localPaths"]["metadataPath"] == str(archive_file)
+    wetness = landis.get_landis_archive_item("NATMAP wetness")
+    assert wetness is not None
+    wetness_detail = landis.archive_item_detail(wetness)
+    assert wetness_detail["sourceKind"] == "supplementary_public"
+    assert wetness_detail["localPaths"]["pagePath"] == str(wetness_page)
+    host = landis.get_landis_archive_item("host-class1")
+    assert host is not None
+    host_detail = landis.archive_item_detail(host)
+    assert host_detail["sourceKind"] == "supplementary_datagov"
+    assert host_detail["resources"][0]["localPath"] == str(shared_fetch)
     assert landis.landis_registry_meta()["archiveTriageUri"] == "resource://mcp-geo/landis-archive-triage"
 
 
@@ -338,6 +432,35 @@ def test_build_provenance_prefers_registry_values(
     assert provenance["productId"] == "pipe-risk"
     assert provenance["warehouseBacked"] is True
     assert provenance["citations"] == [{"title": "Citation"}]
+
+
+def test_registry_covers_supported_natmap_thematic_products() -> None:
+    product_ids = {product["id"] for product in landis.list_landis_products()}
+    supported_ids = {
+        product["id"] for product in landis.supported_natmap_thematic_products()
+    }
+    assert supported_ids
+    assert supported_ids <= product_ids
+
+
+def test_landis_runtime_status_and_tool_meta_surface_capabilities(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(landis.settings, "LANDIS_ENABLED", True, raising=False)
+    monkeypatch.setattr(landis.settings, "LANDIS_LIVE_ENABLED", True, raising=False)
+    monkeypatch.setattr(landis.settings, "LANDIS_WAREHOUSE_DSN", "postgres://landis", raising=False)
+    monkeypatch.setattr(landis.settings, "BOUNDARY_CACHE_DSN", "", raising=False)
+    landis.get_landis_warehouse.cache_clear()
+
+    status = landis.landis_runtime_status(error_reason="upstream_connect_error")
+    assert status["status"] == "error"
+    assert status["reason"] == "upstream_connect_error"
+    assert status["warehouseConfigured"] is True
+
+    meta = landis.landis_tool_meta("landis_natmap.thematic_area_summary")
+    assert meta is not None
+    assert meta["warehouseRequired"] is True
+    assert meta["supportedProducts"]
 
 
 def test_landis_warehouse_settings_and_dependency_guards(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -445,7 +568,10 @@ def test_landis_warehouse_area_summary_success_and_none(monkeypatch: pytest.Monk
     ]
     warehouse = _TestWarehouse(_FakeConn(_FakeCursor(rows=rows)))
     summary = warehouse.soilscapes_area_summary(
-        geometry={"type": "Polygon", "coordinates": [[[-1.5, 52.0], [-1.4, 52.0], [-1.4, 52.2], [-1.5, 52.0]]]}
+        geometry={
+            "type": "Polygon",
+            "coordinates": [[[-1.5, 52.0], [-1.4, 52.0], [-1.4, 52.2], [-1.5, 52.0]]],
+        }
     )
     assert summary is not None
     assert summary["areaSqM"] == 100.0
@@ -606,7 +732,9 @@ def test_landis_warehouse_natmap_queries(monkeypatch: pytest.MonkeyPatch) -> Non
             "input_area_m2": 100.0,
         }
     ]
-    thematic_result = _TestWarehouse(_FakeConn(_FakeCursor(rows=thematic_rows))).natmap_thematic_area_summary(
+    thematic_result = _TestWarehouse(
+        _FakeConn(_FakeCursor(rows=thematic_rows))
+    ).natmap_thematic_area_summary(
         product_id="natmap-carbon",
         geometry={"type": "Polygon", "coordinates": []},
     )

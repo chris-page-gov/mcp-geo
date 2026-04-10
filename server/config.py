@@ -98,6 +98,9 @@ class Settings(_PydanticBaseSettings):
     COUNCIL_TAX_HTTP_TIMEOUT_SECONDS: float = 10.0
     COUNCIL_TAX_HTTP_RETRIES: int = 2
     COUNCIL_TAX_USER_AGENT: str = "mcp-geo-council-tax-pilot/0.1"
+    ADDRESSBASE_PREMIUM_XREF_PATH: str = ""
+    ADDRESSBASE_PREMIUM_DUCKDB_THREADS: int = 1
+    ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT: str = "512MB"
     OS_EXPORT_INLINE_MAX_BYTES: int = 200_000
     OS_DATA_CACHE_DIR: str = "data/cache/os"
     OS_DATA_CACHE_TTL: float = 3600.0

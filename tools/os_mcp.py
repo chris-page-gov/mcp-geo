@@ -187,7 +187,10 @@ DATASET_PATTERNS = [
     r"\blist.*datasets?\b",
     r"\bavailable.*data\b",
     r"\bdatasets?\b",
-    r"\b(list|search|find|show)\b.*\b(dimensions?|codes?|editions?|versions?|codelists?|concepts?)\b",
+    (
+        r"\b(list|search|find|show)\b.*\b"
+        r"(dimensions?|codes?|editions?|versions?|codelists?|concepts?)\b"
+    ),
     r"\bons\b.*\b(dimensions?|codes?|editions?|versions?)\b",
     r"\bnomis\b.*\b(datasets?|codelists?|concepts?|workflow)\b",
     r"\bworkflow profiles?\b",
@@ -224,6 +227,7 @@ CORRELATION_METHOD_REGEX = re.compile(r"\b[A-Z0-9_]+_[0-9]+\b")
 LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
 AREA_CODE_REGEX = re.compile(r"\b([EKNSW]\d{8})\b", re.IGNORECASE)
 RESOURCE_URI_REGEX = re.compile(r"(resource://[^\s\"'<>]+)", re.IGNORECASE)
+ROAD_NUMBER_REGEX = re.compile(r"\b([ABM]\d{1,4}[A-Z]?)\b", re.IGNORECASE)
 
 _PLACE_NAME_STOP_WORDS = {
     "a",
@@ -353,7 +357,7 @@ INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.INTERACTIVE_SELECTION: ["core_router", "apps_ui", "admin_boundaries"],
     QueryIntent.ROUTE_PLANNING: ["core_router", "routing", "apps_ui", "maps_tiles"],
     QueryIntent.DATASET_DISCOVERY: ["core_router", "ons_selection", "ons_data"],
-    QueryIntent.MAP_RENDER: ["core_router", "maps_tiles"],
+    QueryIntent.MAP_RENDER: ["core_router", "maps_tiles", "features_layers"],
     QueryIntent.VECTOR_TILES: ["core_router", "maps_tiles"],
     QueryIntent.LINKED_IDS: ["core_router", "places_names"],
     QueryIntent.ENVIRONMENTAL_SURVEY: [
@@ -451,6 +455,18 @@ def _extract_resource_uri(query: str) -> str | None:
     return uri or None
 
 
+def _extract_road_numbers(query: str) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for match in ROAD_NUMBER_REGEX.findall(query):
+        normalized = match.upper()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        out.append(normalized)
+    return out
+
+
 def _extract_place_name(query: str) -> str | None:
     directional_pattern = re.compile(
         r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+"
@@ -505,6 +521,56 @@ def _extract_lat_lon(query: str) -> tuple[float, float] | None:
     if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
         return None
     return lat, lon
+
+
+def _looks_like_road_overlay_request(query_lower: str) -> bool:
+    road_like = bool(
+        re.search(r"\broads?\b|\broad geometry\b|\broad overlay\b|\boverpass\b", query_lower)
+        or ROAD_NUMBER_REGEX.search(query_lower)
+    )
+    if not road_like:
+        return False
+    return bool(
+        re.search(
+            r"\b(draw|plot|overlay|replace|embed|generate|export|package|render|map)\b",
+            query_lower,
+        )
+        or re.search(r"\bleaflet\b|\bjavascript\b|\bhtml\b|\bsnippet\b|\boverpass\b", query_lower)
+    )
+
+
+def _infer_road_export_format(query_lower: str) -> str:
+    if "leaflet" in query_lower:
+        return "leaflet_snippet"
+    if re.search(r"\bjavascript\b|\bhtml\b|\boverpass\b|\bsnippet\b", query_lower):
+        return "javascript_overlay"
+    return "geojson_bundle"
+
+
+def _build_road_overlay_selection_spec(query: str, query_lower: str) -> dict[str, Any] | None:
+    uprn = _extract_uprn(query)
+    if uprn is not None:
+        return {
+            "selectors": [{"type": "uprn", "uprn": uprn}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+
+    postcode = _extract_postcode(query)
+    if postcode is not None:
+        return {
+            "selectors": [{"type": "postcode", "postcode": postcode}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+
+    area_code = _extract_area_code(query)
+    admin_level = _pick_admin_level(_find_level_mentions(query_lower))
+    if area_code is not None and admin_level is not None:
+        return {
+            "selectors": [{"type": "gss_code", "level": admin_level, "code": area_code}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+
+    return None
 
 
 def _extract_landscape_focus(query: str) -> str | None:
@@ -784,6 +850,24 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if route_request.get("via"):
             route_params["via"] = route_request["via"]
         return QueryIntent.ROUTE_PLANNING, 0.96, route_params, context
+
+    if _looks_like_road_overlay_request(query_lower):
+        road_numbers = _extract_road_numbers(query)
+        if road_numbers:
+            context["road_numbers"] = road_numbers
+        context["map_export_mode"] = "roads_overlay"
+        road_export_params: dict[str, Any] = {
+            "outputFormat": _infer_road_export_format(query_lower),
+        }
+        selection_spec = _build_road_overlay_selection_spec(query, query_lower)
+        if selection_spec is not None:
+            road_export_params["selectionSpec"] = selection_spec
+        if road_numbers:
+            road_export_params["roads"] = [
+                {"label": road_number, "roadClassificationNumber": road_number}
+                for road_number in road_numbers
+            ]
+        return QueryIntent.MAP_RENDER, 0.93, road_export_params, context
 
     postcode = _extract_postcode(query)
     if postcode:
@@ -1222,6 +1306,15 @@ def _get_tool_for_intent(
             "Rank ONS datasets with explainability, then inspect dimensions before querying.",
         )
     if intent == QueryIntent.MAP_RENDER:
+        if context.get("map_export_mode") == "roads_overlay":
+            return (
+                "os_map.export_roads",
+                ["os_map.export_roads"],
+                (
+                    "Compile a complete road overlay server-side, including all upstream pages "
+                    "and semantic road parts."
+                ),
+            )
         return (
             "os_maps.render",
             ["os_maps.render"],
@@ -1318,7 +1411,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_maps.render",
         ],
         QueryIntent.DATASET_DISCOVERY: ["ons_select.search", "ons_search.query", "nomis.datasets"],
-        QueryIntent.MAP_RENDER: ["os_vector_tiles.descriptor"],
+        QueryIntent.MAP_RENDER: [
+            "os_vector_tiles.descriptor",
+            "os_features.query",
+            "os_maps.render",
+        ],
         QueryIntent.VECTOR_TILES: ["os_maps.render"],
         QueryIntent.UNKNOWN: ["os_mcp.descriptor", "admin_lookup.find_by_name"],
     }
@@ -1652,6 +1749,16 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
         "guidance": _get_guidance_for_intent(intent),
         "workflow_profile_uri": workflow_profile_uri,
     }
+    if context.get("map_export_mode") == "roads_overlay":
+        response["guidance"] = (
+            "Use os_map.export_roads for road-overlay work so the server handles NGD paging, "
+            "geometry assembly, and semantic export parts instead of manual resource chunking."
+        )
+        response["alternative_tools"] = [
+            "os_features.query",
+            "os_maps.render",
+            "os_vector_tiles.descriptor",
+        ]
     if str(context.get("unknown_mode") or "") == "resource_bridge":
         resource_guidance = (
             "When a tool returns delivery='resource' or a resource:// URI, do not search the "

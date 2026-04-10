@@ -389,6 +389,9 @@ responses by capability groups (for example `ons_selection`, `maps_tiles`, `apps
 For clients that always request `tools/list` with empty params, set
 `MCP_TOOLS_DEFAULT_TOOLSET=starter` (or
 `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>`) to keep initialization payloads small.
+`council_tax.band_lookup` and `council_tax.query` are always loaded by default
+so MCP clients do not need a separate property-tax discovery step before using
+the council-tax surfaces.
 
 | Tool                                | Purpose                                                                       |
 | ----------------------------------- | ----------------------------------------------------------------------------- |
@@ -410,7 +413,8 @@ For clients that always request `tools/list` with empty params, set
 | admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
 | admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
 | council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
-| landis_catalog.list_products        | LandIS MVP product registry and access tiers                                  |
+| council_tax.query                   | AddressBase Premium UPRN check for Council Tax and non-domestic rates         |
+| landis_catalog.list_products        | LandIS callable product registry, exact thematic IDs, and access tiers        |
 | landis_metadata.get                | LandIS product metadata, provenance, and linked resources                     |
 | landis_soilscapes.point            | LandIS Soilscapes class lookup for a WGS84 point                              |
 | landis_soilscapes.area_summary     | LandIS Soilscapes area composition summary                                    |
@@ -464,15 +468,19 @@ portal session.
 
 Use:
 
-- `landis_catalog.list_products` to discover the supported MVP products and
-  linked resources.
+- `landis_catalog.list_products` to discover the supported callable products,
+  including the exact NATMAP thematic `productId` values accepted by
+  `landis_natmap.thematic_area_summary`, plus linked resources and tool
+  bindings.
 - `landis_metadata.get` to retrieve provenance and limitations for a specific
   LandIS product.
 - `landis_soilscapes.point` and `landis_soilscapes.area_summary` for generalized
   Soilscapes lookups.
 - `landis_derive.pipe_risk` for caveated corrosion and shrink-swell screening.
 - `landis_archive.list_items` and `landis_archive.get_item` to inspect the
-  locally mirrored LandIS archive and its surfacing classification.
+  locally mirrored LandIS archive and its surfacing classification, including
+  supplementary full-release items such as `HOST`, `wetness`, `Series
+  Hydrology`, `Series Leacs`, and matched `data.gov.uk` package metadata.
 - `landis_natmap.point`, `landis_natmap.area_summary`, and
   `landis_natmap.thematic_area_summary` for local-archive-backed NATMAP map-unit
   and thematic summaries once loaded into PostGIS.
@@ -485,6 +493,37 @@ Additional LandIS resources:
 - `resource://mcp-geo/landis-portal-inventory`
 - `resource://mcp-geo/landis-archive-triage`
 - `resource://mcp-geo/landis-full-release-manifest`
+
+Reference documentation for the LandIS strategy and dataset surface is also
+now checked in as an Obsidian vault under
+`Obsidian/LandIS Knowledge Base/`, including the strategy PDF, dataset notes,
+use-case summaries, reference pages, and the MCP architecture roadmap in a
+form that can be browsed directly in Obsidian or as Markdown in the repo.
+
+The repo now also carries a generated, repo-wide Obsidian knowledge base under
+`Obsidian/MCP Geo Knowledge Base/`. Unlike the LandIS example vault, this
+surface is built automatically from tracked repo content, excludes `Obsidian/**`
+ from source scanning to avoid recursion, records commit-pinned GitHub links and
+ source hashes in note frontmatter, and supports an ignored `98 Local Overlay/`
+ subtree for machine-local trace/session evidence.
+
+Refresh the canonical vault with:
+
+```bash
+python3 scripts/build_obsidian_kb.py \
+  --mode canon \
+  --git-ref WORKTREE \
+  --output-root "Obsidian/MCP Geo Knowledge Base" \
+  --manifest-out data/knowledge_base/obsidian_kb_manifest.json
+```
+
+Validate it with:
+
+```bash
+python3 scripts/validate_obsidian_kb.py \
+  --manifest data/knowledge_base/obsidian_kb_manifest.json \
+  --fail-on drift coverage recursion orphan
+```
 
 Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
 and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with
@@ -507,10 +546,16 @@ The Docker wrapper `scripts/mcp-docker-local` now mounts `~/Data` into the app
 container at `/landis-data` by default and sets `LANDIS_LOCAL_DATA_ROOT` there
 when the host directory exists, so the normal `mcp-geo` + PostGIS container
 workflow can use the local archive directly without copying the raw mirror into
-the image or database volume. The verified phase-2 warehouse load currently
-covers `NationalSoilMap`, eight NATMAP thematic products, `NSIsite`, and six
-mirrored NSI observation datasets from the local archive, plus the existing
-Soilscapes and pipe-risk validation layers.
+the image or database volume. On a fresh sidecar, the wrapper now also
+auto-bootstraps the LandIS warehouse tables from that mounted data before it
+starts the stdio server: it runs `scripts/landis_phase2_ingest.py` for the
+portal-archive NATMAP/NSI slice and `scripts/landis_ingest.py` for the
+Warwickshire Soilscapes and pipe-risk validation layers. Expect the first start
+to take materially longer than a warm restart because this load is large. The
+verified phase-2 warehouse load currently covers `NationalSoilMap`, eight
+NATMAP thematic products, `NSIsite`, and six mirrored NSI observation datasets
+from the local archive, plus the existing Soilscapes and pipe-risk validation
+layers.
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources
@@ -726,6 +771,60 @@ Supported inputs include `postcode`, `propertyName`, `street`, `town`,
 `billingAuthorityReference`, and optional filters such as `band` and
 `bandStatus`. Set `COUNCIL_TAX_BAND_LIVE_ENABLED=true` to enable the live
 lookup surface.
+
+### AddressBase Premium UPRN Tax Status
+
+`council_tax.query` checks a batch of UPRNs against the AddressBase Premium
+Application Cross Reference Type 23 table. By default it only counts current
+matches with a blank `END_DATE`, so historical cross references do not get
+reported as current liabilities.
+
+Configure `ADDRESSBASE_PREMIUM_XREF_PATH` to either an extracted AddressBase
+Premium xref CSV/Parquet file or a directory containing one. CSV sources are
+stream-scanned; Parquet sources are queried directly with DuckDB so large local
+lookup workloads can stay memory-bounded without building a separate indexed
+database. The `council_tax.query` tool still classifies `SOURCE=7666VC` as
+Council Tax and `SOURCE=7666VN` as non-domestic rates, based on the current OS
+documentation.
+
+For local runtime use, the recommended workflow is to keep the licensed source
+extract outside git and build a smaller serving Parquet, for example:
+
+```bash
+python -m scripts.addressbase_build_xref \
+  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
+  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+```
+
+The builder keeps the xref columns used by MCP Geo, drops only
+`SOURCE=7666OW` and `SOURCE=7666OP`, writes a sorted `xref_voa_os.parquet`, and
+leaves the wider VOA/OS-linked cross references available for future
+UPRN/TOID-linked workflows. Optional runtime knobs:
+
+- `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
+- `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
+
+For local runtime use, the recommended workflow is to keep the licensed source
+extract outside git and build a smaller serving Parquet, for example:
+
+```bash
+python -m scripts.addressbase_build_xref \
+  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
+  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+```
+
+The builder keeps the xref columns used by MCP Geo, drops `SOURCE=7666OW` and
+`SOURCE=7666OP`, writes a sorted `xref_voa_os.parquet`, and leaves the wider
+VOA/OS-linked cross references available for future UPRN/TOID workflows.
+Optional runtime knobs:
+
+- `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
+- `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
+
+- Product technical specification:
+  [AddressBase Premium Technical Specification](https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/addressbase-premium/addressbase-premium-technical-specification)
+- Type 23 record details and `SOURCE` values:
+  [Application Cross Reference - Type 23 Record](https://docs.os.uk/os-downloads/addressing-and-location/addressbase-premium-islands/addressbase-premium-islands-technical-specification/structured-data-types/application-cross-reference-type-23-record)
 
 ## Error Model
 

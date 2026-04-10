@@ -100,7 +100,21 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "ons_geo": ["ons", "geography", "postcode", "uprn", "onspd", "onsud", "nspl", "nsul"],
     "ons_codes": ["codes", "dimension", "options"],
     "nomis": ["nomis", "labour", "employment", "census", "dataset", "statistics"],
-    "council_tax": ["council", "tax", "band", "billing", "authority", "voa", "hmrc", "property"],
+    "council_tax": [
+        "council",
+        "tax",
+        "band",
+        "billing",
+        "authority",
+        "voa",
+        "hmrc",
+        "property",
+        "uprn",
+        "addressbase",
+        "rates",
+        "business",
+        "non-domestic",
+    ],
     "os_apps": ["ui", "widget", "interactive", "mcp-apps", "event", "log", "telemetry"],
     "os_mcp": ["metadata", "tool-search", "skills", "capabilities", "route", "router", "intent"],
 }
@@ -142,6 +156,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
         "os_landscape.*",
         "os_map.inventory",
         "os_map.export",
+        "os_map.export_roads",
     ),
     "routing": ("os_route.*", "os_apps.render_route_planner"),
     "peat_survey": ("os_peat.*", "os_landscape.*", "os_features.query"),
@@ -169,6 +184,8 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
 
 ALWAYS_LOADED_TOOLS: Set[str] = {
     *STARTER_TOOLS,
+    "council_tax.band_lookup",
+    "council_tax.query",
 }
 
 EXTERNAL_PREFIXES: Set[str] = {
@@ -194,8 +211,18 @@ EXTERNAL_PREFIXES: Set[str] = {
     "council_tax",
 }
 
-STATEFUL_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter", "os_map.export"}
-NON_IDEMPOTENT_TOOLS: Set[str] = {"os_apps.log_event", "ons_data.create_filter", "os_map.export"}
+STATEFUL_TOOLS: Set[str] = {
+    "os_apps.log_event",
+    "ons_data.create_filter",
+    "os_map.export",
+    "os_map.export_roads",
+}
+NON_IDEMPOTENT_TOOLS: Set[str] = {
+    "os_apps.log_event",
+    "ons_data.create_filter",
+    "os_map.export",
+    "os_map.export_roads",
+}
 
 
 def _tokenize(text: str) -> list[str]:

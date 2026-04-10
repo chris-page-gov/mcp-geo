@@ -47,7 +47,9 @@ def _load_features(path: Path) -> list[dict[str, Any]]:
     frame = gpd.read_file(path)
     payload = json.loads(frame.to_json())
     features = payload.get("features") if isinstance(payload, dict) else None
-    return [feature for feature in features if isinstance(feature, dict)] if isinstance(features, list) else []
+    if not isinstance(features, list):
+        return []
+    return [feature for feature in features if isinstance(feature, dict)]
 
 
 def _parse_args() -> argparse.Namespace:
@@ -83,7 +85,11 @@ def _execute_schema(conn: Any, schema_sql: Path, schema_name: str) -> None:
         f"CREATE SCHEMA IF NOT EXISTS {schema_name}",
     )
     with conn.cursor() as cur:
-        cur.execute(sql_text)
+        for statement in sql_text.split(";"):
+            normalized = statement.strip()
+            if not normalized:
+                continue
+            cur.execute(f"{normalized};")
 
 
 def _product_rows(products_json: Path) -> list[dict[str, Any]]:

@@ -4,8 +4,8 @@
     ".github/workflows/ci.yml": "3b0d367e45321140a57a51bbeb6f54b1a00938e5a273bbaeced87c02990a6e21",
     "security/owasp_mcp/evidence/github_main_branch_protection_2026-03-13.json": "eb96ead58916290b17215752461a95301ce8aa511ea4e1e04091916f3f57d3d6",
     "security/owasp_mcp/evidence/tool_change_review_and_branch_protection_2026-03-13.md": "c9d701db3520ddda4794e512ec7489d1712a905d4e243df56552064dfbcb3231",
-    "security/owasp_mcp/tool_manifest.lock.json": "18b447be104ac7d9a609d50f14fbdd110e3876bdb165dabe97fc06e181edd377",
-    "security/owasp_mcp/tool_manifest.lock.json.sig": "986c5b5d5bbe2af17632ae6fa40273c5b4941d6e246c2cfe5d9a50b679fc9861"
+    "security/owasp_mcp/tool_manifest.lock.json": "ce93a00db184c06594e0e3e5f06667dd07e07060d7216e3b6d67fe0b206aef5d",
+    "security/owasp_mcp/tool_manifest.lock.json.sig": "5faeca662d670d8c773ba55cce528c536f5627b8c687bf607efa1f2bc273f4ac"
   },
   "attestation_id": "owasp-mcp-tool-review-and-branch-protection-2026-03-13",
   "control_ids": [
@@ -17,6 +17,6 @@
   "expires_at": "2026-09-12T00:00:00Z",
   "notes": "The main branch requires mandatory CI checks, code-owner review, stale-review dismissal, last-push approval, and conversation resolution.",
   "title": "Security-sensitive tool changes require protected-branch review",
-  "verified_at": "2026-04-04T17:15:00Z",
+  "verified_at": "2026-04-10T11:30:00Z",
   "verifier": "Codex with live GitHub protection capture"
 }

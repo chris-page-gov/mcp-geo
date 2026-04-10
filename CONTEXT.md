@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-05
+Last updated: 2026-04-10
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,155 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-10 AddressBase Premium local-data follow-up is now in progress.
+  `tools/council_tax.py` supports both CSV and Parquet xref sources via the
+  existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting, including supplier-style
+  uppercase headers plus the repo's extracted camelCase/snake_case variants.
+  When pointed at Parquet, the tool now uses DuckDB as a read-only query
+  engine over the file rather than building a separate indexed database, with
+  `ADDRESSBASE_PREMIUM_DUCKDB_THREADS` and
+  `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT` controlling runtime limits.
+- The same 2026-04-10 ABP follow-up now treats `council_tax.band_lookup` and
+  `council_tax.query` as always-loaded MCP tools, so clients do not need a
+  separate property-tax discovery step before using the council-tax surface.
+  The council-tax UPRN query path also now keeps the legacy CSV cap at `5000`
+  items while allowing Parquet-backed batches up to `100000`, reflecting the
+  lower-memory DuckDB-over-Parquet runtime path.
+- The new builder `scripts/addressbase_build_xref.py` produces a serving
+  Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
+  Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,
+  preserve the wider VOA/OS-linked cross references for future runtime use,
+  and write a Parquet ordered by `uprn`/`source` so UPRN batch enrichment and
+  future TOID lookups can reuse the same file without a separate DuckDB
+  storage layer.
+- A 2026-04-09 architecture review also evaluated whether DuckDB should
+  replace the repo's PostGIS-backed cache/warehouse surfaces. Decision: no
+  change for now. DuckDB remains the preferred file-backed analytical engine
+  for local AddressBase-style workloads, while PostGIS stays in place for the
+  boundary cache, LandIS warehouse, and route-graph stack because the routing
+  surface depends on `pgrouting` and the existing spatial service layers would
+  require a broader migration to move cleanly.
+- The 2026-04-07 Council Tax UPRN follow-up is now implemented. The
+  `council_tax.query` tool in `tools/council_tax.py` reads AddressBase Premium
+  Type 23 Application Cross Reference CSV data from the configured
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, stream-scans only the requested UPRNs, and
+  classifies current `SOURCE=7666VC` as Council Tax and `SOURCE=7666VN` as
+  non-domestic rates. The implementation defaults to `activeOnly=true`, which
+  treats blank `END_DATE` as the current-liability filter and reports inactive
+  historical source codes separately so ended cross references are visible
+  without being misreported as current. Provenance now uses the current OS Docs
+  technical-specification pages rather than the dead legacy PDF URL.
+- A first real ABP GML example run from the extSSD delivery is now preserved in
+  the repo as `tests/fixtures/council_tax_uprn_abp_example.json`, with the
+  matching analyst workbook at `output/spreadsheet/uprns_council_tax_status.xlsx`.
+  That sample covers 100 workbook-supplied UPRNs and currently yields 22
+  Council Tax matches, 0 non-domestic-rates matches, and 78 with neither flag
+  present in the scanned Type 23 records.
+- The 2026-04-07 `draw_roads_on_map` architecture review in
+  `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md` is now
+  implemented in the server runtime. `tools/os_map.py` now exposes
+  `os_map.export_roads`, a task-shaped road-overlay export tool that fetches
+  all upstream NGD pages server-side, writes deterministic semantic bundles
+  under `data/os_exports/road-overlays/<request-hash>/`, and returns complete
+  per-road part metadata (`featureCounts`, `sourcePagesFetched`, `complete`,
+  and semantic `parts`) instead of making clients recover byte-chunked JSON by
+  hand. Supported artifact formats are `geojson_bundle`,
+  `javascript_overlay`, and `leaflet_snippet`.
+- A 2026-04-08 hardening pass on the same road-export surface now accepts
+  concise selector payloads like `selectionSpec: {"postcode": "CV3 1HB"}` in
+  addition to canonical `selectionSpec.selectors[...]` arrays. The shorthand
+  normalization is shared with selector-driven `os_map.export` jobs because
+  both flows use the same parser. The same pass also normalizes missing or
+  unreadable ONS geo cache failures into explicit `CACHE_UNAVAILABLE` /
+  `CACHE_READ_ERROR` tool errors, and returns `AOI_NOT_RESOLVED` when a valid
+  selector set produces no road-export AOI geometry, instead of bubbling raw
+  SQLite exceptions as generic internal errors.
+- A separate 2026-04-08 polygon-input hardening pass now makes
+  `os_features.query` and `os_places.polygon` tolerant of JSON-encoded polygon
+  strings as well as native JSON arrays/GeoJSON objects. This specifically
+  covers host/client combinations that stringify nested polygon payloads before
+  they reach the server; those requests are now normalized locally instead of
+  failing with `INVALID_INPUT` at the parser boundary.
+- A wider 2026-04-08 ONS geo refresh redesign is now implemented. The tracked
+  source manifest `resources/ons_geo_sources.json` is resolver-driven rather
+  than `downloadUrl`-only, with ArcGIS hosted-table acquisition for ONSPD/NSPL,
+  release-file discovery for ONSUD/NSUL, and mandatory CHD/RGC support
+  sidecars for code-history/current-code validation. `scripts/ons_geo_cache_refresh.py`
+  now resolves sources automatically, caches raw artifacts under
+  `data/cache/ons_geo/raw/<dataset>/<release>/`, records schema fingerprints
+  plus validation summaries in `resources/ons_geo_cache_index.json`, and
+  stores normalized semantic geography payloads alongside raw rows in the
+  SQLite cache.
+- The same 2026-04-08 redesign also updated the ONS read path and downstream
+  consumers. `server/ons_geo_cache.py` now stores richer product metadata plus
+  CHD/RGC-backed code-reference records, `tools/ons_geo.py` returns normalized
+  geography families and resolved-source provenance in addition to the raw row
+  view, `ons_geo.cache_status` surfaces exact/best-fit/support-dataset health,
+  and `tools/os_map.py` now understands ward/country/region-backed selector
+  columns from the expanded ONS UPRN index. The opt-in script
+  `scripts/ons_geo_live_validate.py` now provides metadata-only live
+  source/schema checks outside the default deterministic CI path, avoiding full
+  dataset refreshes during operator validation runs and treating remote
+  archive-only releases as explicit warnings when schema inspection is not
+  practical. The tracked RGC manifest target now points at the direct
+  December 2025 data.gov.uk package instead of a generic geoportal search URL.
+- A 2026-04-09 follow-up added `resources/addressbase_epoch_schedule.json` and
+  `server/ons_geo_freshness.py` so ONSUD/NSUL freshness is validated against
+  the authoritative AddressBase epoch publication schedule rather than inferred
+  from ONS package titles. `scripts/ons_geo_live_validate.py` now reports
+  `freshness` metadata including resolved epoch, latest published epoch, next
+  scheduled epoch, and lag count; `scripts/ons_geo_cache_refresh.py` writes the
+  same freshness summary into the cache index; and `tools/ons_geo.py` surfaces
+  freshness on lookup/cache-status responses so lagging UPRN datasets are
+  flagged explicitly even when the ONS package itself resolves successfully.
+- A further 2026-04-09 operator-facing follow-up added
+  `server/ons_geo_catalog.py` and the live-only `ons_geo.release_audit` tool in
+  `tools/ons_geo.py`. That audit combines the tracked AddressBase epoch
+  schedule, ONS Open Geography Portal RSS notices, ONS Open Geography Portal
+  dataset discovery, and current package resolution so the repo can distinguish
+  between "latest public package currently resolvable" and "fresh against the
+  latest AddressBase publication". The linked operator note
+  `docs/ons_geo_source_resolution.md` now documents the mixed-source model and
+  explains the main abbreviations and standards involved: CKAN/data.gov.uk for
+  dated package catalog history, DCAT for bulk structured metadata, OGC API
+  Records for Geoportal dataset discovery, RSS for pause/correction notices,
+  and CHD/RGC as the code-history/current-code support datasets used during
+  normalization.
+- `tools/os_mcp.py` now routes road-overlay/map-repair prompts toward
+  `os_map.export_roads` rather than low-level `os_features.query` calls when
+  the user intent is to draw/replace/embed road geometry on a map. This keeps
+  route-query guidance aligned with the new high-level contract.
+- `server/mcp/resource_catalog.py` now returns richer MIME metadata for
+  `resource://mcp-geo/os-exports/*` artifacts such as `.geojson` and `.js`,
+  which matters for the new semantic road-export parts and generated overlay
+  scripts.
+- Closing the 2026-04-07 Claude troubleshooting follow-up captured in
+  `troubleshooting/Landis/mapping_landis_results.md`. `tools/os_features.py`
+  now treats mixed-case CQL property names as an agent-ergonomics issue rather
+  than surfacing raw OS NGD queryable-property errors, by normalizing supplied
+  CQL identifiers against the collection queryables schema before the upstream
+  request. Focused regressions live in
+  `tests/test_os_features_collections.py` and
+  `tests/test_os_features_helpers.py`.
+- Maintaining the new 2026-04-06 repo-wide Obsidian knowledge base under
+  `Obsidian/MCP Geo Knowledge Base/`, `scripts/obsidian_kb_common.py`,
+  `scripts/build_obsidian_kb.py`, `scripts/validate_obsidian_kb.py`, the
+  canonical manifest `data/knowledge_base/obsidian_kb_manifest.json`, and the
+  maintenance skill `skills/mcp-geo-obsidian-kb/SKILL.md`. The canonical vault
+  is now generated from tracked repo content with `Obsidian/**` hard-excluded
+  from source scanning to avoid recursion, every generated note records source
+  hashes plus commit-pinned GitHub links, and local session/log evidence is
+  explicitly split into the ignored overlay subtree
+  `Obsidian/MCP Geo Knowledge Base/98 Local Overlay/` plus the transient
+  overlay manifest `data/knowledge_base/obsidian_kb_overlay_manifest.json`.
+  The current maintenance contract is: rebuild the canonical vault from
+  tracked sources, generate local overlay notes only on demand, and use the
+  validator to detect drift, missing coverage, recursion regressions, and
+  orphaned note files before treating the knowledge base as current. A
+  2026-04-06 follow-up also reformatted note-level `source_hashes` into
+  chunked `sha256:` strings so the checked-in vault preserves provenance
+  without tripping the repo `gitleaks` gate, and the regenerated canonical
+  vault now includes dedicated notes for the KB build/validate scripts.
 - Maintaining the new 2026-04-04 LandIS soil-screening MVP under
   `server/landis.py`, `tools/landis_*.py`, `resources/landis*`, and the new
   ingestion assets in `scripts/landis_*`. The first delivery adds a checked-in
@@ -125,6 +274,21 @@ assumptions change.
   into the app container at `/landis-data` and sets `LANDIS_LOCAL_DATA_ROOT`
   there automatically when the directory exists, so the default app-container +
   PostGIS-container workflow can read the same local LandIS archive directly.
+  A 2026-04-06 follow-up closed the remaining fresh-sidecar gap: the wrapper
+  now auto-detects missing or empty LandIS tables in a new Docker PostGIS
+  sidecar, bootstraps `scripts/landis_schema.sql`, runs
+  `scripts/landis_phase2_ingest.py` against the mounted `/landis-data`
+  archive, and then loads the Warwickshire Soilscapes/pipe-risk validation
+  layers with `scripts/landis_ingest.py`. The same fix also made
+  `scripts/landis_phase2_ingest.py` remap host archive paths correctly when the
+  archive is mounted inside the container, and made `scripts/landis_ingest.py`
+  execute schema SQL statement-by-statement so repeated bootstrap passes are
+  safe. A same-day review/CI hardening pass now also validates candidate
+  `landis_portal_archive_*` roots before phase-2 ingest and falls back to the
+  newest complete archive instead of hard-failing on the newest partial
+  mirror. First startup on a fresh sidecar is therefore intentionally slower
+  than a warm restart because it now performs the real NATMAP/NSI warehouse
+  load instead of failing immediately on an empty database.
   A 2026-04-05 verification run then loaded the MVP Soilscapes/pipe-risk
   layers plus the local NATMAP/NSI phase-2 slice into a fresh PostGIS sidecar
   (`879` Soilscapes polygons, `1,192` pipe-risk polygons, `42,603` NATMAP
@@ -138,10 +302,26 @@ assumptions change.
   (`mcp-geo-postgis-devcontainer`, `mcp-geo-postgis-claude`,
   `mcp-geo-postgis-codex`, and the generic `mcp-geo-postgis-sidecar`) so local
   archive workflows no longer share one fallback volume by default. The wrapper
+  workstream now also has a checked-in companion Obsidian vault at
+  `Obsidian/LandIS Knowledge Base/`, packaging the strategy PDF, dataset notes,
+  reference pages, use-case summaries, and MCP architecture roadmap as a local
+  browsable knowledge base that travels with the repo. The wrapper
   also now inspects recent Postgres logs and flags checkpoint-corrupted sidecar
   volumes explicitly when startup fails. An older legacy `mcp-geo-postgis`
   volume is still known-corrupted from earlier shared-default runs, but it is
-  no longer the default path. Remaining
+  no longer the default path. A 2026-04-06 discovery/availability alignment
+  follow-up now also makes the exact callable NATMAP thematic `productId`
+  values visible through `landis_catalog.list_products` and `/tools/describe`,
+  and extends `landis_archive.*` beyond the portal mirror to include the
+  supplementary full-release/public-menu plus matched `data.gov.uk` package
+  slice so use-case inputs such as `HOST`, `wetness`, `Series Hydrology`, and
+  `Series Leacs` are discoverable through MCP instead of only in raw manifests.
+  The same 2026-04-06 wrapper-bootstrap verification reran the previously
+  failing Warwickshire offline queries against the Docker-network runtime and
+  confirmed `200` responses for `landis_natmap.point`,
+  `landis_soilscapes.point`, `landis_natmap.area_summary`,
+  `landis_derive.pipe_risk`, and `landis_nsi.nearest_sites`.
+  Remaining
   phase-2 work is the join-table
   enrichment model (`NATMAPassociations`, `SOILSERIES`, `HORIZON*`) plus a
   decision on whether scale-specific NATMAP products, AUGER, or Soil Catalogue
@@ -451,6 +631,10 @@ assumptions change.
 ## Active Work
 
 - Maintain and iterate the OWASP MCP strict validation pack (`server/owasp_mcp_validation.py`, `security/owasp_mcp/`, `.github/workflows/ci.yml`) from the current `compliant` strict baseline, keeping the attestation set fresh and preserving the hardened `/mcp` auth, session, deployment, and governance controls.
+- Treat any tool registration or contract change as OWASP maintenance work as
+  well: refresh `security/owasp_mcp/tool_risk_inventory.json`, regenerate the
+  signed manifest artifacts, and rerun the strict validator so CI metadata does
+  not drift behind the live tool set.
 - Prepare the minor-release integration branch `codex/release-0.6.0-integration`
   by landing `codex/validate-maps` plus the boundary harness follow-up while
   explicitly deferring PRs `#24`, `#29`, and `codex/reporting-2026-03-01`.
