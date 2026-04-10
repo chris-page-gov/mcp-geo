@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added DuckDB-backed AddressBase Premium Parquet support for
+  `council_tax.query`, alongside the new builder
+  `scripts/addressbase_build_xref.py`. The council-tax lookup now accepts
+  supplier-style CSV headers, extracted camelCase headers, or Parquet xref
+  files, prefers `xref_voa_os.parquet` when scanning configured directories,
+  and can query local Parquet extracts directly without creating a separate
+  indexed DuckDB database.
 - Added the grounded troubleshooting analysis
   `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, which
   documents why AI clients struggle when map-building tasks are forced through

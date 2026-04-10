@@ -184,6 +184,8 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
 
 ALWAYS_LOADED_TOOLS: Set[str] = {
     *STARTER_TOOLS,
+    "council_tax.band_lookup",
+    "council_tax.query",
 }
 
 EXTERNAL_PREFIXES: Set[str] = {

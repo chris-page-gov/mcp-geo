@@ -1,9 +1,8 @@
 from fastapi.testclient import TestClient
 
+from server.main import app
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.protocol import MCP_APPS_PROTOCOL_VERSION, PROTOCOL_VERSION, SUPPORTED_PROTOCOL_VERSIONS
-
-from server.main import app
 
 client = TestClient(app)
 
@@ -68,3 +67,7 @@ def test_os_mcp_descriptor_force_loads_harold_wood_recovery_tools():
     assert "admin_lookup.area_geometry" not in deferred
     assert "os_linked_ids.get" not in deferred
     assert "os_resources.get" not in deferred
+    assert "council_tax.band_lookup" in always_loaded
+    assert "council_tax.query" in always_loaded
+    assert "council_tax.band_lookup" not in deferred
+    assert "council_tax.query" not in deferred

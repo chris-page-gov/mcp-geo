@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-07
+Last updated: 2026-04-10
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,23 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-10 AddressBase Premium follow-up is now in progress on top of the
+  current `main` branch. `tools/council_tax.py` is being extended so
+  `council_tax.query` supports both CSV and Parquet xref sources via the
+  existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting, including supplier-style
+  uppercase headers plus the repo's extracted camelCase/snake_case variants.
+- The same 2026-04-10 ABP follow-up is activating the council-tax tools for
+  MCP clients by default. `server/mcp/tool_search.py` now treats
+  `council_tax.band_lookup` and `council_tax.query` as always-loaded tools so
+  clients such as Claude do not have to discover or opt into the `property_tax`
+  toolset before using them.
+- The new builder `scripts/addressbase_build_xref.py` produces a serving
+  Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
+  Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,
+  preserve the wider VOA/OS-linked cross references for future runtime use,
+  and write a Parquet ordered by `uprn`/`source` so UPRN batch enrichment and
+  future TOID lookups can reuse the same file without a separate DuckDB
+  storage layer.
 - The 2026-04-07 Council Tax UPRN follow-up is now implemented. The
   `council_tax.query` tool in `tools/council_tax.py` reads AddressBase Premium
   Type 23 Application Cross Reference CSV data from the configured

@@ -63,7 +63,7 @@
     {
       "description": "Query AddressBase Premium Application Cross Reference records by UPRN to identify Council Tax and non-domestic rates flags.",
       "description_sha256": "e39fd2e423bb762a9c39f4ef4abad259de598bb634dfb75b10bacce1599582f7",
-      "input_schema_sha256": "69e802cfb97d12fca022e17ea67d37ac3be0f96ff455696c5dd2873a47e15ed4",
+      "input_schema_sha256": "4d9b54b32780c2ee50f3922a52a3d832d50180dc2d85b9a67bf3cdddbbe1c3cd",
       "name": "council_tax.query",
       "output_schema_sha256": "20cee96d8b33005057a1874bdf6b9e2cc284dc320e01be7ea4404eded2ae7efa",
       "version": "0.1.0"
