@@ -547,6 +547,32 @@ def _infer_road_export_format(query_lower: str) -> str:
     return "geojson_bundle"
 
 
+def _build_road_overlay_selection_spec(query: str, query_lower: str) -> dict[str, Any] | None:
+    uprn = _extract_uprn(query)
+    if uprn is not None:
+        return {
+            "selectors": [{"type": "uprn", "uprn": uprn}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+
+    postcode = _extract_postcode(query)
+    if postcode is not None:
+        return {
+            "selectors": [{"type": "postcode", "postcode": postcode}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+
+    area_code = _extract_area_code(query)
+    admin_level = _pick_admin_level(_find_level_mentions(query_lower))
+    if area_code is not None and admin_level is not None:
+        return {
+            "selectors": [{"type": "gss_code", "level": admin_level, "code": area_code}],
+            "uprnOverrides": {"include": [], "exclude": []},
+        }
+
+    return None
+
+
 def _extract_landscape_focus(query: str) -> str | None:
     query_norm = query.strip()
     if not query_norm:
@@ -825,6 +851,24 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             route_params["via"] = route_request["via"]
         return QueryIntent.ROUTE_PLANNING, 0.96, route_params, context
 
+    if _looks_like_road_overlay_request(query_lower):
+        road_numbers = _extract_road_numbers(query)
+        if road_numbers:
+            context["road_numbers"] = road_numbers
+        context["map_export_mode"] = "roads_overlay"
+        road_export_params: dict[str, Any] = {
+            "outputFormat": _infer_road_export_format(query_lower),
+        }
+        selection_spec = _build_road_overlay_selection_spec(query, query_lower)
+        if selection_spec is not None:
+            road_export_params["selectionSpec"] = selection_spec
+        if road_numbers:
+            road_export_params["roads"] = [
+                {"label": road_number, "roadClassificationNumber": road_number}
+                for road_number in road_numbers
+            ]
+        return QueryIntent.MAP_RENDER, 0.93, road_export_params, context
+
     postcode = _extract_postcode(query)
     if postcode:
         if _is_geography_lookup_query(query_lower):
@@ -852,21 +896,6 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
 
     if any(re.search(pattern, query_lower) for pattern in LINKED_ID_PATTERNS):
         return _classify_linked_identifier_query(query, query_lower, uprn, context)
-
-    if _looks_like_road_overlay_request(query_lower):
-        road_numbers = _extract_road_numbers(query)
-        if road_numbers:
-            context["road_numbers"] = road_numbers
-        context["map_export_mode"] = "roads_overlay"
-        road_export_params: dict[str, Any] = {
-            "outputFormat": _infer_road_export_format(query_lower),
-        }
-        if road_numbers:
-            road_export_params["roads"] = [
-                {"label": road_number, "roadClassificationNumber": road_number}
-                for road_number in road_numbers
-            ]
-        return QueryIntent.MAP_RENDER, 0.93, road_export_params, context
 
     if any(re.search(pattern, query_lower) for pattern in VECTOR_TILE_PATTERNS):
         return QueryIntent.VECTOR_TILES, 0.9, {}, context

@@ -7,7 +7,7 @@
       "requires_user_context": false,
       "side_effect_level": "none"
     },
-    "generated_on": "2026-04-08",
+    "generated_on": "2026-04-09",
     "policy_note": "Read-only tools default to no HITL requirement unless explicitly marked high-risk.",
     "project": "mcp-geo"
   },
@@ -304,6 +304,14 @@
       "data_sensitivity": "public",
       "high_risk_action": false,
       "name": "ons_geo.cache_status",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
+      "data_sensitivity": "public",
+      "high_risk_action": false,
+      "name": "ons_geo.release_audit",
       "network_write": false,
       "requires_user_context": false,
       "side_effect_level": "none"

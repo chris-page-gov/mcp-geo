@@ -81,7 +81,9 @@ def _write_input_parquet(path: Path) -> None:
                 ),
             ],
         )
-        connection.execute(f"COPY input_rows TO '{quoted_path}' (FORMAT PARQUET)")
+        connection.execute(
+            f"COPY input_rows TO '{quoted_path}' (FORMAT PARQUET)"
+        )
     finally:
         connection.close()
 

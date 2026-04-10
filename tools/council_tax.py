@@ -365,11 +365,17 @@ def _resolve_addressbase_xref_path() -> Path | None:
         return None
 
     candidates: list[tuple[int, str, Path]] = []
-    for pattern in ("*.parquet", "*.csv"):
-        for candidate in path.rglob(pattern):
-            score = _score_addressbase_xref_candidate(candidate)
-            if score > 0:
-                candidates.append((score, str(candidate), candidate))
+    for candidate in path.rglob("*"):
+        if not candidate.is_file():
+            continue
+        suffix = candidate.suffix.lower()
+        if suffix not in {".parquet", ".csv"}:
+            continue
+        if suffix == ".parquet" and duckdb is None:
+            continue
+        score = _score_addressbase_xref_candidate(candidate)
+        if score > 0:
+            candidates.append((score, str(candidate), candidate))
     if not candidates:
         return None
     candidates.sort(key=lambda item: (-item[0], item[1]))
@@ -588,6 +594,7 @@ def _duckdb_addressbase_expression(
     *,
     relation_alias: str | None = None,
     normalize_source: bool = False,
+    normalize_uprn: bool = False,
 ) -> str:
     actual = column_mapping.get(canonical)
     if actual is None:
@@ -598,6 +605,8 @@ def _duckdb_addressbase_expression(
     expression = f"CAST({qualified_identifier} AS VARCHAR)"
     if normalize_source:
         return f"UPPER(TRIM({expression}))"
+    if normalize_uprn:
+        return f"REPLACE(TRIM({expression}), ' ', '')"
     return expression
 
 
@@ -705,11 +714,11 @@ def _scan_addressbase_xref_parquet(
                     column_mapping,
                     "UPRN",
                     relation_alias="xref",
+                    normalize_uprn=True,
                 )} = req.uprn
             WHERE {source_expr} IN ('7666VC', '7666VN')
-              AND (? = FALSE OR COALESCE(TRIM({end_date_expr}), '') = '')
             """,
-            [str(path), active_only],
+            [str(path)],
         ).fetchall()
     except Exception as exc:
         return 502, {

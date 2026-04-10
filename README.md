@@ -804,6 +804,23 @@ UPRN/TOID-linked workflows. Optional runtime knobs:
 - `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
 - `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
 
+For local runtime use, the recommended workflow is to keep the licensed source
+extract outside git and build a smaller serving Parquet, for example:
+
+```bash
+python -m scripts.addressbase_build_xref \
+  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
+  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+```
+
+The builder keeps the xref columns used by MCP Geo, drops `SOURCE=7666OW` and
+`SOURCE=7666OP`, writes a sorted `xref_voa_os.parquet`, and leaves the wider
+VOA/OS-linked cross references available for future UPRN/TOID workflows.
+Optional runtime knobs:
+
+- `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
+- `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
+
 - Product technical specification:
   [AddressBase Premium Technical Specification](https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/addressbase-premium/addressbase-premium-technical-specification)
 - Type 23 record details and `SOURCE` values:

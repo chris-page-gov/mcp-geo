@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from typing import Any
 
 
@@ -315,6 +317,14 @@ def test_parse_polygon_accepts_valid_ring_and_geojson() -> None:
     assert error2 is None
     assert points2 == points
 
+    points3, error3 = os_features._parse_polygon(json.dumps(ring))
+    assert error3 is None
+    assert points3 == points
+
+    points4, error4 = os_features._parse_polygon(json.dumps(geo))
+    assert error4 is None
+    assert points4 == points
+
 
 def test_bbox_from_polygon() -> None:
     from tools import os_features
@@ -345,6 +355,14 @@ def test_feature_intersects_polygon_paths() -> None:
         }
     }
     assert os_features._feature_intersects_polygon(feature, poly)
+
+    crossing = {
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [[-1.0, 1.0], [3.0, 1.0]],
+        }
+    }
+    assert os_features._feature_intersects_polygon(crossing, poly)
 
 
 def test_coerce_number_behaviors() -> None:
