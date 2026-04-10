@@ -1,0 +1,13 @@
+{
+  "name": "ONS Postcode Directory (February 2026) for the UK (Hosted Table)",
+  "maxRecordCount": 2,
+  "objectIdField": "OBJECTID",
+  "fields": [
+    {"name": "OBJECTID", "alias": "Object ID"},
+    {"name": "pcds", "alias": "Postcode"},
+    {"name": "lad25cd", "alias": "Local Authority District Code (2025)"},
+    {"name": "lad25nm", "alias": "Local Authority District Name (2025)"},
+    {"name": "wd25cd", "alias": "Ward Code (2025)"},
+    {"name": "wd25nm", "alias": "Ward Name (2025)"}
+  ]
+}

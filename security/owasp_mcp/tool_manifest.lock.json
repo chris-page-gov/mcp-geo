@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 101,
+  "tool_count": 102,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -301,6 +301,14 @@
       "version": "0.1.0"
     },
     {
+      "description": "Audit ONS UPRN release freshness by combining AddressBase epoch schedule, Geoportal notices, Geoportal dataset discovery, and current package resolution.",
+      "description_sha256": "24262a47c67b2a11d950779fbd510ab56182d4c5b17176802ab0fe43ff618885",
+      "input_schema_sha256": "ebfc2013d98b8752e92548a463a8abf2c0d3fa2d2679c5da3f130637d8a46517",
+      "name": "ons_geo.release_audit",
+      "output_schema_sha256": "cd73de629e57ffef593512b01ad2751508716d94a95d5e577a06bdaffe91f556",
+      "version": "0.1.0"
+    },
+    {
       "description": "Search live ONS datasets by term.",
       "description_sha256": "a2c464d9780e590d074e1564a45ec6dbe541af2bac02adb02f262c4c46bb982b",
       "input_schema_sha256": "4f6f77a4b6c6a57fbec507f688aab7ced85a3a0d84ccf6f50d732b8cc1f2217b",
@@ -509,11 +517,11 @@
       "version": "0.1.0"
     },
     {
-      "description": "Export complete road overlay artifacts server-side, including all upstream pages and semantic per-road parts.",
-      "description_sha256": "2bd245a07dec80ff18e527a065f9401526730e1dc30ef7a183d98729a6630727",
-      "input_schema_sha256": "519c58d7738e99a2affc844be98418bf5f23f32a71e8905bd57b01d4f5a4b96a",
+      "description": "Export complete road overlay artifacts server-side from road numbers and/or selectionSpec-derived AOIs, including all upstream pages and semantic parts.",
+      "description_sha256": "15f6777b2be80b7ead20ae8c4dc39fb08d3d6af3d947fd5c86046c712910c8b3",
+      "input_schema_sha256": "abbfb56a33992aa7f58e9a32ab055b2fd56e41ce1a67b8c984ee866b6492fbdd",
       "name": "os_map.export_roads",
-      "output_schema_sha256": "c1dffb37cb3ddf538970cabbebc1415d294a4f9d1897c0713a246129c56d137e",
+      "output_schema_sha256": "da26ea7edef330770563e7a82b68c5a7f8885fe0a9e525ce88b28a6cabca7955",
       "version": "0.1.0"
     },
     {

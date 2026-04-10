@@ -47,12 +47,12 @@ All cache artifacts are written under `data/` (gitignored).
   --sources resources/ons_geo_sources.json \
   --cache-dir data/cache/ons_geo \
   --index-path resources/ons_geo_cache_index.json \
-  --db-name ons_geo_cache.sqlite \
-  --product-file ONSPD=/path/to/onspd.csv \
-  --product-file NSPL=/path/to/nspl.csv \
-  --product-file ONSUD=/path/to/onsud.csv \
-  --product-file NSUL=/path/to/nsul.csv
+  --db-name ons_geo_cache.sqlite
 ```
+
+The refresh script now auto-resolves supported public sources from the manifest.
+Use `--product-file` or `--product-url` only when you need to override a
+specific product for operator control or reproducibility.
 
 3. Populate PostGIS boundary cache (requires PostGIS + geospatial source):
 
@@ -410,10 +410,15 @@ curl -sS "$BASE_URL/tools/call" \
 - `ons_geo.by_postcode`
 - `ons_geo.by_uprn`
 - `ons_geo.cache_status`
+- `ons_geo.release_audit`
 
 Exact mode uses ONSPD/ONSUD; best-fit mode uses NSPL/NSUL.
 Use `ons_geo.cache_status` to check `performance.degraded` before running
-postcode/UPRN lookups.
+postcode/UPRN lookups. Use `ons_geo.release_audit` when you need to know
+whether the public ONS UPRN products are behind the AddressBase publication
+schedule or paused by a publisher notice. See
+[docs/ons_geo_source_resolution.md](/Users/crpage/repos/mcp-geo/docs/ons_geo_source_resolution.md)
+for the source model, glossary, and release-audit rationale.
 
 ```bash
 curl -sS "$BASE_URL/tools/call" \
@@ -423,6 +428,10 @@ curl -sS "$BASE_URL/tools/call" \
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
   -d '{"tool":"ons_geo.by_postcode","postcode":"SW1A 1AA","derivationMode":"best_fit"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"ons_geo.release_audit","timeout":30}'
 ```
 
 ### ONS datasets and code lists

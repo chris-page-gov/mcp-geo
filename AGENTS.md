@@ -208,6 +208,19 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - When creating PRs/comments with markdown that includes backticks, never inline the body directly in a shell command. Write body text to a temp file and use `gh pr create --body-file` / `gh pr edit --body-file` / `gh pr comment --body-file` to avoid shell interpolation and command substitution.
 - In this repo, Codex review is triggered by PR comment (`@codex review`), not by reviewer assignment. If a Codex review is requested, post the trigger comment on the PR and confirm the comment URL.
+- Before requesting review or pushing a batch of review fixes, run a
+  pre-review sweep for the touched area instead of waiting for one comment at
+  a time. Minimum sweep:
+  - cluster open comments by behavior area and fix each cluster in one batch
+  - scan for sibling patterns with `rg` and shared-helper inspection
+  - check transport/runtime variants (`HTTP`, `STDIO`, live probe vs refresh,
+    cache vs direct source, CSV vs Parquet, etc.) when relevant
+  - add regressions for the reported case plus at least one confirmed sibling
+  - rerun the narrowest meaningful validation slice before pushing
+- When several review comments are open, prefer one coordinated fix push per
+  behavior cluster rather than pushing after each individual edit. This reduces
+  drip-feed review passes and makes it more likely that Codex/GitHub sees the
+  full corrected class on the next review.
 - When addressing PR comments, do not stop at the exact line cited by the
   reviewer. Run a same-pattern scan (`rg`, shared-helper inspection, transport
   variant check, and targeted regressions) so the follow-up closes the entire
