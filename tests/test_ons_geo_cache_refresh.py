@@ -1237,6 +1237,21 @@ def test_open_rows_and_rows_from_bytes_support_jsonl(tmp_path: Path) -> None:
     assert payload[0]["UPRN"] == "100023336959"
 
 
+def test_open_rows_collects_jsonl_fieldnames_from_multiple_rows(tmp_path: Path) -> None:
+    rows_path = tmp_path / "sample.jsonl"
+    rows_path.write_text(
+        '{"UPRN":"100023336959"}\n'
+        '{"UPRN":"100023336960","LAD24CD":"E08000026","WARD24CD":"E05001111"}\n',
+        encoding="utf-8",
+    )
+
+    with refresh._open_rows(rows_path) as (rows, fieldnames):
+        payload = list(rows)
+
+    assert fieldnames == ["UPRN", "LAD24CD", "WARD24CD"]
+    assert payload[1]["WARD24CD"] == "E05001111"
+
+
 def test_open_rows_supports_jsonl_inside_zip(tmp_path: Path) -> None:
     archive_path = tmp_path / "sample.zip"
     with refresh.zipfile.ZipFile(archive_path, "w") as archive:

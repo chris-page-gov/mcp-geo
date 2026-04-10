@@ -394,11 +394,82 @@ def test_os_map_export_roads_writes_semantic_parts_and_manifest(client, monkeypa
     assert body["sourcePagesFetched"] == 3
     assert body["cached"] is False
 
+
+def test_os_map_export_roads_rejects_repeating_next_page_token(
+    client,
+    monkeypatch,
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    from server.mcp import resource_catalog
+    from tools import os_map
+
+    os_exports_dir = tmp_path / "os_exports"
+    monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
+    monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
+
+    class DummyTool:
+        def call(self, args: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+            cql = args.get("cql")
+            page_token = str(args.get("pageToken") or "")
+            if cql != "roadclassificationnumber = 'A444'":
+                raise AssertionError(f"Unexpected args: {args}")
+            if not page_token:
+                return 200, {
+                    "features": [
+                        {
+                            "id": "a444-1",
+                            "properties": {"roadclassificationnumber": "A444"},
+                            "geometry": {"type": "LineString", "coordinates": [[-1.5, 52.4], [-1.49, 52.41]]},
+                        }
+                    ],
+                    "offset": 0,
+                    "nextPageToken": "repeat",
+                    "hints": {"warnings": []},
+                }
+            return 200, {
+                "features": [
+                    {
+                        "id": "a444-2",
+                        "properties": {"roadclassificationnumber": "A444"},
+                        "geometry": {"type": "LineString", "coordinates": [[-1.49, 52.41], [-1.48, 52.42]]},
+                    }
+                ],
+                "offset": 1,
+                "nextPageToken": "repeat",
+                "hints": {"warnings": []},
+            }
+
+    monkeypatch.setattr(
+        os_map,
+        "get_tool",
+        lambda name: DummyTool() if name == "os_features.query" else None,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.export_roads",
+            "collection": "trn-ntwk-roadlink-5",
+            "bbox": [-1.65, 52.35, -1.4, 52.58],
+            "roads": [{"label": "A444", "roadClassificationNumber": "A444"}],
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["complete"] is False
+    assert body["roads"][0]["complete"] is False
+    assert body["roads"][0]["error"]["code"] == "INTEGRATION_ERROR"
+    assert "Paging token did not advance" in body["roads"][0]["error"]["message"]
+
     manifest_read = client.get("/resources/read", params={"uri": body["resourceUri"]})
     assert manifest_read.status_code == 200
     manifest_contents = manifest_read.json()["contents"][0]
     manifest = json.loads(manifest_contents["text"])
-    assert manifest["featureCounts"]["A444"] == 3
+    assert manifest["featureCounts"]["A444"] == 2
+    assert manifest["roads"][0]["complete"] is False
+    assert manifest["roads"][0]["error"]["code"] == "INTEGRATION_ERROR"
     assert any(part["name"] == "a444.geojson" for part in manifest["parts"])
 
     a444_part = next(part for part in body["parts"] if part["name"] == "a444.geojson")
@@ -408,7 +479,7 @@ def test_os_map_export_roads_writes_semantic_parts_and_manifest(client, monkeypa
     assert part_contents["mimeType"] == "application/geo+json"
     feature_collection = json.loads(part_contents["text"])
     assert feature_collection["type"] == "FeatureCollection"
-    assert len(feature_collection["features"]) == 3
+    assert len(feature_collection["features"]) == 2
 
 
 def test_os_map_export_roads_uses_cached_manifest_for_repeat_requests(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]

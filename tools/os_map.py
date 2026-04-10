@@ -1333,6 +1333,7 @@ def _fetch_road_export_features(
             }
             break
         page_token: str | None = None
+        seen_page_tokens: set[str] = set()
         while True:
             request: dict[str, Any] = {
                 "tool": "os_features.query",
@@ -1412,6 +1413,14 @@ def _fetch_road_export_features(
                 seen_feature_keys.add(key)
                 features.append(candidate)
             if isinstance(next_page_token, str) and next_page_token:
+                if next_page_token in seen_page_tokens:
+                    error = {
+                        "status": 500,
+                        "code": "INTEGRATION_ERROR",
+                        "message": "Paging token did not advance during os_features.query export",
+                    }
+                    break
+                seen_page_tokens.add(next_page_token)
                 page_token = next_page_token
                 continue
             break

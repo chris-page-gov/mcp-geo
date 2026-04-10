@@ -72,6 +72,7 @@ _SUPPORTED_RESOLVERS = {
     "direct_url",
 }
 _DIRECT_INGEST_SUFFIXES = {".zip", ".csv", ".json", ".ndjson", ".jsonl", ".gz"}
+_JSON_LINES_SCHEMA_SAMPLE_ROWS = 50
 
 _SEMANTIC_FIELD_REGEX: dict[str, re.Pattern[str]] = {
     "postcode": re.compile(r"^(pcds|pcd|postcode|post_code)$", re.IGNORECASE),
@@ -1440,15 +1441,18 @@ def _rows_from_binary_stream(
 
         try:
             iterator = _iter_json_lines()
-            try:
-                first_row = next(iterator)
-            except StopIteration:
+            buffered_rows: list[dict[str, Any]] = []
+            for row in iterator:
+                buffered_rows.append(row)
+                if len(buffered_rows) >= _JSON_LINES_SCHEMA_SAMPLE_ROWS:
+                    break
+            if not buffered_rows:
                 yield iter(()), []
                 return
-            fieldnames = _collect_fieldnames([first_row])
+            fieldnames = _collect_fieldnames(buffered_rows)
 
             def _iter_rows() -> Iterator[dict[str, Any]]:
-                yield first_row
+                yield from buffered_rows
                 yield from iterator
 
             yield _iter_rows(), fieldnames
@@ -1495,6 +1499,22 @@ def _rows_from_json_payload(payload: Any) -> tuple[list[dict[str, Any]], list[st
         rows = [item for item in payload if isinstance(item, dict)]
     fieldnames = _collect_fieldnames(rows)
     return rows, fieldnames
+
+
+def _merged_fieldnames(
+    inferred_fieldnames: list[str],
+    schema_fieldnames: list[str],
+) -> list[str]:
+    merged: list[str] = []
+    seen: set[str] = set()
+    for name in [*inferred_fieldnames, *schema_fieldnames]:
+        if not isinstance(name, str):
+            continue
+        if name in seen:
+            continue
+        seen.add(name)
+        merged.append(name)
+    return merged
 
 
 def _select_archive_member(
@@ -1865,9 +1885,10 @@ def _ingest_support_dataset(
         metadata_aliases=resolved.field_aliases,
     ) as (rows_iter, fieldnames):
         metadata_aliases = resolved.field_aliases
+        available_fieldnames = _merged_fieldnames(fieldnames, resolved.schema_fields)
         mapping, validation = _build_field_mapping(
             dataset,
-            fieldnames=fieldnames or resolved.schema_fields,
+            fieldnames=available_fieldnames,
             metadata_aliases=metadata_aliases,
         )
         if validation["requiredMissing"]:
@@ -1921,7 +1942,7 @@ def _ingest_support_dataset(
     schema_validation = {
         **validation,
         "schemaFingerprint": _schema_fingerprint(
-            fieldnames or resolved.schema_fields,
+            available_fieldnames,
             resolved.field_aliases,
         ),
     }
@@ -1953,9 +1974,10 @@ def _ingest_main_dataset(
         metadata_aliases=resolved.field_aliases,
     ) as (rows_iter, fieldnames):
         metadata_aliases = resolved.field_aliases
+        available_fieldnames = _merged_fieldnames(fieldnames, resolved.schema_fields)
         mapping, validation = _build_field_mapping(
             dataset,
-            fieldnames=fieldnames or resolved.schema_fields,
+            fieldnames=available_fieldnames,
             metadata_aliases=metadata_aliases,
         )
         if validation["requiredMissing"]:
@@ -2030,7 +2052,7 @@ def _ingest_main_dataset(
     schema_validation = {
         **validation,
         "schemaFingerprint": _schema_fingerprint(
-            fieldnames or resolved.schema_fields,
+            available_fieldnames,
             resolved.field_aliases,
         ),
     }
