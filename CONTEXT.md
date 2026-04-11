@@ -98,6 +98,12 @@ assumptions change.
   address-only band queries through `os_places.search ->
   council_tax.band_lookup` so clients resolve a postcode before calling the
   live VOA band form.
+- A 2026-04-11 Docker-sidecar follow-up now mounts the host ONS geo cache and
+  cache index into `scripts/mcp-docker-local` / `scripts/claude-mcp-local`
+  sessions when those artifacts exist locally. This fixes Docker-backed Claude
+  sessions that previously reported `CACHE_UNAVAILABLE` for `ons_geo.*` even
+  though the host repo had a populated cache, because the container only saw
+  `/logs`, `/landis-data`, and any explicit ABP parquet mount.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,

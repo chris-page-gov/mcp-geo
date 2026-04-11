@@ -131,3 +131,96 @@ exit 1
     assert _plan_value(proc.stdout, "postgis_container_name") == "mcp-geo-postgis-sidecar"
     assert _plan_value(proc.stdout, "postgis_volume") == "mcp-geo-postgis-sidecar"
     assert _plan_value(proc.stdout, "postgis_publish_port") == "0"
+
+
+def test_mcp_docker_local_plan_enables_ons_geo_cache_mounts_when_present(
+    tmp_path: Path,
+) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-docker-local"
+    fake_docker = tmp_path / "docker"
+    cache_dir = tmp_path / "ons_geo_cache"
+    index_path = tmp_path / "ons_geo_cache_index.json"
+    cache_dir.mkdir()
+    index_path.write_text("{}", encoding="utf-8")
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = os.environ.copy()
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_POSTGIS_REUSE_DEVCONTAINER"] = "0"
+    env["MCP_GEO_HOST_ONS_GEO_CACHE_DIR"] = str(cache_dir)
+    env["MCP_GEO_HOST_ONS_GEO_CACHE_INDEX_PATH"] = str(index_path)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "ons_geo_host_cache_dir") == str(cache_dir)
+    assert _plan_value(proc.stdout, "ons_geo_container_cache_dir") == "/app/data/cache/ons_geo"
+    assert _plan_value(proc.stdout, "ons_geo_cache_mount_enabled") == "true"
+    assert _plan_value(proc.stdout, "ons_geo_host_cache_index_path") == str(index_path)
+    assert (
+        _plan_value(proc.stdout, "ons_geo_container_cache_index_path")
+        == "/app/resources/ons_geo_cache_index.json"
+    )
+    assert _plan_value(proc.stdout, "ons_geo_cache_index_mount_enabled") == "true"
+
+
+def test_mcp_docker_local_plan_disables_ons_geo_cache_mounts_when_missing(
+    tmp_path: Path,
+) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-docker-local"
+    fake_docker = tmp_path / "docker"
+    cache_dir = tmp_path / "missing-cache"
+    index_path = tmp_path / "missing-index.json"
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = os.environ.copy()
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_POSTGIS_REUSE_DEVCONTAINER"] = "0"
+    env["MCP_GEO_HOST_ONS_GEO_CACHE_DIR"] = str(cache_dir)
+    env["MCP_GEO_HOST_ONS_GEO_CACHE_INDEX_PATH"] = str(index_path)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "ons_geo_host_cache_dir") == str(cache_dir)
+    assert _plan_value(proc.stdout, "ons_geo_cache_mount_enabled") == "false"
+    assert _plan_value(proc.stdout, "ons_geo_host_cache_index_path") == str(index_path)
+    assert _plan_value(proc.stdout, "ons_geo_cache_index_mount_enabled") == "false"

@@ -89,6 +89,11 @@ All notable changes to this project will be documented in this file.
   back to clients, and updated property-tax routing so address-only council-tax
   band prompts resolve candidate postcodes through `os_places.search` before
   calling the live VOA lookup.
+- Fixed Docker-backed `claude-mcp-local` / `mcp-docker-local` sessions so they
+  mount the host ONS geo cache directory and cache index into the container
+  when present. This restores `ons_geo.by_postcode` / `ons_geo.by_uprn` lookups
+  in Claude-sidecar sessions that previously saw `CACHE_UNAVAILABLE` despite a
+  populated host cache.
   pages that sit outside the mirrored portal slice.
 - Added `scripts/landis_release_reconciliation.py` plus generated manifest
   `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`

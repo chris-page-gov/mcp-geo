@@ -12,6 +12,10 @@ DATA_DIR="${MCP_GEO_POSTGIS_DATA_DIR:-$REPO_ROOT/data/postgres}"
 LOG_DIR="${MCP_GEO_LOG_DIR:-$REPO_ROOT/logs}"
 LANDIS_HOST_DATA_ROOT="${MCP_GEO_LANDIS_DATA_ROOT:-${LANDIS_LOCAL_DATA_ROOT:-$HOME/Data}}"
 LANDIS_CONTAINER_DATA_ROOT="${MCP_GEO_LANDIS_CONTAINER_DATA_ROOT:-/landis-data}"
+ONS_GEO_HOST_CACHE_DIR="${MCP_GEO_HOST_ONS_GEO_CACHE_DIR:-$REPO_ROOT/data/cache/ons_geo}"
+ONS_GEO_CONTAINER_CACHE_DIR="${MCP_GEO_CONTAINER_ONS_GEO_CACHE_DIR:-/app/data/cache/ons_geo}"
+ONS_GEO_HOST_CACHE_INDEX_PATH="${MCP_GEO_HOST_ONS_GEO_CACHE_INDEX_PATH:-$REPO_ROOT/resources/ons_geo_cache_index.json}"
+ONS_GEO_CONTAINER_CACHE_INDEX_PATH="${MCP_GEO_CONTAINER_ONS_GEO_CACHE_INDEX_PATH:-/app/resources/ons_geo_cache_index.json}"
 POSTGIS_PUBLISH_PORT="${MCP_GEO_POSTGIS_PUBLISH_PORT:-0}"
 POSTGIS_PGDATA="${MCP_GEO_POSTGIS_PGDATA:-/var/lib/postgresql/data/pgdata}"
 POSTGIS_PLATFORM="${MCP_GEO_POSTGIS_PLATFORM:-linux/amd64}"
@@ -31,6 +35,8 @@ POSTGIS_TARGET_CONTAINER="$POSTGIS_CONTAINER"
 MANAGE_POSTGIS_CONTAINER=true
 PLAN_ONLY="${MCP_GEO_DOCKER_PLAN_ONLY:-0}"
 LANDIS_MOUNT_ENABLED=false
+ONS_GEO_CACHE_MOUNT_ENABLED=false
+ONS_GEO_CACHE_INDEX_MOUNT_ENABLED=false
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
@@ -440,6 +446,12 @@ emit_plan() {
   printf 'landis_host_data_root=%s\n' "$LANDIS_HOST_DATA_ROOT"
   printf 'landis_container_data_root=%s\n' "$LANDIS_CONTAINER_DATA_ROOT"
   printf 'landis_mount_enabled=%s\n' "$LANDIS_MOUNT_ENABLED"
+  printf 'ons_geo_host_cache_dir=%s\n' "$ONS_GEO_HOST_CACHE_DIR"
+  printf 'ons_geo_container_cache_dir=%s\n' "$ONS_GEO_CONTAINER_CACHE_DIR"
+  printf 'ons_geo_cache_mount_enabled=%s\n' "$ONS_GEO_CACHE_MOUNT_ENABLED"
+  printf 'ons_geo_host_cache_index_path=%s\n' "$ONS_GEO_HOST_CACHE_INDEX_PATH"
+  printf 'ons_geo_container_cache_index_path=%s\n' "$ONS_GEO_CONTAINER_CACHE_INDEX_PATH"
+  printf 'ons_geo_cache_index_mount_enabled=%s\n' "$ONS_GEO_CACHE_INDEX_MOUNT_ENABLED"
 }
 
 ensure_postgis_image() {
@@ -516,6 +528,12 @@ fi
 mkdir -p "$LOG_DIR"
 if [[ -n "$LANDIS_HOST_DATA_ROOT" && -d "$LANDIS_HOST_DATA_ROOT" ]]; then
   LANDIS_MOUNT_ENABLED=true
+fi
+if [[ -n "$ONS_GEO_HOST_CACHE_DIR" && -d "$ONS_GEO_HOST_CACHE_DIR" ]]; then
+  ONS_GEO_CACHE_MOUNT_ENABLED=true
+fi
+if [[ -n "$ONS_GEO_HOST_CACHE_INDEX_PATH" && -f "$ONS_GEO_HOST_CACHE_INDEX_PATH" ]]; then
+  ONS_GEO_CACHE_INDEX_MOUNT_ENABLED=true
 fi
 
 detect_reusable_devcontainer_postgis || true
@@ -670,6 +688,12 @@ env_args=(
 if [[ "$LANDIS_MOUNT_ENABLED" == "true" ]]; then
   env_args+=(-e "LANDIS_LOCAL_DATA_ROOT=${LANDIS_CONTAINER_DATA_ROOT}")
 fi
+if [[ "$ONS_GEO_CACHE_MOUNT_ENABLED" == "true" ]]; then
+  env_args+=(-e "ONS_GEO_CACHE_DIR=${ONS_GEO_CONTAINER_CACHE_DIR}")
+fi
+if [[ "$ONS_GEO_CACHE_INDEX_MOUNT_ENABLED" == "true" ]]; then
+  env_args+=(-e "ONS_GEO_CACHE_INDEX_PATH=${ONS_GEO_CONTAINER_CACHE_INDEX_PATH}")
+fi
 
 for var in \
   OS_API_KEY \
@@ -716,6 +740,12 @@ mount_args=(
 
 if [[ "$LANDIS_MOUNT_ENABLED" == "true" ]]; then
   mount_args+=(-v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro")
+fi
+if [[ "$ONS_GEO_CACHE_MOUNT_ENABLED" == "true" ]]; then
+  mount_args+=(-v "$ONS_GEO_HOST_CACHE_DIR:$ONS_GEO_CONTAINER_CACHE_DIR:ro")
+fi
+if [[ "$ONS_GEO_CACHE_INDEX_MOUNT_ENABLED" == "true" ]]; then
+  mount_args+=(-v "$ONS_GEO_HOST_CACHE_INDEX_PATH:$ONS_GEO_CONTAINER_CACHE_INDEX_PATH:ro")
 fi
 
 append_readonly_mount_if_exists "${ADDRESSBASE_PREMIUM_XREF_PATH:-}"
