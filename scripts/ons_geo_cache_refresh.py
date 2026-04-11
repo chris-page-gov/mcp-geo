@@ -78,7 +78,7 @@ _CONTENT_DISPOSITION_FILENAME_RE = re.compile(
     r"""filename\*?=(?:UTF-8''|")?(?P<name>[^";]+)""",
     re.IGNORECASE,
 )
-_SQLITE_REFRESH_COMMIT_BATCH = 50_000
+_SQLITE_REFRESH_INSERT_BATCH = 50_000
 _RGC_XLSX_FIELDNAMES = [
     "GEOGRAPHY_CODE",
     "GEOGRAPHY_NAME",
@@ -1007,7 +1007,7 @@ def _select_direct_discovery_url(
 
     direct_url = _select_candidate_url(
         candidates=[item[0] for item in valid_direct_urls],
-        link_patterns=[],
+        link_patterns=dataset.resolver.link_patterns,
         preferred_suffixes=dataset.resolver.preferred_suffixes,
     )
     if direct_url is None:
@@ -1575,7 +1575,9 @@ def _open_rows(
                 )
             )
             if not members:
-                raise ValueError(f"No CSV, JSON, or supported XLSX file found in zip archive: {path}")
+                raise ValueError(
+                    f"No CSV, JSON, or supported XLSX file found in zip archive: {path}"
+                )
             chosen_member = _select_archive_member(
                 archive=archive,
                 members=members,
@@ -1617,7 +1619,9 @@ def _rows_from_xlsx_stream(
     dataset: DatasetConfig | None,
 ) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
     if dataset is None or dataset.dataset_id != "RGC":
-        raise ValueError(f"Unsupported XLSX source for {name}; only RGC workbook archives are supported.")
+        raise ValueError(
+            f"Unsupported XLSX source for {name}; only RGC workbook archives are supported."
+        )
     workbook = load_workbook(io.BytesIO(stream.read()), read_only=True, data_only=True)
     try:
         def _iter_rows() -> Iterator[dict[str, Any]]:
@@ -1646,7 +1650,11 @@ def _rows_from_xlsx_stream(
                         continue
                     code_value = row[code_index] if code_index < len(row) else None
                     name_value = row[name_index] if name_index < len(row) else None
-                    status_value = row[status_index] if status_index is not None and status_index < len(row) else None
+                    status_value = (
+                        row[status_index]
+                        if status_index is not None and status_index < len(row)
+                        else None
+                    )
                     code = str(code_value or "").strip().upper()
                     geography_name = str(name_value or "").strip()
                     if not code or not geography_name:
@@ -2058,6 +2066,46 @@ def _insert_uprn_index_row(
     normalized_row: dict[str, Any],
     cached_at: str,
 ) -> None:
+    row_values = _uprn_index_row_values(
+        dataset=dataset,
+        normalized_row=normalized_row,
+        cached_at=cached_at,
+    )
+    if row_values is None:
+        return
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO ons_geo_uprn_index (
+            product_id,
+            derivation_mode,
+            uprn,
+            postcode,
+            oa_code,
+            lsoa_code,
+            msoa_code,
+            lad_code,
+            lad_name,
+            ward_code,
+            ward_name,
+            country_code,
+            country_name,
+            region_code,
+            region_name,
+            postal_delivery,
+            geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        row_values,
+    )
+
+
+def _uprn_index_row_values(
+    *,
+    dataset: DatasetConfig,
+    normalized_row: dict[str, Any],
+    cached_at: str,
+) -> tuple[Any, ...] | None:
     semantic = normalized_row.get("semanticFields", {})
     if not isinstance(semantic, dict):
         return
@@ -2082,50 +2130,37 @@ def _insert_uprn_index_row(
     elif isinstance(postal_delivery, int):
         postal_delivery_value = postal_delivery
 
-    conn.execute(
-        """
-        INSERT OR REPLACE INTO ons_geo_uprn_index (
-            product_id,
-            derivation_mode,
-            uprn,
-            postcode,
-            oa_code,
-            lsoa_code,
-            msoa_code,
-            lad_code,
-            lad_name,
-            ward_code,
-            ward_name,
-            country_code,
-            country_name,
-            region_code,
-            region_name,
-            postal_delivery,
-            geographies_json,
-            cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            dataset.dataset_id,
-            dataset.derivation_mode,
-            uprn,
-            semantic.get("postcode"),
-            _geo_value("oa", "currentCode"),
-            _geo_value("lsoa", "currentCode"),
-            _geo_value("msoa", "currentCode"),
-            _geo_value("lad", "currentCode"),
-            _geo_value("lad", "currentName"),
-            _geo_value("ward", "currentCode"),
-            _geo_value("ward", "currentName"),
-            _geo_value("country", "currentCode"),
-            _geo_value("country", "currentName"),
-            _geo_value("region", "currentCode"),
-            _geo_value("region", "currentName"),
-            postal_delivery_value,
-            json.dumps(geographies, ensure_ascii=True, separators=(",", ":")),
-            cached_at,
-        ),
+    return (
+        dataset.dataset_id,
+        dataset.derivation_mode,
+        uprn,
+        semantic.get("postcode"),
+        _geo_value("oa", "currentCode"),
+        _geo_value("lsoa", "currentCode"),
+        _geo_value("msoa", "currentCode"),
+        _geo_value("lad", "currentCode"),
+        _geo_value("lad", "currentName"),
+        _geo_value("ward", "currentCode"),
+        _geo_value("ward", "currentName"),
+        _geo_value("country", "currentCode"),
+        _geo_value("country", "currentName"),
+        _geo_value("region", "currentCode"),
+        _geo_value("region", "currentName"),
+        postal_delivery_value,
+        json.dumps(geographies, ensure_ascii=True, separators=(",", ":")),
+        cached_at,
     )
+
+
+def _flush_pending_rows(
+    conn: sqlite3.Connection,
+    statement: str,
+    pending: list[tuple[Any, ...]],
+) -> None:
+    if not pending:
+        return
+    conn.executemany(statement, pending)
+    pending.clear()
 
 
 def _ingest_support_dataset(
@@ -2138,6 +2173,21 @@ def _ingest_support_dataset(
 ) -> tuple[int, dict[str, Any]]:
     now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     inserted = 0
+    insert_sql = """
+        INSERT OR REPLACE INTO ons_geo_code_reference (
+            dataset_id,
+            code,
+            code_family,
+            name,
+            status,
+            successor_code,
+            successor_name,
+            level,
+            record_json,
+            ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    pending_records: list[tuple[Any, ...]] = []
     with _open_rows(
         resolved.source_path,
         dataset=dataset,
@@ -2166,21 +2216,7 @@ def _ingest_support_dataset(
             if record is None:
                 continue
             code_references.add(record)
-            conn.execute(
-                """
-                INSERT OR REPLACE INTO ons_geo_code_reference (
-                    dataset_id,
-                    code,
-                    code_family,
-                    name,
-                    status,
-                    successor_code,
-                    successor_name,
-                    level,
-                    record_json,
-                    ingested_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+            pending_records.append(
                 (
                     record.dataset_id,
                     record.code,
@@ -2192,13 +2228,14 @@ def _ingest_support_dataset(
                     record.level,
                     json.dumps(record.record, ensure_ascii=True, separators=(",", ":")),
                     now_iso,
-                ),
+                )
             )
             inserted += 1
-            if inserted % _SQLITE_REFRESH_COMMIT_BATCH == 0:
-                conn.commit()
+            if len(pending_records) >= _SQLITE_REFRESH_INSERT_BATCH:
+                _flush_pending_rows(conn, insert_sql, pending_records)
             if max_rows is not None and inserted >= max_rows:
                 break
+        _flush_pending_rows(conn, insert_sql, pending_records)
 
     schema_validation = {
         **validation,
@@ -2229,6 +2266,44 @@ def _ingest_main_dataset(
     now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     inserted = 0
     chosen_key_field: str | None = None
+    rows_insert_sql = """
+        INSERT OR REPLACE INTO ons_geo_rows (
+            product_id,
+            key_type,
+            key_norm,
+            derivation_mode,
+            release,
+            source_name,
+            product_priority,
+            row_json,
+            normalized_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    uprn_index_insert_sql = """
+        INSERT OR REPLACE INTO ons_geo_uprn_index (
+            product_id,
+            derivation_mode,
+            uprn,
+            postcode,
+            oa_code,
+            lsoa_code,
+            msoa_code,
+            lad_code,
+            lad_name,
+            ward_code,
+            ward_name,
+            country_code,
+            country_name,
+            region_code,
+            region_name,
+            postal_delivery,
+            geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    pending_rows: list[tuple[Any, ...]] = []
+    pending_uprn_rows: list[tuple[Any, ...]] = []
     with _open_rows(
         resolved.source_path,
         dataset=dataset,
@@ -2271,21 +2346,7 @@ def _ingest_main_dataset(
                 mapping=mapping,
                 code_references=code_references,
             )
-            conn.execute(
-                """
-                INSERT OR REPLACE INTO ons_geo_rows (
-                    product_id,
-                    key_type,
-                    key_norm,
-                    derivation_mode,
-                    release,
-                    source_name,
-                    product_priority,
-                    row_json,
-                    normalized_json,
-                    cached_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+            pending_rows.append(
                 (
                     dataset.dataset_id,
                     dataset.key_type,
@@ -2297,20 +2358,24 @@ def _ingest_main_dataset(
                     json.dumps(row, ensure_ascii=True, separators=(",", ":")),
                     json.dumps(normalized_row, ensure_ascii=True, separators=(",", ":")),
                     now_iso,
-                ),
+                )
             )
             if dataset.key_type == "uprn":
-                _insert_uprn_index_row(
-                    conn=conn,
+                uprn_index_row = _uprn_index_row_values(
                     dataset=dataset,
                     normalized_row=normalized_row,
                     cached_at=now_iso,
                 )
+                if uprn_index_row is not None:
+                    pending_uprn_rows.append(uprn_index_row)
             inserted += 1
-            if inserted % _SQLITE_REFRESH_COMMIT_BATCH == 0:
-                conn.commit()
+            if len(pending_rows) >= _SQLITE_REFRESH_INSERT_BATCH:
+                _flush_pending_rows(conn, rows_insert_sql, pending_rows)
+                _flush_pending_rows(conn, uprn_index_insert_sql, pending_uprn_rows)
             if max_rows is not None and inserted >= max_rows:
                 break
+        _flush_pending_rows(conn, rows_insert_sql, pending_rows)
+        _flush_pending_rows(conn, uprn_index_insert_sql, pending_uprn_rows)
 
     schema_validation = {
         **validation,

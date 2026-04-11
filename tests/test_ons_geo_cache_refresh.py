@@ -8,8 +8,10 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-import scripts.ons_geo_cache_refresh as refresh
+import pytest
 from openpyxl import Workbook
+
+import scripts.ons_geo_cache_refresh as refresh
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "ons_geo"
 
@@ -655,6 +657,74 @@ def test_ingest_support_dataset_accepts_rgc_xlsx_archive(tmp_path: Path) -> None
     conn.close()
 
 
+def test_ingest_support_dataset_rolls_back_after_batched_failure(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, _base_manifest()))[2][0]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+    conn.execute(
+        """
+        INSERT INTO ons_geo_code_reference (
+            dataset_id,
+            code,
+            code_family,
+            name,
+            status,
+            successor_code,
+            successor_name,
+            level,
+            record_json,
+            ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            dataset.dataset_id,
+            "E090OLD",
+            "lad",
+            "Old Westminster",
+            "current",
+            None,
+            None,
+            "local_authority_district",
+            json.dumps({"GEOGRAPHY_CODE": "E090OLD"}, ensure_ascii=True, separators=(",", ":")),
+            "2026-04-11T00:00:00Z",
+        ),
+    )
+    conn.commit()
+    code_references = refresh.CodeReferenceStore()
+    original_normalize = refresh._normalize_code_reference_row
+    calls = {"count": 0}
+
+    def crashing_normalize(row, *, dataset, mapping):
+        calls["count"] += 1
+        if calls["count"] == 2:
+            raise ValueError("support ingest boom")
+        return original_normalize(row, dataset=dataset, mapping=mapping)
+
+    monkeypatch.setattr(refresh, "_SQLITE_REFRESH_INSERT_BATCH", 1)
+    monkeypatch.setattr(refresh, "_normalize_code_reference_row", crashing_normalize)
+
+    with pytest.raises(ValueError, match="support ingest boom"):
+        refresh._ingest_support_dataset(
+            conn=conn,
+            dataset=dataset,
+            resolved=resolved,
+            max_rows=None,
+            code_references=code_references,
+        )
+    conn.rollback()
+
+    rows = conn.execute(
+        "SELECT code, name FROM ons_geo_code_reference WHERE dataset_id = ? ORDER BY code",
+        (dataset.dataset_id,),
+    ).fetchall()
+    assert rows == [("E090OLD", "Old Westminster")]
+    conn.close()
+
+
 def test_resolve_portal_release_file_prefers_discovery_api_and_suffix(
     monkeypatch,
     tmp_path: Path,
@@ -784,6 +854,82 @@ def test_resolve_portal_release_file_skips_failing_landing_when_discovery_has_zi
         url_overrides={},
     )
     assert resolved.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_resolve_portal_release_file_keeps_link_patterns_for_direct_discovery_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    guide_url = "https://downloads.example.test/onsud-december-2025-epoch-123-user-guide.zip"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "User Guide", "format": "ZIP", "url": guide_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+    zip_content = b"PK\x03\x04data"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == target_url:
+            return _FakeResponse(content=zip_content)
+        if url == guide_url:
+            raise AssertionError("Guide asset should not be selected when linkPatterns target data")
+        if url == "https://example.test/landing":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields a matching zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud-december-2025-epoch-123\\.zip$"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == target_url
     assert resolved.resolved_release == "December 2025 (Epoch 123)"
 
 
@@ -1209,6 +1355,76 @@ def test_probe_portal_release_file_skips_failing_landing_when_discovery_has_zip(
         url_overrides={},
     )
     assert probe.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    assert probe.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_probe_portal_release_file_keeps_link_patterns_for_direct_discovery_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    guide_url = "https://downloads.example.test/onsud-december-2025-epoch-123-user-guide.zip"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "User Guide", "format": "ZIP", "url": guide_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == target_url:
+            return _FakeResponse(content=b"PK\x03\x04probe")
+        if url in {guide_url, "https://example.test/landing"}:
+            raise AssertionError("Probe should not fetch the guide asset or landing page here")
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud-december-2025-epoch-123\\.zip$"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    probe = refresh.probe_dataset_source(
+        dataset,
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert probe.resolved_source_url == target_url
     assert probe.resolved_release == "December 2025 (Epoch 123)"
 
 
@@ -1741,3 +1957,119 @@ def test_code_reference_annotation_flags_family_mismatch() -> None:
         code_references=store,
     )
     assert normalized["geographies"]["lad"]["status"] == "family_mismatch"
+
+
+def test_ingest_main_dataset_rolls_back_after_batched_failure(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "onsud_multi.csv"
+    source_path.write_text(
+        "\n".join(
+            [
+                (
+                    "UPRN,pcds,LAD24CD,LAD24NM,OA21CD,LSOA21CD,MSOA21CD,WD24CD,"
+                    "WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM,postal_delivery"
+                ),
+                (
+                    "100023336959,CV12GT,E08000026,Coventry,E00012345,E01012345,"
+                    "E02012345,E05001111,Holbrooks,E92000001,England,E12000005,"
+                    "West Midlands,1"
+                ),
+                (
+                    "100023336960,CV12GU,E08000026,Coventry,E00012346,E01012346,"
+                    "E02012346,E05001112,Holbrooks,E92000001,England,E12000005,"
+                    "West Midlands,1"
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    payload = _base_manifest()
+    payload["products"][2]["resolver"] = _static_resolver(source_path)
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, payload))[1][2]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+    old_normalized_row = {
+        "semanticFields": {
+            "uprn": "999999999999",
+            "postcode": "CV00AA",
+            "postal_delivery": 1,
+        },
+        "geographies": {
+            "lad": {"currentCode": "E09000033", "currentName": "Westminster"},
+            "ward": {"currentCode": "E05013806", "currentName": "St James's"},
+            "country": {"currentCode": "E92000001", "currentName": "England"},
+            "region": {"currentCode": "E12000007", "currentName": "London"},
+        },
+    }
+    conn.execute(
+        """
+        INSERT INTO ons_geo_rows (
+            product_id,
+            key_type,
+            key_norm,
+            derivation_mode,
+            release,
+            source_name,
+            product_priority,
+            row_json,
+            normalized_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            dataset.dataset_id,
+            dataset.key_type,
+            "999999999999",
+            dataset.derivation_mode,
+            dataset.release,
+            dataset.title,
+            dataset.priority,
+            "{}",
+            json.dumps(old_normalized_row, ensure_ascii=True, separators=(",", ":")),
+            "2026-04-11T00:00:00Z",
+        ),
+    )
+    refresh._insert_uprn_index_row(
+        conn=conn,
+        dataset=dataset,
+        normalized_row=old_normalized_row,
+        cached_at="2026-04-11T00:00:00Z",
+    )
+    conn.commit()
+    code_references = refresh.CodeReferenceStore()
+    original_build = refresh._build_normalized_row
+    calls = {"count": 0}
+
+    def crashing_build(row, *, mapping, code_references):
+        calls["count"] += 1
+        if calls["count"] == 2:
+            raise ValueError("main ingest boom")
+        return original_build(row, mapping=mapping, code_references=code_references)
+
+    monkeypatch.setattr(refresh, "_SQLITE_REFRESH_INSERT_BATCH", 1)
+    monkeypatch.setattr(refresh, "_build_normalized_row", crashing_build)
+
+    with pytest.raises(ValueError, match="main ingest boom"):
+        refresh._ingest_main_dataset(
+            conn=conn,
+            dataset=dataset,
+            resolved=resolved,
+            max_rows=None,
+            code_references=code_references,
+        )
+    conn.rollback()
+
+    rows = conn.execute(
+        "SELECT key_norm FROM ons_geo_rows WHERE product_id = ? ORDER BY key_norm",
+        (dataset.dataset_id,),
+    ).fetchall()
+    uprn_index_rows = conn.execute(
+        "SELECT uprn FROM ons_geo_uprn_index WHERE product_id = ? ORDER BY uprn",
+        (dataset.dataset_id,),
+    ).fetchall()
+    assert rows == [("999999999999",)]
+    assert uprn_index_rows == [("999999999999",)]
+    conn.close()
