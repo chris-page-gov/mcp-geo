@@ -410,8 +410,15 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
     postcode_raw = payload.get("postcode")
     uprn_raw = payload.get("uprn")
 
-    identifiers = [value for value in (area_id_raw, postcode_raw, uprn_raw) if value is not None]
-    if len(identifiers) > 1:
+    normalized_identifier_values = []
+    for value in (area_id_raw, postcode_raw, uprn_raw):
+        if isinstance(value, str):
+            if value.strip():
+                normalized_identifier_values.append(value)
+        elif value is not None:
+            normalized_identifier_values.append(value)
+
+    if len(normalized_identifier_values) > 1:
         return _error("Provide only one of: id, postcode, uprn")
 
     derivation_mode, parse_error = _parse_derivation_mode(payload)

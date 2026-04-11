@@ -671,6 +671,36 @@ def test_ons_geo_area_summary_invalid_id_without_target_level_returns_validation
     assert "Could not infer targetLevel from id K04000001" in body["message"]
 
 
+def test_ons_geo_area_summary_ignores_blank_anchor_fields(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+    monkeypatch.setattr(ons_geo_tools, "get_tool", lambda _name: None)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "id": "",
+            "postcode": "SW1A 1AA",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["anchor"]["type"] == "postcode"
+    assert body["area"]["id"] == "E00000111"
+
+
 def test_ons_geo_by_postcode_cache_unavailable(tmp_path: Path, monkeypatch) -> None:
     missing_dir = tmp_path / "missing"
     _configure_cache_settings(

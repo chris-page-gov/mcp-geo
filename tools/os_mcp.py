@@ -744,6 +744,18 @@ def _looks_like_area_profile_query(query: str, query_lower: str, level_mentions:
     return any(level in {"oa", "lsoa", "msoa", "ward", "local_auth"} for level in level_mentions)
 
 
+def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -> str | None:
+    for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
+        mapped = ADMIN_LEVEL_MAP.get(level)
+        if mapped in {"OA", "LSOA", "MSOA", "WARD", "DISTRICT"}:
+            return mapped
+    if re.search(r"\bcountr(y|ies)\b", query_lower):
+        return "COUNTRY"
+    if re.search(r"\bregions?\b", query_lower):
+        return "REGION"
+    return None
+
+
 def _build_area_profile_params(
     query: str,
     query_lower: str,
@@ -755,24 +767,29 @@ def _build_area_profile_params(
     area_code = _extract_area_code(query)
     postcode = _extract_postcode(query)
     uprn = _extract_uprn(query)
+    requested_level = _requested_area_profile_level(query_lower, level_mentions)
     if area_code:
-        params["id"] = area_code
         inferred = infer_area_level_from_code(area_code)
         if inferred:
+            params["id"] = area_code
             params["targetLevel"] = inferred
             context["area_profile_level"] = inferred
+        elif requested_level is not None:
+            params["id"] = area_code
+            params["targetLevel"] = requested_level
+            context["area_profile_level"] = requested_level
+        else:
+            context["area_profile_needs_level"] = True
+            context["area_profile_code"] = area_code
     elif postcode:
         params["postcode"] = postcode
     elif uprn:
         params["uprn"] = uprn
 
     if "targetLevel" not in params:
-        for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
-            mapped = ADMIN_LEVEL_MAP.get(level)
-            if mapped in {"OA", "LSOA", "MSOA", "WARD", "DISTRICT"}:
-                params["targetLevel"] = mapped
-                context["area_profile_level"] = mapped
-                break
+        if requested_level is not None:
+            params["targetLevel"] = requested_level
+            context["area_profile_level"] = requested_level
         if "targetLevel" not in params and (postcode or uprn):
             params["targetLevel"] = "OA"
             context["area_profile_level"] = "OA"
@@ -1367,10 +1384,29 @@ def _get_tool_for_intent(
         )
     if intent == QueryIntent.AREA_PROFILE:
         follow_up = bool(context.get("area_profile_follow_up"))
+        needs_level = bool(context.get("area_profile_needs_level"))
         explanation = (
             "Use ons_geo.area_summary to resolve a compact area profile from a supplied "
             "area code, postcode, or UPRN."
         )
+        if needs_level:
+            area_code = str(context.get("area_profile_code") or "").strip()
+            explanation = (
+                "An area code was detected, but its target summary level could not be "
+                "inferred automatically. Provide targetLevel explicitly before calling "
+                "ons_geo.area_summary."
+            )
+            if area_code:
+                explanation = (
+                    f"Area code {area_code} was detected, but its target summary level could "
+                    "not be inferred automatically. Provide targetLevel explicitly before "
+                    "calling ons_geo.area_summary."
+                )
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                explanation,
+            )
         if follow_up:
             explanation = (
                 "Use ons_geo.area_summary for the follow-up area profile. If the host keeps "
@@ -2091,7 +2127,13 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     tool, workflow, explanation = _get_tool_for_intent(intent, context)
     workflow_profile_uri = (
         AREA_SUMMARY_WORKFLOW_URI
-        if tool == "ons_geo.area_summary"
+        if (
+            tool == "ons_geo.area_summary"
+            or (
+                intent == QueryIntent.AREA_PROFILE
+                and bool(context.get("area_profile_needs_level"))
+            )
+        )
         else NOMIS_WORKFLOW_URI
         if (tool.startswith("nomis.") or bool(context.get("nomis_preferred")))
         else None
@@ -2127,6 +2169,17 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
             "or provide a postcode/address first so OS Places can resolve candidate UPRNs before "
             "calling council_tax.query."
         )
+    if intent == QueryIntent.AREA_PROFILE and bool(context.get("area_profile_needs_level")):
+        area_code = str(context.get("area_profile_code") or "").strip()
+        response["guidance"] = (
+            "ons_geo.area_summary needs an explicit targetLevel for this area code. "
+            "Use one of OA, LSOA, MSOA, WARD, DISTRICT, COUNTRY, or REGION."
+        )
+        if area_code:
+            response["guidance"] = (
+                f"{response['guidance']} Re-run with id={area_code} and the intended "
+                "targetLevel."
+            )
     if str(context.get("unknown_mode") or "") == "resource_bridge":
         resource_guidance = (
             "When a tool returns delivery='resource' or a resource:// URI, do not search the "

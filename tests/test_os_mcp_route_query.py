@@ -79,6 +79,32 @@ def test_route_query_area_profile_from_postcode():
     assert body["recommended_parameters"]["targetLevel"] == "OA"
 
 
+def test_route_query_area_profile_from_postcode_preserves_region_level():
+    body = _route("Tell me about the region for postcode CV3 1HB")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["postcode"] == "CV31HB"
+    assert body["recommended_parameters"]["targetLevel"] == "REGION"
+
+
+def test_route_query_area_profile_uninferrable_code_needs_explicit_level():
+    body = _route("Quick profile for K04000001")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "targetLevel" in body["guidance"]
+    assert "K04000001" in body["guidance"]
+
+
+def test_route_query_area_profile_country_code_with_explicit_level_is_callable():
+    body = _route("Quick profile for country K04000001")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "K04000001"
+    assert body["recommended_parameters"]["targetLevel"] == "COUNTRY"
+
+
 def test_route_query_uprn_lookup():
     body = _route("Lookup UPRN 100023336959")
     assert body["intent"] == "address_lookup"
