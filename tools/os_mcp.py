@@ -496,6 +496,15 @@ def _looks_like_property_tax_query(query_lower: str) -> bool:
     return False
 
 
+def _looks_like_property_tax_status_prompt(query_lower: str) -> bool:
+    return bool(
+        re.search(
+            r"\bnon-domestic rates?\b|\bbusiness rates?\b|\baddressbase\b|\btype 23\b|\bflags?\b",
+            query_lower,
+        )
+    )
+
+
 def _looks_like_landis_survey_query(query_lower: str) -> bool:
     return bool(
         re.search(
@@ -917,6 +926,7 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if uprns:
             context["uprns"] = uprns
         postcode = _extract_postcode(query)
+        status_prompt = _looks_like_property_tax_status_prompt(query_lower)
         if re.search(r"\bband\b", query_lower):
             if uprns:
                 context["property_tax_mode"] = "band_from_uprn"
@@ -927,6 +937,15 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if uprns:
             context["property_tax_mode"] = "uprn_status_query"
             return QueryIntent.PROPERTY_TAX, 0.95, {"uprns": uprns}, context
+        if status_prompt:
+            if postcode:
+                context["property_tax_mode"] = "status_from_postcode"
+                return QueryIntent.PROPERTY_TAX, 0.9, {"postcode": postcode}, context
+            if re.search(r"\baddress(es)?\b", query_lower):
+                context["property_tax_mode"] = "status_from_address"
+                return QueryIntent.PROPERTY_TAX, 0.85, {"text": query}, context
+            context["property_tax_mode"] = "status_query"
+            return QueryIntent.PROPERTY_TAX, 0.8, {}, context
         params = {"postcode": postcode} if postcode else {}
         context["property_tax_mode"] = "band_lookup"
         return QueryIntent.PROPERTY_TAX, 0.9, params, context
@@ -1324,6 +1343,27 @@ def _get_tool_for_intent(
                 ["council_tax.band_lookup"],
                 "Search the VOA council-tax band service by postcode or address fields.",
             )
+        if property_tax_mode == "status_from_postcode":
+            return (
+                "os_places.by_postcode",
+                ["os_places.by_postcode", "council_tax.query"],
+                (
+                    "Lookup addresses and UPRNs for the postcode using OS Places, then "
+                    "inspect the returned UPRNs in the local AddressBase Premium "
+                    "cross-reference for Council Tax and non-domestic-rates flags."
+                ),
+            )
+        if property_tax_mode == "status_from_address":
+            return (
+                "os_places.search",
+                ["os_places.search", "council_tax.query"],
+                (
+                    "Resolve candidate addresses and UPRNs with OS Places free-text "
+                    "search, then inspect the returned UPRNs in the local "
+                    "AddressBase Premium cross-reference for Council Tax and "
+                    "non-domestic-rates flags."
+                ),
+            )
         return (
             "council_tax.query",
             ["council_tax.query"],
@@ -1664,7 +1704,11 @@ def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
     intent, _confidence, _params, context = _classify_query(query)
     recommended = list(INTENT_TOOLSET_MAP.get(intent, ["starter"]))
     if intent == QueryIntent.PROPERTY_TAX:
-        if str(context.get("property_tax_mode") or "") == "band_from_uprn":
+        if str(context.get("property_tax_mode") or "") in {
+            "band_from_uprn",
+            "status_from_postcode",
+            "status_from_address",
+        }:
             recommended = ["core_router", "places_names", "property_tax"]
         else:
             recommended = ["core_router", "property_tax"]

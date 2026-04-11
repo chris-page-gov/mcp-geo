@@ -98,6 +98,19 @@ def _remote_head(path: Path) -> str | None:
     return result.split()[0]
 
 
+def _is_standalone_git_checkout(path: Path) -> bool:
+    git_marker = path / ".git"
+    if not git_marker.exists():
+        return False
+    top_level = _run_git(path, "rev-parse", "--show-toplevel")
+    if not top_level:
+        return False
+    try:
+        return Path(top_level).resolve() == path.resolve()
+    except OSError:
+        return False
+
+
 def _drift_status(local_head: str | None, remote_head: str | None) -> str:
     if not local_head:
         return "missing_local_git_state"
@@ -110,8 +123,11 @@ def _drift_status(local_head: str | None, remote_head: str | None) -> str:
 
 def audit_target(target: SpecTarget) -> TargetAudit:
     submodule_root = REPO_ROOT / target.submodule_path
-    local_head = _run_git(submodule_root, "rev-parse", "HEAD")
-    remote_head = _remote_head(submodule_root)
+    local_head: str | None = None
+    remote_head: str | None = None
+    if _is_standalone_git_checkout(submodule_root):
+        local_head = _run_git(submodule_root, "rev-parse", "HEAD")
+        remote_head = _remote_head(submodule_root)
     missing_paths = [
         str(Path(target.submodule_path) / relative_path)
         for relative_path in target.tracked_paths

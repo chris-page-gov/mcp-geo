@@ -88,6 +88,24 @@ def test_route_query_property_tax_status_query_uses_council_tax_query():
     assert body["workflow_steps"] == ["council_tax.query"]
 
 
+def test_route_query_business_rates_postcode_uses_places_then_status_query():
+    body = _route("Check business rates status for postcode CV1 2GT")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.by_postcode"
+    assert body["recommended_parameters"]["postcode"] == "CV12GT"
+    assert body["workflow_steps"] == ["os_places.by_postcode", "council_tax.query"]
+
+
+def test_route_query_business_rates_address_uses_places_search_then_status_query():
+    body = _route("Check business rates status for addresses on High Street")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.search"
+    assert body["recommended_parameters"]["text"] == (
+        "Check business rates status for addresses on High Street"
+    )
+    assert body["workflow_steps"] == ["os_places.search", "council_tax.query"]
+
+
 def test_route_query_boundary_fetch():
     body = _route("Get the boundary of Westminster")
     assert body["intent"] == "boundary_fetch"
@@ -592,6 +610,27 @@ def test_select_toolsets_landis_query_infers_landis_toolset():
     matched = body.get("matchedTools", [])
     assert "landis_soilscapes.area_summary" in matched
     assert "os_landscape.find" in matched
+
+
+def test_select_toolsets_business_rates_postcode_infers_places_and_property_tax() -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Check business rates status for postcode CV1 2GT",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "status_from_postcode"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.query" in matched
+    assert "os_places.by_postcode" in matched
 
 
 def test_select_toolsets_explicit_filters():
