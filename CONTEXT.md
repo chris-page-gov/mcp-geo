@@ -104,6 +104,12 @@ assumptions change.
   sessions that previously reported `CACHE_UNAVAILABLE` for `ons_geo.*` even
   though the host repo had a populated cache, because the container only saw
   `/logs`, `/landis-data`, and any explicit ABP parquet mount.
+- A 2026-04-11 NGD features compatibility follow-up now accepts legacy
+  `ngd-base:` collection ids in `os_features.query`. The query path strips the
+  older namespace prefix, preserves existing transport-name compatibility
+  aliases, and upgrades unversioned base ids to the latest advertised
+  collection version before calling the NGD items endpoint, so older client
+  prompts no longer need a manual `os_features.collections` repair step.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,

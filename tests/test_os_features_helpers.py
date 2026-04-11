@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-
 from typing import Any
 
 
@@ -26,10 +25,39 @@ def test_apply_collection_alias_variants() -> None:
     from tools import os_features
 
     assert os_features._apply_collection_alias("buildings") == "bld-fts-buildingpart-2"
+    assert os_features._apply_collection_alias("ngd-base:bld-fts-buildingpart") == (
+        "bld-fts-buildingpart"
+    )
+    assert os_features._apply_collection_alias("ngd-base:trn-fts-roadlink-3") == (
+        "trn-ntwk-roadlink-3"
+    )
     assert os_features._apply_collection_alias("trn-fts-roadlink-3") == "trn-ntwk-roadlink-3"
     assert os_features._apply_collection_alias("trn-fts-roadlink") == "trn-ntwk-roadlink-1"
     assert os_features._apply_collection_alias("  ") == ""
     assert os_features._apply_collection_alias("abc") == "abc"
+
+
+def test_resolve_latest_collection_id_uses_latest_by_base(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_features
+
+    def fake_get_json(_url: str, _params: dict[str, Any] | None = None):
+        return 200, {
+            "collections": [
+                {"id": "bld-fts-buildingpart-1"},
+                {"id": "bld-fts-buildingpart-2"},
+                {"id": "trn-ntwk-roadlink-4"},
+                {"id": "trn-ntwk-roadlink-5"},
+            ]
+        }
+
+    monkeypatch.setattr(os_features, "_client_get_json", fake_get_json, raising=True)
+    assert os_features._resolve_latest_collection_id("bld-fts-buildingpart") == (
+        "bld-fts-buildingpart-2"
+    )
+    assert os_features._resolve_latest_collection_id("trn-fts-roadlink") == (
+        "trn-ntwk-roadlink-5"
+    )
+    assert os_features._resolve_latest_collection_id("trn-ntwk-roadlink-5") is None
 
 
 def test_extract_unsupported_collection_cases() -> None:

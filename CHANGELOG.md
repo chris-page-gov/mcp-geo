@@ -94,6 +94,11 @@ All notable changes to this project will be documented in this file.
   when present. This restores `ons_geo.by_postcode` / `ons_geo.by_uprn` lookups
   in Claude-sidecar sessions that previously saw `CACHE_UNAVAILABLE` despite a
   populated host cache.
+- Fixed `os_features.query` so legacy `ngd-base:` collection ids are accepted
+  as compatibility aliases. Unversioned legacy ids are now upgraded to the
+  latest advertised NGD collection version before the live items request, so
+  older client prompts such as `ngd-base:bld-fts-buildingpart` no longer fail
+  with avoidable unsupported-collection errors.
   pages that sit outside the mirrored portal slice.
 - Added `scripts/landis_release_reconciliation.py` plus generated manifest
   `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`
