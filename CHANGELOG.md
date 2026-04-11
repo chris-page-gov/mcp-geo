@@ -99,6 +99,11 @@ All notable changes to this project will be documented in this file.
   latest advertised NGD collection version before the live items request, so
   older client prompts such as `ngd-base:bld-fts-buildingpart` no longer fail
   with avoidable unsupported-collection errors.
+- Fixed `ons_select.search` elicitation forms so the optional geography/time
+  fields now use plain string `enum` schemas rather than property-level
+  `oneOf` literals. This avoids strict-client validation failures seen in
+  Claude Code, where accepting the form previously stalled because the client
+  treated selected string values as invalid `never` inputs.
   pages that sit outside the mirrored portal slice.
 - Added `scripts/landis_release_reconciliation.py` plus generated manifest
   `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`

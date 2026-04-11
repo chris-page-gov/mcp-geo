@@ -256,6 +256,7 @@ def test_http_transport_client_supports_ui_override(monkeypatch):
     monkeypatch.delenv("MCP_HTTP_UI_SUPPORTED", raising=False)
     assert http_transport._client_supports_ui(capabilities) is True
 
+
 def test_http_transport_client_supports_ui_nested(monkeypatch):
     from server.mcp import http_transport
 
@@ -652,7 +653,7 @@ def test_mcp_http_ons_select_elicitation_stream(monkeypatch, tmp_path):
                 line = raw.decode() if isinstance(raw, (bytes, bytearray)) else raw
                 if not isinstance(line, str) or not line.startswith("data:"):
                     continue
-                data = line[len("data:"):].strip()
+                data = line[len("data:") :].strip()
                 if not data:
                     continue
                 msg = json.loads(data)
@@ -695,6 +696,8 @@ def test_mcp_http_ons_select_elicitation_stream(monkeypatch, tmp_path):
     props = schema.get("properties", {})
     assert "geographyLevel" in props
     assert "timeGranularity" in props
+    assert "oneOf" not in props["geographyLevel"]
+    assert "oneOf" not in props["timeGranularity"]
 
     tool_response = captured.get("tool_response", {})
     result = tool_response.get("result", {})
@@ -749,7 +752,7 @@ def test_mcp_http_select_toolsets_elicitation_stream(monkeypatch):
                 line = raw.decode() if isinstance(raw, (bytes, bytearray)) else raw
                 if not isinstance(line, str) or not line.startswith("data:"):
                     continue
-                data = line[len("data:"):].strip()
+                data = line[len("data:") :].strip()
                 if not data:
                     continue
                 msg = json.loads(data)

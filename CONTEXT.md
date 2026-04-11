@@ -110,6 +110,12 @@ assumptions change.
   aliases, and upgrades unversioned base ids to the latest advertised
   collection version before calling the NGD items endpoint, so older client
   prompts no longer need a manual `os_features.collections` repair step.
+- A 2026-04-11 ONS selection follow-up now uses plain `enum` fields in the
+  `ons_select.search` elicitation form for optional geography/time hints,
+  rather than property-level `oneOf` literals. This fixes Claude Code sessions
+  that displayed the form but would not accept it, showing `Invalid input:
+  expected never, received string` on selected geography/time values while the
+  stdio server was correctly waiting for an elicitation result.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,

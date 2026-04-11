@@ -1,13 +1,17 @@
-import io, json, re
+import io
+import json
+import re
 
 from server import stdio_adapter
 from server.config import settings
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.protocol import PROTOCOL_VERSION
 
+
 def frame(msg: dict) -> bytes:
     body = json.dumps(msg, separators=(",", ":")).encode()
     return f"Content-Length: {len(body)}\r\n\r\n".encode() + body
+
 
 def read_one(buf: io.BytesIO) -> dict:
     # read headers
@@ -44,20 +48,25 @@ def read_all(buf: io.BytesIO) -> list[dict]:
         messages.append(json.loads(body.decode()))
     return messages
 
+
 def test_direct_main_initialize_and_exit():
-    stdin_bytes = frame({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}) + frame({"jsonrpc":"2.0","method":"exit"})
+    stdin_bytes = frame({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}) + frame(
+        {"jsonrpc": "2.0", "method": "exit"}
+    )
     stdin = io.StringIO(stdin_bytes.decode())  # use text for readline compatibility
+
     # Need a binary-capable stdout; we'll capture writes via a custom wrapper
     class StdoutCapture(io.StringIO):
         pass
+
     stdout = StdoutCapture()
     stdio_adapter.main(stdin=stdin, stdout=stdout)
     out_bytes = stdout.getvalue().encode()
     buf = io.BytesIO(out_bytes)
     first = read_one(buf)
-    if 'result' not in first and first.get('method') == 'log':  # skip log notification
+    if "result" not in first and first.get("method") == "log":  # skip log notification
         first = read_one(buf)
-    assert first.get('result', {}).get('server') == 'mcp-geo'
+    assert first.get("result", {}).get("server") == "mcp-geo"
 
 
 def test_stdio_initialize_negotiates_supported_protocol():
@@ -141,17 +150,22 @@ def test_call_tool_omits_structured_content_for_postcode_errors(monkeypatch):
 
 def test_ui_tools_emit_resource_content(monkeypatch):
     monkeypatch.setenv("MCP_STDIO_RESOURCE_CONTENT", "1")
-    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_apps_render_geography_selector", "arguments": {}}
+    )
     assert call.get("ok") is True
     content = call.get("content", [])
     assert content
     assert content[0]["type"] == "text"
     assert "Open the geography selector" in content[0]["text"]
 
+
 def test_ui_tools_include_resource_content_by_default(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_RESOURCE_CONTENT", raising=False)
     monkeypatch.setenv("MCP_STDIO_UI_SUPPORTED", "1")
-    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_apps_render_geography_selector", "arguments": {}}
+    )
     assert call.get("ok") is True
     content = call.get("content", [])
     assert content
@@ -162,7 +176,9 @@ def test_ui_tools_include_resource_content_by_default(monkeypatch):
 def test_stdio_ui_tools_respect_env_text_mode_without_resource_link(monkeypatch):
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
     monkeypatch.setenv("MCP_STDIO_UI_SUPPORTED", "1")
-    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_geography_selector", "arguments": {}})
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_apps_render_geography_selector", "arguments": {}}
+    )
     assert call.get("ok") is True
     data = call.get("data", {})
     assert data.get("_meta", {}).get("uiTextOnlyOverride") is True
@@ -195,7 +211,9 @@ def test_stdio_resource_handoff_omits_resource_link_without_ui_support(monkeypat
     assert call.get("ok") is True
     content = call.get("content", [])
     assert any(block.get("type") == "text" for block in content if isinstance(block, dict))
-    assert not any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+    assert not any(
+        block.get("type") == "resource_link" for block in content if isinstance(block, dict)
+    )
 
 
 def test_stdio_resource_handoff_includes_resource_link_with_ui_support(monkeypatch):
@@ -226,7 +244,9 @@ def test_claude_defaults_ui_tool_content_mode_to_resource_link(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
     monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "claude-ai"})
-    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_apps_render_boundary_explorer", "arguments": {}}
+    )
     assert call.get("ok") is True
     content = call.get("content", [])
     assert content
@@ -252,11 +272,16 @@ def test_codex_does_not_inherit_claude_resource_link_default(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_CLAUDE_APPS_CONTENT_MODE", raising=False)
     monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "embedded", raising=False)
     monkeypatch.setattr(stdio_adapter, "CLIENT_INFO", {"name": "Codex CLI"})
-    call = stdio_adapter.handle_call_tool({"name": "os_apps_render_boundary_explorer", "arguments": {}})
+    call = stdio_adapter.handle_call_tool(
+        {"name": "os_apps_render_boundary_explorer", "arguments": {}}
+    )
     assert call.get("ok") is True
     content = call.get("content", [])
     assert any(block.get("type") == "text" for block in content if isinstance(block, dict))
-    assert not any(block.get("type") == "resource_link" for block in content if isinstance(block, dict))
+    assert not any(
+        block.get("type") == "resource_link" for block in content if isinstance(block, dict)
+    )
+
 
 def test_stdio_client_supports_ui_nested(monkeypatch):
     monkeypatch.delenv("MCP_STDIO_UI_SUPPORTED", raising=False)
@@ -336,7 +361,9 @@ def test_os_route_get_schema_declares_array_items_for_strict_clients():
     result = stdio_adapter.handle_list_tools({})
     tool = next(t for t in result["tools"] if t["name"] == "os_route_get")
     input_missing = _collect_array_paths_missing_items(tool.get("inputSchema", {}), "inputSchema")
-    output_missing = _collect_array_paths_missing_items(tool.get("outputSchema", {}), "outputSchema")
+    output_missing = _collect_array_paths_missing_items(
+        tool.get("outputSchema", {}), "outputSchema"
+    )
     assert input_missing == []
     assert output_missing == []
 
@@ -542,15 +569,18 @@ def test_build_stats_routing_elicitation_defaults_from_payload():
 
 def test_apply_stats_routing_elicitation_invalid_action():
     payload = {}
-    ok, error = stdio_adapter._apply_stats_routing_elicitation_choices(payload, {"action": "unexpected"})
+    ok, error = stdio_adapter._apply_stats_routing_elicitation_choices(
+        payload, {"action": "unexpected"}
+    )
     assert ok is False
     assert error and error.get("code") == "ELICITATION_INVALID_RESULT"
 
 
 def test_is_stats_comparison_query_between_keyword():
-    assert stdio_adapter._is_stats_comparison_query(
-        "Difference between Leamington Spa and Warwick"
-    ) is True
+    assert (
+        stdio_adapter._is_stats_comparison_query("Difference between Leamington Spa and Warwick")
+        is True
+    )
 
 
 def test_maybe_elicit_stats_routing_unavailable_response(monkeypatch):
@@ -689,6 +719,10 @@ def test_ons_select_elicitation_applies_choices(monkeypatch, tmp_path):
     props = schema.get("properties", {})
     assert "geographyLevel" in props
     assert "timeGranularity" in props
+    assert props["geographyLevel"]["enum"] == ["nation", "region", "local_authority", "ward"]
+    assert props["timeGranularity"]["enum"] == ["latest", "year", "quarter", "month"]
+    assert "oneOf" not in props["geographyLevel"]
+    assert "oneOf" not in props["timeGranularity"]
     data = call.get("data", {})
     assert isinstance(data, dict)
     assert data.get("needsElicitation") is False
@@ -798,6 +832,8 @@ def test_stdio_main_round_trip_with_ons_select_elicitation(monkeypatch, tmp_path
     properties = schema.get("properties", {})
     assert "geographyLevel" in properties
     assert "timeGranularity" in properties
+    assert "oneOf" not in properties["geographyLevel"]
+    assert "oneOf" not in properties["timeGranularity"]
 
     tool_response = next(
         m for m in messages if m.get("id") == 2 and isinstance(m.get("result"), dict)
