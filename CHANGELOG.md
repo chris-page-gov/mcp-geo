@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `scripts/check_spec_drift.py` plus the related `docs/spec_tracking.md`
+  workflow so vendored specification/supporting-reference submodules can be
+  audited for origin-head drift and missing local spec paths with one command.
+- Added configurable boundary-run archive path resolution via
+  `BOUNDARY_RUNS_DIR`, `BOUNDARY_RUNS_SEARCH_DIRS`, and the shared helper
+  `server/boundary_run_paths.py`. Boundary-report readers can now search
+  optional mounted roots such as `/Volumes/ExtSSD-Data/Data`, and the boundary
+  pipeline/autofix scripts now honor the configured primary write location.
 - Added DuckDB-backed AddressBase Premium Parquet support for
   `council_tax.query`, alongside the new builder
   `scripts/addressbase_build_xref.py`. The council-tax lookup now accepts
@@ -139,6 +147,22 @@ All notable changes to this project will be documented in this file.
   current OS Docs specification pages instead of the dead legacy PDF URL.
 
 ### Changed
+- Flattened top-level `oneOf` / `anyOf` / `allOf` combinators in sanitized
+  stdio tool input schemas for strict MCP clients such as Claude Code. Nested
+  property unions remain intact, but the startup tool catalog no longer emits
+  top-level combinators that cause client-side tool-registration failures.
+- Hardened `os_mcp.route_query` and `os_mcp.select_toolsets` for the current
+  development surfaces. Council-tax/business-rates prompts now route through a
+  dedicated property-tax path instead of generic address lookup, including the
+  `os_places.by_uprn -> council_tax.band_lookup` workflow for band-from-UPRN
+  prompts and direct `council_tax.query` routing for UPRN status checks.
+  LandIS soil-screening prompts now classify as environmental survey work with
+  explicit `landis_soils` discovery guidance and LandIS-focused survey plans.
+- Updated the checked-in constrained-host startup profile (`starter` plus
+  `ons_geo_lookup,property_tax,features_layers,landis_soils`) across
+  `.vscode/mcp.json`, `.env.example`, `README.md`, and the startup-scope
+  validation scripts so active development tools stay discoverable without
+  exposing the full catalog at startup.
 - Documented the 2026-04-09 DuckDB/PostGIS architecture review: DuckDB is the
   preferred local file-backed query engine for AddressBase-style artifacts,
   but the repo is not replacing the existing PostGIS-backed cache/warehouse
@@ -180,6 +204,11 @@ All notable changes to this project will be documented in this file.
   authoritative freshness reference for `ONSUD` / `NSUL` validation.
 
 ### Fixed
+- Fixed the checked-in repo Docker image so it installs
+  `mcp-geo[addressbase]` instead of only the base package. This restores the
+  intended server-side DuckDB runtime for Parquet-backed `council_tax.query`
+  calls and avoids false `MISSING_DEPENDENCY` errors when the container is
+  rebuilt from the repo `Dockerfile`.
 - `playground/package.json` now pins the non-vulnerable patch lines for
   `vite`, `hono`, and `@hono/node-server`, clearing the remaining npm audit
   findings after the earlier `path-to-regexp` / `picomatch` security refresh

@@ -3,7 +3,31 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-10
+Last updated: 2026-04-11
+
+## Startup discovery + spec drift audit follow-up (2026-04-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| STARTUP-ROUTING-1 Claude starter profile and discovery alignment | done | none | Updated the checked-in starter profile in `.vscode/mcp.json`, `.env.example`, `README.md`, and the startup-scope scripts so constrained hosts now use `starter` plus the active development toolsets `ons_geo_lookup`, `property_tax`, `features_layers`, and `landis_soils`. |
+| STARTUP-ROUTING-2 Property-tax and LandIS routing hardening | done | STARTUP-ROUTING-1 | Hardened `tools/os_mcp.py` so council-tax/business-rates prompts now route to a dedicated `property_tax` intent instead of generic address lookup, including the two-step `os_places.by_uprn -> council_tax.band_lookup` workflow for band-from-UPRN prompts and direct `council_tax.query` routing for UPRN status checks. LandIS soil-screening prompts now classify as environmental survey with explicit `landis_soils` toolset guidance and LandIS-focused survey plans. |
+| STARTUP-ROUTING-3 Strict-client top-level schema-combinator compatibility | done | STARTUP-ROUTING-1 | Flattened top-level `oneOf` / `anyOf` / `allOf` in sanitized stdio tool schemas via `server/tool_naming.py`, preserving nested property unions but removing the top-level combinators that Claude Code rejects during startup tool registration. Added focused regressions in `tests/test_stdio_adapter_coverage_more.py` and verified the rebuilt Docker-backed Claude wrapper now emits zero top-level combinators across the scoped startup catalog. |
+| SPEC-DRIFT-1 Vendored spec drift audit and validation workflow | done | none | Added `scripts/check_spec_drift.py` to compare vendored spec/supporting-reference submodules with origin HEAD and verify the local paths referenced by the repo. Updated `docs/spec_tracking.md` to record the 2026-04-10 audit-only check, distinguish audit from refresh, and define the remediation/validation workflow for future spec updates. |
+
+## ONS geo refresh refactor backlog (2026-04-10)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| OGC-REFRESH-9 Parallel raw acquisition with sequential ingest | pending | OGC-RES-5, OGC-NORM-6 | Refactor `scripts/ons_geo_cache_refresh.py` into explicit phases: support-aware source resolution and raw artifact acquisition may run in parallel, but database ingest should remain sequential. The design should support high-bandwidth hosts without turning one full-cache refresh into a single long serial download path, while still avoiding concurrent SQLite writes. |
+| OGC-REFRESH-10 Selective per-dataset refresh and out-of-cycle updates | pending | OGC-REFRESH-9 | Redesign the cache/index metadata and refresh workflow so datasets can be updated independently when ONS publishes one source out of cycle or pauses another. This should include per-dataset freshness/provenance records strong enough to refresh `ONSPD`, `NSPL`, `ONSUD`, `NSUL`, `CHD`, or `RGC` selectively instead of rebuilding the full cache every time. |
+| OGC-REFRESH-11 Remote-versus-local validation without redownload | pending | OGC-REFRESH-9 | Add a metadata validation mode that can compare what is held on disk with what the upstream source currently advertises without downloading the full artifact again. Candidate signals include CKAN package metadata, ArcGIS hosted-table metadata plus `returnCountOnly`, HTTP `ETag` / `Last-Modified` / `Content-Length`, and persisted local source fingerprints so operators can answer “is my local cache still current?” cheaply before a refresh. |
+| OGC-REFRESH-12 Preserve upstream provenance through local-only rebuilds | pending | OGC-REFRESH-10, OGC-REFRESH-11 | Persist remote provenance beside raw artifacts at first download time so later `static_file` or local-only rebuilds keep the original `resolvedSourceUrl`, resolver type, retrieved timestamp, release label, and equivalent source metadata in the rebuilt cache index instead of falling back to `null` remote provenance. This must be fixed before the next live redownload so the next raw-artifact set captures the remote metadata once and can be reused safely after that. |
+| CACHE-STORAGE-13 Optional external raw-artifact mirrors and search roots | pending | OGC-REFRESH-9 | Add a non-disruptive storage layer for bulky raw artifacts that keeps the current local defaults working but allows optional mirror/search roots such as `/Volumes/ExtSSD-Data/Data`. The design should separate compact runtime state (SQLite index, small manifests) from bulky raw artifacts, search configured external roots when mounted, mirror new downloads there best-effort, and allow local rebuilds from those roots without forcing the primary cache or PostGIS volumes onto the external disk. Reuse targets should include large ONS raw downloads and pre-existing folders such as `/Volumes/ExtSSD-Data/Data/boundary_runs`. |
+| CACHE-STORAGE-13A Boundary-run external-root path resolution | done | CACHE-STORAGE-13 | Added `BOUNDARY_RUNS_DIR` and `BOUNDARY_RUNS_SEARCH_DIRS` plus shared `server/boundary_run_paths.py` resolution so boundary run readers can search optional mounted roots such as `/Volumes/ExtSSD-Data/Data` without changing the local default. `scripts/boundary_pipeline.py` and `scripts/boundary_autofix.py` now also honor the configured primary boundary-run directory for new writes, and `boundary_autofix` now forwards `--workdir` correctly to the pipeline it launches. |
 
 ## AddressBase Premium Parquet runtime follow-up (2026-04-10)
 
@@ -15,6 +39,7 @@ Legend: pending, in_progress, done, blocked
 | ABP-PARQUET-2 Client activation + large-batch readiness | done | ABP-PARQUET-1 | Promoted `council_tax.band_lookup` and `council_tax.query` into the always-loaded MCP tool set so clients can call them without deferred discovery, and raised the Parquet-backed UPRN batch ceiling to `100000` while keeping the legacy CSV ceiling at `5000`. |
 | ABP-PARQUET-3 Serving-file builder and regression coverage | done | ABP-PARQUET-1 | Added `scripts/addressbase_build_xref.py` to build a serving Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts, dropping only `SOURCE=7666OW` and `SOURCE=7666OP` while preserving wider VOA/OS-linked cross references for future UPRN/TOID workflows. Added focused coverage in `tests/test_council_tax_uprn_query.py`, `tests/test_addressbase_build_xref.py`, and `tests/test_os_mcp_descriptor.py` for extracted-header CSV, Parquet directory preference, large Parquet-backed batch lookups, and always-loaded council-tax tools. |
 | ABP-PARQUET-4 DuckDB/PostGIS cache evaluation | done | ABP-PARQUET-1 | Evaluated whether DuckDB should replace the current PostGIS-backed cache/warehouse role now that AddressBase querying uses DuckDB successfully. Decision: no runtime architecture change at this stage. DuckDB remains the preferred local file-backed analytical engine for AddressBase-style workloads, while PostGIS stays in place for the boundary cache, LandIS warehouse, and route-graph stack because routing depends on `pgrouting` and the current spatial service layers would need a broader migration to move cleanly. |
+| ABP-PARQUET-5 Server-image dependency alignment | done | ABP-PARQUET-1 | Fixed the checked-in repo Docker image so it installs `mcp-geo[addressbase]` rather than only the base package. This aligns the container runtime with the Parquet-backed `council_tax.query` contract, keeps DuckDB resolution server-side as designed, and adds a regression assertion over the root `Dockerfile` so future image changes do not silently drop the Python `duckdb` module again. |
 
 ## Claude/LandIS map-export research (2026-04-07)
 

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-10
+Last updated: 2026-04-11
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,25 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-10 Claude/discovery follow-up is now in place. The checked-in
+  constrained-host startup profile uses `MCP_TOOLS_DEFAULT_TOOLSET=starter`
+  plus `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=ons_geo_lookup,property_tax,features_layers,landis_soils`
+  so active ONS geo, AddressBase/council-tax, map-export, and LandIS surfaces
+  remain visible without loading the full catalog at startup. The routing
+  layer in `tools/os_mcp.py` now treats council-tax/business-rates prompts as
+  a dedicated property-tax workflow and LandIS soil-screening prompts as a
+  LandIS-flavored environmental survey path, which fixes the prior
+  misclassification to generic address lookup or admin-boundary discovery.
+- The same 2026-04-10 Claude follow-up now also flattens top-level schema
+  combinators (`oneOf` / `anyOf` / `allOf`) in sanitized stdio tool input
+  schemas via `server/tool_naming.py`. This specifically fixes Claude Code's
+  startup rejection of tool catalogs that included top-level combinators on
+  tools such as `landis_derive.pipe_risk`, while preserving nested
+  property-level unions used elsewhere in the schema surface.
+- A 2026-04-10 vendored-spec follow-up added `scripts/check_spec_drift.py` and
+  refreshed `docs/spec_tracking.md` so maintainers can audit local spec
+  submodule drift, verify tracked local spec paths, and distinguish audit-only
+  checks from true submodule refreshes during release prep.
 - A 2026-04-10 AddressBase Premium local-data follow-up is now in progress.
   `tools/council_tax.py` supports both CSV and Parquet xref sources via the
   existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting, including supplier-style
@@ -60,6 +79,13 @@ assumptions change.
   engine over the file rather than building a separate indexed database, with
   `ADDRESSBASE_PREMIUM_DUCKDB_THREADS` and
   `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT` controlling runtime limits.
+- A same-day container follow-up closed the runtime-packaging gap exposed by
+  early Parquet trials: the checked-in repo `Dockerfile` now installs
+  `mcp-geo[addressbase]`, not just the base package, so the server container
+  ships the Python `duckdb` module required by `council_tax.query`. The
+  Parquet missing-dependency message in `tools/council_tax.py` now also makes
+  it explicit that this failure is about the server runtime rather than the
+  caller host.
 - The same 2026-04-10 ABP follow-up now treats `council_tax.band_lookup` and
   `council_tax.query` as always-loaded MCP tools, so clients do not need a
   separate property-tax discovery step before using the council-tax surface.
@@ -166,6 +192,37 @@ assumptions change.
   Records for Geoportal dataset discovery, RSS for pause/correction notices,
   and CHD/RGC as the code-history/current-code support datasets used during
   normalization.
+- A 2026-04-10 operator trial against a clean local cache showed the current
+  `scripts/ons_geo_cache_refresh.py` workflow is still too coarse and too
+  serial for routine validation. An `ONSPD` refresh attempt was stopped after
+  roughly `1,047,999 / 2,723,596` hosted-table rows (`~38.5%`) and about `1.0
+  GB` of raw `rows.ndjson`, with no SQLite ingest started yet. Follow-up
+  backlog now explicitly targets a two-phase redesign: parallel raw
+  acquisition, sequential ingest, selective per-dataset refresh, and
+  metadata-only remote-versus-local validation so operators can verify
+  on-disk holdings without re-downloading full artifacts.
+- A 2026-04-10/11 follow-up populated the ONS geo cache successfully after
+  three refresh passes: first a full remote acquisition, then an `RGC`
+  workbook-ingest fix, then a local-only rebuild from the downloaded raw
+  artifacts to avoid re-downloading the large ArcGIS sources. That successful
+  local-only rebuild leaves `resolvedSourceUrl=null` in the cache index
+  because `static_file` rebuilds currently discard upstream provenance even
+  though local `sourcePath` and SHA-256 are preserved. Backlog now explicitly
+  includes persisting remote provenance beside raw artifacts before the next
+  live download, plus optional external raw-artifact roots/mirrors (for
+  example `/Volumes/ExtSSD-Data/Data`) so bulky ONS downloads and existing
+  sources such as `boundary_runs` can live off the main local disk when the
+  external volume is mounted without forcing the active SQLite/index state to
+  move there.
+- A 2026-04-11 storage follow-up implemented the first low-disruption slice of
+  that external-root design for boundary run archives. The new shared helper
+  `server/boundary_run_paths.py` centralizes `BOUNDARY_RUNS_DIR` plus optional
+  `BOUNDARY_RUNS_SEARCH_DIRS` resolution, so boundary-report readers can search
+  mounted roots such as `/Volumes/ExtSSD-Data/Data` while keeping the local
+  default unchanged. `scripts/boundary_pipeline.py` and
+  `scripts/boundary_autofix.py` now also honor the configured primary
+  boundary-run output directory for future writes, and `boundary_autofix`
+  correctly forwards `--workdir` to the pipeline it spawns.
 - `tools/os_mcp.py` now routes road-overlay/map-repair prompts toward
   `os_map.export_roads` rather than low-level `os_features.query` calls when
   the user intent is to draw/replace/embed road geometry on a map. This keeps

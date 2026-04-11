@@ -389,6 +389,10 @@ responses by capability groups (for example `ons_selection`, `maps_tiles`, `apps
 For clients that always request `tools/list` with empty params, set
 `MCP_TOOLS_DEFAULT_TOOLSET=starter` (or
 `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>`) to keep initialization payloads small.
+For the current local development profile, the checked-in examples use
+`MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=ons_geo_lookup,property_tax,features_layers,landis_soils`
+alongside `starter` so constrained hosts still see the active ONS geo,
+AddressBase/council-tax, map export, and LandIS surfaces.
 `council_tax.band_lookup` and `council_tax.query` are always loaded by default
 so MCP clients do not need a separate property-tax discovery step before using
 the council-tax surfaces.
@@ -820,6 +824,10 @@ Optional runtime knobs:
 
 - `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
 - `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
+
+The checked-in repo Docker image now installs the `addressbase` extra, so
+Parquet-backed `council_tax.query` runs fully server-side inside the container
+rather than depending on a host Python environment.
 
 - Product technical specification:
   [AddressBase Premium Technical Specification](https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/addressbase-premium/addressbase-premium-technical-specification)
