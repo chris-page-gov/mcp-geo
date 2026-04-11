@@ -36,6 +36,48 @@ _GEOGRAPHY_LEVEL_TYPE_MATCHERS: dict[str, tuple[str, ...]] = {
     "WARD": ("ward",),
     "DISTRICT": ("local authorit", "district"),
 }
+_PROFILE_CATEGORY_ALIASES = {
+    "population": "population",
+    "resident_population": "population",
+    "sex": "sex",
+    "ethnicity": "ethnicity",
+    "country_of_birth": "country_of_birth",
+    "countryofbirth": "country_of_birth",
+    "country-birth": "country_of_birth",
+    "tenure": "tenure",
+}
+_PROFILE_DATASET_SPECS: dict[str, dict[str, Any]] = {
+    "population": {
+        "dataset": "NM_2021_1",
+        "datasetLabel": "TS001 - Number of usual residents in households and communal establishments",
+        "description": "Census 2021 total usual resident count.",
+        "params": {"variable": "1", "measures": "20100"},
+    },
+    "sex": {
+        "dataset": "NM_2028_1",
+        "datasetLabel": "TS008 - Sex",
+        "description": "Census 2021 sex breakdown.",
+        "params": {"measures": "20100"},
+    },
+    "ethnicity": {
+        "dataset": "NM_2041_1",
+        "datasetLabel": "TS021 - Ethnic group",
+        "description": "Census 2021 ethnic group breakdown.",
+        "params": {"measures": "20100"},
+    },
+    "country_of_birth": {
+        "dataset": "NM_2024_1",
+        "datasetLabel": "TS004 - Country of birth",
+        "description": "Census 2021 country of birth breakdown.",
+        "params": {"measures": "20100"},
+    },
+    "tenure": {
+        "dataset": "NM_2072_1",
+        "datasetLabel": "TS054 - Tenure",
+        "description": "Census 2021 tenure breakdown.",
+        "params": {"measures": "20100"},
+    },
+}
 
 
 def _require_live() -> ToolResult | None:
@@ -85,6 +127,37 @@ def _extract_text(value: Any) -> str | None:
 
 def _looks_like_dataset_id(value: str) -> bool:
     return bool(_DATASET_ID_PATTERN.fullmatch(value))
+
+
+def normalize_profile_category(value: str) -> str | None:
+    raw = value.strip().lower().replace("-", "_").replace(" ", "_")
+    return _PROFILE_CATEGORY_ALIASES.get(raw)
+
+
+def curated_profile_dataset_specs(
+    geography: str,
+    categories: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    requested = categories or list(_PROFILE_DATASET_SPECS.keys())
+    specs: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw_category in requested:
+        normalized_category = normalize_profile_category(str(raw_category))
+        if normalized_category is None or normalized_category in seen:
+            continue
+        base = _PROFILE_DATASET_SPECS[normalized_category]
+        params = {"geography": geography, **dict(base.get("params") or {})}
+        specs.append(
+            {
+                "category": normalized_category,
+                "dataset": base["dataset"],
+                "datasetLabel": base["datasetLabel"],
+                "description": base["description"],
+                "params": params,
+            }
+        )
+        seen.add(normalized_category)
+    return specs
 
 
 def _dataset_entry_from_dict(entry: dict[str, Any]) -> dict[str, str | None] | None:
@@ -365,6 +438,41 @@ def _fetch_dataset_overview(dataset: str) -> dict[str, Any] | None:
         "keywords": keywords,
         "dimensions": _overview_dimensions(overview_data),
     }
+
+
+def _fetch_dataset_summary(
+    dataset: str,
+    *,
+    overview: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    summary: dict[str, Any] = {"id": dataset}
+    try:
+        status, data = nomis_client.get_json(_build_url(f"dataset/{dataset}.def.sdmx.json"))
+    except Exception:
+        status, data = 0, {}
+    if status == 200:
+        summary.update(_extract_dataset_definition_summary(dataset, data))
+    if overview is None:
+        try:
+            overview = _fetch_dataset_overview(dataset)
+        except Exception:
+            overview = None
+    if isinstance(overview, dict):
+        coverage = _extract_text(overview.get("coverage"))
+        description = _extract_text(overview.get("description"))
+        keywords = overview.get("keywords")
+        dimensions = overview.get("dimensions")
+        if coverage and not summary.get("coverage"):
+            summary["coverage"] = coverage
+        if description and not summary.get("description"):
+            summary["description"] = description
+        if isinstance(keywords, list) and keywords:
+            summary["keywords"] = keywords
+        if isinstance(dimensions, list) and dimensions:
+            summary["dimensions"] = dimensions
+    if len(summary) == 1:
+        return None
+    return summary
 
 
 def _extract_keyfamilies(data: Any) -> list[dict[str, Any]]:
@@ -1332,6 +1440,9 @@ def _query(payload: dict[str, Any]) -> ToolResult:
                                 )
                             ],
                         }
+                        dataset_summary = _fetch_dataset_summary(dataset, overview=overview)
+                        if dataset_summary is not None:
+                            result["datasetSummary"] = dataset_summary
                         if merged_adjusted:
                             result["queryAdjusted"] = merged_adjusted
                         return 200, result
@@ -1346,6 +1457,9 @@ def _query(payload: dict[str, Any]) -> ToolResult:
             )
         return 400, {"isError": True, "code": "NOMIS_QUERY_ERROR", "message": err}
     result: dict[str, Any] = {"live": True, "dataset": dataset, "format": fmt, "data": data}
+    dataset_summary = _fetch_dataset_summary(dataset, overview=overview)
+    if dataset_summary is not None:
+        result["datasetSummary"] = dataset_summary
     if query_adjusted is not None:
         result["queryAdjusted"] = query_adjusted
         hints: list[str] = []

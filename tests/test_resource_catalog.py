@@ -97,6 +97,7 @@ def test_ons_cache_missing_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
 def test_ons_geo_sources_and_cache_index_resources(monkeypatch: MonkeyPatch, tmp_path) -> None:
     sources_path = tmp_path / "ons_geo_sources.json"
     index_path = tmp_path / "ons_geo_cache_index.json"
+    area_summary_path = tmp_path / "area_summary_workflows.json"
     sources_path.write_text(
         '{"version":"2026-02-22","products":[{"id":"ONSPD"}]}',
         encoding="utf-8",
@@ -105,8 +106,13 @@ def test_ons_geo_sources_and_cache_index_resources(monkeypatch: MonkeyPatch, tmp
         '{"generatedAt":"2026-02-22T00:00:00Z","products":[]}',
         encoding="utf-8",
     )
+    area_summary_path.write_text(
+        '{"version":"2026-04-11","profiles":[{"id":"small_area_summary"}]}',
+        encoding="utf-8",
+    )
     monkeypatch.setattr(resource_catalog, "ONS_GEO_SOURCES_PATH", sources_path)
     monkeypatch.setattr(resource_catalog, "ONS_GEO_CACHE_INDEX_PATH", index_path)
+    monkeypatch.setattr(resource_catalog, "AREA_SUMMARY_WORKFLOWS_PATH", area_summary_path)
 
     content, etag, meta = resource_catalog.load_data_content({"slug": "ons-geo-sources"})
     payload = json.loads(content)
@@ -117,6 +123,14 @@ def test_ons_geo_sources_and_cache_index_resources(monkeypatch: MonkeyPatch, tmp
     content, etag, meta = resource_catalog.load_data_content({"slug": "ons-geo-cache-index"})
     payload = json.loads(content)
     assert payload["generatedAt"] == "2026-02-22T00:00:00Z"
+    assert etag
+    assert meta is None
+
+    content, etag, meta = resource_catalog.load_data_content(
+        {"slug": "area-summary-workflows", "path": area_summary_path}
+    )
+    payload = json.loads(content)
+    assert payload["profiles"][0]["id"] == "small_area_summary"
     assert etag
     assert meta is None
 

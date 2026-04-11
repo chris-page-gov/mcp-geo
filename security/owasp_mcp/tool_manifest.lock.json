@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 102,
+  "tool_count": 103,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -277,6 +277,14 @@
       "version": "0.1.0"
     },
     {
+      "description": "Resolve a compact OA/LSOA/MSOA/ward/profile summary from an area code, postcode, or UPRN using cached ONS geographies, compact inventory counts, and curated NOMIS follow-up datasets.",
+      "description_sha256": "6ea77ea3af351e47807c0aa270011b0bf9bb6cb72e8001e837097c7395b59e32",
+      "input_schema_sha256": "d2e43865541d3a0cee9a0a6c80b1b4b2ac1e424b42f402919e85b24acaedc395",
+      "name": "ons_geo.area_summary",
+      "output_schema_sha256": "2b23389982e75dd920dbf027e46dcbee5e943fa7a231e813cea3906e8d150a1d",
+      "version": "0.1.0"
+    },
+    {
       "description": "Lookup all cached geographies for a postcode using derivation mode (exact via ONSPD, best_fit via NSPL).",
       "description_sha256": "ab463ba51d6b139a2df9c932009f06fe299f0f4f78cefd18d94a50a0a58c920d",
       "input_schema_sha256": "2df0342a7fb2c074bb3d659ff03138690848f46b9e5e6f33e58f0ddfd9fc06fd",
@@ -535,9 +543,9 @@
     {
       "description": "Return a bounded inventory (UPRNs, buildings, road links, path links) for a bbox.",
       "description_sha256": "11f15b1d430f8c36990f22a7cae534d088517c256fafc6db39d175001ec94cee",
-      "input_schema_sha256": "533a35df2808c8de81c12c2ba22fb02eda4bdba35c932e75190e43bf04422b85",
+      "input_schema_sha256": "45a99dfde2bb7267c0a2a83f14ee66f111ff605ad18a146561109a0871c01d97",
       "name": "os_map.inventory",
-      "output_schema_sha256": "38688dd63ff35f49e0ef9ec315d39dbd5ccbc2955ae085619f342ac794500c16",
+      "output_schema_sha256": "d35c32833fa457742e3c985e80d3f4cc594c848d1ecf5f944e179d5ecf2a2675",
       "version": "0.1.0"
     },
     {

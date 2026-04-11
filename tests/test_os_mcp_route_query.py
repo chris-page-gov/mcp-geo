@@ -54,6 +54,31 @@ def test_route_query_postcode_geography_lookup_best_fit():
     assert body["recommended_parameters"]["derivationMode"] == "best_fit"
 
 
+def test_route_query_area_profile_by_code():
+    body = _route("What do you know about OA E00048678?")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E00048678"
+    assert body["recommended_parameters"]["targetLevel"] == "OA"
+    assert body["workflow_profile_uri"] == "resource://mcp-geo/area-summary-workflows"
+
+
+def test_route_query_area_profile_follow_up_phrase():
+    body = _route("What do you know about that OA?")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["targetLevel"] == "OA"
+    assert body["workflow_steps"] == ["ons_geo.area_summary"]
+
+
+def test_route_query_area_profile_from_postcode():
+    body = _route("Tell me about this postcode area CV3 1HB")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["postcode"] == "CV31HB"
+    assert body["recommended_parameters"]["targetLevel"] == "OA"
+
+
 def test_route_query_uprn_lookup():
     body = _route("Lookup UPRN 100023336959")
     assert body["intent"] == "address_lookup"

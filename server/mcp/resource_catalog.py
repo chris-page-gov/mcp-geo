@@ -41,6 +41,7 @@ LANDIS_FULL_RELEASE_MANIFEST_PATH = (
 PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
 PEAT_LAYERS_PATH = ROOT / "resources" / "peat_layers_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
+AREA_SUMMARY_WORKFLOWS_PATH = ROOT / "resources" / "area_summary_workflows.json"
 ONS_GEO_SOURCES_PATH = ROOT / "resources" / "ons_geo_sources.json"
 ONS_GEO_CACHE_INDEX_PATH = ROOT / "resources" / "ons_geo_cache_index.json"
 BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
@@ -396,6 +397,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": NOMIS_WORKFLOWS_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "guide", "domain": "nomis"},
+    },
+    {
+        "slug": "area-summary-workflows",
+        "name": "data_area_summary_workflows",
+        "title": "Area Summary Workflow Profiles",
+        "description": "Compact area-summary prompt patterns, guardrails, and evaluation guidance.",
+        "path": AREA_SUMMARY_WORKFLOWS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "guide", "domain": "ons"},
     },
     {
         "slug": "ons-geo-sources",
@@ -1200,6 +1210,17 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "nomis-workflows"), None
         return (*_load_json_file(NOMIS_WORKFLOWS_PATH), None)
+    if slug == "area-summary-workflows":
+        if not AREA_SUMMARY_WORKFLOWS_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "Area-summary workflows catalog not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "area-summary-workflows"), None
+        return (*_load_json_file(AREA_SUMMARY_WORKFLOWS_PATH), None)
     if slug == "ons-geo-sources":
         if not ONS_GEO_SOURCES_PATH.exists():
             content = json.dumps(

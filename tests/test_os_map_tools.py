@@ -160,6 +160,62 @@ def test_os_map_inventory_orchestrates_layers_and_geometry_flags(client, monkeyp
     assert any("/items" in u for u in urls)
 
 
+def test_os_map_inventory_summary_mode_uses_compact_counts(client, monkeypatch, mock_os_client) -> None:  # type: ignore[no-untyped-def]
+    ngd_calls = _install_os_stubs(monkeypatch, mock_os_client)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.inventory",
+            "bbox": [-0.12, 51.5, -0.11, 51.51],
+            "layers": ["uprns", "buildings"],
+            "responseMode": "summary",
+            "limits": {"uprns": 20, "buildings": 20},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["responseMode"] == "summary"
+
+    uprns = body["layers"]["uprns"]
+    assert uprns["mode"] == "summary"
+    assert uprns["count"] == 2
+    assert uprns["sampleCount"] == 2
+    assert "results" not in uprns
+    assert len(uprns["sample"]) == 2
+
+    buildings = body["layers"]["buildings"]
+    assert buildings["mode"] == "summary"
+    assert buildings["resultType"] == "hits"
+    assert buildings["count"] == 2
+    assert "features" not in buildings
+
+    item_calls = [(url, params) for (url, params) in ngd_calls if "/items" in url]
+    assert item_calls
+    assert any(params.get("limit") == 1 for (_url, params) in item_calls)
+
+
+def test_os_map_inventory_counts_mode_omits_uprn_samples(client, monkeypatch, mock_os_client) -> None:  # type: ignore[no-untyped-def]
+    _install_os_stubs(monkeypatch, mock_os_client)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.inventory",
+            "bbox": [-0.12, 51.5, -0.11, 51.51],
+            "layers": ["uprns"],
+            "responseMode": "counts",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    uprns = body["layers"]["uprns"]
+    assert uprns["mode"] == "counts"
+    assert uprns["count"] == 2
+    assert "sample" not in uprns
+    assert "results" not in uprns
+
+
 def test_os_map_inventory_preserves_harold_wood_places_bbox_axis_order(
     client, monkeypatch, mock_os_client
 ) -> None:  # type: ignore[no-untyped-def]
@@ -890,7 +946,14 @@ def test_os_map_export_roads_accepts_postcode_selection_shorthand(
     assert body["aoi"]["addressStats"]["resolvedUprnCount"] == 1
 
 
-def test_os_map_export_roads_selection_cache_failure_is_normalized(client) -> None:  # type: ignore[no-untyped-def]
+def test_os_map_export_roads_selection_cache_failure_is_normalized(
+    client, monkeypatch, tmp_path
+) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
+
+    missing_cache_dir = tmp_path / "missing_ons_geo_cache"
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(missing_cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", "ons_geo_cache.sqlite", raising=False)
     resp = client.post(
         "/tools/call",
         json={
@@ -1177,6 +1240,7 @@ def test_os_map_selection_export_accepts_postcode_selection_shorthand(
 def test_os_map_selection_export_cache_failure_is_reported(
     client, monkeypatch, tmp_path
 ) -> None:  # type: ignore[no-untyped-def]
+    from server.config import settings
     from server.mcp import resource_catalog
     from tools import os_map
 
@@ -1184,6 +1248,8 @@ def test_os_map_selection_export_cache_failure_is_reported(
     monkeypatch.setattr(resource_catalog, "OS_EXPORTS_DIR", os_exports_dir)
     monkeypatch.setattr(os_map, "_OS_EXPORTS_DIR", os_exports_dir)
     monkeypatch.setattr(os_map, "_OS_EXPORT_JOBS_DIR", os_exports_dir / "jobs")
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(tmp_path / "missing_ons_geo_cache"), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", "ons_geo_cache.sqlite", raising=False)
 
     queued = client.post(
         "/tools/call",

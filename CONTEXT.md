@@ -116,6 +116,27 @@ assumptions change.
   that displayed the form but would not accept it, showing `Invalid input:
   expected never, received string` on selected geography/time values while the
   stdio server was correctly waiting for an elicitation result.
+- A 2026-04-11 postcode-to-area-summary follow-up now adds
+  `ons_geo.area_summary` plus the guide resource
+  `resource://mcp-geo/area-summary-workflows`. The new tool is the compact
+  answer path for prompts such as `What do you know about that OA?`,
+  `Tell me about LSOA E01009617`, or `Tell me about this postcode area CV3
+  1HB`, and it rolls together target-area resolution, compact ONS-cache counts,
+  optional compact inventory, a simple population summary, and curated NOMIS
+  follow-up dataset hints.
+- The same 2026-04-11 follow-up now gives `os_map.inventory` opt-in
+  `responseMode=summary|counts` support so AI clients can request compact
+  UPRN/building summaries without overflowing the chat surface with raw feature
+  payloads. `tools/os_mcp.py` also now routes area-profile prompts to the new
+  higher-level surface instead of encouraging clients to rediscover the OA,
+  call `ons_geo.cache_status`, or fetch full raw inventories for a narrative
+  answer.
+- `nomis.query` now adds `datasetSummary` metadata when available, and the new
+  curated profile-category mapping for `population`, `sex`, `ethnicity`,
+  `country_of_birth`, and `tenure` is shared between `ons_geo.area_summary`
+  and the checked-in workflow/evaluation guidance. The concrete summary-only
+  evaluation artifact from the postcode trace now lives at
+  `examples/ons_from_postcode_03_summary_only_eval.md`.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,

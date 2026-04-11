@@ -44,6 +44,59 @@ def test_nomis_query_success(monkeypatch):
     assert body["data"]["value"] == 123
 
 
+def test_nomis_query_includes_dataset_summary(monkeypatch):
+    from tools import nomis_common
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        if url.endswith("/dataset/NM_2021_1.jsonstat.json"):
+            return 200, {"value": {"0": 292}}
+        if url.endswith("/dataset/NM_2021_1.def.sdmx.json"):
+            return 200, {
+                "structure": {
+                    "keyfamilies": {
+                        "keyfamily": {
+                            "id": "NM_2021_1",
+                            "name": {"value": "TS001 - Usual resident population"},
+                            "annotations": {
+                                "annotation": [
+                                    {
+                                        "annotationtitle": "SubDescription",
+                                        "annotationtext": "Population total",
+                                    }
+                                ]
+                            },
+                        }
+                    }
+                }
+            }
+        if url.endswith(
+            "/dataset/NM_2021_1.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, {
+                "overview": {
+                    "coverage": {"value": "England and Wales"},
+                    "keywords": {"value": "census,population"},
+                    "dimensions": {"dimension": [{"concept": "geography", "codes": {"code": []}}]},
+                }
+            }
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "nomis.query", "dataset": "NM_2021_1", "params": {"geography": "E00048678"}},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["datasetSummary"]["id"] == "NM_2021_1"
+    assert body["datasetSummary"]["name"] == "TS001 - Usual resident population"
+    assert body["datasetSummary"]["coverage"] == "England and Wales"
+
+
 def test_nomis_query_normalizes_date_and_drops_cell_for_jsonstat(monkeypatch):
     from tools import nomis_common
 

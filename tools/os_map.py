@@ -171,6 +171,17 @@ def _parse_limits(value: Any) -> dict[str, int]:
     return limits
 
 
+def _parse_response_mode(value: Any) -> str | None:
+    if value is None:
+        return "full"
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    if normalized not in {"full", "summary", "counts"}:
+        return None
+    return normalized
+
+
 def _parse_layer_tokens(value: Any) -> dict[str, str]:
     if not isinstance(value, dict):
         return {}
@@ -1845,6 +1856,13 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
     page_tokens = _parse_layer_tokens(payload.get("pageTokens"))
     include_geometry = _parse_bool_map(payload.get("includeGeometry"))
     collections_override = _parse_collections_override(payload.get("collections"))
+    response_mode = _parse_response_mode(payload.get("responseMode"))
+    if response_mode is None:
+        return 400, {
+            "isError": True,
+            "code": "INVALID_INPUT",
+            "message": "responseMode must be one of: full, summary, counts",
+        }
 
     result_layers: dict[str, Any] = {}
     hints: list[str] = []
@@ -1866,16 +1884,36 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
                 if not isinstance(raw_results, list):
                     raw_results = []
                 limit = limits.get("uprns", _DEFAULT_LIMITS["uprns"])
-                truncated = len(raw_results) > limit
-                result_layers["uprns"] = {
-                    "results": raw_results[:limit],
-                    "count": min(len(raw_results), limit),
-                    "truncated": truncated,
+                matched_count = len(raw_results)
+                sample_limit = min(limit, 10)
+                truncated = matched_count > limit
+                layer_payload: dict[str, Any] = {
+                    "mode": response_mode,
                     "notes": (
                         ["UPRNs are sourced via OS Places bbox search; results may be truncated upstream."]
                         + (["Increase limits.uprns or zoom in for detail."] if truncated else [])
                     ),
                 }
+                if response_mode == "full":
+                    layer_payload.update(
+                        {
+                            "results": raw_results[:limit],
+                            "count": min(matched_count, limit),
+                            "truncated": truncated,
+                        }
+                    )
+                elif response_mode == "summary":
+                    layer_payload.update(
+                        {
+                            "count": matched_count,
+                            "sample": raw_results[:sample_limit],
+                            "sampleCount": min(matched_count, sample_limit),
+                            "sampleTruncated": matched_count > sample_limit,
+                        }
+                    )
+                else:
+                    layer_payload.update({"count": matched_count})
+                result_layers["uprns"] = layer_payload
                 if isinstance(data, dict) and isinstance(data.get("provenance"), dict):
                     result_layers["uprns"]["provenance"] = data.get("provenance")
 
@@ -1904,9 +1942,11 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
             "tool": "os_features.query",
             "collection": collection_id,
             "bbox": bbox,
-            "limit": limit,
-            "includeGeometry": include_geom,
+            "limit": 1 if response_mode in {"summary", "counts"} else limit,
+            "includeGeometry": include_geom if response_mode == "full" else False,
         }
+        if response_mode in {"summary", "counts"}:
+            req["resultType"] = "hits"
         token = page_tokens.get(layer_id)
         if token:
             req["pageToken"] = token
@@ -1921,10 +1961,26 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
                 "message": "Expected object response from os_features.query",
             }
             return
-        result_layers[layer_id] = data
-        # Cosmetic rename so UIs can treat layers uniformly.
-        result_layers[layer_id].setdefault("layer", layer_id)
-        if not include_geom:
+        if response_mode == "full":
+            result_layers[layer_id] = data
+            # Cosmetic rename so UIs can treat layers uniformly.
+            result_layers[layer_id].setdefault("layer", layer_id)
+        else:
+            compact_layer: dict[str, Any] = {
+                "layer": layer_id,
+                "mode": response_mode,
+                "collection": data.get("collection"),
+                "count": data.get("count"),
+                "numberMatched": data.get("numberMatched"),
+                "resultType": data.get("resultType"),
+                "live": data.get("live", True),
+            }
+            if "requestedCollection" in data:
+                compact_layer["requestedCollection"] = data.get("requestedCollection")
+            if isinstance(data.get("hints"), dict):
+                compact_layer["hints"] = data.get("hints")
+            result_layers[layer_id] = compact_layer
+        if response_mode == "full" and not include_geom:
             hints.append(f"{layer_id}: pass includeGeometry.{layer_id}=true to render on a map.")
 
     _fetch_features("buildings")
@@ -1936,6 +1992,7 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
         "layers": result_layers,
         "requestedLayers": layers,
         "limits": {k: limits[k] for k in layers if k in limits},
+        "responseMode": response_mode,
         "hints": hints,
         "live": True,
     }
@@ -2687,6 +2744,15 @@ register(
                     "type": "object",
                     "description": "Per-layer includeGeometry overrides (NGD layers only).",
                 },
+                "responseMode": {
+                    "type": "string",
+                    "enum": ["full", "summary", "counts"],
+                    "default": "full",
+                    "description": (
+                        "Use summary or counts to avoid large raw payloads when only a compact "
+                        "layer summary is needed."
+                    ),
+                },
                 "collections": {
                     "type": "object",
                     "description": "Per-layer NGD collection id overrides (NGD layers only).",
@@ -2707,6 +2773,7 @@ register(
                 "layers": {"type": "object"},
                 "requestedLayers": {"type": "array", "items": {"type": "string"}},
                 "limits": {"type": "object"},
+                "responseMode": {"type": "string"},
                 "hints": {"type": "array", "items": {"type": "string"}},
             },
             "required": ["layers"],

@@ -301,6 +301,14 @@
       "side_effect_level": "none"
     },
     {
+      "data_sensitivity": "internal",
+      "high_risk_action": false,
+      "name": "ons_geo.area_summary",
+      "network_write": false,
+      "requires_user_context": false,
+      "side_effect_level": "none"
+    },
+    {
       "data_sensitivity": "public",
       "high_risk_action": false,
       "name": "ons_geo.cache_status",

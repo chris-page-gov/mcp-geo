@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `ons_geo.area_summary`, the compact postcode/UPRN/area-code follow-up
+  surface for OA/LSOA/MSOA/ward summaries. It resolves the target area from
+  the local ONS cache, returns compact area counts, can use the new
+  `os_map.inventory` summary/count modes for lightweight built-environment
+  context, and exposes curated NOMIS follow-up datasets for small-area
+  profiling.
+- Added the new guide resource
+  `resource://mcp-geo/area-summary-workflows` plus the supporting evaluation
+  artifact `examples/ons_from_postcode_03_summary_only_eval.md`, documenting
+  the recommended prompt pattern and the guardrail against raw
+  `os_map.inventory` calls for summary-only prompts.
 - Added `scripts/check_spec_drift.py` plus the related `docs/spec_tracking.md`
   workflow so vendored specification/supporting-reference submodules can be
   audited for origin-head drift and missing local spec paths with one command.
@@ -21,6 +32,13 @@ All notable changes to this project will be documented in this file.
   files, prefers `xref_voa_os.parquet` when scanning configured directories,
   and can query local Parquet extracts directly without creating a separate
   indexed DuckDB database.
+
+### Changed
+- `os_map.inventory` now supports opt-in `responseMode=summary|counts` for
+  compact UPRN/building counts, `nomis.query` now includes human-readable
+  `datasetSummary` metadata when available, and `tools/os_mcp.py` now routes
+  area-profile prompts such as `What do you know about that OA?` to
+  `ons_geo.area_summary` instead of encouraging low-level orchestration.
 - Added the grounded troubleshooting analysis
   `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, which
   documents why AI clients struggle when map-building tasks are forced through

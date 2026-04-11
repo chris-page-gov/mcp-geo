@@ -5,6 +5,16 @@ later documentation as the MCP specification evolved.
 
 Last updated: 2026-04-11
 
+## ONS postcode-to-area-summary follow-up (2026-04-11)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| ONS-SUM-1 Compact area-summary surface for OA/LSOA/MSOA follow-ups | done | OGC-NORM-6 | Added `ons_geo.area_summary` so clients can answer prompts such as "What do you know about that OA?" through one compact tool instead of manually chaining postcode lookup, bbox fetch, raw inventory, and NOMIS discovery. The new surface accepts an area code, postcode, or UPRN, resolves the target small area, returns compact counts plus optional population/profile-dataset hints, and points callers at the new `resource://mcp-geo/area-summary-workflows` guide. |
+| ONS-SUM-2 Compact inventory and human-readable NOMIS metadata | done | ONS-SUM-1 | `os_map.inventory` now has opt-in `responseMode=summary|counts` so conversational clients can request compact UPRN/building counts without triggering large raw payloads. `nomis.query` now also adds `datasetSummary` metadata when available, and the server-side curated profile mapping now exposes stable category-to-dataset templates for `population`, `sex`, `ethnicity`, `country_of_birth`, and `tenure`. |
+| ONS-SUM-3 Routing/discovery guidance and evaluation artifacts for AI clients | done | ONS-SUM-1, ONS-SUM-2 | `tools/os_mcp.py` now classifies area-profile prompts separately from plain geography lookup, routes follow-up phrases such as `that OA` to `ons_geo.area_summary`, and advertises the new workflow guide through route-query metadata. Discovery defaults now include `ons_geo.area_summary`, `server/mcp/resource_catalog.py` exposes `area-summary-workflows`, and the concrete summary-only evaluation artifact is checked in at `examples/ons_from_postcode_03_summary_only_eval.md`. |
+
 ## Startup discovery + spec drift audit follow-up (2026-04-10)
 
 Legend: pending, in_progress, done, blocked

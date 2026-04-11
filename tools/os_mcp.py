@@ -13,6 +13,7 @@ from server.mcp.tool_search import (
     get_toolset_catalog,
     parse_toolset_list,
 )
+from server.ons_geo_cache import infer_area_level_from_code
 from server.protocol import (
     MCP_APPS_PROTOCOL_VERSION,
     PROTOCOL_VERSION,
@@ -25,6 +26,7 @@ from tools.typing_utils import is_strict_int
 
 class QueryIntent(StrEnum):
     ADDRESS_LOOKUP = "address_lookup"
+    AREA_PROFILE = "area_profile"
     PROPERTY_TAX = "property_tax"
     POI_LOOKUP = "poi_lookup"
     PLACE_LOOKUP = "place_lookup"
@@ -352,9 +354,11 @@ FEATURE_COLLECTIONS = {
 }
 
 NOMIS_WORKFLOW_URI = "resource://mcp-geo/nomis-workflows"
+AREA_SUMMARY_WORKFLOW_URI = "resource://mcp-geo/area-summary-workflows"
 
 INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.ADDRESS_LOOKUP: ["core_router", "places_names", "ons_geo_lookup"],
+    QueryIntent.AREA_PROFILE: ["core_router", "ons_geo_lookup"],
     QueryIntent.PROPERTY_TAX: ["core_router", "property_tax"],
     QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
     QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
@@ -714,6 +718,75 @@ def _should_route_nomis(query_lower: str, level_mentions: list[str]) -> bool:
     return False
 
 
+def _looks_like_area_profile_query(query: str, query_lower: str, level_mentions: list[str]) -> bool:
+    if _is_geography_lookup_query(query_lower):
+        return False
+    summary_like = bool(
+        re.search(r"\b(profile|summary|overview|describe)\b", query_lower)
+        or "what do you know about" in query_lower
+        or "tell me about" in query_lower
+        or "quick profile" in query_lower
+        or "quick summary" in query_lower
+    )
+    if not summary_like:
+        return False
+    if _extract_area_code(query):
+        return True
+    if _extract_postcode(query) or _extract_uprn(query):
+        return True
+    if re.search(
+        r"\bthat (oa|lsoa|msoa|ward|district|local authority|region|country)\b",
+        query_lower,
+    ):
+        return True
+    if re.search(r"\b(postcode area|area around postcode|this postcode area)\b", query_lower):
+        return True
+    return any(level in {"oa", "lsoa", "msoa", "ward", "local_auth"} for level in level_mentions)
+
+
+def _build_area_profile_params(
+    query: str,
+    query_lower: str,
+    level_mentions: list[str],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    params: dict[str, Any] = {}
+    context: dict[str, Any] = {"area_profile": True, "nomis_preferred": True}
+
+    area_code = _extract_area_code(query)
+    postcode = _extract_postcode(query)
+    uprn = _extract_uprn(query)
+    if area_code:
+        params["id"] = area_code
+        inferred = infer_area_level_from_code(area_code)
+        if inferred:
+            params["targetLevel"] = inferred
+            context["area_profile_level"] = inferred
+    elif postcode:
+        params["postcode"] = postcode
+    elif uprn:
+        params["uprn"] = uprn
+
+    if "targetLevel" not in params:
+        for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
+            mapped = ADMIN_LEVEL_MAP.get(level)
+            if mapped in {"OA", "LSOA", "MSOA", "WARD", "DISTRICT"}:
+                params["targetLevel"] = mapped
+                context["area_profile_level"] = mapped
+                break
+        if "targetLevel" not in params and (postcode or uprn):
+            params["targetLevel"] = "OA"
+            context["area_profile_level"] = "OA"
+
+    derivation_mode = _extract_derivation_mode(query_lower)
+    if derivation_mode:
+        params["derivationMode"] = derivation_mode
+        context["derivation_mode"] = derivation_mode
+
+    if not any(key in params for key in ("id", "postcode", "uprn")):
+        context["area_profile_follow_up"] = True
+    return params, context
+
+
 def _build_interactive_params(query: str, place_name: str | None) -> dict[str, Any]:
     query_lower = query.lower()
     level_mentions = _find_level_mentions(query_lower)
@@ -969,6 +1042,15 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         params = {"postcode": postcode} if postcode else {}
         context["property_tax_mode"] = "band_lookup"
         return QueryIntent.PROPERTY_TAX, 0.9, params, context
+
+    if _looks_like_area_profile_query(query, query_lower, level_mentions):
+        area_profile_params, area_profile_context = _build_area_profile_params(
+            query,
+            query_lower,
+            level_mentions,
+        )
+        context.update(area_profile_context)
+        return QueryIntent.AREA_PROFILE, 0.93, area_profile_params, context
 
     postcode = _extract_postcode(query)
     if postcode:
@@ -1283,6 +1365,23 @@ def _get_tool_for_intent(
             ["os_places.search"],
             "Free-text address search using OS Places.",
         )
+    if intent == QueryIntent.AREA_PROFILE:
+        follow_up = bool(context.get("area_profile_follow_up"))
+        explanation = (
+            "Use ons_geo.area_summary to resolve a compact area profile from a supplied "
+            "area code, postcode, or UPRN."
+        )
+        if follow_up:
+            explanation = (
+                "Use ons_geo.area_summary for the follow-up area profile. If the host keeps "
+                "prior tool context, reuse the previously returned OA/LSOA/MSOA code; "
+                "otherwise pass that code, postcode, or UPRN explicitly."
+            )
+        return (
+            "ons_geo.area_summary",
+            ["ons_geo.area_summary"],
+            explanation,
+        )
     if intent == QueryIntent.POI_LOOKUP:
         poi_mode = str(context.get("poi_mode") or context.get("place_mode") or "")
         if poi_mode == "nearest":
@@ -1589,6 +1688,12 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.search",
             "os_places.nearest",
         ],
+        QueryIntent.AREA_PROFILE: [
+            "ons_geo.by_postcode",
+            "ons_geo.by_uprn",
+            "admin_lookup.area_geometry",
+            "nomis.query",
+        ],
         QueryIntent.PROPERTY_TAX: [
             "council_tax.band_lookup",
             "council_tax.query",
@@ -1643,6 +1748,13 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use ons_geo.by_postcode / ons_geo.by_uprn when you need full geography "
             "mappings for postcode/UPRN with exact (ONSPD/ONSUD) or best_fit "
             "(NSPL/NSUL) derivation modes."
+        ),
+        QueryIntent.AREA_PROFILE: (
+            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries and "
+            "follow-up prompts such as 'that OA'. Prefer its compact inventory/profile "
+            "surface over raw os_map.inventory calls when the user only wants a narrative summary. "
+            "Workflow guidance is available via os_resources.get or resources/read at "
+            "resource://mcp-geo/area-summary-workflows."
         ),
         QueryIntent.PROPERTY_TAX: (
             "Use council_tax.band_lookup for England/Wales VOA band searches by postcode. "
@@ -1968,7 +2080,9 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     intent, confidence, params, context = _classify_query(query)
     tool, workflow, explanation = _get_tool_for_intent(intent, context)
     workflow_profile_uri = (
-        NOMIS_WORKFLOW_URI
+        AREA_SUMMARY_WORKFLOW_URI
+        if tool == "ons_geo.area_summary"
+        else NOMIS_WORKFLOW_URI
         if (tool.startswith("nomis.") or bool(context.get("nomis_preferred")))
         else None
     )

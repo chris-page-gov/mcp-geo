@@ -1,0 +1,48 @@
+{
+  "version": "2026-04-11",
+  "profiles": [
+    {
+      "id": "small_area_summary",
+      "title": "Small Area Summary",
+      "whenToUse": "Use for prompts such as 'What do you know about that OA?', 'Tell me about LSOA E01009617', or 'Give me a quick profile of the postcode area around CV3 1HB'.",
+      "recommendedTools": [
+        "ons_geo.area_summary"
+      ],
+      "steps": [
+        "Pass id directly when the user already has an OA/LSOA/MSOA/ward/district/region/country code.",
+        "Pass postcode or uprn when the user is anchoring from an address or postcode; default targetLevel to OA unless the prompt asks for a larger geography.",
+        "Prefer inventoryResponseMode='summary' or 'counts' for narrative summaries; do not pull full raw inventories unless the user explicitly asks for detailed UPRNs or buildings.",
+        "Use profileDatasets from the response for deeper NOMIS follow-up questions by topic."
+      ],
+      "guardrails": [
+        "Do not call os_map.inventory in full mode for summary-only prompts.",
+        "Avoid admin_lookup.find_by_name when the prior step already returned a concrete OA/LSOA/MSOA code.",
+        "Keep raw ONS fields accessible when OAC or source classifications may matter."
+      ],
+      "promptPatterns": [
+        "What do you know about that OA?",
+        "Tell me about OA E00048678",
+        "Give me a quick profile of LSOA E01009617",
+        "Tell me about this postcode area CV3 1HB"
+      ],
+      "evaluationTrace": {
+        "id": "oa_summary_no_large_inventory_v1",
+        "userPrompt": "What do you know about that OA",
+        "expectedToolSequence": [
+          "ons_geo.area_summary"
+        ],
+        "forbiddenPatterns": [
+          "os_map.inventory(responseMode=full)",
+          "admin_lookup.find_by_name(text=<already-known area code>)",
+          "ons_geo.cache_status()"
+        ],
+        "passCriteria": [
+          "The tool call stays compact and in-band.",
+          "The response includes resolved area identity, compact counts, and curated follow-up dataset hints.",
+          "No large raw inventory payload is fetched unless the user later asks for detail."
+        ]
+      }
+    }
+  ],
+  "defaultProfile": "small_area_summary"
+}
