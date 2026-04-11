@@ -6,7 +6,7 @@ WRAPPER="${MCP_CLAUDE_WRAPPER:-$REPO_ROOT/scripts/claude-mcp-local}"
 BUILD_MODE="${MCP_GEO_DOCKER_BUILD:-never}"
 TIMEOUT_SEC="${MCP_CLAUDE_SCOPE_TIMEOUT_SEC:-45}"
 EXPECT_TOOLSET="${MCP_TOOLS_DEFAULT_TOOLSET_EXPECT:-starter}"
-EXPECT_INCLUDE="${MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS_EXPECT:-features_layers}"
+EXPECT_INCLUDE="${MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS_EXPECT:-ons_geo_lookup,property_tax,features_layers,landis_soils}"
 
 if [[ ! -x "$WRAPPER" ]]; then
   echo "ERROR: wrapper is not executable: $WRAPPER" >&2

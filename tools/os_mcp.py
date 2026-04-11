@@ -25,6 +25,7 @@ from tools.typing_utils import is_strict_int
 
 class QueryIntent(StrEnum):
     ADDRESS_LOOKUP = "address_lookup"
+    PROPERTY_TAX = "property_tax"
     POI_LOOKUP = "poi_lookup"
     PLACE_LOOKUP = "place_lookup"
     STATISTICS = "statistics"
@@ -122,8 +123,14 @@ FEATURE_SEARCH_PATTERNS = [
 ]
 
 SURVEY_PATTERNS = [
+    r"\blandis\b",
     r"\bpeatland\b",
     r"\bpeat\b",
+    r"\bsoil screening\b",
+    r"\bsoilscapes?\b",
+    r"\bnatmap\b",
+    r"\bpipe risk\b",
+    r"\bshrink[- ]?swell\b",
     r"\bsite survey\b",
     r"\benvironmental survey\b",
     r"\bhabitat survey\b",
@@ -348,6 +355,7 @@ NOMIS_WORKFLOW_URI = "resource://mcp-geo/nomis-workflows"
 
 INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.ADDRESS_LOOKUP: ["core_router", "places_names", "ons_geo_lookup"],
+    QueryIntent.PROPERTY_TAX: ["core_router", "property_tax"],
     QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
     QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
     QueryIntent.STATISTICS: ["core_router", "ons_data"],
@@ -392,6 +400,17 @@ def _extract_uprn(query: str) -> str | None:
     if not match:
         return None
     return match.group(0)
+
+
+def _extract_uprns(query: str) -> list[str]:
+    seen: set[str] = set()
+    uprns: list[str] = []
+    for match in UPRN_REGEX.findall(query):
+        if match in seen:
+            continue
+        seen.add(match)
+        uprns.append(match)
+    return uprns
 
 
 def _is_geography_lookup_query(query_lower: str) -> bool:
@@ -465,6 +484,28 @@ def _extract_road_numbers(query: str) -> list[str]:
         seen.add(normalized)
         out.append(normalized)
     return out
+
+
+def _looks_like_property_tax_query(query_lower: str) -> bool:
+    if re.search(r"\bcouncil tax\b|\bcouncil tax band\b", query_lower):
+        return True
+    if re.search(r"\bnon-domestic rates?\b|\bbusiness rates?\b", query_lower):
+        return True
+    if re.search(r"\bvoa\b|\baddressbase\b|\btype 23\b", query_lower):
+        return True
+    return False
+
+
+def _looks_like_landis_survey_query(query_lower: str) -> bool:
+    return bool(
+        re.search(
+            (
+                r"\blandis\b|\bsoil screening\b|\bsoilscapes?\b|\bnatmap\b|"
+                r"\bpipe risk\b|\bshrink[- ]?swell\b|\bcorrosion\b.*\bpipe\b"
+            ),
+            query_lower,
+        )
+    )
 
 
 def _extract_place_name(query: str) -> str | None:
@@ -781,6 +822,8 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if focus:
             context["survey_focus"] = focus
         context["survey_intent"] = True
+        if _looks_like_landis_survey_query(query_lower):
+            context["landis_preferred"] = True
         return (
             QueryIntent.ENVIRONMENTAL_SURVEY,
             0.94,
@@ -868,6 +911,25 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
                 for road_number in road_numbers
             ]
         return QueryIntent.MAP_RENDER, 0.93, road_export_params, context
+
+    if _looks_like_property_tax_query(query_lower):
+        uprns = _extract_uprns(query)
+        if uprns:
+            context["uprns"] = uprns
+        postcode = _extract_postcode(query)
+        if re.search(r"\bband\b", query_lower):
+            if uprns:
+                context["property_tax_mode"] = "band_from_uprn"
+                return QueryIntent.PROPERTY_TAX, 0.95, {"uprn": uprns[0]}, context
+            params = {"postcode": postcode} if postcode else {}
+            context["property_tax_mode"] = "band_lookup"
+            return QueryIntent.PROPERTY_TAX, 0.92, params, context
+        if uprns:
+            context["property_tax_mode"] = "uprn_status_query"
+            return QueryIntent.PROPERTY_TAX, 0.95, {"uprns": uprns}, context
+        params = {"postcode": postcode} if postcode else {}
+        context["property_tax_mode"] = "band_lookup"
+        return QueryIntent.PROPERTY_TAX, 0.9, params, context
 
     postcode = _extract_postcode(query)
     if postcode:
@@ -1099,6 +1161,42 @@ def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
     ]
 
 
+def _build_landis_survey_plan(focus: str | None) -> list[dict[str, Any]]:
+    landscape_name = focus or "Forest of Bowland"
+    return [
+        {
+            "step": 1,
+            "goal": "Resolve the area of interest to a named protected landscape.",
+            "tool": "os_landscape.find",
+            "parameters": {"text": landscape_name, "limit": 3},
+        },
+        {
+            "step": 2,
+            "goal": "Fetch the AOI geometry or bbox for downstream soil screening.",
+            "tool": "os_landscape.get",
+            "parameters": {"id": "<id-from-step-1>", "includeGeometry": True},
+        },
+        {
+            "step": 3,
+            "goal": "Summarize Soilscapes classes across the AOI.",
+            "tool": "landis_soilscapes.area_summary",
+            "parameters": {"geometry": "<aoi-geometry>"},
+        },
+        {
+            "step": 4,
+            "goal": "Summarize NATMAP map units for the same AOI.",
+            "tool": "landis_natmap.area_summary",
+            "parameters": {"geometry": "<aoi-geometry>"},
+        },
+        {
+            "step": 5,
+            "goal": "Screen shrink-swell and corrosion pipe risk when utilities context matters.",
+            "tool": "landis_derive.pipe_risk",
+            "parameters": {"geometry": "<aoi-geometry>"},
+        },
+    ]
+
+
 def _get_tool_for_intent(
     intent: QueryIntent, context: dict[str, Any]
 ) -> tuple[str, list[str], str]:
@@ -1209,6 +1307,31 @@ def _get_tool_for_intent(
             ["admin_lookup.find_by_name"],
             "Find administrative areas by name using admin_lookup.find_by_name.",
         )
+    if intent == QueryIntent.PROPERTY_TAX:
+        property_tax_mode = str(context.get("property_tax_mode") or "")
+        if property_tax_mode == "band_from_uprn":
+            return (
+                "os_places.by_uprn",
+                ["os_places.by_uprn", "council_tax.band_lookup"],
+                (
+                    "Resolve the postcode/address from the UPRN first, then search the "
+                    "VOA council-tax band service with the returned address details."
+                ),
+            )
+        if property_tax_mode == "band_lookup":
+            return (
+                "council_tax.band_lookup",
+                ["council_tax.band_lookup"],
+                "Search the VOA council-tax band service by postcode or address fields.",
+            )
+        return (
+            "council_tax.query",
+            ["council_tax.query"],
+            (
+                "Resolve current Council Tax and non-domestic-rates flags for one or more "
+                "UPRNs from the local AddressBase Premium cross-reference source."
+            ),
+        )
     if intent == QueryIntent.BOUNDARY_FETCH:
         return (
             "admin_lookup.area_geometry",
@@ -1222,6 +1345,21 @@ def _get_tool_for_intent(
             "Query OS NGD feature collections by bbox and collection.",
         )
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
+        if bool(context.get("landis_preferred")):
+            return (
+                "os_landscape.find",
+                [
+                    "os_landscape.find",
+                    "os_landscape.get",
+                    "landis_soilscapes.area_summary",
+                    "landis_natmap.area_summary",
+                    "landis_derive.pipe_risk",
+                ],
+                (
+                    "Resolve the AOI first, then run LandIS soil, NATMAP, and optional "
+                    "pipe-risk screening over the bounded geometry."
+                ),
+            )
         return (
             "os_landscape.find",
             [
@@ -1381,6 +1519,12 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.search",
             "os_places.nearest",
         ],
+        QueryIntent.PROPERTY_TAX: [
+            "council_tax.band_lookup",
+            "council_tax.query",
+            "os_places.by_uprn",
+            "os_places.search",
+        ],
         QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
         QueryIntent.LINKED_IDS: [
             "os_linked_ids.identifiers",
@@ -1429,6 +1573,13 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use ons_geo.by_postcode / ons_geo.by_uprn when you need full geography "
             "mappings for postcode/UPRN with exact (ONSPD/ONSUD) or best_fit "
             "(NSPL/NSUL) derivation modes."
+        ),
+        QueryIntent.PROPERTY_TAX: (
+            "Use council_tax.band_lookup for England/Wales VOA band searches by postcode "
+            "or address fields. Use council_tax.query for local AddressBase Premium UPRN "
+            "cross-reference checks covering Council Tax and non-domestic-rates flags. "
+            "If the prompt starts from a UPRN but asks for banding, resolve the address "
+            "first with os_places.by_uprn."
         ),
         QueryIntent.POI_LOOKUP: (
             "Use os_poi.search/nearest/within for amenities and points of interest. "
@@ -1512,14 +1663,23 @@ def _compact_toolset_catalog() -> dict[str, dict[str, Any]]:
 def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
     intent, _confidence, _params, context = _classify_query(query)
     recommended = list(INTENT_TOOLSET_MAP.get(intent, ["starter"]))
+    if intent == QueryIntent.PROPERTY_TAX:
+        if str(context.get("property_tax_mode") or "") == "band_from_uprn":
+            recommended = ["core_router", "places_names", "property_tax"]
+        else:
+            recommended = ["core_router", "property_tax"]
     if intent in {QueryIntent.STATISTICS, QueryIntent.DATASET_DISCOVERY}:
         if context.get("nomis_preferred"):
             recommended = ["core_router", "nomis_data"]
         else:
             recommended = ["core_router", "ons_selection", "ons_data"]
+    if intent == QueryIntent.ENVIRONMENTAL_SURVEY and bool(context.get("landis_preferred")):
+        recommended = ["core_router", "landis_soils", "protected_landscapes"]
     return recommended, {
         "intent": intent.value,
+        "landisPreferred": bool(context.get("landis_preferred")),
         "nomisPreferred": bool(context.get("nomis_preferred")),
+        "propertyTaxMode": context.get("property_tax_mode"),
     }
 
 
@@ -1772,7 +1932,20 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
         focus_raw = context.get("survey_focus")
         focus = focus_raw if isinstance(focus_raw, str) else None
-        response["surveyPlan"] = _build_survey_plan(focus)
+        if bool(context.get("landis_preferred")):
+            response["surveyPlan"] = _build_landis_survey_plan(focus)
+            response["guidance"] = (
+                "Resolve the named AOI first, then run LandIS soil summaries over the "
+                "bounded geometry. Keep geometry reuse explicit between steps."
+            )
+            response["alternative_tools"] = [
+                "landis_natmap.area_summary",
+                "landis_derive.pipe_risk",
+                "os_peat.evidence_paths",
+                "admin_lookup.find_by_name",
+            ]
+        else:
+            response["surveyPlan"] = _build_survey_plan(focus)
     if intent == QueryIntent.ROUTE_PLANNING and isinstance(context.get("route_request"), dict):
         route_request = context["route_request"]
         extracted = route_request.get("extracted")

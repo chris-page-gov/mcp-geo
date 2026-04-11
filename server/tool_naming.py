@@ -140,4 +140,78 @@ def rewrite_tool_schema(
     new_props["tool"] = updated_tool
     new_schema = dict(schema)
     new_schema["properties"] = new_props
+    return _flatten_top_level_schema_combinators(new_schema)
+
+
+def _flatten_top_level_schema_combinators(schema: dict[str, Any]) -> dict[str, Any]:
+    if schema.get("type") != "object":
+        return schema
+
+    combinator_keys = [key for key in ("oneOf", "anyOf", "allOf") if key in schema]
+    if not combinator_keys:
+        return schema
+
+    new_schema = dict(schema)
+    required = new_schema.get("required")
+    merged_required = (
+        [item for item in required if isinstance(item, str)]
+        if isinstance(required, list)
+        else []
+    )
+    notes: list[str] = []
+
+    for key in combinator_keys:
+        variants = new_schema.pop(key, None)
+        if not isinstance(variants, list):
+            notes.append(f"Top-level {key} was removed for client compatibility.")
+            continue
+
+        variant_required_sets: list[list[str]] = []
+        simple_required_only = True
+        for variant in variants:
+            if not isinstance(variant, dict):
+                simple_required_only = False
+                break
+            extra_keys = set(variant) - {"required", "description", "title"}
+            if extra_keys:
+                simple_required_only = False
+                break
+            variant_required = variant.get("required", [])
+            if not isinstance(variant_required, list) or not all(
+                isinstance(item, str) for item in variant_required
+            ):
+                simple_required_only = False
+                break
+            variant_required_sets.append(variant_required)
+
+        if simple_required_only and variant_required_sets:
+            if key == "allOf":
+                for variant_required in variant_required_sets:
+                    for item in variant_required:
+                        if item not in merged_required:
+                            merged_required.append(item)
+            option_text = " or ".join(
+                " + ".join(items) if items else "(no additional required fields)"
+                for items in variant_required_sets
+            )
+            notes.append(
+                f"Client compatibility note: top-level {key} was flattened; valid input should "
+                f"satisfy {option_text}. Server-side validation still enforces the exact rule."
+            )
+        else:
+            notes.append(
+                f"Client compatibility note: top-level {key} was flattened for strict clients; "
+                "server-side validation still enforces the full original schema."
+            )
+
+    if merged_required:
+        new_schema["required"] = merged_required
+
+    if notes:
+        description = new_schema.get("description")
+        if isinstance(description, str) and description.strip():
+            new_schema["description"] = f"{description} {' '.join(notes)}"
+        else:
+            new_schema["description"] = " ".join(notes)
+
     return new_schema

@@ -69,6 +69,25 @@ def test_route_query_uprn_geography_lookup():
     assert body["recommended_parameters"]["derivationMode"] == "exact"
 
 
+def test_route_query_council_tax_band_from_uprn_uses_two_step_workflow():
+    body = _route("What is the council tax band for UPRN 100023336959?")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.by_uprn"
+    assert body["recommended_parameters"]["uprn"] == "100023336959"
+    assert body["workflow_steps"] == ["os_places.by_uprn", "council_tax.band_lookup"]
+
+
+def test_route_query_property_tax_status_query_uses_council_tax_query():
+    body = _route(
+        "Check council tax and non-domestic rates flags for UPRNs "
+        "100023336959 and 100023336960"
+    )
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "council_tax.query"
+    assert body["recommended_parameters"]["uprns"] == ["100023336959", "100023336960"]
+    assert body["workflow_steps"] == ["council_tax.query"]
+
+
 def test_route_query_boundary_fetch():
     body = _route("Get the boundary of Westminster")
     assert body["intent"] == "boundary_fetch"
@@ -392,6 +411,23 @@ def test_route_query_environmental_survey_bowland():
     assert any(step.get("tool") == "os_peat.evidence_paths" for step in plan)
 
 
+def test_route_query_landis_soil_screening_prefers_landis_workflow():
+    body = _route("Run a LandIS soil screening for Forest of Bowland")
+    assert body["intent"] == "environmental_survey"
+    assert body["recommended_tool"] == "os_landscape.find"
+    assert body["recommended_parameters"]["text"] == "Forest of Bowland"
+    assert body["workflow_steps"] == [
+        "os_landscape.find",
+        "os_landscape.get",
+        "landis_soilscapes.area_summary",
+        "landis_natmap.area_summary",
+        "landis_derive.pipe_risk",
+    ]
+    plan = body.get("surveyPlan")
+    assert isinstance(plan, list)
+    assert any(step.get("tool") == "landis_soilscapes.area_summary" for step in plan)
+
+
 def test_route_query_unknown():
     body = _route("asdfghjkl qwertyuiop")
     assert body["intent"] == "unknown"
@@ -514,6 +550,48 @@ def test_select_toolsets_poi_query_infers_places_names():
     assert "admin_boundaries" not in include
     matched = body.get("matchedTools", [])
     assert "os_poi.search" in matched
+
+
+def test_select_toolsets_property_tax_band_query_infers_property_tax_and_places():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "What is the council tax band for UPRN 100023336959?",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "band_from_uprn"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.band_lookup" in matched
+    assert "os_places.by_uprn" in matched
+
+
+def test_select_toolsets_landis_query_infers_landis_toolset():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Run a LandIS soil screening for Forest of Bowland",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "environmental_survey"
+    assert inference.get("landisPreferred") is True
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "landis_soils" in include
+    assert "protected_landscapes" in include
+    matched = body.get("matchedTools", [])
+    assert "landis_soilscapes.area_summary" in matched
+    assert "os_landscape.find" in matched
 
 
 def test_select_toolsets_explicit_filters():

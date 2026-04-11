@@ -105,6 +105,22 @@ def test_tools_list_starter_default_includes_harold_wood_recovery_tools(monkeypa
     assert "os_resources_get" in names
 
 
+def test_tools_list_starter_default_plus_dev_toolsets_includes_active_workflows(monkeypatch):
+    monkeypatch.setenv("MCP_TOOLS_DEFAULT_TOOLSET", "starter")
+    monkeypatch.setenv(
+        "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS",
+        "ons_geo_lookup,property_tax,features_layers,landis_soils",
+    )
+    resp = client.get("/tools/list", params={"limit": 200})
+    assert resp.status_code == 200
+    names = set(resp.json()["tools"])
+    assert "os_mcp_route_query" in names
+    assert "ons_geo_by_postcode" in names
+    assert "council_tax_query" in names
+    assert "os_map_export_roads" in names
+    assert "landis_soilscapes_area_summary" in names
+
+
 def test_tools_list_handles_filter_validation_error(monkeypatch):
     monkeypatch.setattr(
         tools_api,

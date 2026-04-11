@@ -40,6 +40,40 @@ def test_rewrite_tool_schema_defensive_returns():
     assert stdio_adapter._rewrite_tool_schema(schema, sanitized_name="x", original_name="y") == schema
 
 
+def test_rewrite_tool_schema_flattens_top_level_anyof_for_strict_clients():
+    schema = {
+        "type": "object",
+        "properties": {
+            "tool": {"type": "string", "const": "demo.tool"},
+            "bbox": {"type": "array"},
+            "geometry": {"type": "object"},
+        },
+        "anyOf": [{"required": ["bbox"]}, {"required": ["geometry"]}],
+        "additionalProperties": False,
+    }
+    rewritten = stdio_adapter._rewrite_tool_schema(
+        schema,
+        sanitized_name="demo_tool",
+        original_name="demo.tool",
+    )
+    assert rewritten["properties"]["tool"]["const"] == "demo_tool"
+    assert "anyOf" not in rewritten
+    assert "Client compatibility note" in rewritten.get("description", "")
+    assert "required" not in rewritten or rewritten["required"] == []
+
+
+def test_compact_list_entries_do_not_expose_top_level_schema_combinators():
+    entries = stdio_adapter._build_list_tool_entries(
+        sorted(stdio_adapter.all_tools(), key=lambda tool: tool.name),
+        compact=True,
+    )
+    for entry in entries:
+        schema = entry.get("inputSchema")
+        assert not any(
+            key in schema for key in ("oneOf", "anyOf", "allOf")
+        ), entry.get("name")
+
+
 def test_resp_error_includes_data():
     payload = stdio_adapter._resp_error("x", 123, "nope", {"detail": "x"})
     assert payload["error"]["data"]["detail"] == "x"
