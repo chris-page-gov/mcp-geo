@@ -247,8 +247,60 @@ class _DefinitionListParser(HTMLParser):
             self._current_parts.append(data)
 
 
+class _GovUkErrorSummaryParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.messages: list[str] = []
+        self._summary_depth = 0
+        self._in_list_item = False
+        self._current_parts: list[str] = []
+
+    def handle_starttag(
+        self,
+        tag: str,
+        attrs: list[tuple[str, str | None]],
+    ) -> None:
+        if tag == "div":
+            classes = {
+                part
+                for name, value in attrs
+                if name == "class" and value
+                for part in value.split()
+            }
+            if "govuk-error-summary" in classes:
+                self._summary_depth += 1
+                return
+        if self._summary_depth == 0:
+            return
+        if tag == "li":
+            self._in_list_item = True
+            self._current_parts = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "div" and self._summary_depth > 0:
+            self._summary_depth -= 1
+            return
+        if tag == "li" and self._in_list_item:
+            message = _normalize_space("".join(self._current_parts))
+            if message and message not in self.messages:
+                self.messages.append(message)
+            self._in_list_item = False
+            self._current_parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self._in_list_item:
+            self._current_parts.append(data)
+
+
 def _normalize_space(value: str) -> str:
     return re.sub(r"\s+", " ", unescape(value or "")).strip()
+
+
+def _summarize_error_body(value: str, *, max_length: int = 200) -> str | None:
+    summary = _normalize_space(re.sub(r"<[^>]+>", " ", value or ""))
+    if not summary:
+        return None
+    return summary[:max_length]
 
 
 def _normalize_addressbase_column_name(value: str) -> str:
@@ -300,6 +352,26 @@ def _origin_from_base_url(base_url: str) -> str | None:
     if not parts.scheme or not parts.netloc:
         return None
     return f"{parts.scheme}://{parts.netloc}"
+
+
+def _parse_form_validation_errors(html_text: str) -> list[str]:
+    parser = _GovUkErrorSummaryParser()
+    parser.feed(html_text)
+    return parser.messages
+
+
+def _normalize_form_validation_message(errors: list[str]) -> str:
+    if any("postcode" in error.lower() for error in errors):
+        detail = next(error for error in errors if "postcode" in error.lower())
+        return (
+            "Council Tax band lookup requires a postcode for live VOA searches. "
+            "Resolve a postcode first, for example with os_places.search, then retry "
+            f"council_tax.band_lookup. GOV.UK validation: {detail}"
+        )
+    return (
+        "Council Tax band lookup input was rejected by the live VOA form: "
+        + "; ".join(errors)
+    )
 
 
 def _normalize_uprn(value: Any) -> str | None:
@@ -977,6 +1049,15 @@ class CouncilTaxBandClient:
                     allow_redirects=True,
                 )
                 if response.status_code != 200:
+                    response_summary = _summarize_error_body(response.text)
+                    if 400 <= response.status_code < 500:
+                        validation_errors = _parse_form_validation_errors(response.text)
+                        if validation_errors:
+                            return 400, {
+                                "isError": True,
+                                "code": "INVALID_INPUT",
+                                "message": _normalize_form_validation_message(validation_errors),
+                            }
                     if response.status_code >= 500:
                         self._breaker.record_failure()
                     log_upstream_error(
@@ -985,14 +1066,17 @@ class CouncilTaxBandClient:
                         status_code=response.status_code,
                         url=getattr(response, "url", url),
                         params=data,
-                        detail=response.text[:200],
+                        detail=response_summary or response.text[:200],
                         attempt=attempt,
                         error_category=classify_error("COUNCIL_TAX_API_ERROR"),
                     )
+                    message = "Council Tax band service returned an unexpected error response."
+                    if response_summary:
+                        message = f"Council Tax band service error: {response_summary}"
                     return response.status_code, {
                         "isError": True,
                         "code": "COUNCIL_TAX_API_ERROR",
-                        "message": f"Council Tax band service error: {response.text[:200]}",
+                        "message": message,
                     }
                 self._breaker.record_success()
                 return 200, response.text

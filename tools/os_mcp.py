@@ -505,6 +505,19 @@ def _looks_like_property_tax_status_prompt(query_lower: str) -> bool:
     )
 
 
+def _looks_like_property_tax_address_prompt(query_lower: str) -> bool:
+    return bool(
+        re.search(
+            (
+                r"\baddress(es)?\b|\bstreet\b|\broad\b|\blane\b|\bavenue\b|\bclose\b|"
+                r"\bdrive\b|\bway\b|\bcourt\b|\bplace\b|\bterrace\b|\bcrescent\b|"
+                r"\brow\b|\bhill\b|\bgardens?\b"
+            ),
+            query_lower,
+        )
+    )
+
+
 def _looks_like_landis_survey_query(query_lower: str) -> bool:
     return bool(
         re.search(
@@ -927,10 +940,14 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             context["uprns"] = uprns
         postcode = _extract_postcode(query)
         status_prompt = _looks_like_property_tax_status_prompt(query_lower)
+        address_prompt = _looks_like_property_tax_address_prompt(query_lower)
         if re.search(r"\bband\b", query_lower):
             if uprns:
                 context["property_tax_mode"] = "band_from_uprn"
                 return QueryIntent.PROPERTY_TAX, 0.95, {"uprn": uprns[0]}, context
+            if not postcode and address_prompt:
+                context["property_tax_mode"] = "band_from_address"
+                return QueryIntent.PROPERTY_TAX, 0.9, {"text": query}, context
             params = {"postcode": postcode} if postcode else {}
             context["property_tax_mode"] = "band_lookup"
             return QueryIntent.PROPERTY_TAX, 0.92, params, context
@@ -941,11 +958,14 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             if postcode:
                 context["property_tax_mode"] = "status_from_postcode"
                 return QueryIntent.PROPERTY_TAX, 0.9, {"postcode": postcode}, context
-            if re.search(r"\baddress(es)?\b", query_lower):
+            if address_prompt:
                 context["property_tax_mode"] = "status_from_address"
                 return QueryIntent.PROPERTY_TAX, 0.85, {"text": query}, context
             context["property_tax_mode"] = "status_query"
             return QueryIntent.PROPERTY_TAX, 0.8, {}, context
+        if not postcode and address_prompt:
+            context["property_tax_mode"] = "band_from_address"
+            return QueryIntent.PROPERTY_TAX, 0.88, {"text": query}, context
         params = {"postcode": postcode} if postcode else {}
         context["property_tax_mode"] = "band_lookup"
         return QueryIntent.PROPERTY_TAX, 0.9, params, context
@@ -1337,11 +1357,21 @@ def _get_tool_for_intent(
                     "VOA council-tax band service with the returned address details."
                 ),
             )
+        if property_tax_mode == "band_from_address":
+            return (
+                "os_places.search",
+                ["os_places.search", "council_tax.band_lookup"],
+                (
+                    "Resolve candidate addresses and postcodes with OS Places free-text "
+                    "search first, then run the VOA council-tax band lookup with the "
+                    "selected postcode."
+                ),
+            )
         if property_tax_mode == "band_lookup":
             return (
                 "council_tax.band_lookup",
                 ["council_tax.band_lookup"],
-                "Search the VOA council-tax band service by postcode or address fields.",
+                "Search the VOA council-tax band service by postcode.",
             )
         if property_tax_mode == "status_from_postcode":
             return (
@@ -1615,11 +1645,11 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "(NSPL/NSUL) derivation modes."
         ),
         QueryIntent.PROPERTY_TAX: (
-            "Use council_tax.band_lookup for England/Wales VOA band searches by postcode "
-            "or address fields. Use council_tax.query for local AddressBase Premium UPRN "
-            "cross-reference checks covering Council Tax and non-domestic-rates flags. "
-            "If the prompt starts from a UPRN but asks for banding, resolve the address "
-            "first with os_places.by_uprn."
+            "Use council_tax.band_lookup for England/Wales VOA band searches by postcode. "
+            "If the prompt starts from a UPRN, street, or address description, resolve a "
+            "postcode first with OS Places, then call council_tax.band_lookup. Use "
+            "council_tax.query for local AddressBase Premium UPRN cross-reference checks "
+            "covering Council Tax and non-domestic-rates flags."
         ),
         QueryIntent.POI_LOOKUP: (
             "Use os_poi.search/nearest/within for amenities and points of interest. "
@@ -1705,6 +1735,7 @@ def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
     recommended = list(INTENT_TOOLSET_MAP.get(intent, ["starter"]))
     if intent == QueryIntent.PROPERTY_TAX:
         if str(context.get("property_tax_mode") or "") in {
+            "band_from_address",
             "band_from_uprn",
             "status_from_postcode",
             "status_from_address",

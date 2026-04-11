@@ -120,6 +120,7 @@ def rewrite_tool_schema(
     *,
     sanitized_name: str,
     original_name: str,
+    flatten_top_level_combinators: bool = False,
 ) -> dict[str, Any]:
     if not isinstance(schema, dict):
         return schema
@@ -140,7 +141,9 @@ def rewrite_tool_schema(
     new_props["tool"] = updated_tool
     new_schema = dict(schema)
     new_schema["properties"] = new_props
-    return _flatten_top_level_schema_combinators(new_schema)
+    if flatten_top_level_combinators:
+        return _flatten_top_level_schema_combinators(new_schema)
+    return new_schema
 
 
 def _flatten_top_level_schema_combinators(schema: dict[str, Any]) -> dict[str, Any]:

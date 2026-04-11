@@ -54,6 +54,18 @@ def test_tools_describe_single_sanitized_alias():
     assert data["tools"][0]["annotations"]["originalName"] == "os_places.by_postcode"
 
 
+def test_tools_describe_preserves_top_level_anyof_for_http_clients():
+    resp = client.get("/tools/describe", params={"name": "landis_soilscapes.area_summary"})
+    assert resp.status_code == 200
+    tool = resp.json()["tools"][0]
+    schema = tool["inputSchema"]
+
+    assert tool["name"] == "landis_soilscapes_area_summary"
+    assert schema["properties"]["tool"]["const"] == "landis_soilscapes_area_summary"
+    assert schema["anyOf"] == [{"required": ["bbox"]}, {"required": ["geometry"]}]
+    assert "Client compatibility note" not in schema.get("description", "")
+
+
 def test_tools_describe_unknown():
     resp = client.get("/tools/describe", params={"name": "unknown.tool"})
     assert resp.status_code == 404

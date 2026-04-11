@@ -62,11 +62,11 @@ assumptions change.
   LandIS-flavored environmental survey path, which fixes the prior
   misclassification to generic address lookup or admin-boundary discovery.
 - The same 2026-04-10 Claude follow-up now also flattens top-level schema
-  combinators (`oneOf` / `anyOf` / `allOf`) in sanitized stdio tool input
-  schemas via `server/tool_naming.py`. This specifically fixes Claude Code's
-  startup rejection of tool catalogs that included top-level combinators on
-  tools such as `landis_derive.pipe_risk`, while preserving nested
-  property-level unions used elsewhere in the schema surface.
+  combinators (`oneOf` / `anyOf` / `allOf`) only on the sanitized stdio tool
+  input schemas shown to strict clients. HTTP `/tools/describe` now preserves
+  the original top-level combinators so browser/HTTP clients keep the full
+  contract for area-vs-geometry and similar alternate-input tools, while
+  Claude Code startup still avoids the unsupported top-level combinator shape.
 - A 2026-04-10 vendored-spec follow-up added `scripts/check_spec_drift.py` and
   refreshed `docs/spec_tracking.md` so maintainers can audit local spec
   submodule drift, verify tracked local spec paths, and distinguish audit-only
@@ -92,6 +92,12 @@ assumptions change.
   The council-tax UPRN query path also now keeps the legacy CSV cap at `5000`
   items while allowing Parquet-backed batches up to `100000`, reflecting the
   lower-memory DuckDB-over-Parquet runtime path.
+- A 2026-04-11 council-tax live-search follow-up now normalizes GOV.UK form
+  validation pages into actionable `INVALID_INPUT` responses instead of
+  returning raw HTML snippets, and the property-tax router now sends street or
+  address-only band queries through `os_places.search ->
+  council_tax.band_lookup` so clients resolve a postcode before calling the
+  live VOA band form.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,

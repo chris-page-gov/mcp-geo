@@ -106,6 +106,16 @@ def test_route_query_business_rates_address_uses_places_search_then_status_query
     assert body["workflow_steps"] == ["os_places.search", "council_tax.query"]
 
 
+def test_route_query_council_tax_address_uses_places_search_then_band_lookup():
+    body = _route("Council tax on properties in Gloucester Street, Coventry")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.search"
+    assert body["recommended_parameters"]["text"] == (
+        "Council tax on properties in Gloucester Street, Coventry"
+    )
+    assert body["workflow_steps"] == ["os_places.search", "council_tax.band_lookup"]
+
+
 def test_route_query_boundary_fetch():
     body = _route("Get the boundary of Westminster")
     assert body["intent"] == "boundary_fetch"
@@ -631,6 +641,27 @@ def test_select_toolsets_business_rates_postcode_infers_places_and_property_tax(
     matched = body.get("matchedTools", [])
     assert "council_tax.query" in matched
     assert "os_places.by_postcode" in matched
+
+
+def test_select_toolsets_council_tax_address_band_query_infers_places_and_property_tax() -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Council tax on properties in Gloucester Street, Coventry",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "band_from_address"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.band_lookup" in matched
+    assert "os_places.search" in matched
 
 
 def test_select_toolsets_explicit_filters():

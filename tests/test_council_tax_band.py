@@ -86,6 +86,29 @@ NO_RESULTS_HTML = """
 """
 
 
+FORM_VALIDATION_HTML = """
+<html>
+  <head>
+    <title>Error: Search for a property by other details - Check and challenge your Council Tax band - GOV.UK</title>
+  </head>
+  <body>
+    <div class="govuk-error-summary" id="error-summary" data-module="govuk-error-summary">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">There is a problem</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>
+              <a href="#postcode" id="error-summary-postcode">Enter a postcode, like AA1 1AA</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+"""
+
+
 def test_council_tax_band_lookup_requires_search_fields(client: TestClient) -> None:
     response = client.post("/tools/call", json={"tool": "council_tax.band_lookup"})
     assert response.status_code == 400
@@ -294,6 +317,54 @@ def test_council_tax_band_lookup_propagates_search_form_errors(monkeypatch) -> N
     assert response.json()["code"] == "COUNCIL_TAX_API_ERROR"
 
 
+def test_council_tax_band_lookup_normalizes_upstream_postcode_validation(monkeypatch) -> None:
+    class _Response:
+        def __init__(self, text: str, status_code: int = 200, url: str = "") -> None:
+            self.text = text
+            self.status_code = status_code
+            self.url = url
+
+    class _Session:
+        def request(
+            self,
+            method: str,
+            url: str,
+            *,
+            data: dict[str, str] | None = None,  # noqa: ARG002
+            headers: dict[str, str] | None = None,  # noqa: ARG002
+            timeout: float | None = None,  # noqa: ARG002
+            allow_redirects: bool = True,  # noqa: ARG002
+        ) -> _Response:
+            if method == "GET":
+                return _Response(FORM_HTML, url=url)
+            return _Response(FORM_VALIDATION_HTML, status_code=400, url=url)
+
+    monkeypatch.setattr(
+        council_tax,
+        "client",
+        council_tax.CouncilTaxBandClient(
+            base_url="https://example.test/check-council-tax-band",
+            session=_Session(),
+        ),
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/tools/call",
+        json={
+            "tool": "council_tax.band_lookup",
+            "street": "Gloucester Street",
+            "town": "Coventry",
+        },
+    )
+
+    assert response.status_code == 400
+    body = response.json()
+    assert body["code"] == "INVALID_INPUT"
+    assert "requires a postcode" in body["message"]
+    assert "os_places.search" in body["message"]
+
+
 def test_council_tax_band_lookup_rejects_unparseable_results(monkeypatch) -> None:
     def fake_get_search_form():
         return 200, FORM_HTML
@@ -455,6 +526,45 @@ def test_council_tax_band_client_request_normalizes_upstream_errors() -> None:
     assert status == 503
     assert body["code"] == "COUNCIL_TAX_API_ERROR"
     assert "service unavailable" in body["message"]
+
+
+def test_council_tax_band_client_request_normalizes_validation_html() -> None:
+    class _Response:
+        def __init__(self) -> None:
+            self.status_code = 400
+            self.text = FORM_VALIDATION_HTML
+            self.url = "https://example.test/check-council-tax-band/search-council-tax-advanced"
+
+    class _Breaker:
+        def allow(self) -> bool:
+            return True
+
+        def record_failure(self) -> None:
+            return None
+
+        def record_success(self) -> None:
+            return None
+
+    class _Session:
+        def request(self, *args, **kwargs):  # noqa: ANN002, ANN003, ARG002
+            return _Response()
+
+    session_client = council_tax.CouncilTaxBandClient(
+        base_url="https://example.test/check-council-tax-band",
+        session=_Session(),
+    )
+    session_client._breaker = _Breaker()
+
+    status, body = session_client._request(  # noqa: SLF001
+        "POST",
+        session_client.search_url,
+        data={"street": "Gloucester Street", "town": "Coventry"},
+    )
+
+    assert status == 400
+    assert body["code"] == "INVALID_INPUT"
+    assert "requires a postcode" in body["message"]
+    assert "GOV.UK validation" in body["message"]
 
 
 def test_council_tax_band_client_request_normalizes_tls_errors() -> None:

@@ -78,6 +78,17 @@ All notable changes to this project will be documented in this file.
   confirming that the local archive is complete for the current authenticated
   ArcGIS portal route while also recording additional LandIS families/services
   still listed on the public LandIS website and separately licensed metadata
+
+### Fixed
+- Fixed sanitized tool-schema rewriting so top-level `oneOf` / `anyOf` /
+  `allOf` flattening is now limited to the strict stdio transport. HTTP
+  `/tools/describe` again preserves the full schema contract for alternate
+  input tools such as area-vs-geometry selectors.
+- Fixed `council_tax.band_lookup` so live GOV.UK form-validation responses are
+  normalized into actionable `INVALID_INPUT` errors instead of leaking raw HTML
+  back to clients, and updated property-tax routing so address-only council-tax
+  band prompts resolve candidate postcodes through `os_places.search` before
+  calling the live VOA lookup.
   pages that sit outside the mirrored portal slice.
 - Added `scripts/landis_release_reconciliation.py` plus generated manifest
   `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`
