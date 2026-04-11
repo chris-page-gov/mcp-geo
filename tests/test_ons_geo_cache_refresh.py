@@ -933,6 +933,82 @@ def test_resolve_portal_release_file_keeps_link_patterns_for_direct_discovery_as
     assert resolved.resolved_release == "December 2025 (Epoch 123)"
 
 
+def test_resolve_portal_release_file_skips_dead_direct_discovery_candidate(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    dead_url = "https://downloads.example.test/onsud/download"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "Broken link", "format": "HTML", "url": dead_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+    zip_content = b"PK\x03\x04data"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == dead_url:
+            raise refresh.requests.RequestException("403")
+        if url == target_url:
+            return _FakeResponse(content=zip_content)
+        if url == "https://example.test/landing":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields a matching zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == target_url
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
+
+
 def test_resolve_portal_release_file_uses_latest_ckan_search_result(
     monkeypatch,
     tmp_path: Path,
@@ -1405,6 +1481,80 @@ def test_probe_portal_release_file_keeps_link_patterns_for_direct_discovery_asse
                             "discoveryApiUrl": "https://example.test/api/package_show",
                             "preferredSuffixes": [".zip"],
                             "linkPatterns": ["onsud-december-2025-epoch-123\\.zip$"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    probe = refresh.probe_dataset_source(
+        dataset,
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert probe.resolved_source_url == target_url
+    assert probe.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_probe_portal_release_file_skips_dead_direct_discovery_candidate(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    dead_url = "https://downloads.example.test/onsud/download"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "Broken link", "format": "HTML", "url": dead_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == dead_url:
+            raise refresh.requests.RequestException("403")
+        if url == target_url:
+            return _FakeResponse(content=b"PK\x03\x04probe")
+        if url == "https://example.test/landing":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields a matching zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud"],
                             "releasePatterns": ["Epoch\\s+\\d+"],
                         },
                         "semanticFields": {

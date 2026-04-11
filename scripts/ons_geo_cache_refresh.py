@@ -998,7 +998,7 @@ def _select_direct_discovery_url(
             continue
         try:
             direct_suffix = _validate_direct_ingest_suffix(normalized, timeout=timeout)
-        except ValueError:
+        except (ValueError, requests.RequestException):
             continue
         valid_direct_urls.append((normalized, direct_suffix))
 
