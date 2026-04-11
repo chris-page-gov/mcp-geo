@@ -49,7 +49,7 @@ RUN rm -rf /app/.devcontainer/certs
 RUN HTTP_PROXY="${HTTP_PROXY}" HTTPS_PROXY="${HTTPS_PROXY}" NO_PROXY="${NO_PROXY}" \
     http_proxy="${http_proxy}" https_proxy="${https_proxy}" no_proxy="${no_proxy}" \
     pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir .
+    && pip install --no-cache-dir '.[addressbase]'
 
 RUN useradd --create-home --shell /bin/bash appuser \
     && chown -R appuser:appuser /app

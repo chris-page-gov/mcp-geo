@@ -65,3 +65,9 @@ def test_container_images_use_system_ca_bundle_and_local_cert_drop_point() -> No
     assert "ca-certificates" in postgis_dockerfile
     _assert_ca_refresh_precedes_apt(postgis_dockerfile)
     assert cert_ignore.strip() == "*\n!.gitignore"
+
+
+def test_repo_dockerfile_installs_addressbase_runtime_extra() -> None:
+    repo_dockerfile = (REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
+
+    assert "pip install --no-cache-dir '.[addressbase]'" in repo_dockerfile

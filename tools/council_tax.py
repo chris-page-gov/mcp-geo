@@ -631,7 +631,11 @@ def _scan_addressbase_xref_parquet(
         return 501, {
             "isError": True,
             "code": "MISSING_DEPENDENCY",
-            "message": "duckdb is required to query AddressBase Premium parquet sources",
+            "message": (
+                "The server runtime is missing the duckdb Python module required to query "
+                "AddressBase Premium parquet sources. Install mcp-geo[addressbase] or rebuild "
+                "the server image with that extra."
+            ),
         }
 
     accumulators = _build_addressbase_accumulators(uprns)

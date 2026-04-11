@@ -69,6 +69,17 @@ trim_space() {
   printf "%s" "$value"
 }
 
+append_readonly_mount_if_exists() {
+  local source="$1"
+  local target="${2:-$1}"
+  [[ -n "$source" ]] || return 0
+  if [[ ! -e "$source" ]]; then
+    log "warning: requested mount path does not exist, skipping: $source"
+    return 0
+  fi
+  mount_args+=(-v "$source:$target:ro")
+}
+
 dotenv_get() {
   local key="$1"
   local file="$2"
@@ -662,6 +673,14 @@ fi
 
 for var in \
   OS_API_KEY \
+  COUNCIL_TAX_BAND_LIVE_ENABLED \
+  COUNCIL_TAX_BASE_URL \
+  COUNCIL_TAX_HTTP_TIMEOUT_SECONDS \
+  COUNCIL_TAX_HTTP_RETRIES \
+  COUNCIL_TAX_USER_AGENT \
+  ADDRESSBASE_PREMIUM_XREF_PATH \
+  ADDRESSBASE_PREMIUM_DUCKDB_THREADS \
+  ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT \
   STDIO_KEY \
   BEARER_TOKENS \
   MCP_STDIO_UI_SUPPORTED \
@@ -698,6 +717,8 @@ mount_args=(
 if [[ "$LANDIS_MOUNT_ENABLED" == "true" ]]; then
   mount_args+=(-v "$LANDIS_HOST_DATA_ROOT:$LANDIS_CONTAINER_DATA_ROOT:ro")
 fi
+
+append_readonly_mount_if_exists "${ADDRESSBASE_PREMIUM_XREF_PATH:-}"
 
 docker_args=(
   run --rm -i
