@@ -9,15 +9,16 @@ from server.ons_geo_cache import (
     ONSGeoCacheReadError,
     extract_geography_fields,
     infer_area_level_from_code,
-    normalize_derivation_mode,
     normalize_area_level,
+    normalize_derivation_mode,
     normalize_postcode,
     normalize_uprn,
 )
 from server.ons_geo_catalog import build_release_audit
 from server.ons_geo_freshness import summarize_uprn_dataset_freshness
 from tools.nomis_data import curated_profile_dataset_specs
-from tools.registry import Tool, ToolResult, get as get_tool, register
+from tools.registry import Tool, ToolResult, register
+from tools.registry import get as get_tool
 
 _AREA_SUMMARY_LEVELS = {
     "OA": {"normalizedKey": "oa", "semanticKey": "oa_code"},
@@ -317,7 +318,10 @@ def _resolve_area_from_lookup(
     }, None
 
 
-def _best_effort_call(tool_name: str, arguments: dict[str, Any]) -> tuple[int | None, dict[str, Any] | None]:
+def _best_effort_call(
+    tool_name: str,
+    arguments: dict[str, Any],
+) -> tuple[int | None, dict[str, Any] | None]:
     tool = get_tool(tool_name)
     if tool is None:
         return None, None
@@ -473,7 +477,10 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
             )
         if cache_result is None:
             return _error(
-                f"No geography mapping found for postcode {normalized_postcode} in {derivation_mode} mode.",
+                (
+                    "No geography mapping found for postcode "
+                    f"{normalized_postcode} in {derivation_mode} mode."
+                ),
                 code="NOT_FOUND",
                 status=404,
             )
@@ -525,13 +532,18 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
                     f"id {area_id} implies targetLevel={inferred_level}, not {target_level}"
                 )
             target_level = inferred_level
+        elif target_level is None:
+            return _error(
+                f"Could not infer targetLevel from id {area_id}. Provide targetLevel explicitly."
+            )
         anchor_type = "id"
         anchor_value = area_id
     else:
         if target_level is None:
             return _error("Provide one of: id, postcode, uprn")
         return _error(
-            "Provide id, postcode, or uprn so the requested area can be resolved from the prompt context."
+            "Provide id, postcode, or uprn so the requested area can be "
+            "resolved from the prompt context."
         )
 
     assert target_level is not None
@@ -539,7 +551,10 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
     assert anchor_value is not None
 
     if cache_result is not None:
-        area, area_error = _resolve_area_from_lookup(target_level=target_level, cache_result=cache_result)
+        area, area_error = _resolve_area_from_lookup(
+            target_level=target_level,
+            cache_result=cache_result,
+        )
         if area_error is not None:
             return area_error
         assert area is not None
@@ -579,7 +594,11 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         except ONSGeoCacheReadError:
             counts = None
 
-    inventory = _best_effort_inventory(bbox=bbox, response_mode=inventory_response_mode) if include_inventory else None
+    inventory = (
+        _best_effort_inventory(bbox=bbox, response_mode=inventory_response_mode)
+        if include_inventory
+        else None
+    )
     population = _best_effort_population_summary(str(area["id"])) if include_population else None
     profile_datasets = (
         curated_profile_dataset_specs(str(area["id"]), profile_categories)
@@ -611,7 +630,8 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         "workflowProfileUri": _AREA_SUMMARY_WORKFLOW_URI,
         "guidance": [
             "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries.",
-            "Prefer inventoryResponseMode='summary' or 'counts' for narrative summaries instead of raw map inventories.",
+            "Prefer inventoryResponseMode='summary' or 'counts' for narrative "
+            "summaries instead of raw map inventories.",
             "Use profileDatasets for deeper NOMIS follow-up queries by topic.",
         ],
         "provenance": {

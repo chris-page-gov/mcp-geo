@@ -160,6 +160,10 @@ def build_summary(audits: list[TargetAudit]) -> dict[str, int]:
     return summary
 
 
+def _has_actionable_drift(audit: TargetAudit) -> bool:
+    return audit.drift_status == "behind_or_diverged" or bool(audit.missing_paths)
+
+
 def render_text(audits: list[TargetAudit]) -> str:
     lines = ["Specification Drift Audit", ""]
     for audit in audits:
@@ -215,7 +219,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args.fail_on_drift:
         return 0
     for audit in audits:
-        if audit.drift_status != "up_to_date" or audit.missing_paths:
+        if _has_actionable_drift(audit):
             return 1
     return 0
 

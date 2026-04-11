@@ -1034,7 +1034,7 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             if address_prompt:
                 context["property_tax_mode"] = "status_from_address"
                 return QueryIntent.PROPERTY_TAX, 0.85, {"text": query}, context
-            context["property_tax_mode"] = "status_query"
+            context["property_tax_mode"] = "status_needs_identifier"
             return QueryIntent.PROPERTY_TAX, 0.8, {}, context
         if not postcode and address_prompt:
             context["property_tax_mode"] = "band_from_address"
@@ -1493,6 +1493,15 @@ def _get_tool_for_intent(
                     "non-domestic-rates flags."
                 ),
             )
+        if property_tax_mode == "status_needs_identifier":
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                (
+                    "Business-rates and Council Tax status checks need a UPRN, postcode, "
+                    "or address before council_tax.query can run."
+                ),
+            )
         return (
             "council_tax.query",
             ["council_tax.query"],
@@ -1851,6 +1860,7 @@ def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
             "band_from_uprn",
             "status_from_postcode",
             "status_from_address",
+            "status_needs_identifier",
         }:
             recommended = ["core_router", "places_names", "property_tax"]
         else:
@@ -2108,6 +2118,15 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
             "os_maps.render",
             "os_vector_tiles.descriptor",
         ]
+    if (
+        intent == QueryIntent.PROPERTY_TAX
+        and str(context.get("property_tax_mode") or "") == "status_needs_identifier"
+    ):
+        response["guidance"] = (
+            "Business-rates and Council Tax status checks need a UPRN. Provide a UPRN directly, "
+            "or provide a postcode/address first so OS Places can resolve candidate UPRNs before "
+            "calling council_tax.query."
+        )
     if str(context.get("unknown_mode") or "") == "resource_bridge":
         resource_guidance = (
             "When a tool returns delivery='resource' or a resource:// URI, do not search the "

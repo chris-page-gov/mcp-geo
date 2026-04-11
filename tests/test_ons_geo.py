@@ -537,7 +537,10 @@ def test_ons_geo_by_uprn_exact_mode(tmp_path: Path, monkeypatch) -> None:
     assert body["lookup"]["freshness"]["status"] == "current"
 
 
-def test_ons_geo_area_summary_from_postcode_uses_compact_helpers(tmp_path: Path, monkeypatch) -> None:
+def test_ons_geo_area_summary_from_postcode_uses_compact_helpers(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     cache_dir, db_name, index_path = _seed_cache(tmp_path)
     _configure_cache_settings(
         monkeypatch,
@@ -626,7 +629,10 @@ def test_ons_geo_area_summary_from_postcode_uses_compact_helpers(tmp_path: Path,
     assert inventory_calls and inventory_calls[0]["responseMode"] == "summary"
 
 
-def test_ons_geo_area_summary_requires_anchor_or_explicit_context(tmp_path: Path, monkeypatch) -> None:
+def test_ons_geo_area_summary_requires_anchor_or_explicit_context(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     cache_dir, db_name, index_path = _seed_cache(tmp_path)
     _configure_cache_settings(
         monkeypatch,
@@ -641,6 +647,28 @@ def test_ons_geo_area_summary_requires_anchor_or_explicit_context(tmp_path: Path
     )
     assert resp.status_code == 400
     assert "Provide id, postcode, or uprn" in resp.json()["message"]
+
+
+def test_ons_geo_area_summary_invalid_id_without_target_level_returns_validation_error(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.area_summary", "id": "K04000001"},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "INVALID_INPUT"
+    assert "Could not infer targetLevel from id K04000001" in body["message"]
 
 
 def test_ons_geo_by_postcode_cache_unavailable(tmp_path: Path, monkeypatch) -> None:

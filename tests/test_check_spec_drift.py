@@ -68,3 +68,41 @@ def test_audit_target_reads_heads_for_initialized_standalone_checkout(
     assert audit.remote_head == "def456"
     assert audit.drift_status == "behind_or_diverged"
     assert audit.missing_paths == []
+
+
+def test_fail_on_drift_ignores_remote_unavailable_without_missing_paths(monkeypatch) -> None:
+    audit = spec_drift.TargetAudit(
+        name="example",
+        submodule_path="docs/vendor/example",
+        local_head="abc123",
+        remote_head=None,
+        drift_status="remote_unavailable",
+        missing_paths=[],
+        notes="offline",
+    )
+
+    monkeypatch.setattr(spec_drift, "SPEC_TARGETS", (object(),))
+    monkeypatch.setattr(spec_drift, "audit_target", lambda _target: audit)
+    monkeypatch.setattr(spec_drift, "render_text", lambda _audits: "Specification Drift Audit\n")
+
+    assert spec_drift.main(["--fail-on-drift"]) == 0
+
+
+def test_fail_on_drift_returns_error_for_missing_paths_even_if_remote_unavailable(
+    monkeypatch,
+) -> None:
+    audit = spec_drift.TargetAudit(
+        name="example",
+        submodule_path="docs/vendor/example",
+        local_head="abc123",
+        remote_head=None,
+        drift_status="remote_unavailable",
+        missing_paths=["docs/vendor/example/README.md"],
+        notes="offline",
+    )
+
+    monkeypatch.setattr(spec_drift, "SPEC_TARGETS", (object(),))
+    monkeypatch.setattr(spec_drift, "audit_target", lambda _target: audit)
+    monkeypatch.setattr(spec_drift, "render_text", lambda _audits: "Specification Drift Audit\n")
+
+    assert spec_drift.main(["--fail-on-drift"]) == 1

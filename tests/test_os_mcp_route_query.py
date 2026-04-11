@@ -131,6 +131,15 @@ def test_route_query_business_rates_address_uses_places_search_then_status_query
     assert body["workflow_steps"] == ["os_places.search", "council_tax.query"]
 
 
+def test_route_query_business_rates_without_identifier_requires_resolution_first():
+    body = _route("Check business rates status")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "need a UPRN" in body["guidance"]
+
+
 def test_route_query_council_tax_address_uses_places_search_then_band_lookup():
     body = _route("Council tax on properties in Gloucester Street, Coventry")
     assert body["intent"] == "property_tax"
