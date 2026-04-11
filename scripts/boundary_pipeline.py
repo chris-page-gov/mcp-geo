@@ -16,6 +16,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from server.boundary_run_paths import resolve_boundary_run_dir  # noqa: E402
+
 try:
     import requests
 except ImportError:  # pragma: no cover - optional dependency fallback
@@ -1154,7 +1160,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", default=DEFAULT_MANIFEST)
     parser.add_argument("--checklist", default=DEFAULT_CHECKLIST)
     parser.add_argument("--dsn", default=os.getenv("BOUNDARY_CACHE_DSN", DEFAULT_DSN))
-    parser.add_argument("--workdir", default="data/boundary_runs")
+    parser.add_argument("--workdir", default=None)
     parser.add_argument("--mode", choices=["all", "resolve", "download", "ingest", "validate"], default="all")
     parser.add_argument("--family", action="append", help="Limit to one or more family_id values.")
     parser.add_argument("--variant", action="append", help="Limit to one or more variant values.")
@@ -1381,7 +1387,7 @@ def main() -> None:
     manifest = _load_json(manifest_path)
     checklist = _load_json(checklist_path)
     run_started = datetime.now(timezone.utc).isoformat()
-    run_paths = _ensure_paths(Path(args.workdir))
+    run_paths = _ensure_paths(resolve_boundary_run_dir(args.workdir))
     report: dict[str, Any] = {
         "manifest_version": manifest.get("manifest_version"),
         "run_started_at": run_started,

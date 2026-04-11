@@ -5,9 +5,13 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -17,16 +21,6 @@ def _load_json(path: Path) -> dict[str, Any]:
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
-
-
-def _latest_run_report(run_root: Path) -> Path | None:
-    if not run_root.exists():
-        return None
-    candidates = sorted(run_root.glob("*/run_report.json"))
-    if not candidates:
-        return None
-    return candidates[-1]
-
 
 def _as_list(value: Any) -> list[str]:
     if isinstance(value, list):
@@ -307,7 +301,7 @@ def _delta_summary(current: dict[str, Any], baseline: dict[str, Any]) -> dict[st
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Summarize boundary run effectiveness.")
     parser.add_argument("--run-report", help="Path to run_report.json")
-    parser.add_argument("--workdir", default="data/boundary_runs")
+    parser.add_argument("--workdir", default=None)
     parser.add_argument("--manifest", default="docs/Boundaries.json")
     parser.add_argument("--out", help="Write summary JSON to this path")
     parser.add_argument("--compare", help="Baseline run_report.json to compute deltas")
@@ -318,7 +312,7 @@ def main() -> None:
     args = parse_args()
     report_path = Path(args.run_report) if args.run_report else None
     if report_path is None:
-        report_path = _latest_run_report(Path(args.workdir))
+        report_path = latest_boundary_run_report(args.workdir)
     if not report_path or not report_path.exists():
         raise SystemExit("No run_report.json found.")
 

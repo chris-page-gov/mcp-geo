@@ -39,6 +39,30 @@ def test_boundary_latest_report_present(monkeypatch: MonkeyPatch, tmp_path) -> N
     assert meta is not None
 
 
+def test_boundary_latest_report_search_dirs(monkeypatch: MonkeyPatch, tmp_path) -> None:
+    primary_runs = tmp_path / "runs"
+    external_data_root = tmp_path / "ExtSSD-Data" / "Data"
+    primary_report = primary_runs / "20260101T000000Z" / "run_report.json"
+    primary_report.parent.mkdir(parents=True)
+    primary_report.write_text('{"source":"local"}', encoding="utf-8")
+    external_report = (
+        external_data_root / "boundary_runs" / "20260102T000000Z" / "run_report.json"
+    )
+    external_report.parent.mkdir(parents=True)
+    external_report.write_text('{"source":"external"}', encoding="utf-8")
+
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", primary_runs)
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_SEARCH_DIRS", [external_data_root])
+
+    entry = resource_catalog.resolve_data_resource("boundary-latest-report")
+    assert entry is not None
+    content, etag, meta = resource_catalog.load_data_content(entry)
+    payload = json.loads(content)
+    assert payload["source"] == "external"
+    assert etag
+    assert meta is not None
+
+
 def test_ons_cache_index_and_file(monkeypatch: MonkeyPatch, tmp_path) -> None:
     cache_dir = tmp_path / "ons"
     cache_dir.mkdir()

@@ -139,6 +139,8 @@ class Settings(_PydanticBaseSettings):
     BOUNDARY_DATASET_TABLE: str = "boundary_datasets"
     BOUNDARY_CACHE_MAX_AGE_DAYS: int = 180
     BOUNDARY_CACHE_FALLBACK_LIVE: bool = True
+    BOUNDARY_RUNS_DIR: str = "data/boundary_runs"
+    BOUNDARY_RUNS_SEARCH_DIRS: str = ""
     OPENAI_WIDGET_DOMAIN: str = ""
     MCP_APPS_RESOURCE_LINK: bool = False
     MCP_APPS_CONTENT_MODE: str = ""

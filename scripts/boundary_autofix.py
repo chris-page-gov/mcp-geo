@@ -4,26 +4,25 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 import time
-from datetime import datetime, timezone
+from collections.abc import Iterable
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Iterable
-
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from server.boundary_run_paths import (  # noqa: E402
+    latest_boundary_run_report,
+    resolve_boundary_run_dir,
+)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _latest_run_report(run_root: Path) -> Path | None:
-    if not run_root.exists():
-        return None
-    candidates = sorted(run_root.glob("*/run_report.json"))
-    if not candidates:
-        return None
-    return candidates[-1]
 
 
 def _error_signature(errors: list[dict[str, Any]]) -> list[str]:
@@ -44,20 +43,27 @@ def _families_from_errors(errors: list[dict[str, Any]]) -> list[str]:
     return sorted(set(families))
 
 
-def _run_pipeline(args: list[str]) -> int:
-    cmd = ["python", "scripts/boundary_pipeline.py", *args]
+def _run_pipeline(args: list[str], *, workdir: Path) -> int:
+    cmd = ["python", "scripts/boundary_pipeline.py", "--workdir", workdir.as_posix(), *args]
     return subprocess.call(cmd, cwd=REPO_ROOT.as_posix())
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+    return datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%SZ")
+
+
+def _family_args(families: Iterable[str]) -> list[str]:
+    args: list[str] = []
+    for family in families:
+        args.extend(["--family", family])
+    return args
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run full boundary pipeline then rerun failing families until stable."
     )
-    parser.add_argument("--workdir", default="data/boundary_runs")
+    parser.add_argument("--workdir", default=None)
     parser.add_argument("--manifest", default="docs/Boundaries.json")
     parser.add_argument("--max-iterations", type=int, default=5)
     parser.add_argument("--sleep", type=int, default=2)
@@ -66,19 +72,19 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    run_root = Path(args.workdir)
+    run_root = resolve_boundary_run_dir(args.workdir)
     manifest_path = Path(args.manifest)
     if not manifest_path.exists():
         raise SystemExit(f"Missing manifest at {manifest_path}")
 
     print(f"[{_timestamp()}] starting full run")
-    exit_code = _run_pipeline(["--mode", "all"])
+    exit_code = _run_pipeline(["--mode", "all"], workdir=run_root)
     if exit_code != 0:
         raise SystemExit(f"pipeline failed with exit code {exit_code}")
 
     previous_signature: list[str] | None = None
     for iteration in range(1, args.max_iterations + 1):
-        report_path = _latest_run_report(run_root)
+        report_path = latest_boundary_run_report(run_root)
         if report_path is None:
             raise SystemExit("No run_report.json produced by pipeline.")
         report = _load_json(report_path)
@@ -99,7 +105,10 @@ def main() -> None:
             f"[{_timestamp()}] iteration {iteration} rerun families={len(families)} "
             f"({', '.join(families)})"
         )
-        exit_code = _run_pipeline(["--mode", "all", *sum([["--family", f] for f in families], [])])
+        exit_code = _run_pipeline(
+            ["--mode", "all", *_family_args(families)],
+            workdir=run_root,
+        )
         if exit_code != 0:
             raise SystemExit(f"pipeline failed with exit code {exit_code}")
         time.sleep(max(1, int(args.sleep)))

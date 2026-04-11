@@ -6,15 +6,22 @@ import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from urllib.parse import quote
 
+from server.boundary_run_paths import (
+    configured_boundary_run_dir,
+    configured_boundary_run_search_dirs,
+    latest_boundary_run_report,
+)
 from server.config import settings
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 UI_DIR = ROOT / "ui"
 SKILL_PATH = ROOT / "SKILL.md"
 BOUNDARY_MANIFEST_PATH = ROOT / "docs" / "Boundaries.json"
-BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
+BOUNDARY_RUNS_DIR = configured_boundary_run_dir()
+BOUNDARY_RUNS_SEARCH_DIRS = configured_boundary_run_search_dirs()
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
@@ -565,12 +572,7 @@ def list_skill_resources() -> list[dict[str, Any]]:
 
 
 def _latest_run_report_path() -> Optional[Path]:
-    if not BOUNDARY_RUNS_DIR.exists():
-        return None
-    candidates = sorted(BOUNDARY_RUNS_DIR.glob("*/run_report.json"))
-    if not candidates:
-        return None
-    return candidates[-1]
+    return latest_boundary_run_report(BOUNDARY_RUNS_DIR, BOUNDARY_RUNS_SEARCH_DIRS)
 
 
 def _ons_cache_files() -> list[Path]:

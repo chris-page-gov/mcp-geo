@@ -5,13 +5,15 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
+from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
 
 try:  # Suppress loguru default sink during report runs.
     from loguru import logger
@@ -27,17 +29,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 
 
 def _timestamp_slug() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-
-
-def _latest_run_report(run_root: Path) -> Path | None:
-    if not run_root.exists():
-        return None
-    candidates = sorted(run_root.glob("*/run_report.json"))
-    if not candidates:
-        return None
-    return candidates[-1]
-
+    return datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -86,7 +78,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Print latest boundary reports.")
     parser.add_argument("--boundary", action="store_true", help="Include boundary pipeline report")
     parser.add_argument("--cache", action="store_true", help="Include boundary cache status")
-    parser.add_argument("--workdir", default="data/boundary_runs")
+    parser.add_argument("--workdir", default=None)
     parser.add_argument("--cache-out", default="data/cache_reports")
     return parser.parse_args()
 
@@ -98,8 +90,7 @@ def main() -> None:
     output: dict[str, Any] = {}
 
     if include_boundary:
-        run_root = Path(args.workdir)
-        latest = _latest_run_report(run_root)
+        latest = latest_boundary_run_report(args.workdir)
         output["boundary_pipeline_latest"] = str(latest) if latest else None
 
     cache_status = None
