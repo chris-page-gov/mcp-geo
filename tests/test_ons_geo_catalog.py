@@ -249,3 +249,90 @@ def test_build_release_audit_uses_publication_dates_for_latest_published(monkeyp
     audit = build_release_audit(timeout=5.0)
     assert audit["addressBaseSchedule"]["latestPublished"]["epoch"] == 127
     assert audit["addressBaseSchedule"]["nextScheduled"] is None
+
+
+def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_ingest(
+    monkeypatch,
+) -> None:
+    dataset = SimpleNamespace(
+        dataset_id="ONSUD",
+        title="ONS UPRN Directory",
+        resolver=SimpleNamespace(
+            discovery_api_url="https://example.test/discovery",
+            landing_url="https://example.test/landing",
+            link_patterns=["ONSUD", "ons-uprn-directory", "csv", "zip"],
+            release_patterns=[
+                "(January|February|March|April|May|June|July|August|September|October|"
+                "November|December)\\s+20\\d{2}",
+                "Epoch\\s+\\d+",
+            ],
+        ),
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "load_manifest",
+        lambda _path: ("2026-04-09", [dataset], []),
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "load_addressbase_epoch_schedule",
+        lambda: [
+            {"epoch": 126, "publication_date": "2026-04-02", "scheduled": False},
+            {"epoch": 127, "publication_date": "2026-05-14", "scheduled": True},
+        ],
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "fetch_geoportal_rss_status",
+        lambda *, timeout: {"sourceUrl": "x", "status": None, "relevantNotices": []},
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "probe_dataset_source",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            ValueError(
+                "Resolved release asset has no ingestible file suffix; supported direct "
+                "formats are zip/csv/json/ndjson/jsonl/gz."
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "fetch_geoportal_dataset_latest",
+        lambda product, *, timeout: {"recordId": product, "title": f"{product}_LATEST"},
+    )
+
+    class DummyResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return {
+                "result": {
+                    "results": [
+                        {
+                            "name": "ons-uprn-directory-december-2025-epoch-123",
+                            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+                            "metadata_modified": "2026-04-08T14:01:50.691162",
+                        }
+                    ]
+                }
+            }
+
+        def __enter__(self) -> "DummyResponse":
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            return None
+
+    monkeypatch.setattr(ons_geo_catalog.requests, "get", lambda *args, **kwargs: DummyResponse())
+
+    audit = build_release_audit(timeout=5.0)
+    dataset_row = audit["datasets"][0]
+    assert dataset_row["resolvedRelease"] == "December 2025 (Epoch 123)"
+    assert dataset_row["resolvedSourceUrl"] == "https://www.data.gov.uk/dataset/ons-uprn-directory-december-2025-epoch-123"
+    assert dataset_row["schemaProbeStatus"] == "catalog_only"
+    assert dataset_row["resolutionMode"] == "catalog_only"
+    assert "no ingestible file suffix" in dataset_row["probeError"]
+    assert dataset_row["freshness"]["status"] == "lagging"
+    assert dataset_row["freshness"]["lagEpochs"] == 3

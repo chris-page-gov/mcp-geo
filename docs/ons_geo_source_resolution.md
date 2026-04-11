@@ -114,3 +114,36 @@ out of the lookup path.
   correction/pause notice is active.
 - Prefer epoch numbers over month labels when comparing UPRN products. Month
   names are not reliable enough on their own.
+
+## Current refresh limitations and planned redesign
+
+The current `scripts/ons_geo_cache_refresh.py` workflow is still a
+whole-cache-oriented operator path:
+
+- source acquisition is sequential rather than parallel
+- raw acquisition and SQLite ingest are coupled in one long-running loop
+- the workflow assumes a broad refresh even when only one dataset changed or
+  one source is paused by ONS
+- operators do not yet have a cheap metadata-only way to confirm whether the
+  local on-disk copy still matches the upstream release state
+
+The next refactor should preserve the current normalization/freshness model but
+change the refresh contract:
+
+- parallelize raw acquisition only, with ingest remaining sequential
+- make per-dataset refresh first-class so `ONSPD`, `NSPL`, `ONSUD`, `NSUL`,
+  `CHD`, and `RGC` can be refreshed independently
+- persist enough per-dataset remote/local provenance to validate on-disk
+  holdings against upstream metadata without re-downloading the full artifact
+- keep that provenance attached to raw artifacts so a later local-only rebuild
+  from `static_file` inputs does not drop `resolvedSourceUrl`, retrieved-at, or
+  equivalent upstream identifiers from the rebuilt cache index
+- use source-appropriate validation signals such as CKAN package metadata,
+  ArcGIS hosted-table metadata plus record counts, and HTTP validators like
+  `ETag` / `Last-Modified` where available
+- separate compact runtime state from bulky raw artifacts so optional mounted
+  data roots such as `/Volumes/ExtSSD-Data/Data` can be searched or mirrored
+  without disrupting the current local defaults; bulky caches like ONS raw
+  downloads and boundary-run source folders should be able to live on those
+  external roots when available while the active SQLite/index state remains
+  local by default

@@ -20,9 +20,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qs, urljoin, urlparse
 
 import requests
+from openpyxl import load_workbook
 
 from server.ons_geo_cache import (
     KEY_TYPES,
@@ -73,6 +74,43 @@ _SUPPORTED_RESOLVERS = {
 }
 _DIRECT_INGEST_SUFFIXES = {".zip", ".csv", ".json", ".ndjson", ".jsonl", ".gz"}
 _JSON_LINES_SCHEMA_SAMPLE_ROWS = 50
+_CONTENT_DISPOSITION_FILENAME_RE = re.compile(
+    r"""filename\*?=(?:UTF-8''|")?(?P<name>[^";]+)""",
+    re.IGNORECASE,
+)
+_SQLITE_REFRESH_COMMIT_BATCH = 50_000
+_RGC_XLSX_FIELDNAMES = [
+    "GEOGRAPHY_CODE",
+    "GEOGRAPHY_NAME",
+    "STATUS",
+    "CODE_FAMILY",
+    "LEVEL",
+]
+_RGC_SHEET_SKIP_NAMES = {"RGC", "Metadata_for_geography_listings", "For_Scotland"}
+_RGC_SHEET_ANNOTATIONS = {
+    "OA": ("oa", "output_area"),
+    "LSOA": ("lsoa", "lower_layer_super_output_area"),
+    "DZ": ("lsoa", "lower_layer_super_output_area"),
+    "MSOA": ("msoa", "middle_layer_super_output_area"),
+    "SDZ": ("msoa", "middle_layer_super_output_area"),
+    "WD": ("ward", "ward"),
+    "CMWD": ("ward", "ward"),
+    "DEA": ("ward", "ward"),
+    "UA": ("lad", "local_authority_district"),
+    "NMD": ("lad", "local_authority_district"),
+    "MD": ("lad", "local_authority_district"),
+    "LONB": ("lad", "local_authority_district"),
+    "CTY": ("lad", "local_authority_district"),
+    "MCTY": ("lad", "local_authority_district"),
+    "LGD": ("lad", "local_authority_district"),
+    "LAD": ("lad", "local_authority_district"),
+    "GLAD": ("lad", "local_authority_district"),
+    "GLTLA": ("lad", "local_authority_district"),
+    "CMLAD": ("lad", "local_authority_district"),
+    "CMLAD21": ("lad", "local_authority_district"),
+    "CTRY": ("country", "country"),
+    "RGN": ("region", "region"),
+}
 
 _SEMANTIC_FIELD_REGEX: dict[str, re.Pattern[str]] = {
     "postcode": re.compile(r"^(pcds|pcd|postcode|post_code)$", re.IGNORECASE),
@@ -465,8 +503,27 @@ def _safe_release_fragment(value: str | None, fallback: str) -> str:
     return safe or fallback
 
 
+def _format_detected_release(
+    *,
+    month_match: re.Match[str] | None,
+    epoch_match: re.Match[str] | None,
+) -> str | None:
+    if month_match and epoch_match:
+        return (
+            f"{month_match.group('month').title()} {month_match.group('year')} "
+            f"(Epoch {epoch_match.group('epoch')})"
+        )
+    if epoch_match:
+        return f"Epoch {epoch_match.group('epoch')}"
+    if month_match:
+        return f"{month_match.group('month').title()} {month_match.group('year')}"
+    return None
+
+
 def _detect_release(text: str, explicit_patterns: list[str]) -> str | None:
     normalized_text = text.replace("-", " ").replace("_", " ")
+    overall_month_match = _MONTH_NAME_RE.search(text) or _MONTH_NAME_RE.search(normalized_text)
+    overall_epoch_match = _EPOCH_RE.search(text) or _EPOCH_RE.search(normalized_text)
     for pattern in explicit_patterns:
         try:
             match = re.search(pattern, text, re.IGNORECASE) or re.search(
@@ -484,20 +541,22 @@ def _detect_release(text: str, explicit_patterns: list[str]) -> str | None:
                 candidate = joined.strip() or match.group(0).strip()
             else:
                 candidate = match.group(0).strip()
-            epoch_match = _EPOCH_RE.search(candidate)
-            if epoch_match:
-                return f"Epoch {epoch_match.group('epoch')}"
-            month_match = _MONTH_NAME_RE.search(candidate)
-            if month_match:
-                return f"{month_match.group('month').title()} {month_match.group('year')}"
+            candidate_month_match = _MONTH_NAME_RE.search(candidate)
+            candidate_epoch_match = _EPOCH_RE.search(candidate)
+            if (candidate_month_match or candidate_epoch_match) and (
+                overall_month_match or overall_epoch_match
+            ):
+                combined = _format_detected_release(
+                    month_match=overall_month_match or candidate_month_match,
+                    epoch_match=overall_epoch_match or candidate_epoch_match,
+                )
+                if combined:
+                    return combined
             return candidate
-    match = _MONTH_NAME_RE.search(text) or _MONTH_NAME_RE.search(normalized_text)
-    if match:
-        return f"{match.group('month').title()} {match.group('year')}"
-    match = _EPOCH_RE.search(text) or _EPOCH_RE.search(normalized_text)
-    if match:
-        return f"Epoch {match.group('epoch')}"
-    return None
+    return _format_detected_release(
+        month_match=overall_month_match,
+        epoch_match=overall_epoch_match,
+    )
 
 
 def _response_text(resp: requests.Response) -> str:
@@ -526,6 +585,55 @@ def _collect_json_urls(value: Any, out: list[str]) -> None:
     if isinstance(value, list):
         for item in value:
             _collect_json_urls(item, out)
+
+
+def _arcgis_item_data_url(value: str | None) -> str | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    parsed = urlparse(raw)
+    if parsed.scheme not in {"http", "https"}:
+        return None
+    if "arcgis.com" not in parsed.netloc.lower():
+        return None
+
+    item_id: str | None = None
+    if parsed.path.lower().endswith("/home/item.html"):
+        item_id = parse_qs(parsed.query).get("id", [None])[0]
+    elif "/sharing/rest/content/items/" in parsed.path.lower():
+        parts = [part for part in parsed.path.split("/") if part]
+        try:
+            index = [part.lower() for part in parts].index("items")
+        except ValueError:
+            index = -1
+        if index >= 0 and index + 1 < len(parts):
+            item_id = parts[index + 1]
+
+    normalized_id = str(item_id or "").strip()
+    if not normalized_id:
+        return None
+    return f"https://www.arcgis.com/sharing/rest/content/items/{normalized_id}/data"
+
+
+def _collect_special_discovery_urls(value: Any, out: list[str]) -> None:
+    if isinstance(value, dict):
+        extra_key = str(value.get("key") or "").strip().lower()
+        extra_value = value.get("value")
+        if extra_key == "guid" and isinstance(extra_value, str):
+            data_url = _arcgis_item_data_url(extra_value)
+            if data_url:
+                out.append(data_url)
+        for key, item in value.items():
+            lower_key = str(key).lower()
+            if lower_key == "guid" and isinstance(item, str):
+                data_url = _arcgis_item_data_url(item)
+                if data_url:
+                    out.append(data_url)
+            _collect_special_discovery_urls(item, out)
+        return
+    if isinstance(value, list):
+        for item in value:
+            _collect_special_discovery_urls(item, out)
 
 
 def _parse_ckan_datetime(value: str | None) -> tuple[float, str]:
@@ -610,6 +718,7 @@ def _extract_ckan_discovery_context(
                 "metadataCreated": selected_package.get("metadata_created"),
             }
             _collect_json_urls(selected_package, discovery_urls)
+            _collect_special_discovery_urls(selected_package, discovery_urls)
             landing_override = _data_gov_dataset_url(selected_package.get("name"))
             release_hint = _detect_release(
                 json.dumps(selected_package, ensure_ascii=True),
@@ -623,6 +732,7 @@ def _extract_ckan_discovery_context(
             "metadataCreated": result.get("metadata_created"),
         }
         _collect_json_urls(result, discovery_urls)
+        _collect_special_discovery_urls(result, discovery_urls)
         landing_override = _data_gov_dataset_url(result.get("name"))
         release_hint = _detect_release(
             json.dumps(result, ensure_ascii=True),
@@ -630,6 +740,7 @@ def _extract_ckan_discovery_context(
         )
     else:
         _collect_json_urls(api_payload, discovery_urls)
+        _collect_special_discovery_urls(api_payload, discovery_urls)
         release_hint = _detect_release(
             json.dumps(api_payload, ensure_ascii=True),
             dataset.resolver.release_patterns,
@@ -742,6 +853,7 @@ def _resolve_portal_release_file(
     chosen_url, chosen_suffix = _select_direct_discovery_url(
         dataset=dataset,
         discovery_urls=discovery_urls,
+        timeout=timeout,
     )
     body = ""
     if chosen_url is None or chosen_suffix is None:
@@ -785,16 +897,18 @@ def _resolve_portal_release_file(
             if refined_url:
                 chosen_url = refined_url
 
-        chosen_suffix = _validate_direct_ingest_suffix(chosen_url)
+        chosen_suffix = _validate_direct_ingest_suffix(chosen_url, timeout=timeout)
 
     release = release_hint or _detect_release(
         body + "\n" + chosen_url,
         dataset.resolver.release_patterns,
     )
     release = release or dataset.release
-    suffix = Path(urlparse(chosen_url).path).suffix
+    suffix = chosen_suffix
     raw_dir = raw_root / dataset.dataset_id / _safe_release_fragment(release, "latest")
-    filename = Path(urlparse(chosen_url).path).name or f"{dataset.dataset_id.lower()}{suffix}"
+    filename = Path(urlparse(chosen_url).path).name
+    if not filename or Path(filename).suffix.lower() != suffix.lower():
+        filename = f"{dataset.dataset_id.lower()}{suffix}"
     local_path = raw_dir / filename
     _download(chosen_url, local_path, timeout=timeout)
     return ResolvedSource(
@@ -835,8 +949,29 @@ def _validate_direct_ingest_suffix(
     chosen_url: str,
     *,
     label: str = "Resolved release asset",
+    timeout: float | None = None,
 ) -> str:
     chosen_suffix = Path(urlparse(chosen_url).path).suffix.lower()
+    if not chosen_suffix and timeout is not None:
+        with requests.get(chosen_url, timeout=timeout, stream=True) as resp:
+            resp.raise_for_status()
+            content_disposition = str(resp.headers.get("content-disposition") or "").strip()
+            match = _CONTENT_DISPOSITION_FILENAME_RE.search(content_disposition)
+            if match:
+                chosen_suffix = Path(match.group("name").strip()).suffix.lower()
+            if not chosen_suffix:
+                content_type = str(resp.headers.get("content-type") or "").split(";", 1)[0].strip()
+                content_type_map = {
+                    "application/csv": ".csv",
+                    "application/gzip": ".gz",
+                    "application/json": ".json",
+                    "application/ndjson": ".ndjson",
+                    "application/x-ndjson": ".ndjson",
+                    "application/zip": ".zip",
+                    "application/x-zip-compressed": ".zip",
+                    "text/csv": ".csv",
+                }
+                chosen_suffix = content_type_map.get(content_type.lower(), "")
     if not chosen_suffix:
         raise ValueError(
             f"{label} has no ingestible file suffix; "
@@ -854,17 +989,34 @@ def _select_direct_discovery_url(
     *,
     dataset: DatasetConfig,
     discovery_urls: list[str],
+    timeout: float,
 ) -> tuple[str | None, str | None]:
+    valid_direct_urls: list[tuple[str, str]] = []
+    for candidate in discovery_urls:
+        normalized = _normalize_candidate_url(candidate)
+        if not normalized:
+            continue
+        try:
+            direct_suffix = _validate_direct_ingest_suffix(normalized, timeout=timeout)
+        except ValueError:
+            continue
+        valid_direct_urls.append((normalized, direct_suffix))
+
+    if not valid_direct_urls:
+        return None, None
+
     direct_url = _select_candidate_url(
-        candidates=discovery_urls,
-        link_patterns=dataset.resolver.link_patterns,
+        candidates=[item[0] for item in valid_direct_urls],
+        link_patterns=[],
         preferred_suffixes=dataset.resolver.preferred_suffixes,
     )
     if direct_url is None:
         return None, None
-    try:
-        direct_suffix = _validate_direct_ingest_suffix(direct_url)
-    except ValueError:
+    direct_suffix = next(
+        (suffix for url, suffix in valid_direct_urls if url == direct_url),
+        None,
+    )
+    if direct_suffix is None:
         return None, None
     return direct_url, direct_suffix
 
@@ -903,6 +1055,7 @@ def _probe_portal_release_file(
     chosen_url, chosen_suffix = _select_direct_discovery_url(
         dataset=dataset,
         discovery_urls=discovery_urls,
+        timeout=timeout,
     )
     body = ""
     if chosen_url is None or chosen_suffix is None:
@@ -946,7 +1099,7 @@ def _probe_portal_release_file(
             if refined_url:
                 chosen_url = refined_url
 
-        chosen_suffix = _validate_direct_ingest_suffix(chosen_url)
+        chosen_suffix = _validate_direct_ingest_suffix(chosen_url, timeout=timeout)
 
     _probe_stream_url(chosen_url, timeout=timeout)
     release = release_hint or _detect_release(
@@ -1004,9 +1157,11 @@ def _resolve_direct_url(
     if not url:
         raise ValueError("direct_url resolver requires downloadUrl/landingUrl")
     release = dataset.release
-    suffix = _validate_direct_ingest_suffix(url, label="Direct URL source")
+    suffix = _validate_direct_ingest_suffix(url, label="Direct URL source", timeout=timeout)
     raw_dir = raw_root / dataset.dataset_id / _safe_release_fragment(release, "latest")
-    filename = Path(urlparse(url).path).name or f"{dataset.dataset_id.lower()}{suffix}"
+    filename = Path(urlparse(url).path).name
+    if not filename or Path(filename).suffix.lower() != suffix.lower():
+        filename = f"{dataset.dataset_id.lower()}{suffix}"
     local_path = raw_dir / filename
     _download(url, local_path, timeout=timeout)
     return ResolvedSource(
@@ -1030,7 +1185,7 @@ def _probe_direct_url(
     url = dataset.resolver.landing_url
     if not url:
         raise ValueError("direct_url resolver requires downloadUrl/landingUrl")
-    suffix = _validate_direct_ingest_suffix(url, label="Direct URL source")
+    suffix = _validate_direct_ingest_suffix(url, label="Direct URL source", timeout=timeout)
     _probe_stream_url(url, timeout=timeout)
     return SourceProbe(
         dataset_id=dataset.dataset_id,
@@ -1114,19 +1269,25 @@ def _resolve_hosted_table_arcgis(
 
     offset = 0
     object_id_field = str(metadata.get("objectIdField") or "").strip()
+    last_object_id: Any | None = None
     seen_page_signatures: set[str] = set()
     with rows_path.open("w", encoding="utf-8") as handle:
         while True:
             params: dict[str, str | int] = {
-                "where": "1=1",
                 "outFields": "*",
                 "f": "json",
                 "returnGeometry": "false",
-                "resultOffset": offset,
                 "resultRecordCount": page_size,
             }
             if object_id_field:
+                if last_object_id is None:
+                    params["where"] = "1=1"
+                else:
+                    params["where"] = f"{object_id_field} > {last_object_id}"
                 params["orderByFields"] = object_id_field
+            else:
+                params["where"] = "1=1"
+                params["resultOffset"] = offset
             with requests.get(query_url, timeout=timeout, params=params) as resp:
                 resp.raise_for_status()
                 page = resp.json()
@@ -1153,6 +1314,19 @@ def _resolve_hosted_table_arcgis(
                         "endpoint may be ignoring resultOffset."
                     )
                 seen_page_signatures.add(page_signature)
+                if object_id_field:
+                    next_object_id = page_rows[-1].get(object_id_field)
+                    if next_object_id is None:
+                        raise ValueError(
+                            f"ArcGIS page did not include {object_id_field} values "
+                            "required for keyset pagination."
+                        )
+                    if last_object_id is not None and next_object_id == last_object_id:
+                        raise ValueError(
+                            "ArcGIS query pagination made no progress; "
+                            "endpoint may be ignoring objectId keyset pagination."
+                        )
+                    last_object_id = next_object_id
             for attributes in page_rows:
                 handle.write(
                     json.dumps(attributes, ensure_ascii=True, separators=(",", ":")) + "\n"
@@ -1369,6 +1543,11 @@ def probe_dataset_source(
     raise ValueError(f"Unsupported resolver type: {resolver_type}")
 
 
+def _rgc_sheet_annotation(sheet_name: str) -> tuple[str | None, str | None]:
+    suffix = sheet_name.split("_", 1)[1] if "_" in sheet_name else sheet_name
+    return _RGC_SHEET_ANNOTATIONS.get(suffix, (None, None))
+
+
 @contextmanager
 def _open_rows(
     path: Path,
@@ -1388,10 +1567,15 @@ def _open_rows(
                     or name.lower().endswith(".json")
                     or name.lower().endswith(".ndjson")
                     or name.lower().endswith(".jsonl")
+                    or (
+                        dataset is not None
+                        and dataset.dataset_id == "RGC"
+                        and name.lower().endswith(".xlsx")
+                    )
                 )
             )
             if not members:
-                raise ValueError(f"No CSV or JSON file found in zip archive: {path}")
+                raise ValueError(f"No CSV, JSON, or supported XLSX file found in zip archive: {path}")
             chosen_member = _select_archive_member(
                 archive=archive,
                 members=members,
@@ -1399,8 +1583,21 @@ def _open_rows(
                 metadata_aliases=metadata_aliases or {},
             )
             with archive.open(chosen_member, "r") as raw:
-                with _rows_from_binary_stream(raw, name=chosen_member) as payload:
-                    yield payload
+                if chosen_member.lower().endswith(".xlsx"):
+                    with _rows_from_xlsx_stream(
+                        raw,
+                        name=chosen_member,
+                        dataset=dataset,
+                    ) as payload:
+                        yield payload
+                else:
+                    with _rows_from_binary_stream(raw, name=chosen_member) as payload:
+                        yield payload
+        return
+    if path.suffix.lower() == ".xlsx":
+        with path.open("rb") as stream:
+            with _rows_from_xlsx_stream(stream, name=path.name, dataset=dataset) as payload:
+                yield payload
         return
     if suffix == ".gz":
         with gzip.open(path, "rb") as stream:
@@ -1410,6 +1607,63 @@ def _open_rows(
     with path.open("rb") as stream:
         with _rows_from_binary_stream(stream, name=path.name) as payload:
             yield payload
+
+
+@contextmanager
+def _rows_from_xlsx_stream(
+    stream: Any,
+    *,
+    name: str,
+    dataset: DatasetConfig | None,
+) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
+    if dataset is None or dataset.dataset_id != "RGC":
+        raise ValueError(f"Unsupported XLSX source for {name}; only RGC workbook archives are supported.")
+    workbook = load_workbook(io.BytesIO(stream.read()), read_only=True, data_only=True)
+    try:
+        def _iter_rows() -> Iterator[dict[str, Any]]:
+            for sheet_name in workbook.sheetnames:
+                if sheet_name in _RGC_SHEET_SKIP_NAMES:
+                    continue
+                worksheet = workbook[sheet_name]
+                rows = worksheet.iter_rows(values_only=True)
+                try:
+                    header_row = next(rows)
+                except StopIteration:
+                    continue
+                headers = {
+                    str(value).strip().upper(): index
+                    for index, value in enumerate(header_row)
+                    if value is not None and str(value).strip()
+                }
+                code_index = headers.get("GEOGCD")
+                name_index = headers.get("GEOGNM")
+                status_index = headers.get("STATUS")
+                if code_index is None or name_index is None:
+                    continue
+                code_family, level = _rgc_sheet_annotation(sheet_name)
+                for row in rows:
+                    if not isinstance(row, tuple):
+                        continue
+                    code_value = row[code_index] if code_index < len(row) else None
+                    name_value = row[name_index] if name_index < len(row) else None
+                    status_value = row[status_index] if status_index is not None and status_index < len(row) else None
+                    code = str(code_value or "").strip().upper()
+                    geography_name = str(name_value or "").strip()
+                    if not code or not geography_name:
+                        continue
+                    payload = {
+                        "GEOGRAPHY_CODE": code,
+                        "GEOGRAPHY_NAME": geography_name,
+                        "STATUS": str(status_value).strip() if status_value is not None else None,
+                        "CODE_FAMILY": code_family,
+                        "LEVEL": level,
+                    }
+                    yield payload
+
+        yield _iter_rows(), list(_RGC_XLSX_FIELDNAMES)
+    finally:
+        workbook.close()
+    return
 
 
 @contextmanager
@@ -1467,6 +1721,7 @@ def _rows_from_binary_stream(
         yield iter(reader), [str(item) for item in fieldnames if isinstance(item, str)]
     finally:
         text_stream.detach()
+    return
 
 
 @contextmanager
@@ -1530,7 +1785,11 @@ def _select_archive_member(
     scored_members: list[tuple[int, int, int, str]] = []
     for name in members:
         with archive.open(name, "r") as raw:
-            with _rows_from_binary_stream(raw, name=name) as (_rows_iter, fieldnames):
+            if name.lower().endswith(".xlsx"):
+                payload_context = _rows_from_xlsx_stream(raw, name=name, dataset=dataset)
+            else:
+                payload_context = _rows_from_binary_stream(raw, name=name)
+            with payload_context as (_rows_iter, fieldnames):
                 _mapping, validation = _build_field_mapping(
                     dataset,
                     fieldnames=fieldnames,
@@ -1936,6 +2195,8 @@ def _ingest_support_dataset(
                 ),
             )
             inserted += 1
+            if inserted % _SQLITE_REFRESH_COMMIT_BATCH == 0:
+                conn.commit()
             if max_rows is not None and inserted >= max_rows:
                 break
 
@@ -2046,6 +2307,8 @@ def _ingest_main_dataset(
                     cached_at=now_iso,
                 )
             inserted += 1
+            if inserted % _SQLITE_REFRESH_COMMIT_BATCH == 0:
+                conn.commit()
             if max_rows is not None and inserted >= max_rows:
                 break
 
