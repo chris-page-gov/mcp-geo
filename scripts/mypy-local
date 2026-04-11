@@ -7,6 +7,7 @@ DEFAULT_ARGS=(
   --follow-imports=skip
   server/config.py
   server/security.py
+  server/boundary_run_paths.py
   server/mcp/tools.py
   server/mcp/resource_catalog.py
   tools/os_mcp.py

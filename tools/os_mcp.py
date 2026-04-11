@@ -935,12 +935,12 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if postcode:
         if _is_geography_lookup_query(query_lower):
             context["address_mode"] = "postcode_geography"
-            params: dict[str, Any] = {"postcode": postcode}
+            geography_params: dict[str, Any] = {"postcode": postcode}
             derivation_mode = _extract_derivation_mode(query_lower)
             if derivation_mode:
                 context["derivation_mode"] = derivation_mode
-                params["derivationMode"] = derivation_mode
-            return QueryIntent.ADDRESS_LOOKUP, 0.95, params, context
+                geography_params["derivationMode"] = derivation_mode
+            return QueryIntent.ADDRESS_LOOKUP, 0.95, geography_params, context
         context["address_mode"] = "postcode"
         return QueryIntent.ADDRESS_LOOKUP, 0.95, {"postcode": postcode}, context
 
