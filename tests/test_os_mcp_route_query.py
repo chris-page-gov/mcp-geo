@@ -87,6 +87,23 @@ def test_route_query_area_profile_from_postcode_preserves_region_level():
     assert body["recommended_parameters"]["targetLevel"] == "REGION"
 
 
+def test_route_query_area_profile_from_area_code_preserves_explicit_higher_level():
+    body = _route("Quick profile for LSOA E01009617 at region level")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E01009617"
+    assert body["recommended_parameters"]["targetLevel"] == "REGION"
+
+
+def test_route_query_area_profile_from_area_code_rejects_narrower_target_level():
+    body = _route("Quick profile for district E09000033 at OA level")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert "cannot be narrowed" in body["guidance"]
+    assert "E09000033" in body["guidance"]
+
+
 def test_route_query_area_profile_uninferrable_code_needs_explicit_level():
     body = _route("Quick profile for K04000001")
     assert body["intent"] == "area_profile"
@@ -191,6 +208,15 @@ def test_route_query_council_tax_address_uses_places_search_then_band_lookup():
         "Council tax on properties in Gloucester Street, Coventry"
     )
     assert body["workflow_steps"] == ["os_places.search", "council_tax.band_lookup"]
+
+
+def test_route_query_council_tax_band_without_identifier_requires_resolution_first():
+    body = _route("Check council tax band")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "band lookups need a postcode" in body["guidance"].lower()
 
 
 def test_route_query_boundary_fetch():
@@ -754,6 +780,28 @@ def test_select_toolsets_council_tax_address_band_query_infers_places_and_proper
     inference = body.get("inference", {})
     assert inference.get("intent") == "property_tax"
     assert inference.get("propertyTaxMode") == "band_from_address"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.band_lookup" in matched
+    assert "os_places.search" in matched
+
+
+def test_select_toolsets_council_tax_band_without_identifier_infers_places_and_property_tax(
+) -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Check council tax band",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "band_needs_identifier"
     include = body.get("effectiveFilters", {}).get("includeToolsets", [])
     assert "property_tax" in include
     assert "places_names" in include

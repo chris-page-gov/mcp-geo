@@ -29,6 +29,15 @@ _AREA_SUMMARY_LEVELS = {
     "COUNTRY": {"normalizedKey": "country", "semanticKey": "country_code"},
     "REGION": {"normalizedKey": "region", "semanticKey": "region_code"},
 }
+_AREA_SUMMARY_LEVEL_RANK = {
+    "OA": 0,
+    "LSOA": 1,
+    "MSOA": 2,
+    "WARD": 3,
+    "DISTRICT": 4,
+    "REGION": 5,
+    "COUNTRY": 6,
+}
 _DEFAULT_PROFILE_CATEGORIES = ["population", "sex", "ethnicity", "country_of_birth", "tenure"]
 _AREA_SUMMARY_WORKFLOW_URI = "resource://mcp-geo/area-summary-workflows"
 
@@ -325,8 +334,50 @@ def _best_effort_call(
     tool = get_tool(tool_name)
     if tool is None:
         return None, None
-    status, payload = tool.call(arguments)
+    try:
+        status, payload = tool.call(arguments)
+    except Exception:
+        return None, None
     return status, payload if isinstance(payload, dict) else None
+
+
+def _area_summary_level_rank(level: str | None) -> int | None:
+    if not isinstance(level, str):
+        return None
+    return _AREA_SUMMARY_LEVEL_RANK.get(level)
+
+
+def _resolve_area_from_hierarchy_chain(
+    *,
+    target_level: str,
+    chain: list[dict[str, Any]] | None,
+) -> dict[str, Any] | None:
+    if not isinstance(chain, list):
+        return None
+    for entry in chain:
+        if not isinstance(entry, dict):
+            continue
+        raw_level = entry.get("level")
+        if not isinstance(raw_level, str):
+            continue
+        normalized_level = normalize_area_level(raw_level)
+        if normalized_level != target_level:
+            continue
+        area_id = entry.get("id")
+        if not isinstance(area_id, str) or not area_id.strip():
+            continue
+        area_name = entry.get("name")
+        return {
+            "id": area_id.strip().upper(),
+            "level": target_level,
+            "name": (
+                area_name.strip()
+                if isinstance(area_name, str) and area_name.strip()
+                else area_id
+            ),
+            "hierarchy": chain,
+        }
+    return None
 
 
 def _best_effort_area_geometry(area_id: str) -> dict[str, Any] | None:
@@ -455,6 +506,8 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
     anchor_type: str | None = None
     anchor_value: str | None = None
     cache_result: Any | None = None
+    direct_anchor_level: str | None = None
+    hierarchy_chain: list[dict[str, Any]] | None = None
     cache = ONSGeoCache.from_settings()
 
     if isinstance(postcode_raw, str) and postcode_raw.strip():
@@ -534,15 +587,27 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         area_id = area_id_raw.strip().upper()
         inferred_level = infer_area_level_from_code(area_id)
         if inferred_level is not None:
-            if target_level is not None and target_level != inferred_level:
-                return _error(
-                    f"id {area_id} implies targetLevel={inferred_level}, not {target_level}"
-                )
-            target_level = inferred_level
+            direct_anchor_level = inferred_level
+            if target_level is None:
+                target_level = inferred_level
+            else:
+                inferred_rank = _area_summary_level_rank(inferred_level)
+                target_rank = _area_summary_level_rank(target_level)
+                if (
+                    inferred_rank is not None
+                    and target_rank is not None
+                    and target_rank < inferred_rank
+                ):
+                    return _error(
+                        f"id {area_id} implies level {inferred_level}, which cannot be "
+                        f"narrowed to targetLevel={target_level}"
+                    )
         elif target_level is None:
             return _error(
                 f"Could not infer targetLevel from id {area_id}. Provide targetLevel explicitly."
             )
+        else:
+            direct_anchor_level = target_level
         anchor_type = "id"
         anchor_value = area_id
     else:
@@ -567,6 +632,23 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         assert area is not None
     else:
         area = {"id": anchor_value, "level": target_level, "name": anchor_value, "hierarchy": {}}
+        if anchor_type == "id":
+            hierarchy_chain = _best_effort_reverse_hierarchy(anchor_value)
+            resolved_from_chain = _resolve_area_from_hierarchy_chain(
+                target_level=target_level,
+                chain=hierarchy_chain,
+            )
+            if direct_anchor_level is not None and target_level != direct_anchor_level:
+                if resolved_from_chain is None:
+                    return _error(
+                        f"No {target_level} mapping found for area id {anchor_value}.",
+                        code="NOT_FOUND",
+                        status=404,
+                    )
+                area = resolved_from_chain
+            elif resolved_from_chain is not None:
+                area["name"] = resolved_from_chain["name"]
+                area["hierarchy"] = resolved_from_chain["hierarchy"]
 
     geometry_payload = _best_effort_area_geometry(str(area["id"]))
     bbox = None
@@ -585,6 +667,8 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         if isinstance(area_level, str) and area_level.strip():
             area["level"] = normalize_area_level(area_level) or area["level"]
 
+    if not area.get("hierarchy") and isinstance(hierarchy_chain, list) and hierarchy_chain:
+        area["hierarchy"] = hierarchy_chain
     if not area.get("hierarchy"):
         chain = _best_effort_reverse_hierarchy(str(area["id"]))
         if isinstance(chain, list) and chain:
@@ -600,6 +684,18 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
             )
         except ONSGeoCacheReadError:
             counts = None
+
+    if anchor_type == "id":
+        has_hierarchy = isinstance(area.get("hierarchy"), list) and bool(area["hierarchy"])
+        has_nonzero_counts = isinstance(counts, dict) and any(
+            int(value or 0) > 0 for value in counts.values()
+        )
+        if not has_nonzero_counts and geometry_payload is None and not has_hierarchy:
+            return _error(
+                f"No area found for id {anchor_value} at targetLevel {target_level}.",
+                code="NOT_FOUND",
+                status=404,
+            )
 
     inventory = (
         _best_effort_inventory(bbox=bbox, response_mode=inventory_response_mode)

@@ -671,6 +671,126 @@ def test_ons_geo_area_summary_invalid_id_without_target_level_returns_validation
     assert "Could not infer targetLevel from id K04000001" in body["message"]
 
 
+def test_ons_geo_area_summary_unknown_direct_id_returns_not_found(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+    monkeypatch.setattr(ons_geo_tools, "get_tool", lambda _name: None)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.area_summary", "id": "E01009999", "targetLevel": "LSOA"},
+    )
+    assert resp.status_code == 404
+    body = resp.json()
+    assert body["code"] == "NOT_FOUND"
+    assert "E01009999" in body["message"]
+
+
+def test_ons_geo_area_summary_direct_id_can_resolve_higher_level_from_hierarchy(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.reverse_hierarchy":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "chain": [
+                            {"id": "E01000001", "level": "LSOA", "name": "Example LSOA"},
+                            {"id": "E12000007", "level": "REGION", "name": "London"},
+                        ]
+                    },
+                )
+            )
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "id": "E12000007",
+                        "name": "London",
+                        "bbox": [-0.5, 51.2, 0.3, 51.8],
+                        "meta": {"level": "REGION"},
+                    },
+                )
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "id": "E01000001",
+            "targetLevel": "REGION",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["area"]["id"] == "E12000007"
+    assert body["area"]["level"] == "REGION"
+    assert body["area"]["name"] == "London"
+    assert body["counts"]["uprnCount"] == 3
+
+
+def test_ons_geo_area_summary_tolerates_optional_helper_failures(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda _payload: (_ for _ in ()).throw(RuntimeError("helper failed"))
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "postcode": "SW1A 1AA",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["area"]["id"] == "E00000111"
+    assert body["area"]["name"] == "E00000111"
+
+
 def test_ons_geo_area_summary_ignores_blank_anchor_fields(
     tmp_path: Path,
     monkeypatch,

@@ -327,6 +327,16 @@ LEVEL_RANK = {
     "postcode": 7,
 }
 
+AREA_PROFILE_LEVEL_RANK = {
+    "OA": 0,
+    "LSOA": 1,
+    "MSOA": 2,
+    "WARD": 3,
+    "DISTRICT": 4,
+    "REGION": 5,
+    "COUNTRY": 6,
+}
+
 ADMIN_LEVEL_MAP = {
     "oa": "OA",
     "lsoa": "LSOA",
@@ -337,6 +347,23 @@ ADMIN_LEVEL_MAP = {
     "built_up_area": None,
     "postcode": None,
 }
+
+AREA_PROFILE_LEVEL_PATTERNS = (
+    (r"\boa\b", "OA"),
+    (r"\boutput areas?\b", "OA"),
+    (r"\blsoa\b", "LSOA"),
+    (r"\blower (layer )?super output areas?\b", "LSOA"),
+    (r"\bmsoa\b", "MSOA"),
+    (r"\bmiddle (layer )?super output areas?\b", "MSOA"),
+    (r"\bwards?\b", "WARD"),
+    (r"\blocal authority\b", "DISTRICT"),
+    (r"\bdistricts?\b", "DISTRICT"),
+    (r"\bboroughs?\b", "DISTRICT"),
+    (r"\blad\b", "DISTRICT"),
+    (r"\bregions?\b", "REGION"),
+    (r"\bcountr(y|ies)\b", "COUNTRY"),
+    (r"\bnational\b", "COUNTRY"),
+)
 
 FEATURE_COLLECTIONS = {
     "building": "buildings",
@@ -748,15 +775,26 @@ def _looks_like_area_profile_query(query: str, query_lower: str, level_mentions:
 
 
 def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -> str | None:
+    matches: list[tuple[int, str]] = []
+    for pattern, level in AREA_PROFILE_LEVEL_PATTERNS:
+        for match in re.finditer(pattern, query_lower):
+            matches.append((match.start(), level))
+    if matches:
+        matches.sort(key=lambda item: item[0])
+        return matches[-1][1]
     for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
         mapped = ADMIN_LEVEL_MAP.get(level)
-        if mapped in {"OA", "LSOA", "MSOA", "WARD", "DISTRICT"}:
+        if mapped in AREA_PROFILE_LEVEL_RANK:
             return mapped
-    if re.search(r"\bcountr(y|ies)\b", query_lower):
-        return "COUNTRY"
-    if re.search(r"\bregions?\b", query_lower):
-        return "REGION"
     return None
+
+
+def _area_profile_target_is_compatible(anchor_level: str, target_level: str) -> bool:
+    anchor_rank = AREA_PROFILE_LEVEL_RANK.get(anchor_level)
+    target_rank = AREA_PROFILE_LEVEL_RANK.get(target_level)
+    if anchor_rank is None or target_rank is None:
+        return False
+    return target_rank >= anchor_rank
 
 
 def _build_area_profile_params(
@@ -774,9 +812,18 @@ def _build_area_profile_params(
     if area_code:
         inferred = infer_area_level_from_code(area_code)
         if inferred:
-            params["id"] = area_code
-            params["targetLevel"] = inferred
-            context["area_profile_level"] = inferred
+            context["area_profile_anchor_level"] = inferred
+            if requested_level is not None and not _area_profile_target_is_compatible(
+                inferred,
+                requested_level,
+            ):
+                context["area_profile_incompatible_target"] = True
+                context["area_profile_code"] = area_code
+                context["area_profile_level"] = requested_level
+            else:
+                params["id"] = area_code
+                params["targetLevel"] = requested_level or inferred
+                context["area_profile_level"] = str(params["targetLevel"])
         elif requested_level is not None:
             params["id"] = area_code
             params["targetLevel"] = requested_level
@@ -789,7 +836,7 @@ def _build_area_profile_params(
     elif uprn:
         params["uprn"] = uprn
 
-    if "targetLevel" not in params:
+    if "targetLevel" not in params and not context.get("area_profile_incompatible_target"):
         if requested_level is not None:
             params["targetLevel"] = requested_level
             context["area_profile_level"] = requested_level
@@ -1041,6 +1088,9 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             if not postcode and address_prompt:
                 context["property_tax_mode"] = "band_from_address"
                 return QueryIntent.PROPERTY_TAX, 0.9, {"text": query}, context
+            if not postcode:
+                context["property_tax_mode"] = "band_needs_identifier"
+                return QueryIntent.PROPERTY_TAX, 0.8, {}, context
             params = {"postcode": postcode} if postcode else {}
             context["property_tax_mode"] = "band_lookup"
             return QueryIntent.PROPERTY_TAX, 0.92, params, context
@@ -1388,10 +1438,30 @@ def _get_tool_for_intent(
     if intent == QueryIntent.AREA_PROFILE:
         follow_up = bool(context.get("area_profile_follow_up"))
         needs_level = bool(context.get("area_profile_needs_level"))
+        incompatible_target = bool(context.get("area_profile_incompatible_target"))
         explanation = (
             "Use ons_geo.area_summary to resolve a compact area profile from a supplied "
             "area code, postcode, or UPRN."
         )
+        if incompatible_target:
+            area_code = str(context.get("area_profile_code") or "").strip()
+            anchor_level = str(context.get("area_profile_anchor_level") or "").strip()
+            target_level = str(context.get("area_profile_level") or "").strip()
+            explanation = (
+                "The detected area code cannot be narrowed to the requested target summary "
+                "level. Use a postcode, UPRN, or an area code at that target level instead."
+            )
+            if area_code and anchor_level and target_level:
+                explanation = (
+                    f"Area code {area_code} implies {anchor_level}, which cannot be narrowed "
+                    f"to targetLevel={target_level}. Use a postcode, UPRN, or a matching "
+                    "area code instead."
+                )
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                explanation,
+            )
         if needs_level:
             area_code = str(context.get("area_profile_code") or "").strip()
             explanation = (
@@ -1510,6 +1580,15 @@ def _get_tool_for_intent(
                 "council_tax.band_lookup",
                 ["council_tax.band_lookup"],
                 "Search the VOA council-tax band service by postcode.",
+            )
+        if property_tax_mode == "band_needs_identifier":
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                (
+                    "Council Tax band lookups need a postcode, UPRN, or address before "
+                    "council_tax.band_lookup can run."
+                ),
             )
         if property_tax_mode == "status_from_postcode":
             return (
@@ -1897,6 +1976,7 @@ def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
         if str(context.get("property_tax_mode") or "") in {
             "band_from_address",
             "band_from_uprn",
+            "band_needs_identifier",
             "status_from_postcode",
             "status_from_address",
             "status_needs_identifier",
@@ -2163,15 +2243,33 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
             "os_maps.render",
             "os_vector_tiles.descriptor",
         ]
-    if (
-        intent == QueryIntent.PROPERTY_TAX
-        and str(context.get("property_tax_mode") or "") == "status_needs_identifier"
-    ):
+    property_tax_mode = str(context.get("property_tax_mode") or "")
+    if intent == QueryIntent.PROPERTY_TAX and property_tax_mode == "status_needs_identifier":
         response["guidance"] = (
             "Business-rates and Council Tax status checks need a UPRN. Provide a UPRN directly, "
             "or provide a postcode/address first so OS Places can resolve candidate UPRNs before "
             "calling council_tax.query."
         )
+    if intent == QueryIntent.PROPERTY_TAX and property_tax_mode == "band_needs_identifier":
+        response["guidance"] = (
+            "Council Tax band lookups need a postcode, UPRN, or address. Provide a postcode "
+            "directly, use a UPRN so OS Places can recover the address first, or search by "
+            "address before calling council_tax.band_lookup."
+        )
+    if intent == QueryIntent.AREA_PROFILE and bool(context.get("area_profile_incompatible_target")):
+        area_code = str(context.get("area_profile_code") or "").strip()
+        anchor_level = str(context.get("area_profile_anchor_level") or "").strip()
+        target_level = str(context.get("area_profile_level") or "").strip()
+        response["guidance"] = (
+            "This area code anchor cannot be narrowed to the requested targetLevel. Use a "
+            "postcode, UPRN, or an area code at the intended level instead."
+        )
+        if area_code and anchor_level and target_level:
+            response["guidance"] = (
+                f"Area code {area_code} implies {anchor_level}, which cannot be narrowed to "
+                f"targetLevel={target_level}. Use a postcode, UPRN, or a matching area code "
+                "for that target level."
+            )
     if intent == QueryIntent.AREA_PROFILE and bool(context.get("area_profile_needs_level")):
         area_code = str(context.get("area_profile_code") or "").strip()
         response["guidance"] = (

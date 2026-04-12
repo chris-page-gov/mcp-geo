@@ -52,6 +52,15 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-12 PR follow-up closed the remaining area-summary/router review
+  gaps. `tools/os_mcp.py` now preserves explicit higher-level profile requests
+  on area-code prompts, rejects narrower target levels with descriptor
+  guidance instead of silently changing intent, and routes under-specified
+  Council Tax band prompts to a resolution-first path rather than emitting an
+  uncallable `council_tax.band_lookup` recommendation. `tools/ons_geo.py` now
+  validates direct area ids more strictly, using hierarchy/geometry or
+  non-zero cached membership counts before returning `200`, and helper-tool
+  failures in the optional enrichment path no longer bubble up as `500`s.
 - A 2026-04-12 client-parity follow-up now gives Gemini CLI the same dedicated
   Docker-backed launcher pattern as Claude/Codex via
   `scripts/gemini-mcp-local`, plus `scripts/check_gemini_startup_scope.sh` for

@@ -66,6 +66,16 @@ All notable changes to this project will be documented in this file.
   prompts now follow the postcode/address-to-`council_tax.query` status workflow
   instead of falling back to `council_tax.band_lookup`, with matching toolset
   inference for discovery clients.
+- The same router/summary follow-up now keeps explicit higher-level area-profile
+  requests on area-code prompts instead of silently collapsing them back to the
+  code-implied level, rejects narrower target levels with descriptor guidance,
+  routes under-specified Council Tax band prompts to a resolution-first flow,
+  and hardens `ons_geo.area_summary` so direct area ids return `NOT_FOUND`
+  unless they resolve via hierarchy/geometry or non-zero cached counts.
+- `ons_geo.area_summary` now treats helper tools such as
+  `admin_lookup.area_geometry`, `admin_lookup.reverse_hierarchy`, and
+  `os_map.inventory` as genuinely best-effort: helper exceptions no longer turn
+  an otherwise valid summary request into a `500`.
 - Tightened ONS release detection in `scripts/ons_geo_cache_refresh.py` so
   explicit release-pattern matches keep month/epoch pairing local to the matched
   candidate instead of borrowing an epoch from an unrelated archived resource in
