@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
@@ -79,9 +80,10 @@ SPEC_TARGETS: tuple[SpecTarget, ...] = (
 
 
 def _run_git(path: Path, *args: str) -> str | None:
+    git_executable = shutil.which("git") or "git"
     try:
         completed = subprocess.run(
-            ["/usr/bin/git", "-C", str(path), *args],
+            [git_executable, "-C", str(path), *args],
             check=True,
             capture_output=True,
             text=True,

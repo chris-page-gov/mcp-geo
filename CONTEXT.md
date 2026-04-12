@@ -57,6 +57,10 @@ assumptions change.
   business-rates prompts, and `scripts/ons_geo_cache_refresh.py` now scopes
   month/epoch pairing to the matched release candidate so archived CKAN resource
   titles do not leak the wrong epoch into `resolvedRelease`.
+- The same 2026-04-12 PR cleanup also removed the hardcoded `/usr/bin/git`
+  dependency from `scripts/check_spec_drift.py`; the vendored-spec audit now
+  resolves Git from PATH so release/drift checks behave correctly on Homebrew,
+  Nix, and other nonstandard host layouts.
 - A 2026-04-10 Claude/discovery follow-up is now in place. The checked-in
   constrained-host startup profile uses `MCP_TOOLS_DEFAULT_TOOLSET=starter`
   plus `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=ons_geo_lookup,property_tax,features_layers,landis_soils`

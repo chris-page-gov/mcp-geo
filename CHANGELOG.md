@@ -34,6 +34,9 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- `scripts/check_spec_drift.py` now invokes Git through PATH resolution rather
+  than hardcoding `/usr/bin/git`, so vendored-spec drift audits work on hosts
+  where Git is installed via Homebrew, Nix, or other nonstandard locations.
 - Hardened the `tools/os_mcp.py` property-tax router so plain `council tax status`
   prompts now follow the postcode/address-to-`council_tax.query` status workflow
   instead of falling back to `council_tax.band_lookup`, with matching toolset

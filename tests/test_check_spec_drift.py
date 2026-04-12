@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import scripts.check_spec_drift as spec_drift
@@ -106,3 +107,22 @@ def test_fail_on_drift_returns_error_for_missing_paths_even_if_remote_unavailabl
     monkeypatch.setattr(spec_drift, "render_text", lambda _audits: "Specification Drift Audit\n")
 
     assert spec_drift.main(["--fail-on-drift"]) == 1
+
+
+def test_run_git_uses_path_resolved_git(monkeypatch, tmp_path: Path) -> None:
+    seen_args: list[list[str]] = []
+
+    def fake_run(args: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        seen_args.append(args)
+        assert kwargs["check"] is True
+        assert kwargs["capture_output"] is True
+        assert kwargs["text"] is True
+        return subprocess.CompletedProcess(args=args, returncode=0, stdout="abc123\n")
+
+    monkeypatch.setattr(spec_drift.shutil, "which", lambda name: "/opt/homebrew/bin/git")
+    monkeypatch.setattr(spec_drift.subprocess, "run", fake_run)
+
+    result = spec_drift._run_git(tmp_path, "rev-parse", "HEAD")
+
+    assert result == "abc123"
+    assert seen_args == [["/opt/homebrew/bin/git", "-C", str(tmp_path), "rev-parse", "HEAD"]]
