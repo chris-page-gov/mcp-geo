@@ -34,6 +34,21 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- Setup docs now explicitly treat absolute paths as local examples only, and
+  the README / `.env.example` point path-bearing settings at portable
+  placeholders instead of maintainer-specific locations.
+- `scripts/mcp-docker-local` now hydrates path-bearing local settings such as
+  `LANDIS_LOCAL_DATA_ROOT`, `LANDIS_PORTAL_ARCHIVE_DIR`,
+  `LANDIS_FULL_RELEASE_ARCHIVE_DIR`, `ADDRESSBASE_PREMIUM_XREF_PATH`,
+  `BOUNDARY_RUNS_DIR`, and `BOUNDARY_RUNS_SEARCH_DIRS` from the repo `.env`
+  when host-side GUI clients do not export them directly. The wrapper also now
+  normalizes relative host paths against the repo root and mounts those paths
+  into the container so Docker-backed Claude/Codex sessions can use repo-local
+  data roots and external archives such as `/Volumes/ExtSSD-Data/Data`
+  consistently.
+- LandIS helper scripts now default to `~/Data/...` rather than maintainer
+  machine paths, and LandIS archive relocalization no longer depends on the
+  specific `/Volumes/ExtSSD-Data/Data` prefix.
 - `scripts/check_spec_drift.py` now invokes Git through PATH resolution rather
   than hardcoding `/usr/bin/git`, so vendored-spec drift audits work on hosts
   where Git is installed via Homebrew, Nix, or other nonstandard locations.

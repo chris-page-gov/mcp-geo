@@ -3,7 +3,7 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-11
+Last updated: 2026-04-12
 
 ## ONS postcode-to-area-summary follow-up (2026-04-11)
 
@@ -38,6 +38,7 @@ Legend: pending, in_progress, done, blocked
 | OGC-REFRESH-12 Preserve upstream provenance through local-only rebuilds | pending | OGC-REFRESH-10, OGC-REFRESH-11 | Persist remote provenance beside raw artifacts at first download time so later `static_file` or local-only rebuilds keep the original `resolvedSourceUrl`, resolver type, retrieved timestamp, release label, and equivalent source metadata in the rebuilt cache index instead of falling back to `null` remote provenance. This must be fixed before the next live redownload so the next raw-artifact set captures the remote metadata once and can be reused safely after that. |
 | CACHE-STORAGE-13 Optional external raw-artifact mirrors and search roots | pending | OGC-REFRESH-9 | Add a non-disruptive storage layer for bulky raw artifacts that keeps the current local defaults working but allows optional mirror/search roots such as `/Volumes/ExtSSD-Data/Data`. The design should separate compact runtime state (SQLite index, small manifests) from bulky raw artifacts, search configured external roots when mounted, mirror new downloads there best-effort, and allow local rebuilds from those roots without forcing the primary cache or PostGIS volumes onto the external disk. Reuse targets should include large ONS raw downloads and pre-existing folders such as `/Volumes/ExtSSD-Data/Data/boundary_runs`. |
 | CACHE-STORAGE-13A Boundary-run external-root path resolution | done | CACHE-STORAGE-13 | Added `BOUNDARY_RUNS_DIR` and `BOUNDARY_RUNS_SEARCH_DIRS` plus shared `server/boundary_run_paths.py` resolution so boundary run readers can search optional mounted roots such as `/Volumes/ExtSSD-Data/Data` without changing the local default. `scripts/boundary_pipeline.py` and `scripts/boundary_autofix.py` now also honor the configured primary boundary-run directory for new writes, and `boundary_autofix` now forwards `--workdir` correctly to the pipeline it launches. |
+| CACHE-STORAGE-13B Docker wrapper env hydration and host-path mounts | done | CACHE-STORAGE-13A | Hardened `scripts/mcp-docker-local` so Docker-backed Claude/Codex sessions now hydrate path-bearing local settings from the repo `.env`, normalize relative host overrides against the repo root, and mount configured AddressBase, LandIS archive, and `BOUNDARY_RUNS_*` host paths into the app container. This makes external roots such as `/Volumes/ExtSSD-Data/Data` usable by the AI clients without duplicating machine-specific paths across every client config. |
 
 ## AddressBase Premium Parquet runtime follow-up (2026-04-10)
 

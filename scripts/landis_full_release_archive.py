@@ -42,7 +42,7 @@ from scripts.landis_release_reconciliation import (
     USER_AGENT,
     build_manifest as build_public_manifest,
 )
-DEFAULT_DESTINATION = Path("/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05")
+DEFAULT_DESTINATION = Path.home() / "Data" / "landis_full_release_archive_2026-04-05"
 DEFAULT_PUBLIC_MANIFEST = (
     REPO_ROOT / "research" / "landis-data-source" / "landis_release_reconciliation_2026-04-05.json"
 )

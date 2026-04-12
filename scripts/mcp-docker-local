@@ -2,6 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_ROOT="/app"
 IMAGE="${MCP_GEO_IMAGE:-mcp-geo-server}"
 NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-sidecar}"
 POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-sidecar}"
@@ -37,6 +38,13 @@ PLAN_ONLY="${MCP_GEO_DOCKER_PLAN_ONLY:-0}"
 LANDIS_MOUNT_ENABLED=false
 ONS_GEO_CACHE_MOUNT_ENABLED=false
 ONS_GEO_CACHE_INDEX_MOUNT_ENABLED=false
+BOUNDARY_RUNS_MOUNT_ENABLED=false
+BOUNDARY_RUNS_PRIMARY_HOST_PATH=""
+BOUNDARY_RUNS_PRIMARY_CONTAINER_PATH=""
+BOUNDARY_RUNS_SEARCH_HOST_PATHS=()
+BOUNDARY_RUNS_SEARCH_CONTAINER_PATHS=()
+ADDRESSBASE_XREF_HOST_PATH=""
+ADDRESSBASE_XREF_CONTAINER_PATH=""
 
 log() {
   printf "[mcp-geo] %s\n" "$*" >&2
@@ -84,6 +92,35 @@ append_readonly_mount_if_exists() {
     return 0
   fi
   mount_args+=(-v "$source:$target:ro")
+}
+
+resolve_host_path() {
+  local raw="$1"
+  if [[ "$raw" == "~" ]]; then
+    raw="$HOME"
+  elif [[ "$raw" == ~/* ]]; then
+    raw="$HOME/${raw#~/}"
+  fi
+  if [[ "$raw" = /* ]]; then
+    printf "%s" "$raw"
+    return 0
+  fi
+  printf "%s" "$REPO_ROOT/$raw"
+}
+
+resolve_container_path() {
+  local raw="$1"
+  if [[ "$raw" = /* ]]; then
+    printf "%s" "$raw"
+    return 0
+  fi
+  printf "%s" "$APP_ROOT/$raw"
+}
+
+append_readonly_mount_for_config_path() {
+  local raw="$1"
+  [[ -n "$raw" ]] || return 0
+  append_readonly_mount_if_exists "$(resolve_host_path "$raw")" "$(resolve_container_path "$raw")"
 }
 
 dotenv_get() {
@@ -148,6 +185,39 @@ hydrate_env_secret() {
     export "$key=$value"
     return 0
   fi
+}
+
+hydrate_env_value() {
+  local key="$1"
+  local value="${!key:-}"
+  if [[ -n "$value" ]]; then
+    return 0
+  fi
+  local dotenv_file="${MCP_GEO_ENV_FILE:-$REPO_ROOT/.env}"
+  value="$(dotenv_get "$key" "$dotenv_file" 2>/dev/null || true)"
+  value="$(trim_space "$value")"
+  if [[ -n "$value" ]]; then
+    export "$key=$value"
+  fi
+}
+
+hydrate_env_values() {
+  local key
+  for key in "$@"; do
+    hydrate_env_value "$key"
+  done
+}
+
+parse_csv_values() {
+  local raw="$1"
+  local parts=()
+  local part=""
+  IFS=',' read -r -a parts <<< "$raw"
+  for part in "${parts[@]}"; do
+    part="$(trim_space "$part")"
+    [[ -n "$part" ]] || continue
+    printf "%s\n" "$part"
+  done
 }
 
 wait_for_postgis() {
@@ -433,6 +503,10 @@ detect_reusable_devcontainer_postgis() {
 }
 
 emit_plan() {
+  local boundary_search_host_paths=""
+  local boundary_search_container_paths=""
+  boundary_search_host_paths="$(IFS=,; printf "%s" "${BOUNDARY_RUNS_SEARCH_HOST_PATHS[*]-}")"
+  boundary_search_container_paths="$(IFS=,; printf "%s" "${BOUNDARY_RUNS_SEARCH_CONTAINER_PATHS[*]-}")"
   printf 'postgis_target_container=%s\n' "$POSTGIS_TARGET_CONTAINER"
   printf 'postgis_host=%s\n' "$POSTGIS_HOST"
   printf 'manage_postgis_container=%s\n' "$MANAGE_POSTGIS_CONTAINER"
@@ -446,12 +520,19 @@ emit_plan() {
   printf 'landis_host_data_root=%s\n' "$LANDIS_HOST_DATA_ROOT"
   printf 'landis_container_data_root=%s\n' "$LANDIS_CONTAINER_DATA_ROOT"
   printf 'landis_mount_enabled=%s\n' "$LANDIS_MOUNT_ENABLED"
+  printf 'addressbase_xref_host_path=%s\n' "$ADDRESSBASE_XREF_HOST_PATH"
+  printf 'addressbase_xref_container_path=%s\n' "$ADDRESSBASE_XREF_CONTAINER_PATH"
   printf 'ons_geo_host_cache_dir=%s\n' "$ONS_GEO_HOST_CACHE_DIR"
   printf 'ons_geo_container_cache_dir=%s\n' "$ONS_GEO_CONTAINER_CACHE_DIR"
   printf 'ons_geo_cache_mount_enabled=%s\n' "$ONS_GEO_CACHE_MOUNT_ENABLED"
   printf 'ons_geo_host_cache_index_path=%s\n' "$ONS_GEO_HOST_CACHE_INDEX_PATH"
   printf 'ons_geo_container_cache_index_path=%s\n' "$ONS_GEO_CONTAINER_CACHE_INDEX_PATH"
   printf 'ons_geo_cache_index_mount_enabled=%s\n' "$ONS_GEO_CACHE_INDEX_MOUNT_ENABLED"
+  printf 'boundary_runs_mount_enabled=%s\n' "$BOUNDARY_RUNS_MOUNT_ENABLED"
+  printf 'boundary_runs_primary_host_path=%s\n' "$BOUNDARY_RUNS_PRIMARY_HOST_PATH"
+  printf 'boundary_runs_primary_container_path=%s\n' "$BOUNDARY_RUNS_PRIMARY_CONTAINER_PATH"
+  printf 'boundary_runs_search_host_paths=%s\n' "$boundary_search_host_paths"
+  printf 'boundary_runs_search_container_paths=%s\n' "$boundary_search_container_paths"
 }
 
 ensure_postgis_image() {
@@ -512,6 +593,22 @@ fi
 # Hydrate API secrets from host env/secret file/launchctl/.env without requiring
 # hardcoded values in host MCP config.
 hydrate_env_secret "OS_API_KEY"
+hydrate_env_values \
+  "LANDIS_LOCAL_DATA_ROOT" \
+  "LANDIS_PORTAL_ARCHIVE_DIR" \
+  "LANDIS_FULL_RELEASE_ARCHIVE_DIR" \
+  "ADDRESSBASE_PREMIUM_XREF_PATH" \
+  "ADDRESSBASE_PREMIUM_DUCKDB_THREADS" \
+  "ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT" \
+  "BOUNDARY_RUNS_DIR" \
+  "BOUNDARY_RUNS_SEARCH_DIRS"
+
+DATA_DIR="$(resolve_host_path "$DATA_DIR")"
+LOG_DIR="$(resolve_host_path "$LOG_DIR")"
+ONS_GEO_HOST_CACHE_DIR="$(resolve_host_path "$ONS_GEO_HOST_CACHE_DIR")"
+ONS_GEO_HOST_CACHE_INDEX_PATH="$(resolve_host_path "$ONS_GEO_HOST_CACHE_INDEX_PATH")"
+LANDIS_HOST_DATA_ROOT="${MCP_GEO_LANDIS_DATA_ROOT:-${LANDIS_LOCAL_DATA_ROOT:-$HOME/Data}}"
+LANDIS_HOST_DATA_ROOT="$(resolve_host_path "$LANDIS_HOST_DATA_ROOT")"
 
 case "$POSTGIS_STORAGE_MODE" in
   volume|bind)
@@ -534,6 +631,28 @@ if [[ -n "$ONS_GEO_HOST_CACHE_DIR" && -d "$ONS_GEO_HOST_CACHE_DIR" ]]; then
 fi
 if [[ -n "$ONS_GEO_HOST_CACHE_INDEX_PATH" && -f "$ONS_GEO_HOST_CACHE_INDEX_PATH" ]]; then
   ONS_GEO_CACHE_INDEX_MOUNT_ENABLED=true
+fi
+if [[ -n "${ADDRESSBASE_PREMIUM_XREF_PATH:-}" ]]; then
+  ADDRESSBASE_XREF_HOST_PATH="$(resolve_host_path "${ADDRESSBASE_PREMIUM_XREF_PATH}")"
+  ADDRESSBASE_XREF_CONTAINER_PATH="$(resolve_container_path "${ADDRESSBASE_PREMIUM_XREF_PATH}")"
+fi
+BOUNDARY_RUNS_DIR_EFFECTIVE="${BOUNDARY_RUNS_DIR:-data/boundary_runs}"
+if [[ -n "$BOUNDARY_RUNS_DIR_EFFECTIVE" ]]; then
+  BOUNDARY_RUNS_PRIMARY_HOST_PATH="$(resolve_host_path "${BOUNDARY_RUNS_DIR_EFFECTIVE}")"
+  BOUNDARY_RUNS_PRIMARY_CONTAINER_PATH="$(resolve_container_path "${BOUNDARY_RUNS_DIR_EFFECTIVE}")"
+  if [[ -e "$BOUNDARY_RUNS_PRIMARY_HOST_PATH" ]]; then
+    BOUNDARY_RUNS_MOUNT_ENABLED=true
+  fi
+fi
+if [[ -n "${BOUNDARY_RUNS_SEARCH_DIRS:-}" ]]; then
+  while IFS= read -r raw_path; do
+    [[ -n "$raw_path" ]] || continue
+    BOUNDARY_RUNS_SEARCH_HOST_PATHS+=("$(resolve_host_path "$raw_path")")
+    BOUNDARY_RUNS_SEARCH_CONTAINER_PATHS+=("$(resolve_container_path "$raw_path")")
+    if [[ -e "$(resolve_host_path "$raw_path")" ]]; then
+      BOUNDARY_RUNS_MOUNT_ENABLED=true
+    fi
+  done < <(parse_csv_values "${BOUNDARY_RUNS_SEARCH_DIRS}")
 fi
 
 detect_reusable_devcontainer_postgis || true
@@ -716,6 +835,8 @@ for var in \
   LANDIS_ENABLED \
   LANDIS_LIVE_ENABLED \
   LANDIS_PORTAL_BASE \
+  LANDIS_PORTAL_ARCHIVE_DIR \
+  LANDIS_FULL_RELEASE_ARCHIVE_DIR \
   LANDIS_WAREHOUSE_SCHEMA \
   LANDIS_PRODUCT_REGISTRY_TABLE \
   LANDIS_PROVENANCE_TABLE \
@@ -727,7 +848,9 @@ for var in \
   LANDIS_NSI_OBSERVATIONS_TABLE \
   LANDIS_HTTP_TIMEOUT_CONNECT_SECONDS \
   LANDIS_HTTP_TIMEOUT_READ_SECONDS \
-  LANDIS_HTTP_RETRIES; do
+  LANDIS_HTTP_RETRIES \
+  BOUNDARY_RUNS_DIR \
+  BOUNDARY_RUNS_SEARCH_DIRS; do
   value="${!var:-}"
   if [[ -n "$value" ]]; then
     env_args+=(-e "$var=$value")
@@ -748,7 +871,16 @@ if [[ "$ONS_GEO_CACHE_INDEX_MOUNT_ENABLED" == "true" ]]; then
   mount_args+=(-v "$ONS_GEO_HOST_CACHE_INDEX_PATH:$ONS_GEO_CONTAINER_CACHE_INDEX_PATH:ro")
 fi
 
-append_readonly_mount_if_exists "${ADDRESSBASE_PREMIUM_XREF_PATH:-}"
+append_readonly_mount_for_config_path "${ADDRESSBASE_PREMIUM_XREF_PATH:-}"
+append_readonly_mount_for_config_path "${LANDIS_PORTAL_ARCHIVE_DIR:-}"
+append_readonly_mount_for_config_path "${LANDIS_FULL_RELEASE_ARCHIVE_DIR:-}"
+append_readonly_mount_for_config_path "$BOUNDARY_RUNS_DIR_EFFECTIVE"
+if [[ -n "${BOUNDARY_RUNS_SEARCH_DIRS:-}" ]]; then
+  while IFS= read -r raw_path; do
+    [[ -n "$raw_path" ]] || continue
+    append_readonly_mount_for_config_path "$raw_path"
+  done < <(parse_csv_values "${BOUNDARY_RUNS_SEARCH_DIRS}")
+fi
 
 docker_args=(
   run --rm -i

@@ -236,7 +236,7 @@ def test_path_and_area_helpers_cover_supported_and_invalid_inputs(
     archived_file.parent.mkdir(parents=True)
     archived_file.write_text("{}", encoding="utf-8")
     resolved = landis.resolve_landis_archive_file(
-        "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/data_source/abc/item_detail.json"
+        "/synthetic-external-root/Data/landis_portal_archive_2026-04-04/data_source/abc/item_detail.json"
     )
     assert resolved == archived_file
 
@@ -254,7 +254,7 @@ def test_path_and_area_helpers_cover_supported_and_invalid_inputs(
     ext_archived_file.parent.mkdir(parents=True)
     ext_archived_file.write_text("{}", encoding="utf-8")
     ext_resolved = landis.resolve_landis_archive_file(
-        "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-06/data_source/def/item_detail.json"
+        "/synthetic-external-root/Data/landis_portal_archive_2026-04-06/data_source/def/item_detail.json"
     )
     assert ext_resolved == ext_archived_file
 
@@ -272,15 +272,15 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
                 "runtimeFamily": "natmap",
                 "surfacingClass": "warehouse_next",
                 "itemPath": (
-                    "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/"
+                    "/synthetic-external-root/Data/landis_portal_archive_2026-04-04/"
                     "data_source/svc-1"
                 ),
                 "inventoryPath": (
-                    "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/"
+                    "/synthetic-external-root/Data/landis_portal_archive_2026-04-04/"
                     "data_source/svc-1/inventory_record.json"
                 ),
                 "metadataPath": (
-                    "/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04/"
+                    "/synthetic-external-root/Data/landis_portal_archive_2026-04-04/"
                     "data_source/svc-1/item_detail.json"
                 ),
             }
@@ -294,7 +294,7 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
                 "finalUrl": "https://www.landis.org.uk/data/nmwetness.cfm",
                 "status": "ok",
                 "pagePath": (
-                    "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/"
+                    "/synthetic-external-root/Data/landis_full_release_archive_2026-04-05/"
                     "public_site/NATMAP_wetness/page.html"
                 ),
             }
@@ -307,7 +307,7 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
                 "finalPageUrl": "https://www.data.gov.uk/dataset/host-class1",
                 "status": "ok",
                 "pagePath": (
-                    "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/"
+                    "/synthetic-external-root/Data/landis_full_release_archive_2026-04-05/"
                     "data_gov/host-class1/package_page.html"
                 ),
                 "resources": [
@@ -315,7 +315,7 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
                         "name": "LandIS website",
                         "status": "ok",
                         "path": (
-                            "/Volumes/ExtSSD-Data/Data/landis_full_release_archive_2026-04-05/"
+                            "/synthetic-external-root/Data/landis_full_release_archive_2026-04-05/"
                             "shared_url_fetches/index.html"
                         ),
                     }
@@ -325,7 +325,7 @@ def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_p
     }
     release_payload = {
         "generatedAt": "2026-04-05T00:00:00Z",
-        "destination": "/Users/crpage/Data/landis_full_release_archive_2026-04-05",
+        "destination": "/synthetic-external-root/Data/landis_full_release_archive_2026-04-05",
         "publicItems": [{"slug": "host"}],
         "dataGovPackages": [{"name": "soil-series"}],
         "summary": {"status": "ok"},

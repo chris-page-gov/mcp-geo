@@ -79,7 +79,6 @@ NSI_CAVEATS = [
 
 _LANDIS_LOCAL_DATA_CANDIDATES = (
     Path.home() / "Data",
-    Path("/Volumes/ExtSSD-Data/Data"),
     ROOT / "data" / "landis",
 )
 

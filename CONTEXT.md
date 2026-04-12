@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-11
+Last updated: 2026-04-12
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,16 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-12 portability follow-up now completes the runtime side of the
+  earlier path-cleanup work. `scripts/mcp-docker-local` hydrates path-bearing
+  local settings such as `LANDIS_LOCAL_DATA_ROOT`,
+  `LANDIS_PORTAL_ARCHIVE_DIR`, `LANDIS_FULL_RELEASE_ARCHIVE_DIR`,
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, and `BOUNDARY_RUNS_*` from the repo `.env`
+  when GUI-launched clients do not export them, normalizes relative host paths
+  against the repo root, and mounts those host paths into the app container.
+  This makes Docker-backed Claude/Codex sessions consume repo-local data roots
+  and optional external archives like `/Volumes/ExtSSD-Data/Data` without
+  duplicating the same machine-specific paths in every client config.
 - A 2026-04-12 PR follow-up closed two more review classes: plain `council tax
   status` prompts in `tools/os_mcp.py` now take the same status-query path as
   business-rates prompts, and `scripts/ons_geo_cache_refresh.py` now scopes
@@ -61,6 +71,11 @@ assumptions change.
   dependency from `scripts/check_spec_drift.py`; the vendored-spec audit now
   resolves Git from PATH so release/drift checks behave correctly on Homebrew,
   Nix, and other nonstandard host layouts.
+- A same-day portability cleanup now treats absolute paths in the setup docs as
+  illustrative only, replaces maintainer-specific README / `.env.example`
+  examples with placeholders, and normalizes the LandIS helper-script defaults
+  to `~/Data/...` plus generic archive relocalization rather than the specific
+  `/Volumes/ExtSSD-Data/Data` prefix.
 - A 2026-04-10 Claude/discovery follow-up is now in place. The checked-in
   constrained-host startup profile uses `MCP_TOOLS_DEFAULT_TOOLSET=starter`
   plus `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=ons_geo_lookup,property_tax,features_layers,landis_soils`

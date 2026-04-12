@@ -15,8 +15,6 @@ from scripts import landis_ingest
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PORTAL_ARCHIVE_ROOT = Path.home() / "Data"
-_EXTERNAL_PREFIX = "/Volumes/ExtSSD-Data/Data/"
-_LOCAL_PREFIX = f"{Path.home()}/Data/"
 
 _THEMATIC_DATASETS: dict[str, dict[str, str]] = {
     "NATMAPsoilscapes": {
@@ -156,20 +154,22 @@ def _localize_archive_path(raw_path: str, *, portal_root: Path) -> Path:
     if candidate.exists():
         return candidate
 
-    localized = raw_path.replace(_EXTERNAL_PREFIX, _LOCAL_PREFIX, 1)
-    candidate = Path(localized).expanduser()
-    if candidate.exists():
-        return candidate
-
     raw_candidate = Path(raw_path)
     if portal_root.name in raw_candidate.parts:
         suffix = raw_candidate.parts[raw_candidate.parts.index(portal_root.name) + 1 :]
         return portal_root.joinpath(*suffix)
 
-    if raw_path.startswith(_EXTERNAL_PREFIX):
-        return portal_root.parent / raw_path.removeprefix(_EXTERNAL_PREFIX)
-    if raw_path.startswith(_LOCAL_PREFIX):
-        return portal_root.parent / raw_path.removeprefix(_LOCAL_PREFIX)
+    parent_root_name = portal_root.parent.name
+    if parent_root_name:
+        indices = [
+            index
+            for index, part in enumerate(raw_candidate.parts)
+            if part == parent_root_name
+        ]
+        if indices:
+            suffix = raw_candidate.parts[indices[-1] + 1 :]
+            if suffix:
+                return portal_root.parent.joinpath(*suffix)
     return candidate
 
 
