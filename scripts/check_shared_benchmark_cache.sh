@@ -75,18 +75,29 @@ codex_plan="$(
   "$REPO_ROOT/scripts/codex-mcp-local"
 )"
 
+gemini_plan="$(
+  MCP_GEO_DOCKER_PLAN_ONLY=1 \
+  MCP_GEO_DOCKER_BUILD=never \
+  MCP_GEO_POSTGIS_BUILD=never \
+  "$REPO_ROOT/scripts/gemini-mcp-local"
+)"
+
 claude_target="$(printf "%s\n" "$claude_plan" | plan_value postgis_target_container)"
 claude_manage="$(printf "%s\n" "$claude_plan" | plan_value manage_postgis_container)"
 codex_target="$(printf "%s\n" "$codex_plan" | plan_value postgis_target_container)"
 codex_manage="$(printf "%s\n" "$codex_plan" | plan_value manage_postgis_container)"
+gemini_target="$(printf "%s\n" "$gemini_plan" | plan_value postgis_target_container)"
+gemini_manage="$(printf "%s\n" "$gemini_plan" | plan_value manage_postgis_container)"
 shared_network="$(printf "%s\n" "$claude_plan" | plan_value network)"
 
 [[ "$claude_target" == "$POSTGIS_CONTAINER" ]] || fail "Claude wrapper targets $claude_target, expected $POSTGIS_CONTAINER"
 [[ "$codex_target" == "$POSTGIS_CONTAINER" ]] || fail "Codex wrapper targets $codex_target, expected $POSTGIS_CONTAINER"
+[[ "$gemini_target" == "$POSTGIS_CONTAINER" ]] || fail "Gemini wrapper targets $gemini_target, expected $POSTGIS_CONTAINER"
 [[ "$claude_manage" == "false" ]] || fail "Claude wrapper would start its own PostGIS container"
 [[ "$codex_manage" == "false" ]] || fail "Codex wrapper would start its own PostGIS container"
+[[ "$gemini_manage" == "false" ]] || fail "Gemini wrapper would start its own PostGIS container"
 
-for fallback in mcp-geo-postgis-sidecar mcp-geo-postgis-claude mcp-geo-postgis-codex; do
+for fallback in mcp-geo-postgis-sidecar mcp-geo-postgis-claude mcp-geo-postgis-codex mcp-geo-postgis-gemini; do
   if "$DOCKER_BIN" container inspect "$fallback" >/dev/null 2>&1; then
     fail "fallback PostGIS container $fallback still exists; remove it before benchmarking"
   fi
@@ -99,3 +110,4 @@ info "$extensions"
 info "$cache_counts"
 info "claude_target=$claude_target"
 info "codex_target=$codex_target"
+info "gemini_target=$gemini_target"

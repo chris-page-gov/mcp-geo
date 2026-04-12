@@ -104,6 +104,8 @@ def _infer_source(cmd: list[str]) -> str:
         return "codex"
     if "claude" in name:
         return "claude"
+    if "gemini" in name:
+        return "gemini"
     if "vscode" in name:
         return "vscode"
     return "unknown"
@@ -114,6 +116,8 @@ def _default_surface(source: str) -> str:
         return "cli"
     if source == "claude":
         return "desktop"
+    if source == "gemini":
+        return "cli"
     if source == "vscode":
         return "ide"
     return "unknown"
@@ -136,6 +140,8 @@ def _default_command(mode: str, source: str) -> list[str]:
     if mode == "stdio":
         if source == "codex":
             return [str(REPO_ROOT / "scripts" / "codex-mcp-local")]
+        if source == "gemini":
+            return [str(REPO_ROOT / "scripts" / "gemini-mcp-local")]
         return [str(REPO_ROOT / "scripts" / "claude-mcp-local")]
     if mode == "http":
         return [str(REPO_ROOT / "scripts" / "start_https_proxy.sh")]

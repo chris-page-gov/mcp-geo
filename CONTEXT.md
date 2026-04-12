@@ -52,6 +52,19 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-12 client-parity follow-up now gives Gemini CLI the same dedicated
+  Docker-backed launcher pattern as Claude/Codex via
+  `scripts/gemini-mcp-local`, plus `scripts/check_gemini_startup_scope.sh` for
+  the same scoped-startup preflight used in comparison runs. The shared
+  benchmark-cache guard now checks Gemini against the same PostGIS target as
+  Claude/Codex, and the trace helpers recognize `gemini-mcp-local` so
+  comparison-session capture stays on the Docker-compatible path.
+- The same follow-up also clarified the VS Code path story: the workspace
+  stdio config already pins the same starter discovery defaults, while the
+  server runtime now reads local path-bearing settings like
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, `LANDIS_*`, and `BOUNDARY_RUNS_*` from the
+  repo `.env`, so VS Code can use the same external/local data roots without a
+  separate machine-specific config block.
 - A 2026-04-12 portability follow-up now completes the runtime side of the
   earlier path-cleanup work. `scripts/mcp-docker-local` hydrates path-bearing
   local settings such as `LANDIS_LOCAL_DATA_ROOT`,

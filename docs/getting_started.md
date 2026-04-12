@@ -561,7 +561,7 @@ Storage controls for the wrapper:
   volumes before suggesting the `docker rm` / `docker volume rm` recovery path.
 
 Benchmarking note:
-- Before comparing Codex, Claude, or other Docker-backed clients, run
+- Before comparing Codex, Claude, Gemini, or other Docker-backed clients, run
   `./scripts/check_shared_benchmark_cache.sh` and only continue if it reports
   `PASS`. This ensures every client is pointed at the same PostGIS cache.
 
@@ -594,6 +594,32 @@ To verify scoped startup discovery with the Codex launcher:
 
 For host benchmarking and scored Codex vs Claude runs, use the runbook in
 `docs/benchmarking/codex_vs_claude_host_benchmark.md`.
+
+## Appendix: Gemini local wrapper (PostGIS + cache)
+
+For Gemini CLI, use the Gemini-specific launcher so it shares the same Docker
+bootstrap behavior, cache mounts, and scoped startup defaults as the other
+desktop/CLI comparisons:
+
+```bash
+./scripts/gemini-mcp-local
+```
+
+The Gemini wrapper is a thin dedicated entrypoint over
+`scripts/mcp-docker-local`, using its own sidecar defaults
+(`mcp-geo-postgis-gemini` on `mcp-geo-gemini`) while still reusing the running
+repo devcontainer PostGIS container automatically when available.
+
+To verify scoped startup discovery with the Gemini launcher:
+
+```bash
+./scripts/check_gemini_startup_scope.sh
+```
+
+For fair host comparisons, point the Gemini CLI MCP config at
+`scripts/gemini-mcp-local` instead of a standalone `docker run --env-file`
+command, so it benefits from the same ONS cache mounts, AddressBase mounts,
+LandIS archive roots, and boundary-run search roots as Claude/Codex.
 
 ## Appendix: ChatGPT local dev (HTTPS tunnel)
 

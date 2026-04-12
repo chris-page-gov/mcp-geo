@@ -46,6 +46,12 @@ All notable changes to this project will be documented in this file.
   into the container so Docker-backed Claude/Codex sessions can use repo-local
   data roots and external archives such as `/Volumes/ExtSSD-Data/Data`
   consistently.
+- Added `scripts/gemini-mcp-local` and `scripts/check_gemini_startup_scope.sh`
+  so Gemini CLI can use the same Docker-backed startup path, scoped discovery,
+  cache mounts, and benchmark preflight checks as Claude/Codex. The shared
+  benchmark-cache guard now verifies Gemini against the same PostGIS target as
+  the other Docker-backed clients, and the trace session helpers now recognize
+  Gemini wrapper runs.
 - LandIS helper scripts now default to `~/Data/...` rather than maintainer
   machine paths, and LandIS archive relocalization no longer depends on the
   specific `/Volumes/ExtSSD-Data/Data` prefix.

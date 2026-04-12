@@ -43,6 +43,14 @@ Use one of:
   launching VS Code, or
 - keep `OS_API_KEY` in repo `.env` (loaded by `server/config.py`).
 
+Other path-bearing local settings such as `ADDRESSBASE_PREMIUM_XREF_PATH`,
+`LANDIS_LOCAL_DATA_ROOT`, `LANDIS_PORTAL_ARCHIVE_DIR`,
+`LANDIS_FULL_RELEASE_ARCHIVE_DIR`, `BOUNDARY_RUNS_DIR`, and
+`BOUNDARY_RUNS_SEARCH_DIRS` are also read from the repo `.env` by the server
+runtime. That means VS Code can use the same local/external data roots as the
+Docker-backed wrappers without duplicating those machine-specific paths in
+`.vscode/mcp.json`.
+
 If you change `OS_API_KEY` or `OS_API_KEY_FILE`, restart the MCP server from
 the VS Code MCP Servers panel so the new value is picked up.
 

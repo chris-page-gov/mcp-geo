@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+export MCP_GEO_POSTGIS_STORAGE_MODE="${MCP_GEO_POSTGIS_STORAGE_MODE:-volume}"
+export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-gemini}"
+export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-gemini}"
+export MCP_GEO_POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-gemini}"
+export MCP_GEO_POSTGIS_REUSE_DEVCONTAINER="${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-auto}"
+
+exec "$REPO_ROOT/scripts/mcp-docker-local"

@@ -60,3 +60,40 @@ def test_trace_session_keeps_host_ui_event_path_for_codex_wrapper(
     assert "ONS_API_KEY" not in session_meta["env"]
     assert session_meta["exitCode"] == 0
     assert session_meta["endedAt"].endswith("Z")
+
+
+def test_trace_session_defaults_to_gemini_wrapper_for_gemini_source(
+    monkeypatch, tmp_path: Path
+) -> None:
+    session_root = tmp_path / "logs" / "sessions"
+    captured: list[dict[str, object]] = []
+
+    def fake_run(
+        command: list[str], env: dict[str, str] | None = None, check: bool = False, **_: object
+    ):
+        captured.append({"command": command, "env": env, "check": check})
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(trace_session.subprocess, "run", fake_run)
+    monkeypatch.setattr(trace_session, "_git_info", lambda: {})
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "trace_session.py",
+            "--session-root",
+            str(session_root),
+            "--name",
+            "gemini-trace",
+            "--no-report",
+            "--source",
+            "gemini",
+            "stdio",
+        ],
+    )
+
+    assert trace_session.main() == 0
+    assert len(captured) == 1
+    command = captured[0]["command"]
+    assert isinstance(command, list)
+    assert any(str(part).endswith("gemini-mcp-local") for part in command)
