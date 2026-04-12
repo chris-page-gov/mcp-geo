@@ -120,5 +120,5 @@ printf '%s\\n' "${MCP_GEO_POSTGIS_REUSE_DEVCONTAINER:-}"
         "mcp-geo-codex",
         "mcp-geo-postgis-codex",
         "mcp-geo-postgis-codex",
-        "auto",
+        "0",
     ]

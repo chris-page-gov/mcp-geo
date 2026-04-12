@@ -54,6 +54,74 @@ def test_route_query_postcode_geography_lookup_best_fit():
     assert body["recommended_parameters"]["derivationMode"] == "best_fit"
 
 
+def test_route_query_area_profile_by_code():
+    body = _route("What do you know about OA E00048678?")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E00048678"
+    assert body["recommended_parameters"]["targetLevel"] == "OA"
+    assert body["workflow_profile_uri"] == "resource://mcp-geo/area-summary-workflows"
+
+
+def test_route_query_area_profile_follow_up_phrase():
+    body = _route("What do you know about that OA?")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["targetLevel"] == "OA"
+    assert body["workflow_steps"] == ["ons_geo.area_summary"]
+
+
+def test_route_query_area_profile_from_postcode():
+    body = _route("Tell me about this postcode area CV3 1HB")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["postcode"] == "CV31HB"
+    assert body["recommended_parameters"]["targetLevel"] == "OA"
+
+
+def test_route_query_area_profile_from_postcode_preserves_region_level():
+    body = _route("Tell me about the region for postcode CV3 1HB")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["postcode"] == "CV31HB"
+    assert body["recommended_parameters"]["targetLevel"] == "REGION"
+
+
+def test_route_query_area_profile_from_area_code_preserves_explicit_higher_level():
+    body = _route("Quick profile for LSOA E01009617 at region level")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E01009617"
+    assert body["recommended_parameters"]["targetLevel"] == "REGION"
+
+
+def test_route_query_area_profile_from_area_code_rejects_narrower_target_level():
+    body = _route("Quick profile for district E09000033 at OA level")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert "cannot be narrowed" in body["guidance"]
+    assert "E09000033" in body["guidance"]
+
+
+def test_route_query_area_profile_uninferrable_code_needs_explicit_level():
+    body = _route("Quick profile for K04000001")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "targetLevel" in body["guidance"]
+    assert "K04000001" in body["guidance"]
+
+
+def test_route_query_area_profile_country_code_with_explicit_level_is_callable():
+    body = _route("Quick profile for country K04000001")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "K04000001"
+    assert body["recommended_parameters"]["targetLevel"] == "COUNTRY"
+
+
 def test_route_query_uprn_lookup():
     body = _route("Lookup UPRN 100023336959")
     assert body["intent"] == "address_lookup"
@@ -67,6 +135,88 @@ def test_route_query_uprn_geography_lookup():
     assert body["recommended_tool"] == "ons_geo.by_uprn"
     assert body["recommended_parameters"]["uprn"] == "100023336959"
     assert body["recommended_parameters"]["derivationMode"] == "exact"
+
+
+def test_route_query_council_tax_band_from_uprn_uses_two_step_workflow():
+    body = _route("What is the council tax band for UPRN 100023336959?")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.by_uprn"
+    assert body["recommended_parameters"]["uprn"] == "100023336959"
+    assert body["workflow_steps"] == ["os_places.by_uprn", "council_tax.band_lookup"]
+
+
+def test_route_query_property_tax_status_query_uses_council_tax_query():
+    body = _route(
+        "Check council tax and non-domestic rates flags for UPRNs "
+        "100023336959 and 100023336960"
+    )
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "council_tax.query"
+    assert body["recommended_parameters"]["uprns"] == ["100023336959", "100023336960"]
+    assert body["workflow_steps"] == ["council_tax.query"]
+
+
+def test_route_query_business_rates_postcode_uses_places_then_status_query():
+    body = _route("Check business rates status for postcode CV1 2GT")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.by_postcode"
+    assert body["recommended_parameters"]["postcode"] == "CV12GT"
+    assert body["workflow_steps"] == ["os_places.by_postcode", "council_tax.query"]
+
+
+def test_route_query_council_tax_status_postcode_uses_places_then_status_query():
+    body = _route("Check council tax status for postcode CV1 2GT")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.by_postcode"
+    assert body["recommended_parameters"]["postcode"] == "CV12GT"
+    assert body["workflow_steps"] == ["os_places.by_postcode", "council_tax.query"]
+
+
+def test_route_query_business_rates_address_uses_places_search_then_status_query():
+    body = _route("Check business rates status for addresses on High Street")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.search"
+    assert body["recommended_parameters"]["text"] == (
+        "Check business rates status for addresses on High Street"
+    )
+    assert body["workflow_steps"] == ["os_places.search", "council_tax.query"]
+
+
+def test_route_query_business_rates_without_identifier_requires_resolution_first():
+    body = _route("Check business rates status")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "need a UPRN" in body["guidance"]
+
+
+def test_route_query_council_tax_status_without_identifier_requires_resolution_first():
+    body = _route("Check council tax status")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "need a UPRN" in body["guidance"]
+
+
+def test_route_query_council_tax_address_uses_places_search_then_band_lookup():
+    body = _route("Council tax on properties in Gloucester Street, Coventry")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.search"
+    assert body["recommended_parameters"]["text"] == (
+        "Council tax on properties in Gloucester Street, Coventry"
+    )
+    assert body["workflow_steps"] == ["os_places.search", "council_tax.band_lookup"]
+
+
+def test_route_query_council_tax_band_without_identifier_requires_resolution_first():
+    body = _route("Check council tax band")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "band lookups need a postcode" in body["guidance"].lower()
 
 
 def test_route_query_boundary_fetch():
@@ -392,6 +542,23 @@ def test_route_query_environmental_survey_bowland():
     assert any(step.get("tool") == "os_peat.evidence_paths" for step in plan)
 
 
+def test_route_query_landis_soil_screening_prefers_landis_workflow():
+    body = _route("Run a LandIS soil screening for Forest of Bowland")
+    assert body["intent"] == "environmental_survey"
+    assert body["recommended_tool"] == "os_landscape.find"
+    assert body["recommended_parameters"]["text"] == "Forest of Bowland"
+    assert body["workflow_steps"] == [
+        "os_landscape.find",
+        "os_landscape.get",
+        "landis_soilscapes.area_summary",
+        "landis_natmap.area_summary",
+        "landis_derive.pipe_risk",
+    ]
+    plan = body.get("surveyPlan")
+    assert isinstance(plan, list)
+    assert any(step.get("tool") == "landis_soilscapes.area_summary" for step in plan)
+
+
 def test_route_query_unknown():
     body = _route("asdfghjkl qwertyuiop")
     assert body["intent"] == "unknown"
@@ -514,6 +681,133 @@ def test_select_toolsets_poi_query_infers_places_names():
     assert "admin_boundaries" not in include
     matched = body.get("matchedTools", [])
     assert "os_poi.search" in matched
+
+
+def test_select_toolsets_property_tax_band_query_infers_property_tax_and_places():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "What is the council tax band for UPRN 100023336959?",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "band_from_uprn"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.band_lookup" in matched
+    assert "os_places.by_uprn" in matched
+
+
+def test_select_toolsets_landis_query_infers_landis_toolset():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Run a LandIS soil screening for Forest of Bowland",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "environmental_survey"
+    assert inference.get("landisPreferred") is True
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "landis_soils" in include
+    assert "protected_landscapes" in include
+    matched = body.get("matchedTools", [])
+    assert "landis_soilscapes.area_summary" in matched
+    assert "os_landscape.find" in matched
+
+
+def test_select_toolsets_business_rates_postcode_infers_places_and_property_tax() -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Check business rates status for postcode CV1 2GT",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "status_from_postcode"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.query" in matched
+    assert "os_places.by_postcode" in matched
+
+
+def test_select_toolsets_council_tax_status_postcode_infers_places_and_property_tax() -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Check council tax status for postcode CV1 2GT",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "status_from_postcode"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.query" in matched
+    assert "os_places.by_postcode" in matched
+
+
+def test_select_toolsets_council_tax_address_band_query_infers_places_and_property_tax() -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Council tax on properties in Gloucester Street, Coventry",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "band_from_address"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.band_lookup" in matched
+    assert "os_places.search" in matched
+
+
+def test_select_toolsets_council_tax_band_without_identifier_infers_places_and_property_tax(
+) -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Check council tax band",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "band_needs_identifier"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.band_lookup" in matched
+    assert "os_places.search" in matched
 
 
 def test_select_toolsets_explicit_filters():

@@ -17,6 +17,15 @@
    clear current static-analysis debt (`ruff`/`mypy`) so release gating is enforceable.
 4. **Route graph operationalization**: automate OS MRN package ingestion,
    pgRouting graph builds, and environment bootstrap in deployment workflows.
+5. **ONS geo refresh redesign**: split `ons_geo` cache refresh into
+   parallel raw downloads plus sequential ingest, support selective per-dataset
+   refresh when one ONS source moves out of cycle, and add a metadata-only
+   validation path that can compare on-disk holdings with upstream availability
+   without re-downloading full artifacts. The same redesign should also persist
+   original remote provenance beside raw artifacts so local-only rebuilds keep
+   `resolvedSourceUrl` and related source metadata, and it should support
+   optional external raw-artifact roots or mirrors (for example mounted SSD
+   volumes) so large downloads do not have to live only on the primary local disk.
 
 ### Medium priority
 6. **Pagination for large tool results**: token-based paging for OS features and large datasets.
@@ -43,6 +52,9 @@
 - Implement pagination for OS features and ONS outputs.
 - Expand dataset caching (optional TTLs and invalidation).
 - Extend validation rules for boundary pipeline (explicit overrides).
+- Refactor the `ons_geo` refresh workflow so raw acquisition can run in
+  parallel while cache ingest remains sequential and selectively repeatable by
+  dataset.
 
 ### Phase 3 - UI fidelity (2-4 weeks)
 - Fix MCP-Apps initialization flow for Claude and Inspector.

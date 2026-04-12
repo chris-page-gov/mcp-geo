@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 
-def client_supports_elicitation_form(capabilities: Dict[str, Any]) -> bool:
+def client_supports_elicitation_form(capabilities: dict[str, Any]) -> bool:
     """Return True if a client capability object indicates form elicitation support."""
     if not isinstance(capabilities, dict):
         return False
@@ -47,21 +48,21 @@ _TIME_GRANULARITY_ALIASES: dict[str, str] = {
 }
 
 
-def normalize_ons_select_geography_level(value: str) -> Optional[str]:
+def normalize_ons_select_geography_level(value: str) -> str | None:
     raw = value.strip().lower()
     if not raw:
         return None
     return _GEO_LEVEL_ALIASES.get(raw, raw)
 
 
-def normalize_ons_select_time_granularity(value: str) -> Optional[str]:
+def normalize_ons_select_time_granularity(value: str) -> str | None:
     raw = value.strip().lower()
     if not raw:
         return None
     return _TIME_GRANULARITY_ALIASES.get(raw, raw)
 
 
-def _coerce_string_list(value: Any) -> Optional[List[str]]:
+def _coerce_string_list(value: Any) -> list[str] | None:
     if value is None:
         return None
     if isinstance(value, list):
@@ -76,15 +77,15 @@ def _coerce_string_list(value: Any) -> Optional[List[str]]:
 
 def build_ons_select_elicitation_params(
     query: str,
-    payload: Dict[str, Any],
-    questions: Optional[Iterable[str]] = None,
-) -> Dict[str, Any]:
-    geo_default = ""
+    payload: dict[str, Any],
+    questions: Iterable[str] | None = None,
+) -> dict[str, Any]:
+    geo_default: str | None = None
     if isinstance(payload.get("geographyLevel"), str):
         normalized = normalize_ons_select_geography_level(str(payload.get("geographyLevel")))
         if normalized:
             geo_default = normalized
-    time_default = ""
+    time_default: str | None = None
     if isinstance(payload.get("timeGranularity"), str):
         normalized = normalize_ons_select_time_granularity(str(payload.get("timeGranularity")))
         if normalized:
@@ -103,38 +104,34 @@ def build_ons_select_elicitation_params(
             joined = " ".join(cleaned[:3])
             message = f"{message} {joined}"
 
+    geography_level_schema: dict[str, Any] = {
+        "type": "string",
+        "title": "Geography level",
+        "description": (
+            "Choose the area level you care about (optional). Leave unset for no preference."
+        ),
+        "enum": ["nation", "region", "local_authority", "ward"],
+    }
+    if geo_default is not None:
+        geography_level_schema["default"] = geo_default
+
+    time_granularity_schema: dict[str, Any] = {
+        "type": "string",
+        "title": "Time granularity",
+        "description": "Choose a time basis (optional). Leave unset for no preference.",
+        "enum": ["latest", "year", "quarter", "month"],
+    }
+    if time_default is not None:
+        time_granularity_schema["default"] = time_default
+
     return {
         "mode": "form",
         "message": message,
         "requestedSchema": {
             "type": "object",
             "properties": {
-                "geographyLevel": {
-                    "type": "string",
-                    "title": "Geography level",
-                    "description": "Choose the area level you care about (optional).",
-                    "oneOf": [
-                        {"const": "", "title": "No preference"},
-                        {"const": "nation", "title": "Nation"},
-                        {"const": "region", "title": "Region"},
-                        {"const": "local_authority", "title": "Local authority"},
-                        {"const": "ward", "title": "Ward"},
-                    ],
-                    "default": geo_default,
-                },
-                "timeGranularity": {
-                    "type": "string",
-                    "title": "Time granularity",
-                    "description": "Choose a time basis (optional).",
-                    "oneOf": [
-                        {"const": "", "title": "No preference"},
-                        {"const": "latest", "title": "Latest available"},
-                        {"const": "year", "title": "Annual"},
-                        {"const": "quarter", "title": "Quarterly"},
-                        {"const": "month", "title": "Monthly"},
-                    ],
-                    "default": time_default,
-                },
+                "geographyLevel": geography_level_schema,
+                "timeGranularity": time_granularity_schema,
                 "intentTags": {
                     "type": "string",
                     "title": "Topic focus (optional)",
@@ -149,9 +146,9 @@ def build_ons_select_elicitation_params(
 
 
 def apply_ons_select_elicitation_result(
-    payload: Dict[str, Any],
-    response: Dict[str, Any],
-) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    payload: dict[str, Any],
+    response: dict[str, Any],
+) -> tuple[bool, dict[str, Any] | None]:
     action = response.get("action")
     if action in {"cancel", "decline"}:
         return False, None
@@ -188,7 +185,7 @@ def apply_ons_select_elicitation_result(
     return changed, None
 
 
-def _coerce_toolset_list(value: Any) -> Optional[List[str]]:
+def _coerce_toolset_list(value: Any) -> list[str] | None:
     if value is None:
         return None
     if isinstance(value, list):
@@ -203,10 +200,10 @@ def _coerce_toolset_list(value: Any) -> Optional[List[str]]:
 def build_toolset_selection_elicitation_params(
     *,
     query: str,
-    toolset_names: List[str],
-    default_include: Optional[List[str]] = None,
-    default_exclude: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    toolset_names: list[str],
+    default_include: list[str] | None = None,
+    default_exclude: list[str] | None = None,
+) -> dict[str, Any]:
     include_default = [item for item in (default_include or []) if item in toolset_names]
     exclude_default = [item for item in (default_exclude or []) if item in toolset_names]
     return {
@@ -243,9 +240,9 @@ def build_toolset_selection_elicitation_params(
 
 
 def apply_toolset_selection_elicitation_result(
-    payload: Dict[str, Any],
-    response: Dict[str, Any],
-) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    payload: dict[str, Any],
+    response: dict[str, Any],
+) -> tuple[bool, dict[str, Any] | None]:
     action = response.get("action")
     if action in {"cancel", "decline"}:
         return False, {

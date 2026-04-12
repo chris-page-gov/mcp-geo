@@ -14,6 +14,32 @@ DERIVATION_MODES = {"exact", "best_fit"}
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
 
 _GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM)$")
+_AREA_LEVEL_ALIASES = {
+    "OA": "OA",
+    "OUTPUT_AREA": "OA",
+    "LSOA": "LSOA",
+    "MSOA": "MSOA",
+    "WARD": "WARD",
+    "WD": "WARD",
+    "DISTRICT": "DISTRICT",
+    "LAD": "DISTRICT",
+    "LOCAL_AUTHORITY": "DISTRICT",
+    "LOCAL_AUTHORITY_DISTRICT": "DISTRICT",
+    "COUNTRY": "COUNTRY",
+    "CTRY": "COUNTRY",
+    "NATION": "COUNTRY",
+    "REGION": "REGION",
+    "RGN": "REGION",
+}
+AREA_LEVEL_COLUMN_MAP = {
+    "OA": "oa_code",
+    "LSOA": "lsoa_code",
+    "MSOA": "msoa_code",
+    "WARD": "ward_code",
+    "DISTRICT": "lad_code",
+    "COUNTRY": "country_code",
+    "REGION": "region_code",
+}
 
 
 def _resolve_path(raw: str | None, default: str) -> Path:
@@ -50,6 +76,30 @@ def normalize_key(key_type: str, value: str) -> str | None:
 def normalize_derivation_mode(value: str) -> str | None:
     mode = value.strip().lower()
     return mode if mode in DERIVATION_MODES else None
+
+
+def normalize_area_level(value: str) -> str | None:
+    raw = value.strip().upper().replace(" ", "_").replace("-", "_")
+    return _AREA_LEVEL_ALIASES.get(raw)
+
+
+def infer_area_level_from_code(value: str) -> str | None:
+    code = value.strip().upper()
+    if re.fullmatch(r"[EW]00\d{6}", code):
+        return "OA"
+    if re.fullmatch(r"[EW]01\d{6}", code):
+        return "LSOA"
+    if re.fullmatch(r"[EW]02\d{6}", code):
+        return "MSOA"
+    if re.fullmatch(r"[EW]05\d{6}", code):
+        return "WARD"
+    if re.fullmatch(r"(E06|E07|E08|E09|W06)\d{6}", code):
+        return "DISTRICT"
+    if re.fullmatch(r"[EW]12\d{6}", code):
+        return "REGION"
+    if re.fullmatch(r"[EWNS]92\d{6}", code):
+        return "COUNTRY"
+    return None
 
 
 def _table_columns(conn: sqlite3.Connection, table_name: str) -> set[str]:
@@ -351,6 +401,58 @@ class ONSGeoCache:
             row=payload,
             normalized=normalized,
         )
+
+    def area_member_counts(
+        self,
+        *,
+        area_code: str,
+        area_level: str,
+        derivation_mode: str,
+    ) -> dict[str, int] | None:
+        normalized_level = normalize_area_level(area_level)
+        normalized_mode = normalize_derivation_mode(derivation_mode)
+        if normalized_level is None or normalized_mode is None:
+            return None
+        column = AREA_LEVEL_COLUMN_MAP.get(normalized_level)
+        if column is None:
+            return None
+        code = area_code.strip().upper()
+        if not code:
+            return None
+        if not self.available():
+            return None
+
+        conn: sqlite3.Connection | None = None
+        try:
+            conn = sqlite3.connect(str(self.db_path))
+            row = conn.execute(
+                f"""
+                SELECT
+                    COUNT(*) AS uprn_count,
+                    COUNT(DISTINCT postcode) AS postcode_count,
+                    COALESCE(SUM(CASE WHEN postal_delivery = 1 THEN 1 ELSE 0 END), 0)
+                        AS postal_delivery_uprn_count
+                FROM ons_geo_uprn_index
+                WHERE derivation_mode = ?
+                  AND {column} = ?
+                """,
+                (normalized_mode, code),
+            ).fetchone()
+        except sqlite3.Error as exc:
+            raise ONSGeoCacheReadError(
+                f"Failed to query cache database at {self.db_path}: {exc}"
+            ) from exc
+        finally:
+            if conn is not None:
+                conn.close()
+
+        if row is None:
+            return None
+        return {
+            "uprnCount": int(row[0] or 0),
+            "postcodeCount": int(row[1] or 0),
+            "postalDeliveryUprnCount": int(row[2] or 0),
+        }
 
 
 def _optional_text(value: Any) -> str | None:

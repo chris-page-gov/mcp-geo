@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-10
+Last updated: 2026-04-12
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,83 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-12 PR follow-up closed the remaining area-summary/router review
+  gaps. `tools/os_mcp.py` now preserves explicit higher-level profile requests
+  on area-code prompts, rejects narrower target levels with descriptor
+  guidance instead of silently changing intent, and routes under-specified
+  Council Tax band prompts to a resolution-first path rather than emitting an
+  uncallable `council_tax.band_lookup` recommendation. `tools/ons_geo.py` now
+  validates direct area ids more strictly, using hierarchy/geometry or
+  non-zero cached membership counts before returning `200`, and helper-tool
+  failures in the optional enrichment path no longer bubble up as `500`s.
+- A same-day CI portability follow-up now removes the implicit `rg`
+  dependency from `scripts/check_shared_benchmark_cache.sh` and the
+  PostGIS-diagnostic path in `scripts/mcp-docker-local`. Both scripts now fall
+  back to `grep` when ripgrep is absent, which matches the GitHub Actions
+  runner used by the PR test job and avoids false benchmark-cache failures in
+  minimal shells.
+- A 2026-04-12 client-parity follow-up now gives Gemini CLI the same dedicated
+  Docker-backed launcher pattern as Claude/Codex via
+  `scripts/gemini-mcp-local`, plus `scripts/check_gemini_startup_scope.sh` for
+  the same scoped-startup preflight used in comparison runs. A 2026-04-12
+  topology correction then restored isolated per-client PostGIS as the explicit
+  default for Docker-backed host clients (`claude`, `codex`, `gemini`, and the
+  generic fallback) after the benchmark docs drifted toward an older shared
+  devcontainer assumption. `scripts/check_shared_benchmark_cache.sh` now
+  defaults to verifying parity across those dedicated sidecars and shared mount
+  roots, while explicit shared-mode benchmarking remains available only when
+  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1` is set. The trace helpers recognize
+  `gemini-mcp-local` so comparison-session capture stays on the Docker-
+  compatible path.
+- The same follow-up also clarified the VS Code path story: the workspace
+  stdio config already pins the same starter discovery defaults, while the
+  server runtime now reads local path-bearing settings like
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, `LANDIS_*`, and `BOUNDARY_RUNS_*` from the
+  repo `.env`, so VS Code can use the same external/local data roots without a
+  separate machine-specific config block.
+- A 2026-04-12 portability follow-up now completes the runtime side of the
+  earlier path-cleanup work. `scripts/mcp-docker-local` hydrates path-bearing
+  local settings such as `LANDIS_LOCAL_DATA_ROOT`,
+  `LANDIS_PORTAL_ARCHIVE_DIR`, `LANDIS_FULL_RELEASE_ARCHIVE_DIR`,
+  `ADDRESSBASE_PREMIUM_XREF_PATH`, and `BOUNDARY_RUNS_*` from the repo `.env`
+  when GUI-launched clients do not export them, normalizes relative host paths
+  against the repo root, and mounts those host paths into the app container.
+  This makes Docker-backed Claude/Codex sessions consume repo-local data roots
+  and optional external archives like `/Volumes/ExtSSD-Data/Data` without
+  duplicating the same machine-specific paths in every client config.
+- A 2026-04-12 PR follow-up closed two more review classes: plain `council tax
+  status` prompts in `tools/os_mcp.py` now take the same status-query path as
+  business-rates prompts, and `scripts/ons_geo_cache_refresh.py` now scopes
+  month/epoch pairing to the matched release candidate so archived CKAN resource
+  titles do not leak the wrong epoch into `resolvedRelease`.
+- The same 2026-04-12 PR cleanup also removed the hardcoded `/usr/bin/git`
+  dependency from `scripts/check_spec_drift.py`; the vendored-spec audit now
+  resolves Git from PATH so release/drift checks behave correctly on Homebrew,
+  Nix, and other nonstandard host layouts.
+- A same-day portability cleanup now treats absolute paths in the setup docs as
+  illustrative only, replaces maintainer-specific README / `.env.example`
+  examples with placeholders, and normalizes the LandIS helper-script defaults
+  to `~/Data/...` plus generic archive relocalization rather than the specific
+  `/Volumes/ExtSSD-Data/Data` prefix.
+- A 2026-04-10 Claude/discovery follow-up is now in place. The checked-in
+  constrained-host startup profile uses `MCP_TOOLS_DEFAULT_TOOLSET=starter`
+  plus `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=ons_geo_lookup,property_tax,features_layers,landis_soils`
+  so active ONS geo, AddressBase/council-tax, map-export, and LandIS surfaces
+  remain visible without loading the full catalog at startup. The routing
+  layer in `tools/os_mcp.py` now treats council-tax/business-rates prompts as
+  a dedicated property-tax workflow and LandIS soil-screening prompts as a
+  LandIS-flavored environmental survey path, which fixes the prior
+  misclassification to generic address lookup or admin-boundary discovery.
+- The same 2026-04-10 Claude follow-up now also flattens top-level schema
+  combinators (`oneOf` / `anyOf` / `allOf`) only on the sanitized stdio tool
+  input schemas shown to strict clients. HTTP `/tools/describe` now preserves
+  the original top-level combinators so browser/HTTP clients keep the full
+  contract for area-vs-geometry and similar alternate-input tools, while
+  Claude Code startup still avoids the unsupported top-level combinator shape.
+- A 2026-04-10 vendored-spec follow-up added `scripts/check_spec_drift.py` and
+  refreshed `docs/spec_tracking.md` so maintainers can audit local spec
+  submodule drift, verify tracked local spec paths, and distinguish audit-only
+  checks from true submodule refreshes during release prep.
 - A 2026-04-10 AddressBase Premium local-data follow-up is now in progress.
   `tools/council_tax.py` supports both CSV and Parquet xref sources via the
   existing `ADDRESSBASE_PREMIUM_XREF_PATH` setting, including supplier-style
@@ -60,12 +137,64 @@ assumptions change.
   engine over the file rather than building a separate indexed database, with
   `ADDRESSBASE_PREMIUM_DUCKDB_THREADS` and
   `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT` controlling runtime limits.
+- A same-day container follow-up closed the runtime-packaging gap exposed by
+  early Parquet trials: the checked-in repo `Dockerfile` now installs
+  `mcp-geo[addressbase]`, not just the base package, so the server container
+  ships the Python `duckdb` module required by `council_tax.query`. The
+  Parquet missing-dependency message in `tools/council_tax.py` now also makes
+  it explicit that this failure is about the server runtime rather than the
+  caller host.
 - The same 2026-04-10 ABP follow-up now treats `council_tax.band_lookup` and
   `council_tax.query` as always-loaded MCP tools, so clients do not need a
   separate property-tax discovery step before using the council-tax surface.
   The council-tax UPRN query path also now keeps the legacy CSV cap at `5000`
   items while allowing Parquet-backed batches up to `100000`, reflecting the
   lower-memory DuckDB-over-Parquet runtime path.
+- A 2026-04-11 council-tax live-search follow-up now normalizes GOV.UK form
+  validation pages into actionable `INVALID_INPUT` responses instead of
+  returning raw HTML snippets, and the property-tax router now sends street or
+  address-only band queries through `os_places.search ->
+  council_tax.band_lookup` so clients resolve a postcode before calling the
+  live VOA band form.
+- A 2026-04-11 Docker-sidecar follow-up now mounts the host ONS geo cache and
+  cache index into `scripts/mcp-docker-local` / `scripts/claude-mcp-local`
+  sessions when those artifacts exist locally. This fixes Docker-backed Claude
+  sessions that previously reported `CACHE_UNAVAILABLE` for `ons_geo.*` even
+  though the host repo had a populated cache, because the container only saw
+  `/logs`, `/landis-data`, and any explicit ABP parquet mount.
+- A 2026-04-11 NGD features compatibility follow-up now accepts legacy
+  `ngd-base:` collection ids in `os_features.query`. The query path strips the
+  older namespace prefix, preserves existing transport-name compatibility
+  aliases, and upgrades unversioned base ids to the latest advertised
+  collection version before calling the NGD items endpoint, so older client
+  prompts no longer need a manual `os_features.collections` repair step.
+- A 2026-04-11 ONS selection follow-up now uses plain `enum` fields in the
+  `ons_select.search` elicitation form for optional geography/time hints,
+  rather than property-level `oneOf` literals. This fixes Claude Code sessions
+  that displayed the form but would not accept it, showing `Invalid input:
+  expected never, received string` on selected geography/time values while the
+  stdio server was correctly waiting for an elicitation result.
+- A 2026-04-11 postcode-to-area-summary follow-up now adds
+  `ons_geo.area_summary` plus the guide resource
+  `resource://mcp-geo/area-summary-workflows`. The new tool is the compact
+  answer path for prompts such as `What do you know about that OA?`,
+  `Tell me about LSOA E01009617`, or `Tell me about this postcode area CV3
+  1HB`, and it rolls together target-area resolution, compact ONS-cache counts,
+  optional compact inventory, a simple population summary, and curated NOMIS
+  follow-up dataset hints.
+- The same 2026-04-11 follow-up now gives `os_map.inventory` opt-in
+  `responseMode=summary|counts` support so AI clients can request compact
+  UPRN/building summaries without overflowing the chat surface with raw feature
+  payloads. `tools/os_mcp.py` also now routes area-profile prompts to the new
+  higher-level surface instead of encouraging clients to rediscover the OA,
+  call `ons_geo.cache_status`, or fetch full raw inventories for a narrative
+  answer.
+- `nomis.query` now adds `datasetSummary` metadata when available, and the new
+  curated profile-category mapping for `population`, `sex`, `ethnicity`,
+  `country_of_birth`, and `tenure` is shared between `ons_geo.area_summary`
+  and the checked-in workflow/evaluation guidance. The concrete summary-only
+  evaluation artifact from the postcode trace now lives at
+  `examples/ons_from_postcode_03_summary_only_eval.md`.
 - The new builder `scripts/addressbase_build_xref.py` produces a serving
   Parquet such as `xref_voa_os.parquet` from local ABP CSV/Parquet extracts.
   Its current default is to drop only `SOURCE=7666OW` and `SOURCE=7666OP`,
@@ -166,6 +295,37 @@ assumptions change.
   Records for Geoportal dataset discovery, RSS for pause/correction notices,
   and CHD/RGC as the code-history/current-code support datasets used during
   normalization.
+- A 2026-04-10 operator trial against a clean local cache showed the current
+  `scripts/ons_geo_cache_refresh.py` workflow is still too coarse and too
+  serial for routine validation. An `ONSPD` refresh attempt was stopped after
+  roughly `1,047,999 / 2,723,596` hosted-table rows (`~38.5%`) and about `1.0
+  GB` of raw `rows.ndjson`, with no SQLite ingest started yet. Follow-up
+  backlog now explicitly targets a two-phase redesign: parallel raw
+  acquisition, sequential ingest, selective per-dataset refresh, and
+  metadata-only remote-versus-local validation so operators can verify
+  on-disk holdings without re-downloading full artifacts.
+- A 2026-04-10/11 follow-up populated the ONS geo cache successfully after
+  three refresh passes: first a full remote acquisition, then an `RGC`
+  workbook-ingest fix, then a local-only rebuild from the downloaded raw
+  artifacts to avoid re-downloading the large ArcGIS sources. That successful
+  local-only rebuild leaves `resolvedSourceUrl=null` in the cache index
+  because `static_file` rebuilds currently discard upstream provenance even
+  though local `sourcePath` and SHA-256 are preserved. Backlog now explicitly
+  includes persisting remote provenance beside raw artifacts before the next
+  live download, plus optional external raw-artifact roots/mirrors (for
+  example `/Volumes/ExtSSD-Data/Data`) so bulky ONS downloads and existing
+  sources such as `boundary_runs` can live off the main local disk when the
+  external volume is mounted without forcing the active SQLite/index state to
+  move there.
+- A 2026-04-11 storage follow-up implemented the first low-disruption slice of
+  that external-root design for boundary run archives. The new shared helper
+  `server/boundary_run_paths.py` centralizes `BOUNDARY_RUNS_DIR` plus optional
+  `BOUNDARY_RUNS_SEARCH_DIRS` resolution, so boundary-report readers can search
+  mounted roots such as `/Volumes/ExtSSD-Data/Data` while keeping the local
+  default unchanged. `scripts/boundary_pipeline.py` and
+  `scripts/boundary_autofix.py` now also honor the configured primary
+  boundary-run output directory for future writes, and `boundary_autofix`
+  correctly forwards `--workdir` to the pipeline it spawns.
 - `tools/os_mcp.py` now routes road-overlay/map-repair prompts toward
   `os_map.export_roads` rather than low-level `os_features.query` calls when
   the user intent is to draw/replace/embed road geometry on a map. This keeps

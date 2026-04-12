@@ -43,6 +43,25 @@ cd mcp-geo
 cp .env.example .env
 ```
 
+Path portability note:
+
+- Any absolute path shown later in this README is an example, not a required
+  location.
+- Replace maintainer-specific examples such as `/Users/...` or `/Volumes/...`
+  with paths that exist on your machine.
+- The main path-bearing settings are `ADDRESSBASE_PREMIUM_XREF_PATH`,
+  `LANDIS_LOCAL_DATA_ROOT`, `LANDIS_PORTAL_ARCHIVE_DIR`,
+  `LANDIS_FULL_RELEASE_ARCHIVE_DIR`, `BOUNDARY_RUNS_DIR`,
+  `BOUNDARY_RUNS_SEARCH_DIRS`, and, for GUI-launched wrappers on macOS,
+  `MCP_GEO_DOCKER_BIN`.
+- Docker-backed local wrappers (`scripts/claude-mcp-local`,
+  `scripts/codex-mcp-local`, `scripts/mcp-docker-local`) now hydrate those
+  path-bearing settings from the repo `.env` and mount the configured host
+  paths into the container automatically.
+- Generated reports, research artifacts, and knowledge-base outputs in this
+  repo may embed the maintainer's local paths; they are evidence artifacts, not
+  portable setup inputs.
+
 Open `.env` and paste the required key:
 
 ```text
@@ -298,9 +317,7 @@ Claude Desktop config example (STDIO transport):
 The wrapper script builds and starts the repo's PostGIS+pgRouting sidecar
 image locally (Docker), bootstraps the boundary-cache and route-graph schemas
 idempotently, builds the app image if needed, and runs STDIO with the
-cache/routing DSNs pointed at that sidecar. When the repo devcontainer PostGIS
-service is already running, the Claude wrapper now prefers that existing
-container/network instead of starting a second database.
+cache/routing DSNs pointed at that sidecar.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
 are set, `OS_API_KEY` wins).
 Use `MCP_GEO_DOCKER_BUILD=always|missing|never` to control rebuild behavior.
@@ -327,9 +344,17 @@ volumes explicitly instead of only timing out.
 Wrapper-managed PostGIS sidecars no longer publish `5432` to the host by
 default; set `MCP_GEO_POSTGIS_PUBLISH_PORT` only when you explicitly need host
 access to that sidecar database.
-For benchmark parity across clients, start the repo devcontainer PostGIS first
-and run `./scripts/check_shared_benchmark_cache.sh` before launching Codex or
-Claude so both wrappers are confirmed to reuse the same cache.
+Docker-backed host wrappers now default to isolated PostGIS sidecars per
+client. That is the anti-corruption default and should remain the normal
+operator assumption. For comparison runs, use
+`./scripts/check_shared_benchmark_cache.sh` before launching the clients:
+- default `isolated` mode verifies Claude, Codex, and Gemini are each using
+  their dedicated sidecar with matching mounted data roots and matching cache
+  counts
+- opt-in `shared` mode is available only when you explicitly set
+  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1` and
+  `MCP_GEO_BENCHMARK_CACHE_MODE=shared`, which makes every wrapper reuse the
+  same devcontainer PostGIS container
 
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
@@ -389,6 +414,10 @@ responses by capability groups (for example `ons_selection`, `maps_tiles`, `apps
 For clients that always request `tools/list` with empty params, set
 `MCP_TOOLS_DEFAULT_TOOLSET=starter` (or
 `MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=<csv>`) to keep initialization payloads small.
+For the current local development profile, the checked-in examples use
+`MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS=ons_geo_lookup,property_tax,features_layers,landis_soils`
+alongside `starter` so constrained hosts still see the active ONS geo,
+AddressBase/council-tax, map export, and LandIS surfaces.
 `council_tax.band_lookup` and `council_tax.query` are always loaded by default
 so MCP clients do not need a separate property-tax discovery step before using
 the council-tax surfaces.
@@ -534,7 +563,7 @@ catalog lands in `research/landis-data-source/landis_portal_inventory_2026-04-04
 and the human-readable index lands in
 `docs/reports/landis_portal_inventory_2026-04-04.md`.
 To mirror the authenticated portal payloads to local storage, run
-`python scripts/landis_portal_download.py --destination /Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04`.
+`python scripts/landis_portal_download.py --destination /absolute/path/to/Data/landis_portal_archive_2026-04-04`.
 The downloader reuses the Atlas session, stores per-item metadata plus raw item
 payloads, and exports Feature Service layers/tables in chunked GeoJSON/JSON
 files under the destination root without storing the session token itself.
@@ -542,20 +571,24 @@ To classify the local archive for runtime surfacing, run
 `python scripts/landis_archive_triage.py`.
 To ingest the local NATMAP and NSI phase-2 slice from `~/Data` into PostGIS,
 run `python scripts/landis_phase2_ingest.py --dsn ...`.
-The Docker wrapper `scripts/mcp-docker-local` now mounts `~/Data` into the app
-container at `/landis-data` by default and sets `LANDIS_LOCAL_DATA_ROOT` there
-when the host directory exists, so the normal `mcp-geo` + PostGIS container
-workflow can use the local archive directly without copying the raw mirror into
-the image or database volume. On a fresh sidecar, the wrapper now also
-auto-bootstraps the LandIS warehouse tables from that mounted data before it
-starts the stdio server: it runs `scripts/landis_phase2_ingest.py` for the
-portal-archive NATMAP/NSI slice and `scripts/landis_ingest.py` for the
-Warwickshire Soilscapes and pipe-risk validation layers. Expect the first start
-to take materially longer than a warm restart because this load is large. The
-verified phase-2 warehouse load currently covers `NationalSoilMap`, eight
-NATMAP thematic products, `NSIsite`, and six mirrored NSI observation datasets
-from the local archive, plus the existing Soilscapes and pipe-risk validation
-layers.
+The Docker wrapper `scripts/mcp-docker-local` now mounts the configured LandIS
+data root into the app container at `/landis-data` and sets
+`LANDIS_LOCAL_DATA_ROOT` there automatically. If no explicit root is configured
+it still falls back to `~/Data`. It also hydrates and mounts any configured
+`LANDIS_PORTAL_ARCHIVE_DIR`, `LANDIS_FULL_RELEASE_ARCHIVE_DIR`,
+`ADDRESSBASE_PREMIUM_XREF_PATH`, `BOUNDARY_RUNS_DIR`, and
+`BOUNDARY_RUNS_SEARCH_DIRS` paths from the repo `.env`, so the normal
+`mcp-geo` + PostGIS container workflow can use repo-local data and external
+archives directly without copying raw mirrors into the image or database
+volume. On a fresh sidecar, the wrapper still auto-bootstraps the LandIS
+warehouse tables from the mounted data before it starts the stdio server: it
+runs `scripts/landis_phase2_ingest.py` for the portal-archive NATMAP/NSI slice
+and `scripts/landis_ingest.py` for the Warwickshire Soilscapes and pipe-risk
+validation layers. Expect the first start to take materially longer than a warm
+restart because this load is large. The verified phase-2 warehouse load
+currently covers `NationalSoilMap`, eight NATMAP thematic products,
+`NSIsite`, and six mirrored NSI observation datasets from the local archive,
+plus the existing Soilscapes and pipe-risk validation layers.
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources
@@ -792,8 +825,8 @@ extract outside git and build a smaller serving Parquet, for example:
 
 ```bash
 python -m scripts.addressbase_build_xref \
-  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
-  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+  --input /absolute/path/to/ABP/xref.parquet \
+  --output /absolute/path/to/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
 ```
 
 The builder keeps the xref columns used by MCP Geo, drops only
@@ -809,8 +842,8 @@ extract outside git and build a smaller serving Parquet, for example:
 
 ```bash
 python -m scripts.addressbase_build_xref \
-  --input /Users/crpage/Claude-Cowork/ABP/xref.parquet \
-  --output /Users/crpage/repos/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
+  --input /absolute/path/to/ABP/xref.parquet \
+  --output /absolute/path/to/mcp-geo/data/addressbase_premium/2026-03-03/xref_voa_os.parquet
 ```
 
 The builder keeps the xref columns used by MCP Geo, drops `SOURCE=7666OW` and
@@ -820,6 +853,10 @@ Optional runtime knobs:
 
 - `ADDRESSBASE_PREMIUM_DUCKDB_THREADS`
 - `ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT`
+
+The checked-in repo Docker image now installs the `addressbase` extra, so
+Parquet-backed `council_tax.query` runs fully server-side inside the container
+rather than depending on a host Python environment.
 
 - Product technical specification:
   [AddressBase Premium Technical Specification](https://docs.os.uk/os-downloads/products/addresses-and-names-portfolio/addressbase-premium/addressbase-premium-technical-specification)

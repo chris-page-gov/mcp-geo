@@ -51,6 +51,10 @@ def test_build_ons_select_elicitation_params_defaults_and_message():
     props = schema.get("properties", {})
     assert props["geographyLevel"]["default"] == "local_authority"
     assert props["timeGranularity"]["default"] == "year"
+    assert props["geographyLevel"]["enum"] == ["nation", "region", "local_authority", "ward"]
+    assert props["timeGranularity"]["enum"] == ["latest", "year", "quarter", "month"]
+    assert "oneOf" not in props["geographyLevel"]
+    assert "oneOf" not in props["timeGranularity"]
     assert props["intentTags"]["default"] == "inflation, prices"
 
     params = forms.build_ons_select_elicitation_params(
@@ -59,6 +63,8 @@ def test_build_ons_select_elicitation_params_defaults_and_message():
         questions=None,
     )
     props = params.get("requestedSchema", {}).get("properties", {})
+    assert "default" not in props["geographyLevel"]
+    assert "default" not in props["timeGranularity"]
     assert props["intentTags"]["default"] == "inflation, prices"
 
 

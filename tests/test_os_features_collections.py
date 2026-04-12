@@ -242,6 +242,52 @@ def test_os_features_query_aliases_legacy_transport_collection(
     assert "COLLECTION_ALIAS_APPLIED" in body["hints"]["warnings"]
 
 
+def test_os_features_query_aliases_legacy_ngd_base_collection_and_resolves_latest(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_common, os_features
+
+    fake_client = os_common.client
+    monkeypatch.setattr(os_features, "client", fake_client)
+
+    def collections_handler(url: str, params: dict[str, Any]):
+        return 200, {
+            "collections": [
+                {"id": "bld-fts-buildingpart-1", "title": "Building Part", "description": "v1"},
+                {"id": "bld-fts-buildingpart-2", "title": "Building Part", "description": "v2"},
+            ]
+        }
+
+    def items_handler(url: str, params: dict[str, Any]):
+        return 200, {
+            "numberMatched": 1,
+            "features": [
+                {
+                    "id": "b1",
+                    "geometry": {"type": "Point", "coordinates": [0.0, 0.0]},
+                    "properties": {"name": "Building"},
+                }
+            ],
+        }
+
+    mock_os_client["features/ngd/ofa/v1/collections"] = collections_handler
+    mock_os_client["features/ngd/ofa/v1/collections/bld-fts-buildingpart-2/items"] = items_handler
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "ngd-base:bld-fts-buildingpart",
+            "bbox": [0, 0, 1, 1],
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["collection"] == "bld-fts-buildingpart-2"
+    assert body["requestedCollection"] == "ngd-base:bld-fts-buildingpart"
+    assert "COLLECTION_ALIAS_APPLIED" in body["hints"]["warnings"]
+
+
 def test_os_features_query_normalizes_cql_queryable_field_names(
     client, monkeypatch, mock_os_client
 ) -> None:  # type: ignore[no-untyped-def]

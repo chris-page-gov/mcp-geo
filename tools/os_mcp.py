@@ -13,6 +13,7 @@ from server.mcp.tool_search import (
     get_toolset_catalog,
     parse_toolset_list,
 )
+from server.ons_geo_cache import infer_area_level_from_code
 from server.protocol import (
     MCP_APPS_PROTOCOL_VERSION,
     PROTOCOL_VERSION,
@@ -25,6 +26,8 @@ from tools.typing_utils import is_strict_int
 
 class QueryIntent(StrEnum):
     ADDRESS_LOOKUP = "address_lookup"
+    AREA_PROFILE = "area_profile"
+    PROPERTY_TAX = "property_tax"
     POI_LOOKUP = "poi_lookup"
     PLACE_LOOKUP = "place_lookup"
     STATISTICS = "statistics"
@@ -122,8 +125,14 @@ FEATURE_SEARCH_PATTERNS = [
 ]
 
 SURVEY_PATTERNS = [
+    r"\blandis\b",
     r"\bpeatland\b",
     r"\bpeat\b",
+    r"\bsoil screening\b",
+    r"\bsoilscapes?\b",
+    r"\bnatmap\b",
+    r"\bpipe risk\b",
+    r"\bshrink[- ]?swell\b",
     r"\bsite survey\b",
     r"\benvironmental survey\b",
     r"\bhabitat survey\b",
@@ -318,6 +327,16 @@ LEVEL_RANK = {
     "postcode": 7,
 }
 
+AREA_PROFILE_LEVEL_RANK = {
+    "OA": 0,
+    "LSOA": 1,
+    "MSOA": 2,
+    "WARD": 3,
+    "DISTRICT": 4,
+    "REGION": 5,
+    "COUNTRY": 6,
+}
+
 ADMIN_LEVEL_MAP = {
     "oa": "OA",
     "lsoa": "LSOA",
@@ -328,6 +347,23 @@ ADMIN_LEVEL_MAP = {
     "built_up_area": None,
     "postcode": None,
 }
+
+AREA_PROFILE_LEVEL_PATTERNS = (
+    (r"\boa\b", "OA"),
+    (r"\boutput areas?\b", "OA"),
+    (r"\blsoa\b", "LSOA"),
+    (r"\blower (layer )?super output areas?\b", "LSOA"),
+    (r"\bmsoa\b", "MSOA"),
+    (r"\bmiddle (layer )?super output areas?\b", "MSOA"),
+    (r"\bwards?\b", "WARD"),
+    (r"\blocal authority\b", "DISTRICT"),
+    (r"\bdistricts?\b", "DISTRICT"),
+    (r"\bboroughs?\b", "DISTRICT"),
+    (r"\blad\b", "DISTRICT"),
+    (r"\bregions?\b", "REGION"),
+    (r"\bcountr(y|ies)\b", "COUNTRY"),
+    (r"\bnational\b", "COUNTRY"),
+)
 
 FEATURE_COLLECTIONS = {
     "building": "buildings",
@@ -345,9 +381,12 @@ FEATURE_COLLECTIONS = {
 }
 
 NOMIS_WORKFLOW_URI = "resource://mcp-geo/nomis-workflows"
+AREA_SUMMARY_WORKFLOW_URI = "resource://mcp-geo/area-summary-workflows"
 
 INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.ADDRESS_LOOKUP: ["core_router", "places_names", "ons_geo_lookup"],
+    QueryIntent.AREA_PROFILE: ["core_router", "ons_geo_lookup"],
+    QueryIntent.PROPERTY_TAX: ["core_router", "property_tax"],
     QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
     QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
     QueryIntent.STATISTICS: ["core_router", "ons_data"],
@@ -392,6 +431,17 @@ def _extract_uprn(query: str) -> str | None:
     if not match:
         return None
     return match.group(0)
+
+
+def _extract_uprns(query: str) -> list[str]:
+    seen: set[str] = set()
+    uprns: list[str] = []
+    for match in UPRN_REGEX.findall(query):
+        if match in seen:
+            continue
+        seen.add(match)
+        uprns.append(match)
+    return uprns
 
 
 def _is_geography_lookup_query(query_lower: str) -> bool:
@@ -465,6 +515,53 @@ def _extract_road_numbers(query: str) -> list[str]:
         seen.add(normalized)
         out.append(normalized)
     return out
+
+
+def _looks_like_property_tax_query(query_lower: str) -> bool:
+    if re.search(r"\bcouncil tax\b|\bcouncil tax band\b", query_lower):
+        return True
+    if re.search(r"\bnon-domestic rates?\b|\bbusiness rates?\b", query_lower):
+        return True
+    if re.search(r"\bvoa\b|\baddressbase\b|\btype 23\b", query_lower):
+        return True
+    return False
+
+
+def _looks_like_property_tax_status_prompt(query_lower: str) -> bool:
+    if re.search(
+        r"\bnon-domestic rates?\b|\bbusiness rates?\b|\baddressbase\b|\btype 23\b|\bflags?\b",
+        query_lower,
+    ):
+        return True
+    return bool(
+        re.search(r"\bcouncil tax\b", query_lower)
+        and re.search(r"\b(status|liable|liability|current)\b", query_lower)
+    )
+
+
+def _looks_like_property_tax_address_prompt(query_lower: str) -> bool:
+    return bool(
+        re.search(
+            (
+                r"\baddress(es)?\b|\bstreet\b|\broad\b|\blane\b|\bavenue\b|\bclose\b|"
+                r"\bdrive\b|\bway\b|\bcourt\b|\bplace\b|\bterrace\b|\bcrescent\b|"
+                r"\brow\b|\bhill\b|\bgardens?\b"
+            ),
+            query_lower,
+        )
+    )
+
+
+def _looks_like_landis_survey_query(query_lower: str) -> bool:
+    return bool(
+        re.search(
+            (
+                r"\blandis\b|\bsoil screening\b|\bsoilscapes?\b|\bnatmap\b|"
+                r"\bpipe risk\b|\bshrink[- ]?swell\b|\bcorrosion\b.*\bpipe\b"
+            ),
+            query_lower,
+        )
+    )
 
 
 def _extract_place_name(query: str) -> str | None:
@@ -651,6 +748,112 @@ def _should_route_nomis(query_lower: str, level_mentions: list[str]) -> bool:
     return False
 
 
+def _looks_like_area_profile_query(query: str, query_lower: str, level_mentions: list[str]) -> bool:
+    if _is_geography_lookup_query(query_lower):
+        return False
+    summary_like = bool(
+        re.search(r"\b(profile|summary|overview|describe)\b", query_lower)
+        or "what do you know about" in query_lower
+        or "tell me about" in query_lower
+        or "quick profile" in query_lower
+        or "quick summary" in query_lower
+    )
+    if not summary_like:
+        return False
+    if _extract_area_code(query):
+        return True
+    if _extract_postcode(query) or _extract_uprn(query):
+        return True
+    if re.search(
+        r"\bthat (oa|lsoa|msoa|ward|district|local authority|region|country)\b",
+        query_lower,
+    ):
+        return True
+    if re.search(r"\b(postcode area|area around postcode|this postcode area)\b", query_lower):
+        return True
+    return any(level in {"oa", "lsoa", "msoa", "ward", "local_auth"} for level in level_mentions)
+
+
+def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -> str | None:
+    matches: list[tuple[int, str]] = []
+    for pattern, level in AREA_PROFILE_LEVEL_PATTERNS:
+        for match in re.finditer(pattern, query_lower):
+            matches.append((match.start(), level))
+    if matches:
+        matches.sort(key=lambda item: item[0])
+        return matches[-1][1]
+    for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
+        mapped = ADMIN_LEVEL_MAP.get(level)
+        if mapped in AREA_PROFILE_LEVEL_RANK:
+            return mapped
+    return None
+
+
+def _area_profile_target_is_compatible(anchor_level: str, target_level: str) -> bool:
+    anchor_rank = AREA_PROFILE_LEVEL_RANK.get(anchor_level)
+    target_rank = AREA_PROFILE_LEVEL_RANK.get(target_level)
+    if anchor_rank is None or target_rank is None:
+        return False
+    return target_rank >= anchor_rank
+
+
+def _build_area_profile_params(
+    query: str,
+    query_lower: str,
+    level_mentions: list[str],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    params: dict[str, Any] = {}
+    context: dict[str, Any] = {"area_profile": True, "nomis_preferred": True}
+
+    area_code = _extract_area_code(query)
+    postcode = _extract_postcode(query)
+    uprn = _extract_uprn(query)
+    requested_level = _requested_area_profile_level(query_lower, level_mentions)
+    if area_code:
+        inferred = infer_area_level_from_code(area_code)
+        if inferred:
+            context["area_profile_anchor_level"] = inferred
+            if requested_level is not None and not _area_profile_target_is_compatible(
+                inferred,
+                requested_level,
+            ):
+                context["area_profile_incompatible_target"] = True
+                context["area_profile_code"] = area_code
+                context["area_profile_level"] = requested_level
+            else:
+                params["id"] = area_code
+                params["targetLevel"] = requested_level or inferred
+                context["area_profile_level"] = str(params["targetLevel"])
+        elif requested_level is not None:
+            params["id"] = area_code
+            params["targetLevel"] = requested_level
+            context["area_profile_level"] = requested_level
+        else:
+            context["area_profile_needs_level"] = True
+            context["area_profile_code"] = area_code
+    elif postcode:
+        params["postcode"] = postcode
+    elif uprn:
+        params["uprn"] = uprn
+
+    if "targetLevel" not in params and not context.get("area_profile_incompatible_target"):
+        if requested_level is not None:
+            params["targetLevel"] = requested_level
+            context["area_profile_level"] = requested_level
+        if "targetLevel" not in params and (postcode or uprn):
+            params["targetLevel"] = "OA"
+            context["area_profile_level"] = "OA"
+
+    derivation_mode = _extract_derivation_mode(query_lower)
+    if derivation_mode:
+        params["derivationMode"] = derivation_mode
+        context["derivation_mode"] = derivation_mode
+
+    if not any(key in params for key in ("id", "postcode", "uprn")):
+        context["area_profile_follow_up"] = True
+    return params, context
+
+
 def _build_interactive_params(query: str, place_name: str | None) -> dict[str, Any]:
     query_lower = query.lower()
     level_mentions = _find_level_mentions(query_lower)
@@ -781,6 +984,8 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         if focus:
             context["survey_focus"] = focus
         context["survey_intent"] = True
+        if _looks_like_landis_survey_query(query_lower):
+            context["landis_preferred"] = True
         return (
             QueryIntent.ENVIRONMENTAL_SURVEY,
             0.94,
@@ -869,16 +1074,64 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
             ]
         return QueryIntent.MAP_RENDER, 0.93, road_export_params, context
 
+    if _looks_like_property_tax_query(query_lower):
+        uprns = _extract_uprns(query)
+        if uprns:
+            context["uprns"] = uprns
+        postcode = _extract_postcode(query)
+        status_prompt = _looks_like_property_tax_status_prompt(query_lower)
+        address_prompt = _looks_like_property_tax_address_prompt(query_lower)
+        if re.search(r"\bband\b", query_lower):
+            if uprns:
+                context["property_tax_mode"] = "band_from_uprn"
+                return QueryIntent.PROPERTY_TAX, 0.95, {"uprn": uprns[0]}, context
+            if not postcode and address_prompt:
+                context["property_tax_mode"] = "band_from_address"
+                return QueryIntent.PROPERTY_TAX, 0.9, {"text": query}, context
+            if not postcode:
+                context["property_tax_mode"] = "band_needs_identifier"
+                return QueryIntent.PROPERTY_TAX, 0.8, {}, context
+            params = {"postcode": postcode} if postcode else {}
+            context["property_tax_mode"] = "band_lookup"
+            return QueryIntent.PROPERTY_TAX, 0.92, params, context
+        if uprns:
+            context["property_tax_mode"] = "uprn_status_query"
+            return QueryIntent.PROPERTY_TAX, 0.95, {"uprns": uprns}, context
+        if status_prompt:
+            if postcode:
+                context["property_tax_mode"] = "status_from_postcode"
+                return QueryIntent.PROPERTY_TAX, 0.9, {"postcode": postcode}, context
+            if address_prompt:
+                context["property_tax_mode"] = "status_from_address"
+                return QueryIntent.PROPERTY_TAX, 0.85, {"text": query}, context
+            context["property_tax_mode"] = "status_needs_identifier"
+            return QueryIntent.PROPERTY_TAX, 0.8, {}, context
+        if not postcode and address_prompt:
+            context["property_tax_mode"] = "band_from_address"
+            return QueryIntent.PROPERTY_TAX, 0.88, {"text": query}, context
+        params = {"postcode": postcode} if postcode else {}
+        context["property_tax_mode"] = "band_lookup"
+        return QueryIntent.PROPERTY_TAX, 0.9, params, context
+
+    if _looks_like_area_profile_query(query, query_lower, level_mentions):
+        area_profile_params, area_profile_context = _build_area_profile_params(
+            query,
+            query_lower,
+            level_mentions,
+        )
+        context.update(area_profile_context)
+        return QueryIntent.AREA_PROFILE, 0.93, area_profile_params, context
+
     postcode = _extract_postcode(query)
     if postcode:
         if _is_geography_lookup_query(query_lower):
             context["address_mode"] = "postcode_geography"
-            params: dict[str, Any] = {"postcode": postcode}
+            geography_params: dict[str, Any] = {"postcode": postcode}
             derivation_mode = _extract_derivation_mode(query_lower)
             if derivation_mode:
                 context["derivation_mode"] = derivation_mode
-                params["derivationMode"] = derivation_mode
-            return QueryIntent.ADDRESS_LOOKUP, 0.95, params, context
+                geography_params["derivationMode"] = derivation_mode
+            return QueryIntent.ADDRESS_LOOKUP, 0.95, geography_params, context
         context["address_mode"] = "postcode"
         return QueryIntent.ADDRESS_LOOKUP, 0.95, {"postcode": postcode}, context
 
@@ -1099,6 +1352,42 @@ def _build_survey_plan(focus: str | None) -> list[dict[str, Any]]:
     ]
 
 
+def _build_landis_survey_plan(focus: str | None) -> list[dict[str, Any]]:
+    landscape_name = focus or "Forest of Bowland"
+    return [
+        {
+            "step": 1,
+            "goal": "Resolve the area of interest to a named protected landscape.",
+            "tool": "os_landscape.find",
+            "parameters": {"text": landscape_name, "limit": 3},
+        },
+        {
+            "step": 2,
+            "goal": "Fetch the AOI geometry or bbox for downstream soil screening.",
+            "tool": "os_landscape.get",
+            "parameters": {"id": "<id-from-step-1>", "includeGeometry": True},
+        },
+        {
+            "step": 3,
+            "goal": "Summarize Soilscapes classes across the AOI.",
+            "tool": "landis_soilscapes.area_summary",
+            "parameters": {"geometry": "<aoi-geometry>"},
+        },
+        {
+            "step": 4,
+            "goal": "Summarize NATMAP map units for the same AOI.",
+            "tool": "landis_natmap.area_summary",
+            "parameters": {"geometry": "<aoi-geometry>"},
+        },
+        {
+            "step": 5,
+            "goal": "Screen shrink-swell and corrosion pipe risk when utilities context matters.",
+            "tool": "landis_derive.pipe_risk",
+            "parameters": {"geometry": "<aoi-geometry>"},
+        },
+    ]
+
+
 def _get_tool_for_intent(
     intent: QueryIntent, context: dict[str, Any]
 ) -> tuple[str, list[str], str]:
@@ -1145,6 +1434,62 @@ def _get_tool_for_intent(
             "os_places.search",
             ["os_places.search"],
             "Free-text address search using OS Places.",
+        )
+    if intent == QueryIntent.AREA_PROFILE:
+        follow_up = bool(context.get("area_profile_follow_up"))
+        needs_level = bool(context.get("area_profile_needs_level"))
+        incompatible_target = bool(context.get("area_profile_incompatible_target"))
+        explanation = (
+            "Use ons_geo.area_summary to resolve a compact area profile from a supplied "
+            "area code, postcode, or UPRN."
+        )
+        if incompatible_target:
+            area_code = str(context.get("area_profile_code") or "").strip()
+            anchor_level = str(context.get("area_profile_anchor_level") or "").strip()
+            target_level = str(context.get("area_profile_level") or "").strip()
+            explanation = (
+                "The detected area code cannot be narrowed to the requested target summary "
+                "level. Use a postcode, UPRN, or an area code at that target level instead."
+            )
+            if area_code and anchor_level and target_level:
+                explanation = (
+                    f"Area code {area_code} implies {anchor_level}, which cannot be narrowed "
+                    f"to targetLevel={target_level}. Use a postcode, UPRN, or a matching "
+                    "area code instead."
+                )
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                explanation,
+            )
+        if needs_level:
+            area_code = str(context.get("area_profile_code") or "").strip()
+            explanation = (
+                "An area code was detected, but its target summary level could not be "
+                "inferred automatically. Provide targetLevel explicitly before calling "
+                "ons_geo.area_summary."
+            )
+            if area_code:
+                explanation = (
+                    f"Area code {area_code} was detected, but its target summary level could "
+                    "not be inferred automatically. Provide targetLevel explicitly before "
+                    "calling ons_geo.area_summary."
+                )
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                explanation,
+            )
+        if follow_up:
+            explanation = (
+                "Use ons_geo.area_summary for the follow-up area profile. If the host keeps "
+                "prior tool context, reuse the previously returned OA/LSOA/MSOA code; "
+                "otherwise pass that code, postcode, or UPRN explicitly."
+            )
+        return (
+            "ons_geo.area_summary",
+            ["ons_geo.area_summary"],
+            explanation,
         )
     if intent == QueryIntent.POI_LOOKUP:
         poi_mode = str(context.get("poi_mode") or context.get("place_mode") or "")
@@ -1209,6 +1554,80 @@ def _get_tool_for_intent(
             ["admin_lookup.find_by_name"],
             "Find administrative areas by name using admin_lookup.find_by_name.",
         )
+    if intent == QueryIntent.PROPERTY_TAX:
+        property_tax_mode = str(context.get("property_tax_mode") or "")
+        if property_tax_mode == "band_from_uprn":
+            return (
+                "os_places.by_uprn",
+                ["os_places.by_uprn", "council_tax.band_lookup"],
+                (
+                    "Resolve the postcode/address from the UPRN first, then search the "
+                    "VOA council-tax band service with the returned address details."
+                ),
+            )
+        if property_tax_mode == "band_from_address":
+            return (
+                "os_places.search",
+                ["os_places.search", "council_tax.band_lookup"],
+                (
+                    "Resolve candidate addresses and postcodes with OS Places free-text "
+                    "search first, then run the VOA council-tax band lookup with the "
+                    "selected postcode."
+                ),
+            )
+        if property_tax_mode == "band_lookup":
+            return (
+                "council_tax.band_lookup",
+                ["council_tax.band_lookup"],
+                "Search the VOA council-tax band service by postcode.",
+            )
+        if property_tax_mode == "band_needs_identifier":
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                (
+                    "Council Tax band lookups need a postcode, UPRN, or address before "
+                    "council_tax.band_lookup can run."
+                ),
+            )
+        if property_tax_mode == "status_from_postcode":
+            return (
+                "os_places.by_postcode",
+                ["os_places.by_postcode", "council_tax.query"],
+                (
+                    "Lookup addresses and UPRNs for the postcode using OS Places, then "
+                    "inspect the returned UPRNs in the local AddressBase Premium "
+                    "cross-reference for Council Tax and non-domestic-rates flags."
+                ),
+            )
+        if property_tax_mode == "status_from_address":
+            return (
+                "os_places.search",
+                ["os_places.search", "council_tax.query"],
+                (
+                    "Resolve candidate addresses and UPRNs with OS Places free-text "
+                    "search, then inspect the returned UPRNs in the local "
+                    "AddressBase Premium cross-reference for Council Tax and "
+                    "non-domestic-rates flags."
+                ),
+            )
+        if property_tax_mode == "status_needs_identifier":
+            return (
+                "os_mcp.descriptor",
+                ["os_mcp.descriptor"],
+                (
+                    "Business-rates and Council Tax status checks need a UPRN, postcode, "
+                    "or address before council_tax.query can run."
+                ),
+            )
+        return (
+            "council_tax.query",
+            ["council_tax.query"],
+            (
+                "Resolve current Council Tax and non-domestic-rates flags for one or more "
+                "UPRNs from the local AddressBase Premium cross-reference source."
+            ),
+        )
     if intent == QueryIntent.BOUNDARY_FETCH:
         return (
             "admin_lookup.area_geometry",
@@ -1222,6 +1641,21 @@ def _get_tool_for_intent(
             "Query OS NGD feature collections by bbox and collection.",
         )
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
+        if bool(context.get("landis_preferred")):
+            return (
+                "os_landscape.find",
+                [
+                    "os_landscape.find",
+                    "os_landscape.get",
+                    "landis_soilscapes.area_summary",
+                    "landis_natmap.area_summary",
+                    "landis_derive.pipe_risk",
+                ],
+                (
+                    "Resolve the AOI first, then run LandIS soil, NATMAP, and optional "
+                    "pipe-risk screening over the bounded geometry."
+                ),
+            )
         return (
             "os_landscape.find",
             [
@@ -1381,6 +1815,18 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.search",
             "os_places.nearest",
         ],
+        QueryIntent.AREA_PROFILE: [
+            "ons_geo.by_postcode",
+            "ons_geo.by_uprn",
+            "admin_lookup.area_geometry",
+            "nomis.query",
+        ],
+        QueryIntent.PROPERTY_TAX: [
+            "council_tax.band_lookup",
+            "council_tax.query",
+            "os_places.by_uprn",
+            "os_places.search",
+        ],
         QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
         QueryIntent.LINKED_IDS: [
             "os_linked_ids.identifiers",
@@ -1429,6 +1875,20 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "Use ons_geo.by_postcode / ons_geo.by_uprn when you need full geography "
             "mappings for postcode/UPRN with exact (ONSPD/ONSUD) or best_fit "
             "(NSPL/NSUL) derivation modes."
+        ),
+        QueryIntent.AREA_PROFILE: (
+            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries and "
+            "follow-up prompts such as 'that OA'. Prefer its compact inventory/profile "
+            "surface over raw os_map.inventory calls when the user only wants a narrative summary. "
+            "Workflow guidance is available via os_resources.get or resources/read at "
+            "resource://mcp-geo/area-summary-workflows."
+        ),
+        QueryIntent.PROPERTY_TAX: (
+            "Use council_tax.band_lookup for England/Wales VOA band searches by postcode. "
+            "If the prompt starts from a UPRN, street, or address description, resolve a "
+            "postcode first with OS Places, then call council_tax.band_lookup. Use "
+            "council_tax.query for local AddressBase Premium UPRN cross-reference checks "
+            "covering Council Tax and non-domestic-rates flags."
         ),
         QueryIntent.POI_LOOKUP: (
             "Use os_poi.search/nearest/within for amenities and points of interest. "
@@ -1512,14 +1972,30 @@ def _compact_toolset_catalog() -> dict[str, dict[str, Any]]:
 def _infer_toolsets_from_query(query: str) -> tuple[list[str], dict[str, Any]]:
     intent, _confidence, _params, context = _classify_query(query)
     recommended = list(INTENT_TOOLSET_MAP.get(intent, ["starter"]))
+    if intent == QueryIntent.PROPERTY_TAX:
+        if str(context.get("property_tax_mode") or "") in {
+            "band_from_address",
+            "band_from_uprn",
+            "band_needs_identifier",
+            "status_from_postcode",
+            "status_from_address",
+            "status_needs_identifier",
+        }:
+            recommended = ["core_router", "places_names", "property_tax"]
+        else:
+            recommended = ["core_router", "property_tax"]
     if intent in {QueryIntent.STATISTICS, QueryIntent.DATASET_DISCOVERY}:
         if context.get("nomis_preferred"):
             recommended = ["core_router", "nomis_data"]
         else:
             recommended = ["core_router", "ons_selection", "ons_data"]
+    if intent == QueryIntent.ENVIRONMENTAL_SURVEY and bool(context.get("landis_preferred")):
+        recommended = ["core_router", "landis_soils", "protected_landscapes"]
     return recommended, {
         "intent": intent.value,
+        "landisPreferred": bool(context.get("landis_preferred")),
         "nomisPreferred": bool(context.get("nomis_preferred")),
+        "propertyTaxMode": context.get("property_tax_mode"),
     }
 
 
@@ -1733,7 +2209,15 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     intent, confidence, params, context = _classify_query(query)
     tool, workflow, explanation = _get_tool_for_intent(intent, context)
     workflow_profile_uri = (
-        NOMIS_WORKFLOW_URI
+        AREA_SUMMARY_WORKFLOW_URI
+        if (
+            tool == "ons_geo.area_summary"
+            or (
+                intent == QueryIntent.AREA_PROFILE
+                and bool(context.get("area_profile_needs_level"))
+            )
+        )
+        else NOMIS_WORKFLOW_URI
         if (tool.startswith("nomis.") or bool(context.get("nomis_preferred")))
         else None
     )
@@ -1759,6 +2243,44 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
             "os_maps.render",
             "os_vector_tiles.descriptor",
         ]
+    property_tax_mode = str(context.get("property_tax_mode") or "")
+    if intent == QueryIntent.PROPERTY_TAX and property_tax_mode == "status_needs_identifier":
+        response["guidance"] = (
+            "Business-rates and Council Tax status checks need a UPRN. Provide a UPRN directly, "
+            "or provide a postcode/address first so OS Places can resolve candidate UPRNs before "
+            "calling council_tax.query."
+        )
+    if intent == QueryIntent.PROPERTY_TAX and property_tax_mode == "band_needs_identifier":
+        response["guidance"] = (
+            "Council Tax band lookups need a postcode, UPRN, or address. Provide a postcode "
+            "directly, use a UPRN so OS Places can recover the address first, or search by "
+            "address before calling council_tax.band_lookup."
+        )
+    if intent == QueryIntent.AREA_PROFILE and bool(context.get("area_profile_incompatible_target")):
+        area_code = str(context.get("area_profile_code") or "").strip()
+        anchor_level = str(context.get("area_profile_anchor_level") or "").strip()
+        target_level = str(context.get("area_profile_level") or "").strip()
+        response["guidance"] = (
+            "This area code anchor cannot be narrowed to the requested targetLevel. Use a "
+            "postcode, UPRN, or an area code at the intended level instead."
+        )
+        if area_code and anchor_level and target_level:
+            response["guidance"] = (
+                f"Area code {area_code} implies {anchor_level}, which cannot be narrowed to "
+                f"targetLevel={target_level}. Use a postcode, UPRN, or a matching area code "
+                "for that target level."
+            )
+    if intent == QueryIntent.AREA_PROFILE and bool(context.get("area_profile_needs_level")):
+        area_code = str(context.get("area_profile_code") or "").strip()
+        response["guidance"] = (
+            "ons_geo.area_summary needs an explicit targetLevel for this area code. "
+            "Use one of OA, LSOA, MSOA, WARD, DISTRICT, COUNTRY, or REGION."
+        )
+        if area_code:
+            response["guidance"] = (
+                f"{response['guidance']} Re-run with id={area_code} and the intended "
+                "targetLevel."
+            )
     if str(context.get("unknown_mode") or "") == "resource_bridge":
         resource_guidance = (
             "When a tool returns delivery='resource' or a resource:// URI, do not search the "
@@ -1772,7 +2294,20 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     if intent == QueryIntent.ENVIRONMENTAL_SURVEY:
         focus_raw = context.get("survey_focus")
         focus = focus_raw if isinstance(focus_raw, str) else None
-        response["surveyPlan"] = _build_survey_plan(focus)
+        if bool(context.get("landis_preferred")):
+            response["surveyPlan"] = _build_landis_survey_plan(focus)
+            response["guidance"] = (
+                "Resolve the named AOI first, then run LandIS soil summaries over the "
+                "bounded geometry. Keep geometry reuse explicit between steps."
+            )
+            response["alternative_tools"] = [
+                "landis_natmap.area_summary",
+                "landis_derive.pipe_risk",
+                "os_peat.evidence_paths",
+                "admin_lookup.find_by_name",
+            ]
+        else:
+            response["surveyPlan"] = _build_survey_plan(focus)
     if intent == QueryIntent.ROUTE_PLANNING and isinstance(context.get("route_request"), dict):
         route_request = context["route_request"]
         extracted = route_request.get("extracted")

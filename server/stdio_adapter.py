@@ -125,6 +125,7 @@ def _rewrite_tool_schema(
         schema,
         sanitized_name=sanitized_name,
         original_name=original_name,
+        flatten_top_level_combinators=True,
     )
 
 

@@ -142,6 +142,12 @@ If you need CI automation later, add `.github/workflows/release.yml` to formaliz
 
 - Read `CONTEXT.md` at the start of each session and update it when priorities,
   decisions, or active work items change.
+- Do not assume Docker-backed host clients share one PostGIS database. The
+  normal wrapper topology is isolated per-client named-volume sidecars
+  (`claude`, `codex`, `gemini`, and generic fallback), while shared
+  devcontainer reuse is explicit opt-in only. When benchmarking or debugging
+  host parity, inspect `scripts/check_shared_benchmark_cache.sh` and the active
+  wrapper plans before concluding which topology is in use.
 - Treat every bug fix and PR-comment fix as a small codebase review: identify
   whether the problem sits in a shared helper, repeated pattern, or transport
   variant before editing; then either fix all confirmed matches or record why

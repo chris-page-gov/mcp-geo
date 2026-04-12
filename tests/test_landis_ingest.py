@@ -271,6 +271,22 @@ def test_localize_archive_path_maps_container_mount_from_host_archive() -> None:
     )
 
 
+def test_localize_archive_path_maps_generic_data_root_prefix() -> None:
+    portal_root = Path("/srv/cache/Data/landis_portal_archive_2026-04-04")
+    raw_path = (
+        "/mnt/shared/team-cache/Data/landis_portal_archive_2026-04-04/data_source/"
+        "abc_NationalSoilMap/feature_service/layers/00_National_Soil_Map/records_batch_0001.geojson"
+    )
+
+    localized = landis_phase2_ingest._localize_archive_path(raw_path, portal_root=portal_root)
+
+    assert localized == (
+        portal_root
+        / "data_source/abc_NationalSoilMap/feature_service/layers/00_National_Soil_Map/"
+        "records_batch_0001.geojson"
+    )
+
+
 def test_latest_portal_archive_dir_prefers_newest_non_smoke(tmp_path: Path) -> None:
     _write_complete_portal_archive(tmp_path / "landis_portal_archive_2026-04-04")
     (tmp_path / "landis_portal_archive_2026-05-01-smoke").mkdir()

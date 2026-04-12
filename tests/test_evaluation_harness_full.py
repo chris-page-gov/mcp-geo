@@ -243,6 +243,7 @@ def test_evaluation_harness_full_coverage(monkeypatch, tmp_path, mock_os_client)
         "os_resources.get",
         "ons_geo.by_postcode",
         "ons_geo.by_uprn",
+        "ons_geo.area_summary",
         "ons_geo.cache_status",
         "ons_geo.release_audit",
         "os_places.radius",

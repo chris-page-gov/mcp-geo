@@ -6,15 +6,22 @@ import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from urllib.parse import quote
 
+from server.boundary_run_paths import (
+    configured_boundary_run_dir,
+    configured_boundary_run_search_dirs,
+    latest_boundary_run_report,
+)
 from server.config import settings
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 UI_DIR = ROOT / "ui"
 SKILL_PATH = ROOT / "SKILL.md"
 BOUNDARY_MANIFEST_PATH = ROOT / "docs" / "Boundaries.json"
-BOUNDARY_RUNS_DIR = ROOT / "data" / "boundary_runs"
+BOUNDARY_RUNS_DIR = configured_boundary_run_dir()
+BOUNDARY_RUNS_SEARCH_DIRS = configured_boundary_run_search_dirs()
 ONS_CATALOG_PATH = ROOT / "resources" / "ons_catalog.json"
 OS_CATALOG_PATH = ROOT / "resources" / "os_catalog.json"
 LAYERS_CATALOG_PATH = ROOT / "resources" / "layers_catalog.json"
@@ -34,6 +41,7 @@ LANDIS_FULL_RELEASE_MANIFEST_PATH = (
 PROTECTED_LANDSCAPES_PATH = ROOT / "resources" / "protected_landscapes_england.json"
 PEAT_LAYERS_PATH = ROOT / "resources" / "peat_layers_england.json"
 NOMIS_WORKFLOWS_PATH = ROOT / "resources" / "nomis_workflows.json"
+AREA_SUMMARY_WORKFLOWS_PATH = ROOT / "resources" / "area_summary_workflows.json"
 ONS_GEO_SOURCES_PATH = ROOT / "resources" / "ons_geo_sources.json"
 ONS_GEO_CACHE_INDEX_PATH = ROOT / "resources" / "ons_geo_cache_index.json"
 BOUNDARY_PACK_SOURCES_PATH = ROOT / "resources" / "boundary_pack_sources.json"
@@ -391,6 +399,15 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "annotations": {"type": "guide", "domain": "nomis"},
     },
     {
+        "slug": "area-summary-workflows",
+        "name": "data_area_summary_workflows",
+        "title": "Area Summary Workflow Profiles",
+        "description": "Compact area-summary prompt patterns, guardrails, and evaluation guidance.",
+        "path": AREA_SUMMARY_WORKFLOWS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "guide", "domain": "ons"},
+    },
+    {
         "slug": "ons-geo-sources",
         "name": "data_ons_geo_sources",
         "title": "ONS Geography Source Manifest",
@@ -565,12 +582,7 @@ def list_skill_resources() -> list[dict[str, Any]]:
 
 
 def _latest_run_report_path() -> Optional[Path]:
-    if not BOUNDARY_RUNS_DIR.exists():
-        return None
-    candidates = sorted(BOUNDARY_RUNS_DIR.glob("*/run_report.json"))
-    if not candidates:
-        return None
-    return candidates[-1]
+    return latest_boundary_run_report(BOUNDARY_RUNS_DIR, BOUNDARY_RUNS_SEARCH_DIRS)
 
 
 def _ons_cache_files() -> list[Path]:
@@ -1198,6 +1210,17 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
             )
             return content, _etag_from_bytes(b"missing", "nomis-workflows"), None
         return (*_load_json_file(NOMIS_WORKFLOWS_PATH), None)
+    if slug == "area-summary-workflows":
+        if not AREA_SUMMARY_WORKFLOWS_PATH.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": "Area-summary workflows catalog not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", "area-summary-workflows"), None
+        return (*_load_json_file(AREA_SUMMARY_WORKFLOWS_PATH), None)
     if slug == "ons-geo-sources":
         if not ONS_GEO_SOURCES_PATH.exists():
             content = json.dumps(

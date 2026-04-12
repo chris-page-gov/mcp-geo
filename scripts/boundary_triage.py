@@ -3,13 +3,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
-import scripts.boundary_run_tracker as tracker
-
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+import scripts.boundary_run_tracker as tracker  # noqa: E402
+from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
 
 ERROR_FIXES = {
     "code_field_missing": {
@@ -37,16 +40,6 @@ ERROR_FIXES = {
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _latest_run_report(run_root: Path) -> Path | None:
-    if not run_root.exists():
-        return None
-    candidates = sorted(run_root.glob("*/run_report.json"))
-    if not candidates:
-        return None
-    return candidates[-1]
-
 
 def _variant_status_ok(entry: dict[str, Any] | None) -> bool:
     return bool(entry and entry.get("download_status") == "ok")
@@ -147,14 +140,14 @@ def _write_json(path: Path, payload: Any) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Boundary pipeline triage helper.")
     parser.add_argument("--manifest", default="docs/Boundaries.json")
-    parser.add_argument("--workdir", default="data/boundary_runs")
+    parser.add_argument("--workdir", default=None)
     parser.add_argument("--output", default=None, help="Write triage JSON to this path.")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    report_path = _latest_run_report(Path(args.workdir))
+    report_path = latest_boundary_run_report(args.workdir)
     if report_path is None:
         raise SystemExit("No run_report.json found.")
     report = _load_json(report_path)

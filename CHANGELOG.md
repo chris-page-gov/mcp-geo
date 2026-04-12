@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `ons_geo.area_summary`, the compact postcode/UPRN/area-code follow-up
+  surface for OA/LSOA/MSOA/ward summaries. It resolves the target area from
+  the local ONS cache, returns compact area counts, can use the new
+  `os_map.inventory` summary/count modes for lightweight built-environment
+  context, and exposes curated NOMIS follow-up datasets for small-area
+  profiling.
+- Added the new guide resource
+  `resource://mcp-geo/area-summary-workflows` plus the supporting evaluation
+  artifact `examples/ons_from_postcode_03_summary_only_eval.md`, documenting
+  the recommended prompt pattern and the guardrail against raw
+  `os_map.inventory` calls for summary-only prompts.
+- Added `scripts/check_spec_drift.py` plus the related `docs/spec_tracking.md`
+  workflow so vendored specification/supporting-reference submodules can be
+  audited for origin-head drift and missing local spec paths with one command.
+- Added configurable boundary-run archive path resolution via
+  `BOUNDARY_RUNS_DIR`, `BOUNDARY_RUNS_SEARCH_DIRS`, and the shared helper
+  `server/boundary_run_paths.py`. Boundary-report readers can now search
+  optional mounted roots such as `/Volumes/ExtSSD-Data/Data`, and the boundary
+  pipeline/autofix scripts now honor the configured primary write location.
 - Added DuckDB-backed AddressBase Premium Parquet support for
   `council_tax.query`, alongside the new builder
   `scripts/addressbase_build_xref.py`. The council-tax lookup now accepts
@@ -13,6 +32,63 @@ All notable changes to this project will be documented in this file.
   files, prefers `xref_voa_os.parquet` when scanning configured directories,
   and can query local Parquet extracts directly without creating a separate
   indexed DuckDB database.
+
+### Changed
+- Setup docs now explicitly treat absolute paths as local examples only, and
+  the README / `.env.example` point path-bearing settings at portable
+  placeholders instead of maintainer-specific locations.
+- `scripts/mcp-docker-local` now hydrates path-bearing local settings such as
+  `LANDIS_LOCAL_DATA_ROOT`, `LANDIS_PORTAL_ARCHIVE_DIR`,
+  `LANDIS_FULL_RELEASE_ARCHIVE_DIR`, `ADDRESSBASE_PREMIUM_XREF_PATH`,
+  `BOUNDARY_RUNS_DIR`, and `BOUNDARY_RUNS_SEARCH_DIRS` from the repo `.env`
+  when host-side GUI clients do not export them directly. The wrapper also now
+  normalizes relative host paths against the repo root and mounts those paths
+  into the container so Docker-backed Claude/Codex sessions can use repo-local
+  data roots and external archives such as `/Volumes/ExtSSD-Data/Data`
+  consistently.
+- Added `scripts/gemini-mcp-local` and `scripts/check_gemini_startup_scope.sh`
+  so Gemini CLI can use the same Docker-backed startup path, scoped discovery,
+  cache mounts, and benchmark preflight checks as Claude/Codex. The benchmark
+  preflight now supports both isolated per-client sidecars and explicit shared
+  devcontainer reuse, validates Gemini alongside Claude/Codex in both modes,
+  and the trace session helpers now recognize Gemini wrapper runs.
+- Docker-backed local wrappers now default to isolated PostGIS sidecars again
+  (`MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=0`) instead of silent devcontainer
+  reuse. Shared PostGIS benchmarking remains available, but only as explicit
+  opt-in mode.
+- Shell benchmark/runtime helpers no longer assume `rg` is installed. The
+  benchmark-cache preflight and PostGIS diagnostics now fall back to `grep`
+  in minimal CI or host shells, preventing false failures when ripgrep is not
+  available on PATH.
+- LandIS helper scripts now default to `~/Data/...` rather than maintainer
+  machine paths, and LandIS archive relocalization no longer depends on the
+  specific `/Volumes/ExtSSD-Data/Data` prefix.
+- `scripts/check_spec_drift.py` now invokes Git through PATH resolution rather
+  than hardcoding `/usr/bin/git`, so vendored-spec drift audits work on hosts
+  where Git is installed via Homebrew, Nix, or other nonstandard locations.
+- Hardened the `tools/os_mcp.py` property-tax router so plain `council tax status`
+  prompts now follow the postcode/address-to-`council_tax.query` status workflow
+  instead of falling back to `council_tax.band_lookup`, with matching toolset
+  inference for discovery clients.
+- The same router/summary follow-up now keeps explicit higher-level area-profile
+  requests on area-code prompts instead of silently collapsing them back to the
+  code-implied level, rejects narrower target levels with descriptor guidance,
+  routes under-specified Council Tax band prompts to a resolution-first flow,
+  and hardens `ons_geo.area_summary` so direct area ids return `NOT_FOUND`
+  unless they resolve via hierarchy/geometry or non-zero cached counts.
+- `ons_geo.area_summary` now treats helper tools such as
+  `admin_lookup.area_geometry`, `admin_lookup.reverse_hierarchy`, and
+  `os_map.inventory` as genuinely best-effort: helper exceptions no longer turn
+  an otherwise valid summary request into a `500`.
+- Tightened ONS release detection in `scripts/ons_geo_cache_refresh.py` so
+  explicit release-pattern matches keep month/epoch pairing local to the matched
+  candidate instead of borrowing an epoch from an unrelated archived resource in
+  the same CKAN payload.
+- `os_map.inventory` now supports opt-in `responseMode=summary|counts` for
+  compact UPRN/building counts, `nomis.query` now includes human-readable
+  `datasetSummary` metadata when available, and `tools/os_mcp.py` now routes
+  area-profile prompts such as `What do you know about that OA?` to
+  `ons_geo.area_summary` instead of encouraging low-level orchestration.
 - Added the grounded troubleshooting analysis
   `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`, which
   documents why AI clients struggle when map-building tasks are forced through
@@ -70,6 +146,32 @@ All notable changes to this project will be documented in this file.
   confirming that the local archive is complete for the current authenticated
   ArcGIS portal route while also recording additional LandIS families/services
   still listed on the public LandIS website and separately licensed metadata
+
+### Fixed
+- Fixed sanitized tool-schema rewriting so top-level `oneOf` / `anyOf` /
+  `allOf` flattening is now limited to the strict stdio transport. HTTP
+  `/tools/describe` again preserves the full schema contract for alternate
+  input tools such as area-vs-geometry selectors.
+- Fixed `council_tax.band_lookup` so live GOV.UK form-validation responses are
+  normalized into actionable `INVALID_INPUT` errors instead of leaking raw HTML
+  back to clients, and updated property-tax routing so address-only council-tax
+  band prompts resolve candidate postcodes through `os_places.search` before
+  calling the live VOA lookup.
+- Fixed Docker-backed `claude-mcp-local` / `mcp-docker-local` sessions so they
+  mount the host ONS geo cache directory and cache index into the container
+  when present. This restores `ons_geo.by_postcode` / `ons_geo.by_uprn` lookups
+  in Claude-sidecar sessions that previously saw `CACHE_UNAVAILABLE` despite a
+  populated host cache.
+- Fixed `os_features.query` so legacy `ngd-base:` collection ids are accepted
+  as compatibility aliases. Unversioned legacy ids are now upgraded to the
+  latest advertised NGD collection version before the live items request, so
+  older client prompts such as `ngd-base:bld-fts-buildingpart` no longer fail
+  with avoidable unsupported-collection errors.
+- Fixed `ons_select.search` elicitation forms so the optional geography/time
+  fields now use plain string `enum` schemas rather than property-level
+  `oneOf` literals. This avoids strict-client validation failures seen in
+  Claude Code, where accepting the form previously stalled because the client
+  treated selected string values as invalid `never` inputs.
   pages that sit outside the mirrored portal slice.
 - Added `scripts/landis_release_reconciliation.py` plus generated manifest
   `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`
@@ -139,6 +241,22 @@ All notable changes to this project will be documented in this file.
   current OS Docs specification pages instead of the dead legacy PDF URL.
 
 ### Changed
+- Flattened top-level `oneOf` / `anyOf` / `allOf` combinators in sanitized
+  stdio tool input schemas for strict MCP clients such as Claude Code. Nested
+  property unions remain intact, but the startup tool catalog no longer emits
+  top-level combinators that cause client-side tool-registration failures.
+- Hardened `os_mcp.route_query` and `os_mcp.select_toolsets` for the current
+  development surfaces. Council-tax/business-rates prompts now route through a
+  dedicated property-tax path instead of generic address lookup, including the
+  `os_places.by_uprn -> council_tax.band_lookup` workflow for band-from-UPRN
+  prompts and direct `council_tax.query` routing for UPRN status checks.
+  LandIS soil-screening prompts now classify as environmental survey work with
+  explicit `landis_soils` discovery guidance and LandIS-focused survey plans.
+- Updated the checked-in constrained-host startup profile (`starter` plus
+  `ons_geo_lookup,property_tax,features_layers,landis_soils`) across
+  `.vscode/mcp.json`, `.env.example`, `README.md`, and the startup-scope
+  validation scripts so active development tools stay discoverable without
+  exposing the full catalog at startup.
 - Documented the 2026-04-09 DuckDB/PostGIS architecture review: DuckDB is the
   preferred local file-backed query engine for AddressBase-style artifacts,
   but the repo is not replacing the existing PostGIS-backed cache/warehouse
@@ -180,6 +298,11 @@ All notable changes to this project will be documented in this file.
   authoritative freshness reference for `ONSUD` / `NSUL` validation.
 
 ### Fixed
+- Fixed the checked-in repo Docker image so it installs
+  `mcp-geo[addressbase]` instead of only the base package. This restores the
+  intended server-side DuckDB runtime for Parquet-backed `council_tax.query`
+  calls and avoids false `MISSING_DEPENDENCY` errors when the container is
+  rebuilt from the repo `Dockerfile`.
 - `playground/package.json` now pins the non-vulnerable patch lines for
   `vite`, `hono`, and `@hono/node-server`, clearing the remaining npm audit
   findings after the earlier `path-to-regexp` / `picomatch` security refresh

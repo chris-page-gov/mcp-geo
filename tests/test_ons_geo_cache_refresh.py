@@ -4,7 +4,12 @@ import json
 import sqlite3
 import subprocess
 import sys
+import zipfile
+from io import BytesIO
 from pathlib import Path
+
+import pytest
+from openpyxl import Workbook
 
 import scripts.ons_geo_cache_refresh as refresh
 
@@ -12,12 +17,19 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "ons_geo"
 
 
 class _FakeResponse:
-    def __init__(self, *, json_data=None, text: str | None = None, content: bytes | None = None):
+    def __init__(
+        self,
+        *,
+        json_data=None,
+        text: str | None = None,
+        content: bytes | None = None,
+        headers: dict[str, str] | None = None,
+    ):
         self._json_data = json_data
         self.text = text or ""
         self.content = content if content is not None else self.text.encode("utf-8")
         content_type = "application/json" if json_data is not None else "text/html"
-        self.headers = {"content-type": content_type}
+        self.headers = {"content-type": content_type, **(headers or {})}
 
     def __enter__(self):
         return self
@@ -174,6 +186,26 @@ def _base_manifest() -> dict[str, object]:
             },
         ],
     }
+
+
+def test_detect_release_scopes_epoch_to_matched_release_candidate() -> None:
+    payload = json.dumps(
+        {
+            "resources": [
+                {
+                    "title": "Archived ONS UPRN Directory (October 2025) (Epoch 121)",
+                },
+                {
+                    "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+                },
+            ]
+        },
+        ensure_ascii=True,
+    )
+
+    release = refresh._detect_release(payload, ["December\\s+2025"])
+
+    assert release == "December 2025 (Epoch 123)"
 
 
 def test_ons_geo_cache_refresh_ingests_products_and_sidecars(tmp_path: Path) -> None:
@@ -373,6 +405,114 @@ def test_resolve_hosted_table_arcgis_pages_rows_and_extracts_schema(
     assert any(call[0].endswith("/query") for call in calls)
 
 
+def test_resolve_hosted_table_arcgis_uses_objectid_keyset_pagination(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    metadata_url = "https://example.test/FeatureServer/0?f=json"
+    query_url = "https://example.test/FeatureServer/0/query"
+    metadata = {
+        "name": "ArcGIS Hub Dataset",
+        "maxRecordCount": 1,
+        "objectIdField": "OBJECTID",
+        "fields": [
+            {"name": "OBJECTID", "alias": "Object ID"},
+            {"name": "pcds", "alias": "Postcode"},
+            {"name": "lad25cd", "alias": "Local authority district code"},
+        ],
+    }
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream
+        calls.append((url, params or {}))
+        if url == metadata_url:
+            return _FakeResponse(json_data=metadata)
+        assert params is not None
+        where = params.get("where")
+        if where == "1=1":
+            return _FakeResponse(
+                json_data={
+                    "features": [
+                        {
+                            "attributes": {
+                                "OBJECTID": 1,
+                                "pcds": "SW1A1AA",
+                                "lad25cd": "E09000033",
+                            }
+                        }
+                    ],
+                    "exceededTransferLimit": True,
+                }
+            )
+        if where == "OBJECTID > 1":
+            return _FakeResponse(
+                json_data={
+                    "features": [
+                        {
+                            "attributes": {
+                                "OBJECTID": 2,
+                                "pcds": "SW1A2AA",
+                                "lad25cd": "E09000033",
+                            }
+                        }
+                    ],
+                    "exceededTransferLimit": False,
+                }
+            )
+        return _FakeResponse(json_data={"features": [], "exceededTransferLimit": False})
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [
+                    {
+                        "id": "ONSPD",
+                        "title": "ONSPD",
+                        "keyType": "postcode",
+                        "derivationMode": "exact",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "hosted_table_arcgis",
+                            "metadataUrl": metadata_url,
+                            "queryUrl": query_url,
+                        },
+                        "semanticFields": {
+                            "required": ["postcode", "lad_code"],
+                            "optional": [],
+                            "aliases": {
+                                "postcode": ["pcds"],
+                                "lad_code": ["lad25cd"],
+                            },
+                        },
+                    }
+                ],
+                "supportProducts": [],
+            },
+        )
+    )[1][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+
+    query_calls = [params for url, params in calls if url == query_url]
+    assert len(query_calls) >= 2
+    assert query_calls[0]["where"] == "1=1"
+    assert query_calls[1]["where"] == "OBJECTID > 1"
+    assert "resultOffset" not in query_calls[1]
+    content = resolved.source_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(content) == 2
+
+
 def test_resolve_hosted_table_arcgis_rejects_non_progressing_offsets(
     monkeypatch,
     tmp_path: Path,
@@ -447,6 +587,164 @@ def test_resolve_hosted_table_arcgis_rejects_non_progressing_offsets(
         raise AssertionError("Expected non-progressing ArcGIS pagination to be rejected")
 
 
+def test_ingest_support_dataset_accepts_rgc_xlsx_archive(tmp_path: Path) -> None:
+    workbook = Workbook()
+    summary = workbook.active
+    summary.title = "RGC"
+    summary.append(["Entity code", "Entity name"])
+    summary.append(["E05", "Wards"])
+
+    metadata = workbook.create_sheet("Metadata_for_geography_listings")
+    metadata.append(["Attribute", "Description"])
+    metadata.append(["GEOGCD", "Code"])
+
+    ward = workbook.create_sheet("E05_WD")
+    ward.append(["GEOGCD", "GEOGNM", "STATUS", "ENTITYCD"])
+    ward.append(["E05000001", "Aldersgate", "live", "E05"])
+    ward.append(["E05000002", "Aldgate", "terminated", "E05"])
+
+    country = workbook.create_sheet("E92_CTRY")
+    country.append(["GEOGCD", "GEOGNM", "STATUS", "ENTITYCD"])
+    country.append(["E92000001", "England", "live", "E92"])
+
+    xlsx_bytes = BytesIO()
+    workbook.save(xlsx_bytes)
+    workbook.close()
+
+    archive_path = tmp_path / "rgc.zip"
+    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("rgc.xlsx", xlsx_bytes.getvalue())
+
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "RGC",
+                        "title": "Register of Geographic Codes",
+                        "priority": 20,
+                        "release": "latest",
+                        "resolver": _static_resolver(archive_path),
+                        "semanticFields": {
+                            "required": ["code", "name"],
+                            "optional": ["status", "code_family", "level"],
+                            "aliases": {
+                                "code": ["GEOGRAPHY_CODE", "ENTITYCD"],
+                                "name": ["GEOGRAPHY_NAME", "ENTITYNM"],
+                                "status": ["STATUS"],
+                                "code_family": ["CODE_FAMILY"],
+                                "level": ["LEVEL"],
+                            },
+                            "defaults": {"status": "current"},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.ResolvedSource(
+        dataset_id="RGC",
+        source_path=archive_path,
+        source_format="zip",
+        resolved_source_url=None,
+        resolved_release="December 2025",
+        retrieved_at="2026-04-10T00:00:00Z",
+        metadata={},
+        schema_fields=[],
+        field_aliases={},
+    )
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+    code_references = refresh.CodeReferenceStore()
+    inserted, schema_validation = refresh._ingest_support_dataset(
+        conn=conn,
+        dataset=dataset,
+        resolved=resolved,
+        max_rows=None,
+        code_references=code_references,
+    )
+
+    assert inserted == 3
+    assert schema_validation["status"] == "ok"
+    assert code_references.annotate("E05000001", "ward")["status"] == "current"
+    assert code_references.annotate("E05000001", "ward")["codeFamily"] == "ward"
+    assert code_references.annotate("E92000001", "country")["codeFamily"] == "country"
+    assert conn.execute("SELECT COUNT(*) FROM ons_geo_code_reference").fetchone()[0] == 3
+    conn.close()
+
+
+def test_ingest_support_dataset_rolls_back_after_batched_failure(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, _base_manifest()))[2][0]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+    conn.execute(
+        """
+        INSERT INTO ons_geo_code_reference (
+            dataset_id,
+            code,
+            code_family,
+            name,
+            status,
+            successor_code,
+            successor_name,
+            level,
+            record_json,
+            ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            dataset.dataset_id,
+            "E090OLD",
+            "lad",
+            "Old Westminster",
+            "current",
+            None,
+            None,
+            "local_authority_district",
+            json.dumps({"GEOGRAPHY_CODE": "E090OLD"}, ensure_ascii=True, separators=(",", ":")),
+            "2026-04-11T00:00:00Z",
+        ),
+    )
+    conn.commit()
+    code_references = refresh.CodeReferenceStore()
+    original_normalize = refresh._normalize_code_reference_row
+    calls = {"count": 0}
+
+    def crashing_normalize(row, *, dataset, mapping):
+        calls["count"] += 1
+        if calls["count"] == 2:
+            raise ValueError("support ingest boom")
+        return original_normalize(row, dataset=dataset, mapping=mapping)
+
+    monkeypatch.setattr(refresh, "_SQLITE_REFRESH_INSERT_BATCH", 1)
+    monkeypatch.setattr(refresh, "_normalize_code_reference_row", crashing_normalize)
+
+    with pytest.raises(ValueError, match="support ingest boom"):
+        refresh._ingest_support_dataset(
+            conn=conn,
+            dataset=dataset,
+            resolved=resolved,
+            max_rows=None,
+            code_references=code_references,
+        )
+    conn.rollback()
+
+    rows = conn.execute(
+        "SELECT code, name FROM ons_geo_code_reference WHERE dataset_id = ? ORDER BY code",
+        (dataset.dataset_id,),
+    ).fetchall()
+    assert rows == [("E090OLD", "Old Westminster")]
+    conn.close()
+
+
 def test_resolve_portal_release_file_prefers_discovery_api_and_suffix(
     monkeypatch,
     tmp_path: Path,
@@ -500,7 +798,7 @@ def test_resolve_portal_release_file_prefers_discovery_api_and_suffix(
         url_overrides={},
     )
     assert resolved.resolved_source_url == "https://example.test/downloads/onsud-december-2025-epoch-123.zip"
-    assert resolved.resolved_release == "Epoch 123"
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
     assert resolved.source_path.exists()
 
 
@@ -576,7 +874,159 @@ def test_resolve_portal_release_file_skips_failing_landing_when_discovery_has_zi
         url_overrides={},
     )
     assert resolved.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
-    assert resolved.resolved_release == "Epoch 123"
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_resolve_portal_release_file_keeps_link_patterns_for_direct_discovery_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    guide_url = "https://downloads.example.test/onsud-december-2025-epoch-123-user-guide.zip"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "User Guide", "format": "ZIP", "url": guide_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+    zip_content = b"PK\x03\x04data"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == target_url:
+            return _FakeResponse(content=zip_content)
+        if url == guide_url:
+            raise AssertionError("Guide asset should not be selected when linkPatterns target data")
+        if url == "https://example.test/landing":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields a matching zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud-december-2025-epoch-123\\.zip$"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == target_url
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_resolve_portal_release_file_skips_dead_direct_discovery_candidate(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    dead_url = "https://downloads.example.test/onsud/download"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "Broken link", "format": "HTML", "url": dead_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+    zip_content = b"PK\x03\x04data"
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == dead_url:
+            raise refresh.requests.RequestException("403")
+        if url == target_url:
+            return _FakeResponse(content=zip_content)
+        if url == "https://example.test/landing":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields a matching zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == target_url
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
 
 
 def test_resolve_portal_release_file_uses_latest_ckan_search_result(
@@ -704,7 +1154,7 @@ def test_resolve_portal_release_file_uses_latest_ckan_search_result(
         url_overrides={},
     )
     assert resolved.resolved_source_url == "https://downloads.example.test/onsud-january-2026-epoch-124.zip"
-    assert resolved.resolved_release == "January 2026"
+    assert resolved.resolved_release == "January 2026 (Epoch 124)"
     assert resolved.source_path.exists()
 
 
@@ -809,7 +1259,7 @@ def test_resolve_portal_release_file_ignores_unrelated_newer_ckan_result(
         url_overrides={},
     )
     assert resolved.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
-    assert resolved.resolved_release == "December 2025"
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
 
 
 def test_resolve_portal_release_file_rejects_unsupported_binary_release_assets(
@@ -1001,7 +1451,151 @@ def test_probe_portal_release_file_skips_failing_landing_when_discovery_has_zip(
         url_overrides={},
     )
     assert probe.resolved_source_url == "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
-    assert probe.resolved_release == "Epoch 123"
+    assert probe.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_probe_portal_release_file_keeps_link_patterns_for_direct_discovery_assets(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    guide_url = "https://downloads.example.test/onsud-december-2025-epoch-123-user-guide.zip"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "User Guide", "format": "ZIP", "url": guide_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == target_url:
+            return _FakeResponse(content=b"PK\x03\x04probe")
+        if url in {guide_url, "https://example.test/landing"}:
+            raise AssertionError("Probe should not fetch the guide asset or landing page here")
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud-december-2025-epoch-123\\.zip$"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    probe = refresh.probe_dataset_source(
+        dataset,
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert probe.resolved_source_url == target_url
+    assert probe.resolved_release == "December 2025 (Epoch 123)"
+
+
+def test_probe_portal_release_file_skips_dead_direct_discovery_candidate(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_url = "https://downloads.example.test/onsud-december-2025-epoch-123.zip"
+    dead_url = "https://downloads.example.test/onsud/download"
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "resources": [
+                {"name": "Broken link", "format": "HTML", "url": dead_url},
+                {"name": "Data ZIP", "format": "ZIP", "url": target_url},
+            ],
+        },
+    }
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == dead_url:
+            raise refresh.requests.RequestException("403")
+        if url == target_url:
+            return _FakeResponse(content=b"PK\x03\x04probe")
+        if url == "https://example.test/landing":
+            raise AssertionError(
+                "landing page should not be fetched when discovery already yields a matching zip"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud"],
+                            "releasePatterns": ["Epoch\\s+\\d+"],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    probe = refresh.probe_dataset_source(
+        dataset,
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert probe.resolved_source_url == target_url
+    assert probe.resolved_release == "December 2025 (Epoch 123)"
 
 
 def test_resolve_portal_release_file_rejects_suffixless_release_assets(
@@ -1127,7 +1721,115 @@ def test_probe_portal_release_file_rejects_suffixless_release_assets(
         raise AssertionError("Expected suffixless release asset to be rejected")
 
 
-def test_resolve_direct_url_rejects_suffixless_urls(tmp_path: Path) -> None:
+def test_resolve_portal_release_file_uses_arcgis_guid_download_when_discovery_only_has_html(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    package_show = {
+        "success": True,
+        "result": {
+            "name": "ons-uprn-directory-december-2025-epoch-123",
+            "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+            "extras": [
+                {
+                    "key": "guid",
+                    "value": "https://www.arcgis.com/home/item.html?id=cf1e4c08e78d48e387bcfab837f4e1d0",
+                }
+            ],
+            "resources": [
+                {
+                    "name": "ArcGIS Hub Dataset",
+                    "format": "HTML",
+                    "url": "https://open-geography.example/datasets/ons::ons-uprn-directory-december-2025-epoch-123",
+                }
+            ],
+        },
+    }
+    arcgis_data_url = (
+        "https://www.arcgis.com/sharing/rest/content/items/"
+        "cf1e4c08e78d48e387bcfab837f4e1d0/data"
+    )
+
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, params
+        if url == "https://example.test/api/package_show":
+            return _FakeResponse(json_data=package_show)
+        if url == "https://open-geography.example/datasets/ons::ons-uprn-directory-december-2025-epoch-123":
+            return _FakeResponse(text="<html><body>hub page</body></html>")
+        if url == arcgis_data_url:
+            return _FakeResponse(
+                content=b"PK\x03\x04guid",
+                headers={
+                    "content-type": "application/zip",
+                    "content-disposition": 'attachment; filename="ONSUD_DEC_2025.zip"',
+                },
+            )
+        if url == "https://www.data.gov.uk/dataset/ons-uprn-directory-december-2025-epoch-123":
+            raise AssertionError(
+                "landing page should not be fetched when ArcGIS guid yields direct download"
+            )
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
+    dataset = refresh.load_manifest(
+        _write_manifest(
+            tmp_path,
+            {
+                "version": "2026-04-08",
+                "products": [],
+                "supportProducts": [
+                    {
+                        "id": "ONSUD",
+                        "title": "ONSUD",
+                        "priority": 10,
+                        "release": "latest",
+                        "resolver": {
+                            "type": "portal_release_file",
+                            "landingUrl": "https://example.test/landing",
+                            "discoveryApiUrl": "https://example.test/api/package_show",
+                            "preferredSuffixes": [".zip"],
+                            "linkPatterns": ["onsud", "ons-uprn-directory", "zip"],
+                            "releasePatterns": [
+                                "(January|February|March|April|May|June|July|August|September|"
+                                "October|November|December)\\s+20\\d{2}",
+                                "Epoch\\s+\\d+",
+                            ],
+                        },
+                        "semanticFields": {
+                            "required": ["code"],
+                            "optional": [],
+                            "aliases": {"code": ["GEOGRAPHY_CODE"]},
+                        },
+                    }
+                ],
+            },
+        )
+    )[2][0]
+
+    resolved = refresh.resolve_dataset_source(
+        dataset,
+        raw_root=tmp_path / "raw",
+        timeout=5.0,
+        file_overrides={},
+        url_overrides={},
+    )
+    assert resolved.resolved_source_url == arcgis_data_url
+    assert resolved.resolved_release == "December 2025 (Epoch 123)"
+    assert resolved.source_format == "zip"
+    assert resolved.source_path.exists()
+
+
+def test_resolve_direct_url_rejects_suffixless_urls(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://downloads.example.test/onsud/download":
+            return _FakeResponse(text="<html><body>No file</body></html>")
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
     dataset = refresh.load_manifest(
         _write_manifest(
             tmp_path,
@@ -1173,6 +1875,13 @@ def test_probe_dataset_source_rejects_suffixless_url_overrides(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
+    def fake_get(url, timeout=None, stream=False, params=None):
+        del timeout, stream, params
+        if url == "https://downloads.example.test/onsud/download":
+            return _FakeResponse(text="<html><body>No file</body></html>")
+        raise AssertionError(f"Unexpected URL {url}")
+
+    monkeypatch.setattr(refresh.requests, "get", fake_get)
     dataset = refresh.load_manifest(
         _write_manifest(
             tmp_path,
@@ -1418,3 +2127,119 @@ def test_code_reference_annotation_flags_family_mismatch() -> None:
         code_references=store,
     )
     assert normalized["geographies"]["lad"]["status"] == "family_mismatch"
+
+
+def test_ingest_main_dataset_rolls_back_after_batched_failure(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "onsud_multi.csv"
+    source_path.write_text(
+        "\n".join(
+            [
+                (
+                    "UPRN,pcds,LAD24CD,LAD24NM,OA21CD,LSOA21CD,MSOA21CD,WD24CD,"
+                    "WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM,postal_delivery"
+                ),
+                (
+                    "100023336959,CV12GT,E08000026,Coventry,E00012345,E01012345,"
+                    "E02012345,E05001111,Holbrooks,E92000001,England,E12000005,"
+                    "West Midlands,1"
+                ),
+                (
+                    "100023336960,CV12GU,E08000026,Coventry,E00012346,E01012346,"
+                    "E02012346,E05001112,Holbrooks,E92000001,England,E12000005,"
+                    "West Midlands,1"
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    payload = _base_manifest()
+    payload["products"][2]["resolver"] = _static_resolver(source_path)
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, payload))[1][2]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+    old_normalized_row = {
+        "semanticFields": {
+            "uprn": "999999999999",
+            "postcode": "CV00AA",
+            "postal_delivery": 1,
+        },
+        "geographies": {
+            "lad": {"currentCode": "E09000033", "currentName": "Westminster"},
+            "ward": {"currentCode": "E05013806", "currentName": "St James's"},
+            "country": {"currentCode": "E92000001", "currentName": "England"},
+            "region": {"currentCode": "E12000007", "currentName": "London"},
+        },
+    }
+    conn.execute(
+        """
+        INSERT INTO ons_geo_rows (
+            product_id,
+            key_type,
+            key_norm,
+            derivation_mode,
+            release,
+            source_name,
+            product_priority,
+            row_json,
+            normalized_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            dataset.dataset_id,
+            dataset.key_type,
+            "999999999999",
+            dataset.derivation_mode,
+            dataset.release,
+            dataset.title,
+            dataset.priority,
+            "{}",
+            json.dumps(old_normalized_row, ensure_ascii=True, separators=(",", ":")),
+            "2026-04-11T00:00:00Z",
+        ),
+    )
+    refresh._insert_uprn_index_row(
+        conn=conn,
+        dataset=dataset,
+        normalized_row=old_normalized_row,
+        cached_at="2026-04-11T00:00:00Z",
+    )
+    conn.commit()
+    code_references = refresh.CodeReferenceStore()
+    original_build = refresh._build_normalized_row
+    calls = {"count": 0}
+
+    def crashing_build(row, *, mapping, code_references):
+        calls["count"] += 1
+        if calls["count"] == 2:
+            raise ValueError("main ingest boom")
+        return original_build(row, mapping=mapping, code_references=code_references)
+
+    monkeypatch.setattr(refresh, "_SQLITE_REFRESH_INSERT_BATCH", 1)
+    monkeypatch.setattr(refresh, "_build_normalized_row", crashing_build)
+
+    with pytest.raises(ValueError, match="main ingest boom"):
+        refresh._ingest_main_dataset(
+            conn=conn,
+            dataset=dataset,
+            resolved=resolved,
+            max_rows=None,
+            code_references=code_references,
+        )
+    conn.rollback()
+
+    rows = conn.execute(
+        "SELECT key_norm FROM ons_geo_rows WHERE product_id = ? ORDER BY key_norm",
+        (dataset.dataset_id,),
+    ).fetchall()
+    uprn_index_rows = conn.execute(
+        "SELECT uprn FROM ons_geo_uprn_index WHERE product_id = ? ORDER BY uprn",
+        (dataset.dataset_id,),
+    ).fetchall()
+    assert rows == [("999999999999",)]
+    assert uprn_index_rows == [("999999999999",)]
+    conn.close()

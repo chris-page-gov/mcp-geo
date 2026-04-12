@@ -34,7 +34,7 @@ from scripts.landis_portal_inventory import (  # noqa: E402
 )
 
 DEFAULT_INVENTORY = REPO_ROOT / "research/landis-data-source/landis_portal_inventory_2026-04-04.json"
-DEFAULT_DESTINATION = Path("/Volumes/ExtSSD-Data/Data/landis_portal_archive_2026-04-04")
+DEFAULT_DESTINATION = Path.home() / "Data" / "landis_portal_archive_2026-04-04"
 SAFE_NAME_REGEX = re.compile(r"[^A-Za-z0-9._-]+")
 DEFAULT_FEATURE_BATCH_SIZE = 100
 

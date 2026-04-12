@@ -539,9 +539,8 @@ Storage controls for the wrapper:
   `MCP_GEO_POSTGIS_DATA_DIR` (legacy bind-mount mode).
 - `MCP_GEO_POSTGIS_IMAGE` defaults to `mcp-geo-postgis-pgrouting:16-3.4`.
 - `MCP_GEO_POSTGIS_PLATFORM` defaults to `linux/amd64`.
-- `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER` defaults to `auto` for Docker-backed
-  wrappers, so host-side clients reuse the running repo devcontainer PostGIS
-  container by default.
+- `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER` defaults to `0` for Docker-backed
+  wrappers, so host-side clients keep isolated PostGIS sidecars by default.
 - `scripts/codex-mcp-local` now uses dedicated fallback names
   `mcp-geo-postgis-codex` on network `mcp-geo-codex`; the generic
   `scripts/mcp-docker-local` fallback uses `mcp-geo-postgis-sidecar` on
@@ -550,9 +549,10 @@ Storage controls for the wrapper:
   (`mcp-geo-postgis-devcontainer`) so the host-side wrappers no longer share
   database storage with the devcontainer unless you override the volume name
   explicitly.
-- `scripts/claude-mcp-local` now prefers the running repo devcontainer PostGIS
-  container (`mcp-geo_devcontainer-postgis-1`) when available; otherwise it
-  falls back to its own Docker sidecar.
+- `scripts/claude-mcp-local`, `scripts/codex-mcp-local`, and
+  `scripts/gemini-mcp-local` now default to their own dedicated Docker sidecar
+  names. Reuse of the repo devcontainer PostGIS container is explicit opt-in
+  only via `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1`.
 - The wrapper now sets `PGDATA=/var/lib/postgresql/data/pgdata` to match the
   devcontainer layout and bootstraps the boundary-cache/route-graph schema
   files after the PostGIS sidecar becomes ready.
@@ -561,9 +561,17 @@ Storage controls for the wrapper:
   volumes before suggesting the `docker rm` / `docker volume rm` recovery path.
 
 Benchmarking note:
-- Before comparing Codex, Claude, or other Docker-backed clients, run
+- Before comparing Codex, Claude, Gemini, or other Docker-backed clients, run
   `./scripts/check_shared_benchmark_cache.sh` and only continue if it reports
-  `PASS`. This ensures every client is pointed at the same PostGIS cache.
+  `PASS`.
+- The default benchmark mode is `isolated`, which checks parity across the
+  dedicated client sidecars and shared mounted data roots without forcing every
+  host to share one database.
+- If you explicitly want a shared PostGIS benchmark cache, set
+  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1`,
+  `MCP_GEO_BENCHMARK_CACHE_MODE=shared`, and
+  `MCP_GEO_BENCHMARK_POSTGIS_CONTAINER=<container-name>` before running the
+  preflight and the client wrappers.
 
 If you need deterministic non-interactive routing, set
 `MCP_STDIO_ELICITATION_ENABLED=0` to disable STDIO form elicitation prompts
@@ -594,6 +602,33 @@ To verify scoped startup discovery with the Codex launcher:
 
 For host benchmarking and scored Codex vs Claude runs, use the runbook in
 `docs/benchmarking/codex_vs_claude_host_benchmark.md`.
+
+## Appendix: Gemini local wrapper (PostGIS + cache)
+
+For Gemini CLI, use the Gemini-specific launcher so it shares the same Docker
+bootstrap behavior, cache mounts, and scoped startup defaults as the other
+desktop/CLI comparisons:
+
+```bash
+./scripts/gemini-mcp-local
+```
+
+The Gemini wrapper is a thin dedicated entrypoint over
+`scripts/mcp-docker-local`, using its own sidecar defaults
+(`mcp-geo-postgis-gemini` on `mcp-geo-gemini`). Shared devcontainer reuse is
+available only when you explicitly enable it.
+
+To verify scoped startup discovery with the Gemini launcher:
+
+```bash
+./scripts/check_gemini_startup_scope.sh
+```
+
+For fair host comparisons, point the Gemini CLI MCP config at
+`scripts/gemini-mcp-local` instead of a standalone `docker run --env-file`
+command, so it benefits from the same ONS cache mounts, AddressBase mounts,
+LandIS archive roots, boundary-run search roots, and isolated PostGIS topology
+as Claude/Codex.
 
 ## Appendix: ChatGPT local dev (HTTPS tunnel)
 

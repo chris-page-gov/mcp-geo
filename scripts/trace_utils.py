@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_SESSION_ROOT = Path("logs") / "sessions"
-DOCKER_LOCAL_WRAPPER_NAMES = {"claude-mcp-local", "codex-mcp-local", "mcp-docker-local"}
+DOCKER_LOCAL_WRAPPER_NAMES = {
+    "claude-mcp-local",
+    "codex-mcp-local",
+    "gemini-mcp-local",
+    "mcp-docker-local",
+}
 IGNORE_USEFUL_TOOL_NAMES = {"os_apps.log_event", "os_apps_log_event"}
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from itertools import pairwise
 from typing import Any
 
 from server.config import settings
@@ -81,6 +82,7 @@ _MAX_BBOX_AREA_DEG2 = _float_setting(
 )
 
 _COLLECTION_VERSION_RE = re.compile(r"^(?P<base>.+)-(?P<ver>[0-9]+)$")
+_LEGACY_COLLECTION_NAMESPACE_PREFIXES = ("ngd-base:",)
 _COLLECTION_ALIASES = {
     # Compatibility alias used in prompts/evaluation packs.
     "buildings": "bld-fts-buildingpart-2",
@@ -120,8 +122,20 @@ _HINT_MESSAGES = [
 ]
 
 
-def _apply_collection_alias(value: str) -> str:
+def _strip_legacy_collection_namespace(value: str) -> tuple[str, bool]:
     text = value.strip()
+    if not text:
+        return text, False
+    lowered = text.lower()
+    for prefix in _LEGACY_COLLECTION_NAMESPACE_PREFIXES:
+        if lowered.startswith(prefix):
+            stripped = text[len(prefix) :].strip()
+            return stripped, True
+    return text, False
+
+
+def _apply_collection_alias(value: str) -> str:
+    text, _ = _strip_legacy_collection_namespace(value)
     if not text:
         return text
     lowered = text.lower()
@@ -139,6 +153,32 @@ def _apply_collection_alias(value: str) -> str:
     if mapped_base:
         return f"{mapped_base}-1"
     return text
+
+
+def _resolve_latest_collection_id(value: str) -> str | None:
+    collection = value.strip().lower()
+    if not collection or _COLLECTION_VERSION_RE.match(collection) is not None:
+        return None
+
+    lookup_key = _COLLECTION_BASE_ALIASES.get(collection, collection)
+    status, body = _client_get_json(f"{client.base_ngd_features}/collections", None)
+    if status != 200 or not isinstance(body, dict):
+        return None
+
+    raw_collections = body.get("collections")
+    if not isinstance(raw_collections, list):
+        return None
+
+    collection_ids: list[str] = []
+    for entry in raw_collections:
+        if not isinstance(entry, dict):
+            continue
+        collection_id = str(entry.get("id") or "").strip().lower()
+        if collection_id:
+            collection_ids.append(collection_id)
+    if not collection_ids:
+        return None
+    return _build_latest_by_base(collection_ids).get(lookup_key)
 
 
 def _extract_unsupported_collection(message: Any) -> str | None:
@@ -684,9 +724,9 @@ def _feature_intersects_polygon(
         if _point_in_polygon(point, polygon):
             return True
 
-    polygon_edges = list(zip(polygon, polygon[1:], strict=False))
+    polygon_edges = list(pairwise(polygon))
     for sequence in _iter_line_sequences(coords):
-        for start, end in zip(sequence, sequence[1:], strict=False):
+        for start, end in pairwise(sequence):
             for polygon_start, polygon_end in polygon_edges:
                 if _segments_intersect(start, end, polygon_start, polygon_end):
                     return True
@@ -873,6 +913,9 @@ def _features_query(payload: dict[str, Any]) -> ToolResult:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "Missing collection"}
     requested_collection = collection
     collection = _apply_collection_alias(collection)
+    latest_collection = _resolve_latest_collection_id(collection)
+    if latest_collection:
+        collection = latest_collection
 
     warnings: list[str] = []
     if collection != requested_collection:

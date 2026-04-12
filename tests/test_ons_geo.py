@@ -14,6 +14,14 @@ from server.ons_geo_cache import ONSGeoCacheReadError, ensure_schema
 client = TestClient(app)
 
 
+class _FakeTool:
+    def __init__(self, handler):
+        self._handler = handler
+
+    def call(self, payload):  # type: ignore[no-untyped-def]
+        return self._handler(payload)
+
+
 def _insert_product(
     conn: sqlite3.Connection,
     *,
@@ -162,10 +170,49 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
         key_norm="SW1A1AA",
         derivation_mode="exact",
         source_name="ONSPD",
-        payload={"LAD24CD": "E09000033", "LAD24NM": "Westminster"},
+        payload={
+            "OA21CD": "E00000111",
+            "LSOA21CD": "E01000001",
+            "LSOA21NM": "Example LSOA",
+            "MSOA21CD": "E02000001",
+            "MSOA21NM": "Example MSOA",
+            "LAD24CD": "E09000033",
+            "LAD24NM": "Westminster",
+            "WD24CD": "E05000001",
+            "WD24NM": "Example Ward",
+            "CTRY25CD": "E92000001",
+            "CTRY25NM": "England",
+            "RGN25CD": "E12000007",
+            "RGN25NM": "London",
+            "oac11ind": "4C1",
+        },
         normalized_payload={
-            "semanticFields": {"postcode": "SW1A1AA", "lad_code": "E09000033"},
+            "semanticFields": {
+                "postcode": "SW1A1AA",
+                "oa_code": "E00000111",
+                "lsoa_code": "E01000001",
+                "msoa_code": "E02000001",
+                "lad_code": "E09000033",
+                "ward_code": "E05000001",
+                "country_code": "E92000001",
+                "region_code": "E12000007",
+            },
             "geographies": {
+                "oa": {"code": "E00000111", "currentCode": "E00000111", "currentName": "E00000111"},
+                "lsoa": {
+                    "code": "E01000001",
+                    "currentCode": "E01000001",
+                    "currentName": "Example LSOA",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
+                "msoa": {
+                    "code": "E02000001",
+                    "currentCode": "E02000001",
+                    "currentName": "Example MSOA",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
                 "lad": {
                     "code": "E09000033",
                     "name": "Westminster",
@@ -173,9 +220,30 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                     "currentName": "Westminster",
                     "status": "current",
                     "sourceDataset": "RGC",
-                }
+                },
+                "ward": {
+                    "code": "E05000001",
+                    "currentCode": "E05000001",
+                    "currentName": "Example Ward",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
+                "country": {
+                    "code": "E92000001",
+                    "currentCode": "E92000001",
+                    "currentName": "England",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
+                "region": {
+                    "code": "E12000007",
+                    "currentCode": "E12000007",
+                    "currentName": "London",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
             },
-            "codeStatusSummary": {"current": 1},
+            "codeStatusSummary": {"current": 6},
         },
     )
     _insert_row(
@@ -246,6 +314,92 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
             },
             "codeStatusSummary": {"current": 1},
         },
+    )
+    conn.executemany(
+        """
+        INSERT INTO ons_geo_uprn_index (
+            product_id,
+            derivation_mode,
+            uprn,
+            postcode,
+            oa_code,
+            lsoa_code,
+            msoa_code,
+            lad_code,
+            lad_name,
+            ward_code,
+            ward_name,
+            country_code,
+            country_name,
+            region_code,
+            region_name,
+            postal_delivery,
+            geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                "ONSUD",
+                "exact",
+                "100000000001",
+                "SW1A1AA",
+                "E00000111",
+                "E01000001",
+                "E02000001",
+                "E09000033",
+                "Westminster",
+                "E05000001",
+                "Example Ward",
+                "E92000001",
+                "England",
+                "E12000007",
+                "London",
+                1,
+                json.dumps({"oa": {"code": "E00000111"}}),
+                "2026-02-22T00:00:00Z",
+            ),
+            (
+                "ONSUD",
+                "exact",
+                "100000000002",
+                "SW1A1AA",
+                "E00000111",
+                "E01000001",
+                "E02000001",
+                "E09000033",
+                "Westminster",
+                "E05000001",
+                "Example Ward",
+                "E92000001",
+                "England",
+                "E12000007",
+                "London",
+                1,
+                json.dumps({"oa": {"code": "E00000111"}}),
+                "2026-02-22T00:00:00Z",
+            ),
+            (
+                "ONSUD",
+                "exact",
+                "100000000003",
+                "SW1A2AA",
+                "E00000111",
+                "E01000001",
+                "E02000001",
+                "E09000033",
+                "Westminster",
+                "E05000001",
+                "Example Ward",
+                "E92000001",
+                "England",
+                "E12000007",
+                "London",
+                0,
+                json.dumps({"oa": {"code": "E00000111"}}),
+                "2026-02-22T00:00:00Z",
+            ),
+        ],
     )
     conn.commit()
     conn.close()
@@ -381,6 +535,290 @@ def test_ons_geo_by_uprn_exact_mode(tmp_path: Path, monkeypatch) -> None:
     assert body["geographies"]["lad24"]["code"] == "E08000026"
     assert body["normalizedGeographies"]["lad"]["status"] == "current"
     assert body["lookup"]["freshness"]["status"] == "current"
+
+
+def test_ons_geo_area_summary_from_postcode_uses_compact_helpers(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    seen_calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda payload: (
+                    seen_calls.append((name, dict(payload))),
+                    (
+                        200,
+                        {
+                            "id": "E00000111",
+                            "name": "Example OA",
+                            "bbox": [-0.13, 51.49, -0.12, 51.5],
+                            "live": False,
+                            "meta": {"level": "OA"},
+                        },
+                    ),
+                )[1]
+            )
+        if name == "os_map.inventory":
+            return _FakeTool(
+                lambda payload: (
+                    seen_calls.append((name, dict(payload))),
+                    (
+                        200,
+                        {
+                            "responseMode": "summary",
+                            "layers": {
+                                "uprns": {"mode": "summary", "count": 3},
+                                "buildings": {"mode": "summary", "count": 2},
+                            },
+                        },
+                    ),
+                )[1]
+            )
+        if name == "nomis.query":
+            return _FakeTool(
+                lambda payload: (
+                    seen_calls.append((name, dict(payload))),
+                    (
+                        200,
+                        {
+                            "data": {"value": {"0": 292}},
+                            "datasetSummary": {"id": "NM_2021_1", "name": "TS001 - Population"},
+                        },
+                    ),
+                )[1]
+            )
+        if name == "admin_lookup.reverse_hierarchy":
+            return _FakeTool(
+                lambda payload: (
+                    seen_calls.append((name, dict(payload))),
+                    (200, {"chain": [{"id": "E00000111", "level": "OA", "name": "Example OA"}]}),
+                )[1]
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.area_summary", "postcode": "SW1A 1AA"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["area"]["id"] == "E00000111"
+    assert body["area"]["level"] == "OA"
+    assert body["area"]["name"] == "Example OA"
+    assert body["anchor"]["type"] == "postcode"
+    assert body["anchor"]["classifications"]["oac11ind"] == "4C1"
+    assert body["counts"]["uprnCount"] == 3
+    assert body["counts"]["postcodeCount"] == 2
+    assert body["counts"]["postalDeliveryUprnCount"] == 2
+    assert body["inventory"]["layers"]["uprns"]["count"] == 3
+    assert body["population"]["value"] == 292
+    assert body["profileDatasets"][0]["category"] == "population"
+    inventory_calls = [payload for name, payload in seen_calls if name == "os_map.inventory"]
+    assert inventory_calls and inventory_calls[0]["responseMode"] == "summary"
+
+
+def test_ons_geo_area_summary_requires_anchor_or_explicit_context(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.area_summary", "targetLevel": "OA"},
+    )
+    assert resp.status_code == 400
+    assert "Provide id, postcode, or uprn" in resp.json()["message"]
+
+
+def test_ons_geo_area_summary_invalid_id_without_target_level_returns_validation_error(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.area_summary", "id": "K04000001"},
+    )
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "INVALID_INPUT"
+    assert "Could not infer targetLevel from id K04000001" in body["message"]
+
+
+def test_ons_geo_area_summary_unknown_direct_id_returns_not_found(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+    monkeypatch.setattr(ons_geo_tools, "get_tool", lambda _name: None)
+
+    resp = client.post(
+        "/tools/call",
+        json={"tool": "ons_geo.area_summary", "id": "E01009999", "targetLevel": "LSOA"},
+    )
+    assert resp.status_code == 404
+    body = resp.json()
+    assert body["code"] == "NOT_FOUND"
+    assert "E01009999" in body["message"]
+
+
+def test_ons_geo_area_summary_direct_id_can_resolve_higher_level_from_hierarchy(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.reverse_hierarchy":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "chain": [
+                            {"id": "E01000001", "level": "LSOA", "name": "Example LSOA"},
+                            {"id": "E12000007", "level": "REGION", "name": "London"},
+                        ]
+                    },
+                )
+            )
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "id": "E12000007",
+                        "name": "London",
+                        "bbox": [-0.5, 51.2, 0.3, 51.8],
+                        "meta": {"level": "REGION"},
+                    },
+                )
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "id": "E01000001",
+            "targetLevel": "REGION",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["area"]["id"] == "E12000007"
+    assert body["area"]["level"] == "REGION"
+    assert body["area"]["name"] == "London"
+    assert body["counts"]["uprnCount"] == 3
+
+
+def test_ons_geo_area_summary_tolerates_optional_helper_failures(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda _payload: (_ for _ in ()).throw(RuntimeError("helper failed"))
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "postcode": "SW1A 1AA",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["area"]["id"] == "E00000111"
+    assert body["area"]["name"] == "E00000111"
+
+
+def test_ons_geo_area_summary_ignores_blank_anchor_fields(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+    monkeypatch.setattr(ons_geo_tools, "get_tool", lambda _name: None)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "id": "",
+            "postcode": "SW1A 1AA",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["anchor"]["type"] == "postcode"
+    assert body["area"]["id"] == "E00000111"
 
 
 def test_ons_geo_by_postcode_cache_unavailable(tmp_path: Path, monkeypatch) -> None:

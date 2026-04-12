@@ -38,8 +38,8 @@ PORTAL_INVENTORY_PATH = (
 DEFAULT_OUTPUT_PATH = (
     REPO_ROOT / "research" / "landis-data-source" / "landis_release_reconciliation_2026-04-05.json"
 )
-DEFAULT_ARCHIVE_MANIFEST_PATH = Path(
-    "/Users/crpage/Data/landis_portal_archive_2026-04-04/download_manifest.json"
+DEFAULT_ARCHIVE_MANIFEST_PATH = (
+    Path.home() / "Data" / "landis_portal_archive_2026-04-04" / "download_manifest.json"
 )
 USER_AGENT = "Mozilla/5.0 (compatible; mcp-geo landis release reconciliation)"
 SCRIPT_TAG_RE = re.compile(r"<script\b[^>]*>.*?</script\b[^>]*>", re.IGNORECASE | re.DOTALL)

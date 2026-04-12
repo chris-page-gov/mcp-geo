@@ -8,11 +8,17 @@ from xml.etree import ElementTree
 
 import requests
 
-from scripts.ons_geo_cache_refresh import DEFAULT_SOURCES_PATH, load_manifest, probe_dataset_source
+from scripts.ons_geo_cache_refresh import (
+    DEFAULT_SOURCES_PATH,
+    _extract_ckan_discovery_context,
+    load_manifest,
+    probe_dataset_source,
+)
 from server.ons_geo_freshness import (
     latest_published_epoch,
     load_addressbase_epoch_schedule,
     next_scheduled_epoch,
+    parse_epoch_from_text,
     summarize_uprn_dataset_freshness,
 )
 
@@ -152,6 +158,78 @@ def fetch_geoportal_rss_status(*, timeout: float) -> dict[str, Any]:
     }
 
 
+def _catalog_only_probe(dataset: Any, *, timeout: float, probe_error: str) -> dict[str, Any] | None:
+    resolver = getattr(dataset, "resolver", None)
+    discovery_api_url = getattr(resolver, "discovery_api_url", None)
+    landing_url = getattr(resolver, "landing_url", None)
+    if not isinstance(discovery_api_url, str) or not discovery_api_url.strip():
+        return None
+
+    with requests.get(discovery_api_url, timeout=timeout) as resp:
+        resp.raise_for_status()
+        api_payload = resp.json()
+    _urls, release_hint, landing_override, discovery_metadata = _extract_ckan_discovery_context(
+        dataset,
+        api_payload,
+    )
+    selected_package = (
+        discovery_metadata.get("selectedPackage")
+        if isinstance(discovery_metadata.get("selectedPackage"), dict)
+        else {}
+    )
+    selected_title = str(selected_package.get("title") or "").strip()
+    selected_name = str(selected_package.get("name") or "").strip()
+    resolved_release = release_hint or selected_title or selected_name or None
+    if parse_epoch_from_text(resolved_release) is None:
+        epoch_richer_release = next(
+            (
+                candidate
+                for candidate in (selected_title, selected_name)
+                if parse_epoch_from_text(candidate) is not None
+            ),
+            None,
+        )
+        if epoch_richer_release is not None:
+            resolved_release = epoch_richer_release
+    resolved_source_url = landing_override or landing_url
+
+    return {
+        "resolvedRelease": resolved_release,
+        "resolvedSourceUrl": resolved_source_url,
+        "schemaProbeStatus": "catalog_only",
+        "resolutionMode": "catalog_only",
+        "warning": (
+            "Resolved release metadata came from the publisher catalog because a direct "
+            "ingestable file URL was not available during audit."
+        ),
+        "probeError": probe_error,
+    }
+
+
+def _probe_dataset_for_audit(dataset: Any, *, timeout: float) -> dict[str, Any]:
+    try:
+        probe = probe_dataset_source(
+            dataset,
+            timeout=timeout,
+            file_overrides={},
+            url_overrides={},
+        )
+    except Exception as exc:
+        fallback = _catalog_only_probe(dataset, timeout=timeout, probe_error=str(exc))
+        if fallback is not None:
+            return fallback
+        raise
+
+    return {
+        "resolvedRelease": probe.resolved_release,
+        "resolvedSourceUrl": probe.resolved_source_url,
+        "schemaProbeStatus": probe.schema_probe_status,
+        "resolutionMode": "probe",
+        "warning": getattr(probe, "warning", None),
+        "probeError": None,
+    }
+
+
 def build_release_audit(*, timeout: float) -> dict[str, Any]:
     version, products, _support_products = load_manifest(DEFAULT_SOURCES_PATH)
     schedule = load_addressbase_epoch_schedule()
@@ -162,25 +240,23 @@ def build_release_audit(*, timeout: float) -> dict[str, Any]:
         dataset = next((item for item in products if item.dataset_id == dataset_id), None)
         if dataset is None:
             continue
-        probe = probe_dataset_source(
-            dataset,
-            timeout=timeout,
-            file_overrides={},
-            url_overrides={},
-        )
+        probe = _probe_dataset_for_audit(dataset, timeout=timeout)
         freshness = summarize_uprn_dataset_freshness(
             dataset_id=dataset.dataset_id,
-            resolved_release=probe.resolved_release,
-            resolved_source_url=probe.resolved_source_url,
+            resolved_release=probe["resolvedRelease"],
+            resolved_source_url=probe["resolvedSourceUrl"],
             schedule=schedule,
         )
         results.append(
             {
                 "id": dataset.dataset_id,
                 "title": dataset.title,
-                "resolvedRelease": probe.resolved_release,
-                "resolvedSourceUrl": probe.resolved_source_url,
-                "schemaProbeStatus": probe.schema_probe_status,
+                "resolvedRelease": probe["resolvedRelease"],
+                "resolvedSourceUrl": probe["resolvedSourceUrl"],
+                "schemaProbeStatus": probe["schemaProbeStatus"],
+                "resolutionMode": probe["resolutionMode"],
+                "warning": probe["warning"],
+                "probeError": probe["probeError"],
                 "freshness": freshness,
                 "publisherNoticeStatus": rss_status.get("status"),
                 "geoportalRecord": fetch_geoportal_dataset_latest(
