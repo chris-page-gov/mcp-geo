@@ -188,6 +188,26 @@ def _base_manifest() -> dict[str, object]:
     }
 
 
+def test_detect_release_scopes_epoch_to_matched_release_candidate() -> None:
+    payload = json.dumps(
+        {
+            "resources": [
+                {
+                    "title": "Archived ONS UPRN Directory (October 2025) (Epoch 121)",
+                },
+                {
+                    "title": "ONS UPRN Directory (December 2025) (Epoch 123)",
+                },
+            ]
+        },
+        ensure_ascii=True,
+    )
+
+    release = refresh._detect_release(payload, ["December\\s+2025"])
+
+    assert release == "December 2025 (Epoch 123)"
+
+
 def test_ons_geo_cache_refresh_ingests_products_and_sidecars(tmp_path: Path) -> None:
     manifest = _write_manifest(tmp_path, _base_manifest())
     cache_dir = tmp_path / "cache"

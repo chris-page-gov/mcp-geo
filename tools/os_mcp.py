@@ -501,11 +501,14 @@ def _looks_like_property_tax_query(query_lower: str) -> bool:
 
 
 def _looks_like_property_tax_status_prompt(query_lower: str) -> bool:
+    if re.search(
+        r"\bnon-domestic rates?\b|\bbusiness rates?\b|\baddressbase\b|\btype 23\b|\bflags?\b",
+        query_lower,
+    ):
+        return True
     return bool(
-        re.search(
-            r"\bnon-domestic rates?\b|\bbusiness rates?\b|\baddressbase\b|\btype 23\b|\bflags?\b",
-            query_lower,
-        )
+        re.search(r"\bcouncil tax\b", query_lower)
+        and re.search(r"\b(status|liable|liability|current)\b", query_lower)
     )
 
 

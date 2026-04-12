@@ -520,15 +520,36 @@ def _format_detected_release(
     return None
 
 
+def _nearest_release_match(
+    pattern: re.Pattern[str],
+    text: str,
+    *,
+    anchor: int,
+    max_distance: int = 80,
+) -> re.Match[str] | None:
+    nearest: re.Match[str] | None = None
+    nearest_distance: int | None = None
+    for candidate in pattern.finditer(text):
+        distance = abs(candidate.start() - anchor)
+        if distance > max_distance:
+            continue
+        if nearest is None or nearest_distance is None or distance < nearest_distance:
+            nearest = candidate
+            nearest_distance = distance
+    return nearest
+
+
 def _detect_release(text: str, explicit_patterns: list[str]) -> str | None:
     normalized_text = text.replace("-", " ").replace("_", " ")
     overall_month_match = _MONTH_NAME_RE.search(text) or _MONTH_NAME_RE.search(normalized_text)
     overall_epoch_match = _EPOCH_RE.search(text) or _EPOCH_RE.search(normalized_text)
     for pattern in explicit_patterns:
         try:
-            match = re.search(pattern, text, re.IGNORECASE) or re.search(
-                pattern, normalized_text, re.IGNORECASE
-            )
+            match_source = text
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match is None:
+                match_source = normalized_text
+                match = re.search(pattern, normalized_text, re.IGNORECASE)
         except re.error:
             continue
         if match:
@@ -541,14 +562,20 @@ def _detect_release(text: str, explicit_patterns: list[str]) -> str | None:
                 candidate = joined.strip() or match.group(0).strip()
             else:
                 candidate = match.group(0).strip()
-            candidate_month_match = _MONTH_NAME_RE.search(candidate)
-            candidate_epoch_match = _EPOCH_RE.search(candidate)
-            if (candidate_month_match or candidate_epoch_match) and (
-                overall_month_match or overall_epoch_match
-            ):
+            candidate_month_match = _nearest_release_match(
+                _MONTH_NAME_RE,
+                match_source,
+                anchor=match.start(),
+            )
+            candidate_epoch_match = _nearest_release_match(
+                _EPOCH_RE,
+                match_source,
+                anchor=match.start(),
+            )
+            if candidate_month_match or candidate_epoch_match:
                 combined = _format_detected_release(
-                    month_match=overall_month_match or candidate_month_match,
-                    epoch_match=overall_epoch_match or candidate_epoch_match,
+                    month_match=candidate_month_match,
+                    epoch_match=candidate_epoch_match,
                 )
                 if combined:
                     return combined

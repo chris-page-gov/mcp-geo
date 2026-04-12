@@ -147,6 +147,14 @@ def test_route_query_business_rates_postcode_uses_places_then_status_query():
     assert body["workflow_steps"] == ["os_places.by_postcode", "council_tax.query"]
 
 
+def test_route_query_council_tax_status_postcode_uses_places_then_status_query():
+    body = _route("Check council tax status for postcode CV1 2GT")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_places.by_postcode"
+    assert body["recommended_parameters"]["postcode"] == "CV12GT"
+    assert body["workflow_steps"] == ["os_places.by_postcode", "council_tax.query"]
+
+
 def test_route_query_business_rates_address_uses_places_search_then_status_query():
     body = _route("Check business rates status for addresses on High Street")
     assert body["intent"] == "property_tax"
@@ -159,6 +167,15 @@ def test_route_query_business_rates_address_uses_places_search_then_status_query
 
 def test_route_query_business_rates_without_identifier_requires_resolution_first():
     body = _route("Check business rates status")
+    assert body["intent"] == "property_tax"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_steps"] == ["os_mcp.descriptor"]
+    assert "need a UPRN" in body["guidance"]
+
+
+def test_route_query_council_tax_status_without_identifier_requires_resolution_first():
+    body = _route("Check council tax status")
     assert body["intent"] == "property_tax"
     assert body["recommended_tool"] == "os_mcp.descriptor"
     assert body["recommended_parameters"] == {}
@@ -688,6 +705,27 @@ def test_select_toolsets_business_rates_postcode_infers_places_and_property_tax(
         json={
             "tool": "os_mcp.select_toolsets",
             "query": "Check business rates status for postcode CV1 2GT",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "property_tax"
+    assert inference.get("propertyTaxMode") == "status_from_postcode"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "property_tax" in include
+    assert "places_names" in include
+    matched = body.get("matchedTools", [])
+    assert "council_tax.query" in matched
+    assert "os_places.by_postcode" in matched
+
+
+def test_select_toolsets_council_tax_status_postcode_infers_places_and_property_tax() -> None:
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Check council tax status for postcode CV1 2GT",
         },
     )
     assert resp.status_code == 200

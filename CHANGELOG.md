@@ -34,6 +34,14 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- Hardened the `tools/os_mcp.py` property-tax router so plain `council tax status`
+  prompts now follow the postcode/address-to-`council_tax.query` status workflow
+  instead of falling back to `council_tax.band_lookup`, with matching toolset
+  inference for discovery clients.
+- Tightened ONS release detection in `scripts/ons_geo_cache_refresh.py` so
+  explicit release-pattern matches keep month/epoch pairing local to the matched
+  candidate instead of borrowing an epoch from an unrelated archived resource in
+  the same CKAN payload.
 - `os_map.inventory` now supports opt-in `responseMode=summary|counts` for
   compact UPRN/building counts, `nomis.query` now includes human-readable
   `datasetSummary` metadata when available, and `tools/os_mcp.py` now routes
