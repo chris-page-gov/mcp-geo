@@ -83,6 +83,8 @@ the fallback simplified view when no local browser key is available.
 ## MCP Host Benchmarking
 
 - 2026-03-06: [Codex vs Claude host benchmark smoke report](codex_vs_claude_host_benchmark_2026-03-06_smoke.md)
+- 2026-04-12: [Unattended four-client comparison report](client_interop_unattended_eval_2026-04-12.md)
+- 2026-04-12: [Unattended four-client analysis and remediation plan](client_interop_unattended_eval_2026-04-12_analysis.md)
 
 ## Stakeholder Research and Briefing
 

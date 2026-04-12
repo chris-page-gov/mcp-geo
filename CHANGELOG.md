@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added unattended multi-client host evaluation tooling via
+  `scripts/unattended_client_eval.py`, focused regression coverage in
+  `tests/test_unattended_client_eval.py`, and the first captured aggregate
+  report at `docs/reports/client_interop_unattended_eval_2026-04-12.{md,json}`.
+- Added the follow-on unattended analysis report
+  `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`,
+  grouping the captured evidence by tool family, working flows, failure
+  classes, and a concrete remediation plan for cross-client optimization.
 - Added `ons_geo.area_summary`, the compact postcode/UPRN/area-code follow-up
   surface for OA/LSOA/MSOA/ward summaries. It resolves the target area from
   the local ONS cache, returns compact area counts, can use the new
@@ -34,6 +42,14 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- The unattended benchmark/report flow now treats blocked runs as blocked:
+  runner errors, startup-only sessions, and no-traffic sessions keep only a
+  `diagnosticScore` and no longer count toward the scored-track average.
+- The VS Code unattended benchmark runner now opens the repo workspace before
+  `code chat` so `.vscode/mcp.json` is actually in scope for headless agent
+  sessions; this improves the VS Code comparison track from mostly zero MCP
+  traffic to a mixed result where some scenarios now reach real `mcp-geo`
+  tool calls.
 - Setup docs now explicitly treat absolute paths as local examples only, and
   the README / `.env.example` point path-bearing settings at portable
   placeholders instead of maintainer-specific locations.

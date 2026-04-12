@@ -52,6 +52,40 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-12 benchmark follow-up added
+  `scripts/unattended_client_eval.py` and the first unattended four-client
+  evidence pack at
+  `docs/reports/client_interop_unattended_eval_2026-04-12.{md,json}`. The
+  harness now runs Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent
+  against the shared host scenario pack, keeps blocked runs as blocked
+  (`diagnosticScore` only, no scored-average inflation), and uses a temporary
+  Gemini project scope outside the repo so unattended runs do not dirty a
+  repo-local `.gemini/` folder.
+- The same follow-up established the current observed host behavior: Codex CLI
+  is the strongest unattended path (`7/8` scored, `1/8` startup-only on the
+  resource-retrieval prompt), Gemini CLI currently times out before first MCP
+  traffic on every scenario under the headless CLI path, Claude Code CLI
+  consistently fails the headless run path before usable MCP work, and VS Code
+  Agent only becomes partially usable after explicitly opening the repo
+  workspace before `code chat`, improving from mostly `no_mcp_traffic` to a
+  mixed `4/8` scored and `4/8` no-traffic result.
+- The evidence analysis for that same run now lives in
+  `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`. The
+  key conclusion is that current unattended weaknesses split cleanly into
+  client-readiness blockers rather than one server defect: Gemini is blocked by
+  its own workspace/settings access before MCP startup, Claude Code CLI reaches
+  MCP startup but fails on headless Anthropic auth before prompt execution, and
+  VS Code remains session-nondeterministic even after the workspace-open fix.
+  On the server/tool side, compact workflows are already the strongest path:
+  `admin_lookup.find_by_name`, `ons_geo.area_summary`, `nomis.query`,
+  `os_mcp.route_query`, and `os_apps.render_geography_selector` all show real
+  unattended viability when the host reaches task execution.
+- The VS Code-specific fix is now part of the unattended runner itself:
+  `code --reuse-window .` is issued before each `code chat` prompt so the
+  session is attached to the repo workspace and therefore sees `.vscode/mcp.json`.
+  This addresses the host-side failure mode where a chat session reports that
+  no `mcp-geo` tool or resource is exposed because it is attached to the wrong
+  window rather than because the server is misconfigured.
 - A 2026-04-12 PR follow-up closed the remaining area-summary/router review
   gaps. `tools/os_mcp.py` now preserves explicit higher-level profile requests
   on area-code prompts, rejects narrower target levels with descriptor
