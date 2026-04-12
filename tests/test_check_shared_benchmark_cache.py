@@ -126,6 +126,7 @@ def test_check_shared_benchmark_cache_passes_in_isolated_mode(tmp_path: Path) ->
     env["MCP_GEO_BENCHMARK_CLAUDE_WRAPPER"] = str(claude)
     env["MCP_GEO_BENCHMARK_CODEX_WRAPPER"] = str(codex)
     env["MCP_GEO_BENCHMARK_GEMINI_WRAPPER"] = str(gemini)
+    env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"
 
     proc = subprocess.run(
       ["bash", str(script)],
@@ -164,6 +165,7 @@ def test_check_shared_benchmark_cache_passes_in_shared_mode(tmp_path: Path) -> N
     env["MCP_GEO_BENCHMARK_CLAUDE_WRAPPER"] = str(claude)
     env["MCP_GEO_BENCHMARK_CODEX_WRAPPER"] = str(codex)
     env["MCP_GEO_BENCHMARK_GEMINI_WRAPPER"] = str(gemini)
+    env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"
 
     proc = subprocess.run(
       ["bash", str(script)],

@@ -240,7 +240,19 @@ diagnose_postgis_failure() {
   if [[ -z "$recent_logs" ]]; then
     return 0
   fi
-  if printf "%s" "$recent_logs" | rg -qi \
+  if command -v rg >/dev/null 2>&1; then
+    if printf "%s" "$recent_logs" | rg -qi \
+      'invalid checkpoint record|could not locate a valid checkpoint record'; then
+      log "PostGIS volume appears checkpoint-corrupted for container: $POSTGIS_TARGET_CONTAINER"
+      log "If this sidecar cache is disposable, recreate it with:"
+      log "  docker rm -f $POSTGIS_TARGET_CONTAINER"
+      if [[ "$POSTGIS_STORAGE_MODE" == "volume" ]]; then
+        log "  docker volume rm $POSTGIS_VOLUME"
+      fi
+      log "The wrapper now defaults to per-surface sidecar names to avoid cross-client volume reuse."
+      return 0
+    fi
+  elif printf "%s" "$recent_logs" | grep -Eqi \
     'invalid checkpoint record|could not locate a valid checkpoint record'; then
     log "PostGIS volume appears checkpoint-corrupted for container: $POSTGIS_TARGET_CONTAINER"
     log "If this sidecar cache is disposable, recreate it with:"

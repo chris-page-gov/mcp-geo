@@ -34,6 +34,15 @@ info() {
   printf "%s\n" "$*"
 }
 
+text_matches() {
+  local pattern="$1"
+  if command -v rg >/dev/null 2>&1; then
+    rg -q "$pattern"
+  else
+    grep -Eq "$pattern"
+  fi
+}
+
 plan_value() {
   local plan="$1"
   local key="$2"
@@ -105,8 +114,10 @@ collect_plan() {
 require_extensions() {
   local container="$1"
   local extensions="$2"
-  printf "%s\n" "$extensions" | rg -q '^postgis=' || fail "postgis extension missing in $container"
-  printf "%s\n" "$extensions" | rg -q '^pgrouting=' || fail "pgrouting extension missing in $container"
+  printf "%s\n" "$extensions" | text_matches '^postgis=' \
+    || fail "postgis extension missing in $container"
+  printf "%s\n" "$extensions" | text_matches '^pgrouting=' \
+    || fail "pgrouting extension missing in $container"
 }
 
 if ! "$DOCKER_BIN" info >/dev/null 2>&1; then

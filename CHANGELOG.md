@@ -56,6 +56,10 @@ All notable changes to this project will be documented in this file.
   (`MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=0`) instead of silent devcontainer
   reuse. Shared PostGIS benchmarking remains available, but only as explicit
   opt-in mode.
+- Shell benchmark/runtime helpers no longer assume `rg` is installed. The
+  benchmark-cache preflight and PostGIS diagnostics now fall back to `grep`
+  in minimal CI or host shells, preventing false failures when ripgrep is not
+  available on PATH.
 - LandIS helper scripts now default to `~/Data/...` rather than maintainer
   machine paths, and LandIS archive relocalization no longer depends on the
   specific `/Volumes/ExtSSD-Data/Data` prefix.

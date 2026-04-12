@@ -61,6 +61,12 @@ assumptions change.
   validates direct area ids more strictly, using hierarchy/geometry or
   non-zero cached membership counts before returning `200`, and helper-tool
   failures in the optional enrichment path no longer bubble up as `500`s.
+- A same-day CI portability follow-up now removes the implicit `rg`
+  dependency from `scripts/check_shared_benchmark_cache.sh` and the
+  PostGIS-diagnostic path in `scripts/mcp-docker-local`. Both scripts now fall
+  back to `grep` when ripgrep is absent, which matches the GitHub Actions
+  runner used by the PR test job and avoids false benchmark-cache failures in
+  minimal shells.
 - A 2026-04-12 client-parity follow-up now gives Gemini CLI the same dedicated
   Docker-backed launcher pattern as Claude/Codex via
   `scripts/gemini-mcp-local`, plus `scripts/check_gemini_startup_scope.sh` for
