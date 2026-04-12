@@ -55,10 +55,16 @@ assumptions change.
 - A 2026-04-12 client-parity follow-up now gives Gemini CLI the same dedicated
   Docker-backed launcher pattern as Claude/Codex via
   `scripts/gemini-mcp-local`, plus `scripts/check_gemini_startup_scope.sh` for
-  the same scoped-startup preflight used in comparison runs. The shared
-  benchmark-cache guard now checks Gemini against the same PostGIS target as
-  Claude/Codex, and the trace helpers recognize `gemini-mcp-local` so
-  comparison-session capture stays on the Docker-compatible path.
+  the same scoped-startup preflight used in comparison runs. A 2026-04-12
+  topology correction then restored isolated per-client PostGIS as the explicit
+  default for Docker-backed host clients (`claude`, `codex`, `gemini`, and the
+  generic fallback) after the benchmark docs drifted toward an older shared
+  devcontainer assumption. `scripts/check_shared_benchmark_cache.sh` now
+  defaults to verifying parity across those dedicated sidecars and shared mount
+  roots, while explicit shared-mode benchmarking remains available only when
+  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1` is set. The trace helpers recognize
+  `gemini-mcp-local` so comparison-session capture stays on the Docker-
+  compatible path.
 - The same follow-up also clarified the VS Code path story: the workspace
   stdio config already pins the same starter discovery defaults, while the
   server runtime now reads local path-bearing settings like

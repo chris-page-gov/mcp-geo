@@ -3,50 +3,79 @@
 This runbook adds Codex as a first-class MCP host benchmark target for
 `mcp-geo` alongside Claude Desktop.
 
-## Shared Cache Requirement
+## Benchmark Cache Topology
 
-For any cross-client benchmark or comparison, all clients must hit the same
-PostGIS-backed cache and route-graph store. In this repo, the canonical shared
-cache is the repo devcontainer PostGIS service:
+The default host benchmark topology is isolated per-client PostGIS sidecars:
 
-- container: `mcp-geo_devcontainer-postgis-1`
-- Docker network: `mcp-geo_devcontainer_default`
-- service hostname inside that network: `postgis`
+- Claude: `mcp-geo-postgis-claude` on `mcp-geo-claude`
+- Codex: `mcp-geo-postgis-codex` on `mcp-geo-codex`
+- Gemini: `mcp-geo-postgis-gemini` on `mcp-geo-gemini`
 
-Do not benchmark one client against `mcp-geo_devcontainer-postgis-1` and
-another against a fallback sidecar such as `mcp-geo-postgis-claude`,
-`mcp-geo-postgis-codex`, or `mcp-geo-postgis-sidecar`. That invalidates
-cache-comparison claims.
+This is the anti-corruption default and should be assumed unless you have
+explicitly switched to shared mode.
+
+Benchmark parity is enforced in one of two ways:
+
+1. `isolated` mode, the default:
+   - each client keeps its own PostGIS sidecar
+   - `./scripts/check_shared_benchmark_cache.sh` verifies that all wrappers
+     target their dedicated sidecars, that host-port publishing is disabled,
+     that mounted data roots match, and that the key cache counts match
+2. `shared` mode, explicit opt-in:
+   - every wrapper reuses the same PostGIS container, typically the repo
+     devcontainer PostGIS service
+   - enable it by setting `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1` and
+     `MCP_GEO_BENCHMARK_CACHE_MODE=shared`
 
 ## Exact Startup Procedure
 
-Use this order every time before benchmarking multiple clients:
+Use this order every time before benchmarking multiple clients in the default
+isolated mode:
 
 1. Start Docker Desktop.
-2. Start the repo devcontainer, or bring up its PostGIS service from the repo root:
-
-   ```bash
-   docker compose -f .devcontainer/docker-compose.yml up -d postgis
-   ```
-
-3. Wait until `mcp-geo_devcontainer-postgis-1` is running.
-4. Run the shared-cache preflight:
+2. Start each wrapper once, or run the startup-scope probes, so the dedicated
+   sidecars exist and have completed any first-start bootstrap:
+   - `./scripts/check_claude_startup_scope.sh`
+   - `./scripts/check_codex_startup_scope.sh`
+   - `./scripts/check_gemini_startup_scope.sh`
+3. Run the benchmark-cache preflight:
 
    ```bash
    ./scripts/check_shared_benchmark_cache.sh
    ```
 
-5. Only proceed if the script prints `PASS: shared benchmark cache is ready`.
-6. Then start or benchmark clients through the standard wrappers:
+4. Only proceed if the script prints `PASS: benchmark cache is ready`.
+5. Then start or benchmark clients through the standard wrappers:
    - Codex host runs: `scripts/codex-mcp-local`
    - Claude Desktop: `scripts/claude-mcp-local`
+   - Gemini CLI: `scripts/gemini-mcp-local`
 
-The preflight verifies that:
+The default preflight verifies that:
 
-- the shared PostGIS container is running
-- `postgis` and `pgrouting` are installed
-- Claude and Codex wrappers both target the same devcontainer PostGIS container
-- neither wrapper would start a separate fallback PostGIS sidecar
+- the dedicated PostGIS containers are running
+- `postgis` and `pgrouting` are installed in each
+- no wrapper-owned sidecar is still publishing a host port
+- the mounted host data roots match across Claude, Codex, and Gemini
+- the key cache counts match across the dedicated sidecars
+
+If you explicitly want shared mode instead, use this order:
+
+1. Start the repo devcontainer PostGIS service from the repo root:
+
+   ```bash
+   docker compose -f .devcontainer/docker-compose.yml up -d postgis
+   ```
+
+2. Export:
+
+   ```bash
+   export MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=1
+   export MCP_GEO_BENCHMARK_CACHE_MODE=shared
+   export MCP_GEO_BENCHMARK_POSTGIS_CONTAINER=mcp-geo_devcontainer-postgis-1
+   ```
+
+3. Run `./scripts/check_shared_benchmark_cache.sh`.
+4. Only proceed if the script prints `PASS: benchmark cache is ready`.
 
 If the preflight fails, do not benchmark until the Docker state is corrected.
 
@@ -189,9 +218,11 @@ The markdown report includes:
   `clientVersion`, `model`, `scenarioPack`, and `scenarioId` in `session.json`.
 - `trace_report.py` writes both `report.md` and `summary.json`.
 - Codex uses `scripts/codex-mcp-local`; Claude remains on
-  `scripts/claude-mcp-local` and retains Claude-only defaults. The Codex
-  wrapper prefers Docker on host surfaces and falls back to `scripts/os-mcp`
-  when Docker is unavailable or the session is already inside a container.
+  `scripts/claude-mcp-local`; Gemini uses `scripts/gemini-mcp-local`. The
+  Codex wrapper prefers Docker on host surfaces and falls back to
+  `scripts/os-mcp` when Docker is unavailable or the session is already inside
+  a container.
 - Docker-backed wrappers now default to
-  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=auto`, so when the repo devcontainer DB is
-  running both Codex and Claude reuse that shared cache by default.
+  `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=0`, so isolated per-client PostGIS is the
+  normal host behavior. Shared devcontainer reuse remains available, but only
+  when you enable it explicitly for a comparison run.

@@ -48,10 +48,14 @@ All notable changes to this project will be documented in this file.
   consistently.
 - Added `scripts/gemini-mcp-local` and `scripts/check_gemini_startup_scope.sh`
   so Gemini CLI can use the same Docker-backed startup path, scoped discovery,
-  cache mounts, and benchmark preflight checks as Claude/Codex. The shared
-  benchmark-cache guard now verifies Gemini against the same PostGIS target as
-  the other Docker-backed clients, and the trace session helpers now recognize
-  Gemini wrapper runs.
+  cache mounts, and benchmark preflight checks as Claude/Codex. The benchmark
+  preflight now supports both isolated per-client sidecars and explicit shared
+  devcontainer reuse, validates Gemini alongside Claude/Codex in both modes,
+  and the trace session helpers now recognize Gemini wrapper runs.
+- Docker-backed local wrappers now default to isolated PostGIS sidecars again
+  (`MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=0`) instead of silent devcontainer
+  reuse. Shared PostGIS benchmarking remains available, but only as explicit
+  opt-in mode.
 - LandIS helper scripts now default to `~/Data/...` rather than maintainer
   machine paths, and LandIS archive relocalization no longer depends on the
   specific `/Volumes/ExtSSD-Data/Data` prefix.

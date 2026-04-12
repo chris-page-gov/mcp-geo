@@ -36,7 +36,6 @@ exit 1
     env = os.environ.copy()
     env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
     env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
-    env["MCP_GEO_POSTGIS_REUSE_DEVCONTAINER"] = "0"
 
     proc = subprocess.run(
         ["bash", str(wrapper)],
