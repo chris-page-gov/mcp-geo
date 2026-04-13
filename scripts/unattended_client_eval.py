@@ -7,11 +7,11 @@ import importlib
 import json
 import os
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -40,23 +40,8 @@ DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
 RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
 GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
-VSCODE_DEFAULT_USER_DATA_DIR = Path.home() / "Library/Application Support/Code"
-VSCODE_USER_MCP_RELATIVE_PATH = Path("User") / "mcp.json"
-VSCODE_USER_DATA_SEED_PATHS = (
-    Path("machineid"),
-    Path("languagepacks.json"),
-    Path("User") / "chatLanguageModels.json",
-    Path("User") / "settings.json",
-    Path("User") / "prompts",
-    Path("User") / "snippets",
-    Path("User") / "sync",
-    Path("User") / "globalStorage" / "storage.json",
-    Path("User") / "globalStorage" / "state.vscdb",
-    Path("User") / "globalStorage" / "state.vscdb.backup",
-    Path("User") / "globalStorage" / "github.copilot-chat",
-    Path("User") / "globalStorage" / "github.vscode-pull-request-github",
-    Path("User") / "globalStorage" / "ms-azuretools.vscode-azure-github-copilot",
-)
+VSCODE_WORKSPACE_MCP_RELATIVE_PATH = Path(".vscode") / "mcp.json"
+VSCODE_WINDOW_POLL_INTERVAL_SEC = 0.5
 GEMINI_MCP_ONLY_POLICY = """[[rule]]
 toolName = "mcp_*"
 decision = "allow"
@@ -145,6 +130,12 @@ TRACKS = (
     },
 )
 TRACK_BY_ID = {track["id"]: track for track in TRACKS}
+
+
+@dataclass(frozen=True)
+class VSCodeWindow:
+    name: str
+    document: str
 
 
 def _utc_now() -> str:
@@ -592,38 +583,17 @@ def _prepare_vscode_workspace(
     return workspace_dir
 
 
-def _copy_path(source: Path, target: Path) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if source.is_dir():
-        shutil.copytree(source, target, dirs_exist_ok=True)
-        return
-    shutil.copy2(source, target)
+def _vscode_workspace_mcp_path(workspace_dir: Path) -> Path:
+    return workspace_dir / VSCODE_WORKSPACE_MCP_RELATIVE_PATH
 
 
-def _prepare_vscode_user_data_dir(name: str) -> Path:
-    user_data_dir = DEFAULT_WORKSPACE_ROOT / "vscode-user-data" / _slug(name)
-    if user_data_dir.exists():
-        shutil.rmtree(user_data_dir)
-    user_data_dir.mkdir(parents=True, exist_ok=True)
-    for relative_path in VSCODE_USER_DATA_SEED_PATHS:
-        source = VSCODE_DEFAULT_USER_DATA_DIR / relative_path
-        if not source.exists():
-            continue
-        _copy_path(source, user_data_dir / relative_path)
-    return user_data_dir
-
-
-def _vscode_user_mcp_path(user_data_dir: Path) -> Path:
-    return user_data_dir / VSCODE_USER_MCP_RELATIVE_PATH
-
-
-def _write_vscode_user_data_mcp_config(
-    user_data_dir: Path,
+def _write_vscode_workspace_mcp_config(
+    workspace_dir: Path,
     session_dir: Path,
     server_name: str,
 ) -> tuple[list[Path], list[Path]]:
-    workspace_path = _vscode_user_mcp_path(user_data_dir)
-    payload = _load_json_object(workspace_path) if workspace_path.exists() else {}
+    workspace_path = _vscode_workspace_mcp_path(workspace_dir)
+    payload = {}
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "vscode_mcp_stdio.py",
@@ -649,52 +619,138 @@ def _write_vscode_user_data_mcp_config(
     return (trace_paths, ui_paths)
 
 
-def _terminate_vscode_user_data_instance(user_data_dir: Path) -> None:
-    proc = subprocess.run(
-        ["ps", "axww", "-o", "pid=,command="],
-        capture_output=True,
-        text=True,
-        check=False,
+def _run_osascript(lines: list[str], *args: str) -> subprocess.CompletedProcess[str]:
+    command = ["osascript"]
+    for line in lines:
+        command.extend(["-e", line])
+    command.extend(args)
+    return subprocess.run(command, capture_output=True, text=True, check=False)
+
+
+def _list_vscode_windows() -> list[VSCodeWindow]:
+    proc = _run_osascript(
+        [
+            "set AppleScript's text item delimiters to linefeed",
+            'tell application "System Events"',
+            '  if not (exists process "Code") then return ""',
+            '  tell process "Code"',
+            "    set rows to {}",
+            "    repeat with w in windows",
+            '      set windowName to ""',
+            '      set windowDocument to ""',
+            "      try",
+            "        set windowName to name of w as text",
+            "      end try",
+            "      try",
+            '        set windowDocument to value of attribute "AXDocument" of w as text',
+            "      end try",
+            '      set end of rows to windowName & tab & windowDocument',
+            "    end repeat",
+            "    return rows as text",
+            "  end tell",
+            "end tell",
+        ]
     )
     if proc.returncode != 0:
-        return
-    marker = str(user_data_dir)
-    pids: list[int] = []
+        return []
+    windows: list[VSCodeWindow] = []
     for raw_line in proc.stdout.splitlines():
         line = raw_line.strip()
-        if not line or marker not in line:
+        if not line:
             continue
-        parts = line.split(None, 1)
-        if len(parts) != 2 or not parts[0].isdigit():
-            continue
-        pid = int(parts[0])
-        if pid == os.getpid():
-            continue
-        pids.append(pid)
-    remaining = sorted(set(pids), reverse=True)
-    for pid in remaining:
-        try:
-            os.kill(pid, signal.SIGTERM)
-        except (ProcessLookupError, PermissionError):
-            continue
-    deadline = time.monotonic() + 3
-    while remaining and time.monotonic() < deadline:
-        next_remaining: list[int] = []
-        for pid in remaining:
-            try:
-                os.kill(pid, 0)
-            except (ProcessLookupError, PermissionError):
-                continue
-            next_remaining.append(pid)
-        if not next_remaining:
-            return
-        remaining = next_remaining
-        time.sleep(0.2)
-    for pid in remaining:
-        try:
-            os.kill(pid, signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            continue
+        name, _, document = line.partition("\t")
+        windows.append(VSCodeWindow(name=name.strip(), document=document.strip()))
+    return windows
+
+
+def _wait_for_new_vscode_window(
+    existing_windows: list[VSCodeWindow],
+    *,
+    workspace_name: str,
+    timeout_sec: float = 10.0,
+) -> VSCodeWindow | None:
+    baseline = set(existing_windows)
+    deadline = time.monotonic() + timeout_sec
+    while time.monotonic() < deadline:
+        windows = _list_vscode_windows()
+        for window in windows:
+            if window not in baseline:
+                return window
+        for window in windows:
+            if workspace_name in window.name:
+                return window
+        time.sleep(VSCODE_WINDOW_POLL_INTERVAL_SEC)
+    return None
+
+
+def _raise_vscode_window(window: VSCodeWindow) -> bool:
+    proc = _run_osascript(
+        [
+            "on run argv",
+            '  set targetName to item 1 of argv',
+            '  set targetDocument to item 2 of argv',
+            '  tell application "System Events"',
+            '    if not (exists process "Code") then return "missing"',
+            '    tell process "Code"',
+            "      repeat with w in windows",
+            '        set windowName to ""',
+            '        set windowDocument to ""',
+            "        try",
+            "          set windowName to name of w as text",
+            "        end try",
+            "        try",
+            '          set windowDocument to value of attribute "AXDocument" of w as text',
+            "        end try",
+            '        if windowName is targetName and (targetDocument is "" or ¬',
+            'windowDocument is targetDocument) then',
+            '          perform action "AXRaise" of w',
+            '          return "ok"',
+            "        end if",
+            "      end repeat",
+            "    end tell",
+            "  end tell",
+            '  return "missing"',
+            "end run",
+        ],
+        window.name,
+        window.document,
+    )
+    return proc.returncode == 0 and proc.stdout.strip() == "ok"
+
+
+def _close_vscode_window(window: VSCodeWindow) -> bool:
+    proc = _run_osascript(
+        [
+            "on run argv",
+            '  set targetName to item 1 of argv',
+            '  set targetDocument to item 2 of argv',
+            '  tell application "System Events"',
+            '    if not (exists process "Code") then return "missing"',
+            '    tell process "Code"',
+            "      repeat with w in windows",
+            '        set windowName to ""',
+            '        set windowDocument to ""',
+            "        try",
+            "          set windowName to name of w as text",
+            "        end try",
+            "        try",
+            '          set windowDocument to value of attribute "AXDocument" of w as text',
+            "        end try",
+            '        if windowName is targetName and (targetDocument is "" or ¬',
+            'windowDocument is targetDocument) then',
+            "          click button 1 of w",
+            '          return "ok"',
+            "        end if",
+            "      end repeat",
+            "    end tell",
+            "  end tell",
+            '  return "missing"',
+            "end run",
+        ],
+        window.name,
+        window.document,
+    )
+    return proc.returncode == 0 and proc.stdout.strip() == "ok"
 
 
 def _run_codex_track(
@@ -993,20 +1049,16 @@ def _run_vscode_track(
     name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
     workspace_dir = _prepare_vscode_workspace(task, workspace_name=name)
-    user_data_dir = _prepare_vscode_user_data_dir(name)
     server_name = f"mcp-geo-bench-{_slug(name)}"
     prompt = _task_prompt(task, track_id="vscode_ide", server_name=server_name)
+    existing_windows = _list_vscode_windows()
     open_command = [
         "code",
-        "--user-data-dir",
-        str(user_data_dir),
         "--new-window",
         str(workspace_dir),
     ]
     chat_command = [
         "code",
-        "--user-data-dir",
-        str(user_data_dir),
         "chat",
         "--mode",
         "agent",
@@ -1031,21 +1083,20 @@ def _run_vscode_track(
     _update_session_meta(
         session_dir,
         benchmarkWorkspace=str(workspace_dir),
-        vscodeUserDataDir=str(user_data_dir),
         vscodeServerName=server_name,
         vscodeOpenCommand=open_command,
     )
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
     workspace_env = resolved_process_env()
-    trace_paths, ui_paths = _write_vscode_user_data_mcp_config(
-        user_data_dir,
+    trace_paths, ui_paths = _write_vscode_workspace_mcp_config(
+        workspace_dir,
         session_dir,
         server_name,
     )
     _update_session_paths(
         session_dir,
-        vscodeUserMcpConfig=str(_vscode_user_mcp_path(user_data_dir)),
+        vscodeWorkspaceMcpConfig=str(_vscode_workspace_mcp_path(workspace_dir)),
     )
     trace_snapshot = _snapshot_line_counts(trace_paths)
     ui_snapshot = _snapshot_line_counts(ui_paths)
@@ -1053,6 +1104,7 @@ def _run_vscode_track(
     assistant_output = ""
     exit_code = 0
     blocker: str | None = None
+    benchmark_window: VSCodeWindow | None = None
     open_timeout_sec = min(max(timeout_sec, 5), 20)
     phase = "workspace_open"
     try:
@@ -1072,7 +1124,19 @@ def _run_vscode_track(
                 exit_code = open_proc.returncode
                 blocker = "vscode_workspace_open_failed"
             else:
-                time.sleep(2)
+                benchmark_window = _wait_for_new_vscode_window(
+                    existing_windows,
+                    workspace_name=workspace_dir.name,
+                    timeout_sec=10.0,
+                )
+                if benchmark_window is not None:
+                    _raise_vscode_window(benchmark_window)
+                    _update_session_meta(
+                        session_dir,
+                        vscodeWindowName=benchmark_window.name,
+                        vscodeWindowDocument=benchmark_window.document,
+                    )
+                time.sleep(1)
                 phase = "chat"
                 chat_proc = subprocess.run(
                     chat_command,
@@ -1117,7 +1181,8 @@ def _run_vscode_track(
             if last_growth_at is not None and time.monotonic() - last_growth_at >= 6:
                 break
     finally:
-        _terminate_vscode_user_data_instance(user_data_dir)
+        if benchmark_window is not None:
+            _close_vscode_window(benchmark_window)
 
     _write_text(session_dir / "assistant-response.txt", assistant_output)
     if stderr_chunks:

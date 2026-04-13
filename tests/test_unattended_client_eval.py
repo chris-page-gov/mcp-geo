@@ -69,29 +69,41 @@ def test_prepare_vscode_workspace_supports_unique_workspace_name(
     assert workspace == tmp_path / "workspaces" / "vscode" / "unique-readiness-probe"
 
 
-def test_prepare_vscode_user_data_dir_seeds_minimal_profile(monkeypatch, tmp_path: Path) -> None:
-    source_root = tmp_path / "source-code"
-    (source_root / "machineid").parent.mkdir(parents=True, exist_ok=True)
-    (source_root / "machineid").write_text("machine-id", encoding="utf-8")
-    (source_root / "User" / "settings.json").parent.mkdir(parents=True, exist_ok=True)
-    (source_root / "User" / "settings.json").write_text('{"editor.fontSize": 14}', encoding="utf-8")
-    copilot_dir = source_root / "User" / "globalStorage" / "github.copilot-chat"
-    copilot_dir.mkdir(parents=True, exist_ok=True)
-    (copilot_dir / "seed.json").write_text('{"copilot": true}', encoding="utf-8")
+def test_write_vscode_workspace_mcp_config_writes_ephemeral_workspace_file(
+    monkeypatch, tmp_path: Path
+) -> None:
+    workspace_dir = tmp_path / "workspace"
+    workspace_dir.mkdir(parents=True)
+    session_dir = tmp_path / "session"
+    session_dir.mkdir(parents=True)
 
-    monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", tmp_path / "workspaces")
-    monkeypatch.setattr(unattended_client_eval, "VSCODE_DEFAULT_USER_DATA_DIR", source_root)
-
-    user_data_dir = unattended_client_eval._prepare_vscode_user_data_dir("readiness-seed")
-
-    assert user_data_dir == tmp_path / "workspaces" / "vscode-user-data" / "readiness-seed"
-    assert (user_data_dir / "machineid").read_text(encoding="utf-8") == "machine-id"
-    assert (user_data_dir / "User" / "settings.json").read_text(encoding="utf-8") == (
-        '{"editor.fontSize": 14}'
+    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
+    monkeypatch.setattr(
+        unattended_client_eval.host_benchmark,
+        "_build_temp_stdio_server",
+        lambda *_args, **_kwargs: {
+            "command": "python",
+            "args": ["server.py"],
+            "env": {"UI_EVENT_LOG_PATH": str(session_dir / "ui-events.jsonl"), "A": "B"},
+        },
     )
-    assert (
-        user_data_dir / "User" / "globalStorage" / "github.copilot-chat" / "seed.json"
-    ).read_text(encoding="utf-8") == '{"copilot": true}'
+
+    trace_paths, ui_paths = unattended_client_eval._write_vscode_workspace_mcp_config(
+        workspace_dir,
+        session_dir,
+        "mcp-geo-bench-fixed-vscode-session",
+    )
+
+    workspace_mcp = json.loads(
+        (workspace_dir / ".vscode" / "mcp.json").read_text(encoding="utf-8")
+    )
+    server = workspace_mcp["servers"]["mcp-geo-bench-fixed-vscode-session"]
+    assert server["type"] == "stdio"
+    assert server["command"] == "python"
+    assert server["args"] == ["server.py"]
+    assert server["env"]["A"] == "B"
+    assert trace_paths == [session_dir / "mcp-stdio-trace.jsonl"]
+    assert ui_paths == [session_dir / "ui-events.jsonl"]
 
 
 def test_classify_blocker_category_detects_gemini_workspace_restriction(tmp_path: Path) -> None:
@@ -206,7 +218,7 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     assert 'decision = "deny"' in policy
 
 
-def test_run_vscode_track_uses_isolated_user_data_profile(
+def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     monkeypatch, tmp_path: Path
 ) -> None:
     session_root = tmp_path / "logs" / "sessions"
@@ -214,7 +226,8 @@ def test_run_vscode_track_uses_isolated_user_data_profile(
     commands: list[list[str]] = []
     envs: list[dict[str, str] | None] = []
     rewrites: list[tuple[Path, Path, str]] = []
-    terminations: list[Path] = []
+    raised: list[unattended_client_eval.VSCodeWindow] = []
+    closed: list[unattended_client_eval.VSCodeWindow] = []
     task = {"id": "address_lookup_postcode", "label": "Address", "prompt": "UPRNs for SW1A 1AA"}
     expected_prompt = unattended_client_eval._task_prompt(
         task,
@@ -223,7 +236,10 @@ def test_run_vscode_track_uses_isolated_user_data_profile(
     )
     workspace_root = tmp_path / "workspaces"
     expected_workspace_dir = workspace_root / "vscode" / "fixed-vscode-session"
-    expected_user_data_dir = workspace_root / "vscode-user-data" / "fixed-vscode-session"
+    benchmark_window = unattended_client_eval.VSCodeWindow(
+        name="fixed-vscode-session",
+        document="",
+    )
 
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
     monkeypatch.setattr(
@@ -234,27 +250,37 @@ def test_run_vscode_track_uses_isolated_user_data_profile(
     monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", workspace_root)
     monkeypatch.setattr(
         unattended_client_eval,
-        "_prepare_vscode_user_data_dir",
-        lambda _name: expected_user_data_dir,
+        "_list_vscode_windows",
+        lambda: [unattended_client_eval.VSCodeWindow(name="PROGRESS.MD — mcp-geo", document="")],
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_wait_for_new_vscode_window",
+        lambda _existing, *, workspace_name, timeout_sec=10.0: benchmark_window,
     )
 
-    def fake_write_vscode_user_data_mcp_config(
-        user_data_dir: Path,
+    def fake_write_vscode_workspace_mcp_config(
+        workspace_dir: Path,
         session_dir: Path,
         server_name: str,
     ) -> tuple[list[Path], list[Path]]:
-        rewrites.append((user_data_dir, session_dir, server_name))
+        rewrites.append((workspace_dir, session_dir, server_name))
         return ([session_dir / "mcp-stdio-trace.jsonl"], [session_dir / "ui-events.jsonl"])
 
     monkeypatch.setattr(
         unattended_client_eval,
-        "_write_vscode_user_data_mcp_config",
-        fake_write_vscode_user_data_mcp_config,
+        "_write_vscode_workspace_mcp_config",
+        fake_write_vscode_workspace_mcp_config,
     )
     monkeypatch.setattr(
         unattended_client_eval,
-        "_terminate_vscode_user_data_instance",
-        terminations.append,
+        "_raise_vscode_window",
+        lambda window: raised.append(window) or True,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_close_vscode_window",
+        lambda window: closed.append(window) or True,
     )
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
@@ -285,15 +311,11 @@ def test_run_vscode_track_uses_isolated_user_data_profile(
     assert commands == [
         [
             "code",
-            "--user-data-dir",
-            str(expected_user_data_dir),
             "--new-window",
             str(expected_workspace_dir),
         ],
         [
             "code",
-            "--user-data-dir",
-            str(expected_user_data_dir),
             "chat",
             "--mode",
             "agent",
@@ -302,14 +324,17 @@ def test_run_vscode_track_uses_isolated_user_data_profile(
         ],
     ]
     assert envs[0]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
+    assert "VSCODE_PORTABLE" not in envs[0]
+    assert "VSCODE_PORTABLE" not in envs[1]
     assert rewrites == [
         (
-            expected_user_data_dir,
+            expected_workspace_dir,
             session_dir,
             "mcp-geo-bench-fixed-vscode-session",
         )
     ]
-    assert terminations == [expected_user_data_dir]
+    assert raised == [benchmark_window]
+    assert closed == [benchmark_window]
 
 
 def test_task_prompt_uses_vscode_native_mcp_guidance() -> None:

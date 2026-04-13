@@ -80,17 +80,20 @@ assumptions change.
   readiness-only rerun still left Gemini and VS Code short of the plan's
   definition of done. Gemini now has a per-workspace `.gemini/settings.json`
   plus workspace policy that allows only `mcp_*` tools in headless benchmark
-  runs, while VS Code now uses a clean benchmark workspace plus a seeded
-  isolated `--user-data-dir` profile per attempt instead of rewriting the live
-  `~/Library/Application Support/Code` profile. Each attempt writes its traced
-  `mcp.json` into that isolated profile, opens the benchmark workspace in the
-  same isolated Code instance, runs `code chat --reuse-window` against that
-  instance only, and then terminates the matching `--user-data-dir` processes.
-  This avoids false `no_mcp_traffic` scoring caused by shared-window routing,
-  prevents unattended runs from accumulating live VS Code windows on the
-  workstation, and keeps single-track readiness probes usable because the
-  aggregate report now renders only the requested tracks instead of assuming
-  all four clients are always present.
+  runs. The VS Code path has now been reworked again after the isolated
+  portable-profile attempt showed that copied profile state does not preserve
+  Copilot chat readiness reliably enough for unattended runs. Each attempt now
+  writes its traced benchmark-only server definition into the benchmark
+  workspace's own `.vscode/mcp.json`, opens that clean ignored workspace on
+  the already authenticated live VS Code profile, waits for the new benchmark
+  window, raises that exact window before `code chat --reuse-window`, and then
+  closes that same window through accessibility automation after the attempt.
+  This preserves live Copilot auth without mutating
+  `~/Library/Application Support/Code`, avoids false `no_mcp_traffic` scoring
+  caused by shared-window routing, prevents unattended runs from accumulating
+  stray benchmark windows on the workstation, and keeps single-track readiness
+  probes usable because the aggregate report now renders only the requested
+  tracks instead of assuming all four clients are always present.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at
@@ -132,14 +135,12 @@ assumptions change.
   successful `os_places.by_postcode` lookup for `SW1A 1AA`.
 - The VS Code-specific fix is now part of the unattended runner itself: each
   attempt opens a fresh ignored workspace under
-  `logs/benchmark-workspaces/vscode/<task>/`, seeds a minimal isolated profile
-  under `logs/benchmark-workspaces/vscode-user-data/<session>/` from the
-  installed Copilot-capable VS Code user data, writes a traced benchmark-only
-  `mcp.json` there, opens the workspace with `code --user-data-dir ... --new-window`,
-  then runs `code --user-data-dir ... chat --reuse-window`. The runner now
-  tears down the matching isolated Code processes after each attempt so the
-  benchmark no longer attaches to unrelated live windows or leaves a buildup of
-  benchmark-created Code instances behind.
+  `logs/benchmark-workspaces/vscode/<task>/`, writes a traced benchmark-only
+  `.vscode/mcp.json` inside that workspace, launches it on the live VS Code
+  profile, raises the newly created benchmark window before `code chat
+  --reuse-window`, and closes that same window when the attempt finishes. This
+  keeps Copilot auth on the real profile while making the benchmark attach to a
+  deterministic workspace and leaving the user's other Code windows alone.
 - A 2026-04-12 PR follow-up closed the remaining area-summary/router review
   gaps. `tools/os_mcp.py` now preserves explicit higher-level profile requests
   on area-code prompts, rejects narrower target levels with descriptor

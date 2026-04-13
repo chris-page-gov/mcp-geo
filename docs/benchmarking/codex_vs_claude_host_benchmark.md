@@ -164,10 +164,12 @@ Important behavior:
 - Claude Code CLI uses a temporary strict MCP config per scenario. If the local
   Claude CLI auth/session is broken, the unattended report will record
   `claude_cli_failed` rather than hanging.
-- VS Code Agent now force-opens the repo workspace with `code --reuse-window .`
-  before each `code chat` prompt. Without that step, the headless chat command
-  may attach to a window with no `.vscode/mcp.json` context and therefore no
-  `mcp-geo` tools/resources exposed.
+- VS Code Agent now creates a clean ignored benchmark workspace per attempt,
+  writes a traced `.vscode/mcp.json` into that workspace, opens it on the live
+  authenticated VS Code profile, raises the new benchmark window, and only
+  then issues `code chat --reuse-window`. Without that window-steering step,
+  the headless chat command may attach to a different live Code window with no
+  benchmark MCP context and therefore no `mcp-geo` tools/resources exposed.
 - Blocked runs keep their rubric score only as `diagnosticScore`; they do not
   count as scored attempts in the aggregate average.
 - Benchmark temp-server runs now resolve `OS_API_KEY` / `OS_API_KEY_FILE`

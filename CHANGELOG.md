@@ -91,15 +91,15 @@ All notable changes to this project will be documented in this file.
 - The VS Code unattended benchmark runner now opens a clean ignored benchmark
   workspace before `code chat` so each attempt attaches to a deterministic
   window instead of whichever shared VS Code window happens to be active.
-- The VS Code unattended benchmark runner now seeds a minimal isolated
-  `--user-data-dir` profile for each attempt, writes the traced benchmark-only
-  `mcp.json` there instead of mutating the live
-  `~/Library/Application Support/Code` profile, opens the benchmark workspace
-  inside that isolated instance before running `code chat --reuse-window`,
-  materializes only the session-owned MCP/UI log deltas into the benchmark
-  session directory, and terminates the matching isolated Code processes after
-  each attempt. This removes the previous shared-window coupling and stops
-  unattended runs from accumulating live benchmark windows.
+- The VS Code unattended benchmark runner now writes the traced benchmark-only
+  server definition into the benchmark workspace's own `.vscode/mcp.json`
+  instead of mutating `~/Library/Application Support/Code` or depending on a
+  copied profile. Each attempt opens that workspace on the live authenticated
+  VS Code profile, raises the newly created benchmark window before
+  `code chat --reuse-window`, materializes only the session-owned MCP/UI log
+  deltas into the benchmark session directory, and then closes that same
+  benchmark window afterward. This removes the shared-window coupling without
+  breaking Copilot auth or accumulating stray benchmark windows.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.
