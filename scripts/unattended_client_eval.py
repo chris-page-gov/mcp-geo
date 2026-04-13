@@ -35,7 +35,6 @@ DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
 DEFAULT_REPORT_ROOT = REPO_ROOT / "docs" / "reports"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "logs" / "benchmark-workspaces"
-DEFAULT_VSCODE_WORKSPACE_ROOT = DEFAULT_WORKSPACE_ROOT / "vscode"
 DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
 RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
@@ -541,16 +540,11 @@ def _configure_gemini_workspace(
     _write_json(workspace_dir / ".gemini" / "settings.json", settings)
 
 
-def _prepare_vscode_workspace(
-    *,
-    task: dict[str, Any],
-    session_dir: Path,
-) -> Path:
-    workspace_dir = DEFAULT_VSCODE_WORKSPACE_ROOT / _slug(task["id"])
-    if workspace_dir.exists():
-        shutil.rmtree(workspace_dir)
-    workspace_dir.mkdir(parents=True, exist_ok=True)
-
+def _write_vscode_repo_mcp_config(session_dir: Path) -> str | None:
+    workspace_path = REPO_ROOT / ".vscode" / "mcp.json"
+    original = None
+    if workspace_path.exists():
+        original = workspace_path.read_text(encoding="utf-8")
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "vscode_mcp_stdio.py",
@@ -567,8 +561,16 @@ def _prepare_vscode_workspace(
             }
         }
     }
-    _write_json(workspace_dir / ".vscode" / "mcp.json", payload)
-    return workspace_dir
+    _write_json(workspace_path, payload)
+    return original
+
+
+def _restore_vscode_repo_mcp_config(original: str | None) -> None:
+    workspace_path = REPO_ROOT / ".vscode" / "mcp.json"
+    if original is None:
+        workspace_path.unlink(missing_ok=True)
+        return
+    _write_text(workspace_path, original)
 
 
 def _run_codex_track(
@@ -845,7 +847,6 @@ def _run_vscode_track(
     name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
     prompt = _task_prompt(task)
-    workspace_dir = _prepare_vscode_workspace(task=task, session_dir=session_dir)
     command = ["code", "chat", "--mode", "agent", "--reuse-window", prompt]
     _initial_session_meta(
         session_dir,
@@ -862,40 +863,69 @@ def _run_vscode_track(
         assistantResponse=str(session_dir / "assistant-response.txt"),
         clientStderr=str(_stderr_path(session_dir, "vscode")),
     )
-    _update_session_meta(session_dir, benchmarkWorkspace=str(workspace_dir))
+    _update_session_meta(session_dir, benchmarkWorkspace=str(REPO_ROOT))
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
     trace_before = len(_read_lines(trace_path))
     ui_before = len(_read_lines(ui_path))
-    workspace_command = ["code", "--new-window", str(workspace_dir)]
+    workspace_command = ["code", "--reuse-window", str(REPO_ROOT)]
     workspace_env = resolved_process_env()
-    workspace_proc = subprocess.run(
-        workspace_command,
-        cwd=workspace_dir,
-        env=workspace_env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if workspace_proc.returncode != 0:
-        if workspace_proc.stderr:
-            _write_text(_stderr_path(session_dir, "vscode"), workspace_proc.stderr)
-        blocker = "vscode_workspace_open_failed"
-        _update_session_meta(session_dir, runnerError=blocker)
-        return (session_dir, workspace_proc.returncode or 1, blocker)
-    startup_deadline = time.monotonic() + min(max(timeout_sec, 5), 15)
-    while time.monotonic() < startup_deadline:
-        time.sleep(1)
-        if len(_read_lines(trace_path)) > trace_before:
-            break
-    proc = subprocess.run(
-        command,
-        cwd=workspace_dir,
-        env=workspace_env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    original_mcp_config = _write_vscode_repo_mcp_config(session_dir)
+    try:
+        try:
+            workspace_proc = subprocess.run(
+                workspace_command,
+                cwd=REPO_ROOT,
+                env=workspace_env,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=min(max(timeout_sec, 5), 30),
+            )
+        except subprocess.TimeoutExpired as exc:
+            blocker = f"vscode_workspace_open_timeout_after_{timeout_sec}s"
+            if exc.stderr is not None:
+                _write_text(_stderr_path(session_dir, "vscode"), _coerce_text(exc.stderr))
+            _update_session_meta(session_dir, runnerError=blocker)
+            return (session_dir, 124, blocker)
+        if workspace_proc.returncode != 0:
+            if workspace_proc.stderr:
+                _write_text(_stderr_path(session_dir, "vscode"), workspace_proc.stderr)
+            blocker = "vscode_workspace_open_failed"
+            _update_session_meta(session_dir, runnerError=blocker)
+            return (session_dir, workspace_proc.returncode or 1, blocker)
+        startup_deadline = time.monotonic() + min(max(timeout_sec, 5), 15)
+        while time.monotonic() < startup_deadline:
+            time.sleep(1)
+            if len(_read_lines(trace_path)) > trace_before:
+                break
+        try:
+            proc = subprocess.run(
+                command,
+                cwd=REPO_ROOT,
+                env=workspace_env,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=max(timeout_sec, 5),
+            )
+        except subprocess.TimeoutExpired as exc:
+            blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
+            _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
+            if exc.stderr is not None:
+                _write_text(_stderr_path(session_dir, "vscode"), _coerce_text(exc.stderr))
+            _update_session_meta(session_dir, runnerError=blocker)
+            return (session_dir, 124, blocker)
+    finally:
+        _restore_vscode_repo_mcp_config(original_mcp_config)
+        subprocess.run(
+            workspace_command,
+            cwd=REPO_ROOT,
+            env=workspace_env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
     _write_text(session_dir / "assistant-response.txt", proc.stdout)
     if proc.stderr:
         _write_text(_stderr_path(session_dir, "vscode"), proc.stderr)

@@ -78,12 +78,14 @@ assumptions change.
   facts alongside the OS-key presence flags.
 - A same-day operational follow-up is now in progress because the first live
   readiness-only rerun still left Gemini and VS Code short of the plan's
-  definition of done. Gemini now has a prototype per-workspace
-  `.gemini/settings.json` plus workspace policy that allows only `mcp_*`
-  tools in headless benchmark runs, while VS Code now has a prototype
-  synthetic workspace under `logs/benchmark-workspaces/vscode/<task>/`
-  carrying only a traced `mcp-geo` server in `.vscode/mcp.json`. These are the
-  current closure path for the required all-clients-complete rerun.
+  definition of done. Gemini now has a per-workspace `.gemini/settings.json`
+  plus workspace policy that allows only `mcp_*` tools in headless benchmark
+  runs, while VS Code now uses temporary repo-window instrumentation: the
+  checked-in `.vscode/mcp.json` is rewritten for each benchmark attempt to a
+  single traced `mcp-geo` server and then restored immediately afterward. This
+  matches the actual `code chat --reuse-window` target better than the earlier
+  synthetic-workspace experiment and is the current closure path for the
+  required all-clients-complete rerun.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

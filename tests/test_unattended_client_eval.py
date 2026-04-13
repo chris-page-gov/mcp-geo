@@ -154,32 +154,21 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     assert 'decision = "deny"' in policy
 
 
-def test_run_vscode_track_uses_synthetic_workspace_with_traced_server(
+def test_run_vscode_track_temporarily_rewrites_repo_mcp_config(
     monkeypatch, tmp_path: Path
 ) -> None:
     session_root = tmp_path / "logs" / "sessions"
     session_root.mkdir(parents=True)
-    workspace_root = tmp_path / "benchmark-workspaces" / "vscode"
     commands: list[list[str]] = []
     envs: list[dict[str, str] | None] = []
+    rewrites: list[Path] = []
+    restores: list[str | None] = []
     task = {"id": "address_lookup_postcode", "label": "Address", "prompt": "UPRNs for SW1A 1AA"}
     expected_prompt = unattended_client_eval._task_prompt(task)
 
-    monkeypatch.setattr(unattended_client_eval, "DEFAULT_VSCODE_WORKSPACE_ROOT", workspace_root)
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
-    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
-    monkeypatch.setattr(
-        unattended_client_eval.host_benchmark,
-        "_build_temp_stdio_server",
-        lambda session_dir, **_kwargs: {
-            "command": "python",
-            "args": ["trace-proxy.py", "--log", str(session_dir / "mcp-stdio-trace.jsonl")],
-            "env": {
-                "OS_API_KEY_FILE": "/tmp/os_api_key.txt",
-                "UI_EVENT_LOG_PATH": "ui-events.jsonl",
-            },
-        },
-    )
+    monkeypatch.setattr(unattended_client_eval, "_write_vscode_repo_mcp_config", rewrites.append)
+    monkeypatch.setattr(unattended_client_eval, "_restore_vscode_repo_mcp_config", restores.append)
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
         commands.append(command)
@@ -206,17 +195,14 @@ def test_run_vscode_track_uses_synthetic_workspace_with_traced_server(
     assert session_dir.exists()
     assert exit_code == 0
     assert blocker is None
-    workspace_dir = workspace_root / "address-lookup-postcode"
     assert commands[0:2] == [
-        ["code", "--new-window", str(workspace_dir)],
+        ["code", "--reuse-window", str(unattended_client_eval.REPO_ROOT)],
         ["code", "chat", "--mode", "agent", "--reuse-window", expected_prompt],
     ]
     assert envs[0]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
     assert envs[1]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
-    config = json.loads((workspace_dir / ".vscode" / "mcp.json").read_text(encoding="utf-8"))
-    assert list(config["servers"]) == ["mcp-geo"]
-    assert config["servers"]["mcp-geo"]["command"] == "python"
-    assert config["servers"]["mcp-geo"]["cwd"] == str(unattended_client_eval.REPO_ROOT)
+    assert rewrites == [session_dir]
+    assert restores == [None]
 
 
 def test_run_track_readiness_limits_recovery_to_one_attempt(monkeypatch) -> None:

@@ -93,11 +93,11 @@ All notable changes to this project will be documented in this file.
   sessions; this improves the VS Code comparison track from mostly zero MCP
   traffic to a mixed result where some scenarios now reach real `mcp-geo`
   tool calls.
-- The VS Code unattended benchmark runner now creates a per-session synthetic
-  workspace under `logs/benchmark-workspaces/vscode/<task>/` with a traced
-  `.vscode/mcp.json` that exposes only the benchmark `mcp-geo` server, so
-  unattended runs no longer depend on whichever shared repo window or server
-  choice happened to be active in the GUI.
+- The VS Code unattended benchmark runner now instruments the active repo
+  window directly by temporarily rewriting `.vscode/mcp.json` to a single
+  traced `mcp-geo` server for each benchmark attempt, restoring the checked-in
+  config afterward, and enforcing explicit `code` subprocess timeouts so the
+  unattended runner cannot hang indefinitely on a stuck `code chat` process.
 - The benchmark wrapper plan output now reports whether an OS key and/or key
   file was resolved, without revealing the secret itself. This makes wrapper
   preflight diagnosis possible when local client configs, `.env`, and shell
