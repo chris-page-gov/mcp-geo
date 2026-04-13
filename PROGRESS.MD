@@ -3,7 +3,19 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-12
+Last updated: 2026-04-13
+
+## Unattended multi-client evaluation remediation (2026-04-13)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| UCE-REM-0 Checked-in remediation plan and tracking baseline | done | none | Added `Plans/PLAN-Unattended-multiclient-eval-remediation.md` and aligned `CONTEXT.md`, `PROGRESS.MD`, and `CHANGELOG.md` so the repo records the chosen readiness-first remediation before harness changes land. |
+| UCE-REM-1 Readiness-first unattended harness and blocker taxonomy | in_progress | UCE-REM-0 | Rework `scripts/unattended_client_eval.py` around per-track readiness probes, capability gating, labelled attempts, and stable blocker classes such as `client_auth_failure`, `client_workspace_restriction`, `client_no_mcp_traffic`, `server_no_live_key`, and `scenario_tool_failure`. |
+| UCE-REM-2 Stable Gemini workspaces and bounded recovery behavior | pending | UCE-REM-1 | Replace the temporary Gemini project pattern with an ignored benchmark workspace root, allow `~/.gemini` in scope for settings reads, add a Gemini warmup path, and limit automatic recovery to one explicit readiness retry for Gemini and VS Code only. |
+| UCE-REM-3 Scenario metadata, live/UI gating, and aggregate report redesign | pending | UCE-REM-1 | Extend the unattended scenario pack with readiness/capability metadata (`requiresLiveOsApi`, `requiresUiRuntime`, `toolFamily` / expected capability), skip unsuitable capability groups after readiness, and emit readiness/capability summaries separately in JSON and Markdown outputs. |
+| UCE-REM-4 Regression coverage and docs/report alignment | pending | UCE-REM-1, UCE-REM-2, UCE-REM-3 | Expand `tests/test_unattended_client_eval.py` and `tests/test_benchmark_env.py` for the new readiness and gating rules, then refresh unattended benchmark docs/tracking so the shipped workflow matches the implemented harness. |
 
 ## ONS postcode-to-area-summary follow-up (2026-04-11)
 

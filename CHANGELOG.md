@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the checked-in unattended multi-client remediation implementation plan
+  at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
+  tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the
+  readiness-first redesign before the harness changes land.
 - Added unattended multi-client host evaluation tooling via
   `scripts/unattended_client_eval.py`, focused regression coverage in
   `tests/test_unattended_client_eval.py`, and the first captured aggregate

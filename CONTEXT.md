@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-12
+Last updated: 2026-04-13
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,14 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-13 unattended-eval remediation pass is now in progress, tracked in
+  `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The active
+  implementation goal is to convert the unattended four-client harness from a
+  single-pass scenario runner into a readiness-first then capability-second
+  benchmark, with stable Gemini benchmark workspaces, shared readiness
+  artifacts, explicit blocker taxonomy, one labelled recovery attempt for
+  Gemini/VS Code host flakes only, and report output that separates `not_ready`
+  tracks from genuine capability results.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at
