@@ -9,7 +9,8 @@
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20",
+      "version": "lts",
+      "nvmVersion": "0.40.4",
 
       // Yarn's legacy Debian APT repo regularly causes devcontainer builds to fail
       // due to key rotations/expiry. This repo uses npm, so keep Yarn off APT.
