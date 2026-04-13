@@ -106,6 +106,54 @@ def test_write_vscode_workspace_mcp_config_writes_ephemeral_workspace_file(
     assert ui_paths == [session_dir / "ui-events.jsonl"]
 
 
+def test_find_vscode_window_for_workspace_matches_name_and_document(
+    monkeypatch, tmp_path: Path
+) -> None:
+    workspace_dir = tmp_path / "benchmark-workspace"
+    workspace_dir.mkdir()
+    workspace_uri = workspace_dir.resolve().as_uri()
+    expected = unattended_client_eval.VSCodeWindow(
+        name="benchmark-workspace",
+        document=workspace_uri,
+    )
+
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_list_vscode_windows",
+        lambda: [
+            unattended_client_eval.VSCodeWindow(name="PROGRESS.MD — mcp-geo", document=""),
+            expected,
+        ],
+    )
+
+    assert unattended_client_eval._find_vscode_window_for_workspace(workspace_dir) == expected
+
+
+def test_close_vscode_window_confirms_session_dialog(monkeypatch) -> None:
+    window = unattended_client_eval.VSCodeWindow(name="benchmark", document="")
+    responses = iter(
+        [
+            subprocess.CompletedProcess(["osascript"], 0, stdout="ok\n", stderr=""),
+            subprocess.CompletedProcess(["osascript"], 0, stdout="confirmed\n", stderr=""),
+        ]
+    )
+    windows = iter([[window], []])
+
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_run_osascript",
+        lambda *_args: next(responses),
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_list_vscode_windows",
+        lambda: next(windows),
+    )
+    monkeypatch.setattr(unattended_client_eval.time, "sleep", lambda _seconds: None)
+
+    assert unattended_client_eval._close_vscode_window(window) is True
+
+
 def test_classify_blocker_category_detects_gemini_workspace_restriction(tmp_path: Path) -> None:
     session_dir = tmp_path / "session"
     session_dir.mkdir()
@@ -347,7 +395,7 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
             "mcp-geo-bench-fixed-vscode-session",
         )
     ]
-    assert raised == [benchmark_window]
+    assert raised == [benchmark_window, benchmark_window]
     assert closed == [benchmark_window]
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["vscodeServerLog"] == str(expected_server_log)

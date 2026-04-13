@@ -117,9 +117,26 @@ assumptions change.
   `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix.{md,json}`
   confirmed the result: the first attempt still stayed startup-only, but the
   bounded recovery attempt reached `ready` with a real traced
-  `tools/call:os_resources.get` against the benchmark server. The remaining
-  remediation step is now the full four-client unattended rerun plus the
-  closure report that records the remediation as operationally complete.
+  `tools/call:os_resources.get` against the benchmark server.
+- A full four-client unattended rerun then completed and wrote
+  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
+  per-track readiness artifacts. That run proved the remediation is still not
+  operationally closed: Codex CLI, Gemini CLI, and Claude Code CLI all
+  completed the full eight-scenario pack, but VS Code Agent only passed
+  readiness and then regressed to `startup_only` / `no_mcp_traffic` across all
+  eight capability scenarios. The session traces show only `initialize` plus
+  startup catalog traffic on the benchmark server after readiness, which means
+  the capability chats were still not reliably landing on the benchmark window.
+  The same run also left benchmark Code windows alive long enough to balloon
+  workstation memory, showing that the close-window path was not handling the
+  `A session is in progress` confirmation dialog.
+- The current same-day follow-up therefore stays in progress. The harness now
+  re-raises the benchmark window immediately before the real VS Code scenario
+  chat, resets the trace/UI delta snapshot after the primer so scoring only
+  measures chat-specific traffic, waits longer for first capability traffic
+  before concluding `no_mcp_traffic`, and confirms the in-progress-session
+  close dialog before treating a benchmark window as closed. Another VS Code
+  live rerun is still required before the plan can be marked done.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

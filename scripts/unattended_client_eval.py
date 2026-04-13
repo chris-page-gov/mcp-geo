@@ -43,6 +43,9 @@ GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
 VSCODE_LOG_ROOT = Path.home() / "Library" / "Application Support" / "Code" / "logs"
 VSCODE_WORKSPACE_MCP_RELATIVE_PATH = Path(".vscode") / "mcp.json"
 VSCODE_WINDOW_POLL_INTERVAL_SEC = 0.5
+VSCODE_CHAT_FIRST_ACTIVITY_TIMEOUT_SEC = 30.0
+VSCODE_CHAT_IDLE_TIMEOUT_SEC = 12.0
+VSCODE_WINDOW_CLOSE_TIMEOUT_SEC = 5.0
 VSCODE_BENCH_TOOL_ALIAS_PREFIX = "mcp_mcp-geo-bench_"
 VSCODE_READINESS_TOOL_ALIAS = f"{VSCODE_BENCH_TOOL_ALIAS_PREFIX}os_resources_get"
 VSCODE_READINESS_RESOURCE_URI = "resource://mcp-geo/area-summary-workflows"
@@ -741,6 +744,19 @@ def _wait_for_new_vscode_window(
     return None
 
 
+def _find_vscode_window_for_workspace(workspace_dir: Path) -> VSCodeWindow | None:
+    workspace_uri = workspace_dir.resolve().as_uri()
+    workspace_name = workspace_dir.name
+    for window in _list_vscode_windows():
+        if workspace_name and workspace_name in window.name:
+            return window
+        if window.document and (
+            workspace_uri in window.document or str(workspace_dir.resolve()) in window.document
+        ):
+            return window
+    return None
+
+
 def _raise_vscode_window(window: VSCodeWindow) -> bool:
     proc = _run_osascript(
         [
@@ -776,6 +792,39 @@ def _raise_vscode_window(window: VSCodeWindow) -> bool:
     return proc.returncode == 0 and proc.stdout.strip() == "ok"
 
 
+def _confirm_vscode_close_dialog() -> bool:
+    proc = _run_osascript(
+        [
+            'tell application "System Events"',
+            '  if not (exists process "Code") then return "missing"',
+            '  tell process "Code"',
+            "    repeat 10 times",
+            "      try",
+            '        if exists button "Yes" of sheet 1 of window 1 then',
+            '          click button "Yes" of sheet 1 of window 1',
+            '          return "confirmed"',
+            "        end if",
+            "      end try",
+            "      try",
+            '        if exists button "Yes" of window 1 then',
+            '          click button "Yes" of window 1',
+            '          return "confirmed"',
+            "        end if",
+            "      end try",
+            "      delay 0.2",
+            "    end repeat",
+            "  end tell",
+            "end tell",
+            'return "none"',
+        ]
+    )
+    return proc.returncode == 0 and proc.stdout.strip() in {"confirmed", "none"}
+
+
+def _window_present(window: VSCodeWindow) -> bool:
+    return window in _list_vscode_windows()
+
+
 def _close_vscode_window(window: VSCodeWindow) -> bool:
     proc = _run_osascript(
         [
@@ -808,7 +857,15 @@ def _close_vscode_window(window: VSCodeWindow) -> bool:
         window.name,
         window.document,
     )
-    return proc.returncode == 0 and proc.stdout.strip() == "ok"
+    if proc.returncode != 0 or proc.stdout.strip() != "ok":
+        return False
+    _confirm_vscode_close_dialog()
+    deadline = time.monotonic() + VSCODE_WINDOW_CLOSE_TIMEOUT_SEC
+    while time.monotonic() < deadline:
+        if not _window_present(window):
+            return True
+        time.sleep(VSCODE_WINDOW_POLL_INTERVAL_SEC)
+    return not _window_present(window)
 
 
 def _run_codex_track(
@@ -1229,6 +1286,18 @@ def _run_vscode_track(
                 if blocker is None and not ready_for_chat:
                     blocker = "vscode_mcp_server_not_ready"
                 elif blocker is None:
+                    benchmark_window = (
+                        _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
+                    )
+                    if benchmark_window is not None:
+                        _raise_vscode_window(benchmark_window)
+                        _update_session_meta(
+                            session_dir,
+                            vscodeWindowName=benchmark_window.name,
+                            vscodeWindowDocument=benchmark_window.document,
+                        )
+                    trace_snapshot = _snapshot_line_counts(trace_paths)
+                    ui_snapshot = _snapshot_line_counts(ui_paths)
                     phase = "chat"
                     chat_proc = subprocess.run(
                         chat_command,
@@ -1259,6 +1328,10 @@ def _run_vscode_track(
                 blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
 
         deadline = time.monotonic() + max(timeout_sec, 5)
+        first_activity_deadline = time.monotonic() + min(
+            max(timeout_sec / 2, VSCODE_CHAT_IDLE_TIMEOUT_SEC),
+            VSCODE_CHAT_FIRST_ACTIVITY_TIMEOUT_SEC,
+        )
         last_growth_at: float | None = None
         last_trace_count = _delta_line_count(trace_snapshot)
         last_ui_count = _delta_line_count(ui_snapshot)
@@ -1275,10 +1348,16 @@ def _run_vscode_track(
                 last_trace_count = current_trace_count
                 last_ui_count = current_ui_count
                 continue
-            if last_growth_at is not None and time.monotonic() - last_growth_at >= 6:
+            if last_growth_at is None and time.monotonic() >= first_activity_deadline:
+                break
+            if (
+                last_growth_at is not None
+                and time.monotonic() - last_growth_at >= VSCODE_CHAT_IDLE_TIMEOUT_SEC
+            ):
                 break
     finally:
         if benchmark_window is not None:
+            benchmark_window = _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
             _close_vscode_window(benchmark_window)
 
     _write_text(session_dir / "assistant-response.txt", assistant_output)

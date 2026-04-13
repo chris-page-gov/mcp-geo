@@ -18,6 +18,11 @@ All notable changes to this project will be documented in this file.
   `scripts/unattended_client_eval.py`, focused regression coverage in
   `tests/test_unattended_client_eval.py`, and the first captured aggregate
   report at `docs/reports/client_interop_unattended_eval_2026-04-12.{md,json}`.
+- Added the first full remediation-era four-client rerun artifacts at
+  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
+  per-track readiness JSON outputs. That run confirmed Codex CLI, Gemini CLI,
+  and Claude Code CLI now complete the full eight-scenario pack while VS Code
+  Agent still needs additional remediation before closure.
 - Added the follow-on unattended analysis report
   `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`,
   grouping the captured evidence by tool family, working flows, failure
@@ -115,6 +120,16 @@ All notable changes to this project will be documented in this file.
   `client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix`
   reached `ready` on the bounded recovery attempt with a traced
   `tools/call:os_resources.get`.
+- The VS Code unattended runner now re-raises the benchmark window immediately
+  before the real scenario chat, resets trace/UI delta snapshots after the
+  primer phase so capability scoring does not confuse primer traffic for
+  scenario traffic, waits longer for first chat-specific MCP activity before
+  concluding `no_mcp_traffic`, and explicitly confirms the `A session is in
+  progress` close dialog when closing benchmark windows. These follow-on fixes
+  were prompted by the first full `client_interop_unattended_eval_2026-04-13`
+  rerun, which showed VS Code readiness succeeding but capability scenarios
+  falling back to primer-only startup traffic while benchmark windows remained
+  open long enough to exhaust workstation memory.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.
