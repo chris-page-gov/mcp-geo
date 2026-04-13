@@ -133,10 +133,18 @@ assumptions change.
 - The current same-day follow-up therefore stays in progress. The harness now
   re-raises the benchmark window immediately before the real VS Code scenario
   chat, resets the trace/UI delta snapshot after the primer so scoring only
-  measures chat-specific traffic, waits longer for first capability traffic
-  before concluding `no_mcp_traffic`, and confirms the in-progress-session
-  close dialog before treating a benchmark window as closed. Another VS Code
-  live rerun is still required before the plan can be marked done.
+  measures chat-specific traffic, and confirms the in-progress-session close
+  dialog before treating a benchmark window as closed. A second same-day fix
+  then narrowed the remaining harness defect further: the post-chat monitor was
+  still treating `initialize` / `prompts.list` / `tools.list` startup catalog
+  traffic as useful progress and would stop after one short idle window, which
+  matches the observed `startup_only` traces. The runner now distinguishes
+  startup traffic from useful tool/resource activity, waits up to the full
+  useful-activity timeout before declaring another VS Code `startup_only`
+  attempt, records cleanup metadata in the session, and escalates to
+  benchmark-workspace-specific VS Code process-tree termination if window close
+  automation still leaves a benchmark instance alive. Another VS Code live
+  rerun is still required before the plan can be marked done.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

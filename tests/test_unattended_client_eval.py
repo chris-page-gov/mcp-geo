@@ -154,6 +154,106 @@ def test_close_vscode_window_confirms_session_dialog(monkeypatch) -> None:
     assert unattended_client_eval._close_vscode_window(window) is True
 
 
+def test_trace_activity_since_distinguishes_startup_from_useful_requests(tmp_path: Path) -> None:
+    trace_path = tmp_path / "mcp-stdio-trace.jsonl"
+    trace_path.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "direction": "client->server",
+                        "json": {"id": 1, "method": "initialize", "params": {}},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "direction": "client->server",
+                        "json": {"id": 2, "method": "tools/list", "params": {}},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "direction": "client->server",
+                        "json": {
+                            "id": 3,
+                            "method": "tools/call",
+                            "params": {"name": "os_apps.log_event"},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "direction": "client->server",
+                        "json": {
+                            "id": 4,
+                            "method": "tools/call",
+                            "params": {"name": "os_resources.get"},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "direction": "client->server",
+                        "json": {"id": 5, "method": "resources/read", "params": {}},
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    activity = unattended_client_eval._trace_activity_since({trace_path: 0})
+
+    assert activity["requestCount"] == 5
+    assert activity["startupRequestCount"] == 2
+    assert activity["usefulRequestCount"] == 2
+    assert activity["methods"] == [
+        "initialize",
+        "tools/list",
+        "tools/call",
+        "tools/call",
+        "resources/read",
+    ]
+
+
+def test_cleanup_vscode_workspace_terminates_lingering_workspace_processes(
+    monkeypatch, tmp_path: Path
+) -> None:
+    workspace_dir = tmp_path / "benchmark-workspace"
+    workspace_dir.mkdir()
+    window = unattended_client_eval.VSCodeWindow(name="benchmark-workspace", document="")
+
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_close_vscode_window",
+        lambda _window: False,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_find_vscode_window_for_workspace",
+        lambda _workspace_dir: window,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_find_vscode_workspace_process_roots",
+        lambda _workspace_dir: [101],
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_terminate_vscode_workspace_processes",
+        lambda _workspace_dir: [101, 202],
+    )
+
+    cleanup = unattended_client_eval._cleanup_vscode_workspace(workspace_dir, window)
+
+    assert cleanup == {
+        "closeAttempted": True,
+        "windowClosed": False,
+        "killedProcessPids": [101, 202],
+    }
+
+
 def test_classify_blocker_category_detects_gemini_workspace_restriction(tmp_path: Path) -> None:
     session_dir = tmp_path / "session"
     session_dir.mkdir()
@@ -275,7 +375,7 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     envs: list[dict[str, str] | None] = []
     rewrites: list[tuple[Path, Path, str]] = []
     raised: list[unattended_client_eval.VSCodeWindow] = []
-    closed: list[unattended_client_eval.VSCodeWindow] = []
+    cleanup_calls: list[tuple[Path, unattended_client_eval.VSCodeWindow | None]] = []
     task = {"id": "address_lookup_postcode", "label": "Address", "prompt": "UPRNs for SW1A 1AA"}
     expected_prompt = unattended_client_eval._task_prompt(
         task,
@@ -328,8 +428,13 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     )
     monkeypatch.setattr(
         unattended_client_eval,
-        "_close_vscode_window",
-        lambda window: closed.append(window) or True,
+        "_cleanup_vscode_workspace",
+        lambda workspace_dir, window: cleanup_calls.append((workspace_dir, window))
+        or {
+            "closeAttempted": True,
+            "windowClosed": True,
+            "killedProcessPids": [],
+        },
     )
     monkeypatch.setattr(
         unattended_client_eval,
@@ -396,10 +501,12 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
         )
     ]
     assert raised == [benchmark_window, benchmark_window]
-    assert closed == [benchmark_window]
+    assert cleanup_calls == [(expected_workspace_dir, benchmark_window)]
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["vscodeServerLog"] == str(expected_server_log)
     assert session_meta["vscodePrimerCommand"] == commands[1]
+    assert session_meta["vscodeCleanupWindowClosed"] is True
+    assert session_meta["vscodeCleanupKilledProcessPids"] == []
 
 
 def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
@@ -440,8 +547,12 @@ def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
     )
     monkeypatch.setattr(
         unattended_client_eval,
-        "_close_vscode_window",
-        lambda window: True,
+        "_cleanup_vscode_workspace",
+        lambda _workspace_dir, _window: {
+            "closeAttempted": True,
+            "windowClosed": True,
+            "killedProcessPids": [],
+        },
     )
     monkeypatch.setattr(
         unattended_client_eval,

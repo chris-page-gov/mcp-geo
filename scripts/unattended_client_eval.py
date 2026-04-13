@@ -7,6 +7,7 @@ import importlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -31,6 +32,12 @@ if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
 
 import scripts.host_benchmark as host_benchmark  # noqa: E402
 from scripts.benchmark_env import resolve_inherited_env, resolved_process_env  # noqa: E402
+from scripts.trace_utils import (  # noqa: E402
+    IGNORE_USEFUL_TOOL_NAMES,
+    extract_method,
+    extract_params,
+    extract_tool_name,
+)
 
 DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
@@ -43,9 +50,10 @@ GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
 VSCODE_LOG_ROOT = Path.home() / "Library" / "Application Support" / "Code" / "logs"
 VSCODE_WORKSPACE_MCP_RELATIVE_PATH = Path(".vscode") / "mcp.json"
 VSCODE_WINDOW_POLL_INTERVAL_SEC = 0.5
-VSCODE_CHAT_FIRST_ACTIVITY_TIMEOUT_SEC = 30.0
 VSCODE_CHAT_IDLE_TIMEOUT_SEC = 12.0
+VSCODE_CHAT_USEFUL_ACTIVITY_TIMEOUT_SEC = 45.0
 VSCODE_WINDOW_CLOSE_TIMEOUT_SEC = 5.0
+VSCODE_PROCESS_TERMINATE_TIMEOUT_SEC = 2.0
 VSCODE_BENCH_TOOL_ALIAS_PREFIX = "mcp_mcp-geo-bench_"
 VSCODE_READINESS_TOOL_ALIAS = f"{VSCODE_BENCH_TOOL_ALIAS_PREFIX}os_resources_get"
 VSCODE_READINESS_RESOURCE_URI = "resource://mcp-geo/area-summary-workflows"
@@ -161,6 +169,13 @@ TRACK_BY_ID = {track["id"]: track for track in TRACKS}
 class VSCodeWindow:
     name: str
     document: str
+
+
+@dataclass(frozen=True)
+class ProcessRow:
+    pid: int
+    ppid: int
+    command: str
 
 
 def _utc_now() -> str:
@@ -1152,6 +1167,162 @@ def _materialize_log_delta(output_path: Path, snapshot: dict[Path, int]) -> None
     _write_lines(output_path, lines)
 
 
+def _trace_activity_since(snapshot: dict[Path, int]) -> dict[str, Any]:
+    request_count = 0
+    startup_request_count = 0
+    useful_request_count = 0
+    observed_methods: list[str] = []
+    for path, before in snapshot.items():
+        for raw_line in _read_lines(path)[before:]:
+            try:
+                record = json.loads(raw_line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(record, dict):
+                continue
+            if record.get("direction") not in {"client->server", "client->upstream"}:
+                continue
+            method = extract_method(record)
+            if not isinstance(method, str):
+                continue
+            request_count += 1
+            observed_methods.append(method)
+            if method in {"initialize", "notifications/initialized", "prompts/list", "tools/list"}:
+                startup_request_count += 1
+                continue
+            if method == "tools/call":
+                tool = extract_tool_name(extract_params(record))
+                if tool not in IGNORE_USEFUL_TOOL_NAMES:
+                    useful_request_count += 1
+                continue
+            if method == "resources/read":
+                useful_request_count += 1
+    return {
+        "requestCount": request_count,
+        "startupRequestCount": startup_request_count,
+        "usefulRequestCount": useful_request_count,
+        "methods": observed_methods,
+    }
+
+
+def _list_process_rows() -> list[ProcessRow]:
+    proc = subprocess.run(
+        ["ps", "-axo", "pid=,ppid=,command="],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return []
+    rows: list[ProcessRow] = []
+    for line in proc.stdout.splitlines():
+        parts = line.strip().split(None, 2)
+        if len(parts) != 3:
+            continue
+        try:
+            pid = int(parts[0])
+            ppid = int(parts[1])
+        except ValueError:
+            continue
+        rows.append(ProcessRow(pid=pid, ppid=ppid, command=parts[2]))
+    return rows
+
+
+def _workspace_matches_command(workspace_dir: Path, command: str) -> bool:
+    workspace_path = str(workspace_dir.resolve())
+    workspace_uri = workspace_dir.resolve().as_uri()
+    return workspace_path in command or workspace_uri in command
+
+
+def _find_vscode_workspace_process_roots(workspace_dir: Path) -> list[int]:
+    rows = _list_process_rows()
+    return [
+        row.pid
+        for row in rows
+        if "/Applications/Visual Studio Code.app/Contents/MacOS/Code" in row.command
+        and _workspace_matches_command(workspace_dir, row.command)
+    ]
+
+
+def _collect_process_tree_pids(rows: list[ProcessRow], root_pid: int) -> list[int]:
+    children_by_parent: dict[int, list[int]] = {}
+    for row in rows:
+        children_by_parent.setdefault(row.ppid, []).append(row.pid)
+    ordered: list[int] = []
+    stack = [root_pid]
+    seen: set[int] = set()
+    while stack:
+        pid = stack.pop()
+        if pid in seen:
+            continue
+        seen.add(pid)
+        ordered.append(pid)
+        stack.extend(children_by_parent.get(pid, []))
+    return ordered
+
+
+def _pid_exists(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _terminate_vscode_workspace_processes(workspace_dir: Path) -> list[int]:
+    roots = _find_vscode_workspace_process_roots(workspace_dir)
+    if not roots:
+        return []
+    rows = _list_process_rows()
+    ordered: list[int] = []
+    seen: set[int] = set()
+    for root_pid in roots:
+        for pid in reversed(_collect_process_tree_pids(rows, root_pid)):
+            if pid not in seen:
+                seen.add(pid)
+                ordered.append(pid)
+    for pid in ordered:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            continue
+    deadline = time.monotonic() + VSCODE_PROCESS_TERMINATE_TIMEOUT_SEC
+    while time.monotonic() < deadline:
+        if not any(_pid_exists(pid) for pid in ordered):
+            return ordered
+        time.sleep(VSCODE_WINDOW_POLL_INTERVAL_SEC)
+    for pid in ordered:
+        if not _pid_exists(pid):
+            continue
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            continue
+    return ordered
+
+
+def _cleanup_vscode_workspace(
+    workspace_dir: Path,
+    window: VSCodeWindow | None,
+) -> dict[str, Any]:
+    close_attempted = window is not None
+    window_closed = False
+    if window is not None:
+        window_closed = _close_vscode_window(window)
+    lingering_window = _find_vscode_window_for_workspace(workspace_dir)
+    killed_pids: list[int] = []
+    if lingering_window is not None or _find_vscode_workspace_process_roots(workspace_dir):
+        killed_pids = _terminate_vscode_workspace_processes(workspace_dir)
+    return {
+        "closeAttempted": close_attempted,
+        "windowClosed": window_closed,
+        "killedProcessPids": killed_pids,
+    }
+
+
 def _run_vscode_track(
     *,
     task: dict[str, Any],
@@ -1229,6 +1400,7 @@ def _run_vscode_track(
     exit_code = 0
     blocker: str | None = None
     benchmark_window: VSCodeWindow | None = None
+    cleanup_result: dict[str, Any] | None = None
     open_timeout_sec = min(max(timeout_sec, 5), 20)
     discovery_timeout_sec = min(max(timeout_sec, 15), 30)
     primer_timeout_sec = min(max(timeout_sec, 5), 30)
@@ -1328,27 +1500,41 @@ def _run_vscode_track(
                 blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
 
         deadline = time.monotonic() + max(timeout_sec, 5)
-        first_activity_deadline = time.monotonic() + min(
-            max(timeout_sec / 2, VSCODE_CHAT_IDLE_TIMEOUT_SEC),
-            VSCODE_CHAT_FIRST_ACTIVITY_TIMEOUT_SEC,
+        useful_activity_deadline = time.monotonic() + min(
+            max(timeout_sec, 5),
+            VSCODE_CHAT_USEFUL_ACTIVITY_TIMEOUT_SEC,
         )
         last_growth_at: float | None = None
-        last_trace_count = _delta_line_count(trace_snapshot)
         last_ui_count = _delta_line_count(ui_snapshot)
+        trace_activity = _trace_activity_since(trace_snapshot)
+        last_request_count = int(trace_activity["requestCount"])
+        last_useful_request_count = int(trace_activity["usefulRequestCount"])
 
-        if last_trace_count > 0 or last_ui_count > 0:
+        if last_useful_request_count > 0:
             last_growth_at = time.monotonic()
 
         while time.monotonic() < deadline:
             time.sleep(2)
-            current_trace_count = _delta_line_count(trace_snapshot)
+            trace_activity = _trace_activity_since(trace_snapshot)
+            current_request_count = int(trace_activity["requestCount"])
+            current_useful_request_count = int(trace_activity["usefulRequestCount"])
             current_ui_count = _delta_line_count(ui_snapshot)
-            if current_trace_count > last_trace_count or current_ui_count > last_ui_count:
+            if (
+                current_useful_request_count > last_useful_request_count
+                or (
+                    current_useful_request_count > 0
+                    and current_ui_count > last_ui_count
+                )
+            ):
                 last_growth_at = time.monotonic()
-                last_trace_count = current_trace_count
+                last_request_count = current_request_count
+                last_useful_request_count = current_useful_request_count
                 last_ui_count = current_ui_count
                 continue
-            if last_growth_at is None and time.monotonic() >= first_activity_deadline:
+            if current_request_count > last_request_count:
+                last_request_count = current_request_count
+                continue
+            if last_growth_at is None and time.monotonic() >= useful_activity_deadline:
                 break
             if (
                 last_growth_at is not None
@@ -1356,9 +1542,8 @@ def _run_vscode_track(
             ):
                 break
     finally:
-        if benchmark_window is not None:
-            benchmark_window = _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
-            _close_vscode_window(benchmark_window)
+        benchmark_window = _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
+        cleanup_result = _cleanup_vscode_workspace(workspace_dir, benchmark_window)
 
     _write_text(session_dir / "assistant-response.txt", assistant_output)
     if stderr_chunks:
@@ -1367,6 +1552,13 @@ def _run_vscode_track(
     _materialize_log_delta(trace_path, trace_snapshot)
     _materialize_log_delta(ui_path, ui_snapshot)
 
+    if cleanup_result is not None:
+        _update_session_meta(
+            session_dir,
+            vscodeCleanupCloseAttempted=cleanup_result["closeAttempted"],
+            vscodeCleanupWindowClosed=cleanup_result["windowClosed"],
+            vscodeCleanupKilledProcessPids=cleanup_result["killedProcessPids"],
+        )
     if blocker is not None:
         _update_session_meta(session_dir, runnerError=blocker)
     return (session_dir, exit_code, blocker)

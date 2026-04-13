@@ -130,6 +130,14 @@ All notable changes to this project will be documented in this file.
   rerun, which showed VS Code readiness succeeding but capability scenarios
   falling back to primer-only startup traffic while benchmark windows remained
   open long enough to exhaust workstation memory.
+- The same VS Code unattended runner now also distinguishes startup catalog
+  traffic from useful tool/resource activity during the post-chat wait loop,
+  records cleanup metadata in each benchmark session, and escalates cleanup to
+  benchmark-workspace-specific VS Code process-tree termination when window
+  close automation still leaves a benchmark instance alive. This follow-on fix
+  was prompted by the same `2026-04-13` rerun plus the observed 50+ GB RAM
+  leak, which showed the runner still stopping after short idle periods that
+  contained only `initialize` / `prompts.list` / `tools.list` traffic.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.
