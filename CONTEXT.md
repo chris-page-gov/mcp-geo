@@ -80,12 +80,15 @@ assumptions change.
   readiness-only rerun still left Gemini and VS Code short of the plan's
   definition of done. Gemini now has a per-workspace `.gemini/settings.json`
   plus workspace policy that allows only `mcp_*` tools in headless benchmark
-  runs, while VS Code now uses a clean benchmark workspace plus a temporary
-  rewrite of the user-global MCP profile to one unique traced benchmark server
-  per attempt. The runner now restores the original VS Code profile after each
-  run and materializes only the session-owned MCP/UI log deltas into the
-  benchmark session directory, which avoids false `no_mcp_traffic` scoring when
-  several VS Code windows are open at once.
+  runs, while VS Code now uses a clean benchmark workspace plus a seeded
+  isolated `--user-data-dir` profile per attempt instead of rewriting the live
+  `~/Library/Application Support/Code` profile. Each attempt writes its traced
+  `mcp.json` into that isolated profile, opens the benchmark workspace in the
+  same isolated Code instance, runs `code chat --reuse-window` against that
+  instance only, and then terminates the matching `--user-data-dir` processes.
+  This avoids false `no_mcp_traffic` scoring caused by shared-window routing
+  and prevents unattended runs from accumulating live VS Code windows on the
+  workstation.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at
@@ -127,12 +130,14 @@ assumptions change.
   successful `os_places.by_postcode` lookup for `SW1A 1AA`.
 - The VS Code-specific fix is now part of the unattended runner itself: each
   attempt opens a fresh ignored workspace under
-  `logs/benchmark-workspaces/vscode/<task>/`, rewrites the user-global
-  `~/Library/Application Support/Code/User/mcp.json` profile to a unique traced
-  benchmark server for that attempt, and then runs `code chat --reuse-window`
-  in the freshly opened window. This addresses the host-side failure mode where
-  a chat session inherits the wrong VS Code window/server binding and therefore
-  scores against the wrong MCP trace.
+  `logs/benchmark-workspaces/vscode/<task>/`, seeds a minimal isolated profile
+  under `logs/benchmark-workspaces/vscode-user-data/<session>/` from the
+  installed Copilot-capable VS Code user data, writes a traced benchmark-only
+  `mcp.json` there, opens the workspace with `code --user-data-dir ... --new-window`,
+  then runs `code --user-data-dir ... chat --reuse-window`. The runner now
+  tears down the matching isolated Code processes after each attempt so the
+  benchmark no longer attaches to unrelated live windows or leaves a buildup of
+  benchmark-created Code instances behind.
 - A 2026-04-12 PR follow-up closed the remaining area-summary/router review
   gaps. `tools/os_mcp.py` now preserves explicit higher-level profile requests
   on area-code prompts, rejects narrower target levels with descriptor

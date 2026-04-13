@@ -91,13 +91,15 @@ All notable changes to this project will be documented in this file.
 - The VS Code unattended benchmark runner now opens a clean ignored benchmark
   workspace before `code chat` so each attempt attaches to a deterministic
   window instead of whichever shared VS Code window happens to be active.
-- The VS Code unattended benchmark runner now rewrites the user-global
-  `~/Library/Application Support/Code/User/mcp.json` profile to a unique traced
-  benchmark server for each attempt, restores the original profile afterward,
+- The VS Code unattended benchmark runner now seeds a minimal isolated
+  `--user-data-dir` profile for each attempt, writes the traced benchmark-only
+  `mcp.json` there instead of mutating the live
+  `~/Library/Application Support/Code` profile, opens the benchmark workspace
+  inside that isolated instance before running `code chat --reuse-window`,
   materializes only the session-owned MCP/UI log deltas into the benchmark
-  session directory, and enforces explicit `code` subprocess timeouts so
-  multiple open VS Code windows do not cause false `no_mcp_traffic` scoring or
-  stuck `code chat` processes.
+  session directory, and terminates the matching isolated Code processes after
+  each attempt. This removes the previous shared-window coupling and stops
+  unattended runs from accumulating live benchmark windows.
 - The benchmark wrapper plan output now reports whether an OS key and/or key
   file was resolved, without revealing the secret itself. This makes wrapper
   preflight diagnosis possible when local client configs, `.env`, and shell

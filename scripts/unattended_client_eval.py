@@ -7,6 +7,7 @@ import importlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -39,7 +40,23 @@ DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
 RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
 GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
-VSCODE_USER_MCP_PATH = Path.home() / "Library/Application Support/Code/User/mcp.json"
+VSCODE_DEFAULT_USER_DATA_DIR = Path.home() / "Library/Application Support/Code"
+VSCODE_USER_MCP_RELATIVE_PATH = Path("User") / "mcp.json"
+VSCODE_USER_DATA_SEED_PATHS = (
+    Path("machineid"),
+    Path("languagepacks.json"),
+    Path("User") / "chatLanguageModels.json",
+    Path("User") / "settings.json",
+    Path("User") / "prompts",
+    Path("User") / "snippets",
+    Path("User") / "sync",
+    Path("User") / "globalStorage" / "storage.json",
+    Path("User") / "globalStorage" / "state.vscdb",
+    Path("User") / "globalStorage" / "state.vscdb.backup",
+    Path("User") / "globalStorage" / "github.copilot-chat",
+    Path("User") / "globalStorage" / "github.vscode-pull-request-github",
+    Path("User") / "globalStorage" / "ms-azuretools.vscode-azure-github-copilot",
+)
 GEMINI_MCP_ONLY_POLICY = """[[rule]]
 toolName = "mcp_*"
 decision = "allow"
@@ -469,8 +486,11 @@ def _classify_blocker_category(
             "client_workspace_restriction",
             "Gemini workspace restrictions blocked access to ~/.gemini/settings.json",
         )
-    if track_id == "vscode_ide" and runner_blocker == "vscode_workspace_open_failed":
-        return ("client_workspace_restriction", "VS Code failed to attach the repo workspace")
+    if track_id == "vscode_ide" and runner_blocker in {
+        "vscode_workspace_open_failed",
+        "vscode_workspace_focus_failed",
+    }:
+        return ("client_workspace_restriction", "VS Code failed to attach the benchmark workspace")
     if request_count == 0:
         if exit_code != 0:
             return (
@@ -560,25 +580,50 @@ def _configure_gemini_workspace(
     _write_json(workspace_dir / ".gemini" / "settings.json", settings)
 
 
-def _prepare_vscode_workspace(task: dict[str, Any]) -> Path:
-    workspace_dir = DEFAULT_WORKSPACE_ROOT / "vscode" / _slug(task["id"])
+def _prepare_vscode_workspace(
+    task: dict[str, Any],
+    *,
+    workspace_name: str | None = None,
+) -> Path:
+    workspace_dir = DEFAULT_WORKSPACE_ROOT / "vscode" / (workspace_name or _slug(task["id"]))
     if workspace_dir.exists():
         shutil.rmtree(workspace_dir)
     workspace_dir.mkdir(parents=True, exist_ok=True)
     return workspace_dir
 
 
-def _write_vscode_global_mcp_config(
+def _copy_path(source: Path, target: Path) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if source.is_dir():
+        shutil.copytree(source, target, dirs_exist_ok=True)
+        return
+    shutil.copy2(source, target)
+
+
+def _prepare_vscode_user_data_dir(name: str) -> Path:
+    user_data_dir = DEFAULT_WORKSPACE_ROOT / "vscode-user-data" / _slug(name)
+    if user_data_dir.exists():
+        shutil.rmtree(user_data_dir)
+    user_data_dir.mkdir(parents=True, exist_ok=True)
+    for relative_path in VSCODE_USER_DATA_SEED_PATHS:
+        source = VSCODE_DEFAULT_USER_DATA_DIR / relative_path
+        if not source.exists():
+            continue
+        _copy_path(source, user_data_dir / relative_path)
+    return user_data_dir
+
+
+def _vscode_user_mcp_path(user_data_dir: Path) -> Path:
+    return user_data_dir / VSCODE_USER_MCP_RELATIVE_PATH
+
+
+def _write_vscode_user_data_mcp_config(
+    user_data_dir: Path,
     session_dir: Path,
     server_name: str,
-) -> tuple[str | None, list[Path], list[Path]]:
-    workspace_path = VSCODE_USER_MCP_PATH
-    original = None
-    if workspace_path.exists():
-        original = workspace_path.read_text(encoding="utf-8")
-        payload = _load_json_object(workspace_path)
-    else:
-        payload = {}
+) -> tuple[list[Path], list[Path]]:
+    workspace_path = _vscode_user_mcp_path(user_data_dir)
+    payload = _load_json_object(workspace_path) if workspace_path.exists() else {}
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "vscode_mcp_stdio.py",
@@ -601,16 +646,55 @@ def _write_vscode_global_mcp_config(
     ui_log = (server_config.get("env") or {}).get("UI_EVENT_LOG_PATH")
     if isinstance(ui_log, str) and ui_log:
         ui_paths.append(Path(ui_log))
-    return (original, trace_paths, ui_paths)
+    return (trace_paths, ui_paths)
 
 
-def _restore_vscode_global_mcp_config(original: str | None) -> None:
-    workspace_path = VSCODE_USER_MCP_PATH
-    workspace_path.parent.mkdir(parents=True, exist_ok=True)
-    if original is None:
-        workspace_path.unlink(missing_ok=True)
+def _terminate_vscode_user_data_instance(user_data_dir: Path) -> None:
+    proc = subprocess.run(
+        ["ps", "axww", "-o", "pid=,command="],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
         return
-    _write_text(workspace_path, original)
+    marker = str(user_data_dir)
+    pids: list[int] = []
+    for raw_line in proc.stdout.splitlines():
+        line = raw_line.strip()
+        if not line or marker not in line:
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2 or not parts[0].isdigit():
+            continue
+        pid = int(parts[0])
+        if pid == os.getpid():
+            continue
+        pids.append(pid)
+    remaining = sorted(set(pids), reverse=True)
+    for pid in remaining:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            continue
+    deadline = time.monotonic() + 3
+    while remaining and time.monotonic() < deadline:
+        next_remaining: list[int] = []
+        for pid in remaining:
+            try:
+                os.kill(pid, 0)
+            except (ProcessLookupError, PermissionError):
+                continue
+            next_remaining.append(pid)
+        if not next_remaining:
+            return
+        remaining = next_remaining
+        time.sleep(0.2)
+    for pid in remaining:
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            continue
 
 
 def _run_codex_track(
@@ -908,13 +992,30 @@ def _run_vscode_track(
     track = TRACK_BY_ID["vscode_ide"]
     name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
-    workspace_dir = _prepare_vscode_workspace(task)
-    server_name = f"mcp-geo-bench-{_slug(task['id'])}"
+    workspace_dir = _prepare_vscode_workspace(task, workspace_name=name)
+    user_data_dir = _prepare_vscode_user_data_dir(name)
+    server_name = f"mcp-geo-bench-{_slug(name)}"
     prompt = _task_prompt(task, track_id="vscode_ide", server_name=server_name)
-    command = ["code", "chat", "--mode", "agent", "--reuse-window", prompt]
+    open_command = [
+        "code",
+        "--user-data-dir",
+        str(user_data_dir),
+        "--new-window",
+        str(workspace_dir),
+    ]
+    chat_command = [
+        "code",
+        "--user-data-dir",
+        str(user_data_dir),
+        "chat",
+        "--mode",
+        "agent",
+        "--reuse-window",
+        prompt,
+    ]
     _initial_session_meta(
         session_dir,
-        command=command,
+        command=chat_command,
         scenario_pack=scenario_pack_id,
         task=task,
         model="copilot-agent",
@@ -930,94 +1031,104 @@ def _run_vscode_track(
     _update_session_meta(
         session_dir,
         benchmarkWorkspace=str(workspace_dir),
+        vscodeUserDataDir=str(user_data_dir),
         vscodeServerName=server_name,
+        vscodeOpenCommand=open_command,
     )
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
-    workspace_command = ["code", "--new-window", str(workspace_dir)]
     workspace_env = resolved_process_env()
-    original_mcp_config, trace_paths, ui_paths = _write_vscode_global_mcp_config(
+    trace_paths, ui_paths = _write_vscode_user_data_mcp_config(
+        user_data_dir,
         session_dir,
         server_name,
     )
+    _update_session_paths(
+        session_dir,
+        vscodeUserMcpConfig=str(_vscode_user_mcp_path(user_data_dir)),
+    )
     trace_snapshot = _snapshot_line_counts(trace_paths)
     ui_snapshot = _snapshot_line_counts(ui_paths)
+    stderr_chunks: list[str] = []
+    assistant_output = ""
+    exit_code = 0
+    blocker: str | None = None
+    open_timeout_sec = min(max(timeout_sec, 5), 20)
+    phase = "workspace_open"
     try:
         try:
-            workspace_proc = subprocess.run(
-                workspace_command,
+            open_proc = subprocess.run(
+                open_command,
                 cwd=workspace_dir,
                 env=workspace_env,
                 capture_output=True,
                 text=True,
                 check=False,
-                timeout=min(max(timeout_sec, 5), 30),
+                timeout=open_timeout_sec,
             )
+            if open_proc.stderr:
+                stderr_chunks.append(open_proc.stderr)
+            if open_proc.returncode != 0:
+                exit_code = open_proc.returncode
+                blocker = "vscode_workspace_open_failed"
+            else:
+                time.sleep(2)
+                phase = "chat"
+                chat_proc = subprocess.run(
+                    chat_command,
+                    cwd=workspace_dir,
+                    env=workspace_env,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=max(timeout_sec, 5),
+                )
+                assistant_output = chat_proc.stdout
+                if chat_proc.stderr:
+                    stderr_chunks.append(chat_proc.stderr)
+                exit_code = chat_proc.returncode
+                if chat_proc.returncode != 0:
+                    blocker = "vscode_chat_failed"
         except subprocess.TimeoutExpired as exc:
-            blocker = f"vscode_workspace_open_timeout_after_{timeout_sec}s"
+            exit_code = 124
+            assistant_output = _coerce_text(exc.stdout)
             if exc.stderr is not None:
-                _write_text(_stderr_path(session_dir, "vscode"), _coerce_text(exc.stderr))
-            _update_session_meta(session_dir, runnerError=blocker)
-            return (session_dir, 124, blocker)
-        if workspace_proc.returncode != 0:
-            if workspace_proc.stderr:
-                _write_text(_stderr_path(session_dir, "vscode"), workspace_proc.stderr)
-            blocker = "vscode_workspace_open_failed"
-            _update_session_meta(session_dir, runnerError=blocker)
-            return (session_dir, workspace_proc.returncode or 1, blocker)
-        startup_deadline = time.monotonic() + min(max(timeout_sec, 5), 15)
-        while time.monotonic() < startup_deadline:
-            time.sleep(1)
-            if _delta_line_count(trace_snapshot) > 0:
+                stderr_chunks.append(_coerce_text(exc.stderr))
+            if phase == "workspace_open":
+                blocker = "vscode_workspace_open_failed"
+                stderr_chunks.append(f"workspace open timed out after {open_timeout_sec}s")
+            else:
+                blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
+
+        deadline = time.monotonic() + max(timeout_sec, 5)
+        last_growth_at: float | None = None
+        last_trace_count = _delta_line_count(trace_snapshot)
+        last_ui_count = _delta_line_count(ui_snapshot)
+
+        while time.monotonic() < deadline:
+            time.sleep(2)
+            current_trace_count = _delta_line_count(trace_snapshot)
+            current_ui_count = _delta_line_count(ui_snapshot)
+            if current_trace_count > last_trace_count or current_ui_count > last_ui_count:
+                last_growth_at = time.monotonic()
+                last_trace_count = current_trace_count
+                last_ui_count = current_ui_count
+                continue
+            if last_growth_at is not None and time.monotonic() - last_growth_at >= 6:
                 break
-        try:
-            proc = subprocess.run(
-                command,
-                cwd=workspace_dir,
-                env=workspace_env,
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=max(timeout_sec, 5),
-            )
-        except subprocess.TimeoutExpired as exc:
-            blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
-            _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
-            if exc.stderr is not None:
-                _write_text(_stderr_path(session_dir, "vscode"), _coerce_text(exc.stderr))
-            _update_session_meta(session_dir, runnerError=blocker)
-            return (session_dir, 124, blocker)
     finally:
-        _restore_vscode_global_mcp_config(original_mcp_config)
-    _write_text(session_dir / "assistant-response.txt", proc.stdout)
-    if proc.stderr:
-        _write_text(_stderr_path(session_dir, "vscode"), proc.stderr)
+        _terminate_vscode_user_data_instance(user_data_dir)
 
-    deadline = time.monotonic() + max(timeout_sec, 5)
-    last_growth_at: float | None = None
-    last_trace_count = _delta_line_count(trace_snapshot)
-    last_ui_count = _delta_line_count(ui_snapshot)
-
-    while time.monotonic() < deadline:
-        time.sleep(2)
-        current_trace_count = _delta_line_count(trace_snapshot)
-        current_ui_count = _delta_line_count(ui_snapshot)
-        if current_trace_count > last_trace_count or current_ui_count > last_ui_count:
-            last_growth_at = time.monotonic()
-            last_trace_count = current_trace_count
-            last_ui_count = current_ui_count
-            continue
-        if last_growth_at is not None and time.monotonic() - last_growth_at >= 6:
-            break
-
+    _write_text(session_dir / "assistant-response.txt", assistant_output)
+    if stderr_chunks:
+        _write_text(_stderr_path(session_dir, "vscode"), "\n\n".join(stderr_chunks))
+    time.sleep(1)
     _materialize_log_delta(trace_path, trace_snapshot)
     _materialize_log_delta(ui_path, ui_snapshot)
 
-    blocker = None
-    if proc.returncode != 0:
-        blocker = "vscode_chat_failed"
+    if blocker is not None:
         _update_session_meta(session_dir, runnerError=blocker)
-    return (session_dir, proc.returncode, blocker)
+    return (session_dir, exit_code, blocker)
 
 
 def _run_track(
