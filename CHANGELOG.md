@@ -14,6 +14,13 @@ All notable changes to this project will be documented in this file.
   `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`,
   grouping the captured evidence by tool family, working flows, failure
   classes, and a concrete remediation plan for cross-client optimization.
+- Added shared benchmark secret-resolution helper
+  `scripts/benchmark_env.py` and wired `scripts/unattended_client_eval.py`,
+  `scripts/host_benchmark.py`, and `scripts/mcp-docker-local` to use it.
+  Unattended benchmark runs can now resolve `OS_API_KEY` / `OS_API_KEY_FILE`
+  from process env, `launchctl`, repo `.env`, and the local Claude/Codex
+  `mcp-geo` client configs, closing the previous `NO_API_KEY` gap where eval
+  runs bypassed the normal per-client secret sources.
 - Added `ons_geo.area_summary`, the compact postcode/UPRN/area-code follow-up
   surface for OA/LSOA/MSOA/ward summaries. It resolves the target area from
   the local ONS cache, returns compact area counts, can use the new
@@ -50,6 +57,10 @@ All notable changes to this project will be documented in this file.
   sessions; this improves the VS Code comparison track from mostly zero MCP
   traffic to a mixed result where some scenarios now reach real `mcp-geo`
   tool calls.
+- The benchmark wrapper plan output now reports whether an OS key and/or key
+  file was resolved, without revealing the secret itself. This makes wrapper
+  preflight diagnosis possible when local client configs, `.env`, and shell
+  env differ.
 - Setup docs now explicitly treat absolute paths as local examples only, and
   the README / `.env.example` point path-bearing settings at portable
   placeholders instead of maintainer-specific locations.

@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -17,6 +16,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import scripts.host_benchmark as host_benchmark  # noqa: E402
+from scripts.benchmark_env import resolve_inherited_env, resolved_process_env  # noqa: E402
 
 DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
@@ -102,20 +102,7 @@ def _client_version(command: str) -> str | None:
 
 
 def _build_inherited_env() -> dict[str, str]:
-    keys = (
-        "OS_API_KEY",
-        "OS_API_KEY_FILE",
-        "ONS_LIVE_ENABLED",
-        "STDIO_KEY",
-        "BEARER_TOKENS",
-        "MCP_GEO_DOCKER_BUILD",
-        "MCP_TOOLS_DEFAULT_TOOLSET",
-        "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS",
-        "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS",
-    )
-    env = {key: value for key in keys if (value := os.getenv(key))}
-    env.setdefault("MCP_GEO_DOCKER_BUILD", "never")
-    return env
+    return resolve_inherited_env()
 
 
 def _session_name(track_id: str, scenario_id: str) -> str:
@@ -553,6 +540,7 @@ def _run_vscode_track(
     workspace_proc = subprocess.run(
         workspace_command,
         cwd=REPO_ROOT,
+        env=resolved_process_env(),
         capture_output=True,
         text=True,
         check=False,
@@ -567,6 +555,7 @@ def _run_vscode_track(
     proc = subprocess.run(
         command,
         cwd=REPO_ROOT,
+        env=resolved_process_env(),
         capture_output=True,
         text=True,
         check=False,

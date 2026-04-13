@@ -170,6 +170,12 @@ Important behavior:
   `mcp-geo` tools/resources exposed.
 - Blocked runs keep their rubric score only as `diagnosticScore`; they do not
   count as scored attempts in the aggregate average.
+- Benchmark temp-server runs now resolve `OS_API_KEY` / `OS_API_KEY_FILE`
+  from the same practical local sources used by real client sessions:
+  process env first, then `launchctl`, repo `.env`, Claude Desktop `mcp-geo`
+  config, and Codex `mcp-geo` config. If a higher-priority
+  `OS_API_KEY_FILE` is found, it takes precedence over a lower-priority raw
+  `OS_API_KEY` fallback.
 
 Current evidence snapshot:
 

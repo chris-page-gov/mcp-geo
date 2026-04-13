@@ -85,12 +85,15 @@ def test_mcp_docker_local_plan_hydrates_path_settings_from_dotenv(tmp_path: Path
     landis_root = tmp_path / "ExtSSD-Data" / "Data"
     boundary_root = landis_root / "boundary_runs"
     addressbase_path = repo_root / "data" / "addressbase" / "xref_voa_os.parquet"
+    os_api_key_file = tmp_path / "os_api_key.txt"
 
     boundary_root.mkdir(parents=True)
     landis_root.mkdir(exist_ok=True)
+    os_api_key_file.write_text("test-key\n", encoding="utf-8")
     env_file.write_text(
         "\n".join(
             [
+                f"OS_API_KEY_FILE={os_api_key_file}",
                 f"LANDIS_LOCAL_DATA_ROOT={landis_root}",
                 f"BOUNDARY_RUNS_SEARCH_DIRS={landis_root}",
                 "ADDRESSBASE_PREMIUM_XREF_PATH=data/addressbase/xref_voa_os.parquet",
@@ -128,6 +131,8 @@ exit 1
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert _plan_value(proc.stdout, "landis_host_data_root") == str(landis_root)
     assert _plan_value(proc.stdout, "landis_mount_enabled") == "true"
+    assert _plan_value(proc.stdout, "os_api_key_present") == "true"
+    assert _plan_value(proc.stdout, "os_api_key_file_present") == "true"
     assert _plan_value(proc.stdout, "boundary_runs_mount_enabled") == "true"
     assert _plan_value(proc.stdout, "boundary_runs_search_host_paths") == str(landis_root)
     assert _plan_value(proc.stdout, "boundary_runs_search_container_paths") == str(landis_root)

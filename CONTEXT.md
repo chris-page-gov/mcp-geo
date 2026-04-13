@@ -80,6 +80,17 @@ assumptions change.
   `admin_lookup.find_by_name`, `ons_geo.area_summary`, `nomis.query`,
   `os_mcp.route_query`, and `os_apps.render_geography_selector` all show real
   unattended viability when the host reaches task execution.
+- A 2026-04-13 benchmark follow-up now closes the live-credential gap that was
+  distorting cross-client evals. `scripts/benchmark_env.py` resolves
+  `OS_API_KEY` / `OS_API_KEY_FILE` from practical local sources in priority
+  order: current process env, `launchctl`, repo `.env`, Claude Desktop
+  `mcp-geo` config, then Codex `mcp-geo` config. `scripts/unattended_client_eval.py`
+  and `scripts/host_benchmark.py` now use that shared resolution instead of
+  shell-only inheritance, the VS Code unattended track injects the resolved env
+  into `code` subprocesses, and `scripts/mcp-docker-local` now hydrates
+  `OS_API_KEY_FILE` before deriving `OS_API_KEY`. A post-fix Claude smoke on
+  `address_lookup_postcode` confirmed the result changed from `NO_API_KEY` to a
+  successful `os_places.by_postcode` lookup for `SW1A 1AA`.
 - The VS Code-specific fix is now part of the unattended runner itself:
   `code --reuse-window .` is issued before each `code chat` prompt so the
   session is attached to the repo workspace and therefore sees `.vscode/mcp.json`.

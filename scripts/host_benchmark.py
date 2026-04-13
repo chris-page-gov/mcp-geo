@@ -5,7 +5,6 @@ import argparse
 import datetime as dt
 import importlib
 import json
-import os
 import subprocess
 import sys
 from collections import defaultdict
@@ -16,6 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.benchmark_env import resolve_inherited_env  # noqa: E402
 from scripts.trace_report import _build_summary as build_trace_summary  # noqa: E402
 from scripts.trace_utils import (  # noqa: E402
     DOCKER_LOCAL_WRAPPER_NAMES,
@@ -844,20 +844,7 @@ def cmd_run_codex_cli(args: argparse.Namespace) -> int:
     )
     session_dir = _ensure_session_dir(Path(args.session_root).resolve(), session_name)
     wrapper = Path(args.wrapper).resolve()
-    inherited_env = {
-        key: value
-        for key, value in {
-            "OS_API_KEY": os.getenv("OS_API_KEY"),
-            "ONS_LIVE_ENABLED": os.getenv("ONS_LIVE_ENABLED"),
-            "STDIO_KEY": os.getenv("STDIO_KEY"),
-            "BEARER_TOKENS": os.getenv("BEARER_TOKENS"),
-            "MCP_GEO_DOCKER_BUILD": os.getenv("MCP_GEO_DOCKER_BUILD", "missing"),
-            "MCP_TOOLS_DEFAULT_TOOLSET": os.getenv("MCP_TOOLS_DEFAULT_TOOLSET"),
-            "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS": os.getenv("MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"),
-            "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS": os.getenv("MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS"),
-        }.items()
-        if value
-    }
+    inherited_env = resolve_inherited_env()
     temp_server = _build_temp_stdio_server(
         session_dir,
         wrapper=wrapper,

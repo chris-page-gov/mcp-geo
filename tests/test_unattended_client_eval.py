@@ -142,6 +142,11 @@ def test_run_gemini_track_times_out_cleanly(monkeypatch, tmp_path: Path) -> None
         "_gemini_remove_server",
         lambda *_args, **_kwargs: None,
     )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_build_inherited_env",
+        lambda: {"MCP_GEO_DOCKER_BUILD": "never"},
+    )
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "gemini test")
 
     def fake_run(*_args, **_kwargs) -> subprocess.CompletedProcess[str]:
@@ -168,6 +173,7 @@ def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Pat
     session_root = tmp_path / "logs" / "sessions"
     session_root.mkdir(parents=True)
     commands: list[list[str]] = []
+    envs: list[dict[str, str] | None] = []
     scenario = {"id": "address_lookup_postcode", "prompt": "UPRNs for SW1A 1AA"}
     expected_prompt = unattended_client_eval._scenario_prompt(scenario)
 
@@ -176,11 +182,17 @@ def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Pat
         **_kwargs,
     ) -> subprocess.CompletedProcess[str]:
         commands.append(command)
+        envs.append(_kwargs.get("env"))
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
     monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
     monkeypatch.setattr(unattended_client_eval, "_read_lines", lambda _path: [])
     monkeypatch.setattr(unattended_client_eval.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "resolved_process_env",
+        lambda: {"OS_API_KEY_FILE": "/tmp/os_api_key.txt", "MCP_GEO_DOCKER_BUILD": "never"},
+    )
 
     session_dir, exit_code, blocker = unattended_client_eval._run_vscode_track(
         scenario=scenario,
@@ -196,3 +208,5 @@ def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Pat
         ["code", "--reuse-window", "."],
         ["code", "chat", "--mode", "agent", "--reuse-window", expected_prompt],
     ]
+    assert envs[1]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
+    assert envs[2]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
