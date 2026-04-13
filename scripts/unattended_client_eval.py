@@ -54,6 +54,7 @@ VSCODE_CHAT_IDLE_TIMEOUT_SEC = 12.0
 VSCODE_CHAT_USEFUL_ACTIVITY_TIMEOUT_SEC = 45.0
 VSCODE_WINDOW_CLOSE_TIMEOUT_SEC = 5.0
 VSCODE_PROCESS_TERMINATE_TIMEOUT_SEC = 2.0
+VSCODE_APP_QUIT_TIMEOUT_SEC = 5.0
 VSCODE_BENCH_TOOL_ALIAS_PREFIX = "mcp_mcp-geo-bench_"
 VSCODE_READINESS_TOOL_ALIAS = f"{VSCODE_BENCH_TOOL_ALIAS_PREFIX}os_resources_get"
 VSCODE_READINESS_RESOURCE_URI = "resource://mcp-geo/area-summary-workflows"
@@ -1208,6 +1209,14 @@ def _list_process_rows() -> list[ProcessRow]:
     return rows
 
 
+def _vscode_process_rows() -> list[ProcessRow]:
+    return [
+        row
+        for row in _list_process_rows()
+        if "/Applications/Visual Studio Code.app/Contents/MacOS/" in row.command
+    ]
+
+
 def _workspace_matches_command(workspace_dir: Path, command: str) -> bool:
     workspace_path = str(workspace_dir.resolve())
     workspace_uri = workspace_dir.resolve().as_uri()
@@ -1251,24 +1260,19 @@ def _pid_exists(pid: int) -> bool:
     return True
 
 
-def _terminate_vscode_workspace_processes(workspace_dir: Path) -> list[int]:
-    roots = _find_vscode_workspace_process_roots(workspace_dir)
-    if not roots:
-        return []
-    rows = _list_process_rows()
+def _terminate_pids(pids: list[int], *, timeout_sec: float) -> list[int]:
     ordered: list[int] = []
     seen: set[int] = set()
-    for root_pid in roots:
-        for pid in reversed(_collect_process_tree_pids(rows, root_pid)):
-            if pid not in seen:
-                seen.add(pid)
-                ordered.append(pid)
+    for pid in pids:
+        if pid not in seen:
+            seen.add(pid)
+            ordered.append(pid)
     for pid in ordered:
         try:
             os.kill(pid, signal.SIGTERM)
         except ProcessLookupError:
             continue
-    deadline = time.monotonic() + VSCODE_PROCESS_TERMINATE_TIMEOUT_SEC
+    deadline = time.monotonic() + timeout_sec
     while time.monotonic() < deadline:
         if not any(_pid_exists(pid) for pid in ordered):
             return ordered
@@ -1283,9 +1287,42 @@ def _terminate_vscode_workspace_processes(workspace_dir: Path) -> list[int]:
     return ordered
 
 
+def _terminate_vscode_workspace_processes(workspace_dir: Path) -> list[int]:
+    roots = _find_vscode_workspace_process_roots(workspace_dir)
+    if not roots:
+        return []
+    rows = _list_process_rows()
+    ordered: list[int] = []
+    seen: set[int] = set()
+    for root_pid in roots:
+        for pid in reversed(_collect_process_tree_pids(rows, root_pid)):
+            if pid not in seen:
+                seen.add(pid)
+                ordered.append(pid)
+    return _terminate_pids(ordered, timeout_sec=VSCODE_PROCESS_TERMINATE_TIMEOUT_SEC)
+
+
+def _quit_vscode_app() -> list[int]:
+    baseline_pids = [row.pid for row in _vscode_process_rows()]
+    if not baseline_pids:
+        return []
+    _run_osascript(['tell application id "com.microsoft.VSCode" to quit'])
+    deadline = time.monotonic() + VSCODE_APP_QUIT_TIMEOUT_SEC
+    while time.monotonic() < deadline:
+        if not _vscode_process_rows():
+            return baseline_pids
+        time.sleep(VSCODE_WINDOW_POLL_INTERVAL_SEC)
+    return _terminate_pids(
+        baseline_pids,
+        timeout_sec=VSCODE_PROCESS_TERMINATE_TIMEOUT_SEC,
+    )
+
+
 def _cleanup_vscode_workspace(
     workspace_dir: Path,
     window: VSCodeWindow | None,
+    *,
+    quit_app_when_idle: bool = False,
 ) -> dict[str, Any]:
     close_attempted = window is not None
     window_closed = False
@@ -1295,10 +1332,17 @@ def _cleanup_vscode_workspace(
     killed_pids: list[int] = []
     if lingering_window is not None or _find_vscode_workspace_process_roots(workspace_dir):
         killed_pids = _terminate_vscode_workspace_processes(workspace_dir)
+    app_quit_attempted = False
+    app_quit_process_pids: list[int] = []
+    if quit_app_when_idle and not _list_vscode_windows():
+        app_quit_attempted = True
+        app_quit_process_pids = _quit_vscode_app()
     return {
         "closeAttempted": close_attempted,
         "windowClosed": window_closed,
         "killedProcessPids": killed_pids,
+        "appQuitAttempted": app_quit_attempted,
+        "appQuitProcessPids": app_quit_process_pids,
     }
 
 
@@ -1317,6 +1361,7 @@ def _run_vscode_track(
     server_name = f"mcp-geo-bench-{_slug(name)}"
     prompt = _task_prompt(task, track_id="vscode_ide", server_name=server_name)
     existing_windows = _list_vscode_windows()
+    benchmark_owns_vscode_app = not existing_windows
     open_command = [
         "code",
         "--new-window",
@@ -1350,6 +1395,8 @@ def _run_vscode_track(
         benchmarkWorkspace=str(workspace_dir),
         vscodeServerName=server_name,
         vscodeOpenCommand=open_command,
+        vscodeWindowBaselineCount=len(existing_windows),
+        vscodeBenchmarkOwnsApp=benchmark_owns_vscode_app,
     )
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
@@ -1485,7 +1532,11 @@ def _run_vscode_track(
                 break
     finally:
         benchmark_window = _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
-        cleanup_result = _cleanup_vscode_workspace(workspace_dir, benchmark_window)
+        cleanup_result = _cleanup_vscode_workspace(
+            workspace_dir,
+            benchmark_window,
+            quit_app_when_idle=benchmark_owns_vscode_app,
+        )
 
     _write_text(session_dir / "assistant-response.txt", assistant_output)
     if stderr_chunks:
@@ -1500,6 +1551,8 @@ def _run_vscode_track(
             vscodeCleanupCloseAttempted=cleanup_result["closeAttempted"],
             vscodeCleanupWindowClosed=cleanup_result["windowClosed"],
             vscodeCleanupKilledProcessPids=cleanup_result["killedProcessPids"],
+            vscodeCleanupAppQuitAttempted=cleanup_result["appQuitAttempted"],
+            vscodeCleanupAppQuitProcessPids=cleanup_result["appQuitProcessPids"],
         )
     server_log_matches = _find_vscode_mcp_server_logs(server_name)
     if server_log_matches:

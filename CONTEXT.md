@@ -52,12 +52,15 @@ assumptions change.
 
 ## Current Focus
 
-- The 2026-04-13 unattended-eval remediation is now operationally closed under
-  the checked-in plan acceptance criteria. The canonical aggregate report at
-  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` now shows
-  Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent all passing
+- The 2026-04-13 unattended-eval remediation remains in progress. The
+  canonical aggregate report at
+  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` still
+  shows Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent all passing
   readiness and all completing the full eight-scenario pack with readiness,
-  capability, and tool-family summaries recorded in one report.
+  capability, and tool-family summaries recorded in one report, but a same-day
+  operator report showed Code still reaching roughly 58 GB and requiring a
+  manual kill after the unattended rerun. Closure now depends on a fresh live
+  rerun with the latest VS Code app-lifecycle cleanup safeguard in place.
 - A 2026-04-13 unattended-eval remediation pass is now implemented, tracked in
   `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The unattended
   four-client harness now runs readiness before capability, emits per-track
@@ -159,11 +162,19 @@ assumptions change.
   `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`
   scored all eight capability scenarios. The final canonical four-client rerun
   at `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` now
-  keeps all four tracks in `ready`, records one full pack per client, and no
-  longer leaves VS Code in the earlier silent `no_mcp_traffic` / leaked-window
-  failure mode. Residual `startup_only` / `runner_error` rows on some non-VS
-  scenarios remain visible as reported client-capability outcomes rather than
-  unresolved harness-readiness defects.
+  keeps all four tracks in `ready` and records one full pack per client, but a
+  same-day operator report after that rerun showed the shared Code app could
+  still remain resident and balloon memory enough to require a manual kill. The
+  latest follow-up therefore adds one more VS Code cleanup safeguard:
+  benchmark runs that start from a zero-window baseline now treat the whole
+  Code app lifecycle as benchmark-owned, record that fact in session metadata,
+  and quit the full Code app after workspace cleanup when no other Code windows
+  remain. Focused validation passed via `./scripts/ruff-local
+  scripts/unattended_client_eval.py tests/test_unattended_client_eval.py`,
+  `./scripts/pytest-local -q --no-cov tests/test_unattended_client_eval.py`,
+  and `python3 -m py_compile scripts/unattended_client_eval.py
+  tests/test_unattended_client_eval.py` (`21 passed`). A fresh live rerun is
+  still required before the remediation can be treated as closed again.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

@@ -145,17 +145,24 @@ All notable changes to this project will be documented in this file.
   was prompted by the same `2026-04-13` rerun plus the observed 50+ GB RAM
   leak, which showed the runner still stopping after short idle periods that
   contained only `initialize` / `prompts.list` / `tools.list` traffic.
+- The same VS Code unattended runner now also treats zero-window-baseline
+  launches as benchmark-owned Code app lifecycles and quits the whole Code app
+  after workspace cleanup when no other Code windows remain. Session metadata
+  now records that app-quit path alongside the existing window/process cleanup
+  facts so operator-reported memory leaks can be traced back to a specific
+  cleanup branch.
 - The VS Code unattended runner no longer issues a separate primer chat before
   each benchmark attempt. A targeted canary run showed the reclaimed benchmark
   Code process tree still left the capability session with zero retained
   post-primer MCP traffic, which isolated the primer itself as the only MCP
   traffic source in that flow. The real scenario chat is now the first
   MCP-driving action in each benchmark window.
-- The unattended remediation is now operationally closed under the checked-in
-  plan acceptance criteria: the canonical aggregate report records all four
-  tracks as `ready`, each client completes the full scenario pack, and the
-  previous VS Code-specific silent `no_mcp_traffic` / leaked-window failure
-  mode has been replaced by scored or explicitly classified capability rows.
+- The canonical unattended aggregate report still records all four tracks as
+  `ready` and each client completing the full scenario pack, but operational
+  closure is reopened after a same-day operator report that Code still reached
+  roughly 58 GB and required a manual kill after the unattended rerun. The new
+  zero-window-baseline app-quit safeguard is in place; a fresh live rerun is
+  still pending before the remediation can be re-closed.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.

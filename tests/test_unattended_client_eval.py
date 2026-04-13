@@ -251,6 +251,56 @@ def test_cleanup_vscode_workspace_terminates_lingering_workspace_processes(
         "closeAttempted": True,
         "windowClosed": False,
         "killedProcessPids": [101, 202],
+        "appQuitAttempted": False,
+        "appQuitProcessPids": [],
+    }
+
+
+def test_cleanup_vscode_workspace_quits_idle_app_after_benchmark_owned_run(
+    monkeypatch, tmp_path: Path
+) -> None:
+    workspace_dir = tmp_path / "benchmark-workspace"
+    workspace_dir.mkdir()
+    window = unattended_client_eval.VSCodeWindow(name="benchmark-workspace", document="")
+
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_close_vscode_window",
+        lambda _window: True,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_find_vscode_window_for_workspace",
+        lambda _workspace_dir: None,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_find_vscode_workspace_process_roots",
+        lambda _workspace_dir: [],
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_list_vscode_windows",
+        lambda: [],
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_quit_vscode_app",
+        lambda: [301, 302],
+    )
+
+    cleanup = unattended_client_eval._cleanup_vscode_workspace(
+        workspace_dir,
+        window,
+        quit_app_when_idle=True,
+    )
+
+    assert cleanup == {
+        "closeAttempted": True,
+        "windowClosed": True,
+        "killedProcessPids": [],
+        "appQuitAttempted": True,
+        "appQuitProcessPids": [301, 302],
     }
 
 
@@ -429,11 +479,15 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     monkeypatch.setattr(
         unattended_client_eval,
         "_cleanup_vscode_workspace",
-        lambda workspace_dir, window: cleanup_calls.append((workspace_dir, window))
+        lambda workspace_dir, window, *, quit_app_when_idle=False: cleanup_calls.append(
+            (workspace_dir, window, quit_app_when_idle)
+        )
         or {
             "closeAttempted": True,
             "windowClosed": True,
             "killedProcessPids": [],
+            "appQuitAttempted": False,
+            "appQuitProcessPids": [],
         },
     )
     monkeypatch.setattr(
@@ -493,11 +547,13 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
         )
     ]
     assert raised == [benchmark_window, benchmark_window]
-    assert cleanup_calls == [(expected_workspace_dir, benchmark_window)]
+    assert cleanup_calls == [(expected_workspace_dir, benchmark_window, False)]
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["vscodeServerLog"] == str(expected_server_log)
     assert session_meta["vscodeCleanupWindowClosed"] is True
     assert session_meta["vscodeCleanupKilledProcessPids"] == []
+    assert session_meta["vscodeCleanupAppQuitAttempted"] is False
+    assert session_meta["vscodeCleanupAppQuitProcessPids"] == []
 
 
 def test_run_vscode_track_reports_chat_timeout_without_primer(
@@ -539,10 +595,12 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
     monkeypatch.setattr(
         unattended_client_eval,
         "_cleanup_vscode_workspace",
-        lambda _workspace_dir, _window: {
+        lambda _workspace_dir, _window, *, quit_app_when_idle=False: {
             "closeAttempted": True,
             "windowClosed": True,
             "killedProcessPids": [],
+            "appQuitAttempted": quit_app_when_idle,
+            "appQuitProcessPids": [901] if quit_app_when_idle else [],
         },
     )
     monkeypatch.setattr(
@@ -594,6 +652,8 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
     ]
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["vscodeServerLog"] == str(expected_server_log)
+    assert session_meta["vscodeCleanupAppQuitAttempted"] is True
+    assert session_meta["vscodeCleanupAppQuitProcessPids"] == [901]
 
 
 def test_task_prompt_uses_vscode_native_mcp_guidance() -> None:
