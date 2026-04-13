@@ -52,14 +52,25 @@ assumptions change.
 
 ## Current Focus
 
-- A 2026-04-13 unattended-eval remediation pass is now in progress, tracked in
-  `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The active
-  implementation goal is to convert the unattended four-client harness from a
-  single-pass scenario runner into a readiness-first then capability-second
-  benchmark, with stable Gemini benchmark workspaces, shared readiness
-  artifacts, explicit blocker taxonomy, one labelled recovery attempt for
-  Gemini/VS Code host flakes only, and report output that separates `not_ready`
-  tracks from genuine capability results.
+- A 2026-04-13 unattended-eval remediation pass is now implemented, tracked in
+  `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The unattended
+  four-client harness now runs readiness before capability, emits per-track
+  readiness artifacts plus aggregate readiness/capability summaries, records
+  stable blocker taxonomy classes (`client_auth_failure`,
+  `client_workspace_restriction`, `client_no_mcp_traffic`,
+  `server_no_live_key`, `scenario_tool_failure`, etc.), supports one labelled
+  recovery attempt for Gemini and VS Code readiness only, and writes explicit
+  `not_ready` / `skipped` outcomes instead of inflating scenario-failure rows
+  when the host is not usable or lacks a live OS key.
+- The same 2026-04-13 unattended follow-up also moved Gemini onto stable
+  ignored benchmark workspaces under `logs/benchmark-workspaces/gemini/<task>/`
+  with `--include-directories ~/.gemini`, added the built-in readiness probe
+  / `--readiness-only` mode in `scripts/unattended_client_eval.py`, extended
+  `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` with
+  `requiresLiveOsApi`, `requiresUiRuntime`, `toolFamily`, and
+  `expectedCapability` metadata, and expanded `scripts/mcp-docker-local`
+  preflight output to show non-sensitive toolset/default-secret visibility
+  facts alongside the OS-key presence flags.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

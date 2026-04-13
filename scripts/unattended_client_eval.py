@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -21,10 +22,52 @@ from scripts.benchmark_env import resolve_inherited_env, resolved_process_env  #
 DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
 DEFAULT_REPORT_ROOT = REPO_ROOT / "docs" / "reports"
+DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "logs" / "benchmark-workspaces"
 DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_VSCODE_TRACE_PATH = REPO_ROOT / "logs" / "vscode-mcp-trace.jsonl"
 DEFAULT_VSCODE_UI_PATH = REPO_ROOT / "logs" / "ui-events.vscode-trace.jsonl"
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
+RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
+GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
+
+READINESS_TASK = {
+    "id": "readiness_probe",
+    "label": "Readiness probe",
+    "prompt": (
+        "Call `os_mcp.descriptor` on the connected `mcp-geo` MCP server and "
+        "reply with the server name plus one safe example capability in one sentence."
+    ),
+    "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_mcp.descriptor",
+    ],
+    "expectedTools": ["os_mcp.descriptor"],
+    "expectedResources": [],
+    "successConditions": [
+        "Reaches at least one MCP request during startup.",
+        "Makes a compact useful tool call against the connected server.",
+    ],
+    "fallbackConditions": [],
+    "requiresLiveOsApi": False,
+    "requiresUiRuntime": False,
+    "toolFamily": "descriptor",
+    "expectedCapability": "readiness_probe",
+    "scoringHints": {
+        "toolSearch": "optional",
+        "resourcesRead": "none",
+        "uiRuntime": "not_applicable",
+        "fallbackExpectedOn": [],
+    },
+}
+GEMINI_WORKSPACE_SIGNATURES = (
+    "Path not in workspace",
+    ".gemini/settings.json",
+)
+CLAUDE_AUTH_SIGNATURES = (
+    "Failed to authenticate",
+    "authentication credentials",
+    "authentication_error",
+)
 
 TRACKS = (
     {
@@ -78,8 +121,8 @@ def _slug(value: str) -> str:
     return text.strip("-") or "session"
 
 
-def _scenario_prompt(scenario: dict[str, Any]) -> str:
-    return host_benchmark._prompt_for_scenario(scenario)
+def _task_prompt(task: dict[str, Any]) -> str:
+    return host_benchmark._prompt_for_scenario(task)
 
 
 def _client_version(command: str) -> str | None:
@@ -105,8 +148,20 @@ def _build_inherited_env() -> dict[str, str]:
     return resolve_inherited_env()
 
 
-def _session_name(track_id: str, scenario_id: str) -> str:
-    return f"{_timestamp_slug()}-{_slug(track_id)}-{_slug(scenario_id)}"
+def _env_readiness_facts(inherited_env: dict[str, str] | None = None) -> dict[str, Any]:
+    env = dict(inherited_env or _build_inherited_env())
+    return {
+        "osApiKeyPresent": bool(env.get("OS_API_KEY")),
+        "osApiKeyFilePresent": bool(env.get("OS_API_KEY_FILE")),
+        "liveOsReady": bool(env.get("OS_API_KEY") or env.get("OS_API_KEY_FILE")),
+        "defaultToolset": env.get("MCP_TOOLS_DEFAULT_TOOLSET"),
+        "includeToolsets": env.get("MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"),
+        "excludeToolsets": env.get("MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS"),
+    }
+
+
+def _session_name(track_id: str, task_id: str) -> str:
+    return f"{_timestamp_slug()}-{_slug(track_id)}-{_slug(task_id)}"
 
 
 def _session_path(session_root: Path, name: str) -> Path:
@@ -158,20 +213,33 @@ def _initial_session_meta(
     *,
     command: list[str],
     scenario_pack: str,
-    scenario_id: str,
+    task: dict[str, Any],
     model: str,
     track: dict[str, str],
+    attempt_kind: str,
+    capability_group: str | None,
 ) -> None:
     host_benchmark._write_initial_session_meta(
         session_dir,
         command=command,
         scenario_pack=scenario_pack,
-        scenario_id=scenario_id,
+        scenario_id=task["id"],
         model=model,
         source=track["source"],
         surface=track["surface"],
         host_profile=track["hostProfile"],
         client_version=_client_version(track["clientCommand"]),
+    )
+    _update_session_meta(
+        session_dir,
+        taskId=task["id"],
+        taskLabel=task.get("label", task["id"]),
+        attemptKind=attempt_kind,
+        capabilityGroup=capability_group,
+        expectedCapability=task.get("expectedCapability"),
+        toolFamily=task.get("toolFamily"),
+        requiresLiveOsApi=bool(task.get("requiresLiveOsApi") or task.get("requiresOsApi")),
+        requiresUiRuntime=bool(task.get("requiresUiRuntime")),
     )
 
 
@@ -215,6 +283,12 @@ def _trace_report(session_dir: Path) -> None:
     )
 
 
+def _read_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
 def _load_json_object(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -234,32 +308,141 @@ def _load_existing_score_artifacts(
 
 def _score_session(
     session_dir: Path,
-    scenario: dict[str, Any],
+    task: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     cached = _load_existing_score_artifacts(session_dir)
     if cached is not None:
         return cached
-    evidence, score = host_benchmark.score_session(session_dir, scenario)
+    evidence, score = host_benchmark.score_session(session_dir, task)
     host_benchmark.write_score_artifacts(session_dir, evidence, score)
     return evidence, score
 
 
-def _classify_attempt(
+def _scenario_capability_group(task: dict[str, Any]) -> str:
+    if bool(task.get("requiresUiRuntime")):
+        return "ui"
+    if bool(task.get("requiresLiveOsApi") or task.get("requiresOsApi")):
+        return "live_os"
+    return "offline_safe"
+
+
+def _expected_capability(task: dict[str, Any]) -> str:
+    capability = task.get("expectedCapability")
+    if isinstance(capability, str) and capability:
+        return capability
+    if task.get("expectedResources") and (
+        task.get("scoringHints", {}).get("resourcesRead") == "required"
+    ):
+        return "resource_consumption"
+    intent = task.get("intent")
+    if isinstance(intent, str) and intent:
+        return intent
+    return _scenario_capability_group(task)
+
+
+def _tool_family(task: dict[str, Any]) -> str:
+    family = task.get("toolFamily")
+    if isinstance(family, str) and family:
+        return family
+    expected_tools = task.get("expectedTools") or []
+    for tool_name in expected_tools:
+        if not isinstance(tool_name, str) or "/" in tool_name:
+            continue
+        return tool_name.split(".", 1)[0]
+    return _expected_capability(task)
+
+
+def _classify_capability_status(
     *,
     exit_code: int,
     evidence: dict[str, Any] | None,
-) -> tuple[str, str | None]:
+) -> str:
     if exit_code != 0:
-        return ("runner_error", f"client exited with code {exit_code}")
+        return "runner_error"
     if evidence is None:
-        return ("runner_error", "no evidence captured")
+        return "runner_error"
     request_count = int(evidence.get("traceSummary", {}).get("mcp", {}).get("requestCount") or 0)
     tool_calls = evidence.get("toolCalls") or []
     if request_count == 0:
-        return ("no_mcp_traffic", "client produced no MCP traffic")
+        return "no_mcp_traffic"
     if not tool_calls:
-        return ("startup_only", "client initialized and listed capabilities but made no tool calls")
-    return ("scored", None)
+        return "startup_only"
+    return "scored"
+
+
+def _classify_readiness_status(
+    *,
+    exit_code: int,
+    evidence: dict[str, Any] | None,
+) -> str:
+    if exit_code != 0 or evidence is None:
+        return "not_ready"
+    request_count = int(evidence.get("traceSummary", {}).get("mcp", {}).get("requestCount") or 0)
+    tool_calls = evidence.get("toolCalls") or []
+    if request_count == 0 or not tool_calls:
+        return "not_ready"
+    return "ready"
+
+
+def _classify_blocker_category(
+    *,
+    track_id: str,
+    purpose: str,
+    exit_code: int,
+    evidence: dict[str, Any] | None,
+    runner_blocker: str | None,
+    session_dir: Path | None,
+) -> tuple[str | None, str | None]:
+    error_codes = {str(code) for code in (evidence or {}).get("errorCodes", [])}
+    request_count = int(
+        (evidence or {}).get("traceSummary", {}).get("mcp", {}).get("requestCount") or 0
+    )
+    tool_calls = (evidence or {}).get("toolCalls") or []
+    assistant_text = (
+        _read_text((session_dir or Path()) / "assistant-response.txt") if session_dir else ""
+    )
+    stderr_text = (
+        _read_text(_stderr_path(session_dir, track_id.split("_", 1)[0])) if session_dir else ""
+    )
+    combined = "\n".join(
+        value for value in (runner_blocker or "", assistant_text, stderr_text) if value
+    )
+    lowered = combined.lower()
+
+    if "NO_API_KEY" in error_codes:
+        return ("server_no_live_key", "server returned NO_API_KEY")
+    if track_id == "claude_cli" and any(
+        signature.lower() in lowered for signature in CLAUDE_AUTH_SIGNATURES
+    ):
+        return ("client_auth_failure", "client authentication failed before prompt execution")
+    if track_id == "gemini_cli" and all(
+        signature.lower() in lowered for signature in GEMINI_WORKSPACE_SIGNATURES
+    ):
+        return (
+            "client_workspace_restriction",
+            "Gemini workspace restrictions blocked access to ~/.gemini/settings.json",
+        )
+    if track_id == "vscode_ide" and runner_blocker == "vscode_workspace_open_failed":
+        return ("client_workspace_restriction", "VS Code failed to attach the repo workspace")
+    if request_count == 0:
+        if exit_code != 0:
+            return (
+                "client_launch_failure",
+                runner_blocker or f"client exited with code {exit_code}",
+            )
+        return ("client_no_mcp_traffic", "client produced no MCP traffic")
+    if purpose in {"readiness", "recovery"} and not tool_calls:
+        return ("client_no_useful_tool_call", "client initialized but made no useful tool call")
+    if exit_code != 0:
+        if purpose == "capability":
+            return (
+                "scenario_tool_failure",
+                runner_blocker or f"client exited with code {exit_code}",
+            )
+        return ("client_launch_failure", runner_blocker or f"client exited with code {exit_code}")
+    if purpose == "capability" and runner_blocker:
+        return ("scenario_tool_failure", runner_blocker)
+    return (None, None)
 
 
 def _gemini_remove_server(name: str, *, cwd: Path) -> None:
@@ -293,60 +476,104 @@ def _gemini_add_stdio_server(name: str, server_config: dict[str, Any], *, cwd: P
         raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or "gemini mcp add failed")
 
 
+def _prepare_gemini_workspace(task: dict[str, Any]) -> Path:
+    workspace_dir = DEFAULT_WORKSPACE_ROOT / "gemini" / _slug(task["id"])
+    if workspace_dir.exists():
+        shutil.rmtree(workspace_dir)
+    workspace_dir.mkdir(parents=True, exist_ok=True)
+    return workspace_dir
+
+
 def _run_codex_track(
     *,
-    scenario: dict[str, Any],
-    scenario_pack_path: Path,
+    task: dict[str, Any],
     scenario_pack_id: str,
     session_root: Path,
     model: str,
+    attempt_kind: str,
 ) -> tuple[Path, int, str | None]:
-    name = _session_name("codex_cli", scenario["id"])
-    latest_before = _latest_session_dir(session_root)
-    args = argparse.Namespace(
-        scenario_id=scenario["id"],
-        scenario_pack=str(scenario_pack_path),
-        model=model,
-        server_name="mcp-geo",
-        wrapper=str(REPO_ROOT / "scripts" / "codex-mcp-local"),
-        session_root=str(session_root),
-        name=name,
-    )
-    blocker: str | None = None
-    exit_code = 0
-    try:
-        host_benchmark.cmd_run_codex_cli(args)
-    except Exception as exc:
-        exit_code = 1
-        blocker = str(exc)
-    session_dir = _locate_session_dir(session_root, name=name, latest_before=latest_before)
-    if session_dir is None:
-        session_dir = _session_path(session_root, name)
-        session_dir.mkdir(parents=True, exist_ok=True)
-    _update_session_meta(
+    track = TRACK_BY_ID["codex_cli"]
+    name = _session_name(track["id"], task["id"])
+    session_dir = host_benchmark._ensure_session_dir(session_root, name)
+    prompt = _task_prompt(task)
+    wrapper = REPO_ROOT / "scripts" / "codex-mcp-local"
+    inherited_env = _build_inherited_env()
+    server_name = "mcp-geo"
+    server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
-        scenarioPack=scenario_pack_id,
-        scenarioId=scenario["id"],
+        wrapper=wrapper,
+        inherited_env=inherited_env,
     )
-    if blocker:
-        _update_session_meta(session_dir, runnerError=blocker)
-        _write_text(session_dir / "runner-error.txt", blocker + "\n")
+    previous = host_benchmark._codex_get_server(server_name)
+    restore_config = host_benchmark._prepare_restore_server_config(previous)
+    command = [
+        "codex",
+        "exec",
+        "-m",
+        model,
+        "--json",
+        "-o",
+        str(session_dir / "assistant-response.txt"),
+        "-C",
+        str(REPO_ROOT),
+        prompt,
+    ]
+    _initial_session_meta(
+        session_dir,
+        command=command,
+        scenario_pack=scenario_pack_id,
+        task=task,
+        model=model,
+        track=track,
+        attempt_kind=attempt_kind,
+        capability_group=None if attempt_kind != "capability" else _scenario_capability_group(task),
+    )
+    _update_session_paths(
+        session_dir,
+        assistantResponse=str(session_dir / "assistant-response.txt"),
+        clientStderr=str(_stderr_path(session_dir, "codex")),
+    )
+
+    exit_code = 0
+    blocker: str | None = None
+    try:
+        host_benchmark._codex_remove_server(server_name)
+        host_benchmark._codex_add_stdio_server(server_name, server_config)
+        proc = subprocess.run(
+            command,
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        (session_dir / "codex-events.jsonl").write_text(proc.stdout, encoding="utf-8")
+        if proc.stderr:
+            _write_text(_stderr_path(session_dir, "codex"), proc.stderr)
+        exit_code = proc.returncode
+        if proc.returncode != 0:
+            blocker = f"codex exec failed with code {proc.returncode}"
+            _update_session_meta(session_dir, runnerError=blocker)
+    finally:
+        host_benchmark._restore_server(server_name, restore_config)
+
     return (session_dir, exit_code, blocker)
 
 
 def _run_gemini_track(
     *,
-    scenario: dict[str, Any],
+    task: dict[str, Any],
     scenario_pack_id: str,
     session_root: Path,
     model: str,
     timeout_sec: int,
+    attempt_kind: str,
 ) -> tuple[Path, int, str | None]:
     track = TRACK_BY_ID["gemini_cli"]
-    name = _session_name(track["id"], scenario["id"])
+    name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
-    server_name = f"{DEFAULT_GEMINI_SERVER}-{_slug(session_dir.name)}"
-    prompt = _scenario_prompt(scenario)
+    prompt = _task_prompt(task)
+    project_dir = _prepare_gemini_workspace(task)
+    server_name = f"{DEFAULT_GEMINI_SERVER}-{_slug(task['id'])}"
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "gemini-mcp-local",
@@ -360,6 +587,8 @@ def _run_gemini_track(
         "yolo",
         "--output-format",
         "json",
+        "--include-directories",
+        str(GEMINI_SETTINGS_PATH),
     ]
     if model:
         command.extend(["--model", model])
@@ -368,45 +597,47 @@ def _run_gemini_track(
         session_dir,
         command=command,
         scenario_pack=scenario_pack_id,
-        scenario_id=scenario["id"],
+        task=task,
         model=model,
         track=track,
+        attempt_kind=attempt_kind,
+        capability_group=None if attempt_kind != "capability" else _scenario_capability_group(task),
     )
+    _update_session_meta(session_dir, benchmarkWorkspace=str(project_dir))
     _update_session_paths(
         session_dir,
         assistantResponse=str(session_dir / "assistant-response.txt"),
         clientStderr=str(_stderr_path(session_dir, "gemini")),
     )
+
     exit_code = 0
     blocker: str | None = None
     proc: subprocess.CompletedProcess[str] | None = None
-    with tempfile.TemporaryDirectory(prefix="mcp-geo-gemini-project-") as temp_project:
-        project_dir = Path(temp_project)
+    try:
+        _gemini_remove_server(server_name, cwd=project_dir)
+        _gemini_add_stdio_server(server_name, server_config, cwd=project_dir)
         try:
-            _gemini_remove_server(server_name, cwd=project_dir)
-            _gemini_add_stdio_server(server_name, server_config, cwd=project_dir)
-            try:
-                proc = subprocess.run(
-                    command,
-                    cwd=project_dir,
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                    timeout=max(timeout_sec, 1),
-                )
-            except subprocess.TimeoutExpired as exc:
-                blocker = f"gemini_cli_timeout_after_{timeout_sec}s"
-                _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
-                if exc.stderr:
-                    _write_text(_stderr_path(session_dir, "gemini"), _coerce_text(exc.stderr))
-                _update_session_meta(session_dir, runnerError=blocker)
-                return (session_dir, 124, blocker)
-            _write_text(session_dir / "assistant-response.txt", proc.stdout)
-            if proc.stderr:
-                _write_text(_stderr_path(session_dir, "gemini"), proc.stderr)
-            exit_code = proc.returncode
-        finally:
-            _gemini_remove_server(server_name, cwd=project_dir)
+            proc = subprocess.run(
+                command,
+                cwd=project_dir,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=max(timeout_sec, 1),
+            )
+        except subprocess.TimeoutExpired as exc:
+            blocker = f"gemini_cli_timeout_after_{timeout_sec}s"
+            _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
+            if exc.stderr is not None:
+                _write_text(_stderr_path(session_dir, "gemini"), _coerce_text(exc.stderr))
+            _update_session_meta(session_dir, runnerError=blocker)
+            return (session_dir, 124, blocker)
+        _write_text(session_dir / "assistant-response.txt", proc.stdout)
+        if proc.stderr:
+            _write_text(_stderr_path(session_dir, "gemini"), proc.stderr)
+        exit_code = proc.returncode
+    finally:
+        _gemini_remove_server(server_name, cwd=project_dir)
     if proc is not None and proc.returncode != 0:
         blocker = "gemini_cli_failed"
         _update_session_meta(session_dir, runnerError=blocker)
@@ -415,14 +646,15 @@ def _run_gemini_track(
 
 def _run_claude_track(
     *,
-    scenario: dict[str, Any],
+    task: dict[str, Any],
     scenario_pack_id: str,
     session_root: Path,
     model: str,
     timeout_sec: int,
+    attempt_kind: str,
 ) -> tuple[Path, int, str | None]:
     track = TRACK_BY_ID["claude_cli"]
-    name = _session_name(track["id"], scenario["id"])
+    name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
@@ -446,7 +678,7 @@ def _run_claude_track(
     ) as handle:
         json.dump(mcp_config, handle)
         config_path = Path(handle.name)
-    prompt = _scenario_prompt(scenario)
+    prompt = _task_prompt(task)
     command = ["claude", "--strict-mcp-config", "--mcp-config", str(config_path)]
     if model:
         command.extend(["--model", model])
@@ -455,15 +687,18 @@ def _run_claude_track(
         session_dir,
         command=command,
         scenario_pack=scenario_pack_id,
-        scenario_id=scenario["id"],
+        task=task,
         model=model,
         track=track,
+        attempt_kind=attempt_kind,
+        capability_group=None if attempt_kind != "capability" else _scenario_capability_group(task),
     )
     _update_session_paths(
         session_dir,
         assistantResponse=str(session_dir / "assistant-response.txt"),
         clientStderr=str(_stderr_path(session_dir, "claude")),
     )
+
     proc: subprocess.CompletedProcess[str] | None = None
     blocker: str | None = None
     try:
@@ -479,7 +714,7 @@ def _run_claude_track(
         except subprocess.TimeoutExpired as exc:
             blocker = f"claude_cli_timeout_after_{timeout_sec}s"
             _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
-            if exc.stderr:
+            if exc.stderr is not None:
                 _write_text(_stderr_path(session_dir, "claude"), _coerce_text(exc.stderr))
             _update_session_meta(session_dir, runnerError=blocker)
             return (session_dir, 124, blocker)
@@ -511,25 +746,28 @@ def _write_lines(path: Path, lines: list[str]) -> None:
 
 def _run_vscode_track(
     *,
-    scenario: dict[str, Any],
+    task: dict[str, Any],
     scenario_pack_id: str,
     session_root: Path,
     timeout_sec: int,
+    attempt_kind: str,
 ) -> tuple[Path, int, str | None]:
     track = TRACK_BY_ID["vscode_ide"]
-    name = _session_name(track["id"], scenario["id"])
+    name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
     trace_before = len(_read_lines(DEFAULT_VSCODE_TRACE_PATH))
     ui_before = len(_read_lines(DEFAULT_VSCODE_UI_PATH))
-    prompt = _scenario_prompt(scenario)
+    prompt = _task_prompt(task)
     command = ["code", "chat", "--mode", "agent", "--reuse-window", prompt]
     _initial_session_meta(
         session_dir,
         command=command,
         scenario_pack=scenario_pack_id,
-        scenario_id=scenario["id"],
+        task=task,
         model="copilot-agent",
         track=track,
+        attempt_kind=attempt_kind,
+        capability_group=None if attempt_kind != "capability" else _scenario_capability_group(task),
     )
     _update_session_paths(
         session_dir,
@@ -537,10 +775,11 @@ def _run_vscode_track(
         clientStderr=str(_stderr_path(session_dir, "vscode")),
     )
     workspace_command = ["code", "--reuse-window", "."]
+    workspace_env = resolved_process_env()
     workspace_proc = subprocess.run(
         workspace_command,
         cwd=REPO_ROOT,
-        env=resolved_process_env(),
+        env=workspace_env,
         capture_output=True,
         text=True,
         check=False,
@@ -555,7 +794,7 @@ def _run_vscode_track(
     proc = subprocess.run(
         command,
         cwd=REPO_ROOT,
-        env=resolved_process_env(),
+        env=workspace_env,
         capture_output=True,
         text=True,
         check=False,
@@ -595,8 +834,7 @@ def _run_vscode_track(
 def _run_track(
     *,
     track_id: str,
-    scenario: dict[str, Any],
-    scenario_pack_path: Path,
+    task: dict[str, Any],
     scenario_pack_id: str,
     session_root: Path,
     codex_model: str,
@@ -605,168 +843,270 @@ def _run_track(
     gemini_timeout_sec: int,
     claude_timeout_sec: int,
     vscode_timeout_sec: int,
+    attempt_kind: str,
 ) -> tuple[Path, int, str | None]:
     if track_id == "codex_cli":
         return _run_codex_track(
-            scenario=scenario,
-            scenario_pack_path=scenario_pack_path,
+            task=task,
             scenario_pack_id=scenario_pack_id,
             session_root=session_root,
             model=codex_model,
+            attempt_kind=attempt_kind,
         )
     if track_id == "gemini_cli":
         return _run_gemini_track(
-            scenario=scenario,
+            task=task,
             scenario_pack_id=scenario_pack_id,
             session_root=session_root,
             model=gemini_model,
             timeout_sec=gemini_timeout_sec,
+            attempt_kind=attempt_kind,
         )
     if track_id == "claude_cli":
         return _run_claude_track(
-            scenario=scenario,
+            task=task,
             scenario_pack_id=scenario_pack_id,
             session_root=session_root,
             model=claude_model,
             timeout_sec=claude_timeout_sec,
+            attempt_kind=attempt_kind,
         )
     if track_id == "vscode_ide":
         return _run_vscode_track(
-            scenario=scenario,
+            task=task,
             scenario_pack_id=scenario_pack_id,
             session_root=session_root,
             timeout_sec=vscode_timeout_sec,
+            attempt_kind=attempt_kind,
         )
     raise KeyError(f"Unknown track: {track_id}")
 
 
-def _summarize_attempts(
+def _execute_attempt(
     *,
-    scenario_pack: dict[str, Any],
-    attempts: list[dict[str, Any]],
-) -> tuple[dict[str, Any], str]:
-    scenario_labels = {
-        scenario["id"]: scenario.get("label", scenario["id"])
-        for scenario in scenario_pack["scenarios"]
-    }
-    aggregate: dict[str, Any] = {
-        "generatedAt": _utc_now(),
-        "scenarioPack": scenario_pack["id"],
-        "attempts": attempts,
-        "tracks": {},
-    }
-    for track in TRACKS:
-        track_attempts = [attempt for attempt in attempts if attempt["trackId"] == track["id"]]
-        scored_attempts = [
-            attempt
-            for attempt in track_attempts
-            if attempt["runStatus"] == "scored" and attempt.get("overallScore") is not None
-        ]
-        average = None
-        if scored_attempts:
-            average = round(
-                sum(float(attempt["overallScore"]) for attempt in scored_attempts)
-                / len(scored_attempts),
-                4,
+    track_id: str,
+    task: dict[str, Any],
+    scenario_pack_id: str,
+    session_root: Path,
+    codex_model: str,
+    gemini_model: str,
+    claude_model: str,
+    gemini_timeout_sec: int,
+    claude_timeout_sec: int,
+    vscode_timeout_sec: int,
+    attempt_kind: str,
+) -> dict[str, Any]:
+    session_dir: Path | None = None
+    exit_code = 1
+    runner_blocker: str | None = None
+    evidence: dict[str, Any] | None = None
+    score: dict[str, Any] | None = None
+    purpose = "capability" if attempt_kind == "capability" else attempt_kind
+    started_at = _utc_now()
+    started_monotonic = time.monotonic()
+    try:
+        session_dir, exit_code, runner_blocker = _run_track(
+            track_id=track_id,
+            task=task,
+            scenario_pack_id=scenario_pack_id,
+            session_root=session_root,
+            codex_model=codex_model,
+            gemini_model=gemini_model,
+            claude_model=claude_model,
+            gemini_timeout_sec=gemini_timeout_sec,
+            claude_timeout_sec=claude_timeout_sec,
+            vscode_timeout_sec=vscode_timeout_sec,
+            attempt_kind=attempt_kind,
+        )
+    except Exception as exc:
+        runner_blocker = str(exc)
+        if session_dir is None:
+            session_dir = _session_path(
+                session_root,
+                _session_name(track_id, task["id"]),
             )
-        aggregate["tracks"][track["id"]] = {
-            "label": track["label"],
-            "attemptCount": len(track_attempts),
-            "scoredCount": len(scored_attempts),
-            "averageScore": average,
-            "statuses": {
-                status: len(
-                    [attempt for attempt in track_attempts if attempt["runStatus"] == status]
-                )
-                for status in sorted({attempt["runStatus"] for attempt in track_attempts})
-            },
-        }
+        session_dir.mkdir(parents=True, exist_ok=True)
+        _write_text(session_dir / "runner-error.txt", f"{type(exc).__name__}: {exc}\n")
+        _update_session_meta(session_dir, runnerError=runner_blocker)
 
-    lines = [
-        "# MCP Geo Unattended Client Evaluation",
-        f"Generated: {aggregate['generatedAt']}",
-        f"Scenario pack: {scenario_pack['id']}",
-        "",
-        "## Track Summary",
-        "| Track | Attempts | Scored | Average | Statuses |",
-        "| --- | ---: | ---: | ---: | --- |",
+    if session_dir is not None and session_dir.exists():
+        _trace_report(session_dir)
+        try:
+            evidence, score = _score_session(session_dir, task)
+        except Exception as exc:
+            runner_blocker = runner_blocker or f"score_session failed: {exc}"
+            _write_text(session_dir / "score-error.txt", f"{type(exc).__name__}: {exc}\n")
+
+    if attempt_kind == "capability":
+        run_status = _classify_capability_status(exit_code=exit_code, evidence=evidence)
+    else:
+        run_status = _classify_readiness_status(exit_code=exit_code, evidence=evidence)
+
+    blocker_category, blocker_message = _classify_blocker_category(
+        track_id=track_id,
+        purpose=purpose,
+        exit_code=exit_code,
+        evidence=evidence,
+        runner_blocker=runner_blocker,
+        session_dir=session_dir,
+    )
+    duration_ms = round((time.monotonic() - started_monotonic) * 1000, 2)
+    capability_group = None if attempt_kind != "capability" else _scenario_capability_group(task)
+
+    attempt: dict[str, Any] = {
+        "trackId": track_id,
+        "trackLabel": TRACK_BY_ID[track_id]["label"],
+        "attemptKind": attempt_kind,
+        "taskId": task["id"],
+        "taskLabel": task.get("label", task["id"]),
+        "scenarioId": task["id"] if attempt_kind == "capability" else None,
+        "scenarioLabel": task.get("label", task["id"]) if attempt_kind == "capability" else None,
+        "sessionDir": str(session_dir) if session_dir is not None else None,
+        "startedAt": started_at,
+        "durationMs": duration_ms,
+        "exitCode": exit_code,
+        "runStatus": run_status,
+        "blockerCategory": blocker_category,
+        "blocker": blocker_message or runner_blocker,
+        "blockerRaw": runner_blocker,
+        "overallScore": None,
+        "overallStatus": None,
+        "diagnosticScore": None,
+        "toolCallCount": 0,
+        "requestCount": 0,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": None,
+        "capabilityGroup": capability_group,
+        "expectedCapability": _expected_capability(task),
+        "toolFamily": _tool_family(task),
+        "requiresLiveOsApi": bool(task.get("requiresLiveOsApi") or task.get("requiresOsApi")),
+        "requiresUiRuntime": bool(task.get("requiresUiRuntime")),
+    }
+    if evidence is not None:
+        attempt["toolCallCount"] = len(evidence.get("toolCalls") or [])
+        attempt["requestCount"] = int(
+            evidence.get("traceSummary", {}).get("mcp", {}).get("requestCount") or 0
+        )
+        attempt["errorCodes"] = list(evidence.get("errorCodes") or [])
+        attempt["latencyToFirstUsefulToolCallMs"] = (
+            evidence.get("traceSummary", {})
+            .get("hostSignals", {})
+            .get("latencyToFirstUsefulToolCallMs")
+        )
+    if score is not None:
+        if attempt_kind == "capability" and run_status == "scored":
+            attempt["overallScore"] = score.get("overallScore")
+            attempt["overallStatus"] = score.get("overallStatus")
+        else:
+            attempt["diagnosticScore"] = score.get("overallScore")
+    return attempt
+
+
+def _run_track_readiness(
+    *,
+    track_id: str,
+    scenario_pack_id: str,
+    session_root: Path,
+    codex_model: str,
+    gemini_model: str,
+    claude_model: str,
+    gemini_timeout_sec: int,
+    claude_timeout_sec: int,
+    vscode_timeout_sec: int,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    config_facts = _env_readiness_facts()
+    attempts = [
+        _execute_attempt(
+            track_id=track_id,
+            task=READINESS_TASK,
+            scenario_pack_id=scenario_pack_id,
+            session_root=session_root,
+            codex_model=codex_model,
+            gemini_model=gemini_model,
+            claude_model=claude_model,
+            gemini_timeout_sec=gemini_timeout_sec,
+            claude_timeout_sec=claude_timeout_sec,
+            vscode_timeout_sec=vscode_timeout_sec,
+            attempt_kind="readiness",
+        )
     ]
-    for track in TRACKS:
-        summary = aggregate["tracks"][track["id"]]
-        average = "n/a" if summary["averageScore"] is None else f"{summary['averageScore']:.2f}"
-        statuses = ", ".join(
-            f"{status}={count}" for status, count in sorted(summary["statuses"].items())
-        ) or "none"
-        lines.append(
-            f"| {track['label']} | {summary['attemptCount']} | {summary['scoredCount']} | "
-            f"{average} | {statuses} |"
+    if attempts[0]["runStatus"] != "ready" and track_id in RECOVERY_TRACK_IDS:
+        attempts.append(
+            _execute_attempt(
+                track_id=track_id,
+                task=READINESS_TASK,
+                scenario_pack_id=scenario_pack_id,
+                session_root=session_root,
+                codex_model=codex_model,
+                gemini_model=gemini_model,
+                claude_model=claude_model,
+                gemini_timeout_sec=gemini_timeout_sec,
+                claude_timeout_sec=claude_timeout_sec,
+                vscode_timeout_sec=vscode_timeout_sec,
+                attempt_kind="recovery",
+            )
         )
+    final_attempt = attempts[-1]
+    first_attempt = attempts[0]
+    outcome = "ready" if final_attempt["runStatus"] == "ready" else "not_ready"
+    readiness = {
+        "trackId": track_id,
+        "trackLabel": TRACK_BY_ID[track_id]["label"],
+        "configVisibility": config_facts,
+        "attempts": attempts,
+        "attemptCount": len(attempts),
+        "outcome": outcome,
+        "firstAttemptOutcome": first_attempt["runStatus"],
+        "finalAttemptKind": final_attempt["attemptKind"],
+        "recovered": (
+            first_attempt["runStatus"] != "ready" and final_attempt["runStatus"] == "ready"
+        ),
+        "blockerCategory": None if outcome == "ready" else final_attempt["blockerCategory"],
+        "blocker": None if outcome == "ready" else final_attempt["blocker"],
+        "readinessLatencyMs": final_attempt.get("latencyToFirstUsefulToolCallMs"),
+        "requestCount": final_attempt.get("requestCount", 0),
+        "toolCallCount": final_attempt.get("toolCallCount", 0),
+        "liveOsReady": bool(config_facts["liveOsReady"]),
+    }
+    return readiness, attempts
 
-    lines.extend(
-        [
-            "",
-            "## Scenario Matrix",
-            "| Scenario | "
-            + " | ".join(track["label"] for track in TRACKS)
-            + " |",
-            "| --- | " + " | ".join("---" for _track in TRACKS) + " |",
-        ]
-    )
-    for scenario in scenario_pack["scenarios"]:
-        row = [scenario_labels[scenario["id"]]]
-        for track in TRACKS:
-            attempt = next(
-                (
-                    item
-                    for item in attempts
-                    if item["trackId"] == track["id"] and item["scenarioId"] == scenario["id"]
-                ),
-                None,
-            )
-            if attempt is None:
-                row.append("missing")
-                continue
-            if attempt["runStatus"] != "scored" or attempt.get("overallScore") is None:
-                cell = attempt["runStatus"]
-                blocker = attempt.get("blocker")
-                if blocker:
-                    cell = f"{cell}<br>{blocker}"
-                diagnostic = attempt.get("diagnosticScore")
-                if diagnostic is not None:
-                    cell = f"{cell}<br>diagnostic={float(diagnostic):.2f}"
-                row.append(cell)
-                continue
-            blocker = attempt.get("blocker")
-            cell = f"{attempt['runStatus']} ({float(attempt['overallScore']):.2f})"
-            if blocker:
-                cell = f"{cell}<br>{blocker}"
-            row.append(cell)
-        lines.append(f"| {' | '.join(row)} |")
 
-    lines.extend(
-        [
-            "",
-            "## Attempt Log",
-        ]
-    )
-    for attempt in attempts:
-        lines.append(
-            f"- `{attempt['trackId']}` `{attempt['scenarioId']}`: {attempt['runStatus']}"
-            + (
-                f", score={float(attempt['overallScore']):.2f}"
-                if attempt["runStatus"] == "scored" and attempt.get("overallScore") is not None
-                else ""
-            )
-            + (
-                f", diagnosticScore={float(attempt['diagnosticScore']):.2f}"
-                if attempt.get("diagnosticScore") is not None
-                else ""
-            )
-            + (f", blocker={attempt['blocker']}" if attempt.get("blocker") else "")
-            + (f", session={attempt['sessionDir']}" if attempt.get("sessionDir") else "")
-        )
-
-    return aggregate, "\n".join(lines).strip() + "\n"
+def _make_skipped_capability_attempt(
+    *,
+    track_id: str,
+    task: dict[str, Any],
+    reason_category: str,
+    reason_message: str,
+) -> dict[str, Any]:
+    return {
+        "trackId": track_id,
+        "trackLabel": TRACK_BY_ID[track_id]["label"],
+        "attemptKind": "capability",
+        "taskId": task["id"],
+        "taskLabel": task.get("label", task["id"]),
+        "scenarioId": task["id"],
+        "scenarioLabel": task.get("label", task["id"]),
+        "sessionDir": None,
+        "startedAt": _utc_now(),
+        "durationMs": 0.0,
+        "exitCode": None,
+        "runStatus": "skipped",
+        "blockerCategory": reason_category,
+        "blocker": reason_message,
+        "blockerRaw": None,
+        "overallScore": None,
+        "overallStatus": None,
+        "diagnosticScore": None,
+        "toolCallCount": 0,
+        "requestCount": 0,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": None,
+        "capabilityGroup": _scenario_capability_group(task),
+        "expectedCapability": _expected_capability(task),
+        "toolFamily": _tool_family(task),
+        "requiresLiveOsApi": bool(task.get("requiresLiveOsApi") or task.get("requiresOsApi")),
+        "requiresUiRuntime": bool(task.get("requiresUiRuntime")),
+    }
 
 
 def _selected_scenarios(
@@ -777,6 +1117,324 @@ def _selected_scenarios(
     if not requested_ids:
         return scenarios
     return [scenario for scenario in scenarios if scenario["id"] in requested_ids]
+
+
+def _bucket_summary(attempts: list[dict[str, Any]]) -> dict[str, Any]:
+    scored_attempts = [
+        attempt
+        for attempt in attempts
+        if attempt.get("runStatus") == "scored" and attempt.get("overallScore") is not None
+    ]
+    average = None
+    if scored_attempts:
+        average = round(
+            sum(float(attempt["overallScore"]) for attempt in scored_attempts)
+            / len(scored_attempts),
+            4,
+        )
+    return {
+        "attemptCount": len(attempts),
+        "scoredCount": len(scored_attempts),
+        "averageScore": average,
+        "statuses": {
+            status: len([attempt for attempt in attempts if attempt.get("runStatus") == status])
+            for status in sorted({str(attempt.get("runStatus")) for attempt in attempts})
+        },
+    }
+
+
+def _summarize_attempts(
+    *,
+    scenario_pack: dict[str, Any],
+    readiness_results: dict[str, dict[str, Any]],
+    attempts: list[dict[str, Any]],
+    readiness_only: bool = False,
+) -> tuple[dict[str, Any], str]:
+    readiness_attempts = [
+        attempt for attempt in attempts if attempt["attemptKind"] != "capability"
+    ]
+    capability_attempts = [
+        attempt for attempt in attempts if attempt["attemptKind"] == "capability"
+    ]
+    scenario_labels = {
+        scenario["id"]: scenario.get("label", scenario["id"])
+        for scenario in scenario_pack["scenarios"]
+    }
+    aggregate: dict[str, Any] = {
+        "generatedAt": _utc_now(),
+        "scenarioPack": scenario_pack["id"],
+        "attempts": attempts,
+        "readiness": {
+            "summary": {
+                "trackCount": len(readiness_results),
+                "readyCount": len(
+                    [
+                        result
+                        for result in readiness_results.values()
+                        if result["outcome"] == "ready"
+                    ]
+                ),
+                "firstAttemptReadyCount": len(
+                    [
+                        result
+                        for result in readiness_results.values()
+                        if result["firstAttemptOutcome"] == "ready"
+                    ]
+                ),
+                "recoveredCount": len(
+                    [result for result in readiness_results.values() if result["recovered"]]
+                ),
+                "notReadyCount": len(
+                    [
+                        result
+                        for result in readiness_results.values()
+                        if result["outcome"] != "ready"
+                    ]
+                ),
+            },
+            "attempts": readiness_attempts,
+        },
+        "capability": {
+            "attempts": capability_attempts,
+            "toolFamilies": {},
+            "expectedCapabilities": {},
+        },
+        "tracks": {},
+    }
+
+    for track in TRACKS:
+        readiness = readiness_results[track["id"]]
+        track_capability_attempts = [
+            attempt for attempt in capability_attempts if attempt["trackId"] == track["id"]
+        ]
+        capability_summary = _bucket_summary(track_capability_attempts)
+        capability_summary["capabilities"] = {}
+        capability_summary["toolFamilies"] = {}
+        for capability in sorted(
+            {
+                str(attempt.get("expectedCapability"))
+                for attempt in track_capability_attempts
+                if attempt.get("expectedCapability")
+            }
+        ):
+            capability_attempts_for_name = [
+                attempt
+                for attempt in track_capability_attempts
+                if attempt.get("expectedCapability") == capability
+            ]
+            capability_summary["capabilities"][capability] = _bucket_summary(
+                capability_attempts_for_name
+            )
+        for family in sorted(
+            {
+                str(attempt.get("toolFamily"))
+                for attempt in track_capability_attempts
+                if attempt.get("toolFamily")
+            }
+        ):
+            family_attempts = [
+                attempt
+                for attempt in track_capability_attempts
+                if attempt.get("toolFamily") == family
+            ]
+            capability_summary["toolFamilies"][family] = _bucket_summary(family_attempts)
+        aggregate["tracks"][track["id"]] = {
+            "label": track["label"],
+            "readiness": readiness,
+            "capability": capability_summary,
+        }
+
+    for family in sorted(
+        {
+            str(attempt.get("toolFamily"))
+            for attempt in capability_attempts
+            if attempt.get("toolFamily")
+        }
+    ):
+        family_attempts = [
+            attempt for attempt in capability_attempts if attempt.get("toolFamily") == family
+        ]
+        aggregate["capability"]["toolFamilies"][family] = _bucket_summary(family_attempts)
+    for capability in sorted(
+        {
+            str(attempt.get("expectedCapability"))
+            for attempt in capability_attempts
+            if attempt.get("expectedCapability")
+        }
+    ):
+        capability_attempts_for_name = [
+            attempt
+            for attempt in capability_attempts
+            if attempt.get("expectedCapability") == capability
+        ]
+        aggregate["capability"]["expectedCapabilities"][capability] = _bucket_summary(
+            capability_attempts_for_name
+        )
+
+    lines = [
+        "# MCP Geo Unattended Client Evaluation",
+        f"Generated: {aggregate['generatedAt']}",
+        f"Scenario pack: {scenario_pack['id']}",
+        "",
+        "## Readiness Summary",
+        (
+            "| Track | Outcome | First Attempt | Final Attempt | Recovery | "
+            "Live OS Ready | Config | Blocker |"
+        ),
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for track in TRACKS:
+        readiness = aggregate["tracks"][track["id"]]["readiness"]
+        config = readiness["configVisibility"]
+        config_text = (
+            f"key={str(config['osApiKeyPresent']).lower()}, "
+            f"file={str(config['osApiKeyFilePresent']).lower()}, "
+            f"toolset={config.get('defaultToolset') or 'unset'}, "
+            f"include={config.get('includeToolsets') or 'unset'}"
+        )
+        blocker_text = readiness.get("blockerCategory") or readiness.get("blocker") or "none"
+        lines.append(
+            f"| {track['label']} | {readiness['outcome']} | {readiness['firstAttemptOutcome']} | "
+            f"{readiness['finalAttemptKind']} | {str(readiness['recovered']).lower()} | "
+            f"{str(readiness['liveOsReady']).lower()} | {config_text} | {blocker_text} |"
+        )
+
+    if not readiness_only:
+        lines.extend(
+            [
+                "",
+                "## Capability Summary",
+                "| Track | Attempts | Scored | Average | Statuses |",
+                "| --- | ---: | ---: | ---: | --- |",
+            ]
+        )
+        for track in TRACKS:
+            summary = aggregate["tracks"][track["id"]]["capability"]
+            average = "n/a" if summary["averageScore"] is None else f"{summary['averageScore']:.2f}"
+            statuses = ", ".join(
+                f"{status}={count}" for status, count in sorted(summary["statuses"].items())
+            ) or "none"
+            lines.append(
+                f"| {track['label']} | {summary['attemptCount']} | {summary['scoredCount']} | "
+                f"{average} | {statuses} |"
+            )
+
+        lines.extend(
+            [
+                "",
+                "## Capability Breakdown",
+                "| Track | Capability | Attempts | Scored | Average |",
+                "| --- | --- | ---: | ---: | ---: |",
+            ]
+        )
+        for track in TRACKS:
+            capabilities = aggregate["tracks"][track["id"]]["capability"]["capabilities"]
+            for capability, summary in sorted(capabilities.items()):
+                average = (
+                    "n/a"
+                    if summary["averageScore"] is None
+                    else f"{summary['averageScore']:.2f}"
+                )
+                lines.append(
+                    f"| {track['label']} | {capability} | {summary['attemptCount']} | "
+                    f"{summary['scoredCount']} | {average} |"
+                )
+
+        lines.extend(
+            [
+                "",
+                "## Tool Family Summary",
+                "| Tool Family | Attempts | Scored | Average | Statuses |",
+                "| --- | ---: | ---: | ---: | --- |",
+            ]
+        )
+        for family, summary in sorted(aggregate["capability"]["toolFamilies"].items()):
+            average = "n/a" if summary["averageScore"] is None else f"{summary['averageScore']:.2f}"
+            statuses = ", ".join(
+                f"{status}={count}" for status, count in sorted(summary["statuses"].items())
+            ) or "none"
+            lines.append(
+                f"| {family} | {summary['attemptCount']} | {summary['scoredCount']} | "
+                f"{average} | {statuses} |"
+            )
+
+        lines.extend(
+            [
+                "",
+                "## Scenario Matrix",
+                "| Scenario | " + " | ".join(track["label"] for track in TRACKS) + " |",
+                "| --- | " + " | ".join("---" for _track in TRACKS) + " |",
+            ]
+        )
+        for scenario in scenario_pack["scenarios"]:
+            row = [scenario_labels[scenario["id"]]]
+            for track in TRACKS:
+                readiness = readiness_results[track["id"]]
+                if readiness["outcome"] != "ready":
+                    blocker = (
+                        readiness.get("blockerCategory")
+                        or readiness.get("blocker")
+                        or "not_ready"
+                    )
+                    row.append(f"not_ready<br>{blocker}")
+                    continue
+                attempt = next(
+                    (
+                        item
+                        for item in capability_attempts
+                        if item["trackId"] == track["id"] and item["scenarioId"] == scenario["id"]
+                    ),
+                    None,
+                )
+                if attempt is None:
+                    row.append("missing")
+                    continue
+                if attempt["runStatus"] != "scored" or attempt.get("overallScore") is None:
+                    cell = attempt["runStatus"]
+                    blocker = attempt.get("blockerCategory") or attempt.get("blocker")
+                    if blocker:
+                        cell = f"{cell}<br>{blocker}"
+                    diagnostic = attempt.get("diagnosticScore")
+                    if diagnostic is not None:
+                        cell = f"{cell}<br>diagnostic={float(diagnostic):.2f}"
+                    row.append(cell)
+                    continue
+                cell = f"{attempt['runStatus']} ({float(attempt['overallScore']):.2f})"
+                blocker = attempt.get("blockerCategory") or attempt.get("blocker")
+                if blocker:
+                    cell = f"{cell}<br>{blocker}"
+                row.append(cell)
+            lines.append(f"| {' | '.join(row)} |")
+
+    lines.extend(
+        [
+            "",
+            "## Attempt Log",
+        ]
+    )
+    for attempt in attempts:
+        label = attempt.get("scenarioId") or attempt["taskId"]
+        lines.append(
+            f"- `{attempt['trackId']}` `{attempt['attemptKind']}` `{label}`: {attempt['runStatus']}"
+            + (
+                f", score={float(attempt['overallScore']):.2f}"
+                if attempt.get("overallScore") is not None
+                else ""
+            )
+            + (
+                f", diagnosticScore={float(attempt['diagnosticScore']):.2f}"
+                if attempt.get("diagnosticScore") is not None
+                else ""
+            )
+            + (
+                f", blocker={attempt['blockerCategory']}"
+                if attempt.get("blockerCategory")
+                else ""
+            )
+            + (f", session={attempt['sessionDir']}" if attempt.get("sessionDir") else "")
+        )
+
+    return aggregate, "\n".join(lines).strip() + "\n"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -801,6 +1459,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--gemini-timeout-sec", type=int, default=90)
     parser.add_argument("--claude-timeout-sec", type=int, default=60)
     parser.add_argument("--vscode-timeout-sec", type=int, default=45)
+    parser.add_argument(
+        "--readiness-only",
+        action="store_true",
+        help="Run readiness probes only and skip capability scenarios.",
+    )
     return parser
 
 
@@ -822,23 +1485,49 @@ def main() -> int:
     if args.scenario_ids:
         requested_ids = {item.strip() for item in args.scenario_ids.split(",") if item.strip()}
     scenarios = _selected_scenarios(scenario_pack, requested_ids)
-    if not scenarios:
+    if not scenarios and not args.readiness_only:
         raise SystemExit("No scenarios selected.")
 
-    attempts: list[dict[str, Any]] = []
+    readiness_results: dict[str, dict[str, Any]] = {}
+    all_attempts: list[dict[str, Any]] = []
 
     for track_id in requested_tracks:
+        readiness, readiness_attempts = _run_track_readiness(
+            track_id=track_id,
+            scenario_pack_id=scenario_pack["id"],
+            session_root=session_root,
+            codex_model=args.codex_model,
+            gemini_model=args.gemini_model,
+            claude_model=args.claude_model,
+            gemini_timeout_sec=args.gemini_timeout_sec,
+            claude_timeout_sec=args.claude_timeout_sec,
+            vscode_timeout_sec=args.vscode_timeout_sec,
+        )
+        readiness_results[track_id] = readiness
+        all_attempts.extend(readiness_attempts)
+        if args.readiness_only or readiness["outcome"] != "ready":
+            continue
+
         for scenario in scenarios:
-            session_dir: Path | None = None
-            exit_code = 1
-            blocker: str | None = None
-            evidence: dict[str, Any] | None = None
-            score: dict[str, Any] | None = None
-            try:
-                session_dir, exit_code, runner_blocker = _run_track(
+            if bool(scenario.get("requiresLiveOsApi") or scenario.get("requiresOsApi")) and not (
+                readiness["liveOsReady"]
+            ):
+                all_attempts.append(
+                    _make_skipped_capability_attempt(
+                        track_id=track_id,
+                        task=scenario,
+                        reason_category="server_no_live_key",
+                        reason_message=(
+                            "live OS scenario skipped because readiness did not observe "
+                            "OS_API_KEY or OS_API_KEY_FILE"
+                        ),
+                    )
+                )
+                continue
+            all_attempts.append(
+                _execute_attempt(
                     track_id=track_id,
-                    scenario=scenario,
-                    scenario_pack_path=scenario_pack_path,
+                    task=scenario,
                     scenario_pack_id=scenario_pack["id"],
                     session_root=session_root,
                     codex_model=args.codex_model,
@@ -847,64 +1536,16 @@ def main() -> int:
                     gemini_timeout_sec=args.gemini_timeout_sec,
                     claude_timeout_sec=args.claude_timeout_sec,
                     vscode_timeout_sec=args.vscode_timeout_sec,
+                    attempt_kind="capability",
                 )
-                blocker = runner_blocker
-            except Exception as exc:
-                blocker = str(exc)
-                if session_dir is None:
-                    session_dir = _session_path(
-                        session_root,
-                        _session_name(track_id, scenario["id"]),
-                    )
-                session_dir.mkdir(parents=True, exist_ok=True)
-                _write_text(session_dir / "runner-error.txt", f"{type(exc).__name__}: {exc}\n")
-                _update_session_meta(session_dir, runnerError=str(exc))
-
-            if session_dir.exists():
-                _trace_report(session_dir)
-                try:
-                    evidence, score = _score_session(session_dir, scenario)
-                except Exception as exc:
-                    blocker = blocker or f"score_session failed: {exc}"
-                    _write_text(
-                        session_dir / "score-error.txt",
-                        f"{type(exc).__name__}: {exc}\n",
-                    )
-
-            run_status, classified_blocker = _classify_attempt(
-                exit_code=exit_code,
-                evidence=evidence,
             )
-            blocker = blocker or classified_blocker
-            attempt: dict[str, Any] = {
-                "trackId": track_id,
-                "trackLabel": TRACK_BY_ID[track_id]["label"],
-                "scenarioId": scenario["id"],
-                "scenarioLabel": scenario.get("label", scenario["id"]),
-                "sessionDir": str(session_dir) if session_dir is not None else None,
-                "exitCode": exit_code,
-                "runStatus": run_status,
-                "blocker": blocker,
-                "overallScore": None,
-                "overallStatus": None,
-                "diagnosticScore": None,
-                "toolCallCount": 0,
-                "requestCount": 0,
-            }
-            if evidence is not None:
-                attempt["toolCallCount"] = len(evidence.get("toolCalls") or [])
-                attempt["requestCount"] = int(
-                    evidence.get("traceSummary", {}).get("mcp", {}).get("requestCount") or 0
-                )
-            if score is not None:
-                if run_status == "scored":
-                    attempt["overallScore"] = score.get("overallScore")
-                    attempt["overallStatus"] = score.get("overallStatus")
-                else:
-                    attempt["diagnosticScore"] = score.get("overallScore")
-            attempts.append(attempt)
 
-    aggregate, markdown = _summarize_attempts(scenario_pack=scenario_pack, attempts=attempts)
+    aggregate, markdown = _summarize_attempts(
+        scenario_pack=scenario_pack,
+        readiness_results=readiness_results,
+        attempts=all_attempts,
+        readiness_only=args.readiness_only,
+    )
     date_stamp = dt.date.today().isoformat()
     out_prefix = (
         Path(args.out_prefix).resolve()
@@ -916,6 +1557,9 @@ def main() -> int:
     md_path = out_prefix.with_suffix(".md")
     json_path.write_text(json.dumps(aggregate, indent=2), encoding="utf-8")
     md_path.write_text(markdown, encoding="utf-8")
+    for track_id, readiness in readiness_results.items():
+        readiness_path = out_prefix.parent / f"{out_prefix.stem}.{track_id}.readiness.json"
+        readiness_path.write_text(json.dumps(readiness, indent=2), encoding="utf-8")
     print(md_path)
     print(json_path)
     return 0

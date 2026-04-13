@@ -44,7 +44,7 @@ MCP_TOOLS_DEFAULT_TOOLSET = "starter"
     monkeypatch.setattr(benchmark_env, "DEFAULT_DOTENV_PATH", tmp_path / "missing.env")
     monkeypatch.setattr(benchmark_env, "_launchctl_getenv", lambda _key: None)
 
-    resolved = benchmark_env.resolve_inherited_env({})
+    resolved = benchmark_env.resolve_inherited_env({"DUMMY": "1"})
 
     assert resolved["OS_API_KEY_FILE"] == str(tmp_path / "os_api_key.txt")
     assert "OS_API_KEY" not in resolved
@@ -81,3 +81,38 @@ def test_resolve_inherited_env_prefers_explicit_env_key_over_client_fallbacks(
     assert resolved["OS_API_KEY"] == "shell-key"
     assert resolved["OS_API_KEY_FILE"] == str(tmp_path / "os_api_key.txt")
 
+
+def test_resolve_inherited_env_prefers_launchctl_shared_key_file_and_toolset_defaults(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    dotenv_path = tmp_path / ".env"
+    dotenv_path.write_text(
+        "\n".join(
+            [
+                "OS_API_KEY=dotenv-key",
+                "MCP_TOOLS_DEFAULT_TOOLSET=maps_tiles",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(benchmark_env, "CLAUDE_DESKTOP_CONFIG_PATH", tmp_path / "missing.json")
+    monkeypatch.setattr(benchmark_env, "CODEX_CONFIG_PATH", tmp_path / "missing.toml")
+    monkeypatch.setattr(benchmark_env, "DEFAULT_DOTENV_PATH", dotenv_path)
+
+    def fake_launchctl(key: str) -> str | None:
+        mapping = {
+            "OS_API_KEY_FILE": str(tmp_path / "launchctl_os_api_key.txt"),
+            "MCP_TOOLS_DEFAULT_TOOLSET": "starter",
+            "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS": "ons_geo_lookup,property_tax",
+        }
+        return mapping.get(key)
+
+    monkeypatch.setattr(benchmark_env, "_launchctl_getenv", fake_launchctl)
+
+    resolved = benchmark_env.resolve_inherited_env({"DUMMY": "1"})
+
+    assert resolved["OS_API_KEY_FILE"] == str(tmp_path / "launchctl_os_api_key.txt")
+    assert "OS_API_KEY" not in resolved
+    assert resolved["MCP_TOOLS_DEFAULT_TOOLSET"] == "starter"
+    assert resolved["MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"] == "ons_geo_lookup,property_tax"

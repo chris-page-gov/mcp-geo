@@ -23,6 +23,10 @@
         "Returns address or UPRN evidence instead of generic narrative."
       ],
       "fallbackConditions": [],
+      "requiresLiveOsApi": true,
+      "requiresUiRuntime": false,
+      "toolFamily": "places",
+      "expectedCapability": "live_os_lookup",
       "requiresOsApi": true,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -50,6 +54,10 @@
         "Shows whether the host resolves ambiguity with tool search, descriptor lookup, or direct follow-on tools."
       ],
       "fallbackConditions": [],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false,
+      "toolFamily": "routing",
+      "expectedCapability": "discovery_routing",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -77,6 +85,10 @@
         "Returns postcode-related tool choices instead of a generic summary."
       ],
       "fallbackConditions": [],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false,
+      "toolFamily": "discovery",
+      "expectedCapability": "tool_discovery",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -104,6 +116,10 @@
         "Returns a grounded answer or excerpt summary based on the fetched resource."
       ],
       "fallbackConditions": [],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false,
+      "toolFamily": "resources",
+      "expectedCapability": "resource_consumption",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -131,6 +147,10 @@
         "Preserves render metadata and does not fall back to an unrelated map path."
       ],
       "fallbackConditions": [],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false,
+      "toolFamily": "maps",
+      "expectedCapability": "map_descriptor",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -162,6 +182,10 @@
       "fallbackConditions": [
         "CLI fallback should include static map or export handoff metadata when UI is not available."
       ],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": true,
+      "toolFamily": "ui",
+      "expectedCapability": "ui_fallback_or_runtime",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -193,6 +217,10 @@
       "fallbackConditions": [
         "CLI fallback should remain deterministic and structured."
       ],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": true,
+      "toolFamily": "ui",
+      "expectedCapability": "ui_fallback_or_runtime",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {
@@ -220,6 +248,10 @@
         "Shows whether the host attempts a guided recovery after the initial failure."
       ],
       "fallbackConditions": [],
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false,
+      "toolFamily": "admin_lookup",
+      "expectedCapability": "error_recovery",
       "requiresOsApi": false,
       "requiresOnsLive": false,
       "scoringHints": {

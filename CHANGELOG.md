@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the
   readiness-first redesign before the harness changes land.
+- Added a built-in readiness probe to `scripts/unattended_client_eval.py`
+  together with `--readiness-only`, per-track readiness artifact files, and
+  structured attempt records labelled as `readiness`, `recovery`, or
+  `capability`.
 - Added unattended multi-client host evaluation tooling via
   `scripts/unattended_client_eval.py`, focused regression coverage in
   `tests/test_unattended_client_eval.py`, and the first captured aggregate
@@ -25,6 +29,11 @@ All notable changes to this project will be documented in this file.
   from process env, `launchctl`, repo `.env`, and the local Claude/Codex
   `mcp-geo` client configs, closing the previous `NO_API_KEY` gap where eval
   runs bypassed the normal per-client secret sources.
+- Added explicit unattended scenario metadata in
+  `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` for
+  `requiresLiveOsApi`, `requiresUiRuntime`, `toolFamily`, and
+  `expectedCapability`, allowing the runner to separate readiness from
+  capability and to summarize results by capability/tool family.
 - Added `ons_geo.area_summary`, the compact postcode/UPRN/area-code follow-up
   surface for OA/LSOA/MSOA/ward summaries. It resolves the target area from
   the local ONS cache, returns compact area counts, can use the new
@@ -53,6 +62,25 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- `scripts/unattended_client_eval.py` now runs each client through a readiness
+  phase before the scenario pack, marks unusable tracks as `not_ready` instead
+  of emitting misleading per-scenario runner errors, and skips only the
+  `live_os` scenarios when readiness shows that no usable OS key is visible.
+- The unattended aggregate report schema now separates readiness from
+  capability, tracks first-attempt versus recovery-attempt outcomes, emits
+  blocker taxonomy classes such as `client_auth_failure`,
+  `client_workspace_restriction`, `client_no_mcp_traffic`,
+  `server_no_live_key`, and `scenario_tool_failure`, and adds expected-
+  capability / tool-family summaries so resource-consumption scenarios are not
+  conflated with general tool-selection flows.
+- Gemini unattended runs now use stable ignored benchmark workspaces under
+  `logs/benchmark-workspaces/gemini/<task>/` and include `~/.gemini` in the
+  allowed directory set, eliminating the prior temporary-project pattern that
+  blocked headless Gemini before the first MCP request.
+- `scripts/mcp-docker-local --plan` now reports the chosen default/include/
+  exclude toolset settings alongside the existing non-sensitive OS-key
+  visibility flags, and the wrapper now hydrates those toolset env vars from
+  the same local sources as the benchmark env helper.
 - The unattended benchmark/report flow now treats blocked runs as blocked:
   runner errors, startup-only sessions, and no-traffic sessions keep only a
   `diagnosticScore` and no longer count toward the scored-track average.

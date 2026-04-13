@@ -11,49 +11,6 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def test_run_codex_track_preserves_session_dir_on_runner_failure(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    session_root = tmp_path / "logs" / "sessions"
-    session_root.mkdir(parents=True)
-
-    def fake_run_codex_cli(args: object) -> int:
-        assert args.scenario_id == "tool_search_postcode"  # type: ignore[attr-defined]
-        session_dir = session_root / "forced-codex-session"
-        session_dir.mkdir()
-        _write_json(session_dir / "session.json", {"sessionId": "forced-codex-session"})
-        (session_root / ".latest").write_text(str(session_dir), encoding="utf-8")
-        raise RuntimeError("codex exec failed with code 1")
-
-    monkeypatch.setattr(
-        unattended_client_eval.host_benchmark,
-        "cmd_run_codex_cli",
-        fake_run_codex_cli,
-    )
-    monkeypatch.setattr(
-        unattended_client_eval,
-        "_session_name",
-        lambda *_args: "forced-codex-session",
-    )
-
-    session_dir, exit_code, blocker = unattended_client_eval._run_codex_track(
-        scenario={"id": "tool_search_postcode", "prompt": "Find CV3 1HB"},
-        scenario_pack_path=Path("/tmp/scenarios.json"),
-        scenario_pack_id="pack-id",
-        session_root=session_root,
-        model="gpt-5.4",
-    )
-
-    assert session_dir == session_root / "forced-codex-session"
-    assert exit_code == 1
-    assert blocker == "codex exec failed with code 1"
-    session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
-    assert session_meta["scenarioPack"] == "pack-id"
-    assert session_meta["scenarioId"] == "tool_search_postcode"
-    assert session_meta["runnerError"] == "codex exec failed with code 1"
-
-
 def test_score_session_reuses_existing_benchmark_artifacts(tmp_path: Path) -> None:
     session_dir = tmp_path / "session"
     session_dir.mkdir()
@@ -71,102 +28,110 @@ def test_score_session_reuses_existing_benchmark_artifacts(tmp_path: Path) -> No
     assert score == expected_score
 
 
-def test_summarize_attempts_reports_blocked_and_scored_tracks() -> None:
-    scenario_pack = {
-        "id": "pack-id",
-        "scenarios": [
-            {"id": "tool_search_postcode", "label": "Find postcode tools"},
-            {"id": "geography_selector_widget", "label": "Open geography selector"},
-        ],
-    }
-    attempts = [
-        {
-            "trackId": "codex_cli",
-            "scenarioId": "tool_search_postcode",
-            "runStatus": "scored",
-            "overallScore": 1.0,
-            "blocker": None,
-            "sessionDir": "/tmp/codex",
-        },
-        {
-            "trackId": "gemini_cli",
-            "scenarioId": "tool_search_postcode",
-            "runStatus": "runner_error",
-            "overallScore": None,
-            "diagnosticScore": 0.52,
-            "blocker": "gemini_cli_failed",
-            "sessionDir": "/tmp/gemini",
-        },
-        {
-            "trackId": "claude_cli",
-            "scenarioId": "geography_selector_widget",
-            "runStatus": "no_mcp_traffic",
-            "overallScore": None,
-            "diagnosticScore": 0.36,
-            "blocker": "client produced no MCP traffic",
-            "sessionDir": "/tmp/claude",
-        },
-    ]
+def test_prepare_gemini_workspace_recreates_stable_root(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", tmp_path / "workspaces")
+    task = {"id": "address_lookup_postcode"}
+    workspace = unattended_client_eval._prepare_gemini_workspace(task)
+    stale = workspace / "stale.txt"
+    stale.write_text("old", encoding="utf-8")
 
-    aggregate, markdown = unattended_client_eval._summarize_attempts(
-        scenario_pack=scenario_pack,
-        attempts=attempts,
+    recreated = unattended_client_eval._prepare_gemini_workspace(task)
+
+    assert recreated == workspace
+    assert recreated.name == "address-lookup-postcode"
+    assert not stale.exists()
+
+
+def test_classify_blocker_category_detects_gemini_workspace_restriction(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    session_dir.mkdir()
+    (session_dir / "assistant-response.txt").write_text("", encoding="utf-8")
+    (session_dir / "gemini-exec.stderr.txt").write_text(
+        (
+            'Error executing tool read_file: Path not in workspace: Attempted path '
+            '"/Users/test/.gemini/settings.json" resolves outside the allowed workspace directories'
+        ),
+        encoding="utf-8",
     )
 
-    assert aggregate["tracks"]["codex_cli"]["scoredCount"] == 1
-    assert aggregate["tracks"]["gemini_cli"]["scoredCount"] == 0
-    assert aggregate["tracks"]["gemini_cli"]["statuses"] == {"runner_error": 1}
-    assert aggregate["tracks"]["claude_cli"]["statuses"] == {"no_mcp_traffic": 1}
-    assert "Gemini CLI" in markdown
-    assert "runner_error" in markdown
-    assert "diagnostic=0.52" in markdown
-    assert "Find postcode tools" in markdown
+    category, message = unattended_client_eval._classify_blocker_category(
+        track_id="gemini_cli",
+        purpose="readiness",
+        exit_code=124,
+        evidence={"traceSummary": {"mcp": {"requestCount": 0}}, "toolCalls": [], "errorCodes": []},
+        runner_blocker="gemini_cli_timeout_after_45s",
+        session_dir=session_dir,
+    )
+
+    assert category == "client_workspace_restriction"
+    assert "~/.gemini/settings.json" in message
 
 
-def test_run_gemini_track_times_out_cleanly(monkeypatch, tmp_path: Path) -> None:
+def test_classify_blocker_category_detects_claude_auth_failure(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    session_dir.mkdir()
+    (session_dir / "assistant-response.txt").write_text(
+        (
+            "Failed to authenticate. API Error: 401 "
+            '{"type":"error","error":{"type":"authentication_error"}}'
+        ),
+        encoding="utf-8",
+    )
+
+    category, message = unattended_client_eval._classify_blocker_category(
+        track_id="claude_cli",
+        purpose="readiness",
+        exit_code=1,
+        evidence={"traceSummary": {"mcp": {"requestCount": 6}}, "toolCalls": [], "errorCodes": []},
+        runner_blocker="claude_cli_failed",
+        session_dir=session_dir,
+    )
+
+    assert category == "client_auth_failure"
+    assert "authentication" in message
+
+
+def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path: Path) -> None:
     session_root = tmp_path / "logs" / "sessions"
     session_root.mkdir(parents=True)
+    workspaces = tmp_path / "benchmark-workspaces"
+    commands: list[list[str]] = []
+    cwds: list[Path] = []
 
+    monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", workspaces)
     monkeypatch.setattr(
         unattended_client_eval.host_benchmark,
         "_build_temp_stdio_server",
         lambda *_args, **_kwargs: {"command": "python", "args": [], "env": {}},
     )
-    monkeypatch.setattr(
-        unattended_client_eval,
-        "_gemini_add_stdio_server",
-        lambda *_args, **_kwargs: None,
-    )
-    monkeypatch.setattr(
-        unattended_client_eval,
-        "_gemini_remove_server",
-        lambda *_args, **_kwargs: None,
-    )
-    monkeypatch.setattr(
-        unattended_client_eval,
-        "_build_inherited_env",
-        lambda: {"MCP_GEO_DOCKER_BUILD": "never"},
-    )
+    monkeypatch.setattr(unattended_client_eval, "_gemini_add_stdio_server", lambda *_a, **_k: None)
+    monkeypatch.setattr(unattended_client_eval, "_gemini_remove_server", lambda *_a, **_k: None)
+    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "gemini test")
 
-    def fake_run(*_args, **_kwargs) -> subprocess.CompletedProcess[str]:
-        raise subprocess.TimeoutExpired(cmd=["gemini"], timeout=5, output=b"", stderr=b"")
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        cwds.append(kwargs["cwd"])
+        return subprocess.CompletedProcess(command, 0, stdout="{}", stderr="")
 
     monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
 
     session_dir, exit_code, blocker = unattended_client_eval._run_gemini_track(
-        scenario={"id": "address_lookup_postcode", "prompt": "UPRNs for SW1A 1AA"},
+        task={"id": "address_lookup_postcode", "label": "Address", "prompt": "UPRNs for SW1A 1AA"},
         scenario_pack_id="pack-id",
         session_root=session_root,
         model="",
         timeout_sec=5,
+        attempt_kind="capability",
     )
 
-    assert exit_code == 124
-    assert blocker == "gemini_cli_timeout_after_5s"
-    session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
-    assert session_meta["runnerError"] == "gemini_cli_timeout_after_5s"
-    assert (session_dir / "assistant-response.txt").read_text(encoding="utf-8") == ""
+    assert session_dir.exists()
+    assert exit_code == 0
+    assert blocker is None
+    assert "--include-directories" in commands[0]
+    include_index = commands[0].index("--include-directories")
+    assert commands[0][include_index + 1] == str(Path.home() / ".gemini")
+    assert cwds[0] == workspaces / "gemini" / "address-lookup-postcode"
 
 
 def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Path) -> None:
@@ -174,15 +139,14 @@ def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Pat
     session_root.mkdir(parents=True)
     commands: list[list[str]] = []
     envs: list[dict[str, str] | None] = []
-    scenario = {"id": "address_lookup_postcode", "prompt": "UPRNs for SW1A 1AA"}
-    expected_prompt = unattended_client_eval._scenario_prompt(scenario)
+    task = {"id": "address_lookup_postcode", "label": "Address", "prompt": "UPRNs for SW1A 1AA"}
+    expected_prompt = unattended_client_eval._task_prompt(task)
 
-    def fake_run(
-        command: list[str],
-        **_kwargs,
-    ) -> subprocess.CompletedProcess[str]:
+    monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
+
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
         commands.append(command)
-        envs.append(_kwargs.get("env"))
+        envs.append(kwargs.get("env"))
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
     monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
@@ -195,18 +159,331 @@ def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Pat
     )
 
     session_dir, exit_code, blocker = unattended_client_eval._run_vscode_track(
-        scenario=scenario,
+        task=task,
         scenario_pack_id="pack-id",
         session_root=session_root,
         timeout_sec=1,
+        attempt_kind="readiness",
     )
 
     assert session_dir.exists()
     assert exit_code == 0
     assert blocker is None
-    assert commands[1:3] == [
+    assert commands[0:2] == [
         ["code", "--reuse-window", "."],
         ["code", "chat", "--mode", "agent", "--reuse-window", expected_prompt],
     ]
+    assert envs[0]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
     assert envs[1]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
-    assert envs[2]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
+
+
+def test_run_track_readiness_limits_recovery_to_one_attempt(monkeypatch) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_env_readiness_facts",
+        lambda: {
+            "osApiKeyPresent": False,
+            "osApiKeyFilePresent": True,
+            "liveOsReady": True,
+            "defaultToolset": "starter",
+            "includeToolsets": "ons_geo_lookup",
+            "excludeToolsets": None,
+        },
+    )
+
+    def fake_execute_attempt(**kwargs) -> dict:
+        calls.append(kwargs["attempt_kind"])
+        ready = len(calls) == 2
+        return {
+            "trackId": kwargs["track_id"],
+            "trackLabel": unattended_client_eval.TRACK_BY_ID[kwargs["track_id"]]["label"],
+            "attemptKind": kwargs["attempt_kind"],
+            "runStatus": "ready" if ready else "not_ready",
+            "blockerCategory": None if ready else "client_no_mcp_traffic",
+            "blocker": None if ready else "client produced no MCP traffic",
+            "latencyToFirstUsefulToolCallMs": 1500 if ready else None,
+            "requestCount": 1 if ready else 0,
+            "toolCallCount": 1 if ready else 0,
+        }
+
+    monkeypatch.setattr(unattended_client_eval, "_execute_attempt", fake_execute_attempt)
+
+    readiness, attempts = unattended_client_eval._run_track_readiness(
+        track_id="vscode_ide",
+        scenario_pack_id="pack-id",
+        session_root=Path("/tmp/unused"),
+        codex_model="gpt-5.4",
+        gemini_model="",
+        claude_model="",
+        gemini_timeout_sec=90,
+        claude_timeout_sec=60,
+        vscode_timeout_sec=45,
+    )
+
+    assert [attempt["attemptKind"] for attempt in attempts] == ["readiness", "recovery"]
+    assert readiness["firstAttemptOutcome"] == "not_ready"
+    assert readiness["recovered"] is True
+    assert readiness["outcome"] == "ready"
+
+
+def test_make_skipped_capability_attempt_marks_live_key_gap() -> None:
+    attempt = unattended_client_eval._make_skipped_capability_attempt(
+        track_id="codex_cli",
+        task={
+            "id": "address_lookup_postcode",
+            "label": "Address lookup by postcode",
+            "prompt": "UPRNs for SW1A 1AA",
+            "requiresLiveOsApi": True,
+            "toolFamily": "places",
+            "expectedCapability": "live_os_lookup",
+        },
+        reason_category="server_no_live_key",
+        reason_message="live OS scenario skipped",
+    )
+
+    assert attempt["runStatus"] == "skipped"
+    assert attempt["blockerCategory"] == "server_no_live_key"
+    assert attempt["capabilityGroup"] == "live_os"
+
+
+def test_summarize_attempts_separates_readiness_and_capability() -> None:
+    scenario_pack = {
+        "id": "pack-id",
+        "scenarios": [
+            {
+                "id": "tool_search_postcode",
+                "label": "Find postcode tools",
+                "toolFamily": "discovery",
+                "expectedCapability": "tool_discovery",
+                "requiresLiveOsApi": False,
+                "requiresUiRuntime": False,
+            },
+            {
+                "id": "address_lookup_postcode",
+                "label": "Address lookup",
+                "toolFamily": "places",
+                "expectedCapability": "live_os_lookup",
+                "requiresLiveOsApi": True,
+                "requiresUiRuntime": False,
+            },
+        ],
+    }
+    readiness_results = {
+        "codex_cli": {
+            "trackId": "codex_cli",
+            "trackLabel": "Codex CLI",
+            "configVisibility": {
+                "osApiKeyPresent": False,
+                "osApiKeyFilePresent": True,
+                "liveOsReady": True,
+                "defaultToolset": "starter",
+                "includeToolsets": "ons_geo_lookup",
+                "excludeToolsets": None,
+            },
+            "attempts": [],
+            "attemptCount": 1,
+            "outcome": "ready",
+            "firstAttemptOutcome": "ready",
+            "finalAttemptKind": "readiness",
+            "recovered": False,
+            "blockerCategory": None,
+            "blocker": None,
+            "readinessLatencyMs": 1200,
+            "requestCount": 3,
+            "toolCallCount": 1,
+            "liveOsReady": True,
+        },
+        "gemini_cli": {
+            "trackId": "gemini_cli",
+            "trackLabel": "Gemini CLI",
+            "configVisibility": {
+                "osApiKeyPresent": False,
+                "osApiKeyFilePresent": False,
+                "liveOsReady": False,
+                "defaultToolset": None,
+                "includeToolsets": None,
+                "excludeToolsets": None,
+            },
+            "attempts": [],
+            "attemptCount": 2,
+            "outcome": "not_ready",
+            "firstAttemptOutcome": "not_ready",
+            "finalAttemptKind": "recovery",
+            "recovered": False,
+            "blockerCategory": "client_workspace_restriction",
+            "blocker": "workspace blocked",
+            "readinessLatencyMs": None,
+            "requestCount": 0,
+            "toolCallCount": 0,
+            "liveOsReady": False,
+        },
+        "claude_cli": {
+            "trackId": "claude_cli",
+            "trackLabel": "Claude Code CLI",
+            "configVisibility": {
+                "osApiKeyPresent": False,
+                "osApiKeyFilePresent": True,
+                "liveOsReady": True,
+                "defaultToolset": "starter",
+                "includeToolsets": "ons_geo_lookup",
+                "excludeToolsets": None,
+            },
+            "attempts": [],
+            "attemptCount": 1,
+            "outcome": "ready",
+            "firstAttemptOutcome": "ready",
+            "finalAttemptKind": "readiness",
+            "recovered": False,
+            "blockerCategory": None,
+            "blocker": None,
+            "readinessLatencyMs": 1400,
+            "requestCount": 2,
+            "toolCallCount": 1,
+            "liveOsReady": True,
+        },
+        "vscode_ide": {
+            "trackId": "vscode_ide",
+            "trackLabel": "VS Code Agent",
+            "configVisibility": {
+                "osApiKeyPresent": False,
+                "osApiKeyFilePresent": True,
+                "liveOsReady": True,
+                "defaultToolset": "starter",
+                "includeToolsets": "ons_geo_lookup",
+                "excludeToolsets": None,
+            },
+            "attempts": [],
+            "attemptCount": 1,
+            "outcome": "ready",
+            "firstAttemptOutcome": "ready",
+            "finalAttemptKind": "readiness",
+            "recovered": False,
+            "blockerCategory": None,
+            "blocker": None,
+            "readinessLatencyMs": 1600,
+            "requestCount": 2,
+            "toolCallCount": 1,
+            "liveOsReady": True,
+        },
+    }
+    attempts = [
+        {
+            "trackId": "codex_cli",
+            "trackLabel": "Codex CLI",
+            "attemptKind": "readiness",
+            "taskId": "readiness_probe",
+            "taskLabel": "Readiness probe",
+            "scenarioId": None,
+            "scenarioLabel": None,
+            "sessionDir": "/tmp/codex-readiness",
+            "runStatus": "ready",
+            "blockerCategory": None,
+            "blocker": None,
+            "overallScore": None,
+            "overallStatus": None,
+            "diagnosticScore": 0.92,
+            "toolCallCount": 1,
+            "requestCount": 2,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": 1200,
+            "capabilityGroup": None,
+            "expectedCapability": "readiness_probe",
+            "toolFamily": "descriptor",
+            "requiresLiveOsApi": False,
+            "requiresUiRuntime": False,
+        },
+        {
+            "trackId": "gemini_cli",
+            "trackLabel": "Gemini CLI",
+            "attemptKind": "readiness",
+            "taskId": "readiness_probe",
+            "taskLabel": "Readiness probe",
+            "scenarioId": None,
+            "scenarioLabel": None,
+            "sessionDir": "/tmp/gemini-readiness",
+            "runStatus": "not_ready",
+            "blockerCategory": "client_workspace_restriction",
+            "blocker": "workspace blocked",
+            "overallScore": None,
+            "overallStatus": None,
+            "diagnosticScore": 0.48,
+            "toolCallCount": 0,
+            "requestCount": 0,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": None,
+            "capabilityGroup": None,
+            "expectedCapability": "readiness_probe",
+            "toolFamily": "descriptor",
+            "requiresLiveOsApi": False,
+            "requiresUiRuntime": False,
+        },
+        {
+            "trackId": "codex_cli",
+            "trackLabel": "Codex CLI",
+            "attemptKind": "capability",
+            "taskId": "tool_search_postcode",
+            "taskLabel": "Find postcode tools",
+            "scenarioId": "tool_search_postcode",
+            "scenarioLabel": "Find postcode tools",
+            "sessionDir": "/tmp/codex-capability",
+            "runStatus": "scored",
+            "blockerCategory": None,
+            "blocker": None,
+            "overallScore": 0.75,
+            "overallStatus": "partial",
+            "diagnosticScore": None,
+            "toolCallCount": 1,
+            "requestCount": 3,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": 1200,
+            "capabilityGroup": "offline_safe",
+            "expectedCapability": "tool_discovery",
+            "toolFamily": "discovery",
+            "requiresLiveOsApi": False,
+            "requiresUiRuntime": False,
+        },
+        {
+            "trackId": "codex_cli",
+            "trackLabel": "Codex CLI",
+            "attemptKind": "capability",
+            "taskId": "address_lookup_postcode",
+            "taskLabel": "Address lookup",
+            "scenarioId": "address_lookup_postcode",
+            "scenarioLabel": "Address lookup",
+            "sessionDir": None,
+            "runStatus": "skipped",
+            "blockerCategory": "server_no_live_key",
+            "blocker": "live OS scenario skipped",
+            "overallScore": None,
+            "overallStatus": None,
+            "diagnosticScore": None,
+            "toolCallCount": 0,
+            "requestCount": 0,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": None,
+            "capabilityGroup": "live_os",
+            "expectedCapability": "live_os_lookup",
+            "toolFamily": "places",
+            "requiresLiveOsApi": True,
+            "requiresUiRuntime": False,
+        },
+    ]
+
+    aggregate, markdown = unattended_client_eval._summarize_attempts(
+        scenario_pack=scenario_pack,
+        readiness_results=readiness_results,
+        attempts=attempts,
+    )
+
+    assert aggregate["readiness"]["summary"]["firstAttemptReadyCount"] == 3
+    assert aggregate["readiness"]["summary"]["notReadyCount"] == 1
+    assert aggregate["tracks"]["codex_cli"]["capability"]["capabilities"]["tool_discovery"][
+        "scoredCount"
+    ] == 1
+    assert aggregate["capability"]["toolFamilies"]["discovery"]["scoredCount"] == 1
+    assert "Readiness Summary" in markdown
+    assert "Capability Summary" in markdown
+    assert "Tool Family Summary" in markdown
+    assert "client_workspace_restriction" in markdown
+    assert "not_ready" in markdown

@@ -534,6 +534,9 @@ emit_plan() {
   printf 'landis_mount_enabled=%s\n' "$LANDIS_MOUNT_ENABLED"
   printf 'os_api_key_present=%s\n' "$([[ -n "${OS_API_KEY:-}" ]] && printf true || printf false)"
   printf 'os_api_key_file_present=%s\n' "$([[ -n "${OS_API_KEY_FILE:-}" ]] && printf true || printf false)"
+  printf 'default_toolset=%s\n' "${MCP_TOOLS_DEFAULT_TOOLSET:-}"
+  printf 'include_toolsets=%s\n' "${MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS:-}"
+  printf 'exclude_toolsets=%s\n' "${MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS:-}"
   printf 'addressbase_xref_host_path=%s\n' "$ADDRESSBASE_XREF_HOST_PATH"
   printf 'addressbase_xref_container_path=%s\n' "$ADDRESSBASE_XREF_CONTAINER_PATH"
   printf 'ons_geo_host_cache_dir=%s\n' "$ONS_GEO_HOST_CACHE_DIR"
@@ -609,6 +612,9 @@ fi
 hydrate_env_value "OS_API_KEY_FILE"
 hydrate_env_secret "OS_API_KEY"
 hydrate_env_values \
+  "MCP_TOOLS_DEFAULT_TOOLSET" \
+  "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS" \
+  "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS" \
   "LANDIS_LOCAL_DATA_ROOT" \
   "LANDIS_PORTAL_ARCHIVE_DIR" \
   "LANDIS_FULL_RELEASE_ARCHIVE_DIR" \
