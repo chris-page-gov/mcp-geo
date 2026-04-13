@@ -100,6 +100,13 @@ All notable changes to this project will be documented in this file.
   deltas into the benchmark session directory, and then closes that same
   benchmark window afterward. This removes the shared-window coupling without
   breaking Copilot auth or accumulating stray benchmark windows.
+- Traced temp stdio server definitions now wrap Python-script entrypoints with
+  the active interpreter before passing them to
+  `scripts/mcp_stdio_trace_proxy.py`. This keeps workspace-scoped VS Code
+  benchmark servers aligned with the checked-in `python3
+  scripts/vscode_mcp_stdio.py` launch shape and avoids `PermissionError`
+  startup failures when the traced launcher targets a non-executable Python
+  file directly.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.

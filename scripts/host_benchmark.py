@@ -164,6 +164,12 @@ def _ensure_session_dir(session_root: Path, name: str) -> Path:
     return candidate
 
 
+def _build_traced_target_command(wrapper: Path) -> list[str]:
+    if wrapper.suffix == ".py":
+        return [sys.executable, str(wrapper)]
+    return [str(wrapper)]
+
+
 def _build_temp_stdio_server(
     session_dir: Path,
     *,
@@ -185,7 +191,7 @@ def _build_temp_stdio_server(
             "--log",
             str(session_dir / "mcp-stdio-trace.jsonl"),
             "--",
-            str(wrapper),
+            *_build_traced_target_command(wrapper),
         ],
         "env": env,
     }

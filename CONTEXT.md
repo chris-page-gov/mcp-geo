@@ -94,6 +94,18 @@ assumptions change.
   stray benchmark windows on the workstation, and keeps single-track readiness
   probes usable because the aggregate report now renders only the requested
   tracks instead of assuming all four clients are always present.
+- The latest live VS Code evidence then narrowed the remaining readiness
+  blocker from a generic `client_no_mcp_traffic` symptom to a traced-launcher
+  defect in the harness itself. VS Code was discovering the benchmark
+  workspace MCP server and writing benchmark-specific `mcpServer.*.log` files,
+  but the traced temp-server definition handed
+  `scripts/vscode_mcp_stdio.py` directly to
+  `scripts/mcp_stdio_trace_proxy.py`, which failed with `PermissionError`
+  because the Python file is not executable. `scripts/host_benchmark.py` now
+  wraps Python-script wrapper targets with the interpreter before handing them
+  to the trace proxy so workspace-scoped VS Code benchmark servers launch with
+  the same shape as the checked-in `.vscode/mcp.json` config. Fresh live
+  readiness validation is still pending after this fix.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

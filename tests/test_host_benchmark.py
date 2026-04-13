@@ -331,6 +331,30 @@ def test_build_temp_stdio_server_keeps_host_ui_event_path_for_codex_wrapper(tmp_
     )
 
 
+def test_build_temp_stdio_server_wraps_python_script_targets(tmp_path: Path) -> None:
+    session_dir = tmp_path / "logs" / "sessions" / "trace"
+    session_dir.mkdir(parents=True)
+    wrapper = tmp_path / "scripts" / "vscode_mcp_stdio.py"
+    wrapper.parent.mkdir(parents=True)
+    wrapper.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+    server = host_benchmark._build_temp_stdio_server(
+        session_dir,
+        wrapper=wrapper,
+        inherited_env={},
+    )
+
+    assert server["command"] == sys.executable
+    assert server["args"] == [
+        str(host_benchmark.REPO_ROOT / "scripts" / "mcp_stdio_trace_proxy.py"),
+        "--log",
+        str(session_dir / "mcp-stdio-trace.jsonl"),
+        "--",
+        sys.executable,
+        str(wrapper),
+    ]
+
+
 def test_run_codex_cli_refuses_to_clobber_non_stdio_server(monkeypatch, tmp_path: Path) -> None:
     removed: list[str] = []
     added: list[tuple[str, dict]] = []

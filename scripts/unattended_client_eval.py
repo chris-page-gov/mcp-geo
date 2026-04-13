@@ -628,38 +628,26 @@ def _run_osascript(lines: list[str], *args: str) -> subprocess.CompletedProcess[
 
 
 def _list_vscode_windows() -> list[VSCodeWindow]:
-    proc = _run_osascript(
+    names_proc = _run_osascript(
+        ['tell application "System Events" to tell process "Code" to get name of every window']
+    )
+    if names_proc.returncode != 0:
+        return []
+    docs_proc = _run_osascript(
         [
-            "set AppleScript's text item delimiters to linefeed",
-            'tell application "System Events"',
-            '  if not (exists process "Code") then return ""',
-            '  tell process "Code"',
-            "    set rows to {}",
-            "    repeat with w in windows",
-            '      set windowName to ""',
-            '      set windowDocument to ""',
-            "      try",
-            "        set windowName to name of w as text",
-            "      end try",
-            "      try",
-            '        set windowDocument to value of attribute "AXDocument" of w as text',
-            "      end try",
-            '      set end of rows to windowName & tab & windowDocument',
-            "    end repeat",
-            "    return rows as text",
-            "  end tell",
-            "end tell",
+            'tell application "System Events" to tell process "Code" '
+            'to get value of attribute "AXDocument" of every window'
         ]
     )
-    if proc.returncode != 0:
+    if docs_proc.returncode != 0:
         return []
+    names = [item.strip() for item in names_proc.stdout.strip().split(",") if item.strip()]
+    raw_docs = [item.strip() for item in docs_proc.stdout.strip().split(",")]
+    docs = ["" if item == "missing value" else item for item in raw_docs]
     windows: list[VSCodeWindow] = []
-    for raw_line in proc.stdout.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        name, _, document = line.partition("\t")
-        windows.append(VSCodeWindow(name=name.strip(), document=document.strip()))
+    for index, name in enumerate(names):
+        document = docs[index] if index < len(docs) else ""
+        windows.append(VSCodeWindow(name=name, document=document))
     return windows
 
 
