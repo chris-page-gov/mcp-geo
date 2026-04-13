@@ -5,6 +5,7 @@ import argparse
 import datetime as dt
 import importlib
 import json
+import os
 import subprocess
 import sys
 from collections import defaultdict
@@ -14,6 +15,16 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
+VENV_PYTHON = REPO_ROOT / ".venv" / "bin" / "python"
+if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
+    try:
+        importlib.import_module("fastapi")
+    except ModuleNotFoundError:
+        if VENV_PYTHON.exists() and Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+            env = dict(os.environ)
+            env["MCP_GEO_SKIP_VENV_REEXEC"] = "1"
+            os.execve(str(VENV_PYTHON), [str(VENV_PYTHON), __file__, *sys.argv[1:]], env)
 
 from scripts.benchmark_env import resolve_inherited_env  # noqa: E402
 from scripts.trace_report import _build_summary as build_trace_summary  # noqa: E402

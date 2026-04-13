@@ -52,6 +52,11 @@ assumptions change.
 
 ## Current Focus
 
+- The 2026-04-13 unattended-eval remediation is not yet operationally closed.
+  The redesign and first harness fixes are landed, but the plan's definition of
+  done requires a fresh unattended four-client run where Codex CLI, Gemini CLI,
+  Claude Code CLI, and VS Code Agent all complete the scenario pack and an
+  updated report records the remediation as working in practice.
 - A 2026-04-13 unattended-eval remediation pass is now implemented, tracked in
   `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The unattended
   four-client harness now runs readiness before capability, emits per-track
@@ -71,6 +76,14 @@ assumptions change.
   `expectedCapability` metadata, and expanded `scripts/mcp-docker-local`
   preflight output to show non-sensitive toolset/default-secret visibility
   facts alongside the OS-key presence flags.
+- A same-day operational follow-up is now in progress because the first live
+  readiness-only rerun still left Gemini and VS Code short of the plan's
+  definition of done. Gemini now has a prototype per-workspace
+  `.gemini/settings.json` plus workspace policy that allows only `mcp_*`
+  tools in headless benchmark runs, while VS Code now has a prototype
+  synthetic workspace under `logs/benchmark-workspaces/vscode/<task>/`
+  carrying only a traced `mcp-geo` server in `.vscode/mcp.json`. These are the
+  current closure path for the required all-clients-complete rerun.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

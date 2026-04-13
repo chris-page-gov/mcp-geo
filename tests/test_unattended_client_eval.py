@@ -102,10 +102,8 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     monkeypatch.setattr(
         unattended_client_eval.host_benchmark,
         "_build_temp_stdio_server",
-        lambda *_args, **_kwargs: {"command": "python", "args": [], "env": {}},
+        lambda *_args, **_kwargs: {"command": "python", "args": ["server.py"], "env": {"A": "B"}},
     )
-    monkeypatch.setattr(unattended_client_eval, "_gemini_add_stdio_server", lambda *_a, **_k: None)
-    monkeypatch.setattr(unattended_client_eval, "_gemini_remove_server", lambda *_a, **_k: None)
     monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "gemini test")
 
@@ -128,21 +126,60 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     assert session_dir.exists()
     assert exit_code == 0
     assert blocker is None
-    assert "--include-directories" in commands[0]
-    include_index = commands[0].index("--include-directories")
-    assert commands[0][include_index + 1] == str(Path.home() / ".gemini")
+    include_dirs = [
+        commands[0][idx + 1]
+        for idx, token in enumerate(commands[0])
+        if token == "--include-directories"
+    ]
+    assert include_dirs == [str(Path.home() / ".gemini"), str(unattended_client_eval.REPO_ROOT)]
     assert cwds[0] == workspaces / "gemini" / "address-lookup-postcode"
+    settings = json.loads(
+        (workspaces / "gemini" / "address-lookup-postcode" / ".gemini" / "settings.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    server_name = "mcp-geo-benchmark-address-lookup-postcode"
+    assert settings["tools"]["core"] == []
+    assert settings["mcp"]["allowed"] == [server_name]
+    assert settings["mcpServers"][server_name]["command"] == "python"
+    policy = (
+        workspaces
+        / "gemini"
+        / "address-lookup-postcode"
+        / ".gemini"
+        / "policies"
+        / "00-mcp-only.toml"
+    ).read_text(encoding="utf-8")
+    assert 'toolName = "mcp_*"' in policy
+    assert 'decision = "deny"' in policy
 
 
-def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Path) -> None:
+def test_run_vscode_track_uses_synthetic_workspace_with_traced_server(
+    monkeypatch, tmp_path: Path
+) -> None:
     session_root = tmp_path / "logs" / "sessions"
     session_root.mkdir(parents=True)
+    workspace_root = tmp_path / "benchmark-workspaces" / "vscode"
     commands: list[list[str]] = []
     envs: list[dict[str, str] | None] = []
     task = {"id": "address_lookup_postcode", "label": "Address", "prompt": "UPRNs for SW1A 1AA"}
     expected_prompt = unattended_client_eval._task_prompt(task)
 
+    monkeypatch.setattr(unattended_client_eval, "DEFAULT_VSCODE_WORKSPACE_ROOT", workspace_root)
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
+    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
+    monkeypatch.setattr(
+        unattended_client_eval.host_benchmark,
+        "_build_temp_stdio_server",
+        lambda session_dir, **_kwargs: {
+            "command": "python",
+            "args": ["trace-proxy.py", "--log", str(session_dir / "mcp-stdio-trace.jsonl")],
+            "env": {
+                "OS_API_KEY_FILE": "/tmp/os_api_key.txt",
+                "UI_EVENT_LOG_PATH": "ui-events.jsonl",
+            },
+        },
+    )
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
         commands.append(command)
@@ -169,12 +206,17 @@ def test_run_vscode_track_opens_workspace_before_chat(monkeypatch, tmp_path: Pat
     assert session_dir.exists()
     assert exit_code == 0
     assert blocker is None
+    workspace_dir = workspace_root / "address-lookup-postcode"
     assert commands[0:2] == [
-        ["code", "--reuse-window", "."],
+        ["code", "--new-window", str(workspace_dir)],
         ["code", "chat", "--mode", "agent", "--reuse-window", expected_prompt],
     ]
     assert envs[0]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
     assert envs[1]["OS_API_KEY_FILE"] == "/tmp/os_api_key.txt"
+    config = json.loads((workspace_dir / ".vscode" / "mcp.json").read_text(encoding="utf-8"))
+    assert list(config["servers"]) == ["mcp-geo"]
+    assert config["servers"]["mcp-geo"]["command"] == "python"
+    assert config["servers"]["mcp-geo"]["cwd"] == str(unattended_client_eval.REPO_ROOT)
 
 
 def test_run_track_readiness_limits_recovery_to_one_attempt(monkeypatch) -> None:

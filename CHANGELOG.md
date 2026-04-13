@@ -77,6 +77,10 @@ All notable changes to this project will be documented in this file.
   `logs/benchmark-workspaces/gemini/<task>/` and include `~/.gemini` in the
   allowed directory set, eliminating the prior temporary-project pattern that
   blocked headless Gemini before the first MCP request.
+- Gemini unattended runs now also write a per-workspace `.gemini/settings.json`
+  plus workspace policy that allows only `mcp_*` tools during benchmark runs,
+  replacing the earlier transient `gemini mcp add` flow that still let Gemini
+  fall back to local built-in tools instead of exercising the MCP surface.
 - `scripts/mcp-docker-local --plan` now reports the chosen default/include/
   exclude toolset settings alongside the existing non-sensitive OS-key
   visibility flags, and the wrapper now hydrates those toolset env vars from
@@ -89,6 +93,11 @@ All notable changes to this project will be documented in this file.
   sessions; this improves the VS Code comparison track from mostly zero MCP
   traffic to a mixed result where some scenarios now reach real `mcp-geo`
   tool calls.
+- The VS Code unattended benchmark runner now creates a per-session synthetic
+  workspace under `logs/benchmark-workspaces/vscode/<task>/` with a traced
+  `.vscode/mcp.json` that exposes only the benchmark `mcp-geo` server, so
+  unattended runs no longer depend on whichever shared repo window or server
+  choice happened to be active in the GUI.
 - The benchmark wrapper plan output now reports whether an OS key and/or key
   file was resolved, without revealing the secret itself. This makes wrapper
   preflight diagnosis possible when local client configs, `.env`, and shell

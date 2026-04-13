@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -16,6 +18,16 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+VENV_PYTHON = REPO_ROOT / ".venv" / "bin" / "python"
+if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
+    try:
+        importlib.import_module("fastapi")
+    except ModuleNotFoundError:
+        if VENV_PYTHON.exists() and Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+            env = dict(os.environ)
+            env["MCP_GEO_SKIP_VENV_REEXEC"] = "1"
+            os.execve(str(VENV_PYTHON), [str(VENV_PYTHON), __file__, *sys.argv[1:]], env)
+
 import scripts.host_benchmark as host_benchmark  # noqa: E402
 from scripts.benchmark_env import resolve_inherited_env, resolved_process_env  # noqa: E402
 
@@ -23,12 +35,23 @@ DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
 DEFAULT_REPORT_ROOT = REPO_ROOT / "docs" / "reports"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "logs" / "benchmark-workspaces"
+DEFAULT_VSCODE_WORKSPACE_ROOT = DEFAULT_WORKSPACE_ROOT / "vscode"
 DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
-DEFAULT_VSCODE_TRACE_PATH = REPO_ROOT / "logs" / "vscode-mcp-trace.jsonl"
-DEFAULT_VSCODE_UI_PATH = REPO_ROOT / "logs" / "ui-events.vscode-trace.jsonl"
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
 RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
 GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
+GEMINI_MCP_ONLY_POLICY = """[[rule]]
+toolName = "mcp_*"
+decision = "allow"
+priority = 900
+interactive = false
+
+[[rule]]
+toolName = "*"
+decision = "deny"
+priority = 800
+interactive = false
+"""
 
 READINESS_TASK = {
     "id": "readiness_probe",
@@ -258,6 +281,7 @@ def _update_session_paths(session_dir: Path, **updates: str) -> None:
 
 
 def _write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
 
 
@@ -271,6 +295,10 @@ def _coerce_text(value: str | bytes | None) -> str:
 
 def _stderr_path(session_dir: Path, client: str) -> Path:
     return session_dir / f"{client}-exec.stderr.txt"
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    _write_text(path, json.dumps(payload, indent=2))
 
 
 def _trace_report(session_dir: Path) -> None:
@@ -481,6 +509,65 @@ def _prepare_gemini_workspace(task: dict[str, Any]) -> Path:
     if workspace_dir.exists():
         shutil.rmtree(workspace_dir)
     workspace_dir.mkdir(parents=True, exist_ok=True)
+    (workspace_dir / ".gemini" / "policies").mkdir(parents=True, exist_ok=True)
+    _write_text(workspace_dir / ".gemini" / "policies" / "00-mcp-only.toml", GEMINI_MCP_ONLY_POLICY)
+    return workspace_dir
+
+
+def _configure_gemini_workspace(
+    *,
+    workspace_dir: Path,
+    server_name: str,
+    server_config: dict[str, Any],
+) -> None:
+    settings = {
+        "tools": {
+            "core": [],
+        },
+        "mcp": {
+            "allowed": [server_name],
+        },
+        "mcpServers": {
+            server_name: {
+                "command": server_config["command"],
+                "args": server_config.get("args") or [],
+                "env": server_config.get("env") or {},
+                "cwd": str(REPO_ROOT),
+                "timeout": 120000,
+                "trust": True,
+            }
+        },
+    }
+    _write_json(workspace_dir / ".gemini" / "settings.json", settings)
+
+
+def _prepare_vscode_workspace(
+    *,
+    task: dict[str, Any],
+    session_dir: Path,
+) -> Path:
+    workspace_dir = DEFAULT_VSCODE_WORKSPACE_ROOT / _slug(task["id"])
+    if workspace_dir.exists():
+        shutil.rmtree(workspace_dir)
+    workspace_dir.mkdir(parents=True, exist_ok=True)
+
+    server_config = host_benchmark._build_temp_stdio_server(
+        session_dir,
+        wrapper=REPO_ROOT / "scripts" / "vscode_mcp_stdio.py",
+        inherited_env=_build_inherited_env(),
+    )
+    payload = {
+        "servers": {
+            "mcp-geo": {
+                "type": "stdio",
+                "command": server_config["command"],
+                "args": server_config.get("args") or [],
+                "cwd": str(REPO_ROOT),
+                "env": server_config.get("env") or {},
+            }
+        }
+    }
+    _write_json(workspace_dir / ".vscode" / "mcp.json", payload)
     return workspace_dir
 
 
@@ -579,6 +666,11 @@ def _run_gemini_track(
         wrapper=REPO_ROOT / "scripts" / "gemini-mcp-local",
         inherited_env=_build_inherited_env(),
     )
+    _configure_gemini_workspace(
+        workspace_dir=project_dir,
+        server_name=server_name,
+        server_config=server_config,
+    )
     command = [
         "gemini",
         "--allowed-mcp-server-names",
@@ -589,6 +681,8 @@ def _run_gemini_track(
         "json",
         "--include-directories",
         str(GEMINI_SETTINGS_PATH),
+        "--include-directories",
+        str(REPO_ROOT),
     ]
     if model:
         command.extend(["--model", model])
@@ -614,30 +708,25 @@ def _run_gemini_track(
     blocker: str | None = None
     proc: subprocess.CompletedProcess[str] | None = None
     try:
-        _gemini_remove_server(server_name, cwd=project_dir)
-        _gemini_add_stdio_server(server_name, server_config, cwd=project_dir)
-        try:
-            proc = subprocess.run(
-                command,
-                cwd=project_dir,
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=max(timeout_sec, 1),
-            )
-        except subprocess.TimeoutExpired as exc:
-            blocker = f"gemini_cli_timeout_after_{timeout_sec}s"
-            _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
-            if exc.stderr is not None:
-                _write_text(_stderr_path(session_dir, "gemini"), _coerce_text(exc.stderr))
-            _update_session_meta(session_dir, runnerError=blocker)
-            return (session_dir, 124, blocker)
-        _write_text(session_dir / "assistant-response.txt", proc.stdout)
-        if proc.stderr:
-            _write_text(_stderr_path(session_dir, "gemini"), proc.stderr)
-        exit_code = proc.returncode
-    finally:
-        _gemini_remove_server(server_name, cwd=project_dir)
+        proc = subprocess.run(
+            command,
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=max(timeout_sec, 1),
+        )
+    except subprocess.TimeoutExpired as exc:
+        blocker = f"gemini_cli_timeout_after_{timeout_sec}s"
+        _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
+        if exc.stderr is not None:
+            _write_text(_stderr_path(session_dir, "gemini"), _coerce_text(exc.stderr))
+        _update_session_meta(session_dir, runnerError=blocker)
+        return (session_dir, 124, blocker)
+    _write_text(session_dir / "assistant-response.txt", proc.stdout)
+    if proc.stderr:
+        _write_text(_stderr_path(session_dir, "gemini"), proc.stderr)
+    exit_code = proc.returncode
     if proc is not None and proc.returncode != 0:
         blocker = "gemini_cli_failed"
         _update_session_meta(session_dir, runnerError=blocker)
@@ -755,9 +844,8 @@ def _run_vscode_track(
     track = TRACK_BY_ID["vscode_ide"]
     name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
-    trace_before = len(_read_lines(DEFAULT_VSCODE_TRACE_PATH))
-    ui_before = len(_read_lines(DEFAULT_VSCODE_UI_PATH))
     prompt = _task_prompt(task)
+    workspace_dir = _prepare_vscode_workspace(task=task, session_dir=session_dir)
     command = ["code", "chat", "--mode", "agent", "--reuse-window", prompt]
     _initial_session_meta(
         session_dir,
@@ -774,11 +862,16 @@ def _run_vscode_track(
         assistantResponse=str(session_dir / "assistant-response.txt"),
         clientStderr=str(_stderr_path(session_dir, "vscode")),
     )
-    workspace_command = ["code", "--reuse-window", "."]
+    _update_session_meta(session_dir, benchmarkWorkspace=str(workspace_dir))
+    trace_path = session_dir / "mcp-stdio-trace.jsonl"
+    ui_path = session_dir / "ui-events.jsonl"
+    trace_before = len(_read_lines(trace_path))
+    ui_before = len(_read_lines(ui_path))
+    workspace_command = ["code", "--new-window", str(workspace_dir)]
     workspace_env = resolved_process_env()
     workspace_proc = subprocess.run(
         workspace_command,
-        cwd=REPO_ROOT,
+        cwd=workspace_dir,
         env=workspace_env,
         capture_output=True,
         text=True,
@@ -790,10 +883,14 @@ def _run_vscode_track(
         blocker = "vscode_workspace_open_failed"
         _update_session_meta(session_dir, runnerError=blocker)
         return (session_dir, workspace_proc.returncode or 1, blocker)
-    time.sleep(2)
+    startup_deadline = time.monotonic() + min(max(timeout_sec, 5), 15)
+    while time.monotonic() < startup_deadline:
+        time.sleep(1)
+        if len(_read_lines(trace_path)) > trace_before:
+            break
     proc = subprocess.run(
         command,
-        cwd=REPO_ROOT,
+        cwd=workspace_dir,
         env=workspace_env,
         capture_output=True,
         text=True,
@@ -810,8 +907,8 @@ def _run_vscode_track(
 
     while time.monotonic() < deadline:
         time.sleep(2)
-        current_trace_count = len(_read_lines(DEFAULT_VSCODE_TRACE_PATH))
-        current_ui_count = len(_read_lines(DEFAULT_VSCODE_UI_PATH))
+        current_trace_count = len(_read_lines(trace_path))
+        current_ui_count = len(_read_lines(ui_path))
         if current_trace_count > last_trace_count or current_ui_count > last_ui_count:
             last_growth_at = time.monotonic()
             last_trace_count = current_trace_count
@@ -820,10 +917,6 @@ def _run_vscode_track(
         if last_growth_at is not None and time.monotonic() - last_growth_at >= 6:
             break
 
-    trace_delta = _read_lines(DEFAULT_VSCODE_TRACE_PATH)[trace_before:]
-    ui_delta = _read_lines(DEFAULT_VSCODE_UI_PATH)[ui_before:]
-    _write_lines(session_dir / "mcp-stdio-trace.jsonl", trace_delta)
-    _write_lines(session_dir / "ui-events.jsonl", ui_delta)
     blocker = None
     if proc.returncode != 0:
         blocker = "vscode_chat_failed"
