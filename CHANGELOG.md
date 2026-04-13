@@ -138,6 +138,12 @@ All notable changes to this project will be documented in this file.
   was prompted by the same `2026-04-13` rerun plus the observed 50+ GB RAM
   leak, which showed the runner still stopping after short idle periods that
   contained only `initialize` / `prompts.list` / `tools.list` traffic.
+- The VS Code unattended runner no longer issues a separate primer chat before
+  each benchmark attempt. A targeted canary run showed the reclaimed benchmark
+  Code process tree still left the capability session with zero retained
+  post-primer MCP traffic, which isolated the primer itself as the only MCP
+  traffic source in that flow. The real scenario chat is now the first
+  MCP-driving action in each benchmark window.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.

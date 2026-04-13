@@ -58,9 +58,6 @@ VSCODE_BENCH_TOOL_ALIAS_PREFIX = "mcp_mcp-geo-bench_"
 VSCODE_READINESS_TOOL_ALIAS = f"{VSCODE_BENCH_TOOL_ALIAS_PREFIX}os_resources_get"
 VSCODE_READINESS_RESOURCE_URI = "resource://mcp-geo/area-summary-workflows"
 VSCODE_READINESS_RESOURCE_NAME = "area-summary-workflows"
-VSCODE_MCP_PRIMER_PROMPT = (
-    "Do not inspect the repository or use any tools. Reply with READY in one word."
-)
 GEMINI_MCP_ONLY_POLICY = """[[rule]]
 toolName = "mcp_*"
 decision = "allow"
@@ -536,7 +533,6 @@ def _classify_blocker_category(
             "vscode_workspace_focus_failed",
             "vscode_mcp_server_not_ready",
         }
-        or str(runner_blocker or "").startswith("vscode_primer_timeout_after_")
     ):
         return (
             "client_workspace_restriction",
@@ -720,23 +716,6 @@ def _find_vscode_mcp_server_logs(server_name: str) -> list[Path]:
 
 def _vscode_mcp_server_tools_discovered(log_path: Path) -> bool:
     return any("Discovered " in line and " tools" in line for line in _read_lines(log_path))
-
-
-def _wait_for_vscode_mcp_server_discovery(
-    server_name: str,
-    *,
-    timeout_sec: float = 20.0,
-) -> tuple[Path | None, bool]:
-    latest_log: Path | None = None
-    deadline = time.monotonic() + timeout_sec
-    while time.monotonic() < deadline:
-        matches = _find_vscode_mcp_server_logs(server_name)
-        if matches:
-            latest_log = matches[0]
-            if _vscode_mcp_server_tools_discovered(latest_log):
-                return (latest_log, True)
-        time.sleep(VSCODE_WINDOW_POLL_INTERVAL_SEC)
-    return (latest_log, False)
 
 
 def _wait_for_new_vscode_window(
@@ -1351,14 +1330,6 @@ def _run_vscode_track(
         "--reuse-window",
         prompt,
     ]
-    primer_command = [
-        "code",
-        "chat",
-        "--mode",
-        "agent",
-        "--reuse-window",
-        VSCODE_MCP_PRIMER_PROMPT,
-    ]
     _initial_session_meta(
         session_dir,
         command=chat_command,
@@ -1379,7 +1350,6 @@ def _run_vscode_track(
         benchmarkWorkspace=str(workspace_dir),
         vscodeServerName=server_name,
         vscodeOpenCommand=open_command,
-        vscodePrimerCommand=primer_command,
     )
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
@@ -1402,8 +1372,6 @@ def _run_vscode_track(
     benchmark_window: VSCodeWindow | None = None
     cleanup_result: dict[str, Any] | None = None
     open_timeout_sec = min(max(timeout_sec, 5), 20)
-    discovery_timeout_sec = min(max(timeout_sec, 15), 30)
-    primer_timeout_sec = min(max(timeout_sec, 5), 30)
     phase = "workspace_open"
     try:
         try:
@@ -1434,58 +1402,34 @@ def _run_vscode_track(
                         vscodeWindowName=benchmark_window.name,
                         vscodeWindowDocument=benchmark_window.document,
                     )
-                phase = "primer"
-                primer_proc = subprocess.run(
-                    primer_command,
+                benchmark_window = (
+                    _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
+                )
+                if benchmark_window is not None:
+                    _raise_vscode_window(benchmark_window)
+                    _update_session_meta(
+                        session_dir,
+                        vscodeWindowName=benchmark_window.name,
+                        vscodeWindowDocument=benchmark_window.document,
+                    )
+                trace_snapshot = _snapshot_line_counts(trace_paths)
+                ui_snapshot = _snapshot_line_counts(ui_paths)
+                phase = "chat"
+                chat_proc = subprocess.run(
+                    chat_command,
                     cwd=workspace_dir,
                     env=workspace_env,
                     capture_output=True,
                     text=True,
                     check=False,
-                    timeout=primer_timeout_sec,
+                    timeout=max(timeout_sec, 5),
                 )
-                if primer_proc.stderr:
-                    stderr_chunks.append(primer_proc.stderr)
-                if primer_proc.returncode != 0:
-                    exit_code = primer_proc.returncode
+                assistant_output = chat_proc.stdout
+                if chat_proc.stderr:
+                    stderr_chunks.append(chat_proc.stderr)
+                exit_code = chat_proc.returncode
+                if chat_proc.returncode != 0:
                     blocker = "vscode_chat_failed"
-                server_log, ready_for_chat = _wait_for_vscode_mcp_server_discovery(
-                    server_name,
-                    timeout_sec=discovery_timeout_sec,
-                )
-                if server_log is not None:
-                    _update_session_meta(session_dir, vscodeServerLog=str(server_log))
-                if blocker is None and not ready_for_chat:
-                    blocker = "vscode_mcp_server_not_ready"
-                elif blocker is None:
-                    benchmark_window = (
-                        _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
-                    )
-                    if benchmark_window is not None:
-                        _raise_vscode_window(benchmark_window)
-                        _update_session_meta(
-                            session_dir,
-                            vscodeWindowName=benchmark_window.name,
-                            vscodeWindowDocument=benchmark_window.document,
-                        )
-                    trace_snapshot = _snapshot_line_counts(trace_paths)
-                    ui_snapshot = _snapshot_line_counts(ui_paths)
-                    phase = "chat"
-                    chat_proc = subprocess.run(
-                        chat_command,
-                        cwd=workspace_dir,
-                        env=workspace_env,
-                        capture_output=True,
-                        text=True,
-                        check=False,
-                        timeout=max(timeout_sec, 5),
-                    )
-                    assistant_output = chat_proc.stdout
-                    if chat_proc.stderr:
-                        stderr_chunks.append(chat_proc.stderr)
-                    exit_code = chat_proc.returncode
-                    if chat_proc.returncode != 0:
-                        blocker = "vscode_chat_failed"
         except subprocess.TimeoutExpired as exc:
             exit_code = 124
             assistant_output = _coerce_text(exc.stdout)
@@ -1494,8 +1438,6 @@ def _run_vscode_track(
             if phase == "workspace_open":
                 blocker = "vscode_workspace_open_failed"
                 stderr_chunks.append(f"workspace open timed out after {open_timeout_sec}s")
-            elif phase == "primer":
-                blocker = f"vscode_primer_timeout_after_{primer_timeout_sec}s"
             else:
                 blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
 
@@ -1559,6 +1501,9 @@ def _run_vscode_track(
             vscodeCleanupWindowClosed=cleanup_result["windowClosed"],
             vscodeCleanupKilledProcessPids=cleanup_result["killedProcessPids"],
         )
+    server_log_matches = _find_vscode_mcp_server_logs(server_name)
+    if server_log_matches:
+        _update_session_meta(session_dir, vscodeServerLog=str(server_log_matches[0]))
     if blocker is not None:
         _update_session_meta(session_dir, runnerError=blocker)
     return (session_dir, exit_code, blocker)

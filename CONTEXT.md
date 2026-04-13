@@ -143,8 +143,16 @@ assumptions change.
   useful-activity timeout before declaring another VS Code `startup_only`
   attempt, records cleanup metadata in the session, and escalates to
   benchmark-workspace-specific VS Code process-tree termination if window close
-  automation still leaves a benchmark instance alive. Another VS Code live
-  rerun is still required before the plan can be marked done.
+  automation still leaves a benchmark instance alive. A follow-on live canary
+  at
+  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.{md,json}`
+  then proved the cleanup fix worked but also isolated the remaining flow
+  defect: the retained trace in the live session came entirely from the primer,
+  while the actual capability chat still produced zero post-primer MCP traffic.
+  The VS Code runner has therefore now dropped the separate primer step so the
+  real scenario chat is the first MCP-driving action in the benchmark window.
+  Another VS Code live rerun is still required before the plan can be marked
+  done.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

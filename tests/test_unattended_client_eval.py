@@ -438,8 +438,8 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     )
     monkeypatch.setattr(
         unattended_client_eval,
-        "_wait_for_vscode_mcp_server_discovery",
-        lambda _server_name, *, timeout_sec=20.0: (expected_server_log, True),
+        "_find_vscode_mcp_server_logs",
+        lambda _server_name: [expected_server_log],
     )
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
@@ -479,14 +479,6 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
             "--mode",
             "agent",
             "--reuse-window",
-            unattended_client_eval.VSCODE_MCP_PRIMER_PROMPT,
-        ],
-        [
-            "code",
-            "chat",
-            "--mode",
-            "agent",
-            "--reuse-window",
             expected_prompt,
         ],
     ]
@@ -504,12 +496,11 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     assert cleanup_calls == [(expected_workspace_dir, benchmark_window)]
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
     assert session_meta["vscodeServerLog"] == str(expected_server_log)
-    assert session_meta["vscodePrimerCommand"] == commands[1]
     assert session_meta["vscodeCleanupWindowClosed"] is True
     assert session_meta["vscodeCleanupKilledProcessPids"] == []
 
 
-def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
+def test_run_vscode_track_reports_chat_timeout_without_primer(
     monkeypatch, tmp_path: Path
 ) -> None:
     session_root = tmp_path / "logs" / "sessions"
@@ -556,12 +547,14 @@ def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
     )
     monkeypatch.setattr(
         unattended_client_eval,
-        "_wait_for_vscode_mcp_server_discovery",
-        lambda _server_name, *, timeout_sec=20.0: (expected_server_log, False),
+        "_find_vscode_mcp_server_logs",
+        lambda _server_name: [expected_server_log],
     )
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
         commands.append(command)
+        if command[:2] == ["code", "chat"]:
+            raise subprocess.TimeoutExpired(command, timeout=1, output="", stderr="")
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
     monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
@@ -578,8 +571,8 @@ def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
     )
 
     assert session_dir.exists()
-    assert exit_code == 0
-    assert blocker == "vscode_mcp_server_not_ready"
+    assert exit_code == 124
+    assert blocker == "vscode_chat_timeout_after_1s"
     assert commands == [
         [
             "code",
@@ -592,7 +585,11 @@ def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
             "--mode",
             "agent",
             "--reuse-window",
-            unattended_client_eval.VSCODE_MCP_PRIMER_PROMPT,
+            unattended_client_eval._task_prompt(
+                task,
+                track_id="vscode_ide",
+                server_name="mcp-geo-bench-fixed-vscode-session",
+            ),
         ],
     ]
     session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
