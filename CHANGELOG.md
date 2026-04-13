@@ -88,16 +88,16 @@ All notable changes to this project will be documented in this file.
 - The unattended benchmark/report flow now treats blocked runs as blocked:
   runner errors, startup-only sessions, and no-traffic sessions keep only a
   `diagnosticScore` and no longer count toward the scored-track average.
-- The VS Code unattended benchmark runner now opens the repo workspace before
-  `code chat` so `.vscode/mcp.json` is actually in scope for headless agent
-  sessions; this improves the VS Code comparison track from mostly zero MCP
-  traffic to a mixed result where some scenarios now reach real `mcp-geo`
-  tool calls.
-- The VS Code unattended benchmark runner now instruments the active repo
-  window directly by temporarily rewriting `.vscode/mcp.json` to a single
-  traced `mcp-geo` server for each benchmark attempt, restoring the checked-in
-  config afterward, and enforcing explicit `code` subprocess timeouts so the
-  unattended runner cannot hang indefinitely on a stuck `code chat` process.
+- The VS Code unattended benchmark runner now opens a clean ignored benchmark
+  workspace before `code chat` so each attempt attaches to a deterministic
+  window instead of whichever shared VS Code window happens to be active.
+- The VS Code unattended benchmark runner now rewrites the user-global
+  `~/Library/Application Support/Code/User/mcp.json` profile to a unique traced
+  benchmark server for each attempt, restores the original profile afterward,
+  materializes only the session-owned MCP/UI log deltas into the benchmark
+  session directory, and enforces explicit `code` subprocess timeouts so
+  multiple open VS Code windows do not cause false `no_mcp_traffic` scoring or
+  stuck `code chat` processes.
 - The benchmark wrapper plan output now reports whether an OS key and/or key
   file was resolved, without revealing the secret itself. This makes wrapper
   preflight diagnosis possible when local client configs, `.env`, and shell

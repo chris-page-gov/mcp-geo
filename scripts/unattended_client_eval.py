@@ -39,6 +39,7 @@ DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
 RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
 GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
+VSCODE_USER_MCP_PATH = Path.home() / "Library/Application Support/Code/User/mcp.json"
 GEMINI_MCP_ONLY_POLICY = """[[rule]]
 toolName = "mcp_*"
 decision = "allow"
@@ -56,8 +57,9 @@ READINESS_TASK = {
     "id": "readiness_probe",
     "label": "Readiness probe",
     "prompt": (
-        "Call `os_mcp.descriptor` on the connected `mcp-geo` MCP server and "
-        "reply with the server name plus one safe example capability in one sentence."
+        "Call the connected MCP tool `os_mcp_descriptor` (`os_mcp.descriptor`) "
+        "with an empty input object `{}` and reply with the server name plus "
+        "one safe example capability in one sentence."
     ),
     "expectedMcpEvidence": [
         "initialize",
@@ -143,8 +145,26 @@ def _slug(value: str) -> str:
     return text.strip("-") or "session"
 
 
-def _task_prompt(task: dict[str, Any]) -> str:
-    return host_benchmark._prompt_for_scenario(task)
+def _task_prompt(
+    task: dict[str, Any],
+    *,
+    track_id: str | None = None,
+    server_name: str = "mcp-geo",
+) -> str:
+    if track_id != "vscode_ide":
+        return host_benchmark._prompt_for_scenario(task)
+    if task.get("id") == READINESS_TASK["id"]:
+        return (
+            f"Call os_mcp.descriptor on the connected {server_name} MCP server "
+            "and stop after one sentence."
+        )
+    return (
+        f"Use only the connected `{server_name}` MCP server in this VS Code "
+        "window. Do not use repository inspection, shell commands, HTTP "
+        "endpoints, or fallback paths outside MCP. Return a concise final "
+        "answer.\n\n"
+        f"User request: {task['prompt']}"
+    )
 
 
 def _client_version(command: str) -> str | None:
@@ -540,33 +560,53 @@ def _configure_gemini_workspace(
     _write_json(workspace_dir / ".gemini" / "settings.json", settings)
 
 
-def _write_vscode_repo_mcp_config(session_dir: Path) -> str | None:
-    workspace_path = REPO_ROOT / ".vscode" / "mcp.json"
+def _prepare_vscode_workspace(task: dict[str, Any]) -> Path:
+    workspace_dir = DEFAULT_WORKSPACE_ROOT / "vscode" / _slug(task["id"])
+    if workspace_dir.exists():
+        shutil.rmtree(workspace_dir)
+    workspace_dir.mkdir(parents=True, exist_ok=True)
+    return workspace_dir
+
+
+def _write_vscode_global_mcp_config(
+    session_dir: Path,
+    server_name: str,
+) -> tuple[str | None, list[Path], list[Path]]:
+    workspace_path = VSCODE_USER_MCP_PATH
     original = None
     if workspace_path.exists():
         original = workspace_path.read_text(encoding="utf-8")
+        payload = _load_json_object(workspace_path)
+    else:
+        payload = {}
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "vscode_mcp_stdio.py",
         inherited_env=_build_inherited_env(),
     )
-    payload = {
-        "servers": {
-            "mcp-geo": {
-                "type": "stdio",
-                "command": server_config["command"],
-                "args": server_config.get("args") or [],
-                "cwd": str(REPO_ROOT),
-                "env": server_config.get("env") or {},
-            }
-        }
+    servers = payload.setdefault("servers", {})
+    if not isinstance(servers, dict):
+        raise ValueError("VS Code MCP config 'servers' payload must be an object.")
+    payload.setdefault("inputs", [])
+    servers[server_name] = {
+        "type": "stdio",
+        "command": server_config["command"],
+        "args": server_config.get("args") or [],
+        "cwd": str(REPO_ROOT),
+        "env": server_config.get("env") or {},
     }
     _write_json(workspace_path, payload)
-    return original
+    trace_paths = [session_dir / "mcp-stdio-trace.jsonl"]
+    ui_paths: list[Path] = []
+    ui_log = (server_config.get("env") or {}).get("UI_EVENT_LOG_PATH")
+    if isinstance(ui_log, str) and ui_log:
+        ui_paths.append(Path(ui_log))
+    return (original, trace_paths, ui_paths)
 
 
-def _restore_vscode_repo_mcp_config(original: str | None) -> None:
-    workspace_path = REPO_ROOT / ".vscode" / "mcp.json"
+def _restore_vscode_global_mcp_config(original: str | None) -> None:
+    workspace_path = VSCODE_USER_MCP_PATH
+    workspace_path.parent.mkdir(parents=True, exist_ok=True)
     if original is None:
         workspace_path.unlink(missing_ok=True)
         return
@@ -835,6 +875,28 @@ def _write_lines(path: Path, lines: list[str]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _snapshot_line_counts(paths: list[Path]) -> dict[Path, int]:
+    return {path: len(_read_lines(path)) for path in paths}
+
+
+def _delta_line_count(snapshot: dict[Path, int]) -> int:
+    total = 0
+    for path, before in snapshot.items():
+        total += max(len(_read_lines(path)) - before, 0)
+    return total
+
+
+def _materialize_log_delta(output_path: Path, snapshot: dict[Path, int]) -> None:
+    lines: list[str] = []
+    for path, before in snapshot.items():
+        source_lines = _read_lines(path)
+        if len(source_lines) > before:
+            lines.extend(source_lines[before:])
+    if output_path.exists():
+        output_path.unlink()
+    _write_lines(output_path, lines)
+
+
 def _run_vscode_track(
     *,
     task: dict[str, Any],
@@ -846,7 +908,9 @@ def _run_vscode_track(
     track = TRACK_BY_ID["vscode_ide"]
     name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
-    prompt = _task_prompt(task)
+    workspace_dir = _prepare_vscode_workspace(task)
+    server_name = f"mcp-geo-bench-{_slug(task['id'])}"
+    prompt = _task_prompt(task, track_id="vscode_ide", server_name=server_name)
     command = ["code", "chat", "--mode", "agent", "--reuse-window", prompt]
     _initial_session_meta(
         session_dir,
@@ -863,19 +927,26 @@ def _run_vscode_track(
         assistantResponse=str(session_dir / "assistant-response.txt"),
         clientStderr=str(_stderr_path(session_dir, "vscode")),
     )
-    _update_session_meta(session_dir, benchmarkWorkspace=str(REPO_ROOT))
+    _update_session_meta(
+        session_dir,
+        benchmarkWorkspace=str(workspace_dir),
+        vscodeServerName=server_name,
+    )
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
-    trace_before = len(_read_lines(trace_path))
-    ui_before = len(_read_lines(ui_path))
-    workspace_command = ["code", "--reuse-window", str(REPO_ROOT)]
+    workspace_command = ["code", "--new-window", str(workspace_dir)]
     workspace_env = resolved_process_env()
-    original_mcp_config = _write_vscode_repo_mcp_config(session_dir)
+    original_mcp_config, trace_paths, ui_paths = _write_vscode_global_mcp_config(
+        session_dir,
+        server_name,
+    )
+    trace_snapshot = _snapshot_line_counts(trace_paths)
+    ui_snapshot = _snapshot_line_counts(ui_paths)
     try:
         try:
             workspace_proc = subprocess.run(
                 workspace_command,
-                cwd=REPO_ROOT,
+                cwd=workspace_dir,
                 env=workspace_env,
                 capture_output=True,
                 text=True,
@@ -897,12 +968,12 @@ def _run_vscode_track(
         startup_deadline = time.monotonic() + min(max(timeout_sec, 5), 15)
         while time.monotonic() < startup_deadline:
             time.sleep(1)
-            if len(_read_lines(trace_path)) > trace_before:
+            if _delta_line_count(trace_snapshot) > 0:
                 break
         try:
             proc = subprocess.run(
                 command,
-                cwd=REPO_ROOT,
+                cwd=workspace_dir,
                 env=workspace_env,
                 capture_output=True,
                 text=True,
@@ -917,28 +988,20 @@ def _run_vscode_track(
             _update_session_meta(session_dir, runnerError=blocker)
             return (session_dir, 124, blocker)
     finally:
-        _restore_vscode_repo_mcp_config(original_mcp_config)
-        subprocess.run(
-            workspace_command,
-            cwd=REPO_ROOT,
-            env=workspace_env,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        _restore_vscode_global_mcp_config(original_mcp_config)
     _write_text(session_dir / "assistant-response.txt", proc.stdout)
     if proc.stderr:
         _write_text(_stderr_path(session_dir, "vscode"), proc.stderr)
 
     deadline = time.monotonic() + max(timeout_sec, 5)
     last_growth_at: float | None = None
-    last_trace_count = trace_before
-    last_ui_count = ui_before
+    last_trace_count = _delta_line_count(trace_snapshot)
+    last_ui_count = _delta_line_count(ui_snapshot)
 
     while time.monotonic() < deadline:
         time.sleep(2)
-        current_trace_count = len(_read_lines(trace_path))
-        current_ui_count = len(_read_lines(ui_path))
+        current_trace_count = _delta_line_count(trace_snapshot)
+        current_ui_count = _delta_line_count(ui_snapshot)
         if current_trace_count > last_trace_count or current_ui_count > last_ui_count:
             last_growth_at = time.monotonic()
             last_trace_count = current_trace_count
@@ -946,6 +1009,9 @@ def _run_vscode_track(
             continue
         if last_growth_at is not None and time.monotonic() - last_growth_at >= 6:
             break
+
+    _materialize_log_delta(trace_path, trace_snapshot)
+    _materialize_log_delta(ui_path, ui_snapshot)
 
     blocker = None
     if proc.returncode != 0:
