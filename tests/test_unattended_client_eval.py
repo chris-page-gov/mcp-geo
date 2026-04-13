@@ -240,6 +240,7 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
         name="fixed-vscode-session",
         document="",
     )
+    expected_server_log = tmp_path / "Code" / "logs" / "window25" / "mcpServer.log"
 
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
     monkeypatch.setattr(
@@ -282,6 +283,11 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
         "_close_vscode_window",
         lambda window: closed.append(window) or True,
     )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_wait_for_vscode_mcp_server_discovery",
+        lambda _server_name, *, timeout_sec=20.0: (expected_server_log, True),
+    )
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
         commands.append(command)
@@ -320,6 +326,14 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
             "--mode",
             "agent",
             "--reuse-window",
+            unattended_client_eval.VSCODE_MCP_PRIMER_PROMPT,
+        ],
+        [
+            "code",
+            "chat",
+            "--mode",
+            "agent",
+            "--reuse-window",
             expected_prompt,
         ],
     ]
@@ -335,6 +349,95 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     ]
     assert raised == [benchmark_window]
     assert closed == [benchmark_window]
+    session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
+    assert session_meta["vscodeServerLog"] == str(expected_server_log)
+    assert session_meta["vscodePrimerCommand"] == commands[1]
+
+
+def test_run_vscode_track_blocks_until_workspace_server_tools_are_ready(
+    monkeypatch, tmp_path: Path
+) -> None:
+    session_root = tmp_path / "logs" / "sessions"
+    session_root.mkdir(parents=True)
+    commands: list[list[str]] = []
+    task = {"id": "readiness_probe", "label": "Readiness", "prompt": "Call the descriptor."}
+    benchmark_window = unattended_client_eval.VSCodeWindow(name="readiness-probe", document="")
+    expected_server_log = tmp_path / "Code" / "logs" / "window25" / "mcpServer.log"
+
+    monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_session_name",
+        lambda _track_id, _task_id: "fixed-vscode-session",
+    )
+    monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", tmp_path / "workspaces")
+    monkeypatch.setattr(unattended_client_eval, "_list_vscode_windows", lambda: [])
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_wait_for_new_vscode_window",
+        lambda _existing, *, workspace_name, timeout_sec=10.0: benchmark_window,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_write_vscode_workspace_mcp_config",
+        lambda workspace_dir, session_dir, server_name: (
+            [session_dir / "mcp-stdio-trace.jsonl"],
+            [],
+        ),
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_raise_vscode_window",
+        lambda window: True,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_close_vscode_window",
+        lambda window: True,
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_wait_for_vscode_mcp_server_discovery",
+        lambda _server_name, *, timeout_sec=20.0: (expected_server_log, False),
+    )
+
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
+    monkeypatch.setattr(unattended_client_eval, "_read_lines", lambda _path: [])
+    monkeypatch.setattr(unattended_client_eval.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(unattended_client_eval, "resolved_process_env", lambda: {})
+
+    session_dir, exit_code, blocker = unattended_client_eval._run_vscode_track(
+        task=task,
+        scenario_pack_id="pack-id",
+        session_root=session_root,
+        timeout_sec=1,
+        attempt_kind="readiness",
+    )
+
+    assert session_dir.exists()
+    assert exit_code == 0
+    assert blocker == "vscode_mcp_server_not_ready"
+    assert commands == [
+        [
+            "code",
+            "--new-window",
+            str(tmp_path / "workspaces" / "vscode" / "fixed-vscode-session"),
+        ],
+        [
+            "code",
+            "chat",
+            "--mode",
+            "agent",
+            "--reuse-window",
+            unattended_client_eval.VSCODE_MCP_PRIMER_PROMPT,
+        ],
+    ]
+    session_meta = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
+    assert session_meta["vscodeServerLog"] == str(expected_server_log)
 
 
 def test_task_prompt_uses_vscode_native_mcp_guidance() -> None:
@@ -345,9 +448,23 @@ def test_task_prompt_uses_vscode_native_mcp_guidance() -> None:
     )
 
     assert prompt == (
-        "Call os_mcp.descriptor on the connected mcp-geo-bench-readiness-probe "
-        "MCP server and stop after one sentence."
+        "Use only the connected mcp-geo-bench-readiness-probe MCP server in this VS Code "
+        "window. In this VS Code agent window, the benchmark MCP tools are exposed "
+        f"with `{unattended_client_eval.VSCODE_BENCH_TOOL_ALIAS_PREFIX}...` aliases. "
+        f"Call the exact MCP tool `{unattended_client_eval.VSCODE_READINESS_TOOL_ALIAS}` "
+        f'with {{"uri":"{unattended_client_eval.VSCODE_READINESS_RESOURCE_URI}"}}. '
+        "If that field shape fails, retry the same exact tool with "
+        f'{{"name":"{unattended_client_eval.VSCODE_READINESS_RESOURCE_NAME}"}}. '
+        "Do not inspect the repository, use any other tool, or use fallback paths "
+        "outside MCP. Stop after one sentence."
     )
+
+
+def test_readiness_task_for_vscode_uses_resource_probe() -> None:
+    readiness_task = unattended_client_eval._readiness_task_for_track("vscode_ide")
+
+    assert readiness_task["expectedTools"] == ["os_resources.get"]
+    assert readiness_task["toolFamily"] == "resource_bridge"
 
 
 def test_run_track_readiness_limits_recovery_to_one_attempt(monkeypatch) -> None:

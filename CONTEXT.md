@@ -104,8 +104,22 @@ assumptions change.
   because the Python file is not executable. `scripts/host_benchmark.py` now
   wraps Python-script wrapper targets with the interpreter before handing them
   to the trace proxy so workspace-scoped VS Code benchmark servers launch with
-  the same shape as the checked-in `.vscode/mcp.json` config. Fresh live
-  readiness validation is still pending after this fix.
+  the same shape as the checked-in `.vscode/mcp.json` config.
+- Fresh live validation on 2026-04-13 then exposed one more VS Code-specific
+  requirement in the benchmark flow. Copilot agent mode would not honor raw
+  tool-name prompts like `os_mcp.route_query`, and the first alias-based retry
+  still failed when the runner reused one stable benchmark workspace path for
+  every attempt: the agent claimed the prefixed MCP tool alias did not exist in
+  that window. The current harness now keeps the primer-based warm-up and
+  alias-based VS Code readiness prompt, but opens a unique per-session
+  benchmark workspace again so each attempt gets a fresh VS Code workspace
+  identity plus fresh MCP alias registration. Live probe
+  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix.{md,json}`
+  confirmed the result: the first attempt still stayed startup-only, but the
+  bounded recovery attempt reached `ready` with a real traced
+  `tools/call:os_resources.get` against the benchmark server. The remaining
+  remediation step is now the full four-client unattended rerun plus the
+  closure report that records the remediation as operationally complete.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at

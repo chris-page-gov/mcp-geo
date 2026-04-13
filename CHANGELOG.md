@@ -107,6 +107,14 @@ All notable changes to this project will be documented in this file.
   scripts/vscode_mcp_stdio.py` launch shape and avoids `PermissionError`
   startup failures when the traced launcher targets a non-executable Python
   file directly.
+- The VS Code readiness probe now uses a Copilot-compatible alias-based MCP
+  prompt that targets `os_resources.get` through the benchmark server's exposed
+  tool alias, and VS Code benchmark attempts once again use unique per-session
+  benchmark workspace paths instead of one stable `readiness-probe` workspace.
+  This restores fresh VS Code MCP alias registration per attempt; live probe
+  `client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix`
+  reached `ready` on the bounded recovery attempt with a traced
+  `tools/call:os_resources.get`.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.

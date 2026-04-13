@@ -40,8 +40,16 @@ DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"
 RECOVERY_TRACK_IDS = {"gemini_cli", "vscode_ide"}
 GEMINI_SETTINGS_PATH = Path.home() / ".gemini"
+VSCODE_LOG_ROOT = Path.home() / "Library" / "Application Support" / "Code" / "logs"
 VSCODE_WORKSPACE_MCP_RELATIVE_PATH = Path(".vscode") / "mcp.json"
 VSCODE_WINDOW_POLL_INTERVAL_SEC = 0.5
+VSCODE_BENCH_TOOL_ALIAS_PREFIX = "mcp_mcp-geo-bench_"
+VSCODE_READINESS_TOOL_ALIAS = f"{VSCODE_BENCH_TOOL_ALIAS_PREFIX}os_resources_get"
+VSCODE_READINESS_RESOURCE_URI = "resource://mcp-geo/area-summary-workflows"
+VSCODE_READINESS_RESOURCE_NAME = "area-summary-workflows"
+VSCODE_MCP_PRIMER_PROMPT = (
+    "Do not inspect the repository or use any tools. Reply with READY in one word."
+)
 GEMINI_MCP_ONLY_POLICY = """[[rule]]
 toolName = "mcp_*"
 decision = "allow"
@@ -84,6 +92,20 @@ READINESS_TASK = {
         "uiRuntime": "not_applicable",
         "fallbackExpectedOn": [],
     },
+}
+VSCODE_READINESS_TASK = {
+    **READINESS_TASK,
+    "prompt": (
+        f"Call the VS Code MCP tool alias `{VSCODE_READINESS_TOOL_ALIAS}` "
+        f'with `{{"uri":"{VSCODE_READINESS_RESOURCE_URI}"}}` and reply with '
+        "the resource URI plus one short reason it is useful in one sentence."
+    ),
+    "expectedMcpEvidence": [
+        "initialize",
+        "tools/call:os_resources.get",
+    ],
+    "expectedTools": ["os_resources.get"],
+    "toolFamily": "resource_bridge",
 }
 GEMINI_WORKSPACE_SIGNATURES = (
     "Path not in workspace",
@@ -163,8 +185,15 @@ def _task_prompt(
         return host_benchmark._prompt_for_scenario(task)
     if task.get("id") == READINESS_TASK["id"]:
         return (
-            f"Call os_mcp.descriptor on the connected {server_name} MCP server "
-            "and stop after one sentence."
+            f"Use only the connected {server_name} MCP server in this VS Code "
+            "window. In this VS Code agent window, the benchmark MCP tools are "
+            f"exposed with `{VSCODE_BENCH_TOOL_ALIAS_PREFIX}...` aliases. Call "
+            f"the exact MCP tool `{VSCODE_READINESS_TOOL_ALIAS}` with "
+            f'{{"uri":"{VSCODE_READINESS_RESOURCE_URI}"}}. If that field shape '
+            f"fails, retry the same exact tool with "
+            f'{{"name":"{VSCODE_READINESS_RESOURCE_NAME}"}}. Do not inspect '
+            "the repository, use any other tool, or use fallback paths outside "
+            "MCP. Stop after one sentence."
         )
     return (
         f"Use only the connected `{server_name}` MCP server in this VS Code "
@@ -407,6 +436,12 @@ def _tool_family(task: dict[str, Any]) -> str:
     return _expected_capability(task)
 
 
+def _readiness_task_for_track(track_id: str) -> dict[str, Any]:
+    if track_id == "vscode_ide":
+        return VSCODE_READINESS_TASK
+    return READINESS_TASK
+
+
 def _classify_capability_status(
     *,
     exit_code: int,
@@ -477,11 +512,18 @@ def _classify_blocker_category(
             "client_workspace_restriction",
             "Gemini workspace restrictions blocked access to ~/.gemini/settings.json",
         )
-    if track_id == "vscode_ide" and runner_blocker in {
-        "vscode_workspace_open_failed",
-        "vscode_workspace_focus_failed",
-    }:
-        return ("client_workspace_restriction", "VS Code failed to attach the benchmark workspace")
+    if track_id == "vscode_ide" and (
+        runner_blocker in {
+            "vscode_workspace_open_failed",
+            "vscode_workspace_focus_failed",
+            "vscode_mcp_server_not_ready",
+        }
+        or str(runner_blocker or "").startswith("vscode_primer_timeout_after_")
+    ):
+        return (
+            "client_workspace_restriction",
+            "VS Code failed to attach the benchmark workspace MCP tools before chat",
+        )
     if request_count == 0:
         if exit_code != 0:
             return (
@@ -649,6 +691,34 @@ def _list_vscode_windows() -> list[VSCodeWindow]:
         document = docs[index] if index < len(docs) else ""
         windows.append(VSCodeWindow(name=name, document=document))
     return windows
+
+
+def _find_vscode_mcp_server_logs(server_name: str) -> list[Path]:
+    if not VSCODE_LOG_ROOT.exists():
+        return []
+    matches = VSCODE_LOG_ROOT.rglob(f"mcpServer.mcp.config.*.{server_name}.log")
+    return sorted(matches, key=lambda path: path.stat().st_mtime, reverse=True)
+
+
+def _vscode_mcp_server_tools_discovered(log_path: Path) -> bool:
+    return any("Discovered " in line and " tools" in line for line in _read_lines(log_path))
+
+
+def _wait_for_vscode_mcp_server_discovery(
+    server_name: str,
+    *,
+    timeout_sec: float = 20.0,
+) -> tuple[Path | None, bool]:
+    latest_log: Path | None = None
+    deadline = time.monotonic() + timeout_sec
+    while time.monotonic() < deadline:
+        matches = _find_vscode_mcp_server_logs(server_name)
+        if matches:
+            latest_log = matches[0]
+            if _vscode_mcp_server_tools_discovered(latest_log):
+                return (latest_log, True)
+        time.sleep(VSCODE_WINDOW_POLL_INTERVAL_SEC)
+    return (latest_log, False)
 
 
 def _wait_for_new_vscode_window(
@@ -1053,6 +1123,14 @@ def _run_vscode_track(
         "--reuse-window",
         prompt,
     ]
+    primer_command = [
+        "code",
+        "chat",
+        "--mode",
+        "agent",
+        "--reuse-window",
+        VSCODE_MCP_PRIMER_PROMPT,
+    ]
     _initial_session_meta(
         session_dir,
         command=chat_command,
@@ -1073,6 +1151,7 @@ def _run_vscode_track(
         benchmarkWorkspace=str(workspace_dir),
         vscodeServerName=server_name,
         vscodeOpenCommand=open_command,
+        vscodePrimerCommand=primer_command,
     )
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
@@ -1094,6 +1173,8 @@ def _run_vscode_track(
     blocker: str | None = None
     benchmark_window: VSCodeWindow | None = None
     open_timeout_sec = min(max(timeout_sec, 5), 20)
+    discovery_timeout_sec = min(max(timeout_sec, 15), 30)
+    primer_timeout_sec = min(max(timeout_sec, 5), 30)
     phase = "workspace_open"
     try:
         try:
@@ -1124,23 +1205,46 @@ def _run_vscode_track(
                         vscodeWindowName=benchmark_window.name,
                         vscodeWindowDocument=benchmark_window.document,
                     )
-                time.sleep(1)
-                phase = "chat"
-                chat_proc = subprocess.run(
-                    chat_command,
+                phase = "primer"
+                primer_proc = subprocess.run(
+                    primer_command,
                     cwd=workspace_dir,
                     env=workspace_env,
                     capture_output=True,
                     text=True,
                     check=False,
-                    timeout=max(timeout_sec, 5),
+                    timeout=primer_timeout_sec,
                 )
-                assistant_output = chat_proc.stdout
-                if chat_proc.stderr:
-                    stderr_chunks.append(chat_proc.stderr)
-                exit_code = chat_proc.returncode
-                if chat_proc.returncode != 0:
+                if primer_proc.stderr:
+                    stderr_chunks.append(primer_proc.stderr)
+                if primer_proc.returncode != 0:
+                    exit_code = primer_proc.returncode
                     blocker = "vscode_chat_failed"
+                server_log, ready_for_chat = _wait_for_vscode_mcp_server_discovery(
+                    server_name,
+                    timeout_sec=discovery_timeout_sec,
+                )
+                if server_log is not None:
+                    _update_session_meta(session_dir, vscodeServerLog=str(server_log))
+                if blocker is None and not ready_for_chat:
+                    blocker = "vscode_mcp_server_not_ready"
+                elif blocker is None:
+                    phase = "chat"
+                    chat_proc = subprocess.run(
+                        chat_command,
+                        cwd=workspace_dir,
+                        env=workspace_env,
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                        timeout=max(timeout_sec, 5),
+                    )
+                    assistant_output = chat_proc.stdout
+                    if chat_proc.stderr:
+                        stderr_chunks.append(chat_proc.stderr)
+                    exit_code = chat_proc.returncode
+                    if chat_proc.returncode != 0:
+                        blocker = "vscode_chat_failed"
         except subprocess.TimeoutExpired as exc:
             exit_code = 124
             assistant_output = _coerce_text(exc.stdout)
@@ -1149,6 +1253,8 @@ def _run_vscode_track(
             if phase == "workspace_open":
                 blocker = "vscode_workspace_open_failed"
                 stderr_chunks.append(f"workspace open timed out after {open_timeout_sec}s")
+            elif phase == "primer":
+                blocker = f"vscode_primer_timeout_after_{primer_timeout_sec}s"
             else:
                 blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
 
@@ -1156,6 +1262,9 @@ def _run_vscode_track(
         last_growth_at: float | None = None
         last_trace_count = _delta_line_count(trace_snapshot)
         last_ui_count = _delta_line_count(ui_snapshot)
+
+        if last_trace_count > 0 or last_ui_count > 0:
+            last_growth_at = time.monotonic()
 
         while time.monotonic() < deadline:
             time.sleep(2)
@@ -1368,10 +1477,11 @@ def _run_track_readiness(
     vscode_timeout_sec: int,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     config_facts = _env_readiness_facts()
+    readiness_task = _readiness_task_for_track(track_id)
     attempts = [
         _execute_attempt(
             track_id=track_id,
-            task=READINESS_TASK,
+            task=readiness_task,
             scenario_pack_id=scenario_pack_id,
             session_root=session_root,
             codex_model=codex_model,
@@ -1387,7 +1497,7 @@ def _run_track_readiness(
         attempts.append(
             _execute_attempt(
                 track_id=track_id,
-                task=READINESS_TASK,
+                task=readiness_task,
                 scenario_pack_id=scenario_pack_id,
                 session_root=session_root,
                 codex_model=codex_model,
