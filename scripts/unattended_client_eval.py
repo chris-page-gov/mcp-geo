@@ -1460,6 +1460,7 @@ def _summarize_attempts(
         scenario["id"]: scenario.get("label", scenario["id"])
         for scenario in scenario_pack["scenarios"]
     }
+    active_tracks = [track for track in TRACKS if track["id"] in readiness_results]
     aggregate: dict[str, Any] = {
         "generatedAt": _utc_now(),
         "scenarioPack": scenario_pack["id"],
@@ -1502,7 +1503,7 @@ def _summarize_attempts(
         "tracks": {},
     }
 
-    for track in TRACKS:
+    for track in active_tracks:
         readiness = readiness_results[track["id"]]
         track_capability_attempts = [
             attempt for attempt in capability_attempts if attempt["trackId"] == track["id"]
@@ -1583,7 +1584,7 @@ def _summarize_attempts(
         ),
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
-    for track in TRACKS:
+    for track in active_tracks:
         readiness = aggregate["tracks"][track["id"]]["readiness"]
         config = readiness["configVisibility"]
         config_text = (
@@ -1608,7 +1609,7 @@ def _summarize_attempts(
                 "| --- | ---: | ---: | ---: | --- |",
             ]
         )
-        for track in TRACKS:
+        for track in active_tracks:
             summary = aggregate["tracks"][track["id"]]["capability"]
             average = "n/a" if summary["averageScore"] is None else f"{summary['averageScore']:.2f}"
             statuses = ", ".join(
@@ -1627,7 +1628,7 @@ def _summarize_attempts(
                 "| --- | --- | ---: | ---: | ---: |",
             ]
         )
-        for track in TRACKS:
+        for track in active_tracks:
             capabilities = aggregate["tracks"][track["id"]]["capability"]["capabilities"]
             for capability, summary in sorted(capabilities.items()):
                 average = (
@@ -1662,13 +1663,13 @@ def _summarize_attempts(
             [
                 "",
                 "## Scenario Matrix",
-                "| Scenario | " + " | ".join(track["label"] for track in TRACKS) + " |",
-                "| --- | " + " | ".join("---" for _track in TRACKS) + " |",
+                "| Scenario | " + " | ".join(track["label"] for track in active_tracks) + " |",
+                "| --- | " + " | ".join("---" for _track in active_tracks) + " |",
             ]
         )
         for scenario in scenario_pack["scenarios"]:
             row = [scenario_labels[scenario["id"]]]
-            for track in TRACKS:
+            for track in active_tracks:
                 readiness = readiness_results[track["id"]]
                 if readiness["outcome"] != "ready":
                     blocker = (

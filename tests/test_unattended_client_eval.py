@@ -635,3 +635,83 @@ def test_summarize_attempts_separates_readiness_and_capability() -> None:
     assert "Tool Family Summary" in markdown
     assert "client_workspace_restriction" in markdown
     assert "not_ready" in markdown
+
+
+def test_summarize_attempts_supports_requested_track_subset() -> None:
+    scenario_pack = {
+        "id": "pack-id",
+        "scenarios": [
+            {
+                "id": "readiness_probe",
+                "label": "Readiness probe",
+                "toolFamily": "descriptor",
+                "expectedCapability": "readiness_probe",
+                "requiresLiveOsApi": False,
+                "requiresUiRuntime": False,
+            }
+        ],
+    }
+    readiness_results = {
+        "vscode_ide": {
+            "trackId": "vscode_ide",
+            "trackLabel": "VS Code Agent",
+            "configVisibility": {
+                "osApiKeyPresent": False,
+                "osApiKeyFilePresent": True,
+                "liveOsReady": True,
+                "defaultToolset": "starter",
+                "includeToolsets": "ons_geo_lookup",
+                "excludeToolsets": None,
+            },
+            "attempts": [],
+            "attemptCount": 1,
+            "outcome": "ready",
+            "firstAttemptOutcome": "ready",
+            "finalAttemptKind": "readiness",
+            "recovered": False,
+            "blockerCategory": None,
+            "blocker": None,
+            "readinessLatencyMs": 900,
+            "requestCount": 2,
+            "toolCallCount": 1,
+            "liveOsReady": True,
+        }
+    }
+    attempts = [
+        {
+            "trackId": "vscode_ide",
+            "trackLabel": "VS Code Agent",
+            "attemptKind": "readiness",
+            "taskId": "readiness_probe",
+            "taskLabel": "Readiness probe",
+            "scenarioId": None,
+            "scenarioLabel": None,
+            "sessionDir": "/tmp/vscode-readiness",
+            "runStatus": "ready",
+            "blockerCategory": None,
+            "blocker": None,
+            "overallScore": None,
+            "overallStatus": None,
+            "diagnosticScore": 0.9,
+            "toolCallCount": 1,
+            "requestCount": 2,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": 900,
+            "capabilityGroup": None,
+            "expectedCapability": "readiness_probe",
+            "toolFamily": "descriptor",
+            "requiresLiveOsApi": False,
+            "requiresUiRuntime": False,
+        }
+    ]
+
+    aggregate, markdown = unattended_client_eval._summarize_attempts(
+        scenario_pack=scenario_pack,
+        readiness_results=readiness_results,
+        attempts=attempts,
+        readiness_only=True,
+    )
+
+    assert list(aggregate["tracks"]) == ["vscode_ide"]
+    assert "| VS Code Agent |" in markdown
+    assert "| Codex CLI |" not in markdown

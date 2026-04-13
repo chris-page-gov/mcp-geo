@@ -100,6 +100,9 @@ All notable changes to this project will be documented in this file.
   session directory, and terminates the matching isolated Code processes after
   each attempt. This removes the previous shared-window coupling and stops
   unattended runs from accumulating live benchmark windows.
+- The unattended aggregate renderer now summarizes only the requested tracks
+  instead of assuming all four benchmark clients are always present, so
+  single-track readiness probes produce report artifacts instead of crashing.
 - The benchmark wrapper plan output now reports whether an OS key and/or key
   file was resolved, without revealing the secret itself. This makes wrapper
   preflight diagnosis possible when local client configs, `.env`, and shell

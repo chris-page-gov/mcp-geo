@@ -86,9 +86,11 @@ assumptions change.
   `mcp.json` into that isolated profile, opens the benchmark workspace in the
   same isolated Code instance, runs `code chat --reuse-window` against that
   instance only, and then terminates the matching `--user-data-dir` processes.
-  This avoids false `no_mcp_traffic` scoring caused by shared-window routing
-  and prevents unattended runs from accumulating live VS Code windows on the
-  workstation.
+  This avoids false `no_mcp_traffic` scoring caused by shared-window routing,
+  prevents unattended runs from accumulating live VS Code windows on the
+  workstation, and keeps single-track readiness probes usable because the
+  aggregate report now renders only the requested tracks instead of assuming
+  all four clients are always present.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at
