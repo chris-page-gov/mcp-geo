@@ -1,6 +1,6 @@
 {
-  "trackId": "gemini_cli",
-  "trackLabel": "Gemini CLI",
+  "trackId": "vscode_ide",
+  "trackLabel": "VS Code Agent",
   "configVisibility": {
     "osApiKeyPresent": false,
     "osApiKeyFilePresent": true,
@@ -11,16 +11,16 @@
   },
   "attempts": [
     {
-      "trackId": "gemini_cli",
-      "trackLabel": "Gemini CLI",
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
       "attemptKind": "readiness",
       "taskId": "readiness_probe",
       "taskLabel": "Readiness probe",
       "scenarioId": null,
       "scenarioLabel": null,
-      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T122300Z-gemini-cli-readiness-probe",
-      "startedAt": "2026-04-13T12:23:00Z",
-      "durationMs": 17930.09,
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120625Z-vscode-ide-readiness-probe",
+      "startedAt": "2026-04-13T12:06:25Z",
+      "durationMs": 37907.75,
       "exitCode": 0,
       "runStatus": "ready",
       "blockerCategory": null,
@@ -28,14 +28,14 @@
       "blockerRaw": null,
       "overallScore": null,
       "overallStatus": null,
-      "diagnosticScore": 0.8944,
+      "diagnosticScore": 0.8167,
       "toolCallCount": 1,
-      "requestCount": 6,
+      "requestCount": 5,
       "errorCodes": [],
-      "latencyToFirstUsefulToolCallMs": 9345.911026000977,
+      "latencyToFirstUsefulToolCallMs": 12747.92218208313,
       "capabilityGroup": null,
       "expectedCapability": "readiness_probe",
-      "toolFamily": "descriptor",
+      "toolFamily": "resource_bridge",
       "requiresLiveOsApi": false,
       "requiresUiRuntime": false
     }
@@ -47,8 +47,8 @@
   "recovered": false,
   "blockerCategory": null,
   "blocker": null,
-  "readinessLatencyMs": 9345.911026000977,
-  "requestCount": 6,
+  "readinessLatencyMs": 12747.92218208313,
+  "requestCount": 5,
   "toolCallCount": 1,
   "liveOsReady": true
 }

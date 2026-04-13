@@ -23,6 +23,13 @@ All notable changes to this project will be documented in this file.
   per-track readiness JSON outputs. That run confirmed Codex CLI, Gemini CLI,
   and Claude Code CLI now complete the full eight-scenario pack while VS Code
   Agent still needs additional remediation before closure.
+- Added the VS Code closure evidence at
+  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
+  and
+  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`,
+  plus the final rewritten canonical four-client rerun at
+  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` showing
+  all four clients ready and all four completing the full eight-scenario pack.
 - Added the follow-on unattended analysis report
   `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`,
   grouping the captured evidence by tool family, working flows, failure
@@ -144,6 +151,11 @@ All notable changes to this project will be documented in this file.
   post-primer MCP traffic, which isolated the primer itself as the only MCP
   traffic source in that flow. The real scenario chat is now the first
   MCP-driving action in each benchmark window.
+- The unattended remediation is now operationally closed under the checked-in
+  plan acceptance criteria: the canonical aggregate report records all four
+  tracks as `ready`, each client completes the full scenario pack, and the
+  previous VS Code-specific silent `no_mcp_traffic` / leaked-window failure
+  mode has been replaced by scored or explicitly classified capability rows.
 - The unattended aggregate renderer now summarizes only the requested tracks
   instead of assuming all four benchmark clients are always present, so
   single-track readiness probes produce report artifacts instead of crashing.

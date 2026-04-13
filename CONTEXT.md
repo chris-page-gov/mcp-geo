@@ -52,11 +52,12 @@ assumptions change.
 
 ## Current Focus
 
-- The 2026-04-13 unattended-eval remediation is not yet operationally closed.
-  The redesign and first harness fixes are landed, but the plan's definition of
-  done requires a fresh unattended four-client run where Codex CLI, Gemini CLI,
-  Claude Code CLI, and VS Code Agent all complete the scenario pack and an
-  updated report records the remediation as working in practice.
+- The 2026-04-13 unattended-eval remediation is now operationally closed under
+  the checked-in plan acceptance criteria. The canonical aggregate report at
+  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` now shows
+  Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent all passing
+  readiness and all completing the full eight-scenario pack with readiness,
+  capability, and tool-family summaries recorded in one report.
 - A 2026-04-13 unattended-eval remediation pass is now implemented, tracked in
   `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The unattended
   four-client harness now runs readiness before capability, emits per-track
@@ -130,7 +131,8 @@ assumptions change.
   The same run also left benchmark Code windows alive long enough to balloon
   workstation memory, showing that the close-window path was not handling the
   `A session is in progress` confirmation dialog.
-- The current same-day follow-up therefore stays in progress. The harness now
+- The current same-day follow-up therefore stayed in progress until the final
+  no-primer VS Code reruns landed. The harness now
   re-raises the benchmark window immediately before the real VS Code scenario
   chat, resets the trace/UI delta snapshot after the primer so scoring only
   measures chat-specific traffic, and confirms the in-progress-session close
@@ -149,10 +151,19 @@ assumptions change.
   then proved the cleanup fix worked but also isolated the remaining flow
   defect: the retained trace in the live session came entirely from the primer,
   while the actual capability chat still produced zero post-primer MCP traffic.
-  The VS Code runner has therefore now dropped the separate primer step so the
-  real scenario chat is the first MCP-driving action in the benchmark window.
-  Another VS Code live rerun is still required before the plan can be marked
-  done.
+  The VS Code runner therefore dropped the separate primer step so the real
+  scenario chat became the first MCP-driving action in the benchmark window.
+  The next live canary
+  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
+  then scored `address_lookup_postcode`, and the full VS Code-only rerun at
+  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`
+  scored all eight capability scenarios. The final canonical four-client rerun
+  at `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` now
+  keeps all four tracks in `ready`, records one full pack per client, and no
+  longer leaves VS Code in the earlier silent `no_mcp_traffic` / leaked-window
+  failure mode. Residual `startup_only` / `runner_error` rows on some non-VS
+  scenarios remain visible as reported client-capability outcomes rather than
+  unresolved harness-readiness defects.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at
