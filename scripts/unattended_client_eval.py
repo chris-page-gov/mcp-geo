@@ -13,6 +13,7 @@ import sys
 import tempfile
 import time
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,8 @@ from scripts.trace_utils import (  # noqa: E402
     extract_params,
     extract_tool_name,
 )
+from server.config import settings  # noqa: E402
+from server.security import configured_secrets, mask_in_text, mask_in_value  # noqa: E402
 
 DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
@@ -124,6 +127,13 @@ CLAUDE_AUTH_SIGNATURES = (
     "Failed to authenticate",
     "authentication credentials",
     "authentication_error",
+)
+ARTIFACT_SECRET_KEYS = (
+    "OS_API_KEY",
+    "NOMIS_UID",
+    "NOMIS_SIGNATURE",
+    "MCP_HTTP_AUTH_TOKEN",
+    "MCP_HTTP_JWT_HS256_SECRET",
 )
 
 TRACKS = (
@@ -355,6 +365,41 @@ def _update_session_paths(session_dir: Path, **updates: str) -> None:
 def _write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+@lru_cache(maxsize=1)
+def _artifact_redactions() -> tuple[str, ...]:
+    seen: set[str] = set()
+    values: list[str] = []
+
+    def add(candidate: str | None) -> None:
+        normalized = str(candidate or "").strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            values.append(normalized)
+
+    for secret in configured_secrets(settings):
+        add(secret)
+    for env in (_build_inherited_env(), resolved_process_env()):
+        for key in ARTIFACT_SECRET_KEYS:
+            add(env.get(key))
+    return tuple(values)
+
+
+def _mask_artifact_text(text: str) -> str:
+    return mask_in_text(text, list(_artifact_redactions()))
+
+
+def _mask_artifact_value(value: object) -> object:
+    return mask_in_value(value, list(_artifact_redactions()))
+
+
+def _write_artifact_text(path: Path, text: str) -> None:
+    _write_text(path, _mask_artifact_text(text))
+
+
+def _write_artifact_json(path: Path, payload: dict[str, Any]) -> None:
+    _write_text(path, json.dumps(_mask_artifact_value(payload), indent=2))
 
 
 def _coerce_text(value: str | bytes | None) -> str:
@@ -925,9 +970,9 @@ def _run_codex_track(
             text=True,
             check=False,
         )
-        (session_dir / "codex-events.jsonl").write_text(proc.stdout, encoding="utf-8")
+        _write_artifact_text(session_dir / "codex-events.jsonl", proc.stdout)
         if proc.stderr:
-            _write_text(_stderr_path(session_dir, "codex"), proc.stderr)
+            _write_artifact_text(_stderr_path(session_dir, "codex"), proc.stderr)
         exit_code = proc.returncode
         if proc.returncode != 0:
             blocker = f"codex exec failed with code {proc.returncode}"
@@ -1010,14 +1055,14 @@ def _run_gemini_track(
         )
     except subprocess.TimeoutExpired as exc:
         blocker = f"gemini_cli_timeout_after_{timeout_sec}s"
-        _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
+        _write_artifact_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
         if exc.stderr is not None:
-            _write_text(_stderr_path(session_dir, "gemini"), _coerce_text(exc.stderr))
+            _write_artifact_text(_stderr_path(session_dir, "gemini"), _coerce_text(exc.stderr))
         _update_session_meta(session_dir, runnerError=blocker)
         return (session_dir, 124, blocker)
-    _write_text(session_dir / "assistant-response.txt", proc.stdout)
+    _write_artifact_text(session_dir / "assistant-response.txt", proc.stdout)
     if proc.stderr:
-        _write_text(_stderr_path(session_dir, "gemini"), proc.stderr)
+        _write_artifact_text(_stderr_path(session_dir, "gemini"), proc.stderr)
     exit_code = proc.returncode
     if proc is not None and proc.returncode != 0:
         blocker = "gemini_cli_failed"
@@ -1094,14 +1139,14 @@ def _run_claude_track(
             )
         except subprocess.TimeoutExpired as exc:
             blocker = f"claude_cli_timeout_after_{timeout_sec}s"
-            _write_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
+            _write_artifact_text(session_dir / "assistant-response.txt", _coerce_text(exc.stdout))
             if exc.stderr is not None:
-                _write_text(_stderr_path(session_dir, "claude"), _coerce_text(exc.stderr))
+                _write_artifact_text(_stderr_path(session_dir, "claude"), _coerce_text(exc.stderr))
             _update_session_meta(session_dir, runnerError=blocker)
             return (session_dir, 124, blocker)
-        _write_text(session_dir / "assistant-response.txt", proc.stdout)
+        _write_artifact_text(session_dir / "assistant-response.txt", proc.stdout)
         if proc.stderr:
-            _write_text(_stderr_path(session_dir, "claude"), proc.stderr)
+            _write_artifact_text(_stderr_path(session_dir, "claude"), proc.stderr)
         if proc.returncode != 0:
             blocker = "claude_cli_failed"
             _update_session_meta(session_dir, runnerError=blocker)
@@ -1538,9 +1583,9 @@ def _run_vscode_track(
             quit_app_when_idle=benchmark_owns_vscode_app,
         )
 
-    _write_text(session_dir / "assistant-response.txt", assistant_output)
+    _write_artifact_text(session_dir / "assistant-response.txt", assistant_output)
     if stderr_chunks:
-        _write_text(_stderr_path(session_dir, "vscode"), "\n\n".join(stderr_chunks))
+        _write_artifact_text(_stderr_path(session_dir, "vscode"), "\n\n".join(stderr_chunks))
     time.sleep(1)
     _materialize_log_delta(trace_path, trace_snapshot)
     _materialize_log_delta(ui_path, ui_snapshot)
@@ -1657,7 +1702,7 @@ def _execute_attempt(
                 _session_name(track_id, task["id"]),
             )
         session_dir.mkdir(parents=True, exist_ok=True)
-        _write_text(session_dir / "runner-error.txt", f"{type(exc).__name__}: {exc}\n")
+        _write_artifact_text(session_dir / "runner-error.txt", f"{type(exc).__name__}: {exc}\n")
         _update_session_meta(session_dir, runnerError=runner_blocker)
 
     if session_dir is not None and session_dir.exists():
@@ -1666,7 +1711,7 @@ def _execute_attempt(
             evidence, score = _score_session(session_dir, task)
         except Exception as exc:
             runner_blocker = runner_blocker or f"score_session failed: {exc}"
-            _write_text(session_dir / "score-error.txt", f"{type(exc).__name__}: {exc}\n")
+            _write_artifact_text(session_dir / "score-error.txt", f"{type(exc).__name__}: {exc}\n")
 
     if attempt_kind == "capability":
         run_status = _classify_capability_status(exit_code=exit_code, evidence=evidence)
@@ -2288,11 +2333,12 @@ def main() -> int:
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")
     md_path = out_prefix.with_suffix(".md")
-    json_path.write_text(json.dumps(aggregate, indent=2), encoding="utf-8")
-    md_path.write_text(markdown, encoding="utf-8")
+    _write_artifact_json(json_path, aggregate)
+    # codeql[py/clear-text-storage-sensitive-data]
+    _write_artifact_text(md_path, markdown)
     for track_id, readiness in readiness_results.items():
         readiness_path = out_prefix.parent / f"{out_prefix.stem}.{track_id}.readiness.json"
-        readiness_path.write_text(json.dumps(readiness, indent=2), encoding="utf-8")
+        _write_artifact_json(readiness_path, readiness)
     print(md_path)
     print(json_path)
     return 0

@@ -11,6 +11,47 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def test_write_artifact_text_masks_known_secrets(monkeypatch, tmp_path: Path) -> None:
+    path = tmp_path / "artifact.txt"
+
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_artifact_redactions",
+        lambda: ("hunter2",),
+    )
+
+    unattended_client_eval._write_artifact_text(path, "password=hunter2")
+
+    assert path.read_text(encoding="utf-8") == "password=[REDACTED]"
+
+
+def test_write_artifact_json_masks_secret_like_keys_and_values(monkeypatch, tmp_path: Path) -> None:
+    path = tmp_path / "artifact.json"
+
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_artifact_redactions",
+        lambda: ("hunter2",),
+    )
+
+    unattended_client_eval._write_artifact_json(
+        path,
+        {
+            "safe": "ok",
+            "password": "hunter2",
+            "nested": {"token": "hunter2", "note": "contains hunter2"},
+        },
+    )
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    assert payload == {
+        "safe": "ok",
+        "password": "[REDACTED]",
+        "nested": {"token": "[REDACTED]", "note": "contains [REDACTED]"},
+    }
+
+
 def test_score_session_reuses_existing_benchmark_artifacts(tmp_path: Path) -> None:
     session_dir = tmp_path / "session"
     session_dir.mkdir()
@@ -367,6 +408,7 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
         lambda *_args, **_kwargs: {"command": "python", "args": ["server.py"], "env": {"A": "B"}},
     )
     monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
+    monkeypatch.setattr(unattended_client_eval, "resolved_process_env", lambda: {})
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "gemini test")
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
