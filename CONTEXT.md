@@ -59,6 +59,13 @@ assumptions change.
   The dedicated control vault will live under
   `Obsidian/MCP Geo Agent Control/` and stay separate from the existing
   generated repo knowledge base under `Obsidian/MCP Geo Knowledge Base/`.
+- The first implementation slice for that rollout is now checked in: the
+  dedicated vault scaffold under `Obsidian/MCP Geo Agent Control/`, curated
+  control notes under `00 Home/` and `10 State/`, generated compact digests
+  under `20 Generated/`, the builder helpers
+  `scripts/agent_control_common.py` / `scripts/build_agent_control_vault.py`,
+  the manifest `data/agent_control/control_vault_manifest.json`, and focused
+  preservation/refresh coverage in `tests/test_agent_control_vault.py`.
 - The chosen rollout defaults are now fixed: root `AGENTS.md` remains the
   cross-tool contract, `CONTEXT.md` and `PROGRESS.MD` become compatibility
   shims only in `obsidian` mode, `CHANGELOG.md` remains the release ledger,
@@ -981,7 +988,9 @@ assumptions change.
 - Implement the switchable Obsidian agent-control plane under
   `Plans/PLAN-Obsidian-agent-control-plane.md`, including the dedicated
   control vault, official Obsidian CLI wrapper/preflight, classic-vs-obsidian
-  root adapter generation, and the first instruction-focused smoke pack.
+  root adapter generation, and the first instruction-focused smoke pack. The
+  current active slice is the CLI wrapper/preflight step now that the vault
+  scaffold has landed.
 - Keep the new control vault distinct from the existing reset-on-build
   knowledge base under `Obsidian/MCP Geo Knowledge Base/`; the new surface is
   for agent steering, while the existing vault remains the repo navigation

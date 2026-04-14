@@ -1,0 +1,73 @@
+{
+  "curated_notes": [
+    {
+      "path": "00 Home/00 - Agent Home.md",
+      "protected": true,
+      "title": "Agent Home"
+    },
+    {
+      "path": "10 State/Current Focus.md",
+      "protected": false,
+      "title": "Current Focus"
+    },
+    {
+      "path": "10 State/Work Queue.md",
+      "protected": false,
+      "title": "Work Queue"
+    },
+    {
+      "path": "10 State/Decisions.md",
+      "protected": false,
+      "title": "Decisions"
+    },
+    {
+      "path": "10 State/Verification.md",
+      "protected": false,
+      "title": "Verification"
+    },
+    {
+      "path": "10 State/Change Summary.md",
+      "protected": false,
+      "title": "Change Summary"
+    }
+  ],
+  "generated_at": "2026-04-14T21:27:08Z",
+  "generated_notes": [
+    {
+      "path": "20 Generated/Repo Map Digest.md",
+      "source_paths": [
+        "AGENTS.md",
+        "CONTEXT.md",
+        "PROGRESS.MD",
+        "CHANGELOG.md",
+        "Plans/"
+      ],
+      "title": "Repo Map Digest"
+    },
+    {
+      "path": "20 Generated/Active Plan Summary.md",
+      "source_paths": [
+        "Plans/PLAN-Obsidian-agent-control-plane.md",
+        "Plans/PLAN-Unattended-multiclient-eval-remediation.md"
+      ],
+      "title": "Active Plan Summary"
+    },
+    {
+      "path": "20 Generated/Recent Verification Summary.md",
+      "source_paths": [
+        "CONTEXT.md",
+        "PROGRESS.MD"
+      ],
+      "title": "Recent Verification Summary"
+    },
+    {
+      "path": "20 Generated/Release Summary.md",
+      "source_paths": [
+        "CHANGELOG.md",
+        "RELEASE_NOTES/"
+      ],
+      "title": "Release Summary"
+    }
+  ],
+  "output_root": "/Users/crpage/repos/mcp-geo/Obsidian/MCP Geo Agent Control"
+}

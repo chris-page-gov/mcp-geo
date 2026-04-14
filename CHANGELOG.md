@@ -12,6 +12,13 @@ All notable changes to this project will be documented in this file.
   dedicated control vault under `Obsidian/MCP Geo Agent Control/`, keep
   `AGENTS.md` as the root entrypoint, and compare `classic` versus `obsidian`
   instruction profiles with a dedicated smoke pack.
+- Added the first checked-in Obsidian agent-control vault scaffold under
+  `Obsidian/MCP Geo Agent Control/`, including curated control notes,
+  generated digests for repo map / plans / verification / releases, the new
+  build helper `scripts/agent_control_common.py`, the vault builder
+  `scripts/build_agent_control_vault.py`, the manifest
+  `data/agent_control/control_vault_manifest.json`, and focused regression
+  coverage in `tests/test_agent_control_vault.py`.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

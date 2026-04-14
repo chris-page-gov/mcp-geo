@@ -63,6 +63,9 @@ data/benchmarking/stakeholder_eval/*
 !data/knowledge_base/
 data/knowledge_base/*
 !data/knowledge_base/obsidian_kb_manifest.json
+!data/agent_control/
+data/agent_control/*
+!data/agent_control/*.json
 
 # Playground build artifacts
 playground/node_modules/
