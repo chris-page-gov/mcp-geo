@@ -101,6 +101,13 @@ Default pack:
 
 - `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json`
 
+Separate from the capability benchmark, the repo also maintains an
+instruction-focused smoke pack for the switchable Obsidian agent-control
+surface:
+
+- `docs/benchmarking/obsidian_agent_control_smoke_pack_v1.json`
+- Runbook: `docs/benchmarking/obsidian_agent_control_smoke_pack.md`
+
 Inspect or export it:
 
 ```bash

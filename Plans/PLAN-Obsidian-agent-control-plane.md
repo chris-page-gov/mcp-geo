@@ -1,7 +1,7 @@
 # Obsidian Agent Control Plane
 
 Date: 2026-04-14
-Status: in_progress
+Status: done
 Owner: Codex / Chris Page
 
 ## Summary

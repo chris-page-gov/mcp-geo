@@ -12,7 +12,7 @@ source_paths:
 # Active Plan Summary
 
 ## Current plans
-- `Plans/PLAN-Obsidian-agent-control-plane.md`: Obsidian Agent Control Plane | status `in_progress` | date `2026-04-14`
+- `Plans/PLAN-Obsidian-agent-control-plane.md`: Obsidian Agent Control Plane | status `done` | date `2026-04-14`
   - OACP-0 Checked-in plan and tracker baseline
   - OACP-1 Dedicated control vault scaffold and digest model
   - OACP-2 Obsidian CLI wrapper and preflight

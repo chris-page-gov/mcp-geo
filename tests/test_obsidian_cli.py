@@ -20,8 +20,22 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _run_git(repo_root: Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
+
+
 def _init_minimal_repo(repo_root: Path) -> None:
     _write(repo_root / "AGENTS.md", "# Agents\n")
+    _write(repo_root / "CLAUDE.md", "# Claude\n")
+    _write(repo_root / "GEMINI.md", "# Gemini\n")
+    _write(repo_root / ".github" / "copilot-instructions.md", "# Copilot\n")
     _write(repo_root / "CONTEXT.md", "# Context\n\n## Verification Status\n\n- Green.\n")
     _write(repo_root / "PROGRESS.MD", "# Progress\n\nValidated with `pytest -q`.\n")
     _write(
@@ -119,3 +133,47 @@ def test_validate_control_vault_merges_manifest_and_cli_issues(tmp_path: Path) -
     )
 
     assert any(issue["code"] == "OBSIDIAN_VERSION_TOO_OLD" for issue in issues)
+
+
+def test_validate_control_vault_allows_live_classic_tracker_updates(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _run_git(repo_root, "init")
+    _run_git(repo_root, "config", "user.name", "Test User")
+    _run_git(repo_root, "config", "user.email", "test@example.com")
+    _init_minimal_repo(repo_root)
+    _run_git(repo_root, "add", ".")
+    _run_git(repo_root, "commit", "-m", "Initial commit")
+
+    vault_path = repo_root / "vault"
+    manifest_path = repo_root / "manifest.json"
+    build_control_vault(repo_root, output_root=vault_path, manifest_path=manifest_path)
+    _write(
+        repo_root / "data" / "agent_control" / "active_mode.json",
+        '{\n  "mode": "classic",\n  "root_files": [\n'
+        '    "AGENTS.md",\n    "CLAUDE.md",\n    "GEMINI.md",\n'
+        '    ".github/copilot-instructions.md",\n    "CONTEXT.md",\n    "PROGRESS.MD"\n'
+        "  ]\n}\n",
+    )
+
+    _write(
+        repo_root / "CONTEXT.md",
+        "# Context\n\n## Current Focus\n\n- Updated during the live workstream.\n",
+    )
+    _write(
+        repo_root / "PROGRESS.MD",
+        "# Progress\n\n- Tracker updated after the last milestone.\n",
+    )
+
+    issues = validate_control_vault(
+        repo_root,
+        vault_path,
+        manifest_path,
+        check_cli=False,
+        app_path=tmp_path / "Obsidian.app",
+        cli_path=None,
+        mode_manifest_path=repo_root / "data" / "agent_control" / "active_mode.json",
+    )
+
+    assert not any(issue["code"] == "CLASSIC_RESTORE_MISMATCH" for issue in issues)
+    assert not any(issue["code"] == "CLASSIC_TRACKER_SHIM_ACTIVE" for issue in issues)

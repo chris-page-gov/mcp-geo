@@ -53,12 +53,19 @@ assumptions change.
 ## Current Focus
 
 - A new 2026-04-14 Obsidian control-plane rollout is now in progress under
-  `Plans/PLAN-Obsidian-agent-control-plane.md`. The goal is to replace the
+  `Plans/PLAN-Obsidian-agent-control-plane.md`. The goal was to replace the
   large root tracker read path with a switchable `classic` / `obsidian`
   profile system while keeping root `AGENTS.md` as the universal entrypoint.
   The dedicated control vault will live under
   `Obsidian/MCP Geo Agent Control/` and stay separate from the existing
   generated repo knowledge base under `Obsidian/MCP Geo Knowledge Base/`.
+- That Obsidian control-plane implementation is now complete in the repo:
+  the dedicated vault scaffold, CLI wrapper/preflight, local mode switcher,
+  smoke-pack JSON, runbook, evidence template, README distinction, and
+  focused tests are all checked in. The remaining local prerequisite for the
+  full non-skipped CLI preflight is still the desktop app upgrade to
+  Obsidian `1.12.7+` with `Settings > General > Command Line Interface`
+  enabled.
 - The first implementation slice for that rollout is now checked in: the
   dedicated vault scaffold under `Obsidian/MCP Geo Agent Control/`, curated
   control notes under `00 Home/` and `10 State/`, generated compact digests
@@ -1009,9 +1016,9 @@ assumptions change.
   `Plans/PLAN-Obsidian-agent-control-plane.md`, including the dedicated
   control vault, official Obsidian CLI wrapper/preflight, classic-vs-obsidian
   root adapter generation, and the first instruction-focused smoke pack. The
-  current active slice is the final runbook/docs distinction and validation
-  closure now that the vault scaffold, CLI/preflight layer, local mode
-  switcher, and smoke-pack JSON are all in place.
+  implementation slices are complete; the next operator-facing step is to run
+  the smoke pack against the four target clients after upgrading the local
+  Obsidian desktop app so the full CLI preflight can pass.
 - Keep the new control vault distinct from the existing reset-on-build
   knowledge base under `Obsidian/MCP Geo Knowledge Base/`; the new surface is
   for agent steering, while the existing vault remains the repo navigation

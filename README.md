@@ -534,7 +534,14 @@ The repo now also carries a generated, repo-wide Obsidian knowledge base under
 surface is built automatically from tracked repo content, excludes `Obsidian/**`
  from source scanning to avoid recursion, records commit-pinned GitHub links and
  source hashes in note frontmatter, and supports an ignored `98 Local Overlay/`
- subtree for machine-local trace/session evidence.
+subtree for machine-local trace/session evidence.
+
+Separate from that navigation-oriented knowledge base, the repo now also has a
+switchable agent-control vault under `Obsidian/MCP Geo Agent Control/`. This
+surface is for directing AI agents through a compact control plane rather than
+for broad repo browsing. The committed branch baseline stays in `classic` mode;
+use the switcher to rewrite the working tree into `obsidian` mode locally for
+evaluation and then restore the tracked baseline.
 
 Refresh the canonical vault with:
 
@@ -553,6 +560,29 @@ python3 scripts/validate_obsidian_kb.py \
   --manifest data/knowledge_base/obsidian_kb_manifest.json \
   --fail-on drift coverage recursion orphan
 ```
+
+Build the agent-control vault with:
+
+```bash
+python3 scripts/build_agent_control_vault.py
+```
+
+Validate it without the optional Obsidian CLI preflight:
+
+```bash
+python3 scripts/validate_agent_control.py --skip-cli
+```
+
+Switch between the two root instruction profiles with:
+
+```bash
+python3 scripts/switch_agent_mode.py --mode classic
+python3 scripts/switch_agent_mode.py --mode obsidian
+```
+
+The instruction-focused comparison pack for this control plane lives at
+`docs/benchmarking/obsidian_agent_control_smoke_pack_v1.json`, with the runbook
+at `docs/benchmarking/obsidian_agent_control_smoke_pack.md`.
 
 Enable the live warehouse with `LANDIS_ENABLED=true`, `LANDIS_LIVE_ENABLED=true`,
 and `LANDIS_WAREHOUSE_DSN=...`. Load normalized tables with

@@ -37,6 +37,14 @@ All notable changes to this project will be documented in this file.
   structural regression test `tests/test_obsidian_agent_control_smoke_pack.py`
   for six smoke scenarios across Codex, Claude, Gemini, and VS Code in both
   `classic` and `obsidian` modes.
+- Added the smoke-pack runbook
+  `docs/benchmarking/obsidian_agent_control_smoke_pack.md`, the evidence
+  template `docs/benchmarking/obsidian_agent_control_smoke_evidence_template.md`,
+  and README guidance that distinguishes the new agent-control vault from the
+  existing repo-navigation knowledge base. The Obsidian control-plane
+  implementation is now complete in-repo; the remaining local prerequisite for
+  full CLI-ready validation is upgrading Obsidian to `1.12.7+` and enabling
+  the desktop CLI.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

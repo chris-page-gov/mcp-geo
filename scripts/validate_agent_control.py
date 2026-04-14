@@ -19,6 +19,17 @@ from scripts.agent_control_common import (  # noqa: E402
 )
 from scripts.obsidian_cli import DEFAULT_OBSIDIAN_APP, preflight  # noqa: E402
 
+OBSIDIAN_MODE_MARKERS = {
+    "AGENTS.md": "obsidian` agent-control mode",
+    "CLAUDE.md": "@AGENTS.md",
+    "GEMINI.md": "@AGENTS.md",
+    ".github/copilot-instructions.md": "Primary control surface",
+    "CONTEXT.md": "Compatibility Summary",
+    "PROGRESS.MD": "Compatibility Summary",
+}
+
+CLASSIC_TRACKER_FILES = {"CONTEXT.md", "PROGRESS.MD"}
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Validate the MCP Geo agent control vault.")
@@ -112,15 +123,7 @@ def validate_control_vault(
         mode_manifest = json.loads(mode_manifest_path.read_text(encoding="utf-8"))
         mode = mode_manifest.get("mode")
         if mode == "obsidian":
-            expected_markers = {
-                "AGENTS.md": "obsidian` agent-control mode",
-                "CLAUDE.md": "@AGENTS.md",
-                "GEMINI.md": "@AGENTS.md",
-                ".github/copilot-instructions.md": "Primary control surface",
-                "CONTEXT.md": "Compatibility Summary",
-                "PROGRESS.MD": "Compatibility Summary",
-            }
-            for rel_path, marker in expected_markers.items():
+            for rel_path, marker in OBSIDIAN_MODE_MARKERS.items():
                 text = (repo_root / rel_path).read_text(encoding="utf-8")
                 if marker not in text:
                     issues.append(
@@ -135,6 +138,18 @@ def validate_control_vault(
         elif mode == "classic":
             for rel_path in mode_manifest.get("root_files", []):
                 current = (repo_root / rel_path).read_text(encoding="utf-8")
+                if rel_path in CLASSIC_TRACKER_FILES:
+                    if OBSIDIAN_MODE_MARKERS[rel_path] in current:
+                        issues.append(
+                            {
+                                "code": "CLASSIC_TRACKER_SHIM_ACTIVE",
+                                "message": (
+                                    f"{rel_path} still contains the obsidian-mode "
+                                    "compatibility shim marker while classic mode is active."
+                                ),
+                            }
+                        )
+                    continue
                 if current != git_head_text(repo_root, rel_path):
                     issues.append(
                         {
