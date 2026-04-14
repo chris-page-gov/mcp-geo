@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slow Traffic Advertising Hotspots - Warwick</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+html, body { margin:0; padding:0; height:100%; font-family:"Segoe UI",Arial,sans-serif; background:#1a1a2e; color:#eee; }
+body { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+#header {
+  padding:12px 20px; flex-shrink:0;
+  background:linear-gradient(135deg,#16213e,#0f3460);
+  border-bottom:2px solid #e94560;
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
+#header h1 { font-size:1.05rem; font-weight:700; color:#fff; }
+#header p  { font-size:0.72rem; color:#aac; margin-top:2px; }
+
+#controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex-shrink:0; }
+#style-bar { display:flex; gap:6px; align-items:center; }
+#style-bar span { font-size:0.68rem; color:#aac; margin-right:2px; text-transform:uppercase; letter-spacing:.8px; }
+
+.style-btn {
+  padding:5px 12px; border:1px solid #444; border-radius:6px;
+  background:#1e2a45; color:#ccc; font-size:0.72rem; cursor:pointer; transition:all .18s;
+}
+.style-btn:hover  { border-color:#e94560; color:#fff; }
+.style-btn.active { background:#e94560; border-color:#e94560; color:#fff; font-weight:600; }
+
+#key-btn {
+  padding:5px 12px; border:1px solid #555; border-radius:6px;
+  background:#1e2a45; color:#aac; font-size:0.72rem; cursor:pointer; transition:all .18s;
+}
+#key-btn:hover { border-color:#e94560; color:#fff; }
+
+#map { flex:1; min-height:0; }
+
+#legend {
+  flex-shrink:0; padding:7px 20px; background:#16213e;
+  display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  font-size:0.7rem; border-top:1px solid #2a3555;
+}
+.li { display:flex; align-items:center; gap:5px; }
+.ll { width:22px; height:4px; border-radius:2px; display:inline-block; }
+.ld { width:11px; height:11px; border-radius:50%; display:inline-block; }
+.ls { width:11px; height:11px; border-radius:2px; display:inline-block; }
+#legend b { color:#aac; font-size:0.65rem; text-transform:uppercase; letter-spacing:.8px; }
+
+#key-modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.72); z-index:9999;
+  align-items:center; justify-content:center;
+}
+#key-modal.open { display:flex; }
+#key-box {
+  background:#16213e; border:1px solid #e94560; border-radius:12px;
+  padding:28px 30px; width:380px; max-width:92vw;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);
+}
+#key-box h2 { font-size:1rem; color:#fff; margin-bottom:8px; }
+#key-box .sub { font-size:0.76rem; color:#aac; margin-bottom:18px; line-height:1.55; }
+#key-input {
+  width:100%; padding:9px 12px; border-radius:6px;
+  border:1px solid #444; background:#0f1e38; color:#fff;
+  font-size:0.85rem; margin-bottom:12px; box-sizing:border-box;
+}
+#key-input:focus { outline:none; border-color:#e94560; }
+.key-btns { display:flex; gap:10px; justify-content:flex-end; }
+.key-btns button { padding:8px 18px; border-radius:6px; border:none; cursor:pointer; font-size:0.8rem; }
+#key-cancel { background:#2a3555; color:#aac; }
+#key-save   { background:#e94560; color:#fff; font-weight:600; }
+#key-save:hover { background:#c0314f; }
+#key-warn   { font-size:0.7rem; color:#f57c00; margin-top:6px; display:none; }
+
+.leaflet-popup-content-wrapper { background:#16213e; color:#eee; border:1px solid #e94560; border-radius:8px; }
+.leaflet-popup-tip { background:#16213e; }
+</style>
+</head>
+<body>
+
+<div id="key-modal">
+  <div id="key-box">
+    <h2>&#128273; OS Data Hub API Key</h2>
+    <p class="sub">Enter your Ordnance Survey Data Hub API key to use OS map styles. Your key is saved locally in the browser &mdash; you will not be asked again.</p>
+    <input id="key-input" type="password" placeholder="Paste your OS API key here..." autocomplete="off"/>
+    <p id="key-warn">Please enter a key, or click &ldquo;Use OpenStreetMap&rdquo; to continue without one.</p>
+    <div class="key-btns">
+      <button id="key-cancel">Use OpenStreetMap</button>
+      <button id="key-save">Save &amp; Apply</button>
+    </div>
+  </div>
+</div>
+
+<div id="header">
+  <div>
+    <h1>Slow Traffic Advertising Hotspots &mdash; Warwick &amp; Leamington Spa</h1>
+    <p>OS MasterMap average speed data &middot; Named road junctions &middot; Traffic calming &middot; Source: Ordnance Survey NGD</p>
+  </div>
+  <div id="controls">
+    <div id="style-bar">
+      <span>OS Style:</span>
+      <button class="style-btn active" data-layer="Road_3857">Road</button>
+      <button class="style-btn" data-layer="Outdoor_3857">Outdoor</button>
+      <button class="style-btn" data-layer="Light_3857">Light</button>
+      <button class="style-btn" data-layer="Leisure_3857">Leisure</button>
+    </div>
+    <button id="key-btn">&#128273; API Key</button>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<div id="legend">
+  <b>Speed:</b>
+  <div class="li"><span class="ll" style="background:#c62828"></span>&le;10 kph &mdash; Prime</div>
+  <div class="li"><span class="ll" style="background:#e65100"></span>11&ndash;15 kph &mdash; Excellent</div>
+  <div class="li"><span class="ll" style="background:#f57c00"></span>16&ndash;20 kph &mdash; Good</div>
+  <div class="li"><span class="ll" style="background:#fbc02d"></span>21&ndash;25 kph</div>
+  <div class="li"><span class="ll" style="background:#7cb342"></span>&gt;25 kph &mdash; Flowing</div>
+  <b>Nodes:</b>
+  <div class="li"><span class="ld" style="background:#e94560"></span>Junction</div>
+  <div class="li"><span class="ls" style="background:#00b4d8"></span>Roundabout</div>
+  <div class="li"><span class="ld" style="background:#f4a261"></span>Bus station</div>
+</div>
+
+<script>
+var ROAD_DATA = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5314944, 52.2927653], [-1.5313477, 52.2927737], [-1.531046, 52.2927867]]}, "properties": {"speed": 4.8, "color": "#c62828", "popup": "<b>Avg speed: 4.8 kph</b><br>Very slow (\u226410 kph) \u2014 Prime ad spot<br><small>(52.2928, -1.5313)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5816343, 52.2833263], [-1.5816447, 52.2832799], [-1.5816103, 52.2831985]]}, "properties": {"speed": 5.5, "color": "#c62828", "popup": "<b>Avg speed: 5.5 kph</b><br>Very slow (\u226410 kph) \u2014 Prime ad spot<br><small>(52.2833, -1.5816)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5579038, 52.2894595], [-1.5579055, 52.2892886]]}, "properties": {"speed": 10.9, "color": "#e65100", "popup": "<b>Avg speed: 10.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2893, -1.5579)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5563697, 52.2892589], [-1.5559723, 52.2891499]]}, "properties": {"speed": 11.9, "color": "#e65100", "popup": "<b>Avg speed: 11.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2891, -1.5560)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5825597, 52.2816034], [-1.5826043, 52.2815023]]}, "properties": {"speed": 12.4, "color": "#e65100", "popup": "<b>Avg speed: 12.4 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2815, -1.5826)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.542145, 52.2708953], [-1.5421106, 52.2703992]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2704, -1.5421)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5567976, 52.277069], [-1.5567648, 52.2771492]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2771, -1.5568)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6005456, 52.2706416], [-1.6006314, 52.270549], [-1.6006388, 52.270541], [-1.6008116, 52.2703578]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2705, -1.6006)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5449332, 52.2624371], [-1.5445914, 52.2622174]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2622, -1.5446)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5417043, 52.2598483], [-1.541686, 52.2597985], [-1.5415469, 52.2596556]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2598, -1.5417)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5367319, 52.2648974], [-1.5369041, 52.2649492], [-1.5369699, 52.2650321], [-1.5370075, 52.2650786]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2650, -1.5370)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5909788, 52.2874909], [-1.5909677, 52.2874542], [-1.5909614, 52.2874423], [-1.5909604, 52.2874335], [-1.5909692, 52.2874182], [-1.5909949, 52.2874058], [-1.5912365, 52.2873371]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2874, -1.5910)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5504675, 52.2603323], [-1.5505146, 52.2603614], [-1.5505553, 52.2603773], [-1.5508781, 52.2604556], [-1.5509224, 52.2604775], [-1.5509108, 52.2605582], [-1.5506869, 52.261005], [-1.5506121, 52.261137], [-1.5505253, 52.2613201], [-1.55052, 52.2613975], [-1.5505613, 52.2615664], [-1.5505522, 52.2616302], [-1.5505211, 52.2616708], [-1.5504799, 52.2617044], [-1.5504149, 52.2617342], [-1.5503541, 52.2617523], [-1.5502235, 52.2617656], [-1.5501223, 52.2617595], [-1.5498807, 52.261716], [-1.5497412, 52.2616866], [-1.5496898, 52.2616797], [-1.5496194, 52.2616636], [-1.5495462, 52.2616439], [-1.5491983, 52.2615646], [-1.5489295, 52.2615018], [-1.548739, 52.2614621], [-1.5486774, 52.2614667]]}, "properties": {"speed": 12.9, "color": "#e65100", "popup": "<b>Avg speed: 12.9 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2617, -1.5505)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5336539, 52.2918377], [-1.5336332, 52.2917178]]}, "properties": {"speed": 13.5, "color": "#e65100", "popup": "<b>Avg speed: 13.5 kph</b><br>Slow (11\u201315 kph) \u2014 Excellent ad spot<br><small>(52.2917, -1.5336)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.532739, 52.2925026], [-1.5326882, 52.2921766]]}, "properties": {"speed": 15.2, "color": "#f57c00", "popup": "<b>Avg speed: 15.2 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2922, -1.5327)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5951912, 52.2803837], [-1.5950026, 52.2803775]]}, "properties": {"speed": 15.4, "color": "#f57c00", "popup": "<b>Avg speed: 15.4 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2804, -1.5950)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6091307, 52.2608037], [-1.6091055, 52.2606528], [-1.6091081, 52.2605329], [-1.6091103, 52.260454], [-1.6091032, 52.2603788], [-1.6090855, 52.2602798], [-1.609089, 52.2602379], [-1.6090926, 52.2602148], [-1.6091093, 52.2601881], [-1.6092085, 52.260145], [-1.6094462, 52.2600602], [-1.6096755, 52.2599784]]}, "properties": {"speed": 15.4, "color": "#f57c00", "popup": "<b>Avg speed: 15.4 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2602, -1.6091)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.540333, 52.2504261], [-1.540253, 52.2504031], [-1.5401963, 52.2503894]]}, "properties": {"speed": 15.9, "color": "#f57c00", "popup": "<b>Avg speed: 15.9 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2504, -1.5403)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5234139, 52.2997726], [-1.5232381, 52.2997539], [-1.5230477, 52.2997351], [-1.5228865, 52.2997255], [-1.5227398, 52.2997339], [-1.5225929, 52.2997513], [-1.5225136, 52.2997691]]}, "properties": {"speed": 16.1, "color": "#f57c00", "popup": "<b>Avg speed: 16.1 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2997, -1.5229)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5483087, 52.2796876], [-1.5483128, 52.2796993], [-1.54831, 52.2797297], [-1.5483094, 52.2797366], [-1.5482848, 52.2797645]]}, "properties": {"speed": 16.1, "color": "#f57c00", "popup": "<b>Avg speed: 16.1 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2797, -1.5483)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5393076, 52.2618797], [-1.5392058, 52.2618545], [-1.5391077, 52.2618253]]}, "properties": {"speed": 16.3, "color": "#f57c00", "popup": "<b>Avg speed: 16.3 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2619, -1.5392)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5437464, 52.2596468], [-1.5437312, 52.2595958], [-1.5437083, 52.2595643]]}, "properties": {"speed": 16.9, "color": "#f57c00", "popup": "<b>Avg speed: 16.9 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2596, -1.5437)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5217289, 52.2955678], [-1.5216159, 52.2955655], [-1.5211528, 52.2956864]]}, "properties": {"speed": 17.0, "color": "#f57c00", "popup": "<b>Avg speed: 17.0 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2956, -1.5216)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5718486, 52.263828], [-1.5720288, 52.2638058], [-1.5721163, 52.2638133], [-1.5721577, 52.2638229], [-1.5722757, 52.2638505], [-1.5723365, 52.2638717], [-1.5723554, 52.2638865], [-1.5723644, 52.2639081], [-1.5723559, 52.2639352], [-1.5723503, 52.263953], [-1.5722856, 52.2640897], [-1.5721241, 52.2644107], [-1.5719725, 52.264663], [-1.571756, 52.265017], [-1.5715441, 52.2653685], [-1.5713211, 52.2657345], [-1.5710494, 52.2661908], [-1.5708175, 52.2666036], [-1.5707692, 52.2666834], [-1.5707196, 52.266777], [-1.5706856, 52.2668594], [-1.570646, 52.2669819], [-1.5705204, 52.2674148], [-1.5704708, 52.2675807], [-1.5704126, 52.2678829], [-1.5703405, 52.2682678], [-1.5703257, 52.268338], [-1.5703309, 52.2683844], [-1.570353, 52.2684224]]}, "properties": {"speed": 17.1, "color": "#f57c00", "popup": "<b>Avg speed: 17.1 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2654, -1.5715)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5337691, 52.2616855], [-1.5338031, 52.2615521]]}, "properties": {"speed": 17.1, "color": "#f57c00", "popup": "<b>Avg speed: 17.1 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2616, -1.5338)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5433961, 52.2623142], [-1.5434139, 52.2622629]]}, "properties": {"speed": 17.2, "color": "#f57c00", "popup": "<b>Avg speed: 17.2 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2623, -1.5434)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5666444, 52.2945786], [-1.5666256, 52.2944059]]}, "properties": {"speed": 18.7, "color": "#f57c00", "popup": "<b>Avg speed: 18.7 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2944, -1.5666)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6187393, 52.3155223], [-1.6186452, 52.3154411], [-1.6186093, 52.3154121]]}, "properties": {"speed": 18.9, "color": "#f57c00", "popup": "<b>Avg speed: 18.9 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.3154, -1.6186)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5743167, 52.3192691], [-1.5742116, 52.3195204], [-1.5741666, 52.3196192], [-1.5741072, 52.3196909], [-1.574063, 52.3197177], [-1.5740187, 52.3197445], [-1.5739745, 52.3197623], [-1.573901, 52.31978], [-1.5737982, 52.3197887], [-1.5737542, 52.3197885], [-1.5737102, 52.3197883], [-1.5735931, 52.3197609], [-1.5734031, 52.3196883], [-1.5733008, 52.319643], [-1.572994, 52.3195071]]}, "properties": {"speed": 19.0, "color": "#f57c00", "popup": "<b>Avg speed: 19.0 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.3198, -1.5739)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5905639, 52.3024933], [-1.5905984, 52.30251], [-1.590654, 52.302549], [-1.5906717, 52.3025731], [-1.5908702, 52.3028433], [-1.5909519, 52.3029653], [-1.5909334, 52.3030118], [-1.5908736, 52.3030271], [-1.5907524, 52.3030444], [-1.59051, 52.3030768], [-1.5903454, 52.3031028], [-1.5902165, 52.3031304]]}, "properties": {"speed": 19.2, "color": "#f57c00", "popup": "<b>Avg speed: 19.2 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.3030, -1.5909)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5384644, 52.2809342], [-1.5383463, 52.2810056], [-1.5382873, 52.2810414], [-1.5382432, 52.2810592], [-1.5382138, 52.281065], [-1.5381551, 52.2810768], [-1.5380083, 52.2810942], [-1.5378764, 52.2810937], [-1.5377446, 52.2810842], [-1.5375691, 52.2810386], [-1.5374961, 52.2810113], [-1.5373795, 52.2809479], [-1.5372487, 52.2808395], [-1.5371909, 52.2807584]]}, "properties": {"speed": 19.2, "color": "#f57c00", "popup": "<b>Avg speed: 19.2 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2811, -1.5379)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5636836, 52.2634309], [-1.5636411, 52.2633511], [-1.5636189, 52.2632799], [-1.5636119, 52.2632198], [-1.5636187, 52.2631699], [-1.5636964, 52.263032], [-1.5637284, 52.2629559], [-1.5637637, 52.2628722]]}, "properties": {"speed": 19.2, "color": "#f57c00", "popup": "<b>Avg speed: 19.2 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.2632, -1.5636)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5794293, 52.3185052], [-1.5794564, 52.3185085], [-1.5795288, 52.3185173], [-1.5799273, 52.3185789], [-1.5802347, 52.3186519], [-1.580513, 52.3186978]]}, "properties": {"speed": 19.6, "color": "#f57c00", "popup": "<b>Avg speed: 19.6 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.3186, -1.5799)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5304726, 52.3200743], [-1.5305181, 52.3199396]]}, "properties": {"speed": 19.8, "color": "#f57c00", "popup": "<b>Avg speed: 19.8 kph</b><br>Slow (16\u201320 kph) \u2014 Good ad spot<br><small>(52.3199, -1.5305)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5351046, 52.2884059], [-1.5351806, 52.2884261], [-1.5351842, 52.288434], [-1.5352103, 52.2884907], [-1.5352154, 52.2885019], [-1.5352147, 52.2885035], [-1.5351768, 52.2885428]]}, "properties": {"speed": 20.8, "color": "#fbc02d", "popup": "<b>Avg speed: 20.8 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2885, -1.5352)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.537036, 52.2961239], [-1.5374123, 52.296106]]}, "properties": {"speed": 21.6, "color": "#fbc02d", "popup": "<b>Avg speed: 21.6 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2961, -1.5374)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.53373, 52.3000866], [-1.53372, 52.3000384]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.3000, -1.5337)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5409393, 52.2995991], [-1.5409307, 52.299617], [-1.5408793, 52.2997247]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2996, -1.5409)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5270625, 52.2972788], [-1.5271208, 52.2973061], [-1.52715, 52.2973241], [-1.5271499, 52.2973331], [-1.5271776, 52.2974861], [-1.5271479, 52.2975219], [-1.5271184, 52.2975308], [-1.5270891, 52.2975307], [-1.5270305, 52.2975305], [-1.5270012, 52.2975213], [-1.5269867, 52.2975123], [-1.5269729, 52.2974313], [-1.5269737, 52.2973504], [-1.5269739, 52.2973324], [-1.5269888, 52.2973145], [-1.5270625, 52.2972788]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2975, -1.5270)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.553396, 52.2916182], [-1.5533816, 52.2915912], [-1.5532945, 52.291501], [-1.5532218, 52.2914378], [-1.5531927, 52.2914197]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2915, -1.5533)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5309746, 52.285481], [-1.5310983, 52.285841]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2858, -1.5311)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5268964, 52.3073655], [-1.5269603, 52.3074128], [-1.5270168, 52.3074223], [-1.5270571, 52.3074291], [-1.5271011, 52.3074293], [-1.5272333, 52.3074028], [-1.5272775, 52.307385], [-1.5273514, 52.3073314], [-1.5273515, 52.3073224], [-1.527352, 52.3072774], [-1.5273376, 52.3072504], [-1.5273087, 52.3072143], [-1.527265, 52.3071872], [-1.5271917, 52.3071779], [-1.5271037, 52.3071775], [-1.5270449, 52.3071953], [-1.526986, 52.307213], [-1.526927, 52.3072488], [-1.5268974, 52.3072756], [-1.5268971, 52.3073026], [-1.5268968, 52.3073295], [-1.5268964, 52.3073655]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.3072, -1.5273)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5475996, 52.2978806], [-1.5472769, 52.2978883], [-1.546837, 52.2978956], [-1.5463383, 52.2979027]]}, "properties": {"speed": 21.9, "color": "#fbc02d", "popup": "<b>Avg speed: 21.9 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2979, -1.5468)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6005456, 52.2706416], [-1.6014805, 52.2709774], [-1.6018898, 52.2710956], [-1.6021237, 52.2711593], [-1.603408, 52.2714334], [-1.6038558, 52.2715289]]}, "properties": {"speed": 22.1, "color": "#fbc02d", "popup": "<b>Avg speed: 22.1 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2712, -1.6021)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5431136, 52.2629282], [-1.5429217, 52.2629023]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2629, -1.5429)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5973729, 52.2714399], [-1.5975048, 52.2714404], [-1.5975782, 52.2714227], [-1.5975881, 52.2714137], [-1.5976078, 52.2713958], [-1.5976373, 52.2713689], [-1.5978559, 52.270845]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2714, -1.5976)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5892038, 52.2948817], [-1.5893421, 52.2948592]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2949, -1.5893)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5900646, 52.284238], [-1.5899276, 52.2841598], [-1.5898693, 52.2841265]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2842, -1.5899)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5787444, 52.2948219], [-1.5790591, 52.2948029]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2948, -1.5791)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5535747, 52.2609439], [-1.5534726, 52.2608699]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2609, -1.5535)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5823606, 52.2969565], [-1.5822345, 52.296956]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2970, -1.5822)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6087236, 52.2690696], [-1.6087698, 52.2690865]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2691, -1.6088)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5683115, 52.2847122], [-1.5686832, 52.2845276]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2845, -1.5687)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5928594, 52.2959606], [-1.5927153, 52.2959822]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2960, -1.5927)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5426449, 52.263247], [-1.5425431, 52.2634546], [-1.5423802, 52.2636248], [-1.5423353, 52.2637146], [-1.542305, 52.2638133]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2636, -1.5424)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5462815, 52.2689892], [-1.5460909, 52.2689974]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2690, -1.5461)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5573727, 52.2839104], [-1.5574894, 52.2839647], [-1.5575332, 52.2839829], [-1.5576064, 52.2839921], [-1.5576796, 52.2840014], [-1.5577236, 52.2840016], [-1.5579584, 52.2839755], [-1.5580904, 52.283967], [-1.558237, 52.2839675]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2840, -1.5577)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5649656, 52.2888483], [-1.5653249, 52.2891723]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2892, -1.5653)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5794225, 52.284091], [-1.5792725, 52.2839454], [-1.5792588, 52.2839322]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2839, -1.5793)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6031173, 52.2701064], [-1.6031979, 52.2700073]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2700, -1.6032)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.546589, 52.2594313], [-1.5463573, 52.259481], [-1.5462891, 52.2595093], [-1.5460353, 52.2596962], [-1.5460716, 52.2597427], [-1.5461622, 52.2597895]]}, "properties": {"speed": 22.2, "color": "#fbc02d", "popup": "<b>Avg speed: 22.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2597, -1.5460)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5232533, 52.2969669], [-1.5232685, 52.296922], [-1.5232848, 52.2968927]]}, "properties": {"speed": 22.4, "color": "#fbc02d", "popup": "<b>Avg speed: 22.4 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2969, -1.5233)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5651, 52.2900298], [-1.5642721, 52.2903821], [-1.5638157, 52.2905782], [-1.5632711, 52.290801], [-1.563208, 52.2908253]]}, "properties": {"speed": 22.7, "color": "#fbc02d", "popup": "<b>Avg speed: 22.7 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2906, -1.5638)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5468465, 52.2801241], [-1.5468861, 52.2800821], [-1.5469635, 52.2800203], [-1.547032, 52.2799758], [-1.5470461, 52.2799667], [-1.5471403, 52.2799311], [-1.5473636, 52.279878], [-1.5476058, 52.2798475]]}, "properties": {"speed": 23.2, "color": "#fbc02d", "popup": "<b>Avg speed: 23.2 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2800, -1.5470)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5768189, 52.318406], [-1.5770834, 52.318362], [-1.5774797, 52.3183364], [-1.5776118, 52.3183279], [-1.5778611, 52.3183378], [-1.5781544, 52.3183478], [-1.5784477, 52.3183668], [-1.5786089, 52.3183764], [-1.5789603, 52.3184496], [-1.5790095, 52.3184588], [-1.5790615, 52.3184734]]}, "properties": {"speed": 23.5, "color": "#fbc02d", "popup": "<b>Avg speed: 23.5 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.3183, -1.5782)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5247923, 52.2641039], [-1.5245242, 52.2636839], [-1.5245561, 52.2636315]]}, "properties": {"speed": 23.5, "color": "#fbc02d", "popup": "<b>Avg speed: 23.5 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2637, -1.5245)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5338705, 52.2611749], [-1.5339398, 52.2611417]]}, "properties": {"speed": 23.5, "color": "#fbc02d", "popup": "<b>Avg speed: 23.5 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2611, -1.5339)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5501214, 52.2646725], [-1.5501642, 52.2646252], [-1.5502709, 52.2645166], [-1.5503323, 52.264476], [-1.5503964, 52.2644524], [-1.5505161, 52.2644222], [-1.5507714, 52.2643752]]}, "properties": {"speed": 23.6, "color": "#fbc02d", "popup": "<b>Avg speed: 23.6 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2645, -1.5503)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5528781, 52.2688553], [-1.5527407, 52.2688945], [-1.5524013, 52.2689891], [-1.5523652, 52.2690016], [-1.552338, 52.2690133], [-1.5523108, 52.2690273], [-1.5522773, 52.2690482], [-1.5522571, 52.269063], [-1.5522343, 52.2690825], [-1.5522037, 52.2691163], [-1.5521473, 52.2692028], [-1.5521164, 52.2692499]]}, "properties": {"speed": 23.8, "color": "#fbc02d", "popup": "<b>Avg speed: 23.8 kph</b><br>Moderate (21\u201325 kph)<br><small>(52.2690, -1.5523)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5852874, 52.2835516], [-1.5855631, 52.2835637]]}, "properties": {"speed": 25.1, "color": "#7cb342", "popup": "<b>Avg speed: 25.1 kph</b><br>Moving freely (>25 kph)<br><small>(52.2836, -1.5856)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6319301, 52.2977584], [-1.6319452, 52.2978225]]}, "properties": {"speed": 25.3, "color": "#7cb342", "popup": "<b>Avg speed: 25.3 kph</b><br>Moving freely (>25 kph)<br><small>(52.2978, -1.6319)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5271269, 52.2788126], [-1.5269938, 52.2785578]]}, "properties": {"speed": 27.1, "color": "#7cb342", "popup": "<b>Avg speed: 27.1 kph</b><br>Moving freely (>25 kph)<br><small>(52.2786, -1.5270)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.520917, 52.297425], [-1.5211082, 52.2973718], [-1.5212309, 52.2973451]]}, "properties": {"speed": 28.2, "color": "#7cb342", "popup": "<b>Avg speed: 28.2 kph</b><br>Moving freely (>25 kph)<br><small>(52.2974, -1.5211)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5316592, 52.277915], [-1.5316746, 52.2779118], [-1.5320842, 52.2778264], [-1.532107, 52.2778216]]}, "properties": {"speed": 28.2, "color": "#7cb342", "popup": "<b>Avg speed: 28.2 kph</b><br>Moving freely (>25 kph)<br><small>(52.2778, -1.5321)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5376645, 52.2889592], [-1.5378217, 52.2889599], [-1.5379333, 52.2889962]]}, "properties": {"speed": 29.3, "color": "#7cb342", "popup": "<b>Avg speed: 29.3 kph</b><br>Moving freely (>25 kph)<br><small>(52.2890, -1.5378)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.606945, 52.2647936], [-1.6069211, 52.2648825], [-1.6069375, 52.2649893], [-1.6069429, 52.2649967]]}, "properties": {"speed": 30.5, "color": "#7cb342", "popup": "<b>Avg speed: 30.5 kph</b><br>Moving freely (>25 kph)<br><small>(52.2650, -1.6069)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5219108, 52.295536], [-1.5219801, 52.2953704], [-1.5220249, 52.2952987], [-1.5220992, 52.2952091], [-1.5222593, 52.2950479], [-1.5222771, 52.29503], [-1.5224544, 52.2948958], [-1.5225874, 52.2948065], [-1.5227349, 52.2947262], [-1.522897, 52.2946459], [-1.5230295, 52.2945925], [-1.5231472, 52.294557], [-1.5233419, 52.2945057]]}, "properties": {"speed": 30.6, "color": "#7cb342", "popup": "<b>Avg speed: 30.6 kph</b><br>Moving freely (>25 kph)<br><small>(52.2949, -1.5225)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.540241, 52.2960535], [-1.5401987, 52.2960629], [-1.540184, 52.2960629], [-1.5401401, 52.2960627]]}, "properties": {"speed": 31.1, "color": "#7cb342", "popup": "<b>Avg speed: 31.1 kph</b><br>Moving freely (>25 kph)<br><small>(52.2961, -1.5402)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.6320471, 52.2979127], [-1.6320036, 52.2978586], [-1.6319452, 52.2978225]]}, "properties": {"speed": 31.9, "color": "#7cb342", "popup": "<b>Avg speed: 31.9 kph</b><br>Moving freely (>25 kph)<br><small>(52.2979, -1.6320)</small>"}}, {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[-1.5289962, 52.2919192], [-1.5290982, 52.2919736]]}, "properties": {"speed": 31.9, "color": "#7cb342", "popup": "<b>Avg speed: 31.9 kph</b><br>Moving freely (>25 kph)<br><small>(52.2920, -1.5291)</small>"}}]};
+var JUNCTIONS = [{"name": "Browning Ave / Masefield Ave Roundabout", "lat": 52.2731, "lon": -1.5993, "type": "roundabout"}, {"name": "A425 / Banbury Rd / Gallows Hill Junction", "lat": 52.2755, "lon": -1.5749, "type": "junction"}, {"name": "A425 / Birmingham Rd Junction", "lat": 52.2887, "lon": -1.6075, "type": "junction"}, {"name": "A429 / Stratford Road Junction", "lat": 52.2607, "lon": -1.61, "type": "junction"}, {"name": "Market Place / The Holloway (Warwick town)", "lat": 52.2819, "lon": -1.5909, "type": "junction"}, {"name": "Barrack St / New Bridge St (Warwick town)", "lat": 52.2828, "lon": -1.5914, "type": "junction"}, {"name": "B4087 / Parade / Regent Grove (Leamington)", "lat": 52.2889, "lon": -1.5352, "type": "junction"}, {"name": "A445 / Rugby Rd / St Marks Rd", "lat": 52.2936, "lon": -1.5461, "type": "junction"}, {"name": "B4099 / Grove St / Warwick St (Leamington)", "lat": 52.2918, "lon": -1.5411, "type": "junction"}, {"name": "A4189 / Hampton Road Junction", "lat": 52.2746, "lon": -1.6169, "type": "junction"}, {"name": "B4087 / Harrison Way / Tachbrook Rd", "lat": 52.2743, "lon": -1.5349, "type": "junction"}, {"name": "A425 / Holioak Drive / Myton Road", "lat": 52.2808, "lon": -1.5673, "type": "junction"}, {"name": "Warwick Bus Station", "lat": 52.282, "lon": -1.5866, "type": "bus_station"}];
+
+var map = L.map("map").setView([52.283, -1.580], 13);
+var currentBase = null;
+
+function loadBase(layer, key) {
+  if (currentBase) { map.removeLayer(currentBase); }
+  if (key) {
+    var url = "https://api.os.uk/maps/raster/v1/zxy/" + layer + "/{z}/{x}/{y}?key=" + key;
+    currentBase = L.tileLayer(url, { attribution: "Crown copyright OS Data Hub 2024", maxZoom: 20, minZoom: 7 });
+  } else {
+    currentBase = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      { attribution: "OpenStreetMap contributors", subdomains: "abc", maxZoom: 19 });
+  }
+  currentBase.addTo(map);
+  currentBase.bringToBack();
+}
+
+function getKey()    { try { return localStorage.getItem("os_api_key") || ""; } catch(e) { return ""; } }
+function saveKey(k)  { try { localStorage.setItem("os_api_key", k); } catch(e) {} }
+function getLayer()  { try { return localStorage.getItem("os_layer") || "Road_3857"; } catch(e) { return "Road_3857"; } }
+function saveLayer(l){ try { localStorage.setItem("os_layer", l); } catch(e) {} }
+
+var modal    = document.getElementById("key-modal");
+var keyInput = document.getElementById("key-input");
+var keyWarn  = document.getElementById("key-warn");
+
+function openModal() {
+  keyInput.value = getKey();
+  keyWarn.style.display = "none";
+  modal.classList.add("open");
+  setTimeout(function(){ keyInput.focus(); }, 60);
+}
+function closeModal() { modal.classList.remove("open"); }
+
+document.getElementById("key-save").addEventListener("click", function() {
+  var k = keyInput.value.trim();
+  if (k.length === 0) { keyWarn.style.display = "block"; return; }
+  saveKey(k); closeModal();
+  loadBase(getLayer(), k);
+  updateBtns();
+});
+
+document.getElementById("key-cancel").addEventListener("click", function() {
+  closeModal();
+  if (getKey().length === 0) { loadBase(null, null); }
+});
+
+modal.addEventListener("click", function(e) {
+  if (e.target === modal) {
+    closeModal();
+    if (getKey().length === 0) { loadBase(null, null); }
+  }
+});
+
+document.getElementById("key-btn").addEventListener("click", openModal);
+
+function updateBtns() {
+  var cur = getLayer();
+  document.querySelectorAll(".style-btn").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.layer === cur);
+  });
+}
+
+document.querySelectorAll(".style-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var k = getKey();
+    if (k.length === 0) { openModal(); return; }
+    saveLayer(btn.dataset.layer);
+    updateBtns();
+    loadBase(btn.dataset.layer, k);
+  });
+});
+
+updateBtns();
+var savedKey = getKey();
+if (savedKey.length === 0) {
+  loadBase(null, null);
+  openModal();
+} else {
+  loadBase(getLayer(), savedKey);
+}
+
+function svLink(lat, lon) {
+  var url = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" + lat + "," + lon + "&heading=0&pitch=0";
+  return "<br><a href='" + url + "' target='_blank' style='color:#4fc3f7;font-size:0.72rem;text-decoration:none;'>&#128247; Street View (looking north) &rarr;</a>";
+}
+
+L.geoJSON(ROAD_DATA, {
+  style: function(f) { return { color: f.properties.color, weight: 5, opacity: 0.88 }; },
+  onEachFeature: function(f, layer) {
+    var coords = f.geometry.coordinates;
+    var mid = coords[Math.floor(coords.length / 2)];
+    var lat = mid[1].toFixed(6), lon = mid[0].toFixed(6);
+    layer.bindPopup(f.properties.popup + svLink(lat, lon));
+    layer.on("mouseover", function() { this.setStyle({ weight:9, opacity:1 }); });
+    layer.on("mouseout",  function() { this.setStyle({ weight:5, opacity:0.88 }); });
+  }
+}).addTo(map);
+
+JUNCTIONS.forEach(function(j) {
+  var colors = { roundabout:"#00b4d8", bus_station:"#f4a261", junction:"#e94560" };
+  var c = colors[j.type] || "#e94560";
+  var radius = (j.type === "roundabout") ? "2px" : "50%";
+  var iconHtml = '<div style="width:13px;height:13px;background:' + c + ';border:2px solid #fff;border-radius:' + radius + ';box-shadow:0 0 8px ' + c + ';"></div>';
+  var icon = L.divIcon({ className:"", html: iconHtml, iconSize:[13,13], iconAnchor:[6,6] });
+  L.marker([j.lat, j.lon], {icon: icon})
+    .bindPopup("<b>" + j.name + "</b><br><small style='color:#aac'>Slow-traffic node</small>" + svLink(j.lat, j.lon))
+    .addTo(map);
+});
+
+var tcHtml = '<div style="width:18px;height:18px;background:rgba(233,69,96,0.2);border:2px solid #e94560;border-radius:50%;"></div>';
+var tcIcon = L.divIcon({ className:"", html: tcHtml, iconSize:[18,18], iconAnchor:[9,9] });
+[
+  [52.2820, -1.5893, "Warwick Town Centre"],
+  [52.2920, -1.5360, "Leamington Spa Town Centre"]
+].forEach(function(d) {
+  L.marker([d[0], d[1]], {icon: tcIcon})
+    .bindPopup("<b>" + d[2] + "</b><br>High footfall + slow traffic zone" + svLink(d[0], d[1]))
+    .addTo(map);
+});
+</script>
+</body>
+</html>
