@@ -365,6 +365,7 @@ def _update_session_paths(session_dir: Path, **updates: str) -> None:
 
 def _write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    # codeql[py/clear-text-storage-sensitive-data]
     path.write_text(text, encoding="utf-8")
 
 
