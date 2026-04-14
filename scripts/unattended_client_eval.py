@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -402,6 +403,22 @@ def _write_artifact_json(path: Path, payload: dict[str, Any]) -> None:
     _write_text(path, json.dumps(_mask_artifact_value(payload), indent=2))
 
 
+def _env_placeholder(key: str) -> str:
+    return f"${{env:{key}}}"
+
+
+def _materialize_mcp_config_env(
+    server_env: Mapping[str, str],
+    *,
+    inherited_env: Mapping[str, str] | None = None,
+) -> dict[str, str]:
+    forwarded_env = inherited_env if inherited_env is not None else _build_inherited_env()
+    payload: dict[str, str] = {}
+    for key, value in server_env.items():
+        payload[key] = _env_placeholder(key) if key in forwarded_env else value
+    return payload
+
+
 def _coerce_text(value: str | bytes | None) -> str:
     if value is None:
         return ""
@@ -651,6 +668,7 @@ def _configure_gemini_workspace(
     workspace_dir: Path,
     server_name: str,
     server_config: dict[str, Any],
+    inherited_env: Mapping[str, str] | None = None,
 ) -> None:
     settings = {
         "tools": {
@@ -663,7 +681,10 @@ def _configure_gemini_workspace(
             server_name: {
                 "command": server_config["command"],
                 "args": server_config.get("args") or [],
-                "env": server_config.get("env") or {},
+                "env": _materialize_mcp_config_env(
+                    server_config.get("env") or {},
+                    inherited_env=inherited_env,
+                ),
                 "cwd": str(REPO_ROOT),
                 "timeout": 120000,
                 "trust": True,
@@ -693,6 +714,8 @@ def _write_vscode_workspace_mcp_config(
     workspace_dir: Path,
     session_dir: Path,
     server_name: str,
+    *,
+    inherited_env: Mapping[str, str] | None = None,
 ) -> tuple[list[Path], list[Path]]:
     workspace_path = _vscode_workspace_mcp_path(workspace_dir)
     payload = {}
@@ -710,7 +733,10 @@ def _write_vscode_workspace_mcp_config(
         "command": server_config["command"],
         "args": server_config.get("args") or [],
         "cwd": str(REPO_ROOT),
-        "env": server_config.get("env") or {},
+        "env": _materialize_mcp_config_env(
+            server_config.get("env") or {},
+            inherited_env=inherited_env,
+        ),
     }
     _write_json(workspace_path, payload)
     trace_paths = [session_dir / "mcp-stdio-trace.jsonl"]
@@ -998,15 +1024,17 @@ def _run_gemini_track(
     prompt = _task_prompt(task)
     project_dir = _prepare_gemini_workspace(task)
     server_name = f"{DEFAULT_GEMINI_SERVER}-{_slug(task['id'])}"
+    inherited_env = _build_inherited_env()
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "gemini-mcp-local",
-        inherited_env=_build_inherited_env(),
+        inherited_env=inherited_env,
     )
     _configure_gemini_workspace(
         workspace_dir=project_dir,
         server_name=server_name,
         server_config=server_config,
+        inherited_env=inherited_env,
     )
     command = [
         "gemini",
@@ -1044,10 +1072,12 @@ def _run_gemini_track(
     exit_code = 0
     blocker: str | None = None
     proc: subprocess.CompletedProcess[str] | None = None
+    client_env = resolved_process_env()
     try:
         proc = subprocess.run(
             command,
             cwd=project_dir,
+            env=client_env,
             capture_output=True,
             text=True,
             check=False,
@@ -1082,17 +1112,21 @@ def _run_claude_track(
     track = TRACK_BY_ID["claude_cli"]
     name = _session_name(track["id"], task["id"])
     session_dir = host_benchmark._ensure_session_dir(session_root, name)
+    inherited_env = _build_inherited_env()
     server_config = host_benchmark._build_temp_stdio_server(
         session_dir,
         wrapper=REPO_ROOT / "scripts" / "claude-mcp-local",
-        inherited_env=_build_inherited_env(),
+        inherited_env=inherited_env,
     )
     mcp_config = {
         "mcpServers": {
             "mcp-geo": {
                 "command": server_config["command"],
                 "args": server_config.get("args") or [],
-                "env": server_config.get("env") or {},
+                "env": _materialize_mcp_config_env(
+                    server_config.get("env") or {},
+                    inherited_env=inherited_env,
+                ),
             }
         }
     }
@@ -1127,11 +1161,13 @@ def _run_claude_track(
 
     proc: subprocess.CompletedProcess[str] | None = None
     blocker: str | None = None
+    client_env = resolved_process_env()
     try:
         try:
             proc = subprocess.run(
                 command,
                 cwd=REPO_ROOT,
+                env=client_env,
                 capture_output=True,
                 text=True,
                 check=False,
@@ -1446,10 +1482,12 @@ def _run_vscode_track(
     trace_path = session_dir / "mcp-stdio-trace.jsonl"
     ui_path = session_dir / "ui-events.jsonl"
     workspace_env = resolved_process_env()
+    inherited_env = _build_inherited_env()
     trace_paths, ui_paths = _write_vscode_workspace_mcp_config(
         workspace_dir,
         session_dir,
         server_name,
+        inherited_env=inherited_env,
     )
     _update_session_paths(
         session_dir,

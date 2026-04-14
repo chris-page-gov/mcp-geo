@@ -118,21 +118,26 @@ def test_write_vscode_workspace_mcp_config_writes_ephemeral_workspace_file(
     session_dir = tmp_path / "session"
     session_dir.mkdir(parents=True)
 
-    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
     monkeypatch.setattr(
         unattended_client_eval.host_benchmark,
         "_build_temp_stdio_server",
         lambda *_args, **_kwargs: {
             "command": "python",
             "args": ["server.py"],
-            "env": {"UI_EVENT_LOG_PATH": str(session_dir / "ui-events.jsonl"), "A": "B"},
+            "env": {
+                "UI_EVENT_LOG_PATH": str(session_dir / "ui-events.jsonl"),
+                "OS_API_KEY": "secret",
+                "A": "B",
+            },
         },
     )
+    inherited_env = {"OS_API_KEY": "secret"}
 
     trace_paths, ui_paths = unattended_client_eval._write_vscode_workspace_mcp_config(
         workspace_dir,
         session_dir,
         "mcp-geo-bench-fixed-vscode-session",
+        inherited_env=inherited_env,
     )
 
     workspace_mcp = json.loads(
@@ -142,6 +147,7 @@ def test_write_vscode_workspace_mcp_config_writes_ephemeral_workspace_file(
     assert server["type"] == "stdio"
     assert server["command"] == "python"
     assert server["args"] == ["server.py"]
+    assert server["env"]["OS_API_KEY"] == "${env:OS_API_KEY}"
     assert server["env"]["A"] == "B"
     assert trace_paths == [session_dir / "mcp-stdio-trace.jsonl"]
     assert ui_paths == [session_dir / "ui-events.jsonl"]
@@ -400,20 +406,34 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     workspaces = tmp_path / "benchmark-workspaces"
     commands: list[list[str]] = []
     cwds: list[Path] = []
+    envs: list[dict[str, str] | None] = []
 
     monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", workspaces)
     monkeypatch.setattr(
         unattended_client_eval.host_benchmark,
         "_build_temp_stdio_server",
-        lambda *_args, **_kwargs: {"command": "python", "args": ["server.py"], "env": {"A": "B"}},
+        lambda *_args, **_kwargs: {
+            "command": "python",
+            "args": ["server.py"],
+            "env": {"OS_API_KEY": "secret", "A": "B"},
+        },
     )
-    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
-    monkeypatch.setattr(unattended_client_eval, "resolved_process_env", lambda: {})
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_build_inherited_env",
+        lambda: {"OS_API_KEY": "secret"},
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "resolved_process_env",
+        lambda: {"OS_API_KEY": "secret", "MCP_GEO_DOCKER_BUILD": "never"},
+    )
     monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "gemini test")
 
     def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
         commands.append(command)
         cwds.append(kwargs["cwd"])
+        envs.append(kwargs.get("env"))
         return subprocess.CompletedProcess(command, 0, stdout="{}", stderr="")
 
     monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
@@ -446,6 +466,9 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     assert settings["tools"]["core"] == []
     assert settings["mcp"]["allowed"] == [server_name]
     assert settings["mcpServers"][server_name]["command"] == "python"
+    assert settings["mcpServers"][server_name]["env"]["OS_API_KEY"] == "${env:OS_API_KEY}"
+    assert settings["mcpServers"][server_name]["env"]["A"] == "B"
+    assert envs[0]["OS_API_KEY"] == "secret"
     policy = (
         workspaces
         / "gemini"
@@ -456,6 +479,61 @@ def test_run_gemini_track_includes_home_settings_directory(monkeypatch, tmp_path
     ).read_text(encoding="utf-8")
     assert 'toolName = "mcp_*"' in policy
     assert 'decision = "deny"' in policy
+
+
+def test_run_claude_track_uses_env_placeholders_in_temp_config(monkeypatch, tmp_path: Path) -> None:
+    session_root = tmp_path / "logs" / "sessions"
+    session_root.mkdir(parents=True)
+    configs: list[dict[str, object]] = []
+    envs: list[dict[str, str] | None] = []
+
+    monkeypatch.setattr(
+        unattended_client_eval.host_benchmark,
+        "_build_temp_stdio_server",
+        lambda *_args, **_kwargs: {
+            "command": "python",
+            "args": ["server.py"],
+            "env": {"OS_API_KEY": "secret", "UI_EVENT_LOG_PATH": str(tmp_path / "ui-events.jsonl")},
+        },
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_build_inherited_env",
+        lambda: {"OS_API_KEY": "secret"},
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "resolved_process_env",
+        lambda: {"OS_API_KEY": "secret", "MCP_GEO_DOCKER_BUILD": "never"},
+    )
+    monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "claude test")
+
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        envs.append(kwargs.get("env"))
+        config_path = Path(command[command.index("--mcp-config") + 1])
+        configs.append(json.loads(config_path.read_text(encoding="utf-8")))
+        return subprocess.CompletedProcess(command, 0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
+
+    session_dir, exit_code, blocker = unattended_client_eval._run_claude_track(
+        task={"id": "readiness_probe", "label": "Readiness", "prompt": "Call the descriptor."},
+        scenario_pack_id="pack-id",
+        session_root=session_root,
+        model="",
+        timeout_sec=5,
+        attempt_kind="readiness",
+    )
+
+    assert session_dir.exists()
+    assert exit_code == 0
+    assert blocker is None
+    assert configs[0]["mcpServers"]["mcp-geo"]["env"]["OS_API_KEY"] == "${env:OS_API_KEY}"
+    assert (
+        configs[0]["mcpServers"]["mcp-geo"]["env"]["UI_EVENT_LOG_PATH"]
+        == str(tmp_path / "ui-events.jsonl")
+    )
+    assert envs[0]["OS_API_KEY"] == "secret"
 
 
 def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
@@ -504,6 +582,8 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
         workspace_dir: Path,
         session_dir: Path,
         server_name: str,
+        *,
+        inherited_env: dict[str, str] | None = None,
     ) -> tuple[list[Path], list[Path]]:
         rewrites.append((workspace_dir, session_dir, server_name))
         return ([session_dir / "mcp-stdio-trace.jsonl"], [session_dir / "ui-events.jsonl"])
@@ -549,6 +629,11 @@ def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     monkeypatch.setattr(
         unattended_client_eval,
         "resolved_process_env",
+        lambda: {"OS_API_KEY_FILE": "/tmp/os_api_key.txt", "MCP_GEO_DOCKER_BUILD": "never"},
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_build_inherited_env",
         lambda: {"OS_API_KEY_FILE": "/tmp/os_api_key.txt", "MCP_GEO_DOCKER_BUILD": "never"},
     )
 
@@ -624,7 +709,7 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
     monkeypatch.setattr(
         unattended_client_eval,
         "_write_vscode_workspace_mcp_config",
-        lambda workspace_dir, session_dir, server_name: (
+        lambda workspace_dir, session_dir, server_name, *, inherited_env=None: (
             [session_dir / "mcp-stdio-trace.jsonl"],
             [],
         ),
@@ -661,6 +746,7 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
     monkeypatch.setattr(unattended_client_eval, "_read_lines", lambda _path: [])
     monkeypatch.setattr(unattended_client_eval.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(unattended_client_eval, "resolved_process_env", lambda: {})
+    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
 
     session_dir, exit_code, blocker = unattended_client_eval._run_vscode_track(
         task=task,
