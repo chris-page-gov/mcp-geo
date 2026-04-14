@@ -1572,48 +1572,49 @@ def _run_vscode_track(
             else:
                 blocker = f"vscode_chat_timeout_after_{timeout_sec}s"
 
-        deadline = time.monotonic() + max(timeout_sec, 5)
-        useful_activity_deadline = time.monotonic() + min(
-            max(timeout_sec, 5),
-            VSCODE_CHAT_USEFUL_ACTIVITY_TIMEOUT_SEC,
-        )
-        last_growth_at: float | None = None
-        last_ui_count = _delta_line_count(ui_snapshot)
-        trace_activity = _trace_activity_since(trace_snapshot)
-        last_request_count = int(trace_activity["requestCount"])
-        last_useful_request_count = int(trace_activity["usefulRequestCount"])
-
-        if last_useful_request_count > 0:
-            last_growth_at = time.monotonic()
-
-        while time.monotonic() < deadline:
-            time.sleep(2)
+        if blocker is None:
+            deadline = time.monotonic() + max(timeout_sec, 5)
+            useful_activity_deadline = time.monotonic() + min(
+                max(timeout_sec, 5),
+                VSCODE_CHAT_USEFUL_ACTIVITY_TIMEOUT_SEC,
+            )
+            last_growth_at: float | None = None
+            last_ui_count = _delta_line_count(ui_snapshot)
             trace_activity = _trace_activity_since(trace_snapshot)
-            current_request_count = int(trace_activity["requestCount"])
-            current_useful_request_count = int(trace_activity["usefulRequestCount"])
-            current_ui_count = _delta_line_count(ui_snapshot)
-            if (
-                current_useful_request_count > last_useful_request_count
-                or (
-                    current_useful_request_count > 0
-                    and current_ui_count > last_ui_count
-                )
-            ):
+            last_request_count = int(trace_activity["requestCount"])
+            last_useful_request_count = int(trace_activity["usefulRequestCount"])
+
+            if last_useful_request_count > 0:
                 last_growth_at = time.monotonic()
-                last_request_count = current_request_count
-                last_useful_request_count = current_useful_request_count
-                last_ui_count = current_ui_count
-                continue
-            if current_request_count > last_request_count:
-                last_request_count = current_request_count
-                continue
-            if last_growth_at is None and time.monotonic() >= useful_activity_deadline:
-                break
-            if (
-                last_growth_at is not None
-                and time.monotonic() - last_growth_at >= VSCODE_CHAT_IDLE_TIMEOUT_SEC
-            ):
-                break
+
+            while time.monotonic() < deadline:
+                time.sleep(2)
+                trace_activity = _trace_activity_since(trace_snapshot)
+                current_request_count = int(trace_activity["requestCount"])
+                current_useful_request_count = int(trace_activity["usefulRequestCount"])
+                current_ui_count = _delta_line_count(ui_snapshot)
+                if (
+                    current_useful_request_count > last_useful_request_count
+                    or (
+                        current_useful_request_count > 0
+                        and current_ui_count > last_ui_count
+                    )
+                ):
+                    last_growth_at = time.monotonic()
+                    last_request_count = current_request_count
+                    last_useful_request_count = current_useful_request_count
+                    last_ui_count = current_ui_count
+                    continue
+                if current_request_count > last_request_count:
+                    last_request_count = current_request_count
+                    continue
+                if last_growth_at is None and time.monotonic() >= useful_activity_deadline:
+                    break
+                if (
+                    last_growth_at is not None
+                    and time.monotonic() - last_growth_at >= VSCODE_CHAT_IDLE_TIMEOUT_SEC
+                ):
+                    break
     finally:
         benchmark_window = _find_vscode_window_for_workspace(workspace_dir) or benchmark_window
         cleanup_result = _cleanup_vscode_workspace(

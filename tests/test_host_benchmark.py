@@ -392,6 +392,12 @@ def test_run_codex_cli_does_not_forward_unused_ons_api_key(monkeypatch, tmp_path
 
     monkeypatch.setenv("OS_API_KEY", "os-secret")
     monkeypatch.setenv("ONS_API_KEY", "unused-ons-secret")
+    monkeypatch.delenv("MCP_GEO_DOCKER_BUILD", raising=False)
+    monkeypatch.setattr(
+        host_benchmark,
+        "resolve_inherited_env",
+        lambda: {"OS_API_KEY": "os-secret"},
+    )
     monkeypatch.setattr(
         host_benchmark,
         "load_scenario_pack",
@@ -446,6 +452,7 @@ def test_run_codex_cli_does_not_forward_unused_ons_api_key(monkeypatch, tmp_path
     assert host_benchmark.cmd_run_codex_cli(args) == 0
     assert captured_inherited_env["OS_API_KEY"] == "os-secret"
     assert "ONS_API_KEY" not in captured_inherited_env
+    assert "MCP_GEO_DOCKER_BUILD" not in captured_inherited_env
 
 
 def test_registered_tool_names_uses_defensive_server_import(monkeypatch) -> None:

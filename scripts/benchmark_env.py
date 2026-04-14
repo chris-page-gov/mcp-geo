@@ -173,8 +173,6 @@ def resolve_inherited_env(base_env: Mapping[str, str] | None = None) -> dict[str
     key_rank = source_rank.get("OS_API_KEY")
     if file_rank is not None and key_rank is not None and key_rank > file_rank:
         resolved.pop("OS_API_KEY", None)
-
-    resolved.setdefault("MCP_GEO_DOCKER_BUILD", "never")
     return resolved
 
 

@@ -116,3 +116,31 @@ def test_resolve_inherited_env_prefers_launchctl_shared_key_file_and_toolset_def
     assert "OS_API_KEY" not in resolved
     assert resolved["MCP_TOOLS_DEFAULT_TOOLSET"] == "starter"
     assert resolved["MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"] == "ons_geo_lookup,property_tax"
+
+
+def test_resolve_inherited_env_does_not_invent_docker_build_mode(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(benchmark_env, "CLAUDE_DESKTOP_CONFIG_PATH", tmp_path / "missing.json")
+    monkeypatch.setattr(benchmark_env, "CODEX_CONFIG_PATH", tmp_path / "missing.toml")
+    monkeypatch.setattr(benchmark_env, "DEFAULT_DOTENV_PATH", tmp_path / "missing.env")
+    monkeypatch.setattr(benchmark_env, "_launchctl_getenv", lambda _key: None)
+
+    resolved = benchmark_env.resolve_inherited_env({"DUMMY": "1"})
+
+    assert "MCP_GEO_DOCKER_BUILD" not in resolved
+
+
+def test_resolve_inherited_env_preserves_explicit_docker_build_mode(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(benchmark_env, "CLAUDE_DESKTOP_CONFIG_PATH", tmp_path / "missing.json")
+    monkeypatch.setattr(benchmark_env, "CODEX_CONFIG_PATH", tmp_path / "missing.toml")
+    monkeypatch.setattr(benchmark_env, "DEFAULT_DOTENV_PATH", tmp_path / "missing.env")
+    monkeypatch.setattr(benchmark_env, "_launchctl_getenv", lambda _key: None)
+
+    resolved = benchmark_env.resolve_inherited_env({"MCP_GEO_DOCKER_BUILD": "always"})
+
+    assert resolved["MCP_GEO_DOCKER_BUILD"] == "always"

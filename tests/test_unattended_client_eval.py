@@ -689,6 +689,7 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
     session_root = tmp_path / "logs" / "sessions"
     session_root.mkdir(parents=True)
     commands: list[list[str]] = []
+    sleep_calls: list[int] = []
     task = {"id": "readiness_probe", "label": "Readiness", "prompt": "Call the descriptor."}
     benchmark_window = unattended_client_eval.VSCodeWindow(name="readiness-probe", document="")
     expected_server_log = tmp_path / "Code" / "logs" / "window25" / "mcpServer.log"
@@ -744,7 +745,11 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
 
     monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
     monkeypatch.setattr(unattended_client_eval, "_read_lines", lambda _path: [])
-    monkeypatch.setattr(unattended_client_eval.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(
+        unattended_client_eval.time,
+        "sleep",
+        lambda seconds: sleep_calls.append(seconds),
+    )
     monkeypatch.setattr(unattended_client_eval, "resolved_process_env", lambda: {})
     monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
 
@@ -782,6 +787,84 @@ def test_run_vscode_track_reports_chat_timeout_without_primer(
     assert session_meta["vscodeServerLog"] == str(expected_server_log)
     assert session_meta["vscodeCleanupAppQuitAttempted"] is True
     assert session_meta["vscodeCleanupAppQuitProcessPids"] == [901]
+    assert sleep_calls == [1]
+
+
+def test_run_vscode_track_reports_open_failure_without_idle_polling(
+    monkeypatch, tmp_path: Path
+) -> None:
+    session_root = tmp_path / "logs" / "sessions"
+    session_root.mkdir(parents=True)
+    commands: list[list[str]] = []
+    sleep_calls: list[int] = []
+    task = {"id": "readiness_probe", "label": "Readiness", "prompt": "Call the descriptor."}
+
+    monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "code test")
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_session_name",
+        lambda _track_id, _task_id: "fixed-vscode-session",
+    )
+    monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", tmp_path / "workspaces")
+    monkeypatch.setattr(unattended_client_eval, "_list_vscode_windows", lambda: [])
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_write_vscode_workspace_mcp_config",
+        lambda workspace_dir, session_dir, server_name, *, inherited_env=None: (
+            [session_dir / "mcp-stdio-trace.jsonl"],
+            [],
+        ),
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_cleanup_vscode_workspace",
+        lambda _workspace_dir, _window, *, quit_app_when_idle=False: {
+            "closeAttempted": True,
+            "windowClosed": True,
+            "killedProcessPids": [],
+            "appQuitAttempted": quit_app_when_idle,
+            "appQuitProcessPids": [901] if quit_app_when_idle else [],
+        },
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_find_vscode_mcp_server_logs",
+        lambda _server_name: [],
+    )
+
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="boom")
+
+    monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
+    monkeypatch.setattr(unattended_client_eval, "_read_lines", lambda _path: [])
+    monkeypatch.setattr(
+        unattended_client_eval.time,
+        "sleep",
+        lambda seconds: sleep_calls.append(seconds),
+    )
+    monkeypatch.setattr(unattended_client_eval, "resolved_process_env", lambda: {})
+    monkeypatch.setattr(unattended_client_eval, "_build_inherited_env", lambda: {})
+
+    session_dir, exit_code, blocker = unattended_client_eval._run_vscode_track(
+        task=task,
+        scenario_pack_id="pack-id",
+        session_root=session_root,
+        timeout_sec=1,
+        attempt_kind="readiness",
+    )
+
+    assert session_dir.exists()
+    assert exit_code == 1
+    assert blocker == "vscode_workspace_open_failed"
+    assert commands == [
+        [
+            "code",
+            "--new-window",
+            str(tmp_path / "workspaces" / "vscode" / "fixed-vscode-session"),
+        ]
+    ]
+    assert sleep_calls == [1]
 
 
 def test_task_prompt_uses_vscode_native_mcp_guidance() -> None:
