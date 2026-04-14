@@ -1,6 +1,11 @@
 {
   "curated_notes": [
     {
+      "path": "AGENTS.md",
+      "protected": true,
+      "title": "Canonical AGENTS"
+    },
+    {
       "path": "00 Home/00 - Agent Home.md",
       "protected": true,
       "title": "Agent Home"

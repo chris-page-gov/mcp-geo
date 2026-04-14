@@ -203,9 +203,9 @@ def preflight(
     try:
         help_output = help_text(vault_path, resolved_cli)
         result["help_ok"] = bool(help_output)
-        read_output = read_note(vault_path, "00 Home/00 - Agent Home.md", resolved_cli)
-        result["read_ok"] = "# Agent Home" in read_output
-        search_output = search_notes(vault_path, "Agent Home", resolved_cli)
+        read_output = read_note(vault_path, "AGENTS.md", resolved_cli)
+        result["read_ok"] = "Canonical Obsidian Agent Contract" in read_output
+        search_output = search_notes(vault_path, "Canonical Obsidian Agent Contract", resolved_cli)
         result["search_ok"] = bool(search_output)
     except FileNotFoundError as exc:
         issues.append({"code": "OBSIDIAN_CLI_NOT_REGISTERED", "message": str(exc)})
@@ -222,7 +222,7 @@ def preflight(
         issues.append(
             {
                 "code": "OBSIDIAN_CLI_READ_FAILED",
-                "message": "Obsidian CLI could not read `00 Home/00 - Agent Home.md`.",
+                "message": "Obsidian CLI could not read vault-root `AGENTS.md`.",
             }
         )
     if not result.get("search_ok"):

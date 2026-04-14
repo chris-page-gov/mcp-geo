@@ -125,9 +125,14 @@ def test_preflight_runs_help_read_and_search_with_registered_cli(
         if cmd[1] == "help":
             return subprocess.CompletedProcess(cmd, 0, stdout="help output", stderr="")
         if cmd[1] == "read":
-            return subprocess.CompletedProcess(cmd, 0, stdout="# Agent Home", stderr="")
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout="# AGENTS.md — Canonical Obsidian Agent Contract",
+                stderr="",
+            )
         if cmd[1] == "search":
-            return subprocess.CompletedProcess(cmd, 0, stdout="Agent Home result", stderr="")
+            return subprocess.CompletedProcess(cmd, 0, stdout="AGENTS.md result", stderr="")
         raise AssertionError(f"Unexpected command: {cmd}")
 
     monkeypatch.setattr("scripts.obsidian_cli.subprocess.run", fake_run)

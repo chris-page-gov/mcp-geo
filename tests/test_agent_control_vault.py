@@ -56,6 +56,7 @@ def test_build_control_vault_creates_curated_and_generated_notes(tmp_path: Path)
 
     manifest = build_control_vault(repo, output_root=output_root, manifest_path=manifest_path)
 
+    assert (output_root / "AGENTS.md").exists()
     assert (output_root / "00 Home" / "00 - Agent Home.md").exists()
     assert (output_root / "10 State" / "Current Focus.md").exists()
     assert (output_root / "20 Generated" / "Repo Map Digest.md").exists()
@@ -63,7 +64,26 @@ def test_build_control_vault_creates_curated_and_generated_notes(tmp_path: Path)
     assert manifest["generated_notes"]
 
     saved_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert saved_manifest["curated_notes"][0]["path"] == "AGENTS.md"
     assert saved_manifest["generated_notes"][0]["path"] == "20 Generated/Repo Map Digest.md"
+
+
+def test_build_control_vault_writes_human_usable_obsidian_defaults(tmp_path: Path) -> None:
+    repo = _init_repo(tmp_path)
+    output_root = repo / "Obsidian" / "MCP Geo Agent Control"
+
+    build_control_vault(repo, output_root=output_root, manifest_path=repo / "manifest.json")
+
+    workspace = json.loads(
+        (output_root / ".obsidian" / "workspace.json").read_text(encoding="utf-8")
+    )
+    plugins = json.loads(
+        (output_root / ".obsidian" / "core-plugins.json").read_text(encoding="utf-8")
+    )
+
+    assert workspace["main"]["children"][0]["children"][0]["state"]["state"]["file"] == "AGENTS.md"
+    assert workspace["left"]["children"][0]["children"][0]["state"]["type"] == "file-explorer"
+    assert plugins["file-explorer"] is True
 
 
 def test_build_control_vault_preserves_curated_notes_on_rebuild(tmp_path: Path) -> None:

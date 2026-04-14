@@ -67,6 +67,13 @@ assumptions change.
   runtime is already `1.12.7`, but the shell still cannot find an `obsidian`
   command and the expected CLI binary is not yet available from the app
   install.
+- A follow-up alignment slice is now also in place after reviewing the
+  research note under `research/obsidian-research/`: the control vault now has
+  a canonical vault-root `AGENTS.md`, repo-root `obsidian`-mode adapters now
+  delegate to that canonical vault file, and the checked-in
+  `Obsidian/MCP Geo Agent Control/.obsidian/workspace.json` plus core-plugin
+  defaults now open a real note with the file explorer visible instead of a
+  blank tab.
 - The first implementation slice for that rollout is now checked in: the
   dedicated vault scaffold under `Obsidian/MCP Geo Agent Control/`, curated
   control notes under `00 Home/` and `10 State/`, generated compact digests
@@ -97,6 +104,12 @@ assumptions change.
   six intended smoke scenarios for both modes and the four target clients.
   Structural coverage now lives in
   `tests/test_obsidian_agent_control_smoke_pack.py`.
+- The control-plane design is now closer to the researched “one canonical
+  cross-tool instruction standard”: the canonical instructions for
+  `obsidian` mode live in
+  `Obsidian/MCP Geo Agent Control/AGENTS.md`, while repo-root `AGENTS.md`,
+  `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md` become thin
+  adapters during local `obsidian`-mode evaluation.
 - The chosen rollout defaults are now fixed: root `AGENTS.md` remains the
   cross-tool contract, `CONTEXT.md` and `PROGRESS.MD` become compatibility
   shims only in `obsidian` mode, `CHANGELOG.md` remains the release ledger,

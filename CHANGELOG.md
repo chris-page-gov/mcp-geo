@@ -44,6 +44,12 @@ All notable changes to this project will be documented in this file.
   implementation is now complete in-repo; the remaining local prerequisite for
   full CLI-ready validation is making the desktop CLI binary available to the
   shell and passing the live read/search preflight.
+- Added the canonical vault-root control contract
+  `Obsidian/MCP Geo Agent Control/AGENTS.md`, rewired `obsidian`-mode
+  repo-root adapters to delegate to that file, and checked in human-usable
+  `.obsidian/workspace.json` / core-plugin defaults so opening the control
+  vault in Obsidian shows the canonical instruction surface and file explorer
+  instead of an empty tab.
 
 ### Fixed
 - Fixed the Obsidian CLI preflight so it no longer treats the macOS installer

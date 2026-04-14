@@ -13,6 +13,7 @@ DEFAULT_MANIFEST_PATH = REPO_ROOT / "data" / "agent_control" / "control_vault_ma
 DEFAULT_ACTIVE_MODE_MANIFEST_PATH = REPO_ROOT / "data" / "agent_control" / "active_mode.json"
 
 CURATED_NOTES: tuple[tuple[str, str, bool], ...] = (
+    ("AGENTS.md", "Canonical AGENTS", True),
     ("00 Home/00 - Agent Home.md", "Agent Home", True),
     ("10 State/Current Focus.md", "Current Focus", False),
     ("10 State/Work Queue.md", "Work Queue", False),
@@ -141,12 +142,56 @@ def render_curated_note(title: str, protected: bool) -> str:
             "updated": updated,
         }
     )
-    if title == "Agent Home":
+    if title == "Canonical AGENTS":
+        body = """# AGENTS.md — Canonical Obsidian Agent Contract
+
+This vault-root `AGENTS.md` is the canonical cross-tool instruction contract
+for `obsidian` agent-control mode in this repository.
+
+## Scope and precedence
+
+- Repo-root `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and
+  `.github/copilot-instructions.md` are adapters in `obsidian` mode.
+- This file is the smallest authoritative control surface inside the vault.
+- Use supporting notes for current state and navigation rather than reading
+  long legacy trackers by default.
+
+## Mandatory read order
+
+1. [[00 Home/00 - Agent Home]]
+2. [[10 State/Current Focus]]
+3. [[10 State/Work Queue]]
+4. [[10 State/Verification]]
+5. Generated digests only as compact supporting context:
+   [[20 Generated/Repo Map Digest]],
+   [[20 Generated/Active Plan Summary]],
+   [[20 Generated/Recent Verification Summary]],
+   [[20 Generated/Release Summary]]
+
+## Non-negotiables
+
+- Treat this vault as the current control plane for navigation and active
+  state while `obsidian` mode is enabled.
+- Do not edit `.obsidian/` unless the user explicitly asks.
+- Treat `20 Generated/` notes as generated evidence, not hand-edited notes.
+- Update `CONTEXT.md`, `PROGRESS.MD`, and `CHANGELOG.md` in the repo when
+  workstream state materially changes.
+- Use repo wrappers such as `scripts/pytest-local`, `scripts/ruff-local`, and
+  `scripts/mypy-local` for host-side validation.
+
+## Repo cues
+
+- Root `AGENTS.md` remains the universal repo entrypoint in `classic` mode.
+- The steering vault is `Obsidian/MCP Geo Agent Control/`.
+- The broader repo-navigation vault remains
+  `Obsidian/MCP Geo Knowledge Base/`.
+"""
+    elif title == "Agent Home":
         body = """# Agent Home
 
 ## Mandatory Read Order
 
-1. Read root `AGENTS.md`.
+1. Read [[AGENTS]].
 2. Read [[Current Focus]].
 3. Read [[Work Queue]].
 4. Read [[Verification]].
@@ -165,29 +210,30 @@ def render_curated_note(title: str, protected: bool) -> str:
 
 ## Active priorities
 
-- Build the switchable `classic` / `obsidian` agent-control plane.
+- Keep the switchable `classic` / `obsidian` agent-control plane healthy.
 - Keep root `AGENTS.md` as the universal entrypoint.
-- Replace large default tracker reads with a compact control-vault path.
+- Preserve the compact control-vault read path and smoke-pack evaluation flow.
 
 ## Current blocker
 
-- Official Obsidian CLI validation needs an effective Obsidian runtime
-  `>=1.12.7`.
-- On macOS, the installer shell version can differ from the auto-updated
-  runtime package, so CLI checks should key off the effective runtime version.
+- Obsidian is effectively running `1.12.7`, but the CLI binary still is not
+  available to the shell.
+- Version checks must use the effective runtime package rather than the macOS
+  installer shell plist.
 """
     elif title == "Work Queue":
         body = """# Work Queue
 
 ## Active
 
-- OACP-1 Dedicated control vault scaffold and digest model
+- Validate the canonical vault-root `AGENTS.md` flow across the target agents.
+- Keep repo-root adapters aligned with the vault contract.
 
 ## Next
 
-- OACP-2 Obsidian CLI wrapper and validation preflight
-- OACP-3 Switchable classic/obsidian mode profiles
-- OACP-4 Instruction-focused smoke evaluation pack
+- Run the smoke pack across Codex, Claude, Gemini, and VS Code.
+- Tighten vault defaults only where evaluation reveals real drift.
+- Keep generated digests compact and link-first.
 
 ## Completion rule
 
@@ -318,7 +364,8 @@ def repo_map_note(repo_root: Path) -> tuple[str, list[str]]:
             *(f"- `{item}`" for item in control_files),
             "",
             "## Reading hint",
-            "- Start with `AGENTS.md`, then the state notes under `10 State/`.",
+            "- Start with vault `AGENTS.md`, then `00 Home/00 - Agent Home.md`,"
+            " then the state notes under `10 State/`.",
         ]
     )
     sources = ["AGENTS.md", "CONTEXT.md", "PROGRESS.MD", "CHANGELOG.md", "Plans/"]
@@ -397,12 +444,162 @@ def release_summary_note(repo_root: Path) -> tuple[str, list[str]]:
     return "\n".join(lines), ["CHANGELOG.md", "RELEASE_NOTES/"]
 
 
+def default_core_plugins() -> dict[str, bool]:
+    return {
+        "file-explorer": True,
+        "global-search": True,
+        "switcher": True,
+        "graph": False,
+        "backlink": False,
+        "outgoing-link": False,
+        "tag-pane": False,
+        "page-preview": False,
+        "daily-notes": False,
+        "templates": False,
+        "note-composer": False,
+        "command-palette": True,
+        "slash-command": False,
+        "editor-status": False,
+        "markdown-importer": False,
+        "zk-prefixer": False,
+        "random-note": False,
+        "outline": True,
+        "word-count": False,
+        "slides": False,
+        "audio-recorder": False,
+        "workspaces": False,
+        "file-recovery": False,
+        "publish": False,
+        "sync": False,
+        "canvas": False,
+        "footnotes": False,
+        "properties": True,
+        "bookmarks": True,
+        "bases": False,
+        "webviewer": False,
+    }
+
+
+def default_workspace() -> dict[str, Any]:
+    return {
+        "main": {
+            "id": "agent-control-main",
+            "type": "split",
+            "children": [
+                {
+                    "id": "agent-control-main-tabs",
+                    "type": "tabs",
+                    "children": [
+                        {
+                            "id": "agent-control-agents",
+                            "type": "leaf",
+                            "state": {
+                                "type": "markdown",
+                                "state": {
+                                    "file": "AGENTS.md",
+                                    "mode": "source",
+                                    "source": False,
+                                },
+                                "icon": "lucide-file",
+                                "title": "AGENTS.md",
+                            },
+                        }
+                    ],
+                }
+            ],
+            "direction": "vertical",
+        },
+        "left": {
+            "id": "agent-control-left",
+            "type": "split",
+            "children": [
+                {
+                    "id": "agent-control-left-tabs",
+                    "type": "tabs",
+                    "children": [
+                        {
+                            "id": "agent-control-files",
+                            "type": "leaf",
+                            "state": {
+                                "type": "file-explorer",
+                                "state": {
+                                    "sortOrder": "alphabetical",
+                                    "autoReveal": False,
+                                },
+                                "icon": "lucide-folder-closed",
+                                "title": "Files",
+                            },
+                        },
+                        {
+                            "id": "agent-control-bookmarks",
+                            "type": "leaf",
+                            "state": {
+                                "type": "bookmarks",
+                                "state": {},
+                                "icon": "lucide-bookmark",
+                                "title": "Bookmarks",
+                            },
+                        },
+                    ],
+                }
+            ],
+            "direction": "horizontal",
+            "width": 300,
+        },
+        "right": {
+            "id": "agent-control-right",
+            "type": "split",
+            "children": [
+                {
+                    "id": "agent-control-right-tabs",
+                    "type": "tabs",
+                    "children": [
+                        {
+                            "id": "agent-control-properties",
+                            "type": "leaf",
+                            "state": {
+                                "type": "all-properties",
+                                "state": {
+                                    "sortOrder": "frequency",
+                                    "showSearch": False,
+                                    "searchQuery": "",
+                                },
+                                "icon": "lucide-archive",
+                                "title": "All properties",
+                            },
+                        }
+                    ],
+                }
+            ],
+            "direction": "horizontal",
+            "width": 300,
+            "collapsed": True,
+        },
+        "left-ribbon": {
+            "hiddenItems": {
+                "canvas:Create new canvas": False,
+                "bases:Create new base": False,
+            }
+        },
+        "active": "agent-control-agents",
+        "lastOpenFiles": [
+            "10 State/Verification.md",
+            "10 State/Work Queue.md",
+            "10 State/Current Focus.md",
+            "00 Home/00 - Agent Home.md",
+            "AGENTS.md",
+        ],
+    }
+
+
 def ensure_obsidian_defaults(output_root: Path) -> None:
     obsidian_root = output_root / ".obsidian"
     obsidian_root.mkdir(parents=True, exist_ok=True)
     defaults = {
         "app.json": {"promptDelete": False},
-        "core-plugins.json": [],
+        "appearance.json": {},
+        "core-plugins.json": default_core_plugins(),
+        "workspace.json": default_workspace(),
     }
     for name, payload in defaults.items():
         path = obsidian_root / name

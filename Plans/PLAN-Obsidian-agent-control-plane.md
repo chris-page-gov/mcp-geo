@@ -88,6 +88,18 @@ pushed before the next slice begins.
 - Run the focused validation slices for the new scripts and tests.
 - Update `PROGRESS.MD`, `CHANGELOG.md`, and `CONTEXT.md` with final state.
 
+### OACP-6 Canonical vault-root AGENTS and usable Obsidian defaults
+
+- Add a canonical vault-root `AGENTS.md` inside
+  `Obsidian/MCP Geo Agent Control/`.
+- Make repo-root `obsidian`-mode adapters delegate to that canonical vault
+  file rather than directly to the home note.
+- Check in a human-usable `.obsidian/workspace.json` and core-plugin defaults
+  so opening the control vault in Obsidian shows a real note and file
+  explorer instead of an empty tab.
+- Align the control-vault defaults with the researched “one canonical
+  cross-tool instruction standard” model.
+
 ## Validation plan
 
 - Unit tests:

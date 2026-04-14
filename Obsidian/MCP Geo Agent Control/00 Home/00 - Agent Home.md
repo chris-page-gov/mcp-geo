@@ -10,7 +10,7 @@ updated: "2026-04-14"
 
 ## Mandatory Read Order
 
-1. Read root `AGENTS.md`.
+1. Read [[AGENTS]].
 2. Read [[Current Focus]].
 3. Read [[Work Queue]].
 4. Read [[Verification]].

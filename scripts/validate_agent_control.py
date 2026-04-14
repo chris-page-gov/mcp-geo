@@ -24,7 +24,7 @@ from scripts.obsidian_cli import (  # noqa: E402
 )
 
 OBSIDIAN_MODE_MARKERS = {
-    "AGENTS.md": "obsidian` agent-control mode",
+    "AGENTS.md": "Canonical vault instructions",
     "CLAUDE.md": "@AGENTS.md",
     "GEMINI.md": "@AGENTS.md",
     ".github/copilot-instructions.md": "Primary control surface",

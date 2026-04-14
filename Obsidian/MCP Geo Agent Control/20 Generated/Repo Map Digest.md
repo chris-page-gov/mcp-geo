@@ -38,4 +38,4 @@ source_paths:
 - `CHANGELOG.md`
 
 ## Reading hint
-- Start with `AGENTS.md`, then the state notes under `10 State/`.
+- Start with vault `AGENTS.md`, then `00 Home/00 - Agent Home.md`, then the state notes under `10 State/`.

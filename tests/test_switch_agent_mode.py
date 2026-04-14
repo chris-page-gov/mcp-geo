@@ -72,7 +72,7 @@ def test_switch_obsidian_writes_root_adapters_and_manifest(tmp_path: Path) -> No
     )
 
     assert manifest["mode"] == "obsidian"
-    assert "obsidian` agent-control mode" in (repo / "AGENTS.md").read_text(encoding="utf-8")
+    assert "Canonical vault instructions" in (repo / "AGENTS.md").read_text(encoding="utf-8")
     assert "@AGENTS.md" in (repo / "CLAUDE.md").read_text(encoding="utf-8")
     assert "Compatibility Summary" in (repo / "CONTEXT.md").read_text(encoding="utf-8")
     saved = json.loads(mode_manifest.read_text(encoding="utf-8"))

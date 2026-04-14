@@ -10,13 +10,14 @@ updated: "2026-04-14"
 
 ## Active
 
-- OACP-1 Dedicated control vault scaffold and digest model
+- Validate the canonical vault-root `AGENTS.md` flow across the target agents.
+- Keep repo-root adapters aligned with the vault contract.
 
 ## Next
 
-- OACP-2 Obsidian CLI wrapper and validation preflight
-- OACP-3 Switchable classic/obsidian mode profiles
-- OACP-4 Instruction-focused smoke evaluation pack
+- Run the smoke pack across Codex, Claude, Gemini, and VS Code.
+- Tighten vault defaults only where evaluation reveals real drift.
+- Keep generated digests compact and link-first.
 
 ## Completion rule
 

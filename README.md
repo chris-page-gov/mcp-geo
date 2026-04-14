@@ -541,7 +541,10 @@ switchable agent-control vault under `Obsidian/MCP Geo Agent Control/`. This
 surface is for directing AI agents through a compact control plane rather than
 for broad repo browsing. The committed branch baseline stays in `classic` mode;
 use the switcher to rewrite the working tree into `obsidian` mode locally for
-evaluation and then restore the tracked baseline.
+evaluation and then restore the tracked baseline. The canonical `obsidian`
+instruction contract inside that vault is `Obsidian/MCP Geo Agent Control/AGENTS.md`,
+and the checked-in workspace defaults now open that file with the file explorer
+visible when the vault is opened in Obsidian.
 
 Refresh the canonical vault with:
 
