@@ -41,7 +41,7 @@ from scripts.trace_utils import (  # noqa: E402
 
 DEFAULT_SCENARIO_PACK = host_benchmark.DEFAULT_SCENARIO_PACK
 DEFAULT_SESSION_ROOT = REPO_ROOT / "logs" / "sessions"
-DEFAULT_REPORT_ROOT = REPO_ROOT / "docs" / "reports"
+DEFAULT_REPORT_ROOT = REPO_ROOT / "docs" / "reports" / "client_interop_unattended"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "logs" / "benchmark-workspaces"
 DEFAULT_TRACKS = ("codex_cli", "gemini_cli", "claude_cli", "vscode_ide")
 DEFAULT_GEMINI_SERVER = "mcp-geo-benchmark"

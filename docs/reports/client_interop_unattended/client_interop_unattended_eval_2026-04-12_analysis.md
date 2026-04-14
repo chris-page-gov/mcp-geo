@@ -2,8 +2,8 @@
 
 Date: 2026-04-12
 Primary evidence pack:
-- `docs/reports/client_interop_unattended_eval_2026-04-12.md`
-- `docs/reports/client_interop_unattended_eval_2026-04-12.json`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json`
 - `logs/sessions/client_interop_unattended_eval_20260412/`
 - `logs/sessions/vscode_full_refresh_20260412/`
 

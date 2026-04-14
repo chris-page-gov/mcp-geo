@@ -54,7 +54,7 @@ assumptions change.
 
 - The 2026-04-13 unattended-eval remediation remains in progress. The
   canonical aggregate report at
-  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` still
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` still
   shows Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent all passing
   readiness and all completing the full eight-scenario pack with readiness,
   capability, and tool-family summaries recorded in one report, but a same-day
@@ -118,12 +118,12 @@ assumptions change.
   alias-based VS Code readiness prompt, but opens a unique per-session
   benchmark workspace again so each attempt gets a fresh VS Code workspace
   identity plus fresh MCP alias registration. Live probe
-  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix.{md,json}`
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix.{md,json}`
   confirmed the result: the first attempt still stayed startup-only, but the
   bounded recovery attempt reached `ready` with a real traced
   `tools/call:os_resources.get` against the benchmark server.
 - A full four-client unattended rerun then completed and wrote
-  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
   per-track readiness artifacts. That run proved the remediation is still not
   operationally closed: Codex CLI, Gemini CLI, and Claude Code CLI all
   completed the full eight-scenario pack, but VS Code Agent only passed
@@ -150,18 +150,18 @@ assumptions change.
   benchmark-workspace-specific VS Code process-tree termination if window close
   automation still leaves a benchmark instance alive. A follow-on live canary
   at
-  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.{md,json}`
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.{md,json}`
   then proved the cleanup fix worked but also isolated the remaining flow
   defect: the retained trace in the live session came entirely from the primer,
   while the actual capability chat still produced zero post-primer MCP traffic.
   The VS Code runner therefore dropped the separate primer step so the real
   scenario chat became the first MCP-driving action in the benchmark window.
   The next live canary
-  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
   then scored `address_lookup_postcode`, and the full VS Code-only rerun at
-  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`
   scored all eight capability scenarios. The final canonical four-client rerun
-  at `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` now
+  at `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` now
   keeps all four tracks in `ready` and records one full pack per client, but a
   same-day operator report after that rerun showed the shared Code app could
   still remain resident and balloon memory enough to require a manual kill. The
@@ -178,7 +178,7 @@ assumptions change.
 - A 2026-04-12 benchmark follow-up added
   `scripts/unattended_client_eval.py` and the first unattended four-client
   evidence pack at
-  `docs/reports/client_interop_unattended_eval_2026-04-12.{md,json}`. The
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.{md,json}`. The
   harness now runs Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent
   against the shared host scenario pack, keeps blocked runs as blocked
   (`diagnosticScore` only, no scored-average inflation), and uses a temporary
@@ -193,7 +193,7 @@ assumptions change.
   workspace before `code chat`, improving from mostly `no_mcp_traffic` to a
   mixed `4/8` scored and `4/8` no-traffic result.
 - The evidence analysis for that same run now lives in
-  `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`. The
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`. The
   key conclusion is that current unattended weaknesses split cleanly into
   client-readiness blockers rather than one server defect: Gemini is blocked by
   its own workspace/settings access before MCP startup, Claude Code CLI reaches

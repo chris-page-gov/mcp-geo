@@ -17,21 +17,21 @@ All notable changes to this project will be documented in this file.
 - Added unattended multi-client host evaluation tooling via
   `scripts/unattended_client_eval.py`, focused regression coverage in
   `tests/test_unattended_client_eval.py`, and the first captured aggregate
-  report at `docs/reports/client_interop_unattended_eval_2026-04-12.{md,json}`.
+  report at `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.{md,json}`.
 - Added the first full remediation-era four-client rerun artifacts at
-  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
   per-track readiness JSON outputs. That run confirmed Codex CLI, Gemini CLI,
   and Claude Code CLI now complete the full eight-scenario pack while VS Code
   Agent still needs additional remediation before closure.
 - Added the VS Code closure evidence at
-  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
   and
-  `docs/reports/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`,
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`,
   plus the final rewritten canonical four-client rerun at
-  `docs/reports/client_interop_unattended_eval_2026-04-13.{md,json}` showing
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` showing
   all four clients ready and all four completing the full eight-scenario pack.
 - Added the follow-on unattended analysis report
-  `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`,
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`,
   grouping the captured evidence by tool family, working flows, failure
   classes, and a concrete remediation plan for cross-client optimization.
 - Added shared benchmark secret-resolution helper
@@ -74,6 +74,11 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- Unattended client interop report outputs now live under
+  `docs/reports/client_interop_unattended/` instead of cluttering the
+  top-level `docs/reports/` directory. `scripts/unattended_client_eval.py`
+  now defaults to that subfolder for its report prefix, and new
+  `client_interop_unattended_eval_*` artifacts there are ignored by git.
 - `scripts/unattended_client_eval.py` now runs each client through a readiness
   phase before the scenario pack, marks unusable tracks as `not_ready` instead
   of emitting misleading per-scenario runner errors, and skips only the

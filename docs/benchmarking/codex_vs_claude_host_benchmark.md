@@ -152,7 +152,7 @@ CLI, and VS Code Agent:
 ```bash
 ./.venv/bin/python scripts/unattended_client_eval.py \
   --session-root logs/sessions/client_interop_unattended_eval_$(date +%Y%m%d) \
-  --out-prefix docs/reports/client_interop_unattended_eval_$(date +%F)
+  --out-prefix docs/reports/client_interop_unattended/client_interop_unattended_eval_$(date +%F)
 ```
 
 Important behavior:
@@ -181,9 +181,9 @@ Important behavior:
 
 Current evidence snapshot:
 
-- `docs/reports/client_interop_unattended_eval_2026-04-12.md`
-- `docs/reports/client_interop_unattended_eval_2026-04-12.json`
-- `docs/reports/client_interop_unattended_eval_2026-04-12_analysis.md`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`
 
 Current interpreted state:
 
