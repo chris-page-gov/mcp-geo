@@ -73,6 +73,14 @@ assumptions change.
   CLI-missing, and success-path behavior. The local full preflight now fails
   cleanly with `OBSIDIAN_VERSION_TOO_OLD`, while vault-only validation passes
   with `python3 scripts/validate_agent_control.py --skip-cli`.
+- The switchable mode layer is now also live: `scripts/switch_agent_mode.py`
+  can rewrite the working tree into `obsidian` mode and restore the tracked
+  `classic` baseline from `HEAD`, while `scripts/validate_agent_control.py`
+  now verifies the active mode markers when the local
+  `data/agent_control/active_mode.json` manifest is present. A live repo
+  round-trip already passed on 2026-04-14 via `obsidian -> validate -> classic
+  -> validate` using `--skip-cli`, confirming that the root files restore
+  cleanly after local evaluation.
 - The chosen rollout defaults are now fixed: root `AGENTS.md` remains the
   cross-tool contract, `CONTEXT.md` and `PROGRESS.MD` become compatibility
   shims only in `obsidian` mode, `CHANGELOG.md` remains the release ledger,
@@ -996,8 +1004,9 @@ assumptions change.
   `Plans/PLAN-Obsidian-agent-control-plane.md`, including the dedicated
   control vault, official Obsidian CLI wrapper/preflight, classic-vs-obsidian
   root adapter generation, and the first instruction-focused smoke pack. The
-  current active slice is the classic-vs-obsidian mode switcher now that the
-  vault scaffold and CLI/preflight layers have landed.
+  current active slice is the dedicated smoke-pack comparison now that the
+  vault scaffold, CLI/preflight layer, and local mode switcher are all in
+  place.
 - Keep the new control vault distinct from the existing reset-on-build
   knowledge base under `Obsidian/MCP Geo Knowledge Base/`; the new surface is
   for agent steering, while the existing vault remains the repo navigation
@@ -1319,6 +1328,12 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-04-14: Kept the committed branch baseline in `classic` mode and made
+  `obsidian` mode a local working-tree transformation driven by
+  `scripts/switch_agent_mode.py`. The switcher writes the active-mode manifest
+  to ignored local state at `data/agent_control/active_mode.json`, rewrites
+  the root adapter files for `obsidian` evaluation, and restores the tracked
+  classic root files directly from `HEAD` when switching back.
 - 2026-04-14: Chose a switchable Obsidian agent-control rollout with two
   deterministic profiles: `classic` preserves the current root-file-driven
   behavior, while `obsidian` routes agents through a new dedicated control

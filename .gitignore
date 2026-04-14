@@ -66,6 +66,7 @@ data/knowledge_base/*
 !data/agent_control/
 data/agent_control/*
 !data/agent_control/*.json
+data/agent_control/active_mode.json
 
 # Playground build artifacts
 playground/node_modules/

@@ -26,6 +26,12 @@ All notable changes to this project will be documented in this file.
   read/search behavior, and it now fails locally with a clear
   `OBSIDIAN_VERSION_TOO_OLD` prerequisite message on the current `1.8.7`
   desktop app.
+- Added the switcher `scripts/switch_agent_mode.py --mode classic|obsidian`
+  plus the active-mode validation checks in `scripts/validate_agent_control.py`
+  and focused coverage in `tests/test_switch_agent_mode.py`. The repo now
+  keeps the committed baseline in `classic` mode while the switcher can
+  locally rewrite the root instruction files into `obsidian` mode and restore
+  the tracked baseline from `HEAD` for repeatable evaluation.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

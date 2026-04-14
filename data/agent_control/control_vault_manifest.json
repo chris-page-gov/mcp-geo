@@ -31,7 +31,6 @@
       "title": "Change Summary"
     }
   ],
-  "generated_at": "2026-04-14T21:27:08Z",
   "generated_notes": [
     {
       "path": "20 Generated/Repo Map Digest.md",
@@ -69,5 +68,6 @@
       "title": "Release Summary"
     }
   ],
+  "generated_on": "2026-04-14",
   "output_root": "/Users/crpage/repos/mcp-geo/Obsidian/MCP Geo Agent Control"
 }

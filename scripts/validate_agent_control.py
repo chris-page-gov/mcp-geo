@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -11,7 +12,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.agent_control_common import DEFAULT_MANIFEST_PATH, DEFAULT_OUTPUT_ROOT  # noqa: E402
+from scripts.agent_control_common import (  # noqa: E402
+    DEFAULT_ACTIVE_MODE_MANIFEST_PATH,
+    DEFAULT_MANIFEST_PATH,
+    DEFAULT_OUTPUT_ROOT,
+)
 from scripts.obsidian_cli import DEFAULT_OBSIDIAN_APP, preflight  # noqa: E402
 
 
@@ -46,16 +51,35 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Explicit Obsidian CLI binary path override.",
     )
+    parser.add_argument(
+        "--mode-manifest",
+        type=Path,
+        default=DEFAULT_ACTIVE_MODE_MANIFEST_PATH,
+        help="Optional active-mode manifest path.",
+    )
     return parser
 
 
+def git_head_text(repo_root: Path, rel_path: str) -> str:
+    completed = subprocess.run(
+        ["git", "show", f"HEAD:{rel_path}"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout
+
+
 def validate_control_vault(
+    repo_root: Path,
     output_root: Path,
     manifest_path: Path,
     *,
     check_cli: bool,
     app_path: Path,
     cli_path: Path | None,
+    mode_manifest_path: Path | None,
 ) -> list[dict[str, Any]]:
     issues: list[dict[str, Any]] = []
     if not manifest_path.exists():
@@ -84,6 +108,43 @@ def validate_control_vault(
                     "message": f"Required generated note is missing: {entry['path']}",
                 }
             )
+    if mode_manifest_path and mode_manifest_path.exists():
+        mode_manifest = json.loads(mode_manifest_path.read_text(encoding="utf-8"))
+        mode = mode_manifest.get("mode")
+        if mode == "obsidian":
+            expected_markers = {
+                "AGENTS.md": "obsidian` agent-control mode",
+                "CLAUDE.md": "@AGENTS.md",
+                "GEMINI.md": "@AGENTS.md",
+                ".github/copilot-instructions.md": "Primary control surface",
+                "CONTEXT.md": "Compatibility Summary",
+                "PROGRESS.MD": "Compatibility Summary",
+            }
+            for rel_path, marker in expected_markers.items():
+                text = (repo_root / rel_path).read_text(encoding="utf-8")
+                if marker not in text:
+                    issues.append(
+                        {
+                            "code": "MODE_FILE_MISMATCH",
+                            "message": (
+                                f"{rel_path} does not match the active "
+                                "obsidian-mode marker."
+                            ),
+                        }
+                    )
+        elif mode == "classic":
+            for rel_path in mode_manifest.get("root_files", []):
+                current = (repo_root / rel_path).read_text(encoding="utf-8")
+                if current != git_head_text(repo_root, rel_path):
+                    issues.append(
+                        {
+                            "code": "CLASSIC_RESTORE_MISMATCH",
+                            "message": (
+                                f"{rel_path} does not match the tracked "
+                                "classic baseline at HEAD."
+                            ),
+                        }
+                    )
     if check_cli:
         issues.extend(preflight(output_root, app_path=app_path, cli_path=cli_path)["issues"])
     return issues
@@ -92,11 +153,13 @@ def validate_control_vault(
 def main() -> int:
     args = build_parser().parse_args()
     issues = validate_control_vault(
+        REPO_ROOT,
         args.output_root,
         args.manifest,
         check_cli=not args.skip_cli,
         app_path=args.app_path,
         cli_path=args.cli_path,
+        mode_manifest_path=args.mode_manifest,
     )
     if not issues:
         print("Agent control vault is valid.")

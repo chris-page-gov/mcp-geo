@@ -109,11 +109,13 @@ def test_validate_control_vault_merges_manifest_and_cli_issues(tmp_path: Path) -
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
 
     issues = validate_control_vault(
+        tmp_path,
         vault_path,
         manifest_path,
         check_cli=True,
         app_path=app_path,
         cli_path=None,
+        mode_manifest_path=None,
     )
 
     assert any(issue["code"] == "OBSIDIAN_VERSION_TOO_OLD" for issue in issues)

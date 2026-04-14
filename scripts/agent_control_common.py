@@ -10,6 +10,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "Obsidian" / "MCP Geo Agent Control"
 DEFAULT_MANIFEST_PATH = REPO_ROOT / "data" / "agent_control" / "control_vault_manifest.json"
+DEFAULT_ACTIVE_MODE_MANIFEST_PATH = REPO_ROOT / "data" / "agent_control" / "active_mode.json"
 
 CURATED_NOTES: tuple[tuple[str, str, bool], ...] = (
     ("00 Home/00 - Agent Home.md", "Agent Home", True),
@@ -453,7 +454,7 @@ def build_control_vault(
 
     manifest = {
         "output_root": str(output_root),
-        "generated_at": utc_now(),
+        "generated_on": today_utc(),
         "curated_notes": [
             {"path": note_path, "title": title, "protected": protected}
             for note_path, title, protected in CURATED_NOTES

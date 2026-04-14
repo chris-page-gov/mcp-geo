@@ -19,9 +19,9 @@ source_paths:
 - Latest playground UI test run: `npm --prefix /Users/crpage/repos/mcp-geo/playground run test` (6 passed) on 2026-02-11.
 
 ## Recent recorded validation commands
-- ` preflight output with non-sensitive toolset/default visibility; and validated the change set with `
-- `./scripts/pytest-local -q --no-cov tests/test_unattended_client_eval.py tests/test_benchmark_env.py tests/test_mcp_docker_local.py`
-- `./scripts/pytest-local -q --no-cov tests/test_host_benchmark.py`
-- `python3 -m py_compile scripts/unattended_client_eval.py`
-- `./scripts/ruff-local scripts/unattended_client_eval.py tests/test_unattended_client_eval.py`
-- `./scripts/pytest-local -q --no-cov tests/test_unattended_client_eval.py`
+- `scripts/validate_agent_control.py`
+- `./scripts/ruff-local scripts/obsidian_cli.py scripts/validate_agent_control.py tests/test_obsidian_cli.py`
+- `./scripts/pytest-local -q --no-cov tests/test_obsidian_cli.py`
+- `python3 -m py_compile scripts/obsidian_cli.py scripts/validate_agent_control.py tests/test_obsidian_cli.py`
+- `python3 scripts/validate_agent_control.py --skip-cli`
+- `./scripts/ruff-local scripts/switch_agent_mode.py scripts/validate_agent_control.py tests/test_switch_agent_mode.py tests/test_obsidian_cli.py`
