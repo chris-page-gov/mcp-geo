@@ -1,0 +1,4 @@
+# Generated unattended benchmark outputs live in this subfolder.
+# Keep new reruns out of top-level docs/reports and out of default git status.
+client_interop_unattended_eval_*
+.DS_Store

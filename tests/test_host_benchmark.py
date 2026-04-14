@@ -331,6 +331,30 @@ def test_build_temp_stdio_server_keeps_host_ui_event_path_for_codex_wrapper(tmp_
     )
 
 
+def test_build_temp_stdio_server_wraps_python_script_targets(tmp_path: Path) -> None:
+    session_dir = tmp_path / "logs" / "sessions" / "trace"
+    session_dir.mkdir(parents=True)
+    wrapper = tmp_path / "scripts" / "vscode_mcp_stdio.py"
+    wrapper.parent.mkdir(parents=True)
+    wrapper.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+    server = host_benchmark._build_temp_stdio_server(
+        session_dir,
+        wrapper=wrapper,
+        inherited_env={},
+    )
+
+    assert server["command"] == sys.executable
+    assert server["args"] == [
+        str(host_benchmark.REPO_ROOT / "scripts" / "mcp_stdio_trace_proxy.py"),
+        "--log",
+        str(session_dir / "mcp-stdio-trace.jsonl"),
+        "--",
+        sys.executable,
+        str(wrapper),
+    ]
+
+
 def test_run_codex_cli_refuses_to_clobber_non_stdio_server(monkeypatch, tmp_path: Path) -> None:
     removed: list[str] = []
     added: list[tuple[str, dict]] = []
@@ -368,6 +392,12 @@ def test_run_codex_cli_does_not_forward_unused_ons_api_key(monkeypatch, tmp_path
 
     monkeypatch.setenv("OS_API_KEY", "os-secret")
     monkeypatch.setenv("ONS_API_KEY", "unused-ons-secret")
+    monkeypatch.delenv("MCP_GEO_DOCKER_BUILD", raising=False)
+    monkeypatch.setattr(
+        host_benchmark,
+        "resolve_inherited_env",
+        lambda: {"OS_API_KEY": "os-secret"},
+    )
     monkeypatch.setattr(
         host_benchmark,
         "load_scenario_pack",
@@ -422,6 +452,7 @@ def test_run_codex_cli_does_not_forward_unused_ons_api_key(monkeypatch, tmp_path
     assert host_benchmark.cmd_run_codex_cli(args) == 0
     assert captured_inherited_env["OS_API_KEY"] == "os-secret"
     assert "ONS_API_KEY" not in captured_inherited_env
+    assert "MCP_GEO_DOCKER_BUILD" not in captured_inherited_env
 
 
 def test_registered_tool_names_uses_defensive_server_import(monkeypatch) -> None:

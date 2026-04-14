@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-12
+Last updated: 2026-04-13
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,176 @@ assumptions change.
 
 ## Current Focus
 
+- The 2026-04-13 unattended-eval remediation remains in progress. The
+  canonical aggregate report at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` still
+  shows Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent all passing
+  readiness and all completing the full eight-scenario pack with readiness,
+  capability, and tool-family summaries recorded in one report, but a same-day
+  operator report showed Code still reaching roughly 58 GB and requiring a
+  manual kill after the unattended rerun. Closure now depends on a fresh live
+  rerun with the latest VS Code app-lifecycle cleanup safeguard in place.
+- A 2026-04-13 unattended-eval remediation pass is now implemented, tracked in
+  `Plans/PLAN-Unattended-multiclient-eval-remediation.md`. The unattended
+  four-client harness now runs readiness before capability, emits per-track
+  readiness artifacts plus aggregate readiness/capability summaries, records
+  stable blocker taxonomy classes (`client_auth_failure`,
+  `client_workspace_restriction`, `client_no_mcp_traffic`,
+  `server_no_live_key`, `scenario_tool_failure`, etc.), supports one labelled
+  recovery attempt for Gemini and VS Code readiness only, and writes explicit
+  `not_ready` / `skipped` outcomes instead of inflating scenario-failure rows
+  when the host is not usable or lacks a live OS key.
+- The same 2026-04-13 unattended follow-up also moved Gemini onto stable
+  ignored benchmark workspaces under `logs/benchmark-workspaces/gemini/<task>/`
+  with `--include-directories ~/.gemini`, added the built-in readiness probe
+  / `--readiness-only` mode in `scripts/unattended_client_eval.py`, extended
+  `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` with
+  `requiresLiveOsApi`, `requiresUiRuntime`, `toolFamily`, and
+  `expectedCapability` metadata, and expanded `scripts/mcp-docker-local`
+  preflight output to show non-sensitive toolset/default-secret visibility
+  facts alongside the OS-key presence flags.
+- A same-day operational follow-up is now in progress because the first live
+  readiness-only rerun still left Gemini and VS Code short of the plan's
+  definition of done. Gemini now has a per-workspace `.gemini/settings.json`
+  plus workspace policy that allows only `mcp_*` tools in headless benchmark
+  runs. The VS Code path has now been reworked again after the isolated
+  portable-profile attempt showed that copied profile state does not preserve
+  Copilot chat readiness reliably enough for unattended runs. Each attempt now
+  writes its traced benchmark-only server definition into the benchmark
+  workspace's own `.vscode/mcp.json`, opens that clean ignored workspace on
+  the already authenticated live VS Code profile, waits for the new benchmark
+  window, raises that exact window before `code chat --reuse-window`, and then
+  closes that same window through accessibility automation after the attempt.
+  This preserves live Copilot auth without mutating
+  `~/Library/Application Support/Code`, avoids false `no_mcp_traffic` scoring
+  caused by shared-window routing, prevents unattended runs from accumulating
+  stray benchmark windows on the workstation, and keeps single-track readiness
+  probes usable because the aggregate report now renders only the requested
+  tracks instead of assuming all four clients are always present.
+- The latest live VS Code evidence then narrowed the remaining readiness
+  blocker from a generic `client_no_mcp_traffic` symptom to a traced-launcher
+  defect in the harness itself. VS Code was discovering the benchmark
+  workspace MCP server and writing benchmark-specific `mcpServer.*.log` files,
+  but the traced temp-server definition handed
+  `scripts/vscode_mcp_stdio.py` directly to
+  `scripts/mcp_stdio_trace_proxy.py`, which failed with `PermissionError`
+  because the Python file is not executable. `scripts/host_benchmark.py` now
+  wraps Python-script wrapper targets with the interpreter before handing them
+  to the trace proxy so workspace-scoped VS Code benchmark servers launch with
+  the same shape as the checked-in `.vscode/mcp.json` config.
+- Fresh live validation on 2026-04-13 then exposed one more VS Code-specific
+  requirement in the benchmark flow. Copilot agent mode would not honor raw
+  tool-name prompts like `os_mcp.route_query`, and the first alias-based retry
+  still failed when the runner reused one stable benchmark workspace path for
+  every attempt: the agent claimed the prefixed MCP tool alias did not exist in
+  that window. The current harness now keeps the primer-based warm-up and
+  alias-based VS Code readiness prompt, but opens a unique per-session
+  benchmark workspace again so each attempt gets a fresh VS Code workspace
+  identity plus fresh MCP alias registration. Live probe
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix.{md,json}`
+  confirmed the result: the first attempt still stayed startup-only, but the
+  bounded recovery attempt reached `ready` with a real traced
+  `tools/call:os_resources.get` against the benchmark server.
+- A full four-client unattended rerun then completed and wrote
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
+  per-track readiness artifacts. That run proved the remediation is still not
+  operationally closed: Codex CLI, Gemini CLI, and Claude Code CLI all
+  completed the full eight-scenario pack, but VS Code Agent only passed
+  readiness and then regressed to `startup_only` / `no_mcp_traffic` across all
+  eight capability scenarios. The session traces show only `initialize` plus
+  startup catalog traffic on the benchmark server after readiness, which means
+  the capability chats were still not reliably landing on the benchmark window.
+  The same run also left benchmark Code windows alive long enough to balloon
+  workstation memory, showing that the close-window path was not handling the
+  `A session is in progress` confirmation dialog.
+- The current same-day follow-up therefore stayed in progress until the final
+  no-primer VS Code reruns landed. The harness now
+  re-raises the benchmark window immediately before the real VS Code scenario
+  chat, resets the trace/UI delta snapshot after the primer so scoring only
+  measures chat-specific traffic, and confirms the in-progress-session close
+  dialog before treating a benchmark window as closed. A second same-day fix
+  then narrowed the remaining harness defect further: the post-chat monitor was
+  still treating `initialize` / `prompts.list` / `tools.list` startup catalog
+  traffic as useful progress and would stop after one short idle window, which
+  matches the observed `startup_only` traces. The runner now distinguishes
+  startup traffic from useful tool/resource activity, waits up to the full
+  useful-activity timeout before declaring another VS Code `startup_only`
+  attempt, records cleanup metadata in the session, and escalates to
+  benchmark-workspace-specific VS Code process-tree termination if window close
+  automation still leaves a benchmark instance alive. A follow-on live canary
+  at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.{md,json}`
+  then proved the cleanup fix worked but also isolated the remaining flow
+  defect: the retained trace in the live session came entirely from the primer,
+  while the actual capability chat still produced zero post-primer MCP traffic.
+  The VS Code runner therefore dropped the separate primer step so the real
+  scenario chat became the first MCP-driving action in the benchmark window.
+  The next live canary
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
+  then scored `address_lookup_postcode`, and the full VS Code-only rerun at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`
+  scored all eight capability scenarios. The final canonical four-client rerun
+  at `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` now
+  keeps all four tracks in `ready` and records one full pack per client, but a
+  same-day operator report after that rerun showed the shared Code app could
+  still remain resident and balloon memory enough to require a manual kill. The
+  latest follow-up therefore adds one more VS Code cleanup safeguard:
+  benchmark runs that start from a zero-window baseline now treat the whole
+  Code app lifecycle as benchmark-owned, record that fact in session metadata,
+  and quit the full Code app after workspace cleanup when no other Code windows
+  remain. Focused validation passed via `./scripts/ruff-local
+  scripts/unattended_client_eval.py tests/test_unattended_client_eval.py`,
+  `./scripts/pytest-local -q --no-cov tests/test_unattended_client_eval.py`,
+  and `python3 -m py_compile scripts/unattended_client_eval.py
+  tests/test_unattended_client_eval.py` (`21 passed`). A fresh live rerun is
+  still required before the remediation can be treated as closed again.
+- A 2026-04-12 benchmark follow-up added
+  `scripts/unattended_client_eval.py` and the first unattended four-client
+  evidence pack at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.{md,json}`. The
+  harness now runs Codex CLI, Gemini CLI, Claude Code CLI, and VS Code Agent
+  against the shared host scenario pack, keeps blocked runs as blocked
+  (`diagnosticScore` only, no scored-average inflation), and uses a temporary
+  Gemini project scope outside the repo so unattended runs do not dirty a
+  repo-local `.gemini/` folder.
+- The same follow-up established the current observed host behavior: Codex CLI
+  is the strongest unattended path (`7/8` scored, `1/8` startup-only on the
+  resource-retrieval prompt), Gemini CLI currently times out before first MCP
+  traffic on every scenario under the headless CLI path, Claude Code CLI
+  consistently fails the headless run path before usable MCP work, and VS Code
+  Agent only becomes partially usable after explicitly opening the repo
+  workspace before `code chat`, improving from mostly `no_mcp_traffic` to a
+  mixed `4/8` scored and `4/8` no-traffic result.
+- The evidence analysis for that same run now lives in
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`. The
+  key conclusion is that current unattended weaknesses split cleanly into
+  client-readiness blockers rather than one server defect: Gemini is blocked by
+  its own workspace/settings access before MCP startup, Claude Code CLI reaches
+  MCP startup but fails on headless Anthropic auth before prompt execution, and
+  VS Code remains session-nondeterministic even after the workspace-open fix.
+  On the server/tool side, compact workflows are already the strongest path:
+  `admin_lookup.find_by_name`, `ons_geo.area_summary`, `nomis.query`,
+  `os_mcp.route_query`, and `os_apps.render_geography_selector` all show real
+  unattended viability when the host reaches task execution.
+- A 2026-04-13 benchmark follow-up now closes the live-credential gap that was
+  distorting cross-client evals. `scripts/benchmark_env.py` resolves
+  `OS_API_KEY` / `OS_API_KEY_FILE` from practical local sources in priority
+  order: current process env, `launchctl`, repo `.env`, Claude Desktop
+  `mcp-geo` config, then Codex `mcp-geo` config. `scripts/unattended_client_eval.py`
+  and `scripts/host_benchmark.py` now use that shared resolution instead of
+  shell-only inheritance, the VS Code unattended track injects the resolved env
+  into `code` subprocesses, and `scripts/mcp-docker-local` now hydrates
+  `OS_API_KEY_FILE` before deriving `OS_API_KEY`. A post-fix Claude smoke on
+  `address_lookup_postcode` confirmed the result changed from `NO_API_KEY` to a
+  successful `os_places.by_postcode` lookup for `SW1A 1AA`.
+- The VS Code-specific fix is now part of the unattended runner itself: each
+  attempt opens a fresh ignored workspace under
+  `logs/benchmark-workspaces/vscode/<task>/`, writes a traced benchmark-only
+  `.vscode/mcp.json` inside that workspace, launches it on the live VS Code
+  profile, raises the newly created benchmark window before `code chat
+  --reuse-window`, and closes that same window when the attempt finishes. This
+  keeps Copilot auth on the real profile while making the benchmark attach to a
+  deterministic workspace and leaving the user's other Code windows alone.
 - A 2026-04-12 PR follow-up closed the remaining area-summary/router review
   gaps. `tools/os_mcp.py` now preserves explicit higher-level profile requests
   on area-code prompts, rejects narrower target levels with descriptor

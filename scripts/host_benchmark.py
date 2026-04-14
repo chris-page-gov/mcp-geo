@@ -16,6 +16,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+VENV_PYTHON = REPO_ROOT / ".venv" / "bin" / "python"
+if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
+    try:
+        importlib.import_module("fastapi")
+    except ModuleNotFoundError:
+        if VENV_PYTHON.exists() and Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+            env = dict(os.environ)
+            env["MCP_GEO_SKIP_VENV_REEXEC"] = "1"
+            os.execve(str(VENV_PYTHON), [str(VENV_PYTHON), __file__, *sys.argv[1:]], env)
+
+from scripts.benchmark_env import resolve_inherited_env  # noqa: E402
 from scripts.trace_report import _build_summary as build_trace_summary  # noqa: E402
 from scripts.trace_utils import (  # noqa: E402
     DOCKER_LOCAL_WRAPPER_NAMES,
@@ -153,6 +164,12 @@ def _ensure_session_dir(session_root: Path, name: str) -> Path:
     return candidate
 
 
+def _build_traced_target_command(wrapper: Path) -> list[str]:
+    if wrapper.suffix == ".py":
+        return [sys.executable, str(wrapper)]
+    return [str(wrapper)]
+
+
 def _build_temp_stdio_server(
     session_dir: Path,
     *,
@@ -174,7 +191,7 @@ def _build_temp_stdio_server(
             "--log",
             str(session_dir / "mcp-stdio-trace.jsonl"),
             "--",
-            str(wrapper),
+            *_build_traced_target_command(wrapper),
         ],
         "env": env,
     }
@@ -844,20 +861,7 @@ def cmd_run_codex_cli(args: argparse.Namespace) -> int:
     )
     session_dir = _ensure_session_dir(Path(args.session_root).resolve(), session_name)
     wrapper = Path(args.wrapper).resolve()
-    inherited_env = {
-        key: value
-        for key, value in {
-            "OS_API_KEY": os.getenv("OS_API_KEY"),
-            "ONS_LIVE_ENABLED": os.getenv("ONS_LIVE_ENABLED"),
-            "STDIO_KEY": os.getenv("STDIO_KEY"),
-            "BEARER_TOKENS": os.getenv("BEARER_TOKENS"),
-            "MCP_GEO_DOCKER_BUILD": os.getenv("MCP_GEO_DOCKER_BUILD", "missing"),
-            "MCP_TOOLS_DEFAULT_TOOLSET": os.getenv("MCP_TOOLS_DEFAULT_TOOLSET"),
-            "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS": os.getenv("MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"),
-            "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS": os.getenv("MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS"),
-        }.items()
-        if value
-    }
+    inherited_env = resolve_inherited_env()
     temp_server = _build_temp_stdio_server(
         session_dir,
         wrapper=wrapper,

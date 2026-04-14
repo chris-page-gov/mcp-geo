@@ -6,6 +6,46 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the checked-in unattended multi-client remediation implementation plan
+  at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
+  tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the
+  readiness-first redesign before the harness changes land.
+- Added a built-in readiness probe to `scripts/unattended_client_eval.py`
+  together with `--readiness-only`, per-track readiness artifact files, and
+  structured attempt records labelled as `readiness`, `recovery`, or
+  `capability`.
+- Added unattended multi-client host evaluation tooling via
+  `scripts/unattended_client_eval.py`, focused regression coverage in
+  `tests/test_unattended_client_eval.py`, and the first captured aggregate
+  report at `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.{md,json}`.
+- Added the first full remediation-era four-client rerun artifacts at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` plus the
+  per-track readiness JSON outputs. That run confirmed Codex CLI, Gemini CLI,
+  and Claude Code CLI now complete the full eight-scenario pack while VS Code
+  Agent still needs additional remediation before closure.
+- Added the VS Code closure evidence at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.{md,json}`
+  and
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.{md,json}`,
+  plus the final rewritten canonical four-client rerun at
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` showing
+  all four clients ready and all four completing the full eight-scenario pack.
+- Added the follow-on unattended analysis report
+  `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`,
+  grouping the captured evidence by tool family, working flows, failure
+  classes, and a concrete remediation plan for cross-client optimization.
+- Added shared benchmark secret-resolution helper
+  `scripts/benchmark_env.py` and wired `scripts/unattended_client_eval.py`,
+  `scripts/host_benchmark.py`, and `scripts/mcp-docker-local` to use it.
+  Unattended benchmark runs can now resolve `OS_API_KEY` / `OS_API_KEY_FILE`
+  from process env, `launchctl`, repo `.env`, and the local Claude/Codex
+  `mcp-geo` client configs, closing the previous `NO_API_KEY` gap where eval
+  runs bypassed the normal per-client secret sources.
+- Added explicit unattended scenario metadata in
+  `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` for
+  `requiresLiveOsApi`, `requiresUiRuntime`, `toolFamily`, and
+  `expectedCapability`, allowing the runner to separate readiness from
+  capability and to summarize results by capability/tool family.
 - Added `ons_geo.area_summary`, the compact postcode/UPRN/area-code follow-up
   surface for OA/LSOA/MSOA/ward summaries. It resolves the target area from
   the local ONS cache, returns compact area counts, can use the new
@@ -34,6 +74,107 @@ All notable changes to this project will be documented in this file.
   indexed DuckDB database.
 
 ### Changed
+- Unattended client interop report outputs now live under
+  `docs/reports/client_interop_unattended/` instead of cluttering the
+  top-level `docs/reports/` directory. `scripts/unattended_client_eval.py`
+  now defaults to that subfolder for its report prefix, and new
+  `client_interop_unattended_eval_*` artifacts there are ignored by git.
+- `scripts/unattended_client_eval.py` now runs each client through a readiness
+  phase before the scenario pack, marks unusable tracks as `not_ready` instead
+  of emitting misleading per-scenario runner errors, and skips only the
+  `live_os` scenarios when readiness shows that no usable OS key is visible.
+- The unattended aggregate report schema now separates readiness from
+  capability, tracks first-attempt versus recovery-attempt outcomes, emits
+  blocker taxonomy classes such as `client_auth_failure`,
+  `client_workspace_restriction`, `client_no_mcp_traffic`,
+  `server_no_live_key`, and `scenario_tool_failure`, and adds expected-
+  capability / tool-family summaries so resource-consumption scenarios are not
+  conflated with general tool-selection flows.
+- Gemini unattended runs now use stable ignored benchmark workspaces under
+  `logs/benchmark-workspaces/gemini/<task>/` and include `~/.gemini` in the
+  allowed directory set, eliminating the prior temporary-project pattern that
+  blocked headless Gemini before the first MCP request.
+- Gemini unattended runs now also write a per-workspace `.gemini/settings.json`
+  plus workspace policy that allows only `mcp_*` tools during benchmark runs,
+  replacing the earlier transient `gemini mcp add` flow that still let Gemini
+  fall back to local built-in tools instead of exercising the MCP surface.
+- `scripts/mcp-docker-local --plan` now reports the chosen default/include/
+  exclude toolset settings alongside the existing non-sensitive OS-key
+  visibility flags, and the wrapper now hydrates those toolset env vars from
+  the same local sources as the benchmark env helper.
+- The unattended benchmark/report flow now treats blocked runs as blocked:
+  runner errors, startup-only sessions, and no-traffic sessions keep only a
+  `diagnosticScore` and no longer count toward the scored-track average.
+- The VS Code unattended benchmark runner now opens a clean ignored benchmark
+  workspace before `code chat` so each attempt attaches to a deterministic
+  window instead of whichever shared VS Code window happens to be active.
+- The VS Code unattended benchmark runner now writes the traced benchmark-only
+  server definition into the benchmark workspace's own `.vscode/mcp.json`
+  instead of mutating `~/Library/Application Support/Code` or depending on a
+  copied profile. Each attempt opens that workspace on the live authenticated
+  VS Code profile, raises the newly created benchmark window before
+  `code chat --reuse-window`, materializes only the session-owned MCP/UI log
+  deltas into the benchmark session directory, and then closes that same
+  benchmark window afterward. This removes the shared-window coupling without
+  breaking Copilot auth or accumulating stray benchmark windows.
+- Traced temp stdio server definitions now wrap Python-script entrypoints with
+  the active interpreter before passing them to
+  `scripts/mcp_stdio_trace_proxy.py`. This keeps workspace-scoped VS Code
+  benchmark servers aligned with the checked-in `python3
+  scripts/vscode_mcp_stdio.py` launch shape and avoids `PermissionError`
+  startup failures when the traced launcher targets a non-executable Python
+  file directly.
+- The VS Code readiness probe now uses a Copilot-compatible alias-based MCP
+  prompt that targets `os_resources.get` through the benchmark server's exposed
+  tool alias, and VS Code benchmark attempts once again use unique per-session
+  benchmark workspace paths instead of one stable `readiness-probe` workspace.
+  This restores fresh VS Code MCP alias registration per attempt; live probe
+  `client_interop_unattended_eval_2026-04-13_vscode_workspace_probe_v14_unique_alias_fix`
+  reached `ready` on the bounded recovery attempt with a traced
+  `tools/call:os_resources.get`.
+- The VS Code unattended runner now re-raises the benchmark window immediately
+  before the real scenario chat, resets trace/UI delta snapshots after the
+  primer phase so capability scoring does not confuse primer traffic for
+  scenario traffic, waits longer for first chat-specific MCP activity before
+  concluding `no_mcp_traffic`, and explicitly confirms the `A session is in
+  progress` close dialog when closing benchmark windows. These follow-on fixes
+  were prompted by the first full `client_interop_unattended_eval_2026-04-13`
+  rerun, which showed VS Code readiness succeeding but capability scenarios
+  falling back to primer-only startup traffic while benchmark windows remained
+  open long enough to exhaust workstation memory.
+- The same VS Code unattended runner now also distinguishes startup catalog
+  traffic from useful tool/resource activity during the post-chat wait loop,
+  records cleanup metadata in each benchmark session, and escalates cleanup to
+  benchmark-workspace-specific VS Code process-tree termination when window
+  close automation still leaves a benchmark instance alive. This follow-on fix
+  was prompted by the same `2026-04-13` rerun plus the observed 50+ GB RAM
+  leak, which showed the runner still stopping after short idle periods that
+  contained only `initialize` / `prompts.list` / `tools.list` traffic.
+- The same VS Code unattended runner now also treats zero-window-baseline
+  launches as benchmark-owned Code app lifecycles and quits the whole Code app
+  after workspace cleanup when no other Code windows remain. Session metadata
+  now records that app-quit path alongside the existing window/process cleanup
+  facts so operator-reported memory leaks can be traced back to a specific
+  cleanup branch.
+- The VS Code unattended runner no longer issues a separate primer chat before
+  each benchmark attempt. A targeted canary run showed the reclaimed benchmark
+  Code process tree still left the capability session with zero retained
+  post-primer MCP traffic, which isolated the primer itself as the only MCP
+  traffic source in that flow. The real scenario chat is now the first
+  MCP-driving action in each benchmark window.
+- The canonical unattended aggregate report still records all four tracks as
+  `ready` and each client completing the full scenario pack, but operational
+  closure is reopened after a same-day operator report that Code still reached
+  roughly 58 GB and required a manual kill after the unattended rerun. The new
+  zero-window-baseline app-quit safeguard is in place; a fresh live rerun is
+  still pending before the remediation can be re-closed.
+- The unattended aggregate renderer now summarizes only the requested tracks
+  instead of assuming all four benchmark clients are always present, so
+  single-track readiness probes produce report artifacts instead of crashing.
+- The benchmark wrapper plan output now reports whether an OS key and/or key
+  file was resolved, without revealing the secret itself. This makes wrapper
+  preflight diagnosis possible when local client configs, `.env`, and shell
+  env differ.
 - Setup docs now explicitly treat absolute paths as local examples only, and
   the README / `.env.example` point path-bearing settings at portable
   placeholders instead of maintainer-specific locations.

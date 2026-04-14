@@ -1,0 +1,244 @@
+{
+  "generatedAt": "2026-04-13T12:01:04Z",
+  "scenarioPack": "codex_vs_claude_host_v1",
+  "attempts": [
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "readiness",
+      "taskId": "readiness_probe",
+      "taskLabel": "Readiness probe",
+      "scenarioId": null,
+      "scenarioLabel": null,
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T115926Z-vscode-ide-readiness-probe",
+      "startedAt": "2026-04-13T11:59:26Z",
+      "durationMs": 37035.25,
+      "exitCode": 0,
+      "runStatus": "ready",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": null,
+      "overallStatus": null,
+      "diagnosticScore": 0.6889,
+      "toolCallCount": 1,
+      "requestCount": 1,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": null,
+      "capabilityGroup": null,
+      "expectedCapability": "readiness_probe",
+      "toolFamily": "resource_bridge",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "address_lookup_postcode",
+      "taskLabel": "Address lookup by postcode",
+      "scenarioId": "address_lookup_postcode",
+      "scenarioLabel": "Address lookup by postcode",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120003Z-vscode-ide-address-lookup-postcode",
+      "startedAt": "2026-04-13T12:00:03Z",
+      "durationMs": 60055.5,
+      "exitCode": 0,
+      "runStatus": "no_mcp_traffic",
+      "blockerCategory": "client_no_mcp_traffic",
+      "blocker": "client produced no MCP traffic",
+      "blockerRaw": null,
+      "overallScore": null,
+      "overallStatus": null,
+      "diagnosticScore": 0.5778,
+      "toolCallCount": 0,
+      "requestCount": 0,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": null,
+      "capabilityGroup": "live_os",
+      "expectedCapability": "live_os_lookup",
+      "toolFamily": "places",
+      "requiresLiveOsApi": true,
+      "requiresUiRuntime": false
+    }
+  ],
+  "readiness": {
+    "summary": {
+      "trackCount": 1,
+      "readyCount": 1,
+      "firstAttemptReadyCount": 1,
+      "recoveredCount": 0,
+      "notReadyCount": 0
+    },
+    "attempts": [
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "readiness",
+        "taskId": "readiness_probe",
+        "taskLabel": "Readiness probe",
+        "scenarioId": null,
+        "scenarioLabel": null,
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T115926Z-vscode-ide-readiness-probe",
+        "startedAt": "2026-04-13T11:59:26Z",
+        "durationMs": 37035.25,
+        "exitCode": 0,
+        "runStatus": "ready",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": null,
+        "overallStatus": null,
+        "diagnosticScore": 0.6889,
+        "toolCallCount": 1,
+        "requestCount": 1,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": null,
+        "capabilityGroup": null,
+        "expectedCapability": "readiness_probe",
+        "toolFamily": "resource_bridge",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      }
+    ]
+  },
+  "capability": {
+    "attempts": [
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "address_lookup_postcode",
+        "taskLabel": "Address lookup by postcode",
+        "scenarioId": "address_lookup_postcode",
+        "scenarioLabel": "Address lookup by postcode",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120003Z-vscode-ide-address-lookup-postcode",
+        "startedAt": "2026-04-13T12:00:03Z",
+        "durationMs": 60055.5,
+        "exitCode": 0,
+        "runStatus": "no_mcp_traffic",
+        "blockerCategory": "client_no_mcp_traffic",
+        "blocker": "client produced no MCP traffic",
+        "blockerRaw": null,
+        "overallScore": null,
+        "overallStatus": null,
+        "diagnosticScore": 0.5778,
+        "toolCallCount": 0,
+        "requestCount": 0,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": null,
+        "capabilityGroup": "live_os",
+        "expectedCapability": "live_os_lookup",
+        "toolFamily": "places",
+        "requiresLiveOsApi": true,
+        "requiresUiRuntime": false
+      }
+    ],
+    "toolFamilies": {
+      "places": {
+        "attemptCount": 1,
+        "scoredCount": 0,
+        "averageScore": null,
+        "statuses": {
+          "no_mcp_traffic": 1
+        }
+      }
+    },
+    "expectedCapabilities": {
+      "live_os_lookup": {
+        "attemptCount": 1,
+        "scoredCount": 0,
+        "averageScore": null,
+        "statuses": {
+          "no_mcp_traffic": 1
+        }
+      }
+    }
+  },
+  "tracks": {
+    "vscode_ide": {
+      "label": "VS Code Agent",
+      "readiness": {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "configVisibility": {
+          "osApiKeyPresent": false,
+          "osApiKeyFilePresent": true,
+          "liveOsReady": true,
+          "defaultToolset": "starter",
+          "includeToolsets": "ons_geo_lookup,property_tax,features_layers,landis_soils",
+          "excludeToolsets": null
+        },
+        "attempts": [
+          {
+            "trackId": "vscode_ide",
+            "trackLabel": "VS Code Agent",
+            "attemptKind": "readiness",
+            "taskId": "readiness_probe",
+            "taskLabel": "Readiness probe",
+            "scenarioId": null,
+            "scenarioLabel": null,
+            "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T115926Z-vscode-ide-readiness-probe",
+            "startedAt": "2026-04-13T11:59:26Z",
+            "durationMs": 37035.25,
+            "exitCode": 0,
+            "runStatus": "ready",
+            "blockerCategory": null,
+            "blocker": null,
+            "blockerRaw": null,
+            "overallScore": null,
+            "overallStatus": null,
+            "diagnosticScore": 0.6889,
+            "toolCallCount": 1,
+            "requestCount": 1,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": null,
+            "capabilityGroup": null,
+            "expectedCapability": "readiness_probe",
+            "toolFamily": "resource_bridge",
+            "requiresLiveOsApi": false,
+            "requiresUiRuntime": false
+          }
+        ],
+        "attemptCount": 1,
+        "outcome": "ready",
+        "firstAttemptOutcome": "ready",
+        "finalAttemptKind": "readiness",
+        "recovered": false,
+        "blockerCategory": null,
+        "blocker": null,
+        "readinessLatencyMs": null,
+        "requestCount": 1,
+        "toolCallCount": 1,
+        "liveOsReady": true
+      },
+      "capability": {
+        "attemptCount": 1,
+        "scoredCount": 0,
+        "averageScore": null,
+        "statuses": {
+          "no_mcp_traffic": 1
+        },
+        "capabilities": {
+          "live_os_lookup": {
+            "attemptCount": 1,
+            "scoredCount": 0,
+            "averageScore": null,
+            "statuses": {
+              "no_mcp_traffic": 1
+            }
+          }
+        },
+        "toolFamilies": {
+          "places": {
+            "attemptCount": 1,
+            "scoredCount": 0,
+            "averageScore": null,
+            "statuses": {
+              "no_mcp_traffic": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

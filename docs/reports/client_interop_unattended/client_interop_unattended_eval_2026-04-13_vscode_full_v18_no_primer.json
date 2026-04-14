@@ -1,0 +1,854 @@
+{
+  "generatedAt": "2026-04-13T12:13:45Z",
+  "scenarioPack": "codex_vs_claude_host_v1",
+  "attempts": [
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "readiness",
+      "taskId": "readiness_probe",
+      "taskLabel": "Readiness probe",
+      "scenarioId": null,
+      "scenarioLabel": null,
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120625Z-vscode-ide-readiness-probe",
+      "startedAt": "2026-04-13T12:06:25Z",
+      "durationMs": 37907.75,
+      "exitCode": 0,
+      "runStatus": "ready",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": null,
+      "overallStatus": null,
+      "diagnosticScore": 0.8167,
+      "toolCallCount": 1,
+      "requestCount": 5,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": 12747.92218208313,
+      "capabilityGroup": null,
+      "expectedCapability": "readiness_probe",
+      "toolFamily": "resource_bridge",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "address_lookup_postcode",
+      "taskLabel": "Address lookup by postcode",
+      "scenarioId": "address_lookup_postcode",
+      "scenarioLabel": "Address lookup by postcode",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120703Z-vscode-ide-address-lookup-postcode",
+      "startedAt": "2026-04-13T12:07:03Z",
+      "durationMs": 43674.5,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.7056,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 1,
+      "requestCount": 5,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": 18581.689834594727,
+      "capabilityGroup": "live_os",
+      "expectedCapability": "live_os_lookup",
+      "toolFamily": "places",
+      "requiresLiveOsApi": true,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "ambiguous_westminster_data",
+      "taskLabel": "Ambiguous routing prompt",
+      "scenarioId": "ambiguous_westminster_data",
+      "scenarioLabel": "Ambiguous routing prompt",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120747Z-vscode-ide-ambiguous-westminster-data",
+      "startedAt": "2026-04-13T12:07:47Z",
+      "durationMs": 43681.53,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.65,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 2,
+      "requestCount": 6,
+      "errorCodes": [
+        "-32001"
+      ],
+      "latencyToFirstUsefulToolCallMs": 17941.98489189148,
+      "capabilityGroup": "offline_safe",
+      "expectedCapability": "discovery_routing",
+      "toolFamily": "routing",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "tool_search_postcode",
+      "taskLabel": "Scoped discovery and tool search",
+      "scenarioId": "tool_search_postcode",
+      "scenarioLabel": "Scoped discovery and tool search",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120831Z-vscode-ide-tool-search-postcode",
+      "startedAt": "2026-04-13T12:08:31Z",
+      "durationMs": 53745.58,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.65,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 2,
+      "requestCount": 6,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": 27436.238288879395,
+      "capabilityGroup": "offline_safe",
+      "expectedCapability": "tool_discovery",
+      "toolFamily": "discovery",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "skills_guide_resource",
+      "taskLabel": "Resource retrieval",
+      "scenarioId": "skills_guide_resource",
+      "scenarioLabel": "Resource retrieval",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120924Z-vscode-ide-skills-guide-resource",
+      "startedAt": "2026-04-13T12:09:24Z",
+      "durationMs": 55806.18,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.5389,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 1,
+      "requestCount": 5,
+      "errorCodes": [
+        "NOT_FOUND"
+      ],
+      "latencyToFirstUsefulToolCallMs": 30228.56092453003,
+      "capabilityGroup": "offline_safe",
+      "expectedCapability": "resource_consumption",
+      "toolFamily": "resources",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "static_map_render",
+      "taskLabel": "Static map render",
+      "scenarioId": "static_map_render",
+      "scenarioLabel": "Static map render",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121020Z-vscode-ide-static-map-render",
+      "startedAt": "2026-04-13T12:10:20Z",
+      "durationMs": 49721.1,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.7056,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 2,
+      "requestCount": 6,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": 16778.66220474243,
+      "capabilityGroup": "offline_safe",
+      "expectedCapability": "map_descriptor",
+      "toolFamily": "maps",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "geography_selector_widget",
+      "taskLabel": "Geography selector widget",
+      "scenarioId": "geography_selector_widget",
+      "scenarioLabel": "Geography selector widget",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121110Z-vscode-ide-geography-selector-widget",
+      "startedAt": "2026-04-13T12:11:10Z",
+      "durationMs": 55762.61,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.7611,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 2,
+      "requestCount": 8,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": 30536.41104698181,
+      "capabilityGroup": "ui",
+      "expectedCapability": "ui_fallback_or_runtime",
+      "toolFamily": "ui",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": true
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "boundary_explorer_widget",
+      "taskLabel": "Boundary explorer widget",
+      "scenarioId": "boundary_explorer_widget",
+      "scenarioLabel": "Boundary explorer widget",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121206Z-vscode-ide-boundary-explorer-widget",
+      "startedAt": "2026-04-13T12:12:06Z",
+      "durationMs": 37561.94,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.7611,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 4,
+      "requestCount": 10,
+      "errorCodes": [],
+      "latencyToFirstUsefulToolCallMs": 11244.637250900269,
+      "capabilityGroup": "ui",
+      "expectedCapability": "ui_fallback_or_runtime",
+      "toolFamily": "ui",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": true
+    },
+    {
+      "trackId": "vscode_ide",
+      "trackLabel": "VS Code Agent",
+      "attemptKind": "capability",
+      "taskId": "boundary_not_found_recovery",
+      "taskLabel": "Failure and error recovery",
+      "scenarioId": "boundary_not_found_recovery",
+      "scenarioLabel": "Failure and error recovery",
+      "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121243Z-vscode-ide-boundary-not-found-recovery",
+      "startedAt": "2026-04-13T12:12:43Z",
+      "durationMs": 61846.28,
+      "exitCode": 0,
+      "runStatus": "scored",
+      "blockerCategory": null,
+      "blocker": null,
+      "blockerRaw": null,
+      "overallScore": 0.6778,
+      "overallStatus": "partial",
+      "diagnosticScore": null,
+      "toolCallCount": 5,
+      "requestCount": 13,
+      "errorCodes": [
+        "NOT_FOUND"
+      ],
+      "latencyToFirstUsefulToolCallMs": 23992.154121398926,
+      "capabilityGroup": "offline_safe",
+      "expectedCapability": "error_recovery",
+      "toolFamily": "admin_lookup",
+      "requiresLiveOsApi": false,
+      "requiresUiRuntime": false
+    }
+  ],
+  "readiness": {
+    "summary": {
+      "trackCount": 1,
+      "readyCount": 1,
+      "firstAttemptReadyCount": 1,
+      "recoveredCount": 0,
+      "notReadyCount": 0
+    },
+    "attempts": [
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "readiness",
+        "taskId": "readiness_probe",
+        "taskLabel": "Readiness probe",
+        "scenarioId": null,
+        "scenarioLabel": null,
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120625Z-vscode-ide-readiness-probe",
+        "startedAt": "2026-04-13T12:06:25Z",
+        "durationMs": 37907.75,
+        "exitCode": 0,
+        "runStatus": "ready",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": null,
+        "overallStatus": null,
+        "diagnosticScore": 0.8167,
+        "toolCallCount": 1,
+        "requestCount": 5,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": 12747.92218208313,
+        "capabilityGroup": null,
+        "expectedCapability": "readiness_probe",
+        "toolFamily": "resource_bridge",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      }
+    ]
+  },
+  "capability": {
+    "attempts": [
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "address_lookup_postcode",
+        "taskLabel": "Address lookup by postcode",
+        "scenarioId": "address_lookup_postcode",
+        "scenarioLabel": "Address lookup by postcode",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120703Z-vscode-ide-address-lookup-postcode",
+        "startedAt": "2026-04-13T12:07:03Z",
+        "durationMs": 43674.5,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.7056,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 1,
+        "requestCount": 5,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": 18581.689834594727,
+        "capabilityGroup": "live_os",
+        "expectedCapability": "live_os_lookup",
+        "toolFamily": "places",
+        "requiresLiveOsApi": true,
+        "requiresUiRuntime": false
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "ambiguous_westminster_data",
+        "taskLabel": "Ambiguous routing prompt",
+        "scenarioId": "ambiguous_westminster_data",
+        "scenarioLabel": "Ambiguous routing prompt",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120747Z-vscode-ide-ambiguous-westminster-data",
+        "startedAt": "2026-04-13T12:07:47Z",
+        "durationMs": 43681.53,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.65,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 2,
+        "requestCount": 6,
+        "errorCodes": [
+          "-32001"
+        ],
+        "latencyToFirstUsefulToolCallMs": 17941.98489189148,
+        "capabilityGroup": "offline_safe",
+        "expectedCapability": "discovery_routing",
+        "toolFamily": "routing",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "tool_search_postcode",
+        "taskLabel": "Scoped discovery and tool search",
+        "scenarioId": "tool_search_postcode",
+        "scenarioLabel": "Scoped discovery and tool search",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120831Z-vscode-ide-tool-search-postcode",
+        "startedAt": "2026-04-13T12:08:31Z",
+        "durationMs": 53745.58,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.65,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 2,
+        "requestCount": 6,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": 27436.238288879395,
+        "capabilityGroup": "offline_safe",
+        "expectedCapability": "tool_discovery",
+        "toolFamily": "discovery",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "skills_guide_resource",
+        "taskLabel": "Resource retrieval",
+        "scenarioId": "skills_guide_resource",
+        "scenarioLabel": "Resource retrieval",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120924Z-vscode-ide-skills-guide-resource",
+        "startedAt": "2026-04-13T12:09:24Z",
+        "durationMs": 55806.18,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.5389,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 1,
+        "requestCount": 5,
+        "errorCodes": [
+          "NOT_FOUND"
+        ],
+        "latencyToFirstUsefulToolCallMs": 30228.56092453003,
+        "capabilityGroup": "offline_safe",
+        "expectedCapability": "resource_consumption",
+        "toolFamily": "resources",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "static_map_render",
+        "taskLabel": "Static map render",
+        "scenarioId": "static_map_render",
+        "scenarioLabel": "Static map render",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121020Z-vscode-ide-static-map-render",
+        "startedAt": "2026-04-13T12:10:20Z",
+        "durationMs": 49721.1,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.7056,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 2,
+        "requestCount": 6,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": 16778.66220474243,
+        "capabilityGroup": "offline_safe",
+        "expectedCapability": "map_descriptor",
+        "toolFamily": "maps",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "geography_selector_widget",
+        "taskLabel": "Geography selector widget",
+        "scenarioId": "geography_selector_widget",
+        "scenarioLabel": "Geography selector widget",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121110Z-vscode-ide-geography-selector-widget",
+        "startedAt": "2026-04-13T12:11:10Z",
+        "durationMs": 55762.61,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.7611,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 2,
+        "requestCount": 8,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": 30536.41104698181,
+        "capabilityGroup": "ui",
+        "expectedCapability": "ui_fallback_or_runtime",
+        "toolFamily": "ui",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": true
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "boundary_explorer_widget",
+        "taskLabel": "Boundary explorer widget",
+        "scenarioId": "boundary_explorer_widget",
+        "scenarioLabel": "Boundary explorer widget",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121206Z-vscode-ide-boundary-explorer-widget",
+        "startedAt": "2026-04-13T12:12:06Z",
+        "durationMs": 37561.94,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.7611,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 4,
+        "requestCount": 10,
+        "errorCodes": [],
+        "latencyToFirstUsefulToolCallMs": 11244.637250900269,
+        "capabilityGroup": "ui",
+        "expectedCapability": "ui_fallback_or_runtime",
+        "toolFamily": "ui",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": true
+      },
+      {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "attemptKind": "capability",
+        "taskId": "boundary_not_found_recovery",
+        "taskLabel": "Failure and error recovery",
+        "scenarioId": "boundary_not_found_recovery",
+        "scenarioLabel": "Failure and error recovery",
+        "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T121243Z-vscode-ide-boundary-not-found-recovery",
+        "startedAt": "2026-04-13T12:12:43Z",
+        "durationMs": 61846.28,
+        "exitCode": 0,
+        "runStatus": "scored",
+        "blockerCategory": null,
+        "blocker": null,
+        "blockerRaw": null,
+        "overallScore": 0.6778,
+        "overallStatus": "partial",
+        "diagnosticScore": null,
+        "toolCallCount": 5,
+        "requestCount": 13,
+        "errorCodes": [
+          "NOT_FOUND"
+        ],
+        "latencyToFirstUsefulToolCallMs": 23992.154121398926,
+        "capabilityGroup": "offline_safe",
+        "expectedCapability": "error_recovery",
+        "toolFamily": "admin_lookup",
+        "requiresLiveOsApi": false,
+        "requiresUiRuntime": false
+      }
+    ],
+    "toolFamilies": {
+      "admin_lookup": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.6778,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "discovery": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.65,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "maps": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.7056,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "places": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.7056,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "resources": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.5389,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "routing": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.65,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "ui": {
+        "attemptCount": 2,
+        "scoredCount": 2,
+        "averageScore": 0.7611,
+        "statuses": {
+          "scored": 2
+        }
+      }
+    },
+    "expectedCapabilities": {
+      "discovery_routing": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.65,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "error_recovery": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.6778,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "live_os_lookup": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.7056,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "map_descriptor": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.7056,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "resource_consumption": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.5389,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "tool_discovery": {
+        "attemptCount": 1,
+        "scoredCount": 1,
+        "averageScore": 0.65,
+        "statuses": {
+          "scored": 1
+        }
+      },
+      "ui_fallback_or_runtime": {
+        "attemptCount": 2,
+        "scoredCount": 2,
+        "averageScore": 0.7611,
+        "statuses": {
+          "scored": 2
+        }
+      }
+    }
+  },
+  "tracks": {
+    "vscode_ide": {
+      "label": "VS Code Agent",
+      "readiness": {
+        "trackId": "vscode_ide",
+        "trackLabel": "VS Code Agent",
+        "configVisibility": {
+          "osApiKeyPresent": false,
+          "osApiKeyFilePresent": true,
+          "liveOsReady": true,
+          "defaultToolset": "starter",
+          "includeToolsets": "ons_geo_lookup,property_tax,features_layers,landis_soils",
+          "excludeToolsets": null
+        },
+        "attempts": [
+          {
+            "trackId": "vscode_ide",
+            "trackLabel": "VS Code Agent",
+            "attemptKind": "readiness",
+            "taskId": "readiness_probe",
+            "taskLabel": "Readiness probe",
+            "scenarioId": null,
+            "scenarioLabel": null,
+            "sessionDir": "/Users/crpage/repos/mcp-geo/logs/sessions/20260413T120625Z-vscode-ide-readiness-probe",
+            "startedAt": "2026-04-13T12:06:25Z",
+            "durationMs": 37907.75,
+            "exitCode": 0,
+            "runStatus": "ready",
+            "blockerCategory": null,
+            "blocker": null,
+            "blockerRaw": null,
+            "overallScore": null,
+            "overallStatus": null,
+            "diagnosticScore": 0.8167,
+            "toolCallCount": 1,
+            "requestCount": 5,
+            "errorCodes": [],
+            "latencyToFirstUsefulToolCallMs": 12747.92218208313,
+            "capabilityGroup": null,
+            "expectedCapability": "readiness_probe",
+            "toolFamily": "resource_bridge",
+            "requiresLiveOsApi": false,
+            "requiresUiRuntime": false
+          }
+        ],
+        "attemptCount": 1,
+        "outcome": "ready",
+        "firstAttemptOutcome": "ready",
+        "finalAttemptKind": "readiness",
+        "recovered": false,
+        "blockerCategory": null,
+        "blocker": null,
+        "readinessLatencyMs": 12747.92218208313,
+        "requestCount": 5,
+        "toolCallCount": 1,
+        "liveOsReady": true
+      },
+      "capability": {
+        "attemptCount": 8,
+        "scoredCount": 8,
+        "averageScore": 0.6813,
+        "statuses": {
+          "scored": 8
+        },
+        "capabilities": {
+          "discovery_routing": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.65,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "error_recovery": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.6778,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "live_os_lookup": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.7056,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "map_descriptor": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.7056,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "resource_consumption": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.5389,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "tool_discovery": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.65,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "ui_fallback_or_runtime": {
+            "attemptCount": 2,
+            "scoredCount": 2,
+            "averageScore": 0.7611,
+            "statuses": {
+              "scored": 2
+            }
+          }
+        },
+        "toolFamilies": {
+          "admin_lookup": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.6778,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "discovery": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.65,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "maps": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.7056,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "places": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.7056,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "resources": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.5389,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "routing": {
+            "attemptCount": 1,
+            "scoredCount": 1,
+            "averageScore": 0.65,
+            "statuses": {
+              "scored": 1
+            }
+          },
+          "ui": {
+            "attemptCount": 2,
+            "scoredCount": 2,
+            "averageScore": 0.7611,
+            "statuses": {
+              "scored": 2
+            }
+          }
+        }
+      }
+    }
+  }
+}

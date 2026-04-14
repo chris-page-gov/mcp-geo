@@ -144,6 +144,59 @@ The runner temporarily swaps the Codex MCP registry entry for `mcp-geo` to a
 traced stdio proxy, runs the scenario, restores the prior config, generates the
 trace report, and writes benchmark evidence/score artifacts.
 
+## Unattended Four-Client Run
+
+Run the unattended comparison harness across Codex CLI, Gemini CLI, Claude Code
+CLI, and VS Code Agent:
+
+```bash
+./.venv/bin/python scripts/unattended_client_eval.py \
+  --session-root logs/sessions/client_interop_unattended_eval_$(date +%Y%m%d) \
+  --out-prefix docs/reports/client_interop_unattended/client_interop_unattended_eval_$(date +%F)
+```
+
+Important behavior:
+
+- Codex CLI reuses the existing `host_benchmark` runner and produces the most
+  complete unattended baseline today.
+- Gemini CLI uses a temporary project-scoped MCP registration outside the repo
+  so unattended runs do not create or modify a repo-local `.gemini/` folder.
+- Claude Code CLI uses a temporary strict MCP config per scenario. If the local
+  Claude CLI auth/session is broken, the unattended report will record
+  `claude_cli_failed` rather than hanging.
+- VS Code Agent now creates a clean ignored benchmark workspace per attempt,
+  writes a traced `.vscode/mcp.json` into that workspace, opens it on the live
+  authenticated VS Code profile, raises the new benchmark window, and only
+  then issues `code chat --reuse-window`. Without that window-steering step,
+  the headless chat command may attach to a different live Code window with no
+  benchmark MCP context and therefore no `mcp-geo` tools/resources exposed.
+- Blocked runs keep their rubric score only as `diagnosticScore`; they do not
+  count as scored attempts in the aggregate average.
+- Benchmark temp-server runs now resolve `OS_API_KEY` / `OS_API_KEY_FILE`
+  from the same practical local sources used by real client sessions:
+  process env first, then `launchctl`, repo `.env`, Claude Desktop `mcp-geo`
+  config, and Codex `mcp-geo` config. If a higher-priority
+  `OS_API_KEY_FILE` is found, it takes precedence over a lower-priority raw
+  `OS_API_KEY` fallback.
+
+Current evidence snapshot:
+
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json`
+- `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`
+
+Current interpreted state:
+
+- Codex CLI is the strongest unattended host today and provides the best
+  baseline for actual tool-quality comparisons.
+- Gemini CLI is currently blocked before first MCP traffic by its own
+  workspace/settings behavior on the current headless path.
+- Claude Code CLI currently reaches MCP startup but then fails the headless run
+  path on local Anthropic CLI authentication before task execution.
+- VS Code Agent becomes partially usable when the workspace is force-opened,
+  but the unattended `code chat` path remains nondeterministic and still needs
+  a readiness probe before the full scenario pack is trustworthy.
+
 ## Codex IDE Manual UI Capture
 
 Use one session per scenario. Point the Codex IDE MCP server command at
@@ -226,3 +279,6 @@ The markdown report includes:
   `MCP_GEO_POSTGIS_REUSE_DEVCONTAINER=0`, so isolated per-client PostGIS is the
   normal host behavior. Shared devcontainer reuse remains available, but only
   when you enable it explicitly for a comparison run.
+- The VS Code CLI path is still less deterministic than Codex CLI. Even with
+  the forced workspace-open step, some unattended `code chat` sessions only
+  complete startup discovery and never translate the prompt into tool calls.
