@@ -32,6 +32,11 @@ All notable changes to this project will be documented in this file.
   keeps the committed baseline in `classic` mode while the switcher can
   locally rewrite the root instruction files into `obsidian` mode and restore
   the tracked baseline from `HEAD` for repeatable evaluation.
+- Added the instruction-focused comparison pack
+  `docs/benchmarking/obsidian_agent_control_smoke_pack_v1.json` plus the
+  structural regression test `tests/test_obsidian_agent_control_smoke_pack.py`
+  for six smoke scenarios across Codex, Claude, Gemini, and VS Code in both
+  `classic` and `obsidian` modes.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

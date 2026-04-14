@@ -81,6 +81,11 @@ assumptions change.
   round-trip already passed on 2026-04-14 via `obsidian -> validate -> classic
   -> validate` using `--skip-cli`, confirming that the root files restore
   cleanly after local evaluation.
+- The instruction-focused comparison pack is now checked in at
+  `docs/benchmarking/obsidian_agent_control_smoke_pack_v1.json`, covering the
+  six intended smoke scenarios for both modes and the four target clients.
+  Structural coverage now lives in
+  `tests/test_obsidian_agent_control_smoke_pack.py`.
 - The chosen rollout defaults are now fixed: root `AGENTS.md` remains the
   cross-tool contract, `CONTEXT.md` and `PROGRESS.MD` become compatibility
   shims only in `obsidian` mode, `CHANGELOG.md` remains the release ledger,
@@ -1004,9 +1009,9 @@ assumptions change.
   `Plans/PLAN-Obsidian-agent-control-plane.md`, including the dedicated
   control vault, official Obsidian CLI wrapper/preflight, classic-vs-obsidian
   root adapter generation, and the first instruction-focused smoke pack. The
-  current active slice is the dedicated smoke-pack comparison now that the
-  vault scaffold, CLI/preflight layer, and local mode switcher are all in
-  place.
+  current active slice is the final runbook/docs distinction and validation
+  closure now that the vault scaffold, CLI/preflight layer, local mode
+  switcher, and smoke-pack JSON are all in place.
 - Keep the new control vault distinct from the existing reset-on-build
   knowledge base under `Obsidian/MCP Geo Knowledge Base/`; the new surface is
   for agent steering, while the existing vault remains the repo navigation

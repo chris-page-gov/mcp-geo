@@ -1,0 +1,130 @@
+{
+  "id": "obsidian_agent_control_smoke_v1",
+  "title": "Obsidian Agent Control Smoke Pack",
+  "description": "Instruction-focused comparison pack for evaluating classic versus obsidian agent-control modes across Codex, Claude, Gemini, and VS Code without using the unattended capability harness.",
+  "version": 1,
+  "clients": [
+    "codex",
+    "claude",
+    "gemini",
+    "vscode"
+  ],
+  "modes": [
+    "classic",
+    "obsidian"
+  ],
+  "scenarios": [
+    {
+      "id": "active_profile_discovery",
+      "label": "Active profile discovery",
+      "prompt": "Without changing any files, determine whether this repo is currently in classic or obsidian agent-control mode. Name the first file or files you used and stop there.",
+      "successConditions": [
+        "Correctly names the active profile.",
+        "Cites the first read surface instead of answering from memory.",
+        "Stops after the requested identification step."
+      ],
+      "modeExpectations": {
+        "classic": [
+          "Cites the root-file-driven path, starting from AGENTS.md.",
+          "Does not invent control-vault requirements."
+        ],
+        "obsidian": [
+          "Cites the generated root AGENTS.md plus the control-vault home note.",
+          "Recognizes that CHANGELOG.md is not the default read path."
+        ]
+      }
+    },
+    {
+      "id": "current_focus_lookup",
+      "label": "Current focus lookup",
+      "prompt": "Tell me the current focus of this repository and cite the smallest number of files you needed to read.",
+      "successConditions": [
+        "Returns the current focus accurately.",
+        "Uses the smallest useful read path.",
+        "Names the evidence files that were used."
+      ],
+      "modeExpectations": {
+        "classic": [
+          "Prefers root trackers such as AGENTS.md and CONTEXT.md.",
+          "Avoids wandering through unrelated docs."
+        ],
+        "obsidian": [
+          "Prefers the control-vault state notes.",
+          "Finds focus through Agent Home and Current Focus before any broader repo scan."
+        ]
+      }
+    },
+    {
+      "id": "work_queue_lookup",
+      "label": "Work queue lookup",
+      "prompt": "What is next in the current Obsidian control-plane rollout, and where is that tracked?",
+      "successConditions": [
+        "Finds the active next step in the rollout.",
+        "Cites the tracking surface used to answer.",
+        "Does not confuse done milestones with the active one."
+      ],
+      "modeExpectations": {
+        "classic": [
+          "Finds the answer from the plan file and PROGRESS.MD."
+        ],
+        "obsidian": [
+          "Finds the answer from the control-vault work queue or generated plan summary."
+        ]
+      }
+    },
+    {
+      "id": "repo_navigation_lookup",
+      "label": "Repo navigation lookup",
+      "prompt": "You need to find where the MCP HTTP entrypoint and the main tool registry live. Tell me the smallest navigation path you would use before opening code.",
+      "successConditions": [
+        "Names the correct code surfaces.",
+        "Uses a compact navigation-first approach.",
+        "Distinguishes repo navigation from implementation editing."
+      ],
+      "modeExpectations": {
+        "classic": [
+          "May use AGENTS.md or root repo docs to orient."
+        ],
+        "obsidian": [
+          "Uses the generated repo-map digest before opening broader repo docs."
+        ]
+      }
+    },
+    {
+      "id": "update_discipline_behavior",
+      "label": "Update discipline behavior",
+      "prompt": "If you complete one milestone of the Obsidian control-plane rollout, what repo surfaces are you expected to update before committing?",
+      "successConditions": [
+        "Names the required tracker surfaces.",
+        "Includes the expectation to commit and push after a green milestone.",
+        "Does not invent unrelated release steps."
+      ],
+      "modeExpectations": {
+        "classic": [
+          "Points to the root plan/tracker files."
+        ],
+        "obsidian": [
+          "Points to the control-vault state plus the compatibility or release surfaces where applicable."
+        ]
+      }
+    },
+    {
+      "id": "guardrail_adherence",
+      "label": "Guardrail adherence",
+      "prompt": "Before making any changes, tell me which note or settings areas in the Obsidian control plane should be treated as protected or non-default edit targets.",
+      "successConditions": [
+        "Identifies .obsidian as non-default.",
+        "Recognizes generated notes as non-hand-edited outputs.",
+        "Does not propose reorganizing the vault for tidiness."
+      ],
+      "modeExpectations": {
+        "classic": [
+          "Explains the repo-level guardrails without inventing vault-specific write targets."
+        ],
+        "obsidian": [
+          "Uses Agent Home and generated-note conventions to explain protected areas."
+        ]
+      }
+    }
+  ]
+}
