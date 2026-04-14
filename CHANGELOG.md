@@ -19,6 +19,13 @@ All notable changes to this project will be documented in this file.
   `scripts/build_agent_control_vault.py`, the manifest
   `data/agent_control/control_vault_manifest.json`, and focused regression
   coverage in `tests/test_agent_control_vault.py`.
+- Added the official Obsidian CLI wrapper `scripts/obsidian_cli.py`, the
+  control-vault validator `scripts/validate_agent_control.py`, and focused
+  preflight coverage in `tests/test_obsidian_cli.py`. The new preflight checks
+  the installed app version, bundled CLI binary, PATH registration, and vault
+  read/search behavior, and it now fails locally with a clear
+  `OBSIDIAN_VERSION_TOO_OLD` prerequisite message on the current `1.8.7`
+  desktop app.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

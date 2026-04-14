@@ -66,6 +66,13 @@ assumptions change.
   `scripts/agent_control_common.py` / `scripts/build_agent_control_vault.py`,
   the manifest `data/agent_control/control_vault_manifest.json`, and focused
   preservation/refresh coverage in `tests/test_agent_control_vault.py`.
+- The next rollout slice is now also implemented: `scripts/obsidian_cli.py`
+  provides the official Obsidian CLI wrapper for help/read/search operations,
+  `scripts/validate_agent_control.py` validates the vault plus CLI
+  prerequisites, and `tests/test_obsidian_cli.py` covers version-too-old,
+  CLI-missing, and success-path behavior. The local full preflight now fails
+  cleanly with `OBSIDIAN_VERSION_TOO_OLD`, while vault-only validation passes
+  with `python3 scripts/validate_agent_control.py --skip-cli`.
 - The chosen rollout defaults are now fixed: root `AGENTS.md` remains the
   cross-tool contract, `CONTEXT.md` and `PROGRESS.MD` become compatibility
   shims only in `obsidian` mode, `CHANGELOG.md` remains the release ledger,
@@ -989,8 +996,8 @@ assumptions change.
   `Plans/PLAN-Obsidian-agent-control-plane.md`, including the dedicated
   control vault, official Obsidian CLI wrapper/preflight, classic-vs-obsidian
   root adapter generation, and the first instruction-focused smoke pack. The
-  current active slice is the CLI wrapper/preflight step now that the vault
-  scaffold has landed.
+  current active slice is the classic-vs-obsidian mode switcher now that the
+  vault scaffold and CLI/preflight layers have landed.
 - Keep the new control vault distinct from the existing reset-on-build
   knowledge base under `Obsidian/MCP Geo Knowledge Base/`; the new surface is
   for agent steering, while the existing vault remains the repo navigation
