@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-13
+Last updated: 2026-04-14
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,24 @@ assumptions change.
 
 ## Current Focus
 
+- A new 2026-04-14 Obsidian control-plane rollout is now in progress under
+  `Plans/PLAN-Obsidian-agent-control-plane.md`. The goal is to replace the
+  large root tracker read path with a switchable `classic` / `obsidian`
+  profile system while keeping root `AGENTS.md` as the universal entrypoint.
+  The dedicated control vault will live under
+  `Obsidian/MCP Geo Agent Control/` and stay separate from the existing
+  generated repo knowledge base under `Obsidian/MCP Geo Knowledge Base/`.
+- The chosen rollout defaults are now fixed: root `AGENTS.md` remains the
+  cross-tool contract, `CONTEXT.md` and `PROGRESS.MD` become compatibility
+  shims only in `obsidian` mode, `CHANGELOG.md` remains the release ledger,
+  and the first comparison will be an instruction-focused smoke pack for
+  Codex, Claude, Gemini, and VS Code rather than immediate integration into
+  the unattended capability harness.
+- The current local prerequisite blocker for full `obsidian`-mode validation
+  is the installed Obsidian app version at `/Applications/Obsidian.app`,
+  which currently reports `1.8.7`; the planned official CLI workflow requires
+  Obsidian `>=1.12.7` with `Settings > General > Command Line Interface`
+  enabled before validation can pass cleanly.
 - The 2026-04-13 unattended-eval remediation remains in progress. The
   canonical aggregate report at
   `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` still
@@ -960,6 +978,14 @@ assumptions change.
 
 ## Active Work
 
+- Implement the switchable Obsidian agent-control plane under
+  `Plans/PLAN-Obsidian-agent-control-plane.md`, including the dedicated
+  control vault, official Obsidian CLI wrapper/preflight, classic-vs-obsidian
+  root adapter generation, and the first instruction-focused smoke pack.
+- Keep the new control vault distinct from the existing reset-on-build
+  knowledge base under `Obsidian/MCP Geo Knowledge Base/`; the new surface is
+  for agent steering, while the existing vault remains the repo navigation
+  knowledge base.
 - Maintain and iterate the OWASP MCP strict validation pack (`server/owasp_mcp_validation.py`, `security/owasp_mcp/`, `.github/workflows/ci.yml`) from the current `compliant` strict baseline, keeping the attestation set fresh and preserving the hardened `/mcp` auth, session, deployment, and governance controls.
 - Treat any tool registration or contract change as OWASP maintenance work as
   well: refresh `security/owasp_mcp/tool_risk_inventory.json`, regenerate the
@@ -1277,6 +1303,14 @@ assumptions change.
 
 ## Decisions Log
 
+- 2026-04-14: Chose a switchable Obsidian agent-control rollout with two
+  deterministic profiles: `classic` preserves the current root-file-driven
+  behavior, while `obsidian` routes agents through a new dedicated control
+  vault under `Obsidian/MCP Geo Agent Control/`. Root `AGENTS.md` remains the
+  universal entrypoint in both modes, `CONTEXT.md` and `PROGRESS.MD` become
+  compatibility shims in `obsidian` mode, `CHANGELOG.md` stays the release
+  ledger, and the first evaluation stays separate from the unattended
+  capability harness as a dedicated smoke pack.
 - 2026-03-13: Added and remediated the repo-pinned OWASP MCP validation pack (`security/owasp_mcp/`, `server/owasp_mcp_validation.py`, `scripts/validate_owasp_mcp_server.py`) locked to OWASP GenAI Security Project _A Practical Guide for Secure MCP Server Development_ Version 1.0 (February 2026). The strict baseline now scores `100.0` and is `compliant`, backed by committed attestations, hardened `/mcp` auth/session controls, deployment assets, monitoring assets, and protected-branch review evidence.
 - 2026-03-10: Standardized cross-platform repo/devcontainer behavior by
   enforcing LF line endings via `.gitattributes`/`.editorconfig`, making

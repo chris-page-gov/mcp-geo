@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added the switchable Obsidian agent-control implementation plan at
+  `Plans/PLAN-Obsidian-agent-control-plane.md`, plus the tracked rollout
+  baseline in `PROGRESS.MD` and `CONTEXT.md`. The new workstream will build a
+  dedicated control vault under `Obsidian/MCP Geo Agent Control/`, keep
+  `AGENTS.md` as the root entrypoint, and compare `classic` versus `obsidian`
+  instruction profiles with a dedicated smoke pack.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the
