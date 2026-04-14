@@ -56,6 +56,7 @@ def _init_repo(tmp_path: Path) -> Path:
 def test_switch_obsidian_writes_root_adapters_and_manifest(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
     mode_manifest = repo / "data" / "agent_control" / "active_mode.json"
 
@@ -65,6 +66,7 @@ def test_switch_obsidian_writes_root_adapters_and_manifest(tmp_path: Path) -> No
         output_root=repo / "Obsidian" / "MCP Geo Agent Control",
         mode_manifest_path=mode_manifest,
         app_path=app_path,
+        user_data_path=user_data_path,
         cli_path=None,
         require_cli=False,
     )
@@ -80,6 +82,7 @@ def test_switch_obsidian_writes_root_adapters_and_manifest(tmp_path: Path) -> No
 def test_switch_classic_restores_head_versions(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
     mode_manifest = repo / "data" / "agent_control" / "active_mode.json"
     originals = {
@@ -100,6 +103,7 @@ def test_switch_classic_restores_head_versions(tmp_path: Path) -> None:
         output_root=repo / "Obsidian" / "MCP Geo Agent Control",
         mode_manifest_path=mode_manifest,
         app_path=app_path,
+        user_data_path=user_data_path,
         cli_path=None,
         require_cli=False,
     )
@@ -109,6 +113,7 @@ def test_switch_classic_restores_head_versions(tmp_path: Path) -> None:
         output_root=repo / "Obsidian" / "MCP Geo Agent Control",
         mode_manifest_path=mode_manifest,
         app_path=app_path,
+        user_data_path=user_data_path,
         cli_path=None,
         require_cli=False,
     )
@@ -121,6 +126,7 @@ def test_switch_classic_restores_head_versions(tmp_path: Path) -> None:
 def test_switch_obsidian_can_require_cli_readiness(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
 
     try:
@@ -130,6 +136,7 @@ def test_switch_obsidian_can_require_cli_readiness(tmp_path: Path) -> None:
             output_root=repo / "Obsidian" / "MCP Geo Agent Control",
             mode_manifest_path=repo / "data" / "agent_control" / "active_mode.json",
             app_path=app_path,
+            user_data_path=user_data_path,
             cli_path=None,
             require_cli=True,
         )
@@ -142,6 +149,7 @@ def test_switch_obsidian_can_require_cli_readiness(tmp_path: Path) -> None:
 def test_switch_obsidian_is_idempotent_for_generated_root_files(tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
     mode_manifest = repo / "data" / "agent_control" / "active_mode.json"
 
@@ -151,6 +159,7 @@ def test_switch_obsidian_is_idempotent_for_generated_root_files(tmp_path: Path) 
         output_root=repo / "Obsidian" / "MCP Geo Agent Control",
         mode_manifest_path=mode_manifest,
         app_path=app_path,
+        user_data_path=user_data_path,
         cli_path=None,
         require_cli=False,
     )
@@ -161,6 +170,7 @@ def test_switch_obsidian_is_idempotent_for_generated_root_files(tmp_path: Path) 
         output_root=repo / "Obsidian" / "MCP Geo Agent Control",
         mode_manifest_path=mode_manifest,
         app_path=app_path,
+        user_data_path=user_data_path,
         cli_path=None,
         require_cli=False,
     )

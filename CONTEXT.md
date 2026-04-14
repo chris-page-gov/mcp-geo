@@ -63,9 +63,10 @@ assumptions change.
   the dedicated vault scaffold, CLI wrapper/preflight, local mode switcher,
   smoke-pack JSON, runbook, evidence template, README distinction, and
   focused tests are all checked in. The remaining local prerequisite for the
-  full non-skipped CLI preflight is still the desktop app upgrade to
-  Obsidian `1.12.7+` with `Settings > General > Command Line Interface`
-  enabled.
+  full non-skipped CLI preflight is the desktop CLI itself: the effective
+  runtime is already `1.12.7`, but the shell still cannot find an `obsidian`
+  command and the expected CLI binary is not yet available from the app
+  install.
 - The first implementation slice for that rollout is now checked in: the
   dedicated vault scaffold under `Obsidian/MCP Geo Agent Control/`, curated
   control notes under `00 Home/` and `10 State/`, generated compact digests
@@ -77,9 +78,12 @@ assumptions change.
   provides the official Obsidian CLI wrapper for help/read/search operations,
   `scripts/validate_agent_control.py` validates the vault plus CLI
   prerequisites, and `tests/test_obsidian_cli.py` covers version-too-old,
-  CLI-missing, and success-path behavior. The local full preflight now fails
-  cleanly with `OBSIDIAN_VERSION_TOO_OLD`, while vault-only validation passes
-  with `python3 scripts/validate_agent_control.py --skip-cli`.
+  updated-runtime, CLI-missing, and success-path behavior. The local full
+  preflight now correctly resolves the effective runtime version from
+  Obsidian's auto-updated `obsidian-1.12.7.asar` package instead of the
+  installer shell's `1.8.7` plist version; the remaining live failure is the
+  missing CLI binary/registration, while vault-only validation passes with
+  `python3 scripts/validate_agent_control.py --skip-cli`.
 - The switchable mode layer is now also live: `scripts/switch_agent_mode.py`
   can rewrite the working tree into `obsidian` mode and restore the tracked
   `classic` baseline from `HEAD`, while `scripts/validate_agent_control.py`
@@ -100,10 +104,11 @@ assumptions change.
   Codex, Claude, Gemini, and VS Code rather than immediate integration into
   the unattended capability harness.
 - The current local prerequisite blocker for full `obsidian`-mode validation
-  is the installed Obsidian app version at `/Applications/Obsidian.app`,
-  which currently reports `1.8.7`; the planned official CLI workflow requires
-  Obsidian `>=1.12.7` with `Settings > General > Command Line Interface`
-  enabled before validation can pass cleanly.
+  is the CLI binary/registration itself. The installer shell at
+  `/Applications/Obsidian.app` still reports `1.8.7`, but the effective
+  runtime is the auto-updated
+  `~/Library/Application Support/obsidian/obsidian-1.12.7.asar` package, so
+  the validator must key off runtime version rather than the shell plist.
 - The 2026-04-13 unattended-eval remediation remains in progress. The
   canonical aggregate report at
   `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` still

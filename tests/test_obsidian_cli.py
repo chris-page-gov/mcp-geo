@@ -20,6 +20,11 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _write_updated_asar(user_data_path: Path, version: str) -> None:
+    user_data_path.mkdir(parents=True, exist_ok=True)
+    (user_data_path / f"obsidian-{version}.asar").write_text("", encoding="utf-8")
+
+
 def _run_git(repo_root: Path, *args: str) -> str:
     completed = subprocess.run(
         ["git", *args],
@@ -56,9 +61,10 @@ def test_preflight_reports_version_too_old_before_cli_checks(tmp_path: Path) -> 
     vault_path = tmp_path / "vault"
     vault_path.mkdir()
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
 
-    result = preflight(vault_path, app_path=app_path)
+    result = preflight(vault_path, app_path=app_path, user_data_path=user_data_path)
 
     assert result["ready"] is False
     assert result["issues"][0]["code"] == "OBSIDIAN_VERSION_TOO_OLD"
@@ -68,15 +74,34 @@ def test_preflight_requires_registered_cli_when_version_is_new_enough(tmp_path: 
     vault_path = tmp_path / "vault"
     vault_path.mkdir()
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.12.7")
     bundled = app_path / "Contents" / "MacOS" / "obsidian-cli"
     bundled.parent.mkdir(parents=True, exist_ok=True)
     bundled.write_text("", encoding="utf-8")
 
-    result = preflight(vault_path, app_path=app_path)
+    result = preflight(vault_path, app_path=app_path, user_data_path=user_data_path)
 
     codes = [issue["code"] for issue in result["issues"]]
     assert "OBSIDIAN_CLI_NOT_REGISTERED" in codes
+
+
+def test_preflight_prefers_updated_asar_runtime_version(tmp_path: Path) -> None:
+    vault_path = tmp_path / "vault"
+    vault_path.mkdir()
+    app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
+    _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
+    _write_updated_asar(user_data_path, "1.12.7")
+
+    result = preflight(vault_path, app_path=app_path, user_data_path=user_data_path)
+
+    assert result["app_version"] == "1.12.7"
+    assert result["installer_version"] == "1.8.7"
+    assert result["updated_asar_version"] == "1.12.7"
+    assert result["version_source"] == "updated_asar"
+    assert not any(issue["code"] == "OBSIDIAN_VERSION_TOO_OLD" for issue in result["issues"])
+    assert any(issue["code"] == "OBSIDIAN_CLI_NOT_REGISTERED" for issue in result["issues"])
 
 
 def test_preflight_runs_help_read_and_search_with_registered_cli(
@@ -87,6 +112,7 @@ def test_preflight_runs_help_read_and_search_with_registered_cli(
     _init_minimal_repo(tmp_path)
     build_control_vault(tmp_path, output_root=vault_path, manifest_path=tmp_path / "manifest.json")
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.12.7")
     bundled = app_path / "Contents" / "MacOS" / "obsidian-cli"
     bundled.parent.mkdir(parents=True, exist_ok=True)
@@ -106,7 +132,12 @@ def test_preflight_runs_help_read_and_search_with_registered_cli(
 
     monkeypatch.setattr("scripts.obsidian_cli.subprocess.run", fake_run)
 
-    result = preflight(vault_path, app_path=app_path, cli_path=cli_path)
+    result = preflight(
+        vault_path,
+        app_path=app_path,
+        user_data_path=user_data_path,
+        cli_path=cli_path,
+    )
 
     assert result["ready"] is True
     assert result["help_ok"] is True
@@ -120,6 +151,7 @@ def test_validate_control_vault_merges_manifest_and_cli_issues(tmp_path: Path) -
     _init_minimal_repo(tmp_path)
     build_control_vault(tmp_path, output_root=vault_path, manifest_path=manifest_path)
     app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
 
     issues = validate_control_vault(
@@ -128,6 +160,7 @@ def test_validate_control_vault_merges_manifest_and_cli_issues(tmp_path: Path) -
         manifest_path,
         check_cli=True,
         app_path=app_path,
+        user_data_path=user_data_path,
         cli_path=None,
         mode_manifest_path=None,
     )
@@ -171,6 +204,7 @@ def test_validate_control_vault_allows_live_classic_tracker_updates(tmp_path: Pa
         manifest_path,
         check_cli=False,
         app_path=tmp_path / "Obsidian.app",
+        user_data_path=tmp_path / "userData",
         cli_path=None,
         mode_manifest_path=repo_root / "data" / "agent_control" / "active_mode.json",
     )

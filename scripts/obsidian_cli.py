@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import plistlib
+import re
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
 
 DEFAULT_OBSIDIAN_APP = Path("/Applications/Obsidian.app")
+DEFAULT_OBSIDIAN_USER_DATA = Path.home() / "Library" / "Application Support" / "obsidian"
 MINIMUM_OBSIDIAN_VERSION = (1, 12, 7)
+UPDATED_ASAR_PATTERN = re.compile(r"^obsidian-(\d+(?:\.\d+)*)\.asar$")
 
 
 def minimum_version_string() -> str:
@@ -31,7 +34,11 @@ def version_at_least(version: str, minimum: tuple[int, ...] = MINIMUM_OBSIDIAN_V
     return padded >= minimum
 
 
-def read_app_version(app_path: Path = DEFAULT_OBSIDIAN_APP) -> str | None:
+def version_is_more_recent(candidate: str, baseline: str) -> bool:
+    return parse_version(candidate) > parse_version(baseline)
+
+
+def read_installer_version(app_path: Path = DEFAULT_OBSIDIAN_APP) -> str | None:
     info_path = app_path / "Contents" / "Info.plist"
     if not info_path.exists():
         return None
@@ -39,6 +46,42 @@ def read_app_version(app_path: Path = DEFAULT_OBSIDIAN_APP) -> str | None:
         data = plistlib.load(handle)
     raw = data.get("CFBundleShortVersionString")
     return str(raw) if raw else None
+
+
+def latest_updated_asar_version(user_data_path: Path = DEFAULT_OBSIDIAN_USER_DATA) -> str | None:
+    if not user_data_path.exists():
+        return None
+    latest: str | None = None
+    for path in user_data_path.glob("obsidian-*.asar"):
+        match = UPDATED_ASAR_PATTERN.match(path.name)
+        if not match:
+            continue
+        version = match.group(1)
+        if latest is None or version_is_more_recent(version, latest):
+            latest = version
+    return latest
+
+
+def read_app_version_details(
+    app_path: Path = DEFAULT_OBSIDIAN_APP,
+    user_data_path: Path = DEFAULT_OBSIDIAN_USER_DATA,
+) -> dict[str, str | None]:
+    installer_version = read_installer_version(app_path)
+    updated_asar_version = latest_updated_asar_version(user_data_path)
+    effective_version = installer_version
+    version_source = "installer"
+    if installer_version and updated_asar_version and version_is_more_recent(
+        updated_asar_version,
+        installer_version,
+    ):
+        effective_version = updated_asar_version
+        version_source = "updated_asar"
+    return {
+        "app_version": effective_version,
+        "installer_version": installer_version,
+        "updated_asar_version": updated_asar_version,
+        "version_source": version_source if effective_version else None,
+    }
 
 
 def expected_cli_path(app_path: Path = DEFAULT_OBSIDIAN_APP) -> Path:
@@ -80,20 +123,23 @@ def preflight(
     vault_path: Path,
     *,
     app_path: Path = DEFAULT_OBSIDIAN_APP,
+    user_data_path: Path = DEFAULT_OBSIDIAN_USER_DATA,
     cli_path: Path | None = None,
 ) -> dict[str, Any]:
     issues: list[dict[str, str]] = []
     resolved_cli = cli_path or registered_cli_path()
-    version = read_app_version(app_path)
+    version_details = read_app_version_details(app_path, user_data_path)
+    version = version_details["app_version"]
     bundled_cli = expected_cli_path(app_path)
     result: dict[str, Any] = {
         "vault_path": str(vault_path),
         "app_path": str(app_path),
-        "app_version": version,
+        "user_data_path": str(user_data_path),
         "minimum_version": minimum_version_string(),
         "registered_cli_path": str(resolved_cli) if resolved_cli else None,
         "bundled_cli_path": str(bundled_cli),
         "issues": issues,
+        **version_details,
     }
     if not vault_path.exists():
         issues.append(
@@ -114,18 +160,23 @@ def preflight(
         result["ready"] = False
         return result
     if not version_at_least(version):
+        version_label = version
+        installer_version = version_details["installer_version"]
+        if installer_version and installer_version != version:
+            version_label = f"{version} (installer {installer_version})"
         issues.append(
             {
                 "code": "OBSIDIAN_VERSION_TOO_OLD",
                 "message": (
-                    f"Installed Obsidian {version} is below the required "
+                    f"Installed Obsidian runtime {version_label} is below the required "
                     f"{minimum_version_string()} for the official CLI."
                 ),
             }
         )
         result["ready"] = False
         return result
-    if not bundled_cli.exists():
+    result["bundled_cli_present"] = bundled_cli.exists()
+    if resolved_cli is None and not bundled_cli.exists():
         issues.append(
             {
                 "code": "OBSIDIAN_CLI_BUNDLE_MISSING",

@@ -33,15 +33,16 @@ Use the evidence template at:
    python3 scripts/validate_agent_control.py --skip-cli
    ```
 
-5. If Obsidian has been upgraded to `1.12.7+` and CLI is enabled, run the full
+5. If Obsidian is effectively running `1.12.7+` and CLI is enabled, run the full
    preflight as well:
 
    ```bash
    python3 scripts/validate_agent_control.py
    ```
 
-   If the local app is still older, record the expected prerequisite failure
-   such as `OBSIDIAN_VERSION_TOO_OLD` in the evidence notes.
+   If the local shell still cannot run the CLI, record the expected
+   prerequisite failure such as `OBSIDIAN_CLI_NOT_REGISTERED` or
+   `OBSIDIAN_CLI_BUNDLE_MISSING` in the evidence notes.
 
 ## Mode Procedure
 

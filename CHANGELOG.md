@@ -22,10 +22,9 @@ All notable changes to this project will be documented in this file.
 - Added the official Obsidian CLI wrapper `scripts/obsidian_cli.py`, the
   control-vault validator `scripts/validate_agent_control.py`, and focused
   preflight coverage in `tests/test_obsidian_cli.py`. The new preflight checks
-  the installed app version, bundled CLI binary, PATH registration, and vault
-  read/search behavior, and it now fails locally with a clear
-  `OBSIDIAN_VERSION_TOO_OLD` prerequisite message on the current `1.8.7`
-  desktop app.
+  the effective installed app version, bundled CLI binary, PATH registration,
+  and vault read/search behavior, including the macOS auto-updated runtime
+  package under `~/Library/Application Support/obsidian/obsidian-<version>.asar`.
 - Added the switcher `scripts/switch_agent_mode.py --mode classic|obsidian`
   plus the active-mode validation checks in `scripts/validate_agent_control.py`
   and focused coverage in `tests/test_switch_agent_mode.py`. The repo now
@@ -43,8 +42,15 @@ All notable changes to this project will be documented in this file.
   and README guidance that distinguishes the new agent-control vault from the
   existing repo-navigation knowledge base. The Obsidian control-plane
   implementation is now complete in-repo; the remaining local prerequisite for
-  full CLI-ready validation is upgrading Obsidian to `1.12.7+` and enabling
-  the desktop CLI.
+  full CLI-ready validation is making the desktop CLI binary available to the
+  shell and passing the live read/search preflight.
+
+### Fixed
+- Fixed the Obsidian CLI preflight so it no longer treats the macOS installer
+  shell version as the authoritative app version. The validator now prefers
+  the effective runtime version from the newest auto-updated
+  `obsidian-<version>.asar` package when present, matching the version shown
+  in Obsidian's About dialog.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

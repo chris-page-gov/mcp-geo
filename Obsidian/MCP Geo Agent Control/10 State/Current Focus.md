@@ -10,11 +10,13 @@ updated: "2026-04-14"
 
 ## Active priorities
 
-- Build the switchable `classic` / `obsidian` agent-control plane.
+- Keep the switchable `classic` / `obsidian` agent-control plane healthy.
 - Keep root `AGENTS.md` as the universal entrypoint.
-- Replace large default tracker reads with a compact control-vault path.
+- Preserve the compact control-vault read path and smoke-pack evaluation flow.
 
 ## Current blocker
 
-- Official Obsidian CLI validation needs Obsidian `>=1.12.7`.
-- The current local app version observed during planning was `1.8.7`.
+- Obsidian is effectively running `1.12.7`, but the CLI binary still is not
+  available to the shell.
+- Version checks must use the effective runtime package rather than the macOS
+  installer shell plist.

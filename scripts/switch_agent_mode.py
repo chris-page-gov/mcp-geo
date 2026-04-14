@@ -18,7 +18,11 @@ from scripts.agent_control_common import (  # noqa: E402
     build_control_vault,
     utc_now,
 )
-from scripts.obsidian_cli import DEFAULT_OBSIDIAN_APP, preflight  # noqa: E402
+from scripts.obsidian_cli import (  # noqa: E402
+    DEFAULT_OBSIDIAN_APP,
+    DEFAULT_OBSIDIAN_USER_DATA,
+    preflight,
+)
 
 ROOT_FILES = (
     "AGENTS.md",
@@ -68,6 +72,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Explicit Obsidian CLI binary path override.",
+    )
+    parser.add_argument(
+        "--user-data-path",
+        type=Path,
+        default=DEFAULT_OBSIDIAN_USER_DATA,
+        help="Obsidian user-data directory used to detect updated runtime packages.",
     )
     parser.add_argument(
         "--require-cli",
@@ -273,6 +283,7 @@ def switch_mode(
     output_root: Path,
     mode_manifest_path: Path,
     app_path: Path,
+    user_data_path: Path,
     cli_path: Path | None,
     require_cli: bool,
 ) -> dict[str, Any]:
@@ -282,7 +293,12 @@ def switch_mode(
         output_root=output_root,
         manifest_path=control_manifest_path,
     )
-    cli_preflight = preflight(output_root, app_path=app_path, cli_path=cli_path)
+    cli_preflight = preflight(
+        output_root,
+        app_path=app_path,
+        user_data_path=user_data_path,
+        cli_path=cli_path,
+    )
     if mode == "obsidian":
         if require_cli and not cli_preflight.get("ready"):
             first = cli_preflight["issues"][0]
@@ -306,6 +322,7 @@ def main() -> int:
         output_root=args.output_root,
         mode_manifest_path=args.mode_manifest,
         app_path=args.app_path,
+        user_data_path=args.user_data_path,
         cli_path=args.cli_path,
         require_cli=args.require_cli,
     )

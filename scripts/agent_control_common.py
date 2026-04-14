@@ -171,8 +171,10 @@ def render_curated_note(title: str, protected: bool) -> str:
 
 ## Current blocker
 
-- Official Obsidian CLI validation needs Obsidian `>=1.12.7`.
-- The current local app version observed during planning was `1.8.7`.
+- Official Obsidian CLI validation needs an effective Obsidian runtime
+  `>=1.12.7`.
+- On macOS, the installer shell version can differ from the auto-updated
+  runtime package, so CLI checks should key off the effective runtime version.
 """
     elif title == "Work Queue":
         body = """# Work Queue
