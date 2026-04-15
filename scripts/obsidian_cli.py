@@ -11,6 +11,7 @@ DEFAULT_OBSIDIAN_APP = Path("/Applications/Obsidian.app")
 DEFAULT_OBSIDIAN_USER_DATA = Path.home() / "Library" / "Application Support" / "obsidian"
 MINIMUM_OBSIDIAN_VERSION = (1, 12, 7)
 UPDATED_ASAR_PATTERN = re.compile(r"^obsidian-(\d+(?:\.\d+)*)\.asar$")
+CLI_TIMEOUT_SECONDS = 10
 
 
 def minimum_version_string() -> str:
@@ -93,7 +94,13 @@ def registered_cli_path() -> Path | None:
     return Path(resolved) if resolved else None
 
 
-def run_cli(args: list[str], vault_path: Path, cli_path: Path | None = None) -> str:
+def run_cli(
+    args: list[str],
+    vault_path: Path,
+    cli_path: Path | None = None,
+    *,
+    timeout: float = CLI_TIMEOUT_SECONDS,
+) -> str:
     binary = cli_path or registered_cli_path()
     if binary is None:
         raise FileNotFoundError("Obsidian CLI is not registered on PATH.")
@@ -103,20 +110,38 @@ def run_cli(args: list[str], vault_path: Path, cli_path: Path | None = None) -> 
         check=True,
         capture_output=True,
         text=True,
+        timeout=timeout,
     )
     return completed.stdout.strip()
 
 
-def help_text(vault_path: Path, cli_path: Path | None = None) -> str:
-    return run_cli(["help"], vault_path, cli_path)
+def help_text(
+    vault_path: Path,
+    cli_path: Path | None = None,
+    *,
+    timeout: float = CLI_TIMEOUT_SECONDS,
+) -> str:
+    return run_cli(["help"], vault_path, cli_path, timeout=timeout)
 
 
-def read_note(vault_path: Path, note_path: str, cli_path: Path | None = None) -> str:
-    return run_cli(["read", f"path={note_path}"], vault_path, cli_path)
+def read_note(
+    vault_path: Path,
+    note_path: str,
+    cli_path: Path | None = None,
+    *,
+    timeout: float = CLI_TIMEOUT_SECONDS,
+) -> str:
+    return run_cli(["read", f"path={note_path}"], vault_path, cli_path, timeout=timeout)
 
 
-def search_notes(vault_path: Path, query: str, cli_path: Path | None = None) -> str:
-    return run_cli(["search", f"query={query}"], vault_path, cli_path)
+def search_notes(
+    vault_path: Path,
+    query: str,
+    cli_path: Path | None = None,
+    *,
+    timeout: float = CLI_TIMEOUT_SECONDS,
+) -> str:
+    return run_cli(["search", f"query={query}"], vault_path, cli_path, timeout=timeout)
 
 
 def preflight(
@@ -125,6 +150,7 @@ def preflight(
     app_path: Path = DEFAULT_OBSIDIAN_APP,
     user_data_path: Path = DEFAULT_OBSIDIAN_USER_DATA,
     cli_path: Path | None = None,
+    cli_timeout: float = CLI_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
     issues: list[dict[str, str]] = []
     resolved_cli = cli_path or registered_cli_path()
@@ -201,11 +227,16 @@ def preflight(
         result["ready"] = False
         return result
     try:
-        help_output = help_text(vault_path, resolved_cli)
+        help_output = help_text(vault_path, resolved_cli, timeout=cli_timeout)
         result["help_ok"] = bool(help_output)
-        read_output = read_note(vault_path, "AGENTS.md", resolved_cli)
+        read_output = read_note(vault_path, "AGENTS.md", resolved_cli, timeout=cli_timeout)
         result["read_ok"] = "Canonical Obsidian Agent Contract" in read_output
-        search_output = search_notes(vault_path, "Canonical Obsidian Agent Contract", resolved_cli)
+        search_output = search_notes(
+            vault_path,
+            "Canonical Obsidian Agent Contract",
+            resolved_cli,
+            timeout=cli_timeout,
+        )
         result["search_ok"] = bool(search_output)
     except FileNotFoundError as exc:
         issues.append({"code": "OBSIDIAN_CLI_NOT_REGISTERED", "message": str(exc)})
@@ -216,6 +247,18 @@ def preflight(
             {
                 "code": "OBSIDIAN_CLI_COMMAND_FAILED",
                 "message": f"Command `{command}` failed: {stderr}",
+            }
+        )
+    except subprocess.TimeoutExpired as exc:
+        command = (
+            " ".join(str(part) for part in exc.cmd)
+            if isinstance(exc.cmd, (list, tuple))
+            else str(exc.cmd)
+        )
+        issues.append(
+            {
+                "code": "OBSIDIAN_CLI_COMMAND_TIMEOUT",
+                "message": f"Command `{command}` exceeded {exc.timeout} seconds.",
             }
         )
     if not result.get("read_ok"):

@@ -70,7 +70,10 @@ def test_preflight_reports_version_too_old_before_cli_checks(tmp_path: Path) -> 
     assert result["issues"][0]["code"] == "OBSIDIAN_VERSION_TOO_OLD"
 
 
-def test_preflight_requires_registered_cli_when_version_is_new_enough(tmp_path: Path) -> None:
+def test_preflight_requires_registered_cli_when_version_is_new_enough(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     vault_path = tmp_path / "vault"
     vault_path.mkdir()
     app_path = tmp_path / "Obsidian.app"
@@ -79,6 +82,7 @@ def test_preflight_requires_registered_cli_when_version_is_new_enough(tmp_path: 
     bundled = app_path / "Contents" / "MacOS" / "obsidian-cli"
     bundled.parent.mkdir(parents=True, exist_ok=True)
     bundled.write_text("", encoding="utf-8")
+    monkeypatch.setattr("scripts.obsidian_cli.registered_cli_path", lambda: None)
 
     result = preflight(vault_path, app_path=app_path, user_data_path=user_data_path)
 
@@ -86,13 +90,14 @@ def test_preflight_requires_registered_cli_when_version_is_new_enough(tmp_path: 
     assert "OBSIDIAN_CLI_NOT_REGISTERED" in codes
 
 
-def test_preflight_prefers_updated_asar_runtime_version(tmp_path: Path) -> None:
+def test_preflight_prefers_updated_asar_runtime_version(tmp_path: Path, monkeypatch) -> None:
     vault_path = tmp_path / "vault"
     vault_path.mkdir()
     app_path = tmp_path / "Obsidian.app"
     user_data_path = tmp_path / "userData"
     _write_plist(app_path / "Contents" / "Info.plist", "1.8.7")
     _write_updated_asar(user_data_path, "1.12.7")
+    monkeypatch.setattr("scripts.obsidian_cli.registered_cli_path", lambda: None)
 
     result = preflight(vault_path, app_path=app_path, user_data_path=user_data_path)
 
@@ -148,6 +153,34 @@ def test_preflight_runs_help_read_and_search_with_registered_cli(
     assert result["help_ok"] is True
     assert result["read_ok"] is True
     assert result["search_ok"] is True
+
+
+def test_preflight_times_out_unresponsive_cli(tmp_path: Path, monkeypatch) -> None:
+    vault_path = tmp_path / "vault"
+    _init_minimal_repo(tmp_path)
+    build_control_vault(tmp_path, output_root=vault_path, manifest_path=tmp_path / "manifest.json")
+    app_path = tmp_path / "Obsidian.app"
+    user_data_path = tmp_path / "userData"
+    _write_plist(app_path / "Contents" / "Info.plist", "1.12.7")
+    cli_path = tmp_path / "bin" / "obsidian"
+    cli_path.parent.mkdir(parents=True, exist_ok=True)
+    cli_path.write_text("", encoding="utf-8")
+
+    def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise subprocess.TimeoutExpired(cmd, kwargs["timeout"])
+
+    monkeypatch.setattr("scripts.obsidian_cli.subprocess.run", fake_run)
+
+    result = preflight(
+        vault_path,
+        app_path=app_path,
+        user_data_path=user_data_path,
+        cli_path=cli_path,
+        cli_timeout=0.01,
+    )
+
+    assert result["ready"] is False
+    assert any(issue["code"] == "OBSIDIAN_CLI_COMMAND_TIMEOUT" for issue in result["issues"])
 
 
 def test_validate_control_vault_merges_manifest_and_cli_issues(tmp_path: Path) -> None:

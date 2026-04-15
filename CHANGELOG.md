@@ -52,6 +52,10 @@ All notable changes to this project will be documented in this file.
   instead of an empty tab.
 
 ### Fixed
+- Bounded Obsidian CLI preflight commands with an explicit timeout and made
+  the missing-CLI regression coverage independent of any host-level `obsidian`
+  binary on `PATH`, preventing validation and pytest runs from hanging on an
+  unresponsive desktop CLI registration.
 - Fixed the Obsidian CLI preflight so it no longer treats the macOS installer
   shell version as the authoritative app version. The validator now prefers
   the effective runtime version from the newest auto-updated

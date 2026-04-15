@@ -15,10 +15,11 @@
               "state": {
                 "file": "AGENTS.md",
                 "mode": "source",
-                "source": false
+                "source": false,
+                "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "AGENTS.md"
+              "title": "AGENTS"
             }
           }
         ]
@@ -56,6 +57,23 @@
               "icon": "lucide-bookmark",
               "title": "Bookmarks"
             }
+          },
+          {
+            "id": "dd8018895d859b0e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
           }
         ]
       }
@@ -84,6 +102,21 @@
               "icon": "lucide-archive",
               "title": "All properties"
             }
+          },
+          {
+            "id": "a826ccb82076bf26",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "AGENTS.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of AGENTS"
+            }
           }
         ]
       }
@@ -94,8 +127,8 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "canvas:Create new canvas": false,
-      "bases:Create new base": false
+      "switcher:Open quick switcher": false,
+      "command-palette:Open command palette": false
     }
   },
   "active": "agent-control-agents",
