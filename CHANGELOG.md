@@ -289,6 +289,9 @@ All notable changes to this project will be documented in this file.
   still listed on the public LandIS website and separately licensed metadata
 
 ### Fixed
+- Fixed LandIS archive auto-discovery so multiple configured cache roots are
+  ordered by archive directory name/date rather than by full root path,
+  preventing an older root from masking a newer archive in another location.
 - Fixed sanitized tool-schema rewriting so top-level `oneOf` / `anyOf` /
   `allOf` flattening is now limited to the strict stdio transport. HTTP
   `/tools/describe` again preserves the full schema contract for alternate

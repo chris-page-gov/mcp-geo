@@ -217,7 +217,14 @@ def _latest_archive_dir(prefix: str, *, configured: str) -> Path | None:
             for path in root.glob(f"{prefix}*")
             if path.is_dir() and "-smoke" not in path.name
         )
-    return sorted(matches)[-1] if matches else None
+    # Compare candidates by archive directory name so root path order does not
+    # override date suffix ordering when scanning multiple roots. Keep the first
+    # root hit when names tie so configured roots retain precedence.
+    latest: Path | None = None
+    for candidate in matches:
+        if latest is None or candidate.name > latest.name:
+            latest = candidate
+    return latest
 
 
 def landis_portal_archive_dir() -> Path | None:
