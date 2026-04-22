@@ -2151,7 +2151,7 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
         )
         archive.writestr(
             f"Data/{dataset_id}_DEC_2025_WA.csv",
-            header
+            header.lower()
             + (
                 "100010542645,CF10 1EP,W06000015,Cardiff,W00009250,W01001898,"
                 "W02000383,W05000863,Cathays,W92000004,Wales,W99999999,Wales,1\n"

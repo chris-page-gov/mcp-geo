@@ -1611,26 +1611,52 @@ def _open_rows(
                 dataset=dataset,
                 metadata_aliases=metadata_aliases or {},
             )
-            with _archive_member_rows(
-                archive=archive,
-                member=chosen_members[0],
-                dataset=dataset,
-            ) as (_schema_rows, fieldnames):
+            member_schemas: list[tuple[str, list[str], dict[str, str]]] = []
+            for member in chosen_members:
+                with _archive_member_rows(
+                    archive=archive,
+                    member=member,
+                    dataset=dataset,
+                ) as (_schema_rows, member_fieldnames):
+                    member_mapping: dict[str, str] = {}
+                    if dataset is not None:
+                        member_mapping, _validation = _build_field_mapping(
+                            dataset,
+                            fieldnames=member_fieldnames,
+                            metadata_aliases=metadata_aliases or {},
+                        )
+                    member_schemas.append((member, member_fieldnames, member_mapping))
 
-                def _iter_archive_rows() -> Iterator[dict[str, Any]]:
-                    for member in chosen_members:
-                        with _archive_member_rows(
-                            archive=archive,
-                            member=member,
-                            dataset=dataset,
-                        ) as (rows_iter, _member_fieldnames):
-                            yield from rows_iter
+            fieldnames = member_schemas[0][1]
+            canonical_mapping = member_schemas[0][2]
+            member_mappings = {
+                member: member_mapping
+                for member, _member_fieldnames, member_mapping in member_schemas
+            }
 
-                rows = _iter_archive_rows()
-                try:
-                    yield rows, fieldnames
-                finally:
-                    rows.close()
+            def _iter_archive_rows() -> Iterator[dict[str, Any]]:
+                for member in chosen_members:
+                    with _archive_member_rows(
+                        archive=archive,
+                        member=member,
+                        dataset=dataset,
+                    ) as (rows_iter, _member_fieldnames):
+                        member_mapping = member_mappings.get(member, {})
+                        for row in rows_iter:
+                            if not isinstance(row, dict) or not canonical_mapping:
+                                yield row
+                                continue
+                            yield _canonicalize_archive_row(
+                                row,
+                                source_mapping=member_mapping,
+                                canonical_mapping=canonical_mapping,
+                            )
+
+            rows = _iter_archive_rows()
+            try:
+                yield rows, fieldnames
+            finally:
+                rows.close()
         return
     if path.suffix.lower() == ".xlsx":
         with path.open("rb") as stream:
@@ -1782,6 +1808,24 @@ def _archive_member_rows(
         else:
             with _rows_from_binary_stream(raw, name=member) as payload:
                 yield payload
+
+
+def _canonicalize_archive_row(
+    row: dict[str, Any],
+    *,
+    source_mapping: dict[str, str],
+    canonical_mapping: dict[str, str],
+) -> dict[str, Any]:
+    canonicalized: dict[str, Any] | None = None
+    for semantic_name, source_field in source_mapping.items():
+        target_field = canonical_mapping.get(semantic_name)
+        if not target_field or source_field == target_field or source_field not in row:
+            continue
+        if canonicalized is None:
+            canonicalized = dict(row)
+        if target_field not in canonicalized:
+            canonicalized[target_field] = canonicalized[source_field]
+    return canonicalized if canonicalized is not None else row
 
 
 @contextmanager
