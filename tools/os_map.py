@@ -39,7 +39,10 @@ _DEFAULT_COLLECTION_BASES: dict[str, str] = {
 _NGD_LAYER_IDS = frozenset(_DEFAULT_COLLECTION_BASES)
 _SUPPORTED_LAYER_IDS = frozenset({"uprns", *_NGD_LAYER_IDS})
 _DEFAULT_INVENTORY_LAYERS = ["uprns", "buildings", "road_links", "path_links"]
-_LAYER_DESCRIPTION = "Requested layers (uprns, buildings, road_links, path_links)."
+_LAYER_DESCRIPTION = (
+    "Requested layers (uprns, buildings, road_links, path_links, "
+    "postcode_unit_areas, postcode_unit_points, bus_lanes, cycle_lanes)."
+)
 
 _DEFAULT_LIMITS: dict[str, int] = {
     "uprns": 100,

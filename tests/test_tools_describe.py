@@ -184,6 +184,17 @@ def test_tools_describe_returns_unknown_when_tool_missing_after_resolution(monke
 def _assert_os_map_layers_schema(layers: dict) -> None:
     assert "oneOf" in layers
     assert layers["description"].startswith("Requested layers")
+    for layer_id in (
+        "uprns",
+        "buildings",
+        "road_links",
+        "path_links",
+        "postcode_unit_areas",
+        "postcode_unit_points",
+        "bus_lanes",
+        "cycle_lanes",
+    ):
+        assert layer_id in layers["description"]
     array_option = next(option for option in layers["oneOf"] if option.get("type") == "array")
     string_option = next(option for option in layers["oneOf"] if option.get("type") == "string")
     null_option = next(option for option in layers["oneOf"] if option.get("type") == "null")
