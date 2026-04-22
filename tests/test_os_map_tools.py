@@ -1376,6 +1376,10 @@ def test_os_map_parsers_cover_edge_cases() -> None:
         "buildings",
         "postcode_unit_areas",
     ]
+    assert os_map._parse_layers(["buildings", "buildings", "road_links", "road_links"]) == [
+        "buildings",
+        "road_links",
+    ]
     assert os_map._parse_layers(123) is None
 
     defaults = os_map._parse_limits(None)

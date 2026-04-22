@@ -161,7 +161,10 @@ def _parse_layers(value: Any) -> list[str] | None:
         parts = [str(p).strip() for p in value if p is not None and str(p).strip()]
     else:
         return None
-    out = [p for p in parts if p in _SUPPORTED_LAYER_IDS]
+    out: list[str] = []
+    for part in parts:
+        if part in _SUPPORTED_LAYER_IDS and part not in out:
+            out.append(part)
     return out or None
 
 
