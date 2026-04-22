@@ -289,6 +289,9 @@ All notable changes to this project will be documented in this file.
   still listed on the public LandIS website and separately licensed metadata
 
 ### Fixed
+- Fixed LandIS archive auto-discovery so multiple configured cache roots are
+  ordered by archive directory name/date rather than by full root path,
+  preventing an older root from masking a newer archive in another location.
 - Fixed `os_mcp.route_query` area-profile responses so descriptor fallback
   paths still include the area-summary workflow profile URI when a narrower
   target level is rejected.

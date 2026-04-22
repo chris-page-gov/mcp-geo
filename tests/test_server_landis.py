@@ -258,6 +258,10 @@ def test_path_and_area_helpers_cover_supported_and_invalid_inputs(
     )
     assert ext_resolved == ext_archived_file
 
+    host_newer_portal_dir = host_root / "landis_portal_archive_2026-04-07"
+    host_newer_portal_dir.mkdir(parents=True)
+    assert landis.landis_portal_archive_dir() == host_newer_portal_dir
+
 
 def test_archive_loaders_and_item_helpers(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     triage_payload = {
