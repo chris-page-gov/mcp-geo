@@ -1627,8 +1627,16 @@ def _open_rows(
                         )
                     member_schemas.append((member, member_fieldnames, member_mapping))
 
-            fieldnames = member_schemas[0][1]
-            canonical_mapping = member_schemas[0][2]
+            fieldnames: list[str] = []
+            for _member, member_fieldnames, _member_mapping in member_schemas:
+                fieldnames = _merged_fieldnames(fieldnames, member_fieldnames)
+            canonical_mapping: dict[str, str] = {}
+            if dataset is not None:
+                canonical_mapping, _validation = _build_field_mapping(
+                    dataset,
+                    fieldnames=fieldnames,
+                    metadata_aliases=metadata_aliases or {},
+                )
             member_mappings = {
                 member: member_mapping
                 for member, _member_fieldnames, member_mapping in member_schemas
@@ -1957,7 +1965,9 @@ def _match_field(
     aliases: dict[str, list[str]],
     metadata_aliases: dict[str, str],
 ) -> str | None:
-    lookup = {name.lower(): name for name in fieldnames}
+    lookup: dict[str, str] = {}
+    for name in fieldnames:
+        lookup.setdefault(name.lower(), name)
     explicit_aliases = aliases.get(semantic_name, [])
     for candidate in explicit_aliases:
         chosen = lookup.get(candidate.lower())

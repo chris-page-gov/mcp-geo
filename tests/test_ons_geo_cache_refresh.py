@@ -2136,34 +2136,38 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
     dataset_id: str,
 ) -> None:
     source_path = tmp_path / f"{dataset_id.lower()}_split.zip"
-    header = (
+    ward_header = (
         "UPRN,PCDS,LAD25CD,LAD25NM,OA21CD,LSOA21CD,MSOA21CD,WD25CD,"
-        "WD25NM,CTRY25CD,CTRY25NM,RGN25CD,RGN25NM,postal_delivery\n"
+        "WD25NM,CTRY25CD,CTRY25NM,postal_delivery\n"
+    )
+    region_header = (
+        "uprn,pcds,lad25cd,lad25nm,oa21cd,lsoa21cd,msoa21cd,ctry25cd,"
+        "ctry25nm,rgn25cd,rgn25nm,postal_delivery\n"
     )
     with zipfile.ZipFile(source_path, "w") as archive:
         archive.writestr(
             f"Data/{dataset_id}_DEC_2025_LN.csv",
-            header
+            ward_header
             + (
                 "100023336959,SW1A 2AH,E09000033,Westminster,E00023913,E01004734,"
-                "E02000977,E05013806,St James's,E92000001,England,E12000007,London,1\n"
+                "E02000977,E05013806,St James's,E92000001,England,1\n"
             ),
         )
         archive.writestr(
             f"Data/{dataset_id}_DEC_2025_WA.csv",
-            header.lower()
+            region_header
             + (
                 "100010542645,CF10 1EP,W06000015,Cardiff,W00009250,W01001898,"
-                "W02000383,W05000863,Cathays,W92000004,Wales,W99999999,Wales,1\n"
+                "W02000383,W92000004,Wales,W99999999,Wales,1\n"
             ),
         )
         archive.writestr(
             f"Data/{dataset_id}_DEC_2025_YH.csv",
-            header
+            ward_header
             + (
                 "10000062102,HU9 3HS,E06000010,Kingston upon Hull,E00065069,"
                 "E01012896,E02002671,E05011542,Longhill & Bilton Grange,"
-                "E92000001,England,E12000003,Yorkshire and The Humber,1\n"
+                "E92000001,England,1\n"
             ),
         )
         archive.writestr(
@@ -2198,7 +2202,7 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
         ).fetchall()
         uprn_index_rows = conn.execute(
             """
-            SELECT uprn, postcode, lad_code, ward_code
+            SELECT uprn, postcode, lad_code, ward_code, region_code
             FROM ons_geo_uprn_index
             WHERE product_id = ?
             ORDER BY uprn
@@ -2213,9 +2217,9 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
     assert validation["requiredMissing"] == []
     assert rows == [("10000062102",), ("100010542645",), ("100023336959",)]
     assert uprn_index_rows == [
-        ("10000062102", "HU93HS", "E06000010", "E05011542"),
-        ("100010542645", "CF101EP", "W06000015", "W05000863"),
-        ("100023336959", "SW1A2AH", "E09000033", "E05013806"),
+        ("10000062102", "HU93HS", "E06000010", "E05011542", None),
+        ("100010542645", "CF101EP", "W06000015", None, "W99999999"),
+        ("100023336959", "SW1A2AH", "E09000033", "E05013806", None),
     ]
 
 
