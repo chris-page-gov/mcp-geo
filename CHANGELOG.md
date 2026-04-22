@@ -292,6 +292,14 @@ All notable changes to this project will be documented in this file.
 - Fixed LandIS archive auto-discovery so multiple configured cache roots are
   ordered by archive directory name/date rather than by full root path,
   preventing an older root from masking a newer archive in another location.
+- Fixed `os_mcp.route_query` area-profile responses so descriptor fallback
+  paths still include the area-summary workflow profile URI when a narrower
+  target level is rejected.
+- Fixed ONSUD/NSUL cache refresh for region-sharded UPRN ZIP archives. The
+  refresh path now streams every compatible best-schema UPRN shard instead of
+  ingesting a single tie-broken CSV member, preventing Claude-side
+  `ons_geo.by_uprn` lookups from returning `NOT_FOUND` for every region not
+  present in the one loaded shard after the cache is rebuilt.
 - Fixed sanitized tool-schema rewriting so top-level `oneOf` / `anyOf` /
   `allOf` flattening is now limited to the strict stdio transport. HTTP
   `/tools/describe` again preserves the full schema contract for alternate
