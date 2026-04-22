@@ -44,6 +44,7 @@ def test_mask_in_value_masks_sensitive_keys_and_nested_values():
 def test_configured_secrets_collects_expected_settings():
     class _Cfg:
         OS_API_KEY = "os-secret"
+        OS_API_ACCESS_TOKEN = "os-access-token"
         NOMIS_UID = "nomis-uid"
         NOMIS_SIGNATURE = "nomis-signature"
         MCP_HTTP_AUTH_TOKEN = "http-auth-token"
@@ -51,6 +52,7 @@ def test_configured_secrets_collects_expected_settings():
 
     assert configured_secrets(_Cfg()) == [
         "os-secret",
+        "os-access-token",
         "nomis-uid",
         "nomis-signature",
         "http-auth-token",

@@ -86,6 +86,33 @@ _LEGACY_COLLECTION_NAMESPACE_PREFIXES = ("ngd-base:",)
 _COLLECTION_ALIASES = {
     # Compatibility alias used in prompts/evaluation packs.
     "buildings": "bld-fts-buildingpart-2",
+    "postcode geometries": "asu-gbpcd-postcodeunitarea",
+    "postcode geometry": "asu-gbpcd-postcodeunitarea",
+    "postcode-geometry": "asu-gbpcd-postcodeunitarea",
+    "postcode_unit_areas": "asu-gbpcd-postcodeunitarea",
+    "postcode unit areas": "asu-gbpcd-postcodeunitarea",
+    "postcode_unit_area": "asu-gbpcd-postcodeunitarea",
+    "postcode unit area": "asu-gbpcd-postcodeunitarea",
+    "gb_postcode_unit_areas": "asu-gbpcd-postcodeunitarea",
+    "gb postcode unit areas": "asu-gbpcd-postcodeunitarea",
+    "gb_postcode_unit_area": "asu-gbpcd-postcodeunitarea",
+    "gb postcode unit area": "asu-gbpcd-postcodeunitarea",
+    "postcode_unit_points": "asu-gbpcd-postcodeunitpoint",
+    "postcode unit points": "asu-gbpcd-postcodeunitpoint",
+    "postcode_unit_point": "asu-gbpcd-postcodeunitpoint",
+    "postcode unit point": "asu-gbpcd-postcodeunitpoint",
+    "gb_postcode_unit_points": "asu-gbpcd-postcodeunitpoint",
+    "gb postcode unit points": "asu-gbpcd-postcodeunitpoint",
+    "gb_postcode_unit_point": "asu-gbpcd-postcodeunitpoint",
+    "gb postcode unit point": "asu-gbpcd-postcodeunitpoint",
+    "bus_lanes": "trn-ntwk-buslane",
+    "bus lanes": "trn-ntwk-buslane",
+    "bus_lane": "trn-ntwk-buslane",
+    "bus lane": "trn-ntwk-buslane",
+    "cycle_lanes": "trn-ntwk-cyclelane",
+    "cycle lanes": "trn-ntwk-cyclelane",
+    "cycle_lane": "trn-ntwk-cyclelane",
+    "cycle lane": "trn-ntwk-cyclelane",
 }
 _COLLECTION_BASE_ALIASES = {
     # Compatibility alias for legacy/deprecated transport naming in older traces/prompts.
@@ -117,7 +144,7 @@ _HINT_MESSAGES = [
     "Use pageToken (offset) + limit for paging.",
     "Pass includeGeometry=true only when geometry is explicitly required.",
     "Pass polygon/filter/sortBy/includeFields/excludeFields for local post-filtering.",
-    "Set resultType='hits' for count-only responses.",
+    "Set MCP resultType='hits' for compact no-feature responses.",
     "If resultType='hits' returns numberMatched=null, count may be a lower-bound estimate.",
 ]
 

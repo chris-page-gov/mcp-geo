@@ -215,6 +215,10 @@ def _extract_inventory_overlay_layers(inventory: dict[str, Any]) -> list[dict[st
         "buildings": ("inventory_buildings", "Buildings", "polygon"),
         "road_links": ("inventory_road_links", "Road Links", "line"),
         "path_links": ("inventory_path_links", "Path Links", "line"),
+        "postcode_unit_areas": ("inventory_postcode_unit_areas", "Postcode Unit Areas", "polygon"),
+        "postcode_unit_points": ("inventory_postcode_unit_points", "Postcode Unit Points", "point"),
+        "bus_lanes": ("inventory_bus_lanes", "Bus Lanes", "line"),
+        "cycle_lanes": ("inventory_cycle_lanes", "Cycle Lanes", "line"),
     }
     for key, (layer_id, title, kind) in ngd_map.items():
         row = layers.get(key)
@@ -493,7 +497,7 @@ def _maps_render(payload: dict[str, Any]):
     ]
     if any(layer.get("source") == "os_map.inventory" for layer in overlay_layers):
         hints.append(
-            "Inventory overlays align with os_map.inventory layer ids (uprns/buildings/road_links/path_links)."
+            "Inventory overlays align with os_map.inventory layer ids."
         )
 
     return 200, {

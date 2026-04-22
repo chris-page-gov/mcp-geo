@@ -118,6 +118,7 @@ COMPARISON_PATTERNS = [
 FEATURE_SEARCH_PATTERNS = [
     (
         r"\b(buildings?|roads?|streets?|railway|station|bridges?|path links?|road links?|"
+        r"bus lanes?|cycle lanes?|postcode unit (areas?|points?)|postcode geometr(y|ies)|"
         r"parcels?|topograph(y|ic))\b"
     ),
     r"\bfeatures?\b",
@@ -366,6 +367,24 @@ AREA_PROFILE_LEVEL_PATTERNS = (
 )
 
 FEATURE_COLLECTIONS = {
+    "postcode geometries": "asu-gbpcd-postcodeunitarea",
+    "postcode geometry": "asu-gbpcd-postcodeunitarea",
+    "postcode unit areas": "asu-gbpcd-postcodeunitarea",
+    "postcode unit area": "asu-gbpcd-postcodeunitarea",
+    "gb postcode unit areas": "asu-gbpcd-postcodeunitarea",
+    "gb postcode unit area": "asu-gbpcd-postcodeunitarea",
+    "postcode unit points": "asu-gbpcd-postcodeunitpoint",
+    "postcode unit point": "asu-gbpcd-postcodeunitpoint",
+    "gb postcode unit points": "asu-gbpcd-postcodeunitpoint",
+    "gb postcode unit point": "asu-gbpcd-postcodeunitpoint",
+    "bus lanes": "trn-ntwk-buslane",
+    "bus lane": "trn-ntwk-buslane",
+    "cycle lanes": "trn-ntwk-cyclelane",
+    "cycle lane": "trn-ntwk-cyclelane",
+    "road links": "trn-ntwk-roadlink",
+    "road link": "trn-ntwk-roadlink",
+    "path links": "trn-ntwk-pathlink",
+    "path link": "trn-ntwk-pathlink",
     "building": "buildings",
     "buildings": "buildings",
     "road": "roads",

@@ -519,7 +519,7 @@
     {
       "description": "Export a map artifact. Legacy mode exports inventory snapshots from bbox; selection_uprn mode queues async selector-driven UPRN exports.",
       "description_sha256": "9a78478141b276a0a52ff7f43ec67db5b2b9dea1feb345ed87c15ca3b9f9c789",
-      "input_schema_sha256": "4d2240a6b55d4cb78a66b7cad96eca6fa0b5f9b04aadde4078855dd19081efb2",
+      "input_schema_sha256": "42df2c3e0e47ced261f29611c3e03c22364b333189d2f8026b993dd6d56f056c",
       "name": "os_map.export",
       "output_schema_sha256": "05342964c01cc86e59daaaac4fbc893bef8de0679e99dfe431a95fbf081fda2e",
       "version": "0.1.0"
@@ -543,7 +543,7 @@
     {
       "description": "Return a bounded inventory (UPRNs, buildings, road links, path links) for a bbox.",
       "description_sha256": "11f15b1d430f8c36990f22a7cae534d088517c256fafc6db39d175001ec94cee",
-      "input_schema_sha256": "45a99dfde2bb7267c0a2a83f14ee66f111ff605ad18a146561109a0871c01d97",
+      "input_schema_sha256": "1103379682ebc675d832e6b86678f54d39221e3eab1464280a6bb84da4b98c3c",
       "name": "os_map.inventory",
       "output_schema_sha256": "d35c32833fa457742e3c985e80d3f4cc594c848d1ecf5f944e179d5ecf2a2675",
       "version": "0.1.0"

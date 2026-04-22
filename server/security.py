@@ -39,6 +39,7 @@ def configured_secrets(config: object) -> list[str]:
     seen: set[str] = set()
     for key in (
         "OS_API_KEY",
+        "OS_API_ACCESS_TOKEN",
         "NOMIS_UID",
         "NOMIS_SIGNATURE",
         "MCP_HTTP_AUTH_TOKEN",

@@ -17,10 +17,10 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 
     req_exc = _ReqExc()
 
+from server.circuit_breaker import get_circuit_breaker
 from server.config import settings
 from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
-from server.circuit_breaker import get_circuit_breaker
 
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
@@ -45,6 +45,17 @@ _AUTH_INVALID_TOKENS = (
     "not enabled",
     "disallowed",
 )
+
+
+def _normalize_auth_mode(value: Any) -> str:
+    normalized = str(value or "query").strip().lower().replace("_", "-")
+    if normalized in {"query", "query-param", "query-parameter", "api-key"}:
+        return "query"
+    if normalized in {"header", "key-header", "api-key-header"}:
+        return "header"
+    if normalized in {"bearer", "oauth", "oauth2", "oauth2-bearer"}:
+        return "bearer"
+    return "query"
 
 
 def add_warning(warnings: list[str], code: str) -> None:
@@ -118,11 +129,23 @@ class OSClient:
     def __init__(
         self,
         api_key: str | None = None,
+        auth_mode: str | None = None,
+        access_token: str | None = None,
         retries: int | None = None,
         connect_timeout: float | None = None,
         read_timeout: float | None = None,
     ):
-        self.api_key = api_key or getattr(settings, "OS_API_KEY", "")
+        raw_api_key = api_key if api_key is not None else getattr(settings, "OS_API_KEY", "")
+        raw_access_token = (
+            access_token
+            if access_token is not None
+            else getattr(settings, "OS_API_ACCESS_TOKEN", "")
+        )
+        self.api_key = str(raw_api_key or "").strip()
+        self.auth_mode = _normalize_auth_mode(
+            auth_mode if auth_mode is not None else getattr(settings, "OS_API_AUTH_MODE", "query")
+        )
+        self.access_token = str(raw_access_token or "").strip()
         configured_retries = (
             retries
             if retries is not None
@@ -145,10 +168,54 @@ class OSClient:
         )
         self._breaker = get_circuit_breaker("os")
 
+    def _has_credentials(self) -> bool:
+        if self.auth_mode == "bearer":
+            return bool(self.access_token)
+        return bool(self.api_key)
+
     def _auth_params(self) -> dict[str, Any]:
-        if not self.api_key:
+        if self.auth_mode != "query" or not self.api_key:
             return {}
         return {"key": self.api_key}
+
+    def _auth_headers(self) -> dict[str, str]:
+        if self.auth_mode == "header" and self.api_key:
+            return {"key": self.api_key}
+        if self.auth_mode == "bearer" and self.access_token:
+            return {"Authorization": f"Bearer {self.access_token}"}
+        return {}
+
+    def _missing_credentials_error(self) -> tuple[int, dict[str, Any]]:
+        return 501, {
+            "isError": True,
+            "code": "NO_API_KEY",
+            "message": "OS API credential missing.",
+        }
+
+    def _get(
+        self,
+        url: str,
+        *,
+        params: dict[str, Any],
+        headers: dict[str, str],
+        timeout: float | tuple[float, float],
+    ):
+        if headers:
+            return requests.get(url, params=params, headers=headers, timeout=timeout)
+        return requests.get(url, params=params, timeout=timeout)
+
+    def _post(
+        self,
+        url: str,
+        *,
+        params: dict[str, Any],
+        headers: dict[str, str],
+        body: dict[str, Any],
+        timeout: float | tuple[float, float],
+    ):
+        if headers:
+            return requests.post(url, params=params, headers=headers, json=body, timeout=timeout)
+        return requests.post(url, params=params, json=body, timeout=timeout)
 
     def _effective_timeout(
         self,
@@ -183,12 +250,8 @@ class OSClient:
         timeout: float | tuple[float, float] | None = None,
         retries: int | None = None,
     ) -> tuple[int, dict[str, Any]]:
-        if not self.api_key:
-            return 501, {
-                "isError": True,
-                "code": "NO_API_KEY",
-                "message": "OS API key missing.",
-            }
+        if not self._has_credentials():
+            return self._missing_credentials_error()
         if requests is None:
             return 501, {
                 "isError": True,
@@ -196,6 +259,7 @@ class OSClient:
                 "message": "requests is not installed",
             }
         merged = {**(params or {}), **self._auth_params()}
+        headers = self._auth_headers()
         if not self._breaker.allow():
             return 503, {
                 "isError": True,
@@ -207,7 +271,7 @@ class OSClient:
         last_exc: Exception | None = None
         for attempt in range(1, max_attempts + 1):
             try:
-                resp = requests.get(url, params=merged, timeout=request_timeout)
+                resp = self._get(url, params=merged, headers=headers, timeout=request_timeout)
                 if resp.status_code != 200:
                     if resp.status_code >= 500:
                         self._breaker.record_failure()
@@ -334,12 +398,8 @@ class OSClient:
         timeout: float | tuple[float, float] | None = None,
         retries: int | None = None,
     ) -> tuple[int, dict[str, Any]]:
-        if not self.api_key:
-            return 501, {
-                "isError": True,
-                "code": "NO_API_KEY",
-                "message": "OS API key missing.",
-            }
+        if not self._has_credentials():
+            return self._missing_credentials_error()
         if requests is None:
             return 501, {
                 "isError": True,
@@ -347,6 +407,7 @@ class OSClient:
                 "message": "requests is not installed",
             }
         merged = {**(params or {}), **self._auth_params()}
+        headers = self._auth_headers()
         if not self._breaker.allow():
             return 503, {
                 "isError": True,
@@ -358,10 +419,11 @@ class OSClient:
         last_exc: Exception | None = None
         for attempt in range(1, max_attempts + 1):
             try:
-                resp = requests.post(
+                resp = self._post(
                     url,
                     params=merged,
-                    json=body or {},
+                    headers=headers,
+                    body=body or {},
                     timeout=request_timeout,
                 )
                 if resp.status_code != 200:
@@ -489,12 +551,8 @@ class OSClient:
         timeout: float | tuple[float, float] | None = None,
         retries: int | None = None,
     ) -> tuple[int, dict[str, Any]]:
-        if not self.api_key:
-            return 501, {
-                "isError": True,
-                "code": "NO_API_KEY",
-                "message": "OS API key missing.",
-            }
+        if not self._has_credentials():
+            return self._missing_credentials_error()
         if requests is None:
             return 501, {
                 "isError": True,
@@ -502,6 +560,7 @@ class OSClient:
                 "message": "requests is not installed",
             }
         merged = {**(params or {}), **self._auth_params()}
+        headers = self._auth_headers()
         if not self._breaker.allow():
             return 503, {
                 "isError": True,
@@ -513,7 +572,7 @@ class OSClient:
         last_exc: Exception | None = None
         for attempt in range(1, max_attempts + 1):
             try:
-                resp = requests.get(url, params=merged, timeout=request_timeout)
+                resp = self._get(url, params=merged, headers=headers, timeout=request_timeout)
                 if resp.status_code != 200:
                     if resp.status_code >= 500:
                         self._breaker.record_failure()

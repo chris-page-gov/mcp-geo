@@ -73,6 +73,18 @@ def _install_os_stubs(  # type: ignore[no-untyped-def]
                     {"id": "bld-fts-buildingpart-1", "title": "Building Part", "description": ""},
                     {"id": "trn-ntwk-roadlink-5", "title": "RoadLink", "description": ""},
                     {"id": "trn-ntwk-pathlink-2", "title": "PathLink", "description": ""},
+                    {
+                        "id": "asu-gbpcd-postcodeunitarea-1",
+                        "title": "Postcode Unit Area",
+                        "description": "",
+                    },
+                    {
+                        "id": "asu-gbpcd-postcodeunitpoint-1",
+                        "title": "Postcode Unit Point",
+                        "description": "",
+                    },
+                    {"id": "trn-ntwk-buslane-1", "title": "Bus Lane", "description": ""},
+                    {"id": "trn-ntwk-cyclelane-1", "title": "Cycle Lane", "description": ""},
                 ]
             }
 
@@ -84,8 +96,13 @@ def _install_os_stubs(  # type: ignore[no-untyped-def]
 
         def _feature(fid: str, geom_type: str) -> dict[str, Any]:
             geom: dict[str, Any]
-            if geom_type == "LineString":
-                geom = {"type": "LineString", "coordinates": [[-0.1105, 51.5005], [-0.1100, 51.5008]]}
+            if geom_type == "Point":
+                geom = {"type": "Point", "coordinates": [-0.1102, 51.5006]}
+            elif geom_type == "LineString":
+                geom = {
+                    "type": "LineString",
+                    "coordinates": [[-0.1105, 51.5005], [-0.1100, 51.5008]],
+                }
             else:
                 geom = {
                     "type": "Polygon",
@@ -107,9 +124,18 @@ def _install_os_stubs(  # type: ignore[no-untyped-def]
         elif coll.startswith("trn-ntwk-roadlink"):
             total = 5
             feats = [_feature(f"r{i}", "LineString") for i in range(1, total + 1)]
-        else:
+        elif coll.startswith("trn-ntwk-pathlink"):
             total = 1
             feats = [_feature("p1", "LineString")]
+        elif coll.startswith("asu-gbpcd-postcodeunitarea"):
+            total = 1
+            feats = [_feature("pcda1", "Polygon")]
+        elif coll.startswith("asu-gbpcd-postcodeunitpoint"):
+            total = 1
+            feats = [_feature("pcdp1", "Point")]
+        else:
+            total = 1
+            feats = [_feature("lane1", "LineString")]
 
         sliced = feats[offset:offset + limit]
         return 200, {"features": sliced, "numberMatched": total}
@@ -158,6 +184,41 @@ def test_os_map_inventory_orchestrates_layers_and_geometry_flags(client, monkeyp
     urls = [u for (u, _params) in ngd_calls]
     assert any(u.endswith("/collections") for u in urls)
     assert any("/items" in u for u in urls)
+
+
+def test_os_map_inventory_supports_spring_2026_ngd_layers(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    _install_os_stubs(monkeypatch, mock_os_client)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_map.inventory",
+            "bbox": [-0.12, 51.5, -0.11, 51.51],
+            "layers": [
+                "postcode_unit_areas",
+                "postcode_unit_points",
+                "bus_lanes",
+                "cycle_lanes",
+            ],
+            "includeGeometry": {
+                "postcode_unit_areas": True,
+                "postcode_unit_points": True,
+                "bus_lanes": True,
+                "cycle_lanes": True,
+            },
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    layers = body["layers"]
+    assert layers["postcode_unit_areas"]["collection"] == "asu-gbpcd-postcodeunitarea-1"
+    assert layers["postcode_unit_areas"]["features"][0]["geometry"]["type"] == "Polygon"
+    assert layers["postcode_unit_points"]["collection"] == "asu-gbpcd-postcodeunitpoint-1"
+    assert layers["postcode_unit_points"]["features"][0]["geometry"]["type"] == "Point"
+    assert layers["bus_lanes"]["collection"] == "trn-ntwk-buslane-1"
+    assert layers["cycle_lanes"]["collection"] == "trn-ntwk-cyclelane-1"
 
 
 def test_os_map_inventory_summary_mode_uses_compact_counts(client, monkeypatch, mock_os_client) -> None:  # type: ignore[no-untyped-def]
@@ -1310,7 +1371,15 @@ def test_os_map_parsers_cover_edge_cases() -> None:
     assert os_map._parse_bbox([0, 0, 0, 1]) is None  # minLon >= maxLon
     assert os_map._parse_bbox([0, 1, 2, 0]) is None  # minLat >= maxLat
 
-    assert os_map._parse_layers("uprns, buildings, nope") == ["uprns", "buildings"]
+    assert os_map._parse_layers("uprns, buildings, postcode_unit_areas, nope") == [
+        "uprns",
+        "buildings",
+        "postcode_unit_areas",
+    ]
+    assert os_map._parse_layers(["buildings", "buildings", "road_links", "road_links"]) == [
+        "buildings",
+        "road_links",
+    ]
     assert os_map._parse_layers(123) is None
 
     defaults = os_map._parse_limits(None)
@@ -1318,20 +1387,30 @@ def test_os_map_parsers_cover_edge_cases() -> None:
     assert defaults["buildings"] == 100
     assert defaults["road_links"] == 100
     assert defaults["path_links"] == 100
+    assert defaults["postcode_unit_areas"] == 100
 
-    limits = os_map._parse_limits({"uprns": "x", "buildings": 0, "road_links": 999999, "nope": 1})
+    limits = os_map._parse_limits(
+        {"uprns": "x", "buildings": 0, "road_links": 999999, "cycle_lanes": 7, "nope": 1}
+    )
     assert limits["uprns"] == os_map._DEFAULT_LIMITS["uprns"]
     assert limits["buildings"] == os_map._DEFAULT_LIMITS["buildings"]
     assert limits["road_links"] == os_map._MAX_LIMIT
+    assert limits["cycle_lanes"] == 7
 
-    tokens = os_map._parse_layer_tokens({"buildings": " 10 ", "road_links": 2.7, "nope": "x"})
-    assert tokens == {"buildings": "10", "road_links": "2"}
+    tokens = os_map._parse_layer_tokens(
+        {"buildings": " 10 ", "road_links": 2.7, "postcode_unit_points": "3", "nope": "x"}
+    )
+    assert tokens == {"buildings": "10", "road_links": "2", "postcode_unit_points": "3"}
 
-    bools = os_map._parse_bool_map({"buildings": "nope", "road_links": True, "nope": True})
-    assert bools == {"road_links": True}
+    bools = os_map._parse_bool_map(
+        {"buildings": "nope", "road_links": True, "bus_lanes": False, "nope": True}
+    )
+    assert bools == {"road_links": True, "bus_lanes": False}
 
-    cols = os_map._parse_collections_override({"buildings": " bld-123 ", "nope": "x"})
-    assert cols == {"buildings": "bld-123"}
+    cols = os_map._parse_collections_override(
+        {"buildings": " bld-123 ", "cycle_lanes": " trn-cycle ", "nope": "x"}
+    )
+    assert cols == {"buildings": "bld-123", "cycle_lanes": "trn-cycle"}
 
     column_config = os_map._normalize_columns_config(
         {"defaultSet": "unknown", "selectorMembership": False}
@@ -1773,6 +1852,28 @@ def test_os_maps_render_inventory_alignment(client, monkeypatch) -> None:  # typ
                         ],
                         "nextPageToken": "1",
                     },
+                    "postcode_unit_areas": {
+                        "collection": "asu-gbpcd-postcodeunitarea-1",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": "pcda1",
+                                "geometry": {"type": "Polygon", "coordinates": []},
+                                "properties": {"postcode": "SW1A 1AA"},
+                            }
+                        ],
+                    },
+                    "cycle_lanes": {
+                        "collection": "trn-ntwk-cyclelane-1",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": "cycle1",
+                                "geometry": {"type": "LineString", "coordinates": []},
+                                "properties": {"name": "Cycle lane"},
+                            }
+                        ],
+                    },
                 },
             }
 
@@ -1784,7 +1885,15 @@ def test_os_maps_render_inventory_alignment(client, monkeypatch) -> None:  # typ
             "tool": "os_maps.render",
             "bbox": [-0.12, 51.5, -0.11, 51.51],
             "includeInventory": True,
-            "inventory": {"layers": ["uprns", "buildings", "road_links"]},
+            "inventory": {
+                "layers": [
+                    "uprns",
+                    "buildings",
+                    "road_links",
+                    "postcode_unit_areas",
+                    "cycle_lanes",
+                ]
+            },
         },
     )
     assert resp.status_code == 200
@@ -1795,6 +1904,8 @@ def test_os_maps_render_inventory_alignment(client, monkeypatch) -> None:  # typ
     assert layers["inventory_uprns"]["count"] == 2
     assert layers["inventory_buildings"]["collection"] == "bld-fts-buildingpart-1"
     assert layers["inventory_road_links"]["nextPageToken"] == "1"
+    assert layers["inventory_postcode_unit_areas"]["kind"] == "polygon"
+    assert layers["inventory_cycle_lanes"]["collection"] == "trn-ntwk-cyclelane-1"
 
 
 def test_os_map_inventory_error_branches(monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -2031,6 +2142,12 @@ def test_os_maps_helper_normalization_paths() -> None:
                     ],
                     "nextPageToken": "10",
                 },
+                "postcode_unit_points": {
+                    "collection": "pcdp-x",
+                    "features": [
+                        {"type": "Feature", "geometry": {"type": "Point", "coordinates": []}}
+                    ],
+                },
             }
         }
     )
@@ -2038,6 +2155,7 @@ def test_os_maps_helper_normalization_paths() -> None:
         "inventory_uprns",
         "inventory_buildings",
         "inventory_path_links",
+        "inventory_postcode_unit_points",
     }
     summary = os_maps._overlay_summary(inventory_layers)
     assert any(row["id"] == "inventory_path_links" and row["nextPageToken"] == "10" for row in summary)
