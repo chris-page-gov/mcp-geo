@@ -100,6 +100,7 @@ def test_route_query_area_profile_from_area_code_rejects_narrower_target_level()
     assert body["intent"] == "area_profile"
     assert body["recommended_tool"] == "os_mcp.descriptor"
     assert body["recommended_parameters"] == {}
+    assert body["workflow_profile_uri"] == "resource://mcp-geo/area-summary-workflows"
     assert "cannot be narrowed" in body["guidance"]
     assert "E09000033" in body["guidance"]
 

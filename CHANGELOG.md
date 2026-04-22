@@ -289,6 +289,9 @@ All notable changes to this project will be documented in this file.
   still listed on the public LandIS website and separately licensed metadata
 
 ### Fixed
+- Fixed `os_mcp.route_query` area-profile responses so descriptor fallback
+  paths still include the area-summary workflow profile URI when a narrower
+  target level is rejected.
 - Fixed sanitized tool-schema rewriting so top-level `oneOf` / `anyOf` /
   `allOf` flattening is now limited to the strict stdio transport. HTTP
   `/tools/describe` again preserves the full schema contract for alternate
