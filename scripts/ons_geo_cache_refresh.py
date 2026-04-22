@@ -1605,23 +1605,66 @@ def _open_rows(
                 raise ValueError(
                     f"No CSV, JSON, or supported XLSX file found in zip archive: {path}"
                 )
-            chosen_member = _select_archive_member(
+            chosen_members = _select_archive_members(
                 archive=archive,
                 members=members,
                 dataset=dataset,
                 metadata_aliases=metadata_aliases or {},
             )
-            with archive.open(chosen_member, "r") as raw:
-                if chosen_member.lower().endswith(".xlsx"):
-                    with _rows_from_xlsx_stream(
-                        raw,
-                        name=chosen_member,
+            member_schemas: list[tuple[str, list[str], dict[str, str]]] = []
+            for member in chosen_members:
+                with _archive_member_rows(
+                    archive=archive,
+                    member=member,
+                    dataset=dataset,
+                ) as (_schema_rows, member_fieldnames):
+                    member_mapping: dict[str, str] = {}
+                    if dataset is not None:
+                        member_mapping, _validation = _build_field_mapping(
+                            dataset,
+                            fieldnames=member_fieldnames,
+                            metadata_aliases=metadata_aliases or {},
+                        )
+                    member_schemas.append((member, member_fieldnames, member_mapping))
+
+            fieldnames: list[str] = []
+            for _member, member_fieldnames, _member_mapping in member_schemas:
+                fieldnames = _merged_fieldnames(fieldnames, member_fieldnames)
+            canonical_mapping: dict[str, str] = {}
+            if dataset is not None:
+                canonical_mapping, _validation = _build_field_mapping(
+                    dataset,
+                    fieldnames=fieldnames,
+                    metadata_aliases=metadata_aliases or {},
+                )
+            member_mappings = {
+                member: member_mapping
+                for member, _member_fieldnames, member_mapping in member_schemas
+            }
+
+            def _iter_archive_rows() -> Iterator[dict[str, Any]]:
+                for member in chosen_members:
+                    with _archive_member_rows(
+                        archive=archive,
+                        member=member,
                         dataset=dataset,
-                    ) as payload:
-                        yield payload
-                else:
-                    with _rows_from_binary_stream(raw, name=chosen_member) as payload:
-                        yield payload
+                    ) as (rows_iter, _member_fieldnames):
+                        member_mapping = member_mappings.get(member, {})
+                        for row in rows_iter:
+                            if not isinstance(row, dict) or not canonical_mapping:
+                                yield row
+                                continue
+                            yield _canonicalize_archive_row(
+                                row,
+                                source_mapping=member_mapping,
+                                canonical_mapping=canonical_mapping,
+                            )
+
+            rows = _iter_archive_rows()
+            try:
+                yield rows, fieldnames
+            finally:
+                rows.close()
         return
     if path.suffix.lower() == ".xlsx":
         with path.open("rb") as stream:
@@ -1760,6 +1803,40 @@ def _rows_from_binary_stream(
 
 
 @contextmanager
+def _archive_member_rows(
+    *,
+    archive: zipfile.ZipFile,
+    member: str,
+    dataset: DatasetConfig | None,
+) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
+    with archive.open(member, "r") as raw:
+        if member.lower().endswith(".xlsx"):
+            with _rows_from_xlsx_stream(raw, name=member, dataset=dataset) as payload:
+                yield payload
+        else:
+            with _rows_from_binary_stream(raw, name=member) as payload:
+                yield payload
+
+
+def _canonicalize_archive_row(
+    row: dict[str, Any],
+    *,
+    source_mapping: dict[str, str],
+    canonical_mapping: dict[str, str],
+) -> dict[str, Any]:
+    canonicalized: dict[str, Any] | None = None
+    for semantic_name, source_field in source_mapping.items():
+        target_field = canonical_mapping.get(semantic_name)
+        if not target_field or source_field == target_field or source_field not in row:
+            continue
+        if canonicalized is None:
+            canonicalized = dict(row)
+        if target_field not in canonicalized:
+            canonicalized[target_field] = canonicalized[source_field]
+    return canonicalized if canonicalized is not None else row
+
+
+@contextmanager
 def _rows_from_bytes(
     content: bytes,
     *,
@@ -1807,29 +1884,28 @@ def _merged_fieldnames(
     return merged
 
 
-def _select_archive_member(
+def _select_archive_members(
     *,
     archive: zipfile.ZipFile,
     members: list[str],
     dataset: DatasetConfig | None,
     metadata_aliases: dict[str, str],
-) -> str:
+    allow_multi: bool | None = None,
+) -> list[str]:
     if dataset is None or len(members) == 1:
-        return members[0]
+        return [members[0]]
 
     scored_members: list[tuple[int, int, int, str]] = []
     for name in members:
-        with archive.open(name, "r") as raw:
-            if name.lower().endswith(".xlsx"):
-                payload_context = _rows_from_xlsx_stream(raw, name=name, dataset=dataset)
-            else:
-                payload_context = _rows_from_binary_stream(raw, name=name)
-            with payload_context as (_rows_iter, fieldnames):
-                _mapping, validation = _build_field_mapping(
-                    dataset,
-                    fieldnames=fieldnames,
-                    metadata_aliases=metadata_aliases,
-                )
+        with _archive_member_rows(archive=archive, member=name, dataset=dataset) as (
+            _rows_iter,
+            fieldnames,
+        ):
+            _mapping, validation = _build_field_mapping(
+                dataset,
+                fieldnames=fieldnames,
+                metadata_aliases=metadata_aliases,
+            )
         required_found = len(validation["requiredFound"])
         required_missing = len(validation["requiredMissing"])
         optional_found = len(validation["optionalFound"])
@@ -1838,7 +1914,17 @@ def _select_archive_member(
         )
 
     scored_members.sort(reverse=True)
-    return scored_members[0][3]
+    if allow_multi is None:
+        allow_multi = dataset.key_type == "uprn"
+    if not allow_multi:
+        return [scored_members[0][3]]
+
+    best_required, best_missing, best_optional, _best_name = scored_members[0]
+    return sorted(
+        name
+        for required, missing, optional, name in scored_members
+        if (required, missing, optional) == (best_required, best_missing, best_optional)
+    )
 
 
 def _collect_fieldnames(rows: Iterable[dict[str, Any]]) -> list[str]:
@@ -1879,7 +1965,9 @@ def _match_field(
     aliases: dict[str, list[str]],
     metadata_aliases: dict[str, str],
 ) -> str | None:
-    lookup = {name.lower(): name for name in fieldnames}
+    lookup: dict[str, str] = {}
+    for name in fieldnames:
+        lookup.setdefault(name.lower(), name)
     explicit_aliases = aliases.get(semantic_name, [])
     for candidate in explicit_aliases:
         chosen = lookup.get(candidate.lower())

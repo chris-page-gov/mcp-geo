@@ -3,7 +3,17 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-13
+Last updated: 2026-04-15
+
+## ONS UPRN multi-shard ZIP ingest fix (2026-04-15)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| ONS-UPRN-SHARD-1 Root-cause Claude UPRN `NOT_FOUND` failures | done | none | Traced Welsh and non-Yorkshire English `ons_geo.by_uprn` misses to the ONS geo refresh path selecting one best-scoring CSV member from region-sharded ONSUD/NSUL ZIP archives. The existing local cache contains the `YH` shard only (`~3.6M` UPRNs), explaining why `10000062102` hits while `100010542645`, `90074379`, and `100023336959` miss. |
+| ONS-UPRN-SHARD-2 Stream every compatible UPRN archive member | done | ONS-UPRN-SHARD-1 | Updated `scripts/ons_geo_cache_refresh.py` so ZIP-backed UPRN products stream all members with the best schema score instead of one tie-broken member, while preserving single-member selection for non-UPRN datasets. Added parameterized ONSUD/NSUL regressions covering `LN`, `WA`, and `YH` shards and confirming rows populate both `ons_geo_rows` and `ons_geo_uprn_index`. Validation passed via `./scripts/ruff-local scripts/ons_geo_cache_refresh.py tests/test_ons_geo_cache_refresh.py`, `./scripts/pytest-local -q --no-cov tests/test_ons_geo_cache_refresh.py -k 'uprn_product_zip or ingests_products_and_sidecars'`, `./scripts/pytest-local -q --no-cov tests/test_ons_geo_cache_refresh.py tests/test_ons_geo.py tests/test_ons_geo_cache.py`, and `python3 -m py_compile scripts/ons_geo_cache_refresh.py tests/test_ons_geo_cache_refresh.py`. |
+| ONS-UPRN-SHARD-3 Rebuild affected local/client ONS geo caches | pending | ONS-UPRN-SHARD-2 | Existing cache files built before this fix remain incomplete and will continue returning `NOT_FOUND` for missing shards until `scripts/ons_geo_cache_refresh.py` is rerun. The current repo cache is 66 GB and was not rebuilt during the code fix because a full corrected UPRN ingest is expected to be much larger and long-running. |
 
 ## Unattended multi-client evaluation remediation (2026-04-13)
 
