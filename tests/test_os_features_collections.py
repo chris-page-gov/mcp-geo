@@ -288,6 +288,80 @@ def test_os_features_query_aliases_legacy_ngd_base_collection_and_resolves_lates
     assert "COLLECTION_ALIAS_APPLIED" in body["hints"]["warnings"]
 
 
+def test_os_features_query_aliases_spring_2026_postcode_unit_area(
+    client, monkeypatch, mock_os_client
+) -> None:  # type: ignore[no-untyped-def]
+    from tools import os_common, os_features
+
+    fake_client = os_common.client
+    monkeypatch.setattr(os_features, "client", fake_client)
+
+    seen_params: list[dict[str, Any]] = []
+
+    def collections_handler(url: str, params: dict[str, Any]):
+        return 200, {
+            "collections": [
+                {
+                    "id": "asu-gbpcd-postcodeunitarea-1",
+                    "title": "Postcode Unit Area",
+                    "description": "v1",
+                },
+                {
+                    "id": "asu-gbpcd-postcodeunitarea-2",
+                    "title": "Postcode Unit Area",
+                    "description": "v2",
+                },
+            ]
+        }
+
+    def items_handler(url: str, params: dict[str, Any]):
+        seen_params.append(dict(params))
+        return 200, {
+            "numberMatched": 1,
+            "features": [
+                {
+                    "id": "pcda1",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-0.1300, 51.5000],
+                                [-0.1295, 51.5000],
+                                [-0.1295, 51.5005],
+                                [-0.1300, 51.5005],
+                                [-0.1300, 51.5000],
+                            ]
+                        ],
+                    },
+                    "properties": {"postcode": "SW1A 1AA"},
+                }
+            ],
+        }
+
+    mock_os_client[
+        "features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-2/items"
+    ] = items_handler
+    mock_os_client["features/ngd/ofa/v1/collections"] = collections_handler
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_features.query",
+            "collection": "postcode unit areas",
+            "bbox": [-0.15, 51.49, -0.10, 51.52],
+            "limit": 1,
+            "includeGeometry": True,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["collection"] == "asu-gbpcd-postcodeunitarea-2"
+    assert body["requestedCollection"] == "postcode unit areas"
+    assert body["features"][0]["id"] == "pcda1"
+    assert seen_params[0]["limit"] == 1
+    assert "COLLECTION_ALIAS_APPLIED" in body["hints"]["warnings"]
+
+
 def test_os_features_query_normalizes_cql_queryable_field_names(
     client, monkeypatch, mock_os_client
 ) -> None:  # type: ignore[no-untyped-def]

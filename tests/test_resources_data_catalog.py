@@ -43,6 +43,29 @@ def test_resources_read_boundary_manifest() -> None:
     assert "boundary_families" in payload
 
 
+def test_resources_read_layers_catalog_includes_spring_2026_ngd_layers() -> None:
+    resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/layers-catalog"})
+    assert resp.status_code == 200
+    contents = resource_contents(resp)
+    payload = json.loads(contents[0]["text"])
+    layers = {
+        row.get("id"): row
+        for row in payload.get("layers", [])
+        if isinstance(row, dict) and isinstance(row.get("id"), str)
+    }
+
+    expected = {
+        "postcode_unit_areas": ("asu-gbpcd-postcodeunitarea", "polygons"),
+        "postcode_unit_points": ("asu-gbpcd-postcodeunitpoint", "points"),
+        "bus_lanes": ("trn-ntwk-buslane", "lines"),
+        "cycle_lanes": ("trn-ntwk-cyclelane", "lines"),
+    }
+    for layer_id, (collection_base_id, kind) in expected.items():
+        assert layers[layer_id]["provider"] == "os_ngd"
+        assert layers[layer_id]["collectionBaseId"] == collection_base_id
+        assert layers[layer_id]["kind"] == kind
+
+
 def test_resources_read_map_embedding_style_profiles() -> None:
     resp = client.get("/resources/read", params={"uri": "resource://mcp-geo/map-embedding-style-profiles"})
     assert resp.status_code == 200

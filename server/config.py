@@ -35,6 +35,8 @@ else:
 
 class Settings(_PydanticBaseSettings):
     OS_API_KEY: str = ""
+    OS_API_AUTH_MODE: str = "query"
+    OS_API_ACCESS_TOKEN: str = ""
     AUDIT_PACK_ROOT: str = "logs/audit-packs"
     DEBUG_ERRORS: bool = False
     LOG_JSON: bool = True
@@ -297,6 +299,7 @@ def hydrate_env_secret_from_file(
 load_dotenv()
 for _secret_key in (
     "OS_API_KEY",
+    "OS_API_ACCESS_TOKEN",
     "NOMIS_UID",
     "NOMIS_SIGNATURE",
     "MCP_HTTP_AUTH_TOKEN",

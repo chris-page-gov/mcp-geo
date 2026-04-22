@@ -31,13 +31,25 @@ _DEFAULT_COLLECTION_BASES: dict[str, str] = {
     "buildings": "bld-fts-buildingpart",
     "road_links": "trn-ntwk-roadlink",
     "path_links": "trn-ntwk-pathlink",
+    "postcode_unit_areas": "asu-gbpcd-postcodeunitarea",
+    "postcode_unit_points": "asu-gbpcd-postcodeunitpoint",
+    "bus_lanes": "trn-ntwk-buslane",
+    "cycle_lanes": "trn-ntwk-cyclelane",
 }
+_NGD_LAYER_IDS = frozenset(_DEFAULT_COLLECTION_BASES)
+_SUPPORTED_LAYER_IDS = frozenset({"uprns", *_NGD_LAYER_IDS})
+_DEFAULT_INVENTORY_LAYERS = ["uprns", "buildings", "road_links", "path_links"]
+_LAYER_DESCRIPTION = "Requested layers (uprns, buildings, road_links, path_links)."
 
 _DEFAULT_LIMITS: dict[str, int] = {
     "uprns": 100,
     "buildings": 100,
     "road_links": 100,
     "path_links": 100,
+    "postcode_unit_areas": 100,
+    "postcode_unit_points": 100,
+    "bus_lanes": 100,
+    "cycle_lanes": 100,
 }
 
 _MAX_LIMIT = 500
@@ -149,8 +161,7 @@ def _parse_layers(value: Any) -> list[str] | None:
         parts = [str(p).strip() for p in value if p is not None and str(p).strip()]
     else:
         return None
-    allowed = {"uprns", "buildings", "road_links", "path_links"}
-    out = [p for p in parts if p in allowed]
+    out = [p for p in parts if p in _SUPPORTED_LAYER_IDS]
     return out or None
 
 
@@ -187,7 +198,7 @@ def _parse_layer_tokens(value: Any) -> dict[str, str]:
         return {}
     out: dict[str, str] = {}
     for key, raw in value.items():
-        if key not in {"buildings", "road_links", "path_links"}:
+        if key not in _NGD_LAYER_IDS:
             continue
         if isinstance(raw, (int, float)):
             raw = str(int(raw))
@@ -201,7 +212,7 @@ def _parse_bool_map(value: Any) -> dict[str, bool]:
         return {}
     out: dict[str, bool] = {}
     for key, raw in value.items():
-        if key not in {"buildings", "road_links", "path_links"}:
+        if key not in _NGD_LAYER_IDS:
             continue
         if isinstance(raw, bool):
             out[key] = raw
@@ -213,7 +224,7 @@ def _parse_collections_override(value: Any) -> dict[str, str]:
         return {}
     out: dict[str, str] = {}
     for key, raw in value.items():
-        if key not in {"buildings", "road_links", "path_links"}:
+        if key not in _NGD_LAYER_IDS:
             continue
         if isinstance(raw, str) and raw.strip():
             out[key] = raw.strip()
@@ -1851,7 +1862,7 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
             "message": "bbox must be [minLon,minLat,maxLon,maxLat] with min < max",
         }
 
-    layers = _parse_layers(payload.get("layers")) or ["uprns", "buildings", "road_links", "path_links"]
+    layers = _parse_layers(payload.get("layers")) or list(_DEFAULT_INVENTORY_LAYERS)
     limits = _parse_limits(payload.get("limits"))
     page_tokens = _parse_layer_tokens(payload.get("pageTokens"))
     include_geometry = _parse_bool_map(payload.get("includeGeometry"))
@@ -1983,9 +1994,10 @@ def _inventory(payload: dict[str, Any]) -> ToolResult:
         if response_mode == "full" and not include_geom:
             hints.append(f"{layer_id}: pass includeGeometry.{layer_id}=true to render on a map.")
 
-    _fetch_features("buildings")
-    _fetch_features("road_links")
-    _fetch_features("path_links")
+    for layer_id in layers:
+        if layer_id == "uprns":
+            continue
+        _fetch_features(layer_id)
 
     return 200, {
         "bbox": bbox,
@@ -2736,7 +2748,7 @@ register(
                         {"type": "string", "minLength": 1},
                         {"type": "null"},
                     ],
-                    "description": "Requested layers (uprns, buildings, road_links, path_links).",
+                    "description": _LAYER_DESCRIPTION,
                 },
                 "limits": {"type": "object", "description": "Per-layer max features (budgets)."},
                 "pageTokens": {"type": "object", "description": "Per-layer paging tokens for NGD layers."},
@@ -2814,7 +2826,7 @@ register(
                         {"type": "string", "minLength": 1},
                         {"type": "null"},
                     ],
-                    "description": "Requested layers (uprns, buildings, road_links, path_links).",
+                    "description": _LAYER_DESCRIPTION,
                 },
                 "limits": {"type": "object"},
                 "includeGeometry": {"type": "object"},

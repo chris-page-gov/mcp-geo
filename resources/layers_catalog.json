@@ -68,7 +68,64 @@
         "render": { "mode": "line" },
         "budgets": { "maxFeatures": 2000 }
       }
+    },
+    {
+      "id": "postcode_unit_areas",
+      "title": "Postcode Unit Areas (NGD GB Postcodes)",
+      "provider": "os_ngd",
+      "kind": "polygons",
+      "collectionBaseId": "asu-gbpcd-postcodeunitarea",
+      "default": {
+        "render": { "mode": "fill-outline" },
+        "budgets": { "maxFeatures": 1000 }
+      },
+      "notes": [
+        "Added to OS NGD in the Spring 2026 release.",
+        "GB-only API Features layer; NI postcodes are not available through OS NGD API Features."
+      ]
+    },
+    {
+      "id": "postcode_unit_points",
+      "title": "Postcode Unit Points (NGD GB Postcodes)",
+      "provider": "os_ngd",
+      "kind": "points",
+      "collectionBaseId": "asu-gbpcd-postcodeunitpoint",
+      "default": {
+        "render": { "mode": "dot" },
+        "budgets": { "maxFeatures": 1000 }
+      },
+      "notes": [
+        "Added to OS NGD in the Spring 2026 release.",
+        "Use alongside postcode_unit_areas when both centroid-style and area geometry are useful."
+      ]
+    },
+    {
+      "id": "bus_lanes",
+      "title": "Bus Lanes (NGD Transport Network Bus Lane)",
+      "provider": "os_ngd",
+      "kind": "lines",
+      "collectionBaseId": "trn-ntwk-buslane",
+      "default": {
+        "render": { "mode": "line" },
+        "budgets": { "maxFeatures": 1000 }
+      },
+      "notes": [
+        "Coverage is GB-wide from the OS NGD Spring 2026 release."
+      ]
+    },
+    {
+      "id": "cycle_lanes",
+      "title": "Cycle Lanes (NGD Transport Network Cycle Lane)",
+      "provider": "os_ngd",
+      "kind": "lines",
+      "collectionBaseId": "trn-ntwk-cyclelane",
+      "default": {
+        "render": { "mode": "line" },
+        "budgets": { "maxFeatures": 1000 }
+      },
+      "notes": [
+        "Coverage extends to Scotland and Wales from the OS NGD Spring 2026 release."
+      ]
     }
   ]
 }
-

@@ -250,6 +250,20 @@ def test_route_query_vector_tiles():
     assert body["recommended_tool"] == "os_vector_tiles.descriptor"
 
 
+def test_route_query_ngd_postcode_unit_area_collection():
+    body = _route("Query NGD postcode unit area geometries")
+    assert body["intent"] == "feature_search"
+    assert body["recommended_tool"] == "os_features.query"
+    assert body["recommended_parameters"]["collection"] == "asu-gbpcd-postcodeunitarea"
+
+
+def test_route_query_ngd_cycle_lane_collection():
+    body = _route("Find cycle lanes in the NGD")
+    assert body["intent"] == "feature_search"
+    assert body["recommended_tool"] == "os_features.query"
+    assert body["recommended_parameters"]["collection"] == "trn-ntwk-cyclelane"
+
+
 def test_route_query_linked_ids():
     body = _route("Resolve USRN 12345678")
     assert body["intent"] == "linked_ids"

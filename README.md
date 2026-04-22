@@ -66,6 +66,8 @@ Open `.env` and paste the required key:
 
 ```text
 OS_API_KEY=your-key-here
+# Optional: query (default), header, or bearer.
+OS_API_AUTH_MODE=query
 
 # Optional: higher-rate NOMIS access
 NOMIS_UID=your-nomis-uid
@@ -217,7 +219,13 @@ Then visit:
 - `POST /tools/call` with `{ "tool": "os_places.by_postcode", "postcode": "SW1A1AA" }`
 - `POST /mcp` with `{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}`
 
-Set `OS_API_KEY` in the environment (or `.env`) for all Ordnance Survey calls. The server assumes it is present; missing or invalid keys return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
+Set `OS_API_KEY` in the environment (or `.env`) for Ordnance Survey API-key calls.
+`OS_API_AUTH_MODE=query` is the default and sends the key as the documented `key`
+query parameter. `OS_API_AUTH_MODE=header` sends the same project key in the
+documented `key` header. `OS_API_AUTH_MODE=bearer` sends `OS_API_ACCESS_TOKEN`
+as an OAuth2 bearer token; MCP-Geo does not mint OS OAuth tokens itself, so the
+caller must refresh that token out of band. Missing or invalid credentials
+return `NO_API_KEY`, `OS_API_KEY_INVALID`, or `OS_API_KEY_EXPIRED`.
 
 If MCP HTTP auth is enabled, only `GET /health` remains public. The raw HTTP
 tool, resource, metrics, and playground routes all require the same bearer auth
@@ -940,8 +948,9 @@ share the same auth boundary as `/mcp`.
   `MCP_HTTP_JWT_REQUIRED_SCOPES` constrain accepted tokens.
 - `MCP_HTTP_SESSION_TTL` and `MCP_HTTP_SESSION_TOOL_CALL_LIMIT` bound session
   lifetime and tool-call volume.
-- `OS_API_KEY_FILE`, `NOMIS_UID_FILE`, and `NOMIS_SIGNATURE_FILE` support
-  secret-file delivery without committing live secrets.
+- `OS_API_KEY_FILE`, `OS_API_ACCESS_TOKEN_FILE`, `NOMIS_UID_FILE`, and
+  `NOMIS_SIGNATURE_FILE` support secret-file delivery without committing live
+  secrets.
 - `ops/deployment/docker-compose.prod.yml` is the hardened reference deployment
   used by the OWASP MCP strict evidence set.
 

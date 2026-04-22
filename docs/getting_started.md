@@ -22,6 +22,8 @@ git submodule update --init --recursive
 Set env vars for live data when you have keys:
 - `OS_API_KEY` (required) for Ordnance Survey tools
 - `OS_API_KEY_FILE` (optional) path to a local secret file (used when `OS_API_KEY` is unset)
+- `OS_API_AUTH_MODE=query|header|bearer` (optional; `query` is the default)
+- `OS_API_ACCESS_TOKEN` or `OS_API_ACCESS_TOKEN_FILE` when using `OS_API_AUTH_MODE=bearer`
 - `NOMIS_UID` and `NOMIS_SIGNATURE` (optional) for higher-rate NOMIS access
 - `ONS_LIVE_ENABLED=true` only if you have explicitly disabled live ONS mode elsewhere
 - `LOG_JSON=true` to force JSON logs (now default)
@@ -197,6 +199,8 @@ depending on the Inspector version).
 
 Note: for HTTP connections, Inspector does not pass environment variables.
 Set `OS_API_KEY` on the server process before starting `uvicorn`.
+If using OS OAuth2, set `OS_API_AUTH_MODE=bearer` and provide a current
+`OS_API_ACCESS_TOKEN`; MCP-Geo does not refresh OS bearer tokens itself.
 `ONS_LIVE_ENABLED` defaults to `true` unless you have disabled it.
 
 If you prefer STDIO instead, use the repo wrapper:
@@ -206,6 +210,8 @@ If you prefer STDIO instead, use the repo wrapper:
 3) In `Environment Variables`, add:
    - `OS_API_KEY` (required for OS tools), or
    - `OS_API_KEY_FILE` (path to a file containing the OS key)
+   - `OS_API_AUTH_MODE=header` if you prefer OS's documented key header mode, or
+     `OS_API_AUTH_MODE=bearer` plus `OS_API_ACCESS_TOKEN` for a pre-minted OAuth2 token
    - `ONS_LIVE_ENABLED=true` only if you have explicitly disabled live ONS tools elsewhere
 4) Click `Connect`.
 
@@ -499,7 +505,9 @@ Claude Desktop config example:
 The wrapper starts PostGIS in Docker, builds the image if needed, and uses
 `postgresql://mcp_geo:mcp_geo@postgis:5432/mcp_geo` for the cache.
 Set either `OS_API_KEY` or `OS_API_KEY_FILE` in the host environment (if both
-are set, `OS_API_KEY` wins).
+are set, `OS_API_KEY` wins). For bearer-token mode, set
+`OS_API_AUTH_MODE=bearer` and either `OS_API_ACCESS_TOKEN` or
+`OS_API_ACCESS_TOKEN_FILE`.
 By default it stores PostGIS data in a Docker named volume
 (`mcp-geo-postgis-claude`) and uses dedicated Claude sidecar names
 (`mcp-geo-postgis-claude` on `mcp-geo-claude`) rather than a repo bind mount.

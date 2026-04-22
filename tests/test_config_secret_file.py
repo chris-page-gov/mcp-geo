@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from server.config import (
     Settings,
     _coerce_fallback_setting_value,
@@ -15,6 +17,16 @@ def test_hydrate_env_secret_from_file_sets_key(tmp_path):
     hydrate_env_secret_from_file("OS_API_KEY", env)
 
     assert env["OS_API_KEY"] == "test-key-from-file"
+
+
+def test_hydrate_env_secret_from_file_sets_os_access_token(tmp_path):
+    secret_file = tmp_path / "os_access_token.txt"
+    secret_file.write_text("test-token-from-file\n", encoding="utf-8")
+    env: dict[str, str] = {"OS_API_ACCESS_TOKEN_FILE": str(secret_file)}
+
+    hydrate_env_secret_from_file("OS_API_ACCESS_TOKEN", env)
+
+    assert env["OS_API_ACCESS_TOKEN"] == "test-token-from-file"
 
 
 def test_hydrate_env_secret_from_file_preserves_existing_key(tmp_path):
@@ -78,6 +90,13 @@ def test_coerce_fallback_setting_value_preserves_default_on_invalid_typed_value(
     assert _coerce_fallback_setting_value("flase", bool, False) is False
     assert _coerce_fallback_setting_value("abc", int, 207) == 207
     assert _coerce_fallback_setting_value("oops", float, 60.0) == 60.0
+
+
+def test_coerce_fallback_setting_value_preserves_invalid_without_default():
+    assert _coerce_fallback_setting_value("flase", bool) == "flase"
+    assert _coerce_fallback_setting_value("abc", int) == "abc"
+    assert _coerce_fallback_setting_value("oops", float) == "oops"
+    assert _coerce_fallback_setting_value("value", ClassVar[str]) == "value"
 
 
 def test_populate_fallback_settings_coerces_env_backed_defaults():
@@ -168,6 +187,7 @@ def test_populate_fallback_settings_ignores_placeholder_env_values():
 
 def test_populate_fallback_settings_honors_overrides_without_crashing():
     class DummySettings:
+        SKIPPED: ClassVar[str] = "unchanged"
         RATE_LIMIT_PER_MIN: int = 207
         RATE_LIMIT_BYPASS: bool = False
 
@@ -175,9 +195,11 @@ def test_populate_fallback_settings_honors_overrides_without_crashing():
 
     _populate_fallback_settings(
         dummy,
-        {"RATE_LIMIT_PER_MIN": "123", "RATE_LIMIT_BYPASS": "true"},
+        {"RATE_LIMIT_PER_MIN": "123", "RATE_LIMIT_BYPASS": "true", "EXTRA": "kept"},
         {},
     )
 
     assert dummy.RATE_LIMIT_PER_MIN == 123
     assert dummy.RATE_LIMIT_BYPASS is True
+    assert dummy.SKIPPED == "unchanged"
+    assert dummy.EXTRA == "kept"

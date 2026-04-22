@@ -33,6 +33,13 @@ def test_apply_collection_alias_variants() -> None:
     )
     assert os_features._apply_collection_alias("trn-fts-roadlink-3") == "trn-ntwk-roadlink-3"
     assert os_features._apply_collection_alias("trn-fts-roadlink") == "trn-ntwk-roadlink-1"
+    assert os_features._apply_collection_alias("postcode unit areas") == (
+        "asu-gbpcd-postcodeunitarea"
+    )
+    assert os_features._apply_collection_alias("postcode_unit_points") == (
+        "asu-gbpcd-postcodeunitpoint"
+    )
+    assert os_features._apply_collection_alias("cycle lanes") == "trn-ntwk-cyclelane"
     assert os_features._apply_collection_alias("  ") == ""
     assert os_features._apply_collection_alias("abc") == "abc"
 
@@ -47,6 +54,10 @@ def test_resolve_latest_collection_id_uses_latest_by_base(monkeypatch) -> None: 
                 {"id": "bld-fts-buildingpart-2"},
                 {"id": "trn-ntwk-roadlink-4"},
                 {"id": "trn-ntwk-roadlink-5"},
+                {"id": "asu-gbpcd-postcodeunitarea-1"},
+                {"id": "asu-gbpcd-postcodeunitarea-2"},
+                {"id": "asu-gbpcd-postcodeunitpoint-1"},
+                {"id": "trn-ntwk-cyclelane-1"},
             ]
         }
 
@@ -56,6 +67,13 @@ def test_resolve_latest_collection_id_uses_latest_by_base(monkeypatch) -> None: 
     )
     assert os_features._resolve_latest_collection_id("trn-fts-roadlink") == (
         "trn-ntwk-roadlink-5"
+    )
+    assert os_features._resolve_latest_collection_id("asu-gbpcd-postcodeunitarea") == (
+        "asu-gbpcd-postcodeunitarea-2"
+    )
+    assert os_features._resolve_latest_collection_id("postcode unit points") is None
+    assert os_features._resolve_latest_collection_id("trn-ntwk-cyclelane") == (
+        "trn-ntwk-cyclelane-1"
     )
     assert os_features._resolve_latest_collection_id("trn-ntwk-roadlink-5") is None
 
