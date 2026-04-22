@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from argparse import Namespace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -100,9 +101,11 @@ def test_running_app_containers_matches_requested_tag(monkeypatch: pytest.Monkey
         *,
         check: bool = True,
         env: dict[str, str] | None = None,
+        timeout: float | None = None,
     ) -> prepare_for_demo.CommandResult:
         assert check in {True, False}
         assert env is None
+        assert timeout is None
         if args == ["docker", "ps", "--format", "{{json .}}"]:
             stdout = "\n".join(json.dumps(row) for row in ps_rows)
             return prepare_for_demo.CommandResult(0, stdout, "")
@@ -160,3 +163,84 @@ def test_run_returns_command_result_for_os_errors(monkeypatch: pytest.MonkeyPatc
 
     assert result.returncode == 126
     assert "not executable" in result.stderr
+
+
+def test_run_returns_command_result_for_timeouts(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(*_args: object, **_kwargs: object) -> object:
+        raise prepare_for_demo.subprocess.TimeoutExpired(
+            cmd=["slow-wrapper"],
+            timeout=3,
+            output="partial output",
+            stderr="still running",
+        )
+
+    monkeypatch.setattr(prepare_for_demo.subprocess, "run", fake_run)
+
+    result = prepare_for_demo._run(["slow-wrapper"], check=False, timeout=3)
+
+    assert result.returncode == 124
+    assert result.stdout == "partial output"
+    assert result.stderr == "still running"
+
+
+def test_wrapper_plan_uses_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    wrapper = tmp_path / "wrapper"
+    wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+    seen: dict[str, object] = {}
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        seen["args"] = args
+        seen["check"] = check
+        seen["env"] = env
+        seen["timeout"] = timeout
+        return prepare_for_demo.CommandResult(124, "", "timed out after 15s")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+
+    plan = prepare_for_demo.wrapper_plan(wrapper)
+
+    assert plan == {"error": "timed out after 15s"}
+    assert seen["args"] == [str(wrapper)]
+    assert seen["check"] is False
+    assert seen["timeout"] == prepare_for_demo.WRAPPER_PLAN_TIMEOUT_SECONDS
+    assert isinstance(seen["env"], dict)
+    assert seen["env"]["MCP_GEO_DOCKER_PLAN_ONLY"] == "1"
+
+
+def test_run_checks_reports_unresolved_ref(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert check is True
+        assert env is None
+        assert timeout is None
+        if args == ["git", "status", "--porcelain"]:
+            return prepare_for_demo.CommandResult(0, "", "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    def fake_git_ref_full(ref: str) -> str:
+        if ref == "HEAD":
+            return "head-sha"
+        raise RuntimeError("git rev-parse missing-ref failed: ambiguous argument")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", fake_git_ref_full)
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=False, ref="missing-ref", image="mcp-geo-server", rebuild=False)
+    )
+
+    assert checks[-1].level == "FAIL"
+    assert checks[-1].name == "git.ref"
+    assert "missing-ref" in checks[-1].detail
+    assert not any(check.name.startswith("docker.") for check in checks)

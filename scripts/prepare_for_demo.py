@@ -14,6 +14,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_IMAGE = "mcp-geo-server"
 DEFAULT_REF = "origin/main"
+WRAPPER_PLAN_TIMEOUT_SECONDS = 15
 APP_WRAPPERS = {
     "claude": "scripts/claude-mcp-local",
     "codex": "scripts/codex-mcp-local",
@@ -36,11 +37,20 @@ class CommandResult:
     stderr: str
 
 
+def _command_text(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode(errors="replace")
+    return value
+
+
 def _run(
     args: list[str],
     *,
     check: bool = True,
     env: dict[str, str] | None = None,
+    timeout: float | None = None,
 ) -> CommandResult:
     try:
         proc = subprocess.run(
@@ -50,7 +60,16 @@ def _run(
             text=True,
             capture_output=True,
             check=False,
+            timeout=timeout,
         )
+    except subprocess.TimeoutExpired as exc:
+        stdout = _command_text(exc.stdout)
+        stderr = _command_text(exc.stderr)
+        timeout_text = f"{timeout:g}s" if timeout is not None else "the timeout"
+        detail = stderr.strip() or stdout.strip() or f"timed out after {timeout_text}"
+        if check:
+            raise RuntimeError(f"{' '.join(args)} failed: {detail}") from exc
+        return CommandResult(124, stdout, detail)
     except OSError as exc:
         if check:
             raise RuntimeError(f"{' '.join(args)} failed: {exc}") from exc
@@ -218,7 +237,12 @@ def wrapper_plan(wrapper: Path) -> dict[str, str]:
     env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
     env["MCP_GEO_DOCKER_BUILD"] = "never"
     env["MCP_GEO_POSTGIS_BUILD"] = "never"
-    proc = _run([str(wrapper)], check=False, env=env)
+    proc = _run(
+        [str(wrapper)],
+        check=False,
+        env=env,
+        timeout=WRAPPER_PLAN_TIMEOUT_SECONDS,
+    )
     if proc.returncode != 0:
         return {"error": (proc.stderr or proc.stdout).strip()}
     plan: dict[str, str] = {}
@@ -275,10 +299,31 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
     else:
         add(checks, "PASS", "git.clean", "Working tree is clean.")
 
-    head = git_ref_full("HEAD")
-    ref = git_ref_full(args.ref)
-    ref_short = git_ref_short(args.ref)
-    ref_time = git_ref_timestamp(args.ref)
+    try:
+        head = git_ref_full("HEAD")
+    except RuntimeError as exc:
+        add(
+            checks,
+            "FAIL",
+            "git.ref",
+            f"Could not resolve HEAD: {exc}",
+            "Check the local checkout before running the demo.",
+        )
+        return checks
+
+    try:
+        ref = git_ref_full(args.ref)
+        ref_short = git_ref_short(args.ref)
+        ref_time = git_ref_timestamp(args.ref)
+    except (RuntimeError, ValueError) as exc:
+        add(
+            checks,
+            "FAIL",
+            "git.ref",
+            f"Could not resolve target ref {args.ref!r}: {exc}",
+            "Fetch the correct branch/tag or pass --ref to an existing local ref.",
+        )
+        return checks
     if head == ref:
         add(checks, "PASS", "git.ref", f"HEAD matches {args.ref} ({ref_short}).")
     else:
