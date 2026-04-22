@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+import os
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
@@ -25,6 +28,97 @@ def test_image_staleness_compares_created_time_to_reference() -> None:
 
     assert prepare_for_demo.is_stale(image_created, merged_ref) is True
     assert prepare_for_demo.is_stale(merged_ref, image_created) is False
+
+
+def test_git_fetch_args_target_remote_tracking_ref() -> None:
+    assert prepare_for_demo.git_fetch_args_for_ref("origin/release/demo") == [
+        "git",
+        "fetch",
+        "--quiet",
+        "origin",
+        "release/demo:refs/remotes/origin/release/demo",
+    ]
+    assert prepare_for_demo.git_fetch_args_for_ref("v1.2.3") == [
+        "git",
+        "fetch",
+        "--quiet",
+        "origin",
+        "v1.2.3",
+    ]
+
+
+def test_configured_docker_bin_must_be_executable(tmp_path: Path) -> None:
+    docker_stub = tmp_path / "docker"
+    docker_stub.write_text("#!/bin/sh\n", encoding="utf-8")
+    docker_stub.chmod(0o644)
+
+    assert prepare_for_demo.configured_docker_error(
+        {"MCP_GEO_DOCKER_BIN": str(docker_stub)}
+    ) == f"MCP_GEO_DOCKER_BIN is not executable: {docker_stub}."
+    assert prepare_for_demo.find_docker({"MCP_GEO_DOCKER_BIN": str(docker_stub)}) is None
+
+    docker_stub.chmod(0o755)
+
+    assert (
+        prepare_for_demo.configured_docker_error({"MCP_GEO_DOCKER_BIN": str(docker_stub)})
+        is None
+    )
+    assert prepare_for_demo.find_docker({"MCP_GEO_DOCKER_BIN": str(docker_stub)}) == str(
+        docker_stub
+    )
+
+
+def test_configured_docker_bin_rejects_directory(tmp_path: Path) -> None:
+    assert prepare_for_demo.configured_docker_error(
+        {"MCP_GEO_DOCKER_BIN": str(tmp_path)}
+    ) == f"MCP_GEO_DOCKER_BIN points to a directory, not an executable: {tmp_path}."
+
+
+def test_image_ref_matching_preserves_tags_and_registry_ports() -> None:
+    assert prepare_for_demo.image_ref_matches("mcp-geo-server:demo", "mcp-geo-server:demo")
+    assert not prepare_for_demo.image_ref_matches(
+        "mcp-geo-server:old", "mcp-geo-server:demo"
+    )
+    assert prepare_for_demo.image_ref_matches(
+        "localhost:5000/mcp-geo-server:demo",
+        "localhost:5000/mcp-geo-server:demo",
+    )
+    assert not prepare_for_demo.image_ref_matches(
+        "localhost:5000/mcp-geo-server:old",
+        "localhost:5000/mcp-geo-server:demo",
+    )
+
+
+def test_running_app_containers_matches_requested_tag(monkeypatch: pytest.MonkeyPatch) -> None:
+    ps_rows = [
+        {"ID": "keep", "Image": "mcp-geo-server:demo", "Names": "demo", "Status": "Up"},
+        {"ID": "skip", "Image": "mcp-geo-server:old", "Names": "old", "Status": "Up"},
+    ]
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert check in {True, False}
+        assert env is None
+        if args == ["docker", "ps", "--format", "{{json .}}"]:
+            stdout = "\n".join(json.dumps(row) for row in ps_rows)
+            return prepare_for_demo.CommandResult(0, stdout, "")
+        if args[:3] == ["docker", "container", "inspect"]:
+            payload = {
+                "Image": f"sha256:{args[3]}",
+                "Created": "2026-04-22T12:00:00Z",
+            }
+            return prepare_for_demo.CommandResult(0, json.dumps(payload), "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+
+    containers = prepare_for_demo.running_app_containers("docker", "mcp-geo-server:demo")
+
+    assert [container["id"] for container in containers] == ["keep"]
 
 
 def test_render_checks_reports_failures_and_remediation() -> None:
@@ -54,3 +148,15 @@ def test_render_checks_reports_failures_and_remediation() -> None:
 def test_parse_timestamp_rejects_invalid_values(value: str) -> None:
     with pytest.raises(ValueError):
         prepare_for_demo.parse_timestamp(value)
+
+
+def test_run_returns_command_result_for_os_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(*_args: object, **_kwargs: object) -> object:
+        raise PermissionError("not executable")
+
+    monkeypatch.setattr(prepare_for_demo.subprocess, "run", fake_run)
+
+    result = prepare_for_demo._run([os.devnull, "info"], check=False)
+
+    assert result.returncode == 126
+    assert "not executable" in result.stderr

@@ -42,14 +42,19 @@ def _run(
     check: bool = True,
     env: dict[str, str] | None = None,
 ) -> CommandResult:
-    proc = subprocess.run(
-        args,
-        cwd=REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    try:
+        proc = subprocess.run(
+            args,
+            cwd=REPO_ROOT,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as exc:
+        if check:
+            raise RuntimeError(f"{' '.join(args)} failed: {exc}") from exc
+        return CommandResult(126, "", str(exc))
     if check and proc.returncode != 0:
         stderr = proc.stderr.strip()
         stdout = proc.stdout.strip()
@@ -94,14 +99,52 @@ def format_dt(value: datetime) -> str:
     return value.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def is_executable_file(path: str) -> bool:
+    candidate = Path(path)
+    return candidate.is_file() and os.access(candidate, os.X_OK)
+
+
+def configured_docker_error(env: dict[str, str]) -> str | None:
+    configured = env.get("MCP_GEO_DOCKER_BIN", "").strip()
+    if not configured:
+        return None
+
+    candidate = Path(configured)
+    if candidate.exists():
+        if candidate.is_dir():
+            return f"MCP_GEO_DOCKER_BIN points to a directory, not an executable: {configured}."
+        if not is_executable_file(configured):
+            return f"MCP_GEO_DOCKER_BIN is not executable: {configured}."
+        return None
+
+    if os.sep not in configured and shutil.which(configured):
+        return None
+    return f"MCP_GEO_DOCKER_BIN points to a missing path: {configured}."
+
+
 def find_docker(env: dict[str, str]) -> str | None:
     configured = env.get("MCP_GEO_DOCKER_BIN", "").strip()
-    if configured and Path(configured).exists():
-        return configured
+    if configured:
+        if Path(configured).exists() and is_executable_file(configured):
+            return configured
+        resolved = shutil.which(configured) if os.sep not in configured else None
+        if resolved:
+            return resolved
+        return None
     for candidate in ("/opt/homebrew/bin/docker", "/usr/local/bin/docker", "/usr/bin/docker"):
-        if Path(candidate).exists():
+        if is_executable_file(candidate):
             return candidate
     return shutil.which("docker")
+
+
+def git_fetch_args_for_ref(ref: str) -> list[str]:
+    if ref.startswith("origin/") and len(ref) > len("origin/"):
+        branch = ref.removeprefix("origin/")
+        return ["git", "fetch", "--quiet", "origin", f"{branch}:refs/remotes/origin/{branch}"]
+    if ref.startswith("refs/remotes/origin/") and len(ref) > len("refs/remotes/origin/"):
+        branch = ref.removeprefix("refs/remotes/origin/")
+        return ["git", "fetch", "--quiet", "origin", f"{branch}:refs/remotes/origin/{branch}"]
+    return ["git", "fetch", "--quiet", "origin", ref]
 
 
 def git_ref_timestamp(ref: str) -> datetime:
@@ -127,6 +170,18 @@ def image_info(docker_bin: str, image: str) -> tuple[str, datetime] | None:
     return str(payload["Id"]), parse_timestamp(str(payload["Created"]))
 
 
+def image_ref_variants(image: str) -> set[str]:
+    variants = {image}
+    image_name = image.rsplit("/", 1)[-1]
+    if "@" not in image and ":" not in image_name:
+        variants.add(f"{image}:latest")
+    return variants
+
+
+def image_ref_matches(container_image: str, target_image: str) -> bool:
+    return container_image in image_ref_variants(target_image)
+
+
 def running_app_containers(docker_bin: str, image: str) -> list[dict[str, Any]]:
     ps = _run([docker_bin, "ps", "--format", "{{json .}}"], check=False)
     if ps.returncode != 0:
@@ -136,7 +191,7 @@ def running_app_containers(docker_bin: str, image: str) -> list[dict[str, Any]]:
         if not line.strip():
             continue
         item = json.loads(line)
-        if str(item.get("Image", "")).split(":", 1)[0] != image:
+        if not image_ref_matches(str(item.get("Image", "")), image):
             continue
         container_id = str(item.get("ID", ""))
         inspect = _run(
@@ -194,15 +249,17 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
     env = dict(os.environ)
 
     if args.fetch:
-        fetch = _run(["git", "fetch", "--quiet", "origin", "main"], check=False)
+        fetch_args = git_fetch_args_for_ref(args.ref)
+        fetch = _run(fetch_args, check=False)
         if fetch.returncode == 0:
-            add(checks, "PASS", "git.fetch", "Fetched origin/main.")
+            add(checks, "PASS", "git.fetch", f"Fetched {args.ref} from origin.")
         else:
             add(
                 checks,
                 "WARN",
                 "git.fetch",
-                (fetch.stderr or fetch.stdout).strip() or "Could not fetch origin/main.",
+                (fetch.stderr or fetch.stdout).strip()
+                or f"Could not fetch {args.ref} from origin.",
                 "Check network/GitHub auth before relying on local remote state.",
             )
 
@@ -232,6 +289,16 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
             f"HEAD does not match {args.ref} ({ref_short}).",
             f"Run: git merge --ff-only {args.ref}",
         )
+
+    if docker_error := configured_docker_error(env):
+        add(
+            checks,
+            "FAIL",
+            "docker.available",
+            docker_error,
+            "Fix MCP_GEO_DOCKER_BIN or unset it to use Docker from PATH.",
+        )
+        return checks
 
     docker_bin = find_docker(env)
     if not docker_bin:
@@ -386,7 +453,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-fetch",
         dest="fetch",
         action="store_false",
-        help="Do not fetch origin/main.",
+        help="Do not fetch the target ref before checking it.",
     )
     parser.add_argument(
         "--rebuild",
