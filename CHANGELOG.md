@@ -289,6 +289,9 @@ All notable changes to this project will be documented in this file.
   still listed on the public LandIS website and separately licensed metadata
 
 ### Fixed
+- Fixed `os_mcp.route_query` area-profile responses so descriptor fallback
+  paths still include the area-summary workflow profile URI when a narrower
+  target level is rejected.
 - Fixed ONSUD/NSUL cache refresh for region-sharded UPRN ZIP archives. The
   refresh path now streams every compatible best-schema UPRN shard instead of
   ingesting a single tie-broken CSV member, preventing Claude-side

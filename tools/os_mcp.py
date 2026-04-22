@@ -2210,13 +2210,7 @@ def _route_query(payload: dict[str, Any]) -> ToolResult:
     tool, workflow, explanation = _get_tool_for_intent(intent, context)
     workflow_profile_uri = (
         AREA_SUMMARY_WORKFLOW_URI
-        if (
-            tool == "ons_geo.area_summary"
-            or (
-                intent == QueryIntent.AREA_PROFILE
-                and bool(context.get("area_profile_needs_level"))
-            )
-        )
+        if intent == QueryIntent.AREA_PROFILE
         else NOMIS_WORKFLOW_URI
         if (tool.startswith("nomis.") or bool(context.get("nomis_preferred")))
         else None
