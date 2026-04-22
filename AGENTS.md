@@ -22,7 +22,9 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 - `tests/`: Pytest suite (currently missing critical coverage—see gaps section).
 - `research/`: Research packs and design studies (see `research/ons_dataset_selection/`).
 - `.devcontainer/`: Development container configuration.
-- `CHANGELOG.md`: Unreleased section tracks epics.
+- `CHANGELOG.md`: Canonical release log. Parallel PRs may use branch-local
+  fragments as described in "Parallel Tracking Docs" below, then fold them into
+  the Unreleased section during integration.
 - `pyproject.toml`: Project metadata & dependencies.
 - `.env.example`: Example environment; currently only OS_API_KEY stub.
 
@@ -110,8 +112,36 @@ This document defines how agents (and humans) should work within the `mcp-geo` r
 ## Commits & PRs
 
 - Use Conventional Commits: `feat(server): implement os_places.by_postcode parsing`.
-- Each PR must: update `CHANGELOG.md`, add/adjust docs, include/adjust tests.
+- Each PR must: include release-note coverage, add/adjust docs, and include/adjust tests.
+  For parallel work, release-note coverage can be a branch-local changelog
+  fragment instead of a direct `CHANGELOG.md` edit.
 - Avoid bundling unrelated refactors with feature delivery.
+
+## Parallel Tracking Docs
+
+High-churn tracking docs (`CHANGELOG.md`, `PROGRESS.MD`, `CONTEXT.md`, and
+similar top-level status files) are shared integration surfaces. When several
+worktrees or PRs are active in parallel, avoid making every branch edit the same
+canonical section unless that branch is the integration branch.
+
+- For normal feature or bug-fix PRs, prefer a branch-local changelog fragment
+  such as `changelog.d/<date>-<short-branch-or-pr>.md` with only the final
+  `Added` / `Changed` / `Fixed` bullets for that branch. If the directory does
+  not exist yet, create it in the PR that first needs the pattern.
+- Edit `CHANGELOG.md` directly only for release preparation, integration
+  branches, single-branch work, or when the user explicitly asks for the
+  canonical changelog to be updated immediately.
+- For implementation progress, prefer a focused plan file under `Plans/` while
+  the work is in flight. Update `PROGRESS.MD` directly when the workstream is
+  repo-level, when the branch is about to merge, or when you have first synced
+  with current `main`.
+- Keep `CONTEXT.md` for durable decisions and active cross-branch facts. Do not
+  add transient per-branch status there unless other concurrent work needs to
+  know it before merge.
+- When merging a batch of parallel PRs, first update each branch from current
+  `main`, fold any `changelog.d/` fragments and completed plan status into the
+  canonical docs once, and preserve entries from all branches. Admin override
+  can bypass review gates, but it cannot safely bypass content conflicts.
 
 ## Release Process (Publish a Version)
 
