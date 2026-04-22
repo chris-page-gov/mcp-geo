@@ -289,6 +289,11 @@ All notable changes to this project will be documented in this file.
   still listed on the public LandIS website and separately licensed metadata
 
 ### Fixed
+- Fixed ONSUD/NSUL cache refresh for region-sharded UPRN ZIP archives. The
+  refresh path now streams every compatible best-schema UPRN shard instead of
+  ingesting a single tie-broken CSV member, preventing Claude-side
+  `ons_geo.by_uprn` lookups from returning `NOT_FOUND` for every region not
+  present in the one loaded shard after the cache is rebuilt.
 - Fixed sanitized tool-schema rewriting so top-level `oneOf` / `anyOf` /
   `allOf` flattening is now limited to the strict stdio transport. HTTP
   `/tools/describe` again preserves the full schema contract for alternate

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-13
+Last updated: 2026-04-15
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,17 @@ assumptions change.
 
 ## Current Focus
 
+- A 2026-04-15 ONS UPRN lookup incident is now fixed in the refresh code but
+  still requires cache rebuild before already-populated client caches are
+  healthy. Claude-side `ons_geo.by_uprn` calls for Welsh and non-Yorkshire
+  English UPRNs were returning `NOT_FOUND` because the ONSUD/NSUL source ZIPs
+  are region-sharded under `Data/`, while `scripts/ons_geo_cache_refresh.py`
+  selected only one best-scoring CSV member from each archive. The affected
+  local cache therefore held the `YH` shard only (`~3.6M` UPRNs) despite marking
+  ONSUD/NSUL as `ingested`. The patch streams every compatible UPRN archive
+  member for ONSUD and NSUL, with regressions covering `LN`, `WA`, and `YH`
+  shards. Existing `data/cache/ons_geo/ons_geo_cache.sqlite` files created
+  before this fix remain incomplete until the ONS geo cache refresh is rerun.
 - The 2026-04-13 unattended-eval remediation remains in progress. The
   canonical aggregate report at
   `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.{md,json}` still

@@ -2129,6 +2129,96 @@ def test_code_reference_annotation_flags_family_mismatch() -> None:
     assert normalized["geographies"]["lad"]["status"] == "family_mismatch"
 
 
+@pytest.mark.parametrize(("product_index", "dataset_id"), [(2, "ONSUD"), (3, "NSUL")])
+def test_ingest_uprn_product_zip_streams_all_data_shards(
+    tmp_path: Path,
+    product_index: int,
+    dataset_id: str,
+) -> None:
+    source_path = tmp_path / f"{dataset_id.lower()}_split.zip"
+    header = (
+        "UPRN,PCDS,LAD25CD,LAD25NM,OA21CD,LSOA21CD,MSOA21CD,WD25CD,"
+        "WD25NM,CTRY25CD,CTRY25NM,RGN25CD,RGN25NM,postal_delivery\n"
+    )
+    with zipfile.ZipFile(source_path, "w") as archive:
+        archive.writestr(
+            f"Data/{dataset_id}_DEC_2025_LN.csv",
+            header
+            + (
+                "100023336959,SW1A 2AH,E09000033,Westminster,E00023913,E01004734,"
+                "E02000977,E05013806,St James's,E92000001,England,E12000007,London,1\n"
+            ),
+        )
+        archive.writestr(
+            f"Data/{dataset_id}_DEC_2025_WA.csv",
+            header
+            + (
+                "100010542645,CF10 1EP,W06000015,Cardiff,W00009250,W01001898,"
+                "W02000383,W05000863,Cathays,W92000004,Wales,W99999999,Wales,1\n"
+            ),
+        )
+        archive.writestr(
+            f"Data/{dataset_id}_DEC_2025_YH.csv",
+            header
+            + (
+                "10000062102,HU9 3HS,E06000010,Kingston upon Hull,E00065069,"
+                "E01012896,E02002671,E05011542,Longhill & Bilton Grange,"
+                "E92000001,England,E12000003,Yorkshire and The Humber,1\n"
+            ),
+        )
+        archive.writestr(
+            "Documents/LAD names and codes.csv",
+            "GEOGRAPHY_CODE,GEOGRAPHY_NAME\nE09000033,Westminster\n",
+        )
+
+    payload = _base_manifest()
+    payload["products"][product_index]["resolver"] = _static_resolver(source_path)
+    dataset = refresh.load_manifest(_write_manifest(tmp_path, payload))[1][product_index]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+
+    try:
+        inserted, validation, key_field = refresh._ingest_main_dataset(
+            conn=conn,
+            dataset=dataset,
+            resolved=resolved,
+            max_rows=None,
+            code_references=refresh.CodeReferenceStore(),
+        )
+
+        rows = conn.execute(
+            """
+            SELECT key_norm
+            FROM ons_geo_rows
+            WHERE product_id = ?
+            ORDER BY key_norm
+            """,
+            (dataset_id,),
+        ).fetchall()
+        uprn_index_rows = conn.execute(
+            """
+            SELECT uprn, postcode, lad_code, ward_code
+            FROM ons_geo_uprn_index
+            WHERE product_id = ?
+            ORDER BY uprn
+            """,
+            (dataset_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert inserted == 3
+    assert key_field == "UPRN"
+    assert validation["requiredMissing"] == []
+    assert rows == [("10000062102",), ("100010542645",), ("100023336959",)]
+    assert uprn_index_rows == [
+        ("10000062102", "HU93HS", "E06000010", "E05011542"),
+        ("100010542645", "CF101EP", "W06000015", "W05000863"),
+        ("100023336959", "SW1A2AH", "E09000033", "E05013806"),
+    ]
+
+
 def test_ingest_main_dataset_rolls_back_after_batched_failure(
     monkeypatch,
     tmp_path: Path,

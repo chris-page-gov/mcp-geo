@@ -1605,23 +1605,32 @@ def _open_rows(
                 raise ValueError(
                     f"No CSV, JSON, or supported XLSX file found in zip archive: {path}"
                 )
-            chosen_member = _select_archive_member(
+            chosen_members = _select_archive_members(
                 archive=archive,
                 members=members,
                 dataset=dataset,
                 metadata_aliases=metadata_aliases or {},
             )
-            with archive.open(chosen_member, "r") as raw:
-                if chosen_member.lower().endswith(".xlsx"):
-                    with _rows_from_xlsx_stream(
-                        raw,
-                        name=chosen_member,
-                        dataset=dataset,
-                    ) as payload:
-                        yield payload
-                else:
-                    with _rows_from_binary_stream(raw, name=chosen_member) as payload:
-                        yield payload
+            with _archive_member_rows(
+                archive=archive,
+                member=chosen_members[0],
+                dataset=dataset,
+            ) as (_schema_rows, fieldnames):
+
+                def _iter_archive_rows() -> Iterator[dict[str, Any]]:
+                    for member in chosen_members:
+                        with _archive_member_rows(
+                            archive=archive,
+                            member=member,
+                            dataset=dataset,
+                        ) as (rows_iter, _member_fieldnames):
+                            yield from rows_iter
+
+                rows = _iter_archive_rows()
+                try:
+                    yield rows, fieldnames
+                finally:
+                    rows.close()
         return
     if path.suffix.lower() == ".xlsx":
         with path.open("rb") as stream:
@@ -1760,6 +1769,22 @@ def _rows_from_binary_stream(
 
 
 @contextmanager
+def _archive_member_rows(
+    *,
+    archive: zipfile.ZipFile,
+    member: str,
+    dataset: DatasetConfig | None,
+) -> Iterator[tuple[Iterator[dict[str, Any]], list[str]]]:
+    with archive.open(member, "r") as raw:
+        if member.lower().endswith(".xlsx"):
+            with _rows_from_xlsx_stream(raw, name=member, dataset=dataset) as payload:
+                yield payload
+        else:
+            with _rows_from_binary_stream(raw, name=member) as payload:
+                yield payload
+
+
+@contextmanager
 def _rows_from_bytes(
     content: bytes,
     *,
@@ -1807,29 +1832,28 @@ def _merged_fieldnames(
     return merged
 
 
-def _select_archive_member(
+def _select_archive_members(
     *,
     archive: zipfile.ZipFile,
     members: list[str],
     dataset: DatasetConfig | None,
     metadata_aliases: dict[str, str],
-) -> str:
+    allow_multi: bool | None = None,
+) -> list[str]:
     if dataset is None or len(members) == 1:
-        return members[0]
+        return [members[0]]
 
     scored_members: list[tuple[int, int, int, str]] = []
     for name in members:
-        with archive.open(name, "r") as raw:
-            if name.lower().endswith(".xlsx"):
-                payload_context = _rows_from_xlsx_stream(raw, name=name, dataset=dataset)
-            else:
-                payload_context = _rows_from_binary_stream(raw, name=name)
-            with payload_context as (_rows_iter, fieldnames):
-                _mapping, validation = _build_field_mapping(
-                    dataset,
-                    fieldnames=fieldnames,
-                    metadata_aliases=metadata_aliases,
-                )
+        with _archive_member_rows(archive=archive, member=name, dataset=dataset) as (
+            _rows_iter,
+            fieldnames,
+        ):
+            _mapping, validation = _build_field_mapping(
+                dataset,
+                fieldnames=fieldnames,
+                metadata_aliases=metadata_aliases,
+            )
         required_found = len(validation["requiredFound"])
         required_missing = len(validation["requiredMissing"])
         optional_found = len(validation["optionalFound"])
@@ -1838,7 +1862,17 @@ def _select_archive_member(
         )
 
     scored_members.sort(reverse=True)
-    return scored_members[0][3]
+    if allow_multi is None:
+        allow_multi = dataset.key_type == "uprn"
+    if not allow_multi:
+        return [scored_members[0][3]]
+
+    best_required, best_missing, best_optional, _best_name = scored_members[0]
+    return sorted(
+        name
+        for required, missing, optional, name in scored_members
+        if (required, missing, optional) == (best_required, best_missing, best_optional)
+    )
 
 
 def _collect_fieldnames(rows: Iterable[dict[str, Any]]) -> list[str]:
