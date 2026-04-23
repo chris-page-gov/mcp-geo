@@ -574,7 +574,7 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
             continue
         plan = wrapper_plan(wrapper)
         if "error" in plan:
-            add(checks, "WARN", f"wrapper.{client}", f"Plan check failed: {plan['error']}")
+            add(checks, "FAIL", f"wrapper.{client}", f"Plan check failed: {plan['error']}")
             continue
         add(
             checks,

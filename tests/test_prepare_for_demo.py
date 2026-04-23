@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 from argparse import Namespace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -29,6 +31,42 @@ def test_image_staleness_compares_created_time_to_reference() -> None:
 
     assert prepare_for_demo.is_stale(image_created, merged_ref) is True
     assert prepare_for_demo.is_stale(merged_ref, image_created) is False
+
+
+def test_entrypoint_uses_configured_python_311() -> None:
+    env = {**os.environ, "MCP_GEO_PYTHON_BIN": sys.executable}
+
+    result = subprocess.run(
+        [str(prepare_for_demo.REPO_ROOT / "scripts" / "prepare-for-demo"), "--help"],
+        cwd=prepare_for_demo.REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Check whether local MCP-Geo clients are ready" in result.stdout
+
+
+def test_entrypoint_rejects_old_python(tmp_path: Path) -> None:
+    python_stub = tmp_path / "python3"
+    python_stub.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    python_stub.chmod(0o755)
+    env = {**os.environ, "MCP_GEO_PYTHON_BIN": str(python_stub)}
+
+    result = subprocess.run(
+        [str(prepare_for_demo.REPO_ROOT / "scripts" / "prepare-for-demo"), "--help"],
+        cwd=prepare_for_demo.REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "requires Python >=3.11" in result.stderr
+    assert str(python_stub) in result.stderr
 
 
 def test_git_fetch_args_target_remote_tracking_ref() -> None:
@@ -394,6 +432,65 @@ def test_wrapper_plan_uses_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     assert seen["timeout"] == prepare_for_demo.WRAPPER_PLAN_TIMEOUT_SECONDS
     assert isinstance(seen["env"], dict)
     assert seen["env"]["MCP_GEO_DOCKER_PLAN_ONLY"] == "1"
+
+
+def test_run_checks_fails_when_wrapper_plan_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    ref_time = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
+    wrapper = tmp_path / "wrapper"
+    wrapper.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    wrapper.chmod(0o755)
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert env is None
+        assert timeout is None
+        if args == ["git", "status", "--porcelain"]:
+            assert check is True
+            return prepare_for_demo.CommandResult(0, "", "")
+        if args == ["docker", "info"]:
+            assert check is False
+            return prepare_for_demo.CommandResult(0, "", "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", lambda _ref: "same-sha")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_short", lambda _ref: "same")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_timestamp", lambda _ref: ref_time)
+    monkeypatch.setattr(prepare_for_demo, "configured_docker_error", lambda _env: None)
+    monkeypatch.setattr(prepare_for_demo, "find_docker", lambda _env: "docker")
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "image_info",
+        lambda _docker, _image: ("image-id", ref_time),
+    )
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "running_app_containers",
+        lambda _docker, _image: prepare_for_demo.ContainerScan([], None),
+    )
+    monkeypatch.setattr(prepare_for_demo, "APP_WRAPPERS", {"test": str(wrapper)})
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "wrapper_plan",
+        lambda _wrapper: {"error": "timed out after 15s"},
+    )
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=False, ref="HEAD", image="mcp-geo-server", rebuild=False)
+    )
+
+    wrapper_checks = [check for check in checks if check.name == "wrapper.test"]
+    assert wrapper_checks == [
+        prepare_for_demo.Check("FAIL", "wrapper.test", "Plan check failed: timed out after 15s")
+    ]
 
 
 def test_run_checks_reports_unresolved_ref(monkeypatch: pytest.MonkeyPatch) -> None:
