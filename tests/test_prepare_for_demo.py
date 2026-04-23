@@ -48,6 +48,41 @@ def test_git_fetch_args_target_remote_tracking_ref() -> None:
     ]
 
 
+def test_git_ref_helpers_peel_refs_to_commits(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[list[str]] = []
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert check is True
+        assert env is None
+        assert timeout is None
+        seen.append(args)
+        if args[:2] == ["git", "show"]:
+            return prepare_for_demo.CommandResult(0, "1776166330\n", "")
+        if "--short" in args:
+            return prepare_for_demo.CommandResult(0, "abc123\n", "")
+        return prepare_for_demo.CommandResult(0, "abc123full\n", "")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+
+    assert prepare_for_demo.git_ref_full("v1.0.0") == "abc123full"
+    assert prepare_for_demo.git_ref_short("v1.0.0") == "abc123"
+    assert prepare_for_demo.git_ref_timestamp("v1.0.0") == datetime.fromtimestamp(
+        1776166330,
+        tz=UTC,
+    )
+    assert seen == [
+        ["git", "rev-parse", "v1.0.0^{commit}"],
+        ["git", "rev-parse", "--short", "v1.0.0^{commit}"],
+        ["git", "show", "-s", "--format=%ct", "v1.0.0^{commit}"],
+    ]
+
+
 def test_configured_docker_bin_must_be_executable(tmp_path: Path) -> None:
     docker_stub = tmp_path / "docker"
     docker_stub.write_text("#!/bin/sh\n", encoding="utf-8")
@@ -119,9 +154,34 @@ def test_running_app_containers_matches_requested_tag(monkeypatch: pytest.Monkey
 
     monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
 
-    containers = prepare_for_demo.running_app_containers("docker", "mcp-geo-server:demo")
+    scan = prepare_for_demo.running_app_containers("docker", "mcp-geo-server:demo")
 
-    assert [container["id"] for container in containers] == ["keep"]
+    assert scan.error is None
+    assert [container["id"] for container in scan.containers] == ["keep"]
+
+
+def test_running_app_containers_surfaces_docker_ps_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert args == ["docker", "ps", "--format", "{{json .}}"]
+        assert check is False
+        assert env is None
+        assert timeout is None
+        return prepare_for_demo.CommandResult(1, "", "permission denied")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+
+    scan = prepare_for_demo.running_app_containers("docker", "mcp-geo-server")
+
+    assert scan.containers == []
+    assert scan.error == "permission denied"
 
 
 def test_render_checks_reports_failures_and_remediation() -> None:
@@ -244,3 +304,52 @@ def test_run_checks_reports_unresolved_ref(monkeypatch: pytest.MonkeyPatch) -> N
     assert checks[-1].name == "git.ref"
     assert "missing-ref" in checks[-1].detail
     assert not any(check.name.startswith("docker.") for check in checks)
+
+
+def test_run_checks_fails_when_docker_container_scan_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ref_time = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert env is None
+        assert timeout is None
+        if args == ["git", "status", "--porcelain"]:
+            assert check is True
+            return prepare_for_demo.CommandResult(0, "", "")
+        if args == ["docker", "info"]:
+            assert check is False
+            return prepare_for_demo.CommandResult(0, "", "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", lambda _ref: "same-sha")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_short", lambda _ref: "same")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_timestamp", lambda _ref: ref_time)
+    monkeypatch.setattr(prepare_for_demo, "configured_docker_error", lambda _env: None)
+    monkeypatch.setattr(prepare_for_demo, "find_docker", lambda _env: "docker")
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "image_info",
+        lambda _docker, _image: ("image-id", ref_time),
+    )
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "running_app_containers",
+        lambda _docker, _image: prepare_for_demo.ContainerScan([], "permission denied"),
+    )
+    monkeypatch.setattr(prepare_for_demo, "APP_WRAPPERS", {})
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=False, ref="HEAD", image="mcp-geo-server", rebuild=False)
+    )
+
+    container_checks = [check for check in checks if check.name == "docker.containers"]
+    assert [check.level for check in container_checks] == ["FAIL"]
+    assert "permission denied" in container_checks[0].detail

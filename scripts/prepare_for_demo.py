@@ -37,6 +37,12 @@ class CommandResult:
     stderr: str
 
 
+@dataclass
+class ContainerScan:
+    containers: list[dict[str, Any]]
+    error: str | None = None
+
+
 def _command_text(value: str | bytes | None) -> str:
     if value is None:
         return ""
@@ -80,6 +86,10 @@ def _run(
         detail = stderr or stdout or f"exit code {proc.returncode}"
         raise RuntimeError(f"{' '.join(args)} failed: {detail}")
     return CommandResult(proc.returncode, proc.stdout, proc.stderr)
+
+
+def command_failure_detail(result: CommandResult, fallback: str) -> str:
+    return result.stderr.strip() or result.stdout.strip() or fallback
 
 
 def parse_timestamp(value: str) -> datetime:
@@ -166,16 +176,22 @@ def git_fetch_args_for_ref(ref: str) -> list[str]:
     return ["git", "fetch", "--quiet", "origin", ref]
 
 
+def git_commit_ref(ref: str) -> str:
+    return f"{ref}^{{commit}}"
+
+
 def git_ref_timestamp(ref: str) -> datetime:
-    return parse_timestamp(_run(["git", "show", "-s", "--format=%ct", ref]).stdout)
+    return parse_timestamp(
+        _run(["git", "show", "-s", "--format=%ct", git_commit_ref(ref)]).stdout
+    )
 
 
 def git_ref_short(ref: str) -> str:
-    return _run(["git", "rev-parse", "--short", ref]).stdout.strip()
+    return _run(["git", "rev-parse", "--short", git_commit_ref(ref)]).stdout.strip()
 
 
 def git_ref_full(ref: str) -> str:
-    return _run(["git", "rev-parse", ref]).stdout.strip()
+    return _run(["git", "rev-parse", git_commit_ref(ref)]).stdout.strip()
 
 
 def image_info(docker_bin: str, image: str) -> tuple[str, datetime] | None:
@@ -201,15 +217,23 @@ def image_ref_matches(container_image: str, target_image: str) -> bool:
     return container_image in image_ref_variants(target_image)
 
 
-def running_app_containers(docker_bin: str, image: str) -> list[dict[str, Any]]:
+def running_app_containers(docker_bin: str, image: str) -> ContainerScan:
     ps = _run([docker_bin, "ps", "--format", "{{json .}}"], check=False)
     if ps.returncode != 0:
-        return []
+        return ContainerScan(
+            [],
+            command_failure_detail(ps, "docker ps failed."),
+        )
     rows: list[dict[str, Any]] = []
+    errors: list[str] = []
     for line in ps.stdout.splitlines():
         if not line.strip():
             continue
-        item = json.loads(line)
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError as exc:
+            errors.append(f"could not parse docker ps output: {exc}")
+            continue
         if not image_ref_matches(str(item.get("Image", "")), image):
             continue
         container_id = str(item.get("ID", ""))
@@ -218,8 +242,16 @@ def running_app_containers(docker_bin: str, image: str) -> list[dict[str, Any]]:
             check=False,
         )
         if inspect.returncode != 0 or not inspect.stdout.strip():
+            errors.append(
+                f"could not inspect container {container_id}: "
+                f"{command_failure_detail(inspect, 'docker container inspect failed.')}"
+            )
             continue
-        payload = json.loads(inspect.stdout)
+        try:
+            payload = json.loads(inspect.stdout)
+        except json.JSONDecodeError as exc:
+            errors.append(f"could not parse inspect output for container {container_id}: {exc}")
+            continue
         rows.append(
             {
                 "id": container_id,
@@ -229,7 +261,7 @@ def running_app_containers(docker_bin: str, image: str) -> list[dict[str, Any]]:
                 "created": parse_timestamp(str(payload.get("Created", ""))),
             }
         )
-    return rows
+    return ContainerScan(rows, "; ".join(errors) or None)
 
 
 def wrapper_plan(wrapper: Path) -> dict[str, str]:
@@ -404,8 +436,18 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
                 ),
             )
 
-    containers = running_app_containers(docker_bin, args.image)
-    if not containers:
+    container_scan = running_app_containers(docker_bin, args.image)
+    if container_scan.error:
+        add(
+            checks,
+            "FAIL",
+            "docker.containers",
+            f"Could not fully inspect running {args.image} app containers: {container_scan.error}",
+            "Fix Docker permissions/API access before relying on container readiness.",
+        )
+
+    containers = container_scan.containers
+    if not containers and not container_scan.error:
         add(checks, "PASS", "docker.containers", f"No running {args.image} app containers.")
     else:
         for container in containers:
