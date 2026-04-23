@@ -43,6 +43,12 @@ class ContainerScan:
     error: str | None = None
 
 
+@dataclass
+class FetchAttempt:
+    args: list[str]
+    target_ref: str
+
+
 def _command_text(value: str | bytes | None) -> str:
     if value is None:
         return ""
@@ -170,13 +176,59 @@ def find_docker(env: dict[str, str]) -> str | None:
 
 
 def git_fetch_args_for_ref(ref: str) -> list[str]:
+    return git_fetch_attempts_for_ref(ref)[0].args
+
+
+def _branch_fetch_attempt(branch: str) -> FetchAttempt:
+    return FetchAttempt(
+        [
+            "git",
+            "fetch",
+            "--quiet",
+            "origin",
+            f"+refs/heads/{branch}:refs/remotes/origin/{branch}",
+        ],
+        f"origin/{branch}",
+    )
+
+
+def _tag_fetch_attempt(tag: str) -> FetchAttempt:
+    return FetchAttempt(
+        ["git", "fetch", "--quiet", "origin", f"+refs/tags/{tag}:refs/tags/{tag}"],
+        f"refs/tags/{tag}",
+    )
+
+
+def git_fetch_attempts_for_ref(ref: str) -> list[FetchAttempt]:
     if ref.startswith("origin/") and len(ref) > len("origin/"):
         branch = ref.removeprefix("origin/")
-        return ["git", "fetch", "--quiet", "origin", f"{branch}:refs/remotes/origin/{branch}"]
+        return [_branch_fetch_attempt(branch)]
     if ref.startswith("refs/remotes/origin/") and len(ref) > len("refs/remotes/origin/"):
         branch = ref.removeprefix("refs/remotes/origin/")
-        return ["git", "fetch", "--quiet", "origin", f"{branch}:refs/remotes/origin/{branch}"]
-    return ["git", "fetch", "--quiet", "origin", ref]
+        return [_branch_fetch_attempt(branch)]
+    if ref.startswith("refs/heads/") and len(ref) > len("refs/heads/"):
+        branch = ref.removeprefix("refs/heads/")
+        return [_branch_fetch_attempt(branch)]
+    if ref.startswith("refs/tags/") and len(ref) > len("refs/tags/"):
+        tag = ref.removeprefix("refs/tags/")
+        return [_tag_fetch_attempt(tag)]
+    if ref.startswith("refs/"):
+        return [FetchAttempt(["git", "fetch", "--quiet", "origin", ref], ref)]
+    if ref:
+        return [_branch_fetch_attempt(ref), _tag_fetch_attempt(ref)]
+    return [FetchAttempt(["git", "fetch", "--quiet", "origin", ref], ref)]
+
+
+def git_fetch_ref(ref: str) -> tuple[CommandResult, str]:
+    errors: list[str] = []
+    attempts = git_fetch_attempts_for_ref(ref)
+    for attempt in attempts:
+        result = _run(attempt.args, check=False)
+        if result.returncode == 0:
+            return result, attempt.target_ref
+        errors.append(command_failure_detail(result, "fetch failed."))
+    detail = "\n".join(errors) or f"Could not fetch {ref} from origin."
+    return CommandResult(1, "", detail), ref
 
 
 def git_commit_ref(ref: str) -> str:
@@ -312,12 +364,12 @@ def build_image(docker_bin: str, image: str) -> CommandResult:
 def run_checks(args: argparse.Namespace) -> list[Check]:
     checks: list[Check] = []
     env = dict(os.environ)
+    target_ref = args.ref
 
     if args.fetch:
-        fetch_args = git_fetch_args_for_ref(args.ref)
-        fetch = _run(fetch_args, check=False)
+        fetch, target_ref = git_fetch_ref(args.ref)
         if fetch.returncode == 0:
-            add(checks, "PASS", "git.fetch", f"Fetched {args.ref} from origin.")
+            add(checks, "PASS", "git.fetch", f"Fetched {target_ref} from origin.")
         else:
             add(
                 checks,
@@ -353,9 +405,9 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
         return checks
 
     try:
-        ref = git_ref_full(args.ref)
-        ref_short = git_ref_short(args.ref)
-        ref_time = git_ref_timestamp(args.ref)
+        ref = git_ref_full(target_ref)
+        ref_short = git_ref_short(target_ref)
+        ref_time = git_ref_timestamp(target_ref)
     except (RuntimeError, ValueError) as exc:
         add(
             checks,
@@ -366,14 +418,14 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
         )
         return checks
     if head == ref:
-        add(checks, "PASS", "git.ref", f"HEAD matches {args.ref} ({ref_short}).")
+        add(checks, "PASS", "git.ref", f"HEAD matches {target_ref} ({ref_short}).")
     else:
         add(
             checks,
             "FAIL",
             "git.ref",
-            f"HEAD does not match {args.ref} ({ref_short}).",
-            f"Run: git merge --ff-only {args.ref}",
+            f"HEAD does not match {target_ref} ({ref_short}).",
+            f"Run: git merge --ff-only {target_ref}",
         )
 
     if docker_error := configured_docker_error(env):
@@ -439,7 +491,7 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
                 "docker.image",
                 (
                     f"Image {args.image!r} was created {format_dt(created)}, before "
-                    f"{args.ref} ({ref_short}) at {format_dt(ref_time)}."
+                    f"{target_ref} ({ref_short}) at {format_dt(ref_time)}."
                 ),
                 f"Run: docker build -t {args.image} {REPO_ROOT}",
             )
@@ -450,7 +502,7 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
                 "docker.image",
                 (
                     f"Image {args.image!r} was created {format_dt(created)}, after "
-                    f"{args.ref} ({ref_short}) at {format_dt(ref_time)}."
+                    f"{target_ref} ({ref_short}) at {format_dt(ref_time)}."
                 ),
             )
 
@@ -474,7 +526,7 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
             if image_id and container["image_id"] != image_id:
                 stale_reasons.append("it uses an older image id")
             if is_stale(created, ref_time):
-                stale_reasons.append(f"it was created {format_dt(created)} before {args.ref}")
+                stale_reasons.append(f"it was created {format_dt(created)} before {target_ref}")
             if stale_reasons:
                 add(
                     checks,

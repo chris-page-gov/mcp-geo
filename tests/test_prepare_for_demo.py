@@ -37,14 +37,85 @@ def test_git_fetch_args_target_remote_tracking_ref() -> None:
         "fetch",
         "--quiet",
         "origin",
-        "release/demo:refs/remotes/origin/release/demo",
+        "+refs/heads/release/demo:refs/remotes/origin/release/demo",
     ]
     assert prepare_for_demo.git_fetch_args_for_ref("v1.2.3") == [
         "git",
         "fetch",
         "--quiet",
         "origin",
-        "v1.2.3",
+        "+refs/heads/v1.2.3:refs/remotes/origin/v1.2.3",
+    ]
+
+
+def test_git_fetch_ref_resolves_unqualified_branch_to_remote_tracking(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: list[list[str]] = []
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert check is False
+        assert env is None
+        assert timeout is None
+        seen.append(args)
+        return prepare_for_demo.CommandResult(0, "", "")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+
+    result, target_ref = prepare_for_demo.git_fetch_ref("release/demo")
+
+    assert result.returncode == 0
+    assert target_ref == "origin/release/demo"
+    assert seen == [
+        [
+            "git",
+            "fetch",
+            "--quiet",
+            "origin",
+            "+refs/heads/release/demo:refs/remotes/origin/release/demo",
+        ],
+    ]
+
+
+def test_git_fetch_ref_falls_back_to_tag_ref(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[list[str]] = []
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert check is False
+        assert env is None
+        assert timeout is None
+        seen.append(args)
+        if "refs/heads/v1.2.3" in args[-1]:
+            return prepare_for_demo.CommandResult(128, "", "branch not found")
+        return prepare_for_demo.CommandResult(0, "", "")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+
+    result, target_ref = prepare_for_demo.git_fetch_ref("v1.2.3")
+
+    assert result.returncode == 0
+    assert target_ref == "refs/tags/v1.2.3"
+    assert seen == [
+        [
+            "git",
+            "fetch",
+            "--quiet",
+            "origin",
+            "+refs/heads/v1.2.3:refs/remotes/origin/v1.2.3",
+        ],
+        ["git", "fetch", "--quiet", "origin", "+refs/tags/v1.2.3:refs/tags/v1.2.3"],
     ]
 
 
@@ -317,6 +388,66 @@ def test_run_checks_reports_unresolved_ref(monkeypatch: pytest.MonkeyPatch) -> N
     assert checks[-1].name == "git.ref"
     assert "missing-ref" in checks[-1].detail
     assert not any(check.name.startswith("docker.") for check in checks)
+
+
+def test_run_checks_resolves_successfully_fetched_branch_target(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ref_time = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
+    resolved_refs: list[str] = []
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert env is None
+        assert timeout is None
+        if args == ["git", "status", "--porcelain"]:
+            assert check is True
+            return prepare_for_demo.CommandResult(0, "", "")
+        if args == ["docker", "info"]:
+            assert check is False
+            return prepare_for_demo.CommandResult(0, "", "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    def fake_ref_full(ref: str) -> str:
+        resolved_refs.append(ref)
+        return "same-sha"
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "git_fetch_ref",
+        lambda _ref: (prepare_for_demo.CommandResult(0, "", ""), "origin/release/demo"),
+    )
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", fake_ref_full)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_short", lambda _ref: "same")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_timestamp", lambda _ref: ref_time)
+    monkeypatch.setattr(prepare_for_demo, "configured_docker_error", lambda _env: None)
+    monkeypatch.setattr(prepare_for_demo, "find_docker", lambda _env: "docker")
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "image_info",
+        lambda _docker, _image: ("image-id", ref_time),
+    )
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "running_app_containers",
+        lambda _docker, _image: prepare_for_demo.ContainerScan([], None),
+    )
+    monkeypatch.setattr(prepare_for_demo, "APP_WRAPPERS", {})
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=True, ref="release/demo", image="mcp-geo-server", rebuild=False)
+    )
+
+    assert resolved_refs == ["HEAD", "origin/release/demo"]
+    assert any(
+        check.name == "git.ref" and "origin/release/demo" in check.detail for check in checks
+    )
 
 
 def test_run_checks_fails_when_docker_container_scan_fails(
