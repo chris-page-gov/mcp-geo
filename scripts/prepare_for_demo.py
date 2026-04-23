@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -20,6 +21,7 @@ APP_WRAPPERS = {
     "codex": "scripts/codex-mcp-local",
     "gemini": "scripts/gemini-mcp-local",
 }
+SHA_REF_RE = re.compile(r"[0-9a-fA-F]{7,40}")
 
 
 @dataclass
@@ -219,7 +221,24 @@ def git_fetch_attempts_for_ref(ref: str) -> list[FetchAttempt]:
     return [FetchAttempt(["git", "fetch", "--quiet", "origin", ref], ref)]
 
 
+def is_clearly_local_ref(ref: str) -> bool:
+    if ref in {"HEAD", "@"}:
+        return True
+    if ref.startswith(("HEAD~", "HEAD^", "@~", "@^")):
+        return True
+    if not SHA_REF_RE.fullmatch(ref):
+        return False
+    try:
+        git_ref_full(ref)
+    except RuntimeError:
+        return False
+    return True
+
+
 def git_fetch_ref(ref: str) -> tuple[CommandResult, str]:
+    if is_clearly_local_ref(ref):
+        return CommandResult(0, f"Using local ref {ref}; fetch skipped.", ""), ref
+
     errors: list[str] = []
     attempts = git_fetch_attempts_for_ref(ref)
     for attempt in attempts:
@@ -369,7 +388,8 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
     if args.fetch:
         fetch, target_ref = git_fetch_ref(args.ref)
         if fetch.returncode == 0:
-            add(checks, "PASS", "git.fetch", f"Fetched {target_ref} from origin.")
+            detail = fetch.stdout.strip() or f"Fetched {target_ref} from origin."
+            add(checks, "PASS", "git.fetch", detail)
         else:
             add(
                 checks,

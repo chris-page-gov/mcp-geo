@@ -119,6 +119,45 @@ def test_git_fetch_ref_falls_back_to_tag_ref(monkeypatch: pytest.MonkeyPatch) ->
     ]
 
 
+def test_git_fetch_ref_skips_fetch_for_head(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unexpected_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        raise AssertionError(f"Unexpected fetch command for local ref: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", unexpected_run)
+
+    result, target_ref = prepare_for_demo.git_fetch_ref("HEAD")
+
+    assert result.returncode == 0
+    assert result.stdout == "Using local ref HEAD; fetch skipped."
+    assert target_ref == "HEAD"
+
+
+def test_git_fetch_ref_skips_fetch_for_local_sha(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unexpected_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        raise AssertionError(f"Unexpected fetch command for local SHA: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", unexpected_run)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", lambda _ref: "a" * 40)
+
+    result, target_ref = prepare_for_demo.git_fetch_ref("abc1234")
+
+    assert result.returncode == 0
+    assert result.stdout == "Using local ref abc1234; fetch skipped."
+    assert target_ref == "abc1234"
+
+
 def test_git_ref_helpers_peel_refs_to_commits(monkeypatch: pytest.MonkeyPatch) -> None:
     seen: list[list[str]] = []
 
@@ -413,6 +452,58 @@ def test_run_checks_blocks_on_fetch_failure(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert [(check.level, check.name) for check in checks] == [("FAIL", "git.fetch")]
     assert checks[0].detail == "auth failed"
+
+
+def test_run_checks_continues_after_local_ref_fetch_skip(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ref_time = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert env is None
+        assert timeout is None
+        if args == ["git", "status", "--porcelain"]:
+            assert check is True
+            return prepare_for_demo.CommandResult(0, "", "")
+        if args == ["docker", "info"]:
+            assert check is False
+            return prepare_for_demo.CommandResult(0, "", "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", lambda _ref: "same-sha")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_short", lambda _ref: "same")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_timestamp", lambda _ref: ref_time)
+    monkeypatch.setattr(prepare_for_demo, "configured_docker_error", lambda _env: None)
+    monkeypatch.setattr(prepare_for_demo, "find_docker", lambda _env: "docker")
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "image_info",
+        lambda _docker, _image: ("image-id", ref_time),
+    )
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "running_app_containers",
+        lambda _docker, _image: prepare_for_demo.ContainerScan([], None),
+    )
+    monkeypatch.setattr(prepare_for_demo, "APP_WRAPPERS", {})
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=True, ref="HEAD", image="mcp-geo-server", rebuild=False)
+    )
+
+    assert checks[0] == prepare_for_demo.Check(
+        "PASS",
+        "git.fetch",
+        "Using local ref HEAD; fetch skipped.",
+    )
+    assert any(check.name == "git.ref" and check.level == "PASS" for check in checks)
 
 
 def test_run_checks_resolves_successfully_fetched_branch_target(
