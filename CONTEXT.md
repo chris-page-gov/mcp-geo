@@ -52,8 +52,11 @@ assumptions change.
 
 ## Current Focus
 
-- Release `v0.8.0` pins the 2026-04-23 stable pre-strategy-review baseline. It
-  freezes current `main` after the LandIS phase-2,
+- Release `v0.8.1` is the current 2026-04-23 package release. It preserves the
+  `v0.8.0` stable pre-strategy-review baseline and adds the package-content fix
+  needed for installed wheels to include nested server modules, audit schemas,
+  static resources, UI assets, and typed tool metadata. The baseline freezes
+  current `main` after the LandIS phase-2,
   AddressBase/Council Tax, ONS geography, task-shaped OS map export,
   unattended multi-client evaluation, and OS NGD Spring 2026 work. Validation
   passed via `./scripts/ruff-local` and `./scripts/pytest-local -q` (`1585

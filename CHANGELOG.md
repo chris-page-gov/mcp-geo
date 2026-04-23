@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-04-23
+
 ### Fixed
 - Fixed published package contents so installed wheels include nested server
   modules, audit schemas, static resources, UI assets, and typed tool metadata
