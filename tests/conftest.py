@@ -1,8 +1,11 @@
+from collections.abc import Callable
+from typing import Any
+
 import pytest
 from fastapi.testclient import TestClient
 
 from server.main import app
-from typing import Any, Callable
+
 
 @pytest.fixture
 def mock_os_client(monkeypatch):
@@ -41,3 +44,16 @@ def reset_rate_limit_state(monkeypatch):
     monkeypatch.setattr(settings, "RATE_LIMIT_BYPASS", False, raising=False)
     with main._rate_lock:
         main._rate_counters.clear()
+
+
+@pytest.fixture(autouse=True)
+def reset_default_toolset_config(monkeypatch):
+    from server.config import settings
+
+    for name in (
+        "MCP_TOOLS_DEFAULT_TOOLSET",
+        "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS",
+        "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS",
+    ):
+        monkeypatch.delenv(name, raising=False)
+        monkeypatch.setattr(settings, name, "", raising=False)
