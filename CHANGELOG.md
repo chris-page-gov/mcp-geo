@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-04-23
+
 ### Added
+- Added OS NGD Spring 2026 compatibility for GB Postcode Unit Area/Point, Bus
+  Lane, and Cycle Lane feature layers across collection aliases, map inventory,
+  rendered overlays, and the layers catalog.
+- Added optional OS API auth modes for documented key-header and bearer-token
+  request carriers while keeping query-string API key auth as the default.
+- Added opt-in live OS NGD Spring 2026 integration tests covering collection
+  discovery, existing/new collection item queries, and key-header auth.
 - Added the checked-in unattended multi-client remediation implementation plan
   at `Plans/PLAN-Unattended-multiclient-eval-remediation.md`, plus lockstep
   tracking updates in `CONTEXT.md` and `PROGRESS.MD` so the repo records the

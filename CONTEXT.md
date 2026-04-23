@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-15
+Last updated: 2026-04-23
 Owner: @chris-page-gov
 
 ## Purpose
@@ -30,9 +30,9 @@ assumptions change.
 - Quick guidance: use `03_architecture.md`/`04_system_design.md` for system understanding,
   `06_api_contracts.md` for interface details, `10_mcp_apps_ui.md` for UI behaviors, and
   `12_backlog_and_plan.md` for delivery sequencing.
-- Current scope snapshot: HTTP and STDIO MCP server; OS Places/Names/NGD/linked IDs/maps/
-  admin lookup/ONS/NOMIS/Council Tax pilot tools; boundary cache pipeline; MCP-Apps UI
-  resources via `ui://`.
+- Current scope snapshot: HTTP and STDIO MCP server; OS Places/Names/NGD/linked IDs/maps,
+  admin lookup, ONS/NOMIS, Council Tax/AddressBase, and LandIS tools; boundary
+  cache pipeline; MCP-Apps UI resources via `ui://`.
 
 ## Codex Usage (Mac App + Devcontainer)
 
@@ -52,6 +52,14 @@ assumptions change.
 
 ## Current Focus
 
+- Release `v0.8.0` pins the 2026-04-23 stable pre-strategy-review baseline. It
+  freezes current `main` after the LandIS phase-2,
+  AddressBase/Council Tax, ONS geography, task-shaped OS map export,
+  unattended multi-client evaluation, and OS NGD Spring 2026 work. Validation
+  passed via `./scripts/ruff-local` and `./scripts/pytest-local -q` (`1585
+  passed`, `10 skipped`, coverage `90.50%`). Known caveats remain: pre-fix ONS
+  UPRN caches need rebuild, and the VS Code unattended cleanup remediation
+  still needs one fresh live rerun before closure.
 - A 2026-04-15 ONS UPRN lookup incident is now fixed in the refresh code but
   still requires cache rebuild before already-populated client caches are
   healthy. Claude-side `ons_geo.by_uprn` calls for Welsh and non-Yorkshire

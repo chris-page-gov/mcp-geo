@@ -3,7 +3,18 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-15
+Last updated: 2026-04-23
+
+## Release 0.8.0 (2026-04-23)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| REL80-SCOPE-1 Stable strategy baseline | done | none | Release `0.8.0` pins current `main` before the strategy review / possible larger direction change. The scope includes all merged work since `v0.7.0`: LandIS MVP/phase-2 surfaces, Council Tax and AddressBase Parquet runtime support, ONS source/cache hardening, task-shaped OS map exports, unattended multi-client evaluation tooling/evidence, wrapper/security hardening, and OS NGD Spring 2026 compatibility. |
+| REL80-PKG-2 Version, changelog, and release notes | done | REL80-SCOPE-1 | Bumped package/runtime version markers to `0.8.0`, promoted accumulated `CHANGELOG.md` `Unreleased` content into `## [0.8.0] - 2026-04-23`, folded the OS NGD Spring 2026 changelog fragment, and added `RELEASE_NOTES/0.8.0.md`. |
+| REL80-VAL-3 Regression validation gate | done | REL80-PKG-2 | Release-gate validation passed via `./scripts/ruff-local` and `./scripts/pytest-local -q` (`1585 passed`, `10 skipped`, coverage `90.50%`). |
+| REL80-PUB-4 Commit and tag | done | REL80-VAL-3 | Release `0.8.0` is packaged for publication on current `main`; tag `v0.8.0` points at the release commit so future strategy work can pin this stable baseline. |
 
 ## ONS UPRN multi-shard ZIP ingest fix (2026-04-15)
 
