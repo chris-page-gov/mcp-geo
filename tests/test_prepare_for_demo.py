@@ -125,6 +125,19 @@ def test_image_ref_matching_preserves_tags_and_registry_ports() -> None:
     )
 
 
+def test_image_ref_matching_treats_latest_and_untagged_as_equivalent() -> None:
+    assert prepare_for_demo.image_ref_matches("mcp-geo-server", "mcp-geo-server:latest")
+    assert prepare_for_demo.image_ref_matches("mcp-geo-server:latest", "mcp-geo-server")
+    assert prepare_for_demo.image_ref_matches(
+        "localhost:5000/mcp-geo-server",
+        "localhost:5000/mcp-geo-server:latest",
+    )
+    assert prepare_for_demo.image_ref_matches(
+        "localhost:5000/mcp-geo-server:latest",
+        "localhost:5000/mcp-geo-server",
+    )
+
+
 def test_running_app_containers_matches_requested_tag(monkeypatch: pytest.MonkeyPatch) -> None:
     ps_rows = [
         {"ID": "keep", "Image": "mcp-geo-server:demo", "Names": "demo", "Status": "Up"},
@@ -353,3 +366,53 @@ def test_run_checks_fails_when_docker_container_scan_fails(
     container_checks = [check for check in checks if check.name == "docker.containers"]
     assert [check.level for check in container_checks] == ["FAIL"]
     assert "permission denied" in container_checks[0].detail
+
+
+def test_run_checks_reports_docker_rebuild_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ref_time = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
+
+    def fake_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        assert env is None
+        assert timeout is None
+        if args == ["git", "status", "--porcelain"]:
+            assert check is True
+            return prepare_for_demo.CommandResult(0, "", "")
+        if args == ["docker", "info"]:
+            assert check is False
+            return prepare_for_demo.CommandResult(0, "", "")
+        raise AssertionError(f"Unexpected command: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", fake_run)
+    monkeypatch.setattr(prepare_for_demo, "git_ref_full", lambda _ref: "same-sha")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_short", lambda _ref: "same")
+    monkeypatch.setattr(prepare_for_demo, "git_ref_timestamp", lambda _ref: ref_time)
+    monkeypatch.setattr(prepare_for_demo, "configured_docker_error", lambda _env: None)
+    monkeypatch.setattr(prepare_for_demo, "find_docker", lambda _env: "docker")
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "build_image",
+        lambda _docker, _image: prepare_for_demo.CommandResult(1, "", "build failed"),
+    )
+    monkeypatch.setattr(prepare_for_demo, "image_info", lambda _docker, _image: None)
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "running_app_containers",
+        lambda _docker, _image: prepare_for_demo.ContainerScan([], None),
+    )
+    monkeypatch.setattr(prepare_for_demo, "APP_WRAPPERS", {})
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=False, ref="HEAD", image="mcp-geo-server", rebuild=True)
+    )
+
+    rebuild_checks = [check for check in checks if check.name == "docker.image.rebuild"]
+    assert [check.level for check in rebuild_checks] == ["INFO", "FAIL"]
+    assert "build failed" in rebuild_checks[1].detail

@@ -89,7 +89,10 @@ def _run(
 
 
 def command_failure_detail(result: CommandResult, fallback: str) -> str:
-    return result.stderr.strip() or result.stdout.strip() or fallback
+    detail = result.stderr.strip() or result.stdout.strip() or fallback
+    if len(detail) > 500:
+        return f"{detail[:497]}..."
+    return detail
 
 
 def parse_timestamp(value: str) -> datetime:
@@ -208,8 +211,14 @@ def image_info(docker_bin: str, image: str) -> tuple[str, datetime] | None:
 def image_ref_variants(image: str) -> set[str]:
     variants = {image}
     image_name = image.rsplit("/", 1)[-1]
-    if "@" not in image and ":" not in image_name:
+    if "@" in image:
+        return variants
+    if ":" not in image_name:
         variants.add(f"{image}:latest")
+    elif image_name.endswith(":latest"):
+        prefix, separator, _ = image.rpartition("/")
+        untagged_name = image_name.removesuffix(":latest")
+        variants.add(f"{prefix}{separator}{untagged_name}" if separator else untagged_name)
     return variants
 
 
@@ -296,8 +305,8 @@ def add(
     checks.append(Check(level, name, detail, remediation))
 
 
-def build_image(docker_bin: str, image: str) -> None:
-    subprocess.run([docker_bin, "build", "-t", image, str(REPO_ROOT)], cwd=REPO_ROOT, check=True)
+def build_image(docker_bin: str, image: str) -> CommandResult:
+    return _run([docker_bin, "build", "-t", image, str(REPO_ROOT)], check=False)
 
 
 def run_checks(args: argparse.Namespace) -> list[Check]:
@@ -400,7 +409,16 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
 
     if args.rebuild:
         add(checks, "INFO", "docker.image.rebuild", f"Rebuilding {args.image}.")
-        build_image(docker_bin, args.image)
+        rebuild = build_image(docker_bin, args.image)
+        if rebuild.returncode != 0:
+            detail = command_failure_detail(rebuild, "build failed.")
+            add(
+                checks,
+                "FAIL",
+                "docker.image.rebuild",
+                f"Could not rebuild {args.image}: {detail}",
+                f"Run manually: docker build -t {args.image} {REPO_ROOT}",
+            )
 
     current_image = image_info(docker_bin, args.image)
     if current_image is None:
