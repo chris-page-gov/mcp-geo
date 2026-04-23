@@ -367,6 +367,22 @@ operator assumption. For comparison runs, use
 If Docker isn't on the GUI PATH (common on macOS), set `MCP_GEO_DOCKER_BIN` in
 Claude Desktop to the absolute Docker path (for example `/opt/homebrew/bin/docker`).
 
+Before demos, run the readiness check:
+
+```bash
+./scripts/prepare-for-demo
+```
+
+It verifies that the checkout matches `origin/main`, the local
+`mcp-geo-server` Docker image was built after that ref, stale app containers
+are not still running, the Claude/Codex/Gemini wrappers resolve as expected,
+and `.vscode/mcp.json` is present. If the image is stale, either rebuild it
+directly or rerun the check with `--rebuild`:
+
+```bash
+./scripts/prepare-for-demo --rebuild
+```
+
 Optional HTTP transport:
 
 ```bash

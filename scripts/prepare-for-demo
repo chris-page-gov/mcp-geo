@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${MCP_GEO_PYTHON_BIN:-}"
+
+python_supports_prepare_for_demo() {
+  "$1" - <<'PY' >/dev/null 2>&1
+import sys
+
+raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
+PY
+}
+
+if [[ -z "$PYTHON_BIN" && -x "$REPO_ROOT/.venv/bin/python" ]]; then
+  PYTHON_BIN="$REPO_ROOT/.venv/bin/python"
+fi
+
+if [[ -z "$PYTHON_BIN" ]]; then
+  for candidate in python3.12 python3.11 python3; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      candidate_path="$(command -v "$candidate")"
+      if python_supports_prepare_for_demo "$candidate_path"; then
+        PYTHON_BIN="$candidate_path"
+        break
+      fi
+    fi
+  done
+fi
+
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo "prepare-for-demo requires Python >=3.11; set MCP_GEO_PYTHON_BIN to override." >&2
+  exit 127
+fi
+
+if ! python_supports_prepare_for_demo "$PYTHON_BIN"; then
+  echo "prepare-for-demo requires Python >=3.11; selected interpreter is $PYTHON_BIN." >&2
+  exit 1
+fi
+
+exec "$PYTHON_BIN" "$REPO_ROOT/scripts/prepare_for_demo.py" "$@"
