@@ -88,6 +88,14 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
 
+[tool.setuptools.packages.find]
+include = ["server*", "tools*", "scripts*", "resources*", "ui*"]
+
+[tool.setuptools.package-data]
+"resources" = ["*.json", "*.jpg", "landis/*.md", "prompts/*.json"]
+"ui" = ["*.html", "shared/*.css", "shared/*.js", "vendor/*"]
+"server.audit" = ["schemas/*.json"]
+"tools" = ["py.typed"]
+
 [tool.setuptools]
-packages = ["server", "tools", "scripts"]
 license-files = ["LICENSE"]

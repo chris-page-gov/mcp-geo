@@ -991,7 +991,16 @@ def load_ui_content(
 
 
 def load_skill_content() -> tuple[str, str]:
-    content = SKILL_PATH.read_text(encoding="utf-8")
+    if SKILL_PATH.exists():
+        content = SKILL_PATH.read_text(encoding="utf-8")
+    else:
+        content = (
+            "# MCP Geo Skills\n\n"
+            "This installed package does not include the repository-root SKILL.md file. "
+            "Start natural-language requests with `os_mcp.route_query`, use "
+            "`/tools/list` and `/tools/describe` for the installed tool catalog, and "
+            "prefer `os_resources.get` or `resources/read` for resource handoffs.\n"
+        )
     etag = _etag_from_bytes(content.encode("utf-8"), SKILLS_RESOURCE["uri"])
     return content, etag
 

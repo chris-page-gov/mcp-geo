@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Fixed published package contents so installed wheels include nested server
+  modules, audit schemas, static resources, UI assets, and typed tool metadata
+  needed by HTTP and STDIO runtimes.
+
 ## [0.8.0] - 2026-04-23
 
 ### Added
