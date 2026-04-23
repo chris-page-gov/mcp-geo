@@ -390,6 +390,31 @@ def test_run_checks_reports_unresolved_ref(monkeypatch: pytest.MonkeyPatch) -> N
     assert not any(check.name.startswith("docker.") for check in checks)
 
 
+def test_run_checks_blocks_on_fetch_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unexpected_run(
+        args: list[str],
+        *,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> prepare_for_demo.CommandResult:
+        raise AssertionError(f"Unexpected command after fetch failure: {args}")
+
+    monkeypatch.setattr(prepare_for_demo, "_run", unexpected_run)
+    monkeypatch.setattr(
+        prepare_for_demo,
+        "git_fetch_ref",
+        lambda _ref: (prepare_for_demo.CommandResult(1, "", "auth failed"), "origin/main"),
+    )
+
+    checks = prepare_for_demo.run_checks(
+        Namespace(fetch=True, ref="origin/main", image="mcp-geo-server", rebuild=False)
+    )
+
+    assert [(check.level, check.name) for check in checks] == [("FAIL", "git.fetch")]
+    assert checks[0].detail == "auth failed"
+
+
 def test_run_checks_resolves_successfully_fetched_branch_target(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -373,12 +373,13 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
         else:
             add(
                 checks,
-                "WARN",
+                "FAIL",
                 "git.fetch",
                 (fetch.stderr or fetch.stdout).strip()
                 or f"Could not fetch {args.ref} from origin.",
                 "Check network/GitHub auth before relying on local remote state.",
             )
+            return checks
 
     status = _run(["git", "status", "--porcelain"]).stdout.strip()
     if status:
