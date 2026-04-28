@@ -11,6 +11,7 @@ MCP Geo exposes UI resources that can be opened by MCP clients that support
 - `ui://mcp-geo/route-planner`
 - `ui://mcp-geo/feature-inspector`
 - `ui://mcp-geo/statistics-dashboard`
+- Planned: `ui://mcp-geo/postcode-picker`
 
 ## Render tools
 
@@ -19,6 +20,7 @@ MCP Geo exposes UI resources that can be opened by MCP clients that support
 - `os_apps.render_feature_inspector`
 - `os_apps.render_statistics_dashboard`
 - `os_apps.render_ui_probe`
+- Planned: `os_apps.render_postcode_picker`
 
 Each render tool returns:
 - `status` + `instructions`
@@ -51,6 +53,24 @@ UI content blocks are controlled by `MCP_APPS_CONTENT_MODE`:
 The route planner does not silently fabricate a route when solver data is
 unavailable. Hosts should surface the returned `ROUTE_GRAPH_NOT_READY`,
 `AMBIGUOUS_STOP`, or `NO_ROUTE` errors directly.
+
+## Planned postcode picker
+
+The postcode picker should be a dedicated MCP-App rather than a mode inside the
+geography selector. It should support workflows such as "pick some postcodes
+around CV1 3HB" by using the current OS postcode capability to discover nearby
+or matching postcodes, then letting the user multi-select the postcodes of
+interest.
+
+The returned structured selection must support both:
+
+- selected postcode values and normalized display labels
+- optional UPRN expansion for the selected postcodes
+
+UPRN expansion must be explicit. The widget/tool contract should offer a
+payload mode such as `uprnMode=none|summary|full`, or an equivalent field, so
+clients can request postcode-only selection by default and only request full
+UPRN lists when the user or workflow needs address-level identifiers.
 
 ## Known integration issues
 

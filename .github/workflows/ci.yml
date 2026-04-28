@@ -147,8 +147,11 @@ jobs:
 
       - name: Install validator dependencies
         run: |
-          pip install -e ".[dev,boundaries]" pip-audit
+          python -m pip install -e ".[dev,boundaries]"
           mkdir -p artifacts/owasp-mcp
+          # Audit the project dependency snapshot, not runner/bootstrap tooling.
+          python -m pip freeze --exclude-editable > artifacts/owasp-mcp/pip-audit-requirements.txt
+          python -m pip install pip-audit
 
       - name: Secret scan (gitleaks)
         id: gitleaks
@@ -166,7 +169,11 @@ jobs:
         id: pip_audit
         continue-on-error: true
         run: |
-          pip-audit --progress-spinner off --format json > artifacts/owasp-mcp/pip-audit.json
+          pip-audit \
+            --progress-spinner off \
+            --format json \
+            -r artifacts/owasp-mcp/pip-audit-requirements.txt \
+            > artifacts/owasp-mcp/pip-audit.json
 
       - name: Run OWASP MCP validator
         id: owasp_validate

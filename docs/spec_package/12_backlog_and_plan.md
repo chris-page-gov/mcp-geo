@@ -13,11 +13,19 @@
 ### High priority
 1. **CI pipeline**: add lint/type/test/coverage CI with badges.
 2. **MCP-Apps client compatibility**: validate UI initialization across Claude and Inspector; document required client steps.
-3. **Restore strict quality gates**: raise pytest coverage back to `>=90%` and
+3. **MCP-Apps postcode picker**: add a dedicated postcode picker widget rather
+   than overloading the geography selector for postcode workflows. It should use
+   the current OS postcode capability for postcode discovery, support
+   multi-select around a seed postcode such as `CV1 3HB`, and return structured
+   selections that include the chosen postcodes plus an explicit option to also
+   return the UPRN list behind each selected postcode. The contract should make
+   the UPRN payload mode selectable (`none`, `summary`, `full`, or equivalent)
+   so clients can avoid accidentally returning very large address lists.
+4. **Restore strict quality gates**: raise pytest coverage back to `>=90%` and
    clear current static-analysis debt (`ruff`/`mypy`) so release gating is enforceable.
-4. **Route graph operationalization**: automate OS MRN package ingestion,
+5. **Route graph operationalization**: automate OS MRN package ingestion,
    pgRouting graph builds, and environment bootstrap in deployment workflows.
-5. **ONS geo refresh redesign**: split `ons_geo` cache refresh into
+6. **ONS geo refresh redesign**: split `ons_geo` cache refresh into
    parallel raw downloads plus sequential ingest, support selective per-dataset
    refresh when one ONS source moves out of cycle, and add a metadata-only
    validation path that can compare on-disk holdings with upstream availability
@@ -26,20 +34,27 @@
    `resolvedSourceUrl` and related source metadata, and it should support
    optional external raw-artifact roots or mirrors (for example mounted SSD
    volumes) so large downloads do not have to live only on the primary local disk.
+7. **MCP draft 2026 readiness**: prepare for the upstream `DRAFT-2026-v1`
+   specification without adopting it by default. Track draft drift, lock
+   deterministic `tools/list` ordering with regressions, add Streamable HTTP
+   `Mcp-Method` / `Mcp-Name` observe-mode validation before any strict mode,
+   centralize extension capability declarations, and design `_meta` trace
+   context handling. Detailed assessment:
+   `Plans/PLAN-MCP-draft-2026-readiness.md`.
 
 ### Medium priority
-6. **Pagination for large tool results**: token-based paging for OS features and large datasets.
-7. **Structured JSON logging sink**: allow log shipping to OTLP / JSON.
-8. **ONS dataset caching**: expand on-disk cache to cover query outputs, add TTL and invalidation.
-9. **Admin cache staleness policy**: configurable freshness thresholds with alerting.
-10. **Performance regression tests**: boundary cache and maps proxy latency baselines.
-11. **Route restriction depth**: promote turn restrictions and RAMI-derived hazards
+8. **Pagination for large tool results**: token-based paging for OS features and large datasets.
+9. **Structured JSON logging sink**: allow log shipping to OTLP / JSON.
+10. **ONS dataset caching**: expand on-disk cache to cover query outputs, add TTL and invalidation.
+11. **Admin cache staleness policy**: configurable freshness thresholds with alerting.
+12. **Performance regression tests**: boundary cache and maps proxy latency baselines.
+13. **Route restriction depth**: promote turn restrictions and RAMI-derived hazards
     from warnings/penalties to full route-cost enforcement where data supports it.
 
 ### Low priority
-12. **UI polish**: improve MCP-Apps widgets with real data bindings.
-13. **CLI/Playground UX**: expose UI session details and rendering hints.
-14. **Full documentation cross-links**: consolidate tutorial and evaluation docs.
+14. **UI polish**: improve MCP-Apps widgets with real data bindings.
+15. **CLI/Playground UX**: expose UI session details and rendering hints.
+16. **Full documentation cross-links**: consolidate tutorial and evaluation docs.
 
 ## Completion plan (phased)
 
@@ -58,6 +73,8 @@
 
 ### Phase 3 - UI fidelity (2-4 weeks)
 - Fix MCP-Apps initialization flow for Claude and Inspector.
+- Build the postcode picker MCP-App with postcode multi-select and optional
+  UPRN-list output for selected postcodes.
 - Produce real UI screenshots and update docs.
 
 ### Phase 4 - Resources & observability (4-6 weeks)

@@ -3,7 +3,24 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-23
+Last updated: 2026-04-28
+
+## MCP draft 2026 readiness assessment (2026-04-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MCP-DRAFT-0 Draft impact assessment and backlog capture | done | none | Assessed upstream MCP `DRAFT-2026-v1` against MCP-Geo without adopting it. Added `Plans/PLAN-MCP-draft-2026-readiness.md`, registered the draft in `docs/spec_tracking.md`, added the draft docs/schema paths to `scripts/check_spec_drift.py`, and added a high-priority backlog item covering Streamable HTTP `Mcp-Method` / `Mcp-Name` observe mode, deterministic `tools/list` regressions, extension capability centralization, `_meta` trace context design, and `x-mcp-header` guardrails. |
+
+## MCP-Apps postcode picker backlog (2026-04-28)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| PCPICK-0 Priority requirement captured | done | none | Added a high-priority backlog requirement for a dedicated MCP-Apps postcode picker using current OS postcode functionality. The planned contract must support seed-postcode discovery, multi-select, structured postcode output, and an explicit option to return the UPRN list behind each selected postcode. |
+| PCPICK-1 Implement postcode picker MCP-App | pending | PCPICK-0, MCP-Apps client compatibility | Build `os_apps.render_postcode_picker` / `ui://mcp-geo/postcode-picker`, with explicit UPRN payload modes so postcode-only selection stays compact by default and full UPRN lists are returned only when requested. |
 
 ## Release 0.8.0 (2026-04-23)
 

@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-23
+Last updated: 2026-04-28
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,16 @@ assumptions change.
 
 ## Current Focus
 
+- A high-priority MCP-Apps postcode picker is now on the backlog. It should use
+  the current OS postcode capability for seed-postcode discovery and
+  multi-select, and it must offer an explicit option to return the UPRN list
+  behind selected postcodes as well as postcode-only selections.
+- MCP draft 2026 readiness is tracked as preparation only. On 2026-04-28,
+  upstream draft schema was confirmed to declare `DRAFT-2026-v1`, while the
+  stable/current runtime target remains `2025-11-25`. The impact assessment and
+  backlog are in `Plans/PLAN-MCP-draft-2026-readiness.md`; near-term prep is
+  observe-mode HTTP header validation, deterministic `tools/list` regressions,
+  extension capability centralization, and `_meta` trace-context design.
 - Release `v0.8.1` is the current 2026-04-23 package release. It preserves the
   `v0.8.0` stable pre-strategy-review baseline and adds the package-content fix
   needed for installed wheels to include nested server modules, audit schemas,
