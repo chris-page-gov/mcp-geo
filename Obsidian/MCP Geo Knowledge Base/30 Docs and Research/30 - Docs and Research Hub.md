@@ -535,6 +535,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 ## Note Groups
 
 - [[Miscellaneous Tracked Surface]]
+- [[Research Project - LLM Wiki versus RAG]]
 - [[Data Manifests]]
 - [[Documentation Surface]]
 - [[Peatland Case Study]]

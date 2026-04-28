@@ -40,8 +40,10 @@ SPEC_TARGETS: tuple[SpecTarget, ...] = (
             "docs/specification/2025-03-26",
             "docs/specification/2025-06-18",
             "docs/specification/2025-11-25",
+            "docs/specification/draft",
+            "schema/draft",
         ),
-        notes="Core MCP specification revisions tracked in README/spec_tracking.",
+        notes="Core MCP specification revisions and current draft tracked in README/spec_tracking.",
     ),
     SpecTarget(
         name="mcp_apps",
