@@ -147,7 +147,8 @@ jobs:
 
       - name: Install validator dependencies
         run: |
-          pip install -e ".[dev,boundaries]" pip-audit
+          python -m pip install --upgrade "pip>=26.1"
+          python -m pip install -e ".[dev,boundaries]" pip-audit
           mkdir -p artifacts/owasp-mcp
 
       - name: Secret scan (gitleaks)
