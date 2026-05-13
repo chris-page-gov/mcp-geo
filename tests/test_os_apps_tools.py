@@ -72,7 +72,11 @@ def test_os_apps_env_text_mode_sets_text_only_override(monkeypatch):
     status, body = os_apps._render_geography_selector({})
     assert status == 200
     assert body["_meta"]["uiTextOnlyOverride"] is True
-    assert all(block.get("type") == "text" for block in body.get("content", []) if isinstance(block, dict))
+    assert all(
+        block.get("type") == "text"
+        for block in body.get("content", [])
+        if isinstance(block, dict)
+    )
 
 
 def test_os_apps_reject_boolean_numeric_inputs():
@@ -103,6 +107,10 @@ def test_os_apps_render_boundary_explorer(monkeypatch):
     assert body["config"]["level"] == "WARD"
     assert body["config"]["searchTerm"] == "Westminster"
     assert body["config"]["detailLevel"] == "postcode"
+    assert "Do not fetch resource chunks to assemble standalone HTML" in body["instructions"]
+    assert body["structuredContent"]["mcpApp"]["preferredAction"] == "render_resource_uri"
+    assert body["_meta"]["mcpGeo/renderingGuidance"]["fallbackAction"] == "report_resource_handoff"
+    assert "substitute_map_artifact" in body["structuredContent"]["mcpApp"]["avoid"]
     resource_blocks = [
         block
         for block in body.get("content", [])

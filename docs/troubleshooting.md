@@ -404,6 +404,28 @@ Notes:
 - JSON trace lines with `direction=server->stderr` are diagnostics; they are not
   MCP JSON-RPC payloads.
 
+## MCP-Apps UI handoff turns into a standalone map artifact
+If a client calls an `os_apps.render_*` tool, sees `ui://mcp-geo/...`, then
+tries to fetch every HTML chunk and create a new Leaflet/OpenStreetMap artifact,
+the MCP server has already done its part. The client/model is failing to render
+or preserve the MCP-App handoff.
+
+How to confirm:
+- The render tool returned `resourceUri` or `_meta.ui.resourceUri` with a
+  `ui://mcp-geo/...` value.
+- The decorated result includes `resourceHandoff.resolverTool=os_resources.get`
+  and `protocolMethod=resources/read`.
+- `os_resources.get` can read the resource with byte-offset pagination.
+
+Remediation:
+- Prefer host-native MCP-App rendering of the returned `ui://` resource.
+- If the host cannot render MCP-Apps, report the `resourceHandoff` fields and
+  first `os_resources.get` pagination metadata instead of creating a substitute
+  map.
+- Do not replace the MCP-Geo app with ad hoc Leaflet/OpenStreetMap/Postcodes.io
+  HTML. That loses OS-backed provenance and can hit external tile policy blocks
+  such as OpenStreetMap "Access blocked" placeholder tiles.
+
 ## Claude tool name mismatch: `Tool '<name>' not found` with `mcp-geo:<name>` hint
 If Claude reports a tool as not found and suggests a similarly named
 `mcp-geo:<tool_name>`, this is a client-side namespacing mismatch.

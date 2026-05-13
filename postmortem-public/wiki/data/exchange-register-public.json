@@ -1,0 +1,92 @@
+[
+  {
+    "exchange_id": "EX-0001",
+    "global_sequence": 1,
+    "session_source_id": "CONV-001",
+    "title": "Launch MCP-Geo Server for Demonstration",
+    "public_path": "postmortem-public/wiki/exchanges/0001-20260513-launch-mcp-geo-server-for-demonstration.md",
+    "user_contribution": "Asked for a no-code-change runtime check and server launch for demonstration.",
+    "codex_contribution": "Checked and launched the local MCP-Geo server while keeping credentials out of the record."
+  },
+  {
+    "exchange_id": "EX-0002",
+    "global_sequence": 2,
+    "session_source_id": "CONV-001",
+    "title": "Assess Nottinghamshire Geotechnical Earthworks Collapse Risk",
+    "public_path": "postmortem-public/wiki/exchanges/0002-20260513-assess-nottinghamshire-geotechnical-earthworks-collapse-risk.md",
+    "user_contribution": "Set a geotechnical risk question against Nottinghamshire.",
+    "codex_contribution": "Mapped the question to administrative geography and OS NGD-style landform screening."
+  },
+  {
+    "exchange_id": "EX-0003",
+    "global_sequence": 3,
+    "session_source_id": "CONV-001",
+    "title": "Explain LandIS Warehouse Unavailability",
+    "public_path": "postmortem-public/wiki/exchanges/0003-20260513-explain-landis-warehouse-unavailability.md",
+    "user_contribution": "Asked why the LandIS warehouse path was unavailable.",
+    "codex_contribution": "Separated MCP server health from local DSN, Docker/PostGIS, and table-coverage state."
+  },
+  {
+    "exchange_id": "EX-0004",
+    "global_sequence": 4,
+    "session_source_id": "CONV-001",
+    "title": "Troubleshoot Missing Postgres",
+    "public_path": "postmortem-public/wiki/exchanges/0004-20260513-troubleshoot-missing-postgres.md",
+    "user_contribution": "Directed runtime troubleshooting for the missing Postgres path.",
+    "codex_contribution": "Recovered and validated a local PostGIS/LandIS phase-2 workflow."
+  },
+  {
+    "exchange_id": "EX-0005",
+    "global_sequence": 5,
+    "session_source_id": "CONV-001",
+    "title": "Extend LandIS Coverage to Nottinghamshire",
+    "public_path": "postmortem-public/wiki/exchanges/0005-20260513-extend-landis-coverage-to-nottinghamshire.md",
+    "user_contribution": "Asked to extend the available LandIS coverage to Nottinghamshire.",
+    "codex_contribution": "Distinguished supported soil-context coverage from unavailable LEACS-derived pipe-risk coverage."
+  },
+  {
+    "exchange_id": "EX-0006",
+    "global_sequence": 6,
+    "session_source_id": "CONV-001",
+    "title": "Mount ExtSSD-Data and Recheck Archives",
+    "public_path": "postmortem-public/wiki/exchanges/0006-20260513-mount-extssd-data-and-recheck-archives.md",
+    "user_contribution": "Mounted the external archive drive and asked for a second inspection.",
+    "codex_contribution": "Inspected the mounted archive and preserved a no-touch posture for original data directories."
+  },
+  {
+    "exchange_id": "EX-0007",
+    "global_sequence": 7,
+    "session_source_id": "CONV-001",
+    "title": "Check LEACS Provenance",
+    "public_path": "postmortem-public/wiki/exchanges/0007-20260513-check-leacs-provenance.md",
+    "user_contribution": "Asked whether LEACS provenance came from an earlier agentic download.",
+    "codex_contribution": "Recovered evidence of captured public pages and metadata, while noting the data payload was absent."
+  },
+  {
+    "exchange_id": "EX-0008",
+    "global_sequence": 8,
+    "session_source_id": "CONV-001",
+    "title": "Probe LEACS Download Routes",
+    "public_path": "postmortem-public/wiki/exchanges/0008-20260513-probe-leacs-download-routes.md",
+    "user_contribution": "Authorized probing public and authenticated routes for the missing LEACS data.",
+    "codex_contribution": "Checked CKAN/data.gov.uk and authenticated portal routes without finding a downloadable LEACS payload."
+  },
+  {
+    "exchange_id": "EX-0009",
+    "global_sequence": 9,
+    "session_source_id": "CONV-001",
+    "title": "Document LEACS Access and Future Conditions",
+    "public_path": "postmortem-public/wiki/exchanges/0009-20260513-document-leacs-access-and-future-conditions.md",
+    "user_contribution": "Asked for reusable documentation and metadata for future requests.",
+    "codex_contribution": "Created the LEACS access probe report, metadata record, context note, and changelog fragment."
+  },
+  {
+    "exchange_id": "EX-0010",
+    "global_sequence": 10,
+    "session_source_id": "CONV-001",
+    "title": "Create MCP-Geo Conversation LLM Wiki",
+    "public_path": "postmortem-public/wiki/exchanges/0010-20260513-create-mcp-geo-conversation-llm-wiki.md",
+    "user_contribution": "Asked for an LLM Wiki record in the same form as the hackathon repo.",
+    "codex_contribution": "Created the public conversation wiki with reader, source, exchange, decision, evidence, and register pages."
+  }
+]

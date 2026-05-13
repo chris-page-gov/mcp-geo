@@ -30,7 +30,10 @@ _UI_RESOURCE_LINKS = {
     _UI_URIS["boundary"]: {
         "name": "ui_boundary_explorer",
         "title": "Map Lab",
-        "description": "Map Lab workspace for UK boundaries, UPRNs, buildings, links, and selector-based collections.",
+        "description": (
+            "Map Lab workspace for UK boundaries, UPRNs, buildings, links, and "
+            "selector-based collections."
+        ),
     },
     _UI_URIS["statistics"]: {
         "name": "ui_statistics_dashboard",
@@ -74,6 +77,18 @@ _MAX_EMBEDDED_RESOURCE_BYTES = 850_000
 _ONS_DATASET_ALIASES = {
     "gdp": "gdp-to-four-decimal-places",
 }
+_MCP_APP_RENDERING_GUIDANCE = (
+    "Render the MCP-App UI resource directly in the host when supported. "
+    "Do not fetch resource chunks to assemble standalone HTML, and do not create "
+    "substitute Leaflet/OpenStreetMap/Postcodes.io artifacts. "
+    "If the host cannot render MCP-Apps, report the resourceHandoff details instead."
+)
+
+
+def _with_mcp_app_rendering_guidance(instructions: str) -> str:
+    if _MCP_APP_RENDERING_GUIDANCE in instructions:
+        return instructions
+    return f"{instructions} {_MCP_APP_RENDERING_GUIDANCE}"
 
 
 def build_ui_tool_meta(tool_name: str) -> dict[str, Any] | None:
@@ -159,7 +174,9 @@ def _build_embedded_resource(resource_uri: str) -> tuple[dict[str, Any] | None, 
     return {"type": "resource", "resource": resource}, None
 
 
-def _enforce_widget_response_limit(response: dict[str, Any], *, resource_uri: str) -> dict[str, Any]:
+def _enforce_widget_response_limit(
+    response: dict[str, Any], *, resource_uri: str
+) -> dict[str, Any]:
     if _json_size_bytes(response) <= _MAX_TOOL_RESPONSE_BYTES:
         return response
     response["content"] = [
@@ -192,6 +209,7 @@ def _build_widget_response(
     resource_uri: str,
     content_mode: str | None = None,
 ) -> ToolResult:
+    instructions = _with_mcp_app_rendering_guidance(instructions)
     content = [{"type": "text", "text": instructions}]
     mode = _resolve_content_mode(content_mode)
     if mode == "resource_link":
@@ -218,6 +236,16 @@ def _build_widget_response(
         "instructions": instructions,
         "resourceUri": resource_uri,
         "uiResourceUris": [resource_uri],
+        "mcpApp": {
+            "resourceUri": resource_uri,
+            "preferredAction": "render_resource_uri",
+            "fallbackAction": "report_resource_handoff",
+            "avoid": [
+                "standalone_html_assembly",
+                "substitute_map_artifact",
+                "external_tile_or_postcode_services",
+            ],
+        },
     }
     response = {
         "status": "ready",
@@ -229,6 +257,15 @@ def _build_widget_response(
             "ui": {"resourceUri": resource_uri},
             "ui/resourceUri": resource_uri,
             "uiResourceUris": [resource_uri],
+            "mcpGeo/renderingGuidance": {
+                "preferredAction": "render_resource_uri",
+                "fallbackAction": "report_resource_handoff",
+                "avoid": [
+                    "standalone_html_assembly",
+                    "substitute_map_artifact",
+                    "external_tile_or_postcode_services",
+                ],
+            },
         },
         "structuredContent": structured,
         "content": content,
@@ -658,7 +695,9 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
 
     normalized_stops = [normalize_stop(stop) for stop in (stops_value or [])]
     normalized_via = [normalize_stop(stop) for stop in (via_value or [])]
-    if any(stop is None for stop in normalized_stops) or any(stop is None for stop in normalized_via):
+    if any(stop is None for stop in normalized_stops) or any(
+        stop is None for stop in normalized_via
+    ):
         return _error("Each route stop must include exactly one of query, uprn, or coordinates")
 
     start_lat = payload.get("startLat")
@@ -674,7 +713,12 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
         if value is not None and not isinstance(value, (int, float)):
             return _error(f"{key} must be a number")
     if not normalized_stops:
-        if start_lat is not None and start_lng is not None and end_lat is not None and end_lng is not None:
+        if (
+            start_lat is not None
+            and start_lng is not None
+            and end_lat is not None
+            and end_lng is not None
+        ):
             normalized_stops = [
                 {"coordinates": [float(start_lng), float(start_lat)]},
                 {"coordinates": [float(end_lng), float(end_lat)]},
@@ -686,7 +730,9 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
                 normalized_origin = normalize_stop(origin)
                 normalized_destination = normalize_stop(destination)
                 if normalized_origin is None or normalized_destination is None:
-                    return _error("origin/destination must be stop objects, coordinates, or strings")
+                    return _error(
+                        "origin/destination must be stop objects, coordinates, or strings"
+                    )
                 normalized_stops = [normalized_origin, normalized_destination]
 
     if normalized_stops:
@@ -708,7 +754,9 @@ def _render_route_planner(payload: dict[str, Any]) -> ToolResult:
             "softAvoid": bool(constraints.get("softAvoid", True)),
         }
 
-    profile = normalize_route_profile(payload.get("profile") or payload.get("routeMode") or payload.get("mode"))
+    profile = normalize_route_profile(
+        payload.get("profile") or payload.get("routeMode") or payload.get("mode")
+    )
     config["profile"] = profile
     delivery = payload.get("delivery")
     if delivery is not None and not isinstance(delivery, str):

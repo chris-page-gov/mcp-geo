@@ -1,0 +1,30 @@
+[
+  {
+    "artifact_id": "ART-001",
+    "title": "LandIS LEACS Access Probe Report",
+    "path": "docs/reports/landis_leacs_access_probe_2026-05-13.md",
+    "type": "report",
+    "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-002",
+    "title": "LandIS LEACS Access Probe Metadata",
+    "path": "research/landis-data-source/landis_leacs_access_probe_2026-05-13.json",
+    "type": "metadata",
+    "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-003",
+    "title": "MCP-Geo Durable Context",
+    "path": "CONTEXT.md",
+    "type": "context",
+    "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-004",
+    "title": "LLM Wiki vs RAG Research Note",
+    "path": "research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md",
+    "type": "research",
+    "conversation": "CONV-001"
+  }
+]

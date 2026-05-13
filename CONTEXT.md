@@ -56,6 +56,12 @@ assumptions change.
   the current OS postcode capability for seed-postcode discovery and
   multi-select, and it must offer an explicit option to return the UPRN list
   behind selected postcodes as well as postcode-only selections.
+- Claude Cowork currently treats MCP-App `ui://` handoffs as large HTML to
+  repackage rather than host-rendered apps. The 2026-04-28 CV3 1HB evidence is
+  in `troubleshooting/mcp-cowork/cowork-sanity-and-failure-report-2026-04-28.md`.
+  `os_apps.render_*` responses now include explicit guidance to render the
+  MCP-App resource or report `resourceHandoff`, not create ad hoc
+  Leaflet/OpenStreetMap/Postcodes.io artifacts.
 - MCP draft 2026 readiness is tracked as preparation only. On 2026-04-28,
   upstream draft schema was confirmed to declare `DRAFT-2026-v1`, while the
   stable/current runtime target remains `2025-11-25`. The impact assessment and
@@ -678,6 +684,20 @@ assumptions change.
   supplementary full-release/public-menu plus matched `data.gov.uk` package
   slice so use-case inputs such as `HOST`, `wetness`, `Series Hydrology`, and
   `Series Leacs` are discoverable through MCP instead of only in raw manifests.
+  A 2026-05-13 LEACS access probe is now recorded in
+  `docs/reports/landis_leacs_access_probe_2026-05-13.md` and
+  `research/landis-data-source/landis_leacs_access_probe_2026-05-13.json`:
+  public CKAN records, archived public pages, and a fresh authenticated Atlas
+  portal scan expose LEACS metadata but no downloadable LEACS payload. Treat
+  Nottinghamshire pipe-risk expansion as blocked on a licensed Cranfield
+  extract or a future portal/CKAN resource change; any interim model must be
+  labelled as a proxy, not LEACS-derived pipe risk.
+  The same 2026-05-13 thread is now captured as a public-safe conversation LLM
+  Wiki under `postmortem-public/wiki/`, with source, reader, exchange,
+  decision, repository-evidence, and JSON register pages following the
+  hackathon postmortem pattern. The raw transcript was not exported into the
+  repo; the current record is a curated derivative from the live thread and
+  linked repo artifacts.
   The same 2026-04-06 wrapper-bootstrap verification reran the previously
   failing Warwickshire offline queries against the Docker-network runtime and
   confirmed `200` responses for `landis_natmap.point`,

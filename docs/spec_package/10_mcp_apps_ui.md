@@ -44,6 +44,13 @@ UI content blocks are controlled by `MCP_APPS_CONTENT_MODE`:
 - `embedded` embeds UI HTML as a `resource` content block.
 - `text` emits text-only content.
 
+Render tools also include explicit MCP-App handoff guidance in `instructions`,
+`structuredContent.mcpApp`, and `_meta["mcpGeo/renderingGuidance"]`. Hosts
+should render the returned `ui://` resource directly when they support MCP-Apps.
+If they cannot render it, they should report the `resourceHandoff` contract
+instead of assembling standalone HTML or creating substitute Leaflet /
+OpenStreetMap / Postcodes.io maps.
+
 ## STDIO UI fallback behavior
 
 - If the client does not advertise UI support, the stdio adapter injects a

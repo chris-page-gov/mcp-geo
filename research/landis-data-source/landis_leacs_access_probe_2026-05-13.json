@@ -1,0 +1,186 @@
+{
+  "version": "2026-05-13-leacs-access-probe",
+  "generatedAt": "2026-05-13T16:20:59Z",
+  "purpose": "Record whether LandIS LEACS data can be downloaded for future MCP-Geo pipe-risk coverage expansion.",
+  "conclusion": {
+    "status": "not_currently_downloadable_from_available_routes",
+    "summary": "The public data.gov.uk/CKAN records expose LEACS metadata but only a generic LandIS website HTML resource. The authenticated LandIS ArcGIS portal session was valid, but catalog search and deep service/table field scans found no LEACS, corrosivity, shrink-swell, CORR_FE, CORR_ZN, or SHRINK_SWELL item/table/field. No new LEACS data payload was downloaded.",
+    "currentPipeRiskCoverage": "Only the Warwickshire validation GeoJSON is present locally; Nottinghamshire has zero intersections in landis.pipe_risk_polygons."
+  },
+  "operatorContext": {
+    "date": "2026-05-13",
+    "atlasSession": "User reported signing into the LandIS portal in ChatGPT Atlas with an authenticated portal account.",
+    "credentialHandling": "The ArcGIS token was discovered by the existing repo helper for live queries only. It was not printed, stored, or written to this metadata file."
+  },
+  "publicCkanPackages": [
+    {
+      "title": "Soil Series LEACS",
+      "name": "soil-series-leacs1",
+      "packageId": "430086d9-d677-4a71-a0b7-f9abfd774517",
+      "guid": "CU-LANDIS-SOILSERIESLEACS",
+      "apiUrl": "https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=soil-series-leacs1",
+      "dataGovUrl": "https://www.data.gov.uk/dataset/430086d9-d677-4a71-a0b7-f9abfd774517/soil-series-leacs1",
+      "notes": "SOILSERIES leacs provides information on the shrink-swell and corrosivity of the soil to Fe and Zn.",
+      "isOpen": false,
+      "contactEmail": "nsridata@cranfield.ac.uk",
+      "accessConstraints": [
+        "(e) intellectual property rights;"
+      ],
+      "licenceSummary": "The information contained in LandIS is copyright and subject to a specific licensing agreement between Cranfield University and the user.",
+      "resources": [
+        {
+          "id": "e1060327-8078-4df6-ad06-17891939283f",
+          "name": "LandIS website",
+          "format": "HTML",
+          "url": "http://www.landis.org.uk/",
+          "archiverMimeType": "text/html",
+          "archiverHash": "5c31a890aab4d93c2a806c0d7a8f23aea33a1565"
+        }
+      ]
+    },
+    {
+      "title": "LEACS by Soil Association",
+      "name": "leacs-by-soil-association1",
+      "packageId": "48f74257-b732-41db-abb1-c48ff7f1c57c",
+      "guid": "CU-LANDIS-MAPUNIT_LEACS",
+      "apiUrl": "https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=leacs-by-soil-association1",
+      "dataGovUrl": "https://www.data.gov.uk/dataset/48f74257-b732-41db-abb1-c48ff7f1c57c/leacs-by-soil-association1",
+      "notes": "Dominant shrink swell and corrosivity class associated with each soil association in the national map plus a breakdown of the proportion of the soil association within each class.",
+      "isOpen": false,
+      "contactEmail": "nsridata@cranfield.ac.uk",
+      "accessConstraints": [
+        "(e) intellectual property rights;"
+      ],
+      "licenceSummary": "The information contained in LandIS is copyright and subject to a specific licensing agreement between Cranfield University and the user.",
+      "resources": [
+        {
+          "id": "56edec1c-543e-4d79-ad70-0331fb815f36",
+          "name": "LandIS website",
+          "format": "HTML",
+          "url": "http://www.landis.org.uk/",
+          "archiverMimeType": "text/html",
+          "archiverHash": "5c31a890aab4d93c2a806c0d7a8f23aea33a1565"
+        }
+      ]
+    }
+  ],
+  "archivedPublicReleaseEvidence": {
+    "fullReleaseManifest": "[EXTSSD_DATA_ROOT]/landis_full_release_archive_2026-04-05/full_release_manifest.json",
+    "verificationManifest": "[EXTSSD_DATA_ROOT]/landis_full_release_archive_2026-04-05/verification_manifest.json",
+    "checkedInTriageManifest": "research/landis-data-source/landis_archive_triage_2026-04-05.json",
+    "items": [
+      {
+        "name": "Series Leacs",
+        "url": "https://www.landis.org.uk/data/ssleacs.cfm",
+        "archivePath": "[EXTSSD_DATA_ROOT]/landis_full_release_archive_2026-04-05/public_site/Series_Leacs/page.html",
+        "sha256": "4fc57b8086f717c95433d007ddcd41aa738f2dc6fc6e694f2ad8db2a1cc1c52b",
+        "contentType": "text/html;charset=UTF-8",
+        "downloadPayloadFound": false
+      },
+      {
+        "name": "Leacs",
+        "url": "https://www.landis.org.uk/services/leacs.cfm",
+        "archivePath": "[EXTSSD_DATA_ROOT]/landis_full_release_archive_2026-04-05/public_site/Leacs/page.html",
+        "sha256": "e1163fd7de8dec227b2ab83c905dccf70174fc32242d23a41438e192bf7e0229",
+        "contentType": "text/html;charset=UTF-8",
+        "downloadPayloadFound": false
+      },
+      {
+        "name": "LEACS by Soil Association",
+        "url": "https://www.data.gov.uk/dataset/48f74257-b732-41db-abb1-c48ff7f1c57c/leacs-by-soil-association1",
+        "archivePath": "[EXTSSD_DATA_ROOT]/landis_full_release_archive_2026-04-05/data_gov/leacs-by-soil-association1/package_page.html",
+        "sha256": "c0e3bb11e70c3caff07573f86ce0fa3e13afd9749d6fa4e6ffd25d90f84f38c1",
+        "downloadPayloadFound": false
+      },
+      {
+        "name": "Soil Series LEACS",
+        "url": "https://www.data.gov.uk/dataset/430086d9-d677-4a71-a0b7-f9abfd774517/soil-series-leacs1",
+        "archivePath": "[EXTSSD_DATA_ROOT]/landis_full_release_archive_2026-04-05/data_gov/soil-series-leacs1/package_page.html",
+        "sha256": "036e2f455266c1e0a678f5bca7ac2fd2970f22b0368bcdeb50bf19988cb3cfb2",
+        "downloadPayloadFound": false
+      }
+    ]
+  },
+  "protectedPortalProbe": {
+    "source": "https://portal.landis.org.uk via Cranfield ArcGIS organisation BsCa1SurMySYByZ3",
+    "catalogItemCount": 108,
+    "directSearches": [
+      {
+        "query": "LEACS",
+        "total": 0
+      },
+      {
+        "query": "SOILSERIESLEACS",
+        "total": 0
+      },
+      {
+        "query": "MAPUNIT_LEACS",
+        "total": 0
+      },
+      {
+        "query": "SOIL_SERIES_LEACS",
+        "total": 0
+      },
+      {
+        "query": "corrosivity shrink",
+        "total": 0
+      },
+      {
+        "query": "shrink swell",
+        "total": 0
+      },
+      {
+        "query": "CORR_FE",
+        "total": 0
+      },
+      {
+        "query": "SHRINK_SWELL",
+        "total": 0
+      }
+    ],
+    "deepMetadataScan": {
+      "scope": "All accessible protected catalog items, Feature Service service metadata, layers, tables, field names, and field aliases.",
+      "terms": [
+        "leacs",
+        "corros",
+        "shrink",
+        "swell",
+        "corr_fe",
+        "corr_zn",
+        "shrink_swell",
+        "soilseriesleacs",
+        "mapunit_leacs"
+      ],
+      "matches": 0
+    },
+    "relatedAccessibleItem": {
+      "id": "5f54467246a1484f8e17c1b8ba2218d8",
+      "title": "SOILSERIES",
+      "type": "Feature Service",
+      "url": "https://services-eu1.arcgis.com/BsCa1SurMySYByZ3/arcgis/rest/services/SOILSERIES/FeatureServer",
+      "table": "Soil Series",
+      "recordCountFromArchive": 1343,
+      "fields": [
+        "OBJECTID",
+        "SERIES",
+        "SERIESNAME",
+        "SUBGROUP",
+        "MODDEFN",
+        "STATE"
+      ],
+      "leacsFieldsPresent": false
+    }
+  },
+  "localWarehouseState": {
+    "pipeRiskDatasetVersion": "2026-warwickshire-validation",
+    "pipeRiskFeatureCount": 1192,
+    "nottinghamshirePipeRiskIntersections": 0,
+    "onlyLocalPipeRiskFileFound": "[EXTSSD_DATA_ROOT]/landis_warwickshire_validation/official/landis_official_pipe_risk_warwickshire.geojson"
+  },
+  "futureDecisionRules": [
+    "Treat LEACS as not available for automated download unless a new protected portal item/table appears, a CKAN package resource changes from HTML to a tabular/spatial format, or Cranfield supplies a licensed extract.",
+    "If repeating the check, first compare CKAN resources and protected portal direct search totals against this metadata file. Do not perform a full download unless a new non-HTML resource or matching portal Feature Service/table appears.",
+    "If Cranfield supplies an extract, expected useful fields include SHRINK_SWELL, CORR_FE, CORR_ZN, and a join key to soil series, association, or NATMAP map unit.",
+    "Until a real LEACS payload exists, any Nottinghamshire pipe-risk expansion should be labelled as a proxy model, not LEACS-derived pipe risk."
+  ]
+}

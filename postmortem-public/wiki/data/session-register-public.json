@@ -1,0 +1,21 @@
+[
+  {
+    "source_id": "CONV-001",
+    "title": "LandIS, Nottinghamshire Coverage, and LEACS Access Probe",
+    "conversation_date": "2026-05-13",
+    "publication_status": "public-safe-curated-derivative",
+    "public_source_path": "postmortem-public/wiki/sources/conv-001-mcp-geo-landis-nottinghamshire-leacs.md",
+    "public_reader_path": "postmortem-public/wiki/readers/conv-001-mcp-geo-landis-nottinghamshire-leacs.md",
+    "exchange_count": 10,
+    "raw_transcript_status": "not-exported",
+    "themes": [
+      "mcp-server-launch",
+      "nottinghamshire-geotechnical-screening",
+      "landis-warehouse",
+      "postgis",
+      "extssd-data",
+      "leacs-access-probe",
+      "llm-wiki"
+    ]
+  }
+]
