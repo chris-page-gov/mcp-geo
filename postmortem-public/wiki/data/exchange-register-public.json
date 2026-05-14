@@ -88,5 +88,140 @@
     "public_path": "postmortem-public/wiki/exchanges/0010-20260513-create-mcp-geo-conversation-llm-wiki.md",
     "user_contribution": "Asked for an LLM Wiki record in the same form as the hackathon repo.",
     "codex_contribution": "Created the public conversation wiki with reader, source, exchange, decision, evidence, and register pages."
+  },
+  {
+    "exchange_id": "EX-0011",
+    "global_sequence": 11,
+    "session_source_id": "CONV-002",
+    "title": "CV1 Map Request Produces Fragile HTML Output",
+    "public_path": "postmortem-public/wiki/exchanges/0011-20260213-cv1-map-request-fragile-html-output.md",
+    "user_contribution": "Asked to show CV1 3HB on a map.",
+    "codex_contribution": "Captured that the data lookup was tractable but the generated HTML map surface was fragile."
+  },
+  {
+    "exchange_id": "EX-0012",
+    "global_sequence": 12,
+    "session_source_id": "CONV-002",
+    "title": "OS Mapping and API-Key Handling Drift",
+    "public_path": "postmortem-public/wiki/exchanges/0012-20260213-os-mapping-api-key-handling-drift.md",
+    "user_contribution": "Required OS mapping and asked to keep the OS API key out of logged conversation text.",
+    "codex_contribution": "Recorded the credential-handling boundary and the weakness of browser-side generated map repair."
+  },
+  {
+    "exchange_id": "EX-0013",
+    "global_sequence": 13,
+    "session_source_id": "CONV-002",
+    "title": "Vector Tile Runtime and CSP Failures",
+    "public_path": "postmortem-public/wiki/exchanges/0013-20260213-vector-tile-runtime-csp-failures.md",
+    "user_contribution": "Pushed the client away from Leaflet toward vector tiles and reported repeated runtime failures.",
+    "codex_contribution": "Summarized the MapLibre/global/worker/CSP failure pattern as a host-compatibility issue."
+  },
+  {
+    "exchange_id": "EX-0014",
+    "global_sequence": 14,
+    "session_source_id": "CONV-002",
+    "title": "Constrained CV1 Postcode Tool Probes",
+    "public_path": "postmortem-public/wiki/exchanges/0014-20260214-constrained-cv1-postcode-tool-probes.md",
+    "user_contribution": "Narrowed the task to exactly one MCP postcode lookup call for CV1 3HB.",
+    "codex_contribution": "Captured the successful control case showing the OS Places data path was stable."
+  },
+  {
+    "exchange_id": "EX-0015",
+    "global_sequence": 15,
+    "session_source_id": "CONV-002",
+    "title": "Surrounding Postcodes and Road Workbook Request",
+    "public_path": "postmortem-public/wiki/exchanges/0015-20260214-surrounding-postcodes-road-workbook-request.md",
+    "user_contribution": "Asked for road-level UPRN counts, property-type breakdowns, bounding-box size, and workbook output.",
+    "codex_contribution": "Captured the shift from fragile map display toward structured, auditable data products."
+  },
+  {
+    "exchange_id": "EX-0016",
+    "global_sequence": 16,
+    "session_source_id": "CONV-003",
+    "title": "Broad Leamington/Warwick Comparison Overloads Search",
+    "public_path": "postmortem-public/wiki/exchanges/0016-20260207-leamington-warwick-broad-comparison-overload.md",
+    "user_contribution": "Asked MCP-Geo to compare life in Leamington and Warwick.",
+    "codex_contribution": "Captured that broad name/admin searches needed a clearer comparison-unit selection step."
+  },
+  {
+    "exchange_id": "EX-0017",
+    "global_sequence": 17,
+    "session_source_id": "CONV-003",
+    "title": "Stats Routing Creates a Ward-Level Comparison Contract",
+    "public_path": "postmortem-public/wiki/exchanges/0017-20260210-stats-routing-ward-comparison-contract.md",
+    "user_contribution": "Asked to use stats routing for a Leamington Spa and Warwick life comparison.",
+    "codex_contribution": "Captured that routing correctly selected NOMIS and ward-level comparison but did not hand off a complete query plan."
+  },
+  {
+    "exchange_id": "EX-0018",
+    "global_sequence": 18,
+    "session_source_id": "CONV-003",
+    "title": "Dashboard Render Fallback to Direct Queries",
+    "public_path": "postmortem-public/wiki/exchanges/0018-20260210-dashboard-render-fallback-to-direct-queries.md",
+    "user_contribution": "Continued the same statistics-routing comparison request.",
+    "codex_contribution": "Captured the dashboard-render failure and the pivot to direct NOMIS query construction."
+  },
+  {
+    "exchange_id": "EX-0019",
+    "global_sequence": 19,
+    "session_source_id": "CONV-003",
+    "title": "NOMIS Dataset Discovery Drift",
+    "public_path": "postmortem-public/wiki/exchanges/0019-20260210-nomis-dataset-discovery-drift.md",
+    "user_contribution": "Continued the same statistics-routing comparison request.",
+    "codex_contribution": "Captured broad dataset search drift and the eventual identification of relevant Census 2021 topic-summary datasets."
+  },
+  {
+    "exchange_id": "EX-0020",
+    "global_sequence": 20,
+    "session_source_id": "CONV-003",
+    "title": "Census Query Parameter Failures",
+    "public_path": "postmortem-public/wiki/exchanges/0020-20260210-census-query-parameter-failures.md",
+    "user_contribution": "Continued the same statistics-routing comparison request.",
+    "codex_contribution": "Captured repeated NOMIS incomplete-query, invalid-response, and SDMX conversion failures."
+  },
+  {
+    "exchange_id": "EX-0021",
+    "global_sequence": 21,
+    "session_source_id": "CONV-003",
+    "title": "Comparison Output Contract Needed",
+    "public_path": "postmortem-public/wiki/exchanges/0021-20260210-comparison-output-contract-needed.md",
+    "user_contribution": "Continued the same statistics-routing comparison request.",
+    "codex_contribution": "Captured the need for a restartable comparison plan with selected areas, indicators, query templates, and fallback tables."
+  },
+  {
+    "exchange_id": "EX-0022",
+    "global_sequence": 22,
+    "session_source_id": "CONV-004",
+    "title": "UPRN Lookup Returns False NOT_FOUND",
+    "public_path": "postmortem-public/wiki/exchanges/0022-20260415-uprn-lookup-false-not-found.md",
+    "user_contribution": "Asked why known UPRNs were returning NOT_FOUND through Claude-side ONS geography lookups.",
+    "codex_contribution": "Captured the false-negative symptom and separated it from genuinely unknown UPRNs."
+  },
+  {
+    "exchange_id": "EX-0023",
+    "global_sequence": 23,
+    "session_source_id": "CONV-004",
+    "title": "Cache Diagnosis Finds Single-Shard Ingestion",
+    "public_path": "postmortem-public/wiki/exchanges/0023-20260415-cache-diagnosis-single-shard-ingestion.md",
+    "user_contribution": "Asked whether the ONS geography cache contents matched the advertised ingested products.",
+    "codex_contribution": "Captured that ONSUD/NSUL were region-sharded and the affected cache held only one shard."
+  },
+  {
+    "exchange_id": "EX-0024",
+    "global_sequence": 24,
+    "session_source_id": "CONV-004",
+    "title": "Refresh Logic Streams All Compatible UPRN Shards",
+    "public_path": "postmortem-public/wiki/exchanges/0024-20260415-refresh-logic-streams-all-uprn-shards.md",
+    "user_contribution": "Asked for the refresh path to ingest every applicable ONSUD/NSUL regional data shard.",
+    "codex_contribution": "Captured the refresh-code fix that streams all compatible best-schema UPRN archive members."
+  },
+  {
+    "exchange_id": "EX-0025",
+    "global_sequence": 25,
+    "session_source_id": "CONV-004",
+    "title": "Rebuild Requirement and Regression Boundary",
+    "public_path": "postmortem-public/wiki/exchanges/0025-20260415-rebuild-requirement-regression-boundary.md",
+    "user_contribution": "Asked what remains required after the refresh-code fix.",
+    "codex_contribution": "Captured that pre-fix caches need rebuild and that regression coverage must prove multi-shard ingestion."
   }
 ]

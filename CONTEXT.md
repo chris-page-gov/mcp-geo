@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-04-28
+Last updated: 2026-05-14
 Owner: @chris-page-gov
 
 ## Purpose
@@ -698,6 +698,29 @@ assumptions change.
   hackathon postmortem pattern. The raw transcript was not exported into the
   repo; the current record is a curated derivative from the live thread and
   linked repo artifacts.
+  Follow-on work on 2026-05-14 made this workflow repeatable: `postmortem/` is
+  the gitignored private source/candidate area, `postmortem-public/` is the
+  tracked publication tree, and `scripts/llm_wiki_postmortem_inventory.py`
+  produces newest-first candidate inventories with size/token/effort estimates
+  before selected sessions are promoted. The inventory now also emits repeated
+  session rollups that compact scheduled automations, retry clusters, and
+  short status/check-monitoring loops into summed metric rows for curation. The
+  reusable process is documented in `docs/llm_wiki_postmortem_workflow.md` and
+  mirrored into the published wiki at
+  `postmortem-public/wiki/repeatable-workflow.md`.
+  The first Stage 2 capture selection is recorded at
+  `postmortem-public/wiki/capture-selection.md`: seven candidate sessions were
+  selected from the existing Claude example documents plus the ONS UPRN
+  client-failure incident, grouped for future curation as CONV-002 through
+  CONV-004 rather than promoted as isolated raw transcript dumps.
+  Stage 2 should run restartably when connectivity is unreliable: use
+  gitignored `postmortem/stage2/capture-progress.json` for private checkpoint
+  state, process one planned conversation or capture slice per run, validate
+  public wiki JSON/links/private-path hygiene before stopping, and resume from
+  the checkpoint plus public capture-selection statuses. The restartable Stage
+  2 slices curated CONV-002, CONV-003, and CONV-004, marking CAP-002 through
+  CAP-007 complete and using CAP-001 as context for the Claude client-failure
+  examples. The selected Stage 2 capture batch is complete.
   The same 2026-04-06 wrapper-bootstrap verification reran the previously
   failing Warwickshire offline queries against the Docker-network runtime and
   confirmed `200` responses for `landis_natmap.point`,

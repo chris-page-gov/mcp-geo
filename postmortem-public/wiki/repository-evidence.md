@@ -23,8 +23,32 @@ This page links the curated conversation record to durable repository artifacts.
 
 - [Durable MCP-Geo context](../../CONTEXT.md)
 - [LLM Wiki vs RAG research note](../../research/llm_wiki_vs_rag/LLM%20Wiki,%20Enhanced%20RAG%20and%20the%20Right%20Knowledge%20Architecture%20for%20MCP-Geo.md)
+- [Selected capture queue](capture-selection.md)
 - [CONV-001 public source note](sources/conv-001-mcp-geo-landis-nottinghamshire-leacs.md)
-- [CONV-001 source summary](../../postmortem/sources/conversations/conv-001-20260513-mcp-geo-landis-nottinghamshire-leacs.md)
+- [CONV-001 start-to-finish reader](readers/conv-001-mcp-geo-landis-nottinghamshire-leacs.md)
+- [CONV-002 public source note](sources/conv-002-claude-cv1-map-failure-success.md)
+- [CONV-002 start-to-finish reader](readers/conv-002-claude-cv1-map-failure-success.md)
+- [CONV-003 public source note](sources/conv-003-claude-leamington-warwick-stats-routing.md)
+- [CONV-003 start-to-finish reader](readers/conv-003-claude-leamington-warwick-stats-routing.md)
+- [CONV-004 public source note](sources/conv-004-ons-uprn-shard-ingestion-incident.md)
+- [CONV-004 start-to-finish reader](readers/conv-004-ons-uprn-shard-ingestion-incident.md)
+- [Repeatable workflow](repeatable-workflow.md)
+- [Repository workflow note](../../docs/llm_wiki_postmortem_workflow.md)
+- [Codex session inventory script](../../scripts/llm_wiki_postmortem_inventory.py)
+
+## ONS UPRN Evidence
+
+- [ONS geo source resolution note](../../docs/ons_geo_source_resolution.md)
+- [ONS cache refresh script](../../scripts/ons_geo_cache_refresh.py)
+- [ONS cache refresh regression tests](../../tests/test_ons_geo_cache_refresh.py)
+- [Release changelog](../../CHANGELOG.md)
+
+## Selected Client-Interop Source Examples
+
+- [Claude failed conversation](../../docs/Claude_failed_conversation.md)
+- [Claude success conversation](../../docs/Claude_success_conversation.md)
+- [Claude Opus failed conversation 1](../../docs/Claude_opus_4-6_failed_convo_1.md)
+- [Claude Opus failed conversation 2](../../docs/claude_opus_4-6_failed_convo_2.md)
 
 ## External Data Roots
 

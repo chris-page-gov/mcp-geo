@@ -17,5 +17,64 @@
       "leacs-access-probe",
       "llm-wiki"
     ]
+  },
+  {
+    "source_id": "CONV-002",
+    "title": "Claude CV1 Map Failure and Constrained Success Path",
+    "conversation_date": "2026-02-13/2026-02-14",
+    "publication_status": "public-safe-curated-derivative",
+    "public_source_path": "postmortem-public/wiki/sources/conv-002-claude-cv1-map-failure-success.md",
+    "public_reader_path": "postmortem-public/wiki/readers/conv-002-claude-cv1-map-failure-success.md",
+    "exchange_count": 5,
+    "raw_transcript_status": "not-exported",
+    "themes": [
+      "claude-client-interop",
+      "cv1-3hb",
+      "os-places",
+      "os-mapping",
+      "maplibre",
+      "content-security-policy",
+      "structured-output"
+    ]
+  },
+  {
+    "source_id": "CONV-003",
+    "title": "Claude Opus Leamington/Warwick Stats-Routing Failures",
+    "conversation_date": "2026-02-07/2026-02-10",
+    "publication_status": "public-safe-curated-derivative",
+    "public_source_path": "postmortem-public/wiki/sources/conv-003-claude-leamington-warwick-stats-routing.md",
+    "public_reader_path": "postmortem-public/wiki/readers/conv-003-claude-leamington-warwick-stats-routing.md",
+    "exchange_count": 6,
+    "raw_transcript_status": "not-exported",
+    "themes": [
+      "claude-client-interop",
+      "leamington-warwick",
+      "stats-routing",
+      "nomis",
+      "census-2021",
+      "admin-boundaries",
+      "mcp-app-dashboard",
+      "query-normalization"
+    ]
+  },
+  {
+    "source_id": "CONV-004",
+    "title": "ONS UPRN Shard-Ingestion Incident",
+    "conversation_date": "2026-04-15",
+    "publication_status": "public-safe-curated-derivative",
+    "public_source_path": "postmortem-public/wiki/sources/conv-004-ons-uprn-shard-ingestion-incident.md",
+    "public_reader_path": "postmortem-public/wiki/readers/conv-004-ons-uprn-shard-ingestion-incident.md",
+    "exchange_count": 4,
+    "raw_transcript_status": "not-exported",
+    "themes": [
+      "claude-client-interop",
+      "ons-geo",
+      "uprn",
+      "onsud",
+      "nsul",
+      "cache-refresh",
+      "sharded-archives",
+      "regression"
+    ]
   }
 ]
