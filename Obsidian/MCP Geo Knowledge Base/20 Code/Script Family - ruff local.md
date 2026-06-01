@@ -3,16 +3,16 @@ title: "Script Family - ruff local"
 kb_kind: "code_family"
 source_paths:
   - "scripts/ruff-local"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/ruff-local"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/ruff-local"
 source_hashes:
   scripts/ruff-local: "sha256:f8feff8e-5928a161-c88efec8-29ee28e3-c9a52a04-f32881d8-9b5edaaa-a7dccfd2"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-10"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Script Family - ruff local
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Pinned Sources
 
-- [`scripts/ruff-local`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/ruff-local)
+- [`scripts/ruff-local`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/ruff-local)

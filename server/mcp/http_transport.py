@@ -41,16 +41,18 @@ from server.mcp.elicitation_forms import (
 )
 from server.mcp.prompts import get_prompt, list_prompts
 from server.mcp.resource_handoff import decorate_resource_handoff
-from server.mcp.resource_catalog import MCP_APPS_MIME
+from server.mcp import rc2026
 from server.mcp.tool_search import get_toolset_catalog, resolve_default_toolset_filters_from_env
 from server.observability import record_tool_call
 from server.protocol import (
     HTTP_DEFAULT_PROTOCOL_VERSION,
+    MCP_2026_RC_PROTOCOL_VERSION,
     PROTOCOL_VERSION,
-    SUPPORTED_PROTOCOL_VERSIONS,
+    is_mcp_2026_rc_protocol,
     is_supported_protocol_version,
     negotiate_protocol_version,
     normalize_protocol_version,
+    supported_protocol_versions,
 )
 from tools.registry import get as get_tool
 
@@ -62,6 +64,7 @@ _SESSION_LOCK = threading.Lock()
 _SESSION_STATE: dict[str, dict[str, Any]] = {}
 _MCP_HTTP_METRICS_LOCK = threading.Lock()
 _AUTH_FAILURES_TOTAL: dict[str, int] = {}
+_STANDARD_HEADER_OBSERVATIONS_TOTAL: dict[tuple[str, str], int] = {}
 _SESSION_QUOTA_REJECTIONS_TOTAL = 0
 try:
     _SESSION_TTL_SECONDS = float(
@@ -116,6 +119,26 @@ def _get_session(request: Request) -> tuple[str, dict[str, Any]]:
         state = {"capabilities": {}, "last_seen": now}
         _SESSION_STATE[resolved] = state
         return resolved, state
+
+
+def _request_wants_stateless_2026_rc(
+    request: Request,
+    method: str | None,
+    params: dict[str, Any],
+) -> bool:
+    return rc2026.wants_2026_rc_protocol(
+        header_version=request.headers.get("mcp-protocol-version"),
+        method=method,
+        params=params,
+    )
+
+
+def _record_standard_header_observation(header: str, issue: str) -> None:
+    with _MCP_HTTP_METRICS_LOCK:
+        key = (header, issue)
+        _STANDARD_HEADER_OBSERVATIONS_TOTAL[key] = (
+            _STANDARD_HEADER_OBSERVATIONS_TOTAL.get(key, 0) + 1
+        )
 
 
 def _b64url_decode(value: str) -> bytes:
@@ -323,6 +346,8 @@ def build_prometheus_lines() -> list[str]:
     lines = [
         "# HELP mcp_http_auth_failures_total Total failed MCP HTTP auth decisions by reason",
         "# TYPE mcp_http_auth_failures_total counter",
+        "# HELP mcp_http_standard_header_observations_total Total MCP HTTP standard-header observations by header and issue",
+        "# TYPE mcp_http_standard_header_observations_total counter",
         "# HELP mcp_http_session_quota_rejections_total Total MCP HTTP session quota rejections",
         "# TYPE mcp_http_session_quota_rejections_total counter",
         "# HELP mcp_http_sessions_active Current active MCP HTTP sessions",
@@ -330,9 +355,15 @@ def build_prometheus_lines() -> list[str]:
     ]
     with _MCP_HTTP_METRICS_LOCK:
         auth_failures = dict(_AUTH_FAILURES_TOTAL)
+        standard_header_observations = dict(_STANDARD_HEADER_OBSERVATIONS_TOTAL)
         quota_rejections = _SESSION_QUOTA_REJECTIONS_TOTAL
     for reason, count in sorted(auth_failures.items()):
         lines.append(f'mcp_http_auth_failures_total{{reason="{reason}"}} {count}')
+    for (header, issue), count in sorted(standard_header_observations.items()):
+        lines.append(
+            'mcp_http_standard_header_observations_total'
+            f'{{header="{header}",issue="{issue}"}} {count}'
+        )
     lines.append(f"mcp_http_session_quota_rejections_total {quota_rejections}")
     with _SESSION_LOCK:
         lines.append(f"mcp_http_sessions_active {len(_SESSION_STATE)}")
@@ -502,16 +533,7 @@ def _initialize(params: dict[str, Any], session_state: dict[str, Any]) -> dict[s
     return {
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": stdio_adapter.SERVER_VERSION},
-        "capabilities": {
-            "tools": {"list": True, "call": True},
-            "resources": {"list": True, "read": True},
-            "prompts": {"list": True, "get": True},
-            "extensions": {
-                "io.modelcontextprotocol/ui": {
-                    "mimeTypes": [MCP_APPS_MIME],
-                }
-            },
-        },
+        "capabilities": rc2026.build_server_capabilities(),
         "server": "mcp-geo",
         "version": stdio_adapter.SERVER_VERSION,
     }
@@ -524,7 +546,7 @@ def _protocol_error_response(
     requested: str | None = None,
     negotiated: str | None = None,
 ) -> JSONResponse:
-    data: dict[str, Any] = {"supported": list(SUPPORTED_PROTOCOL_VERSIONS)}
+    data: dict[str, Any] = {"supported": list(supported_protocol_versions())}
     if requested is not None:
         data["requested"] = requested
     if negotiated is not None:
@@ -540,6 +562,7 @@ def _resolve_request_protocol_version(
     *,
     request: Request,
     method: str,
+    params: dict[str, Any],
     session_state: dict[str, Any],
     headers: dict[str, str],
 ) -> tuple[str, JSONResponse | None]:
@@ -553,6 +576,32 @@ def _resolve_request_protocol_version(
                 requested=header_version,
             ),
         )
+    request_meta_version = rc2026.request_meta_from_params(params).get("protocolVersion")
+    if isinstance(request_meta_version, str) and not is_supported_protocol_version(
+        request_meta_version
+    ):
+        return (
+            PROTOCOL_VERSION,
+            _protocol_error_response(
+                headers=headers,
+                message="Unsupported protocol version",
+                requested=request_meta_version,
+            ),
+        )
+    meta_version = rc2026.requested_protocol_from_params(method, params)
+    if (
+        method != "initialize"
+        and meta_version
+        and not is_supported_protocol_version(meta_version)
+    ):
+        return (
+            PROTOCOL_VERSION,
+            _protocol_error_response(
+                headers=headers,
+                message="Unsupported protocol version",
+                requested=meta_version,
+            ),
+        )
 
     negotiated = normalize_protocol_version(session_state.get("protocolVersion"))
     if negotiated and not is_supported_protocol_version(negotiated):
@@ -562,9 +611,36 @@ def _resolve_request_protocol_version(
     if method == "initialize":
         if header_version:
             return header_version, None
+        if isinstance(request_meta_version, str):
+            return request_meta_version, None
+        if meta_version and is_supported_protocol_version(meta_version):
+            return meta_version, None
         if negotiated:
             return negotiated, None
         return HTTP_DEFAULT_PROTOCOL_VERSION, None
+
+    if meta_version:
+        if negotiated and meta_version != negotiated:
+            return (
+                negotiated,
+                _protocol_error_response(
+                    headers=headers,
+                    message="_meta.protocolVersion does not match negotiated session protocol",
+                    requested=meta_version,
+                    negotiated=negotiated,
+                ),
+            )
+        if header_version and header_version != meta_version:
+            return (
+                meta_version,
+                _protocol_error_response(
+                    headers=headers,
+                    message="MCP-Protocol-Version does not match _meta.protocolVersion",
+                    requested=header_version,
+                    negotiated=meta_version,
+                ),
+            )
+        return meta_version, None
 
     if negotiated and header_version and header_version != negotiated:
         return (
@@ -582,6 +658,69 @@ def _resolve_request_protocol_version(
     if negotiated:
         return negotiated, None
     return HTTP_DEFAULT_PROTOCOL_VERSION, None
+
+
+def _expected_mcp_name(method: str, params: dict[str, Any]) -> str | None:
+    if method == "tools/call":
+        name = params.get("name") or params.get("tool")
+        return name if isinstance(name, str) else None
+    if method == "resources/read":
+        value = params.get("uri") or params.get("name")
+        return value if isinstance(value, str) else None
+    if method == "prompts/get":
+        value = params.get("name")
+        return value if isinstance(value, str) else None
+    return None
+
+
+def _validate_standard_headers(
+    *,
+    request: Request,
+    method: str,
+    params: dict[str, Any],
+    protocol_version: str,
+    headers: dict[str, str],
+) -> JSONResponse | None:
+    strict = is_mcp_2026_rc_protocol(protocol_version)
+    method_header = request.headers.get("mcp-method")
+    if not method_header:
+        _record_standard_header_observation("Mcp-Method", "missing")
+        if strict:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=_resp_error(None, -32600, "Missing Mcp-Method header"),
+                headers=headers,
+            )
+    elif method_header != method:
+        _record_standard_header_observation("Mcp-Method", "mismatch")
+        if strict:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=_resp_error(None, -32600, "Mcp-Method header mismatch"),
+                headers=headers,
+            )
+
+    expected_name = _expected_mcp_name(method, params)
+    if expected_name is None:
+        return None
+    name_header = request.headers.get("mcp-name")
+    if not name_header:
+        _record_standard_header_observation("Mcp-Name", "missing")
+        if strict:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=_resp_error(None, -32600, "Missing Mcp-Name header"),
+                headers=headers,
+            )
+    elif name_header != expected_name:
+        _record_standard_header_observation("Mcp-Name", "mismatch")
+        if strict:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=_resp_error(None, -32600, "Mcp-Name header mismatch"),
+                headers=headers,
+            )
+    return None
 
 
 def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str, Any]:
@@ -656,24 +795,55 @@ def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str
 
 
 def _dispatch(method: str, params: dict[str, Any], session_state: dict[str, Any]) -> Any:
+    protocol_version = normalize_protocol_version(
+        rc2026.requested_protocol_from_params(method, params)
+        or session_state.get("protocolVersion")
+    ) or PROTOCOL_VERSION
+    if method == "server/discover":
+        return rc2026.build_server_discover_result()
     if method == "initialize":
         return _initialize(params, session_state)
     if method == "tools/list":
-        return stdio_adapter.handle_list_tools(params)
+        result = stdio_adapter.handle_list_tools(params)
+        return rc2026.add_cache_metadata(
+            result,
+            method=method,
+            protocol_version=protocol_version,
+        )
     if method == "tools/search":
         return stdio_adapter.handle_search_tools(params)
     if method == "tools/call":
         return _call_tool(params, session_state.get("capabilities", {}))
     if method == "resources/list":
-        return stdio_adapter.handle_list_resources(params)
+        result = stdio_adapter.handle_list_resources(params)
+        return rc2026.add_cache_metadata(
+            result,
+            method=method,
+            protocol_version=protocol_version,
+        )
     if method == "resources/templates/list":
-        return stdio_adapter.handle_list_resource_templates(params)
+        result = stdio_adapter.handle_list_resource_templates(params)
+        return rc2026.add_cache_metadata(
+            result,
+            method=method,
+            protocol_version=protocol_version,
+        )
     if method == "resources/describe":
         return {"resources": stdio_adapter.RESOURCE_LIST}
     if method == "resources/read":
-        return stdio_adapter.handle_get_resource(params)
+        result = stdio_adapter.handle_get_resource(params)
+        return rc2026.add_cache_metadata(
+            result,
+            method=method,
+            protocol_version=protocol_version,
+        )
     if method == "prompts/list":
-        return {"prompts": list_prompts()}
+        result = {"prompts": list_prompts()}
+        return rc2026.add_cache_metadata(
+            result,
+            method=method,
+            protocol_version=protocol_version,
+        )
     if method == "prompts/get":
         name = params.get("name")
         if not isinstance(name, str) or not name.strip():
@@ -757,15 +927,6 @@ async def mcp_endpoint(request: Request):
             content=_resp_error(msg_id, -32600, "Invalid Request"),
             headers=headers,
         )
-    protocol_version, protocol_error = _resolve_request_protocol_version(
-        request=request,
-        method=method,
-        session_state=session_state,
-        headers=headers,
-    )
-    headers["mcp-protocol-version"] = protocol_version
-    if protocol_error is not None:
-        return protocol_error
     params = msg.get("params")
     if params is None:
         params = {}
@@ -775,6 +936,29 @@ async def mcp_endpoint(request: Request):
             content=_resp_error(msg_id, -32602, "Invalid params"),
             headers=headers,
         )
+    if _request_wants_stateless_2026_rc(request, method, params):
+        headers = {}
+        session_state = {"capabilities": {}, "stateless": True}
+    rc2026.update_state_from_request_meta(session_state, params)
+    protocol_version, protocol_error = _resolve_request_protocol_version(
+        request=request,
+        method=method,
+        params=params,
+        session_state=session_state,
+        headers=headers,
+    )
+    headers["mcp-protocol-version"] = protocol_version
+    if protocol_error is not None:
+        return protocol_error
+    header_error = _validate_standard_headers(
+        request=request,
+        method=method,
+        params=params,
+        protocol_version=protocol_version,
+        headers=headers,
+    )
+    if header_error is not None:
+        return header_error
     try:
         auth_claims = _authenticate_request(request, session_state)
         _enforce_session_quota(method, session_state, auth_claims)
@@ -807,12 +991,66 @@ async def mcp_endpoint(request: Request):
             call_params["args"] = payload
             call_params["arguments"] = payload
             call_params["payload"] = payload
+            rc_mode = protocol_version == MCP_2026_RC_PROTOCOL_VERSION
+            if rc_mode and resolved_name == "os_mcp.select_toolsets":
+                response = rc2026.input_response(params, "toolset_selection")
+                if response:
+                    should_continue, elicitation_error = (
+                        apply_toolset_selection_elicitation_result(payload, response)
+                    )
+                    if not should_continue:
+                        data = elicitation_error or {
+                            "isError": True,
+                            "code": "ELICITATION_CANCELLED",
+                            "message": "Elicitation cancelled.",
+                        }
+                        final_result = {
+                            "status": 409,
+                            "ok": False,
+                            "data": data,
+                            "isError": True,
+                            "content": stdio_adapter._tool_content_from_data(
+                                data,
+                                allow_resource=False,
+                            ),
+                        }
+                        return JSONResponse(
+                            status_code=status.HTTP_200_OK,
+                            content=_resp_success(msg_id, final_result),
+                            headers=headers,
+                        )
+                    call_params["args"] = payload
+                    call_params["arguments"] = payload
+                    call_params["payload"] = payload
+                elif (
+                    _needs_toolset_elicitation(payload)
+                    and rc2026.client_supports_elicitation_request(capabilities)
+                ):
+                    result = rc2026.build_input_required_result(
+                        key="toolset_selection",
+                        method="elicitation/create",
+                        params=_build_toolset_elicitation_params(payload),
+                        request_state={"tool": resolved_name},
+                    )
+                    return JSONResponse(
+                        status_code=status.HTTP_200_OK,
+                        content=_resp_success(msg_id, result),
+                        headers=headers,
+                    )
+            if rc_mode and resolved_name == "ons_select.search":
+                response = rc2026.input_response(params, "ons_select_disambiguation")
+                if response:
+                    changed, _error = apply_ons_select_elicitation_result(payload, response)
+                    if changed:
+                        call_params["args"] = payload
+                        call_params["arguments"] = payload
+                        call_params["payload"] = payload
             wants_elicitation = (
                 _bool_env("MCP_HTTP_ELICITATION_ENABLED", default=True)
                 and _accepts_event_stream(request)
                 and client_supports_elicitation_form(capabilities)
             )
-            if resolved_name == "os_mcp.select_toolsets" and wants_elicitation:
+            if resolved_name == "os_mcp.select_toolsets" and wants_elicitation and not rc_mode:
                 if _needs_toolset_elicitation(payload):
                     elicitation_params = _build_toolset_elicitation_params(payload)
                     elicitation_id = _next_elicitation_request_id(session_state)
@@ -895,6 +1133,32 @@ async def mcp_endpoint(request: Request):
                     )
             initial_result = _call_tool(call_params, capabilities)
             data = initial_result.get("data") if isinstance(initial_result, dict) else None
+            if (
+                rc_mode
+                and resolved_name == "ons_select.search"
+                and isinstance(data, dict)
+                and data.get("needsElicitation") is True
+                and rc2026.client_supports_elicitation_request(capabilities)
+            ):
+                query = data.get("query") or payload.get("query") or payload.get("q") or ""
+                if isinstance(query, str) and query.strip():
+                    questions = data.get("elicitationQuestions")
+                    question_list = questions if isinstance(questions, list) else None
+                    result = rc2026.build_input_required_result(
+                        key="ons_select_disambiguation",
+                        method="elicitation/create",
+                        params=build_ons_select_elicitation_params(
+                            query.strip(),
+                            payload,
+                            question_list,
+                        ),
+                        request_state={"tool": resolved_name},
+                    )
+                    return JSONResponse(
+                        status_code=status.HTTP_200_OK,
+                        content=_resp_success(msg_id, result),
+                        headers=headers,
+                    )
             if (
                 resolved_name == "ons_select.search"
                 and isinstance(data, dict)
@@ -992,9 +1256,10 @@ async def mcp_endpoint(request: Request):
             headers=headers,
         )
     except LookupError as exc:
+        code = -32602 if protocol_version == MCP_2026_RC_PROTOCOL_VERSION and method == "resources/read" else 1001
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content=_resp_error(msg_id, 1001, str(exc)),
+            content=_resp_error(msg_id, code, str(exc)),
             headers=headers,
         )
     except ValueError as exc:

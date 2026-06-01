@@ -3,16 +3,16 @@ title: "Tool Family - os resources"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_resources.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_resources.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/os_resources.py"
 source_hashes:
   tools/os_resources.py: "sha256:08b4b0a9-1f373d78-4c876a99-95332f7c-ff4dacde-e9eb3f60-d7f5fe49-0313a307"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-14"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Tool Family - os resources
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Pinned Sources
 
-- [`tools/os_resources.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_resources.py)
+- [`tools/os_resources.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/os_resources.py)

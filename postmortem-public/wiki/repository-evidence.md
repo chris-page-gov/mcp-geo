@@ -22,6 +22,8 @@ This page links the curated conversation record to durable repository artifacts.
 ## Conversation And Project Memory
 
 - [Durable MCP-Geo context](../../CONTEXT.md)
+- [MCP 2026-07-28 RC alignment ledger](../../Plans/PLAN-MCP-2026-07-28-RC-alignment.md)
+- [Preview specification tracking](../../docs/spec_tracking.md)
 - [LLM Wiki vs RAG research note](../../research/llm_wiki_vs_rag/LLM%20Wiki,%20Enhanced%20RAG%20and%20the%20Right%20Knowledge%20Architecture%20for%20MCP-Geo.md)
 - [Selected capture queue](capture-selection.md)
 - [CONV-001 public source note](sources/conv-001-mcp-geo-landis-nottinghamshire-leacs.md)

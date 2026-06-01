@@ -586,6 +586,23 @@ If you need deterministic non-interactive routing, set
 (`os_mcp.stats_routing`, `ons_select.search`). For Streamable HTTP (`/mcp`), set
 `MCP_HTTP_ELICITATION_ENABLED=0`.
 
+### MCP 2026-07-28 RC interop mode
+
+The default runtime protocol remains `2025-11-25`. To test the 2026-07-28
+release-candidate path, set one of:
+
+```bash
+MCP_2026_RC_ENABLED=1
+# or
+MCP_PROTOCOL_2026_07_28_ENABLED=1
+```
+
+RC HTTP requests must carry `MCP-Protocol-Version: 2026-07-28` and
+`Mcp-Method`; `Mcp-Name` is also required for named methods such as
+`tools/call`, `resources/read`, and `prompts/get`. RC mode is stateless and
+does not issue or require `Mcp-Session-Id`. Stable clients should leave the RC
+flags unset.
+
 ## Appendix: Codex local wrapper (PostGIS + cache)
 
 For Codex CLI and Codex IDE, use the Codex-specific launcher so Codex does not

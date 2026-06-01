@@ -3,16 +3,16 @@ title: "Tool Family - ons geo"
 kb_kind: "code_family"
 source_paths:
   - "tools/ons_geo.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/ons_geo.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/ons_geo.py"
 source_hashes:
-  tools/ons_geo.py: "sha256:ffe904e5-98b9c0d3-8f7bd159-b8534032-048f4685-b9301969-574e8ff3-b350462b"
-generated_at: "2026-04-06T14:09:00Z"
+  tools/ons_geo.py: "sha256:73b51d87-59ec04c5-eeff3bd0-87b3b080-528a8c35-305aa5ae-9ede068b-7f427c44"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-22"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Tool Family - ons geo
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `tools/ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-02-23 | `tests/test_evaluation_harness_full.py`, `tests/test_ons_geo.py`, `tests/test_ons_geo_cache.py`, `tests/test_ons_geo_cache_refresh.py` |
+| `tools/ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-04-12 | `tests/test_benchmark_env.py`, `tests/test_check_shared_benchmark_cache.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_docker_local.py` |
 
 ## Pinned Sources
 
-- [`tools/ons_geo.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/ons_geo.py)
+- [`tools/ons_geo.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/ons_geo.py)

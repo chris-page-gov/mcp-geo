@@ -3,16 +3,16 @@ title: "Script Family - host benchmark"
 kb_kind: "code_family"
 source_paths:
   - "scripts/host_benchmark.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/host_benchmark.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/host_benchmark.py"
 source_hashes:
-  scripts/host_benchmark.py: "sha256:f6240273-57511e24-d6e19ef2-fa22e7d9-0a0d2e29-a13ab1a3-7452330a-0f9f29e7"
-generated_at: "2026-04-06T14:09:00Z"
+  scripts/host_benchmark.py: "sha256:55ae2ef9-f98f9847-a91225bd-26287670-1e0c127b-e2ed92ed-9f19d897-20d53eda"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-06"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Script Family - host benchmark
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `scripts/host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | `tests/test_host_benchmark.py`, `tests/test_map_trials_host_simulation_profiles.py` |
+| `scripts/host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-04-13 | `tests/test_host_benchmark.py`, `tests/test_map_trials_host_simulation_profiles.py`, `tests/test_unattended_client_eval.py` |
 
 ## Pinned Sources
 
-- [`scripts/host_benchmark.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/host_benchmark.py)
+- [`scripts/host_benchmark.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/host_benchmark.py)

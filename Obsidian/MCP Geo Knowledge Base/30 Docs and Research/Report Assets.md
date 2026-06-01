@@ -15,22 +15,22 @@ source_paths:
   - "docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png"
   - "docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png"
   - "docs/reports/assets/wheelchair_route_comparison_2026-03-07.png"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f01_repo_at_a_glance.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f02_reader_pathways.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f03_runtime_request_flow.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f05_documentation_publication_stack.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f08_governed_answer_loop.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/mcp_geo_stakeholders.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/stakeholders.mermaid"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/wheelchair_route_comparison_2026-03-07.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f01_repo_at_a_glance.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f02_reader_pathways.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f03_runtime_request_flow.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f05_documentation_publication_stack.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f08_governed_answer_loop.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/mcp_geo_stakeholders.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/stakeholders.mermaid"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/wheelchair_route_comparison_2026-03-07.png"
 source_hashes:
   docs/reports/assets/analytical_index/f01_repo_at_a_glance.png: "sha256:4741967b-77f48d3e-2e3913a0-65628dff-7130a86a-bf58886e-949b009d-a05f2752"
   docs/reports/assets/analytical_index/f02_reader_pathways.png: "sha256:a81d1e74-5e21cc24-d3b3c887-f95bf83a-727cc272-1fd109ee-d459bd30-8cc7dc63"
@@ -45,10 +45,10 @@ source_hashes:
   docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png: "sha256:411d61bd-c2a03bc8-3247897e-97c6f04e-386061e2-cd34d576-047629f1-e6eb31d1"
   docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png: "sha256:8fedef17-0d3b505f-697f35d7-06c649b5-965859e2-29d832be-480b83d6-3dae40a9"
   docs/reports/assets/wheelchair_route_comparison_2026-03-07.png: "sha256:47364ccb-aabdc683-abacb4eb-2c1b501e-a9e6e0d3-30815c72-2cedf6ad-41d396fd"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-07"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Report Assets
 
@@ -77,31 +77,31 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Binary Artifacts
 
-- `docs/reports/assets/analytical_index/f01_repo_at_a_glance.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f01_repo_at_a_glance.png)
-- `docs/reports/assets/analytical_index/f02_reader_pathways.png` (58.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f02_reader_pathways.png)
-- `docs/reports/assets/analytical_index/f03_runtime_request_flow.png` (52.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f03_runtime_request_flow.png)
-- `docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png` (62.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png)
-- `docs/reports/assets/analytical_index/f05_documentation_publication_stack.png` (81.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f05_documentation_publication_stack.png)
-- `docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png` (67.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png)
-- `docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png` (64.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png)
-- `docs/reports/assets/analytical_index/f08_governed_answer_loop.png` (66.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f08_governed_answer_loop.png)
-- `docs/reports/assets/mcp_geo_stakeholders.png` (56.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/mcp_geo_stakeholders.png)
-- `docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png)
-- `docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png` (242.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png)
-- `docs/reports/assets/wheelchair_route_comparison_2026-03-07.png` (84.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/wheelchair_route_comparison_2026-03-07.png)
+- `docs/reports/assets/analytical_index/f01_repo_at_a_glance.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f01_repo_at_a_glance.png)
+- `docs/reports/assets/analytical_index/f02_reader_pathways.png` (58.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f02_reader_pathways.png)
+- `docs/reports/assets/analytical_index/f03_runtime_request_flow.png` (52.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f03_runtime_request_flow.png)
+- `docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png` (62.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png)
+- `docs/reports/assets/analytical_index/f05_documentation_publication_stack.png` (81.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f05_documentation_publication_stack.png)
+- `docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png` (67.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png)
+- `docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png` (64.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png)
+- `docs/reports/assets/analytical_index/f08_governed_answer_loop.png` (66.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f08_governed_answer_loop.png)
+- `docs/reports/assets/mcp_geo_stakeholders.png` (56.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/mcp_geo_stakeholders.png)
+- `docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png)
+- `docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png` (242.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png)
+- `docs/reports/assets/wheelchair_route_comparison_2026-03-07.png` (84.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/wheelchair_route_comparison_2026-03-07.png)
 
 ## Pinned Sources
 
-- [`docs/reports/assets/analytical_index/f01_repo_at_a_glance.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f01_repo_at_a_glance.png)
-- [`docs/reports/assets/analytical_index/f02_reader_pathways.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f02_reader_pathways.png)
-- [`docs/reports/assets/analytical_index/f03_runtime_request_flow.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f03_runtime_request_flow.png)
-- [`docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png)
-- [`docs/reports/assets/analytical_index/f05_documentation_publication_stack.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f05_documentation_publication_stack.png)
-- [`docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png)
-- [`docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png)
-- [`docs/reports/assets/analytical_index/f08_governed_answer_loop.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/analytical_index/f08_governed_answer_loop.png)
-- [`docs/reports/assets/mcp_geo_stakeholders.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/mcp_geo_stakeholders.png)
-- [`docs/reports/assets/stakeholders.mermaid`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/stakeholders.mermaid)
-- [`docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png)
-- [`docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png)
-- [`docs/reports/assets/wheelchair_route_comparison_2026-03-07.png`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/reports/assets/wheelchair_route_comparison_2026-03-07.png)
+- [`docs/reports/assets/analytical_index/f01_repo_at_a_glance.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f01_repo_at_a_glance.png)
+- [`docs/reports/assets/analytical_index/f02_reader_pathways.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f02_reader_pathways.png)
+- [`docs/reports/assets/analytical_index/f03_runtime_request_flow.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f03_runtime_request_flow.png)
+- [`docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f04_tool_resource_ecosystem.png)
+- [`docs/reports/assets/analytical_index/f05_documentation_publication_stack.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f05_documentation_publication_stack.png)
+- [`docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f06_evidence_assurance_ladder.png)
+- [`docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f07_release_iteration_pipeline.png)
+- [`docs/reports/assets/analytical_index/f08_governed_answer_loop.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/analytical_index/f08_governed_answer_loop.png)
+- [`docs/reports/assets/mcp_geo_stakeholders.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/mcp_geo_stakeholders.png)
+- [`docs/reports/assets/stakeholders.mermaid`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/stakeholders.mermaid)
+- [`docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/teignmouth_peninsula_profile_counts_2026-03-07.png)
+- [`docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png)
+- [`docs/reports/assets/wheelchair_route_comparison_2026-03-07.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/docs/reports/assets/wheelchair_route_comparison_2026-03-07.png)

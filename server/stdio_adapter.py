@@ -25,12 +25,12 @@ if str(ROOT) not in sys.path:
 
 # Import side-effects to register tools
 import tools.registry as _reg  # noqa: F401
+from server.mcp import rc2026
 from server.mcp import tools as _mcp_import  # noqa: F401
 
 from tools.registry import all_tools, get as get_tool
 from server.mcp.resource_catalog import (
     list_data_resources,
-    MCP_APPS_MIME,
     list_skill_resources,
     list_ui_resources,
 )
@@ -63,7 +63,7 @@ from server.mcp.client_capabilities import (
 )
 from server import __version__ as SERVER_VERSION
 from server.observability import record_tool_call
-from server.protocol import negotiate_protocol_version
+from server.protocol import MCP_2026_RC_PROTOCOL_VERSION, negotiate_protocol_version
 from server.tool_naming import (
     build_tool_name_maps,
     resolve_tool_name,
@@ -84,7 +84,35 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
     name = params.get("name")
     uri = params.get("uri")
     resource = read_resource_content(name=name, uri=uri)
-    return read_result_payload(resource)
+    result = read_result_payload(resource)
+    return rc2026.add_cache_metadata(
+        result,
+        method="resources/read",
+        protocol_version=_request_protocol_version(params),
+    )
+
+
+def _request_protocol_version(params: Dict[str, Any] | None = None) -> str:
+    meta_version = rc2026.requested_protocol_from_params(None, params or {})
+    if meta_version == MCP_2026_RC_PROTOCOL_VERSION and rc2026.is_mcp_2026_rc_enabled():
+        return MCP_2026_RC_PROTOCOL_VERSION
+    negotiated = CLIENT_CAPABILITY_SUMMARY.get("negotiatedProtocolVersion")
+    return negotiated if isinstance(negotiated, str) else negotiate_protocol_version(None)
+
+
+def _record_request_meta(params: Dict[str, Any]) -> Dict[str, Any]:
+    global LAST_REQUEST_META, CLIENT_CAPABILITIES, CLIENT_INFO
+    state: Dict[str, Any] = {"capabilities": CLIENT_CAPABILITIES}
+    meta = rc2026.update_state_from_request_meta(state, params)
+    if meta:
+        LAST_REQUEST_META = meta
+        capabilities = meta.get("capabilities")
+        if isinstance(capabilities, dict):
+            CLIENT_CAPABILITIES = capabilities
+        client_info = meta.get("clientInfo")
+        if isinstance(client_info, dict):
+            CLIENT_INFO = client_info
+    return meta
 
 def _resolve_framing() -> Optional[str]:
     raw = os.environ.get("MCP_STDIO_FRAMING", "").strip().lower()
@@ -97,6 +125,7 @@ def _resolve_framing() -> Optional[str]:
 CLIENT_CAPABILITIES: Dict[str, Any] = {}
 CLIENT_CAPABILITY_SUMMARY: Dict[str, Any] = {}
 CLIENT_INFO: Dict[str, Any] = {}
+LAST_REQUEST_META: Dict[str, Any] = {}
 _ELICITATION_HANDLER: Optional[Callable[[Dict[str, Any]], Dict[str, Any] | None]] = None
 _ELICITATION_REQUEST_SEQ = 0
 
@@ -390,6 +419,30 @@ def _maybe_elicit_select_toolsets(payload: Dict[str, Any]) -> tuple[bool, Dict[s
             "message": "No elicitation response received from client.",
         }
     return apply_toolset_selection_elicitation_result(payload, response)
+
+
+def _build_select_toolsets_input_request(payload: Dict[str, Any]) -> Dict[str, Any]:
+    catalog = get_toolset_catalog()
+    default_toolset, default_include, default_exclude = resolve_default_toolset_filters_from_env()
+    include_seed = list(default_include)
+    if default_toolset:
+        include_seed.append(default_toolset)
+    query = payload.get("query")
+    query_text = query.strip() if isinstance(query, str) else ""
+    return build_toolset_selection_elicitation_params(
+        query=query_text,
+        toolset_names=sorted(catalog.keys()),
+        default_include=include_seed,
+        default_exclude=default_exclude,
+    )
+
+
+def _needs_select_toolsets_input(payload: Dict[str, Any]) -> bool:
+    if payload.get("skipElicitation") is True:
+        return False
+    return not any(
+        payload.get(key) is not None for key in ("toolset", "includeToolsets", "excludeToolsets")
+    )
 
 
 def _tool_content_limit_bytes() -> int:
@@ -718,16 +771,7 @@ def handle_initialize(params: Dict[str, Any]) -> Any:
     return {
         "protocolVersion": protocol_version,
         "serverInfo": {"name": "mcp-geo", "version": SERVER_VERSION},
-        "capabilities": {
-            "tools": {"list": True, "call": True},
-            "resources": {"list": True, "read": True},
-            "prompts": {"list": True, "get": True},
-            "extensions": {
-                "io.modelcontextprotocol/ui": {
-                    "mimeTypes": [MCP_APPS_MIME],
-                }
-            },
-        },
+        "capabilities": rc2026.build_server_capabilities(),
         "server": "mcp-geo",
         "version": SERVER_VERSION,
     }
@@ -834,7 +878,11 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
     }
     if not compact:
         result["toolsets"] = get_toolset_catalog()
-    return result
+    return rc2026.add_cache_metadata(
+        result,
+        method="tools/list",
+        protocol_version=_request_protocol_version(_params),
+    )
 
 
 def handle_search_tools(params: Dict[str, Any]) -> Any:
@@ -899,6 +947,39 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     if not isinstance(payload, dict):
         raise TypeError("Payload must be object")
     payload = dict(payload)
+    protocol_version = _request_protocol_version(params)
+    rc_mode = protocol_version == MCP_2026_RC_PROTOCOL_VERSION
+    if rc_mode and resolved_name == "os_mcp.select_toolsets":
+        response = rc2026.input_response(params, "toolset_selection")
+        if response:
+            should_continue, elicitation_error = apply_toolset_selection_elicitation_result(
+                payload,
+                response,
+            )
+            if not should_continue:
+                data = elicitation_error or {
+                    "isError": True,
+                    "code": "ELICITATION_CANCELLED",
+                    "message": "Elicitation cancelled.",
+                }
+                result: Dict[str, Any] = {
+                    "status": 409,
+                    "ok": False,
+                    "data": data,
+                    "isError": True,
+                    "content": _tool_content_from_data(data, allow_resource=False),
+                }
+                return result
+        elif (
+            _needs_select_toolsets_input(payload)
+            and rc2026.client_supports_elicitation_request(CLIENT_CAPABILITIES)
+        ):
+            return rc2026.build_input_required_result(
+                key="toolset_selection",
+                method="elicitation/create",
+                params=_build_select_toolsets_input_request(payload),
+                request_state={"tool": resolved_name},
+            )
     if (
         resolved_name.startswith("os_apps.render_")
         and "contentMode" not in payload
@@ -938,7 +1019,31 @@ def handle_call_tool(params: Dict[str, Any]) -> Any:
     started = time.perf_counter()
     status, data = tool.call(payload)
     if resolved_name == "ons_select.search" and isinstance(data, dict):
-        if _maybe_elicit_ons_select(payload, data):
+        response = rc2026.input_response(params, "ons_select_disambiguation")
+        if rc_mode and response:
+            changed, _error = apply_ons_select_elicitation_result(payload, response)
+            if changed:
+                status, data = tool.call(payload)
+        elif (
+            rc_mode
+            and data.get("needsElicitation") is True
+            and rc2026.client_supports_elicitation_request(CLIENT_CAPABILITIES)
+        ):
+            query = data.get("query") or payload.get("query") or payload.get("q") or ""
+            if isinstance(query, str) and query.strip():
+                questions = data.get("elicitationQuestions")
+                question_list = questions if isinstance(questions, list) else None
+                return rc2026.build_input_required_result(
+                    key="ons_select_disambiguation",
+                    method="elicitation/create",
+                    params=build_ons_select_elicitation_params(
+                        query.strip(),
+                        payload,
+                        question_list,
+                    ),
+                    request_state={"tool": resolved_name},
+                )
+        elif _maybe_elicit_ons_select(payload, data):
             status, data = tool.call(payload)
     if isinstance(data, dict):
         data = dict(data)
@@ -1006,13 +1111,32 @@ def _compact_resources(resources: List[dict[str, Any]]) -> List[dict[str, Any]]:
 
 
 def handle_list_resources(_params: Dict[str, Any]) -> Any:
-    return {"resources": _compact_resources(RESOURCE_LIST)}
+    result = {"resources": _compact_resources(RESOURCE_LIST)}
+    return rc2026.add_cache_metadata(
+        result,
+        method="resources/list",
+        protocol_version=_request_protocol_version(_params),
+    )
 
 def handle_list_resource_templates(_params: Dict[str, Any]) -> Any:
-    return {"resourceTemplates": []}
+    result = {"resourceTemplates": []}
+    return rc2026.add_cache_metadata(
+        result,
+        method="resources/templates/list",
+        protocol_version=_request_protocol_version(_params),
+    )
 
 def handle_list_prompts(_params: Dict[str, Any]) -> Any:
-    return {"prompts": list_prompt_defs()}
+    result = {"prompts": list_prompt_defs()}
+    return rc2026.add_cache_metadata(
+        result,
+        method="prompts/list",
+        protocol_version=_request_protocol_version(_params),
+    )
+
+
+def handle_server_discover(_params: Dict[str, Any]) -> Any:
+    return rc2026.build_server_discover_result()
 
 def handle_get_prompt(params: Dict[str, Any]) -> Any:
     name = params.get("name")
@@ -1027,6 +1151,7 @@ def handle_shutdown(_params: Dict[str, Any]) -> Any:
     return None
 
 HANDLERS: Dict[str, Any] = {
+    "server/discover": handle_server_discover,
     "initialize": handle_initialize,
     "tools/list": handle_list_tools,
     "tools/search": handle_search_tools,
@@ -1205,6 +1330,7 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
                     if not is_notification:
                         _write_message(_resp_error(msg_id, -32602, "Invalid params"), framing)
                 continue
+            _record_request_meta(params)
             try:
                 result = handler(params)
                 if framing:
@@ -1213,7 +1339,13 @@ def main(stdin: Optional[TextIO] = None, stdout: Optional[TextIO] = None) -> Non
             except LookupError as e:
                 if framing:
                     if not is_notification:
-                        _write_message(_resp_error(msg_id, 1001, str(e)), framing)
+                        code = (
+                            -32602
+                            if method == "resources/read"
+                            and _request_protocol_version(params) == MCP_2026_RC_PROTOCOL_VERSION
+                            else 1001
+                        )
+                        _write_message(_resp_error(msg_id, code, str(e)), framing)
             except ValueError as e:
                 if framing:
                     if not is_notification:

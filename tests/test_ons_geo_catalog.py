@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import server.ons_geo_freshness as ons_geo_freshness
 import server.ons_geo_catalog as ons_geo_catalog
 import server.ons_geo_freshness as ons_geo_freshness
 from server.ons_geo_catalog import (
@@ -198,7 +199,7 @@ def test_fetch_geoportal_rss_status_requires_channel(monkeypatch) -> None:
 
 
 def test_build_release_audit_combines_schedule_probe_and_geoportal(monkeypatch) -> None:
-    _freeze_release_audit_today(monkeypatch, date(2026, 4, 9))
+    _freeze_release_audit_today(monkeypatch, date(2026, 4, 30))
     monkeypatch.setattr(
         ons_geo_catalog,
         "load_manifest",
@@ -242,7 +243,6 @@ def test_build_release_audit_combines_schedule_probe_and_geoportal(monkeypatch) 
         "fetch_geoportal_dataset_latest",
         lambda product, *, timeout: {"recordId": product, "title": f"{product}_LATEST"},
     )
-
     audit = build_release_audit(timeout=5.0)
     assert audit["version"] == "2026-04-09"
     assert audit["addressBaseSchedule"]["latestPublished"]["epoch"] == 126
@@ -280,7 +280,7 @@ def test_build_release_audit_uses_publication_dates_for_latest_published(monkeyp
 def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_ingest(
     monkeypatch,
 ) -> None:
-    _freeze_release_audit_today(monkeypatch, date(2026, 4, 9))
+    _freeze_release_audit_today(monkeypatch, date(2026, 4, 30))
     dataset = SimpleNamespace(
         dataset_id="ONSUD",
         title="ONS UPRN Directory",
@@ -328,7 +328,6 @@ def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_in
         "fetch_geoportal_dataset_latest",
         lambda product, *, timeout: {"recordId": product, "title": f"{product}_LATEST"},
     )
-
     class DummyResponse:
         def raise_for_status(self) -> None:
             return None

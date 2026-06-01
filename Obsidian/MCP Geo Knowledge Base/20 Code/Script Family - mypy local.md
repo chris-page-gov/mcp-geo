@@ -3,16 +3,16 @@ title: "Script Family - mypy local"
 kb_kind: "code_family"
 source_paths:
   - "scripts/mypy-local"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/mypy-local"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/mypy-local"
 source_hashes:
-  scripts/mypy-local: "sha256:d4ea1aeb-1c640035-7a9e750c-7572a63c-319288d8-aaf72821-3e793f80-3efc80d2"
-generated_at: "2026-04-06T14:09:00Z"
+  scripts/mypy-local: "sha256:658e450b-61ddd591-a272444f-3056b65d-d926c3a2-ae72b99e-9d60e86c-deaa2161"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-10"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Script Family - mypy local
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `scripts/mypy-local` | set -euo pipefail | 2026-03-10 | 2026-03-24 | - |
+| `scripts/mypy-local` | set -euo pipefail | 2026-03-10 | 2026-04-12 | - |
 
 ## Pinned Sources
 
-- [`scripts/mypy-local`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/mypy-local)
+- [`scripts/mypy-local`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/mypy-local)

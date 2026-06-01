@@ -10,17 +10,17 @@ source_paths:
   - "skills/mcp-geo-repo-extent-complexity/SKILL.md"
   - "skills/mcp-geo-repo-extent-complexity/references/sota_practice.md"
   - "skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-detailed-os-maps/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-long-horizon-summary/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-obsidian-kb/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-repo-extent-complexity/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-repo-extent-complexity/references/sota_practice.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-detailed-os-maps/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-long-horizon-summary/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-obsidian-kb/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-repo-extent-complexity/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-repo-extent-complexity/references/sota_practice.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh"
 source_hashes:
   skills/mcp-geo-detailed-os-maps/SKILL.md: "sha256:27d76f18-aca45757-a6d6b237-1e87c98c-1c7d3e7e-876aac62-2aef99db-618c4e76"
   skills/mcp-geo-long-horizon-summary/SKILL.md: "sha256:d218207b-161f68f5-5717e623-49c9871b-4772cfda-e7f9af76-1ae8dc96-0105f9d8"
@@ -30,10 +30,10 @@ source_hashes:
   skills/mcp-geo-repo-extent-complexity/SKILL.md: "sha256:6f066c52-79b0de37-871f6414-c33cc582-3f8230e9-43df6531-7f3dbe2b-581c65f4"
   skills/mcp-geo-repo-extent-complexity/references/sota_practice.md: "sha256:89b787f8-32ef4f9e-941b84f4-c2e51766-a1bc0258-8601965e-59017345-1b642c61"
   skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh: "sha256:e1857bf3-5d49b0c3-6da2d882-44b2c563-36aea8d2-c463ffcd-b2abfcfd-6ebe865a"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-25"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Repository Skills
 
@@ -65,11 +65,11 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Pinned Sources
 
-- [`skills/mcp-geo-detailed-os-maps/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-detailed-os-maps/SKILL.md)
-- [`skills/mcp-geo-long-horizon-summary/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-long-horizon-summary/SKILL.md)
-- [`skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh)
-- [`skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl)
-- [`skills/mcp-geo-obsidian-kb/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-obsidian-kb/SKILL.md)
-- [`skills/mcp-geo-repo-extent-complexity/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-repo-extent-complexity/SKILL.md)
-- [`skills/mcp-geo-repo-extent-complexity/references/sota_practice.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-repo-extent-complexity/references/sota_practice.md)
-- [`skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh)
+- [`skills/mcp-geo-detailed-os-maps/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-detailed-os-maps/SKILL.md)
+- [`skills/mcp-geo-long-horizon-summary/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-long-horizon-summary/SKILL.md)
+- [`skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh)
+- [`skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-long-horizon-summary/templates/summary_card.svg.tmpl)
+- [`skills/mcp-geo-obsidian-kb/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-obsidian-kb/SKILL.md)
+- [`skills/mcp-geo-repo-extent-complexity/SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-repo-extent-complexity/SKILL.md)
+- [`skills/mcp-geo-repo-extent-complexity/references/sota_practice.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-repo-extent-complexity/references/sota_practice.md)
+- [`skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh)

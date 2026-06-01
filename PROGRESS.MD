@@ -3,7 +3,18 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-04-28
+Last updated: 2026-06-01
+
+## MCP 2026-07-28 RC submodule refresh and alignment (2026-06-01)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| MCP-RC-0 Clean worktree and source review | done | none | Created clean worktree `/Users/crpage/tmp/mcp-geo-rc-align` on `codex/mcp-2026-rc-alignment` because the original checkout had unrelated uncommitted edits. Reviewed the 2026-05-21 RC blog, draft changelog, relevant SEPs, and SDK migration issues before runtime changes. |
+| MCP-RC-1 Submodule refresh ledger | done | MCP-RC-0 | Updated `docs/vendor/mcp/repos/modelcontextprotocol`, `ext-apps`, `ext-auth`, `inspector`, `docs/vendor/agentskills`, and `docs/vendor/openai/repos/openai-apps-sdk-examples`. Verified `submodules/os-mcp` against its configured `geo-mcpi` branch and OS vector stylesheets against remote `HEAD` as no-op checks. Ledger lives in `Plans/PLAN-MCP-2026-07-28-RC-alignment.md`. |
+| MCP-RC-2 Feature-gated runtime alignment | done | MCP-RC-1 | Added opt-in `2026-07-28` support while retaining `2025-11-25` as default: HTTP/STDIO `server/discover`, stateless HTTP without `Mcp-Session-Id`, per-request `_meta`, `Mcp-Method` / `Mcp-Name` observe/strict behavior, cache metadata, MRTR input-required results for selected elicitation paths, RC resource-not-found mapping to `-32602`, and JSON Schema 2020-12 guardrails. |
+| MCP-RC-3 Documentation and wiki lockstep | done | MCP-RC-1, MCP-RC-2 | Updated spec tracking, vendor docs, README/getting-started config notes, MCP Apps alignment notes, changelog fragment, context, this progress ledger, the checked-in Obsidian KB, and the public postmortem wiki evidence page. Final validation passed with spec drift, whitespace, lint, type, full pytest/coverage, Obsidian KB, and postmortem wiki checks. |
 
 ## MCP draft 2026 readiness assessment (2026-04-28)
 

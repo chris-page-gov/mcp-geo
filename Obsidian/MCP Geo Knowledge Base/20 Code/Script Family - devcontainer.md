@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "scripts/devcontainer_mcp_setup.sh"
   - "scripts/devcontainer_post_start.sh"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/devcontainer_mcp_setup.sh"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/devcontainer_post_start.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/devcontainer_mcp_setup.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/devcontainer_post_start.sh"
 source_hashes:
   scripts/devcontainer_mcp_setup.sh: "sha256:3ff076fb-99d9dbce-bb55a2bf-97541800-7543af17-f64c7b4b-7cc0669c-548db6b3"
   scripts/devcontainer_post_start.sh: "sha256:ce84a680-cc56600f-98308762-67a9800e-1b8575ce-69271946-e801ce45-b15be1f1"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T01:38:32Z"
 evidence_scope: "canon"
 first_seen_date: "2026-01-20"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T01:38:32Z"
 ---
 # Script Family - devcontainer
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Pinned Sources
 
-- [`scripts/devcontainer_mcp_setup.sh`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/devcontainer_mcp_setup.sh)
-- [`scripts/devcontainer_post_start.sh`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/devcontainer_post_start.sh)
+- [`scripts/devcontainer_mcp_setup.sh`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/devcontainer_mcp_setup.sh)
+- [`scripts/devcontainer_post_start.sh`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/devcontainer_post_start.sh)
