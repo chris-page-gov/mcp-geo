@@ -766,6 +766,7 @@ source_paths:
   - "server/mcp/http_transport.py"
   - "server/mcp/playground.py"
   - "server/mcp/prompts.py"
+  - "server/mcp/rc2026.py"
   - "server/mcp/resource_access.py"
   - "server/mcp/resource_catalog.py"
   - "server/mcp/resource_handoff.py"
@@ -951,6 +952,7 @@ source_paths:
   - "tests/test_map_trials_summary.py"
   - "tests/test_map_trials_verify.py"
   - "tests/test_maps_proxy.py"
+  - "tests/test_mcp_2026_rc.py"
   - "tests/test_mcp_client_if_none_match.py"
   - "tests/test_mcp_client_resources_get.py"
   - "tests/test_mcp_docker_local.py"
@@ -1186,41 +1188,41 @@ source_paths:
   - "ui/vendor/maplibre-gl.css"
   - "ui/vendor/maplibre-gl.js"
   - "ui/vendor/shp.min.js"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/.github/workflows/ci.yml"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/AGENTS.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/GEMINI.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/Gemini-Code-Review.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/PROGRESS.MD"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.10.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.11.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.12.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.3.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.4.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.5.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.6.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.7.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.8.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.9.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.3.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.3.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.3.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.4.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.5.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.6.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.7.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.8.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.8.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/.github/workflows/ci.yml"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/AGENTS.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/GEMINI.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/Gemini-Code-Review.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.10.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.11.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.12.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.3.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.4.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.5.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.6.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.7.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.8.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.9.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.4.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.5.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.6.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.7.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
 source_hashes:
   .github/workflows/ci.yml: "sha256:d5729288-59efff5f-f6ec29df-3217ee98-790b11a9-6b38ee8e-901d12b5-28e9d451"
   AGENTS.md: "sha256:48bfd2dd-ca8e9bf2-91c51fb0-550894d3-a351736c-61502efc-b8591312-eb1e46c9"
@@ -1229,7 +1231,7 @@ source_hashes:
   GEMINI.md: "sha256:d36bb40f-904fc33b-15e34bff-a06b1f73-383e9ac2-15c10cd2-33c6d10c-fd971368"
   Gemini-Code-Review.md: "sha256:65d676b2-ef0cc74f-bad244ac-3c28d05a-bd5c9934-2c8766d6-f3fc7f69-eefe28ff"
   PROGRESS.MD: "sha256:cb45234f-a9a2e553-76fab9f1-837fe7ab-f8cfdc22-083df4d5-88ada35f-40ecefaa"
-  README.md: "sha256:a62356fd-fa1a2081-4365a154-0c0f9f7a-fe2f3009-5ae1b98e-8676a29e-6ed3ea31"
+  README.md: "sha256:943edd53-b3373afe-2034243a-51b10a89-d19c701c-6e4101db-b322cb37-0e389788"
   RELEASE_NOTES/0.2.1.md: "sha256:ad7fae04-5fa333cc-c431d7e6-6a790a48-85da7032-4d2cf2c8-2ba90af5-b54aedf6"
   RELEASE_NOTES/0.2.10.md: "sha256:10a1b4ac-dc2be5ba-18142c63-8986e311-5a64227f-14681141-2db6cf3f-ddfb1d18"
   RELEASE_NOTES/0.2.11.md: "sha256:abedb7ff-8bf00de3-94653863-e60d6e25-ba866dab-785f246e-51555121-a9842073"
@@ -1254,10 +1256,10 @@ source_hashes:
   SKILL.md: "sha256:239dda35-60c21b51-63e281e4-d828463c-ce02a583-75481335-5ed54dc1-fd42be87"
   data/benchmarking/stakeholder_eval/benchmark_pack_v1.json: "sha256:25a3a2b0-a1a2c527-7f403dc7-f3ca04ee-af025a97-c1f928c7-45b9562d-aa4a0899"
   data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt: "sha256:049b6282-185b37ca-39f55776-1b8f8061-2b88b4c3-202b4d6c-578c5ac3-7d0a8d99"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # MCP Geo Knowledge Base
 
@@ -1265,7 +1267,7 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 - Deterministic canonical vault generated from repo sources while excluding `Obsidian/**`.
 - Evidence-first notes record source files, hashes, dates, and commit-pinned GitHub links.
-- Generated from `2d7d7ba76db4643934aa2bd1b294e0e352285702` (dirty worktree).
+- Generated from `923807292e3a134ad8214be3de523caa7fdce7c5` (dirty worktree).
 
 ## Navigation
 
@@ -1281,7 +1283,7 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 | Category | Count | Notes |
 | --- | ---: | --- |
-| `code_runtime` | 583 | [[Audit and Transcript Infrastructure]], [[Build Obsidian Kb]], [[Codex Long Horizon Summary]], [[Config]], [[Generate Mcp Geo Analytical Index]], [[MCP Surface Overview]], [[Main]], [[Playground and Browser Tests]], [[Playground]], [[Repo Extent Complexity Report]], [[Resources and Data Assets]], [[Resources]], [[Script Family - addressbase]], [[Script Family - benchmark]], [[Script Family - boundary]], [[Script Family - check]], [[Script Family - claude mcp local]], [[Script Family - claude]], [[Script Family - codex mcp local]], [[Script Family - devcontainer]], [[Script Family - docker compose map sidecar]], [[Script Family - docx]], [[Script Family - export]], [[Script Family - gemini mcp local]], [[Script Family - generate]], [[Script Family - host benchmark]], [[Script Family - landis]], [[Script Family - latest]], [[Script Family - live]], [[Script Family - llm]], [[Script Family - map trials]], [[Script Family - mcp docker local]], [[Script Family - mcp]], [[Script Family - mypy local]], [[Script Family - obsidian]], [[Script Family - ons catalog]], [[Script Family - ons]], [[Script Family - os catalog]], [[Script Family - os mcp]], [[Script Family - os]], [[Script Family - pack cache]], [[Script Family - prepare for demo]], [[Script Family - prepare]], [[Script Family - pytest local]], [[Script Family - rate limit]], [[Script Family - replicate]], [[Script Family - route graph]], [[Script Family - ruff local]], [[Script Family - run local tool]], [[Script Family - run playground demo]], [[Script Family - run]], [[Script Family - scripts package]], [[Script Family - seed]], [[Script Family - smoke]], [[Script Family - spec]], [[Script Family - stakeholder]], [[Script Family - start]], [[Script Family - trace]], [[Script Family - unattended]], [[Script Family - validate owasp mcp local]], [[Script Family - validate]], [[Script Family - vendor]], [[Script Family - vscode]], [[Server Runtime Overview]], [[Stdio Adapter]], [[Test and Validation Surface]], [[Tool Family - accessors]], [[Tool Family - admin lookup]], [[Tool Family - council tax]], [[Tool Family - landis]], [[Tool Family - nomis]], [[Tool Family - ons catalog]], [[Tool Family - ons codes]], [[Tool Family - ons common]], [[Tool Family - ons data]], [[Tool Family - ons geo]], [[Tool Family - ons search]], [[Tool Family - ons select]], [[Tool Family - os apps]], [[Tool Family - os common]], [[Tool Family - os delivery]], [[Tool Family - os downloads]], [[Tool Family - os features]], [[Tool Family - os landscape]], [[Tool Family - os linked ids]], [[Tool Family - os map]], [[Tool Family - os maps]], [[Tool Family - os mcp]], [[Tool Family - os names]], [[Tool Family - os net]], [[Tool Family - os offline]], [[Tool Family - os peat]], [[Tool Family - os places]], [[Tool Family - os poi]], [[Tool Family - os qgis]], [[Tool Family - os resources]], [[Tool Family - os route]], [[Tool Family - os tiles]], [[Tool Family - os vector tiles]], [[Tool Family - py]], [[Tool Family - registry]], [[Tool Family - tools package]], [[Tool Family - types]], [[Tool Family - typing utils]], [[Tools]], [[Trace Report]], [[Trace Session]], [[UI Surfaces]], [[Validate Obsidian Kb]] |
+| `code_runtime` | 585 | [[Audit and Transcript Infrastructure]], [[Build Obsidian Kb]], [[Codex Long Horizon Summary]], [[Config]], [[Generate Mcp Geo Analytical Index]], [[MCP Surface Overview]], [[Main]], [[Playground and Browser Tests]], [[Playground]], [[Repo Extent Complexity Report]], [[Resources and Data Assets]], [[Resources]], [[Script Family - addressbase]], [[Script Family - benchmark]], [[Script Family - boundary]], [[Script Family - check]], [[Script Family - claude mcp local]], [[Script Family - claude]], [[Script Family - codex mcp local]], [[Script Family - devcontainer]], [[Script Family - docker compose map sidecar]], [[Script Family - docx]], [[Script Family - export]], [[Script Family - gemini mcp local]], [[Script Family - generate]], [[Script Family - host benchmark]], [[Script Family - landis]], [[Script Family - latest]], [[Script Family - live]], [[Script Family - llm]], [[Script Family - map trials]], [[Script Family - mcp docker local]], [[Script Family - mcp]], [[Script Family - mypy local]], [[Script Family - obsidian]], [[Script Family - ons catalog]], [[Script Family - ons]], [[Script Family - os catalog]], [[Script Family - os mcp]], [[Script Family - os]], [[Script Family - pack cache]], [[Script Family - prepare for demo]], [[Script Family - prepare]], [[Script Family - pytest local]], [[Script Family - rate limit]], [[Script Family - replicate]], [[Script Family - route graph]], [[Script Family - ruff local]], [[Script Family - run local tool]], [[Script Family - run playground demo]], [[Script Family - run]], [[Script Family - scripts package]], [[Script Family - seed]], [[Script Family - smoke]], [[Script Family - spec]], [[Script Family - stakeholder]], [[Script Family - start]], [[Script Family - trace]], [[Script Family - unattended]], [[Script Family - validate owasp mcp local]], [[Script Family - validate]], [[Script Family - vendor]], [[Script Family - vscode]], [[Server Runtime Overview]], [[Stdio Adapter]], [[Test and Validation Surface]], [[Tool Family - accessors]], [[Tool Family - admin lookup]], [[Tool Family - council tax]], [[Tool Family - landis]], [[Tool Family - nomis]], [[Tool Family - ons catalog]], [[Tool Family - ons codes]], [[Tool Family - ons common]], [[Tool Family - ons data]], [[Tool Family - ons geo]], [[Tool Family - ons search]], [[Tool Family - ons select]], [[Tool Family - os apps]], [[Tool Family - os common]], [[Tool Family - os delivery]], [[Tool Family - os downloads]], [[Tool Family - os features]], [[Tool Family - os landscape]], [[Tool Family - os linked ids]], [[Tool Family - os map]], [[Tool Family - os maps]], [[Tool Family - os mcp]], [[Tool Family - os names]], [[Tool Family - os net]], [[Tool Family - os offline]], [[Tool Family - os peat]], [[Tool Family - os places]], [[Tool Family - os poi]], [[Tool Family - os qgis]], [[Tool Family - os resources]], [[Tool Family - os route]], [[Tool Family - os tiles]], [[Tool Family - os vector tiles]], [[Tool Family - py]], [[Tool Family - registry]], [[Tool Family - tools package]], [[Tool Family - types]], [[Tool Family - typing utils]], [[Tools]], [[Trace Report]], [[Trace Session]], [[UI Surfaces]], [[Validate Obsidian Kb]] |
 | `docs_research` | 497 | [[Miscellaneous Tracked Surface]], [[Data Manifests]], [[Documentation Surface]], [[Peatland Case Study]], [[Report Assets]], [[Reports Catalog]], [[Research Pack - Deep Research Report]], [[Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP zip]], [[Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP]], [[Research Pack - landis data source]], [[Research Pack - llm wiki vs rag]], [[Research Pack - map delivery research 2026 02]], [[Research Pack - ons dataset selection]], [[Research Pack - os dataset selection]], [[Troubleshooting and Case Notes]] |
 | `external_context` | 14 | [[External Mirrors and Submodules]] |
 | `skills_maintenance` | 8 | [[Repository Skills]] |

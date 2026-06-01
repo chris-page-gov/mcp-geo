@@ -3,16 +3,16 @@ title: "Script Family - validate"
 kb_kind: "code_family"
 source_paths:
   - "scripts/validate_owasp_mcp_server.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/validate_owasp_mcp_server.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/validate_owasp_mcp_server.py"
 source_hashes:
   scripts/validate_owasp_mcp_server.py: "sha256:05c85ac9-fc0f0038-72b0132c-e5051556-535ff0d6-ad09dd47-9e9867ef-2efdd37f"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-13"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - validate
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`scripts/validate_owasp_mcp_server.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/validate_owasp_mcp_server.py)
+- [`scripts/validate_owasp_mcp_server.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/validate_owasp_mcp_server.py)

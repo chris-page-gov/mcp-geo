@@ -25,32 +25,32 @@ source_paths:
   - "research/ons_dataset_selection/sample_datapacks/uk-migration-change.json"
   - "research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json"
   - "research/ons_dataset_selection/taxonomy_options.json"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_3.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_4.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/completion.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/evaluation_plan.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/evidence_register.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/linking_rules.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/ons_datapack_schema.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/report.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/roadmap.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/housing-space-pressure.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/inflation-trend-uk.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/life-expectancy-inequality.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/local-population-change.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/pay-vs-prices.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/productivity-performance.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/uk-growth-momentum.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/uk-migration-change.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/taxonomy_options.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_3.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_4.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/completion.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/evaluation_plan.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/evidence_register.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/linking_rules.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/ons_datapack_schema.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/report.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/roadmap.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/housing-space-pressure.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/inflation-trend-uk.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/life-expectancy-inequality.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/local-population-change.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/pay-vs-prices.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/productivity-performance.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/uk-growth-momentum.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/uk-migration-change.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/taxonomy_options.json"
 source_hashes:
   research/ons_dataset_selection/Phase_1.md: "sha256:962d3b9f-89bd0df5-ae4a8974-19fb7c83-0c5266eb-f0f1078a-cf446f10-64ba37f1"
   research/ons_dataset_selection/Phase_2.md: "sha256:0b9fe7f0-9fcba9ec-2c60eb64-5d07db31-7b7e79f5-e7d3fe6a-edae1bb3-8e1897bc"
@@ -75,10 +75,10 @@ source_hashes:
   research/ons_dataset_selection/sample_datapacks/uk-migration-change.json: "sha256:0b603481-8ee81f72-67b0357e-08e92a7b-2ebc5d82-1db2f478-3ce5caa6-73209395"
   research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json: "sha256:b111bcfe-71e12818-33fb51a6-44f5cb7d-a4780da9-da14b8ed-43053afc-0be1e6bf"
   research/ons_dataset_selection/taxonomy_options.json: "sha256:1286f1a0-b9a06e40-925a145e-d75ce95a-845721fc-5027e801-ebb5b024-92ca8070"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-07"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Research Pack - ons dataset selection
 
@@ -128,26 +128,26 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`research/ons_dataset_selection/Phase_1.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_1.md)
-- [`research/ons_dataset_selection/Phase_2.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_2.md)
-- [`research/ons_dataset_selection/Phase_3.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_3.md)
-- [`research/ons_dataset_selection/Phase_4.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/Phase_4.md)
-- [`research/ons_dataset_selection/completion.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/completion.json)
-- [`research/ons_dataset_selection/evaluation_plan.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/evaluation_plan.md)
-- [`research/ons_dataset_selection/evidence_register.csv`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/evidence_register.csv)
-- [`research/ons_dataset_selection/linking_rules.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/linking_rules.md)
-- [`research/ons_dataset_selection/ons_datapack_schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/ons_datapack_schema.json)
-- [`research/ons_dataset_selection/report.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/report.md)
-- [`research/ons_dataset_selection/roadmap.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/roadmap.md)
-- [`research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json)
-- [`research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json)
-- [`research/ons_dataset_selection/sample_datapacks/housing-space-pressure.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/housing-space-pressure.json)
-- [`research/ons_dataset_selection/sample_datapacks/inflation-trend-uk.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/inflation-trend-uk.json)
-- [`research/ons_dataset_selection/sample_datapacks/life-expectancy-inequality.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/life-expectancy-inequality.json)
-- [`research/ons_dataset_selection/sample_datapacks/local-population-change.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/local-population-change.json)
-- [`research/ons_dataset_selection/sample_datapacks/pay-vs-prices.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/pay-vs-prices.json)
-- [`research/ons_dataset_selection/sample_datapacks/productivity-performance.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/productivity-performance.json)
-- [`research/ons_dataset_selection/sample_datapacks/uk-growth-momentum.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/uk-growth-momentum.json)
-- [`research/ons_dataset_selection/sample_datapacks/uk-migration-change.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/uk-migration-change.json)
-- [`research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json)
-- [`research/ons_dataset_selection/taxonomy_options.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/ons_dataset_selection/taxonomy_options.json)
+- [`research/ons_dataset_selection/Phase_1.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_1.md)
+- [`research/ons_dataset_selection/Phase_2.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_2.md)
+- [`research/ons_dataset_selection/Phase_3.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_3.md)
+- [`research/ons_dataset_selection/Phase_4.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/Phase_4.md)
+- [`research/ons_dataset_selection/completion.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/completion.json)
+- [`research/ons_dataset_selection/evaluation_plan.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/evaluation_plan.md)
+- [`research/ons_dataset_selection/evidence_register.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/evidence_register.csv)
+- [`research/ons_dataset_selection/linking_rules.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/linking_rules.md)
+- [`research/ons_dataset_selection/ons_datapack_schema.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/ons_datapack_schema.json)
+- [`research/ons_dataset_selection/report.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/report.md)
+- [`research/ons_dataset_selection/roadmap.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/roadmap.md)
+- [`research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json)
+- [`research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json)
+- [`research/ons_dataset_selection/sample_datapacks/housing-space-pressure.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/housing-space-pressure.json)
+- [`research/ons_dataset_selection/sample_datapacks/inflation-trend-uk.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/inflation-trend-uk.json)
+- [`research/ons_dataset_selection/sample_datapacks/life-expectancy-inequality.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/life-expectancy-inequality.json)
+- [`research/ons_dataset_selection/sample_datapacks/local-population-change.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/local-population-change.json)
+- [`research/ons_dataset_selection/sample_datapacks/pay-vs-prices.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/pay-vs-prices.json)
+- [`research/ons_dataset_selection/sample_datapacks/productivity-performance.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/productivity-performance.json)
+- [`research/ons_dataset_selection/sample_datapacks/uk-growth-momentum.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/uk-growth-momentum.json)
+- [`research/ons_dataset_selection/sample_datapacks/uk-migration-change.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/uk-migration-change.json)
+- [`research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/sample_datapacks/unemployment-pressure.json)
+- [`research/ons_dataset_selection/taxonomy_options.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/ons_dataset_selection/taxonomy_options.json)

@@ -213,11 +213,16 @@ variables explicitly to `docker run -e ...`.
 Run HTTP transport:
 
 ```bash
-docker run --rm -p 8000:8000 \
-  -e OS_API_KEY=your-api-key-here \
-  mcp-geo-server \
-  uvicorn server.main:app --host 0.0.0.0 --port 8000
+./scripts/mcp-http-demo-local
 ```
+
+The HTTP demo launcher starts Docker-backed Streamable HTTP on
+`http://127.0.0.1:8000/mcp`. It hydrates `OS_API_KEY` from
+`OS_API_KEY_FILE` when needed, mounts ONS dataset, ONS geography, and OS data
+caches into the app container when those host paths exist, and sets the
+container cache environment variables to the mounted paths. Override the
+listening port with `MCP_GEO_HTTP_PORT`; use `MCP_GEO_ENV_FILE` when the `.env`
+file with your cache paths lives outside the current worktree.
 
 Run STDIO (for MCP desktop clients):
 

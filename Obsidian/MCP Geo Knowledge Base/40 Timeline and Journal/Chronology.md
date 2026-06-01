@@ -26,33 +26,33 @@ source_paths:
   - "RELEASE_NOTES/0.7.0.md"
   - "RELEASE_NOTES/0.8.0.md"
   - "RELEASE_NOTES/0.8.1.md"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/PROGRESS.MD"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.10.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.11.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.12.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.3.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.4.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.5.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.6.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.7.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.8.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.2.9.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.3.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.3.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.3.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.4.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.5.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.6.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.7.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.8.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/RELEASE_NOTES/0.8.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.10.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.11.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.12.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.3.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.4.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.5.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.6.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.7.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.8.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.9.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.4.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.5.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.6.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.7.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.1.md"
 source_hashes:
   CHANGELOG.md: "sha256:7609427d-3636dc27-ba969ca5-4ed0c777-8469c7a8-5fb9d2db-63dad5eb-34168c23"
   CONTEXT.md: "sha256:320e381f-5f7471c2-97d5ed69-8c72003e-d5f4c724-3426eb51-ca99076b-eede3adb"
@@ -78,10 +78,10 @@ source_hashes:
   RELEASE_NOTES/0.7.0.md: "sha256:1e5723a1-ea654d4f-abe38931-449c006a-a1e3c17c-060b5bfd-2238711c-52c74be5"
   RELEASE_NOTES/0.8.0.md: "sha256:831956d7-83840a17-cd402d0f-1994e79e-de7c29ff-3ba00e38-3e443278-54f22500"
   RELEASE_NOTES/0.8.1.md: "sha256:40a14b52-2a189b65-40628826-2221912d-598d1f43-c56ef705-04d9f633-874a793c"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Chronology
 
@@ -89,6 +89,7 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 | Commit | Date | Subject |
 | --- | --- | --- |
+| [`9238072`](https://github.com/chris-page-gov/mcp-geo/commit/9238072) | 2026-06-01 | feat(protocol): align MCP 2026 release candidate |
 | [`2d7d7ba`](https://github.com/chris-page-gov/mcp-geo/commit/2d7d7ba) | 2026-05-14 | docs(llm-wiki): add postmortem capture workflow |
 | [`238ff5f`](https://github.com/chris-page-gov/mcp-geo/commit/238ff5f) | 2026-05-13 | fix(mcp-apps): capture handoff and LandIS evidence |
 | [`062ec22`](https://github.com/chris-page-gov/mcp-geo/commit/062ec22) | 2026-04-28 | [codex] Capture MCP draft and research backlog (#76) |
@@ -208,7 +209,6 @@ last_validated_at: "2026-06-01T01:38:32Z"
 | [`038ba6a`](https://github.com/chris-page-gov/mcp-geo/commit/038ba6a) | 2026-04-06 | fix(landis): search all local archive roots |
 | [`f7d5f8a`](https://github.com/chris-page-gov/mcp-geo/commit/f7d5f8a) | 2026-04-06 | fix(landis): preserve nsi area pagination counts |
 | [`94fe40f`](https://github.com/chris-page-gov/mcp-geo/commit/94fe40f) | 2026-04-06 | fix(landis): harden html stripping and nsi nearest query |
-| [`badee01`](https://github.com/chris-page-gov/mcp-geo/commit/badee01) | 2026-04-06 | Merge origin/main into codex/landis |
 
 ## Dated Reports and Research Packs
 

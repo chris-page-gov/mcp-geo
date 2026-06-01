@@ -3,16 +3,16 @@ title: "Project Configuration"
 kb_kind: "storyline_note"
 source_paths:
   - "pyproject.toml"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/pyproject.toml"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/pyproject.toml"
 source_hashes:
   pyproject.toml: "sha256:4194c8f8-5a1fd1fe-23d10c83-a02647f1-2591c7a7-3282623d-6f5e9ceb-66903f94"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Project Configuration
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`pyproject.toml`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/pyproject.toml)
+- [`pyproject.toml`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/pyproject.toml)

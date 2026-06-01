@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "tools/os_places.py"
   - "tools/os_places_extra.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/os_places.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/os_places_extra.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_places.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_places_extra.py"
 source_hashes:
   tools/os_places.py: "sha256:c67771ad-19c7b5c6-8b0fc928-fa68d0a6-f4150dc7-c3a2780c-b5d7d52d-1b9f084d"
   tools/os_places_extra.py: "sha256:b1981205-1842e123-1d54c929-c023db22-633149c7-48968fa0-678459f5-38583ff7"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Tool Family - os places
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`tools/os_places.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/os_places.py)
-- [`tools/os_places_extra.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/tools/os_places_extra.py)
+- [`tools/os_places.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_places.py)
+- [`tools/os_places_extra.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_places_extra.py)

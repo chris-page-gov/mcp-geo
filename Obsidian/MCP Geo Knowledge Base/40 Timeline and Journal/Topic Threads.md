@@ -5,20 +5,20 @@ source_paths:
   - "CHANGELOG.md"
   - "CONTEXT.md"
   - "PROGRESS.MD"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/PROGRESS.MD"
 source_hashes:
   CHANGELOG.md: "sha256:7609427d-3636dc27-ba969ca5-4ed0c777-8469c7a8-5fb9d2db-63dad5eb-34168c23"
   CONTEXT.md: "sha256:320e381f-5f7471c2-97d5ed69-8c72003e-d5f4c724-3426eb51-ca99076b-eede3adb"
   PROGRESS.MD: "sha256:cb45234f-a9a2e553-76fab9f1-837fe7ab-f8cfdc22-083df4d5-88ada35f-40ecefaa"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Topic Threads
 
@@ -27,6 +27,7 @@ guessing why the work happened.
 
 ## Authentication and Security
 
+- `2026-06-01` `docs/vendor/mcp/repos/ext-auth`: Tracked directory or submodule entry.
 - `2026-05-13` `docs/troubleshooting.md`: This guide lists common error codes emitted by the MCP Geo server and suggested remediation steps. Need OS credentials or trial access before troubleshooting auth errors? - OS API authentication overview: <https://docs.o
 - `2026-05-13` `docs/reports/landis_leacs_access_probe_2026-05-13.md`: This probe checked whether the LandIS LEACS data needed for wider pipe-risk coverage can be downloaded from the available public and authenticated routes. Result: LEACS is not currently available as a downloadable payloa
 - `2026-04-22` `tests/test_security.py`: from server.security import configured_secrets, mask_in_text, mask_in_value, redact
@@ -42,7 +43,6 @@ guessing why the work happened.
 - `2026-04-04` `scripts/landis_portal_inventory.py`: Build an authenticated LandIS portal inventory from an Atlas browser session. This script is intended for local operator use after signing into the LandIS portal in ChatGPT Atlas on macOS. It discovers an ArcGIS access token from the Atlas Chromium history database, enumerates the protected LandIS portal catalog, enriches key item types, and writes both JSON and Markdown inventories.
 - `2026-04-04` `docs/reports/landis_portal_inventory_2026-04-04.md`: Generated: `2026-04-04T19:38:31.702172+00:00` This inventory was generated from an authenticated LandIS portal session in ChatGPT Atlas. It records the accessible ArcGIS catalog items without storing the session token. -
 - `2026-03-24` `tests/test_owasp_mcp_validation.py`: from __future__ import annotations
-- `2026-03-24` `server/owasp_mcp_validation.py`: from __future__ import annotations
 
 ## LandIS
 
@@ -65,10 +65,10 @@ guessing why the work happened.
 
 ## Map Delivery
 
+- `2026-06-01` `docs/spec_package/12_backlog_and_plan.md`: - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy). - **Resources catalog**: expanded `/resources/*` with boundary manifest, latest report, cache status, and ONS cache index. - **
 - `2026-05-13` `troubleshooting/mcp-cowork/mcp-cowork-fail2.md`: Claude finished the response Show me a map so I can see postcodes around of CV3 1HB Claude responded: Got the coordinates. Used mcp-geo integration, loaded tools Used mcp-geo integration, loaded tools The user wants to s
 - `2026-05-13` `docs/spec_package/10_mcp_apps_ui.md`: MCP Geo exposes UI resources that can be opened by MCP clients that support `text/html;profile=mcp-app` resources. - `ui://mcp-geo/geography-selector` - `ui://mcp-geo/route-planner` - `ui://mcp-geo/feature-inspector` - `
 - `2026-05-13` `docs/reports/landis_leacs_access_probe_2026-05-13.md`: This probe checked whether the LandIS LEACS data needed for wider pipe-risk coverage can be downloaded from the available public and authenticated routes. Result: LEACS is not currently available as a downloadable payloa
-- `2026-04-28` `docs/spec_package/12_backlog_and_plan.md`: - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy). - **Resources catalog**: expanded `/resources/*` with boundary manifest, latest report, cache status, and ONS cache index. - **
 - `2026-04-22` `tools/os_maps.py`: from __future__ import annotations
 - `2026-04-22` `tools/os_map.py`: from __future__ import annotations
 - `2026-04-22` `tests/test_os_mcp_route_query.py`: from fastapi.testclient import TestClient
@@ -84,9 +84,9 @@ guessing why the work happened.
 
 ## Evaluation and Evidence
 
+- `2026-06-01` `docs/spec_package/12_backlog_and_plan.md`: - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy). - **Resources catalog**: expanded `/resources/*` with boundary manifest, latest report, cache status, and ONS cache index. - **
 - `2026-05-13` `troubleshooting/mcp-cowork/cowork-sanity-and-failure-report-2026-04-28.md`: Date: 2026-04-28 This note diagnoses the saved Claude Cowork transcripts in `troubleshooting/mcp-cowork/` and separates: - MCP-Geo server/runtime health - Docker Desktop external-drive mount health - Claude Cowork MCP-Ap
 - `2026-05-13` `docs/reports/landis_leacs_access_probe_2026-05-13.md`: This probe checked whether the LandIS LEACS data needed for wider pipe-risk coverage can be downloaded from the available public and authenticated routes. Result: LEACS is not currently available as a downloadable payloa
-- `2026-04-28` `docs/spec_package/12_backlog_and_plan.md`: - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy). - **Resources catalog**: expanded `/resources/*` with boundary manifest, latest report, cache status, and ONS cache index. - **
 - `2026-04-23` `CHANGELOG.md`: All notable changes to this project will be documented in this file. - Fixed published package contents so installed wheels include nested server modules, audit schemas, static resources, UI assets, and typed tool metada
 - `2026-04-22` `docs/reports/os_ngd_spring_2026_release_impact.md`: Date: 2026-04-22 - [OS NGD product page](https://www.ordnancesurvey.co.uk/products/os-ngd) - [OS NGD What's New](https://docs.os.uk/osngd/os-ngd-news/whats-new) - [OS NGD API Features: data available](https://docs.os.uk/
 - `2026-04-14` `tests/test_host_benchmark.py`: from __future__ import annotations
@@ -103,22 +103,22 @@ guessing why the work happened.
 
 ## CI and Release
 
+- `2026-06-01` `docs/vendor/mcp/README.md`: This folder is intended to hold **offline** copies of the MCP specification and key dev-tool docs. - [MCP specification (latest, 2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25) - [MCP transports (2
+- `2026-06-01` `docs/mcp_apps_alignment.md`: This note summarizes how the repo aligns with the finalized MCP Apps spec and removes legacy OpenAI Apps (skybridge) compatibility. - MCP Apps spec: `docs/vendor/mcp/repos/ext-apps/specification/2026-01-26/apps.mdx` - MC
+- `2026-06-01` `README.md`: A research Model Context Protocol (MCP) server for geospatial (Ordnance Survey) and statistical (Office of National Statistics) data. If you have Docker installed and Internet access, have this running in 3 minutes. This
+- `2026-06-01` `PROGRESS.MD`: This file tracks how the implementation compares to the original proposal and later documentation as the MCP specification evolved. Last updated: 2026-06-01 Legend: pending, in_progress, done, blocked | Workstream | Stat
 - `2026-05-13` `troubleshooting/mcp-cowork/cowork-sanity-and-failure-report-2026-04-28.md`: Date: 2026-04-28 This note diagnoses the saved Claude Cowork transcripts in `troubleshooting/mcp-cowork/` and separates: - MCP-Geo server/runtime health - Docker Desktop external-drive mount health - Claude Cowork MCP-Ap
 - `2026-05-13` `research/landis-data-source/landis_leacs_access_probe_2026-05-13.json`: JSON object keys: archivedPublicReleaseEvidence, conclusion, futureDecisionRules, generatedAt, localWarehouseState, operatorContext, protectedPortalProbe, publicCkanPackages
-- `2026-04-28` `PROGRESS.MD`: This file tracks how the implementation compares to the original proposal and later documentation as the MCP specification evolved. Last updated: 2026-06-01 Legend: pending, in_progress, done, blocked | Workstream | Stat
 - `2026-04-28` `.github/workflows/ci.yml`: name: CI
 - `2026-04-23` `docs/Build.md`: This guide describes how to install, run, and validate the current MCP Geo server in this repository. It replaces the original planning backlog with repo-aligned instructions. - Python 3.11+ - Optional: Docker (for conta
 - `2026-04-23` `RELEASE_NOTES/0.8.1.md`: Date: 2026-04-23 `0.8.1` is a patch release for the `0.8.0` stable strategy baseline. It fixes the published package contents so installed wheels work outside the source checkout for both HTTP and STDIO runtimes. - Inclu
 - `2026-04-23` `RELEASE_NOTES/0.8.0.md`: Date: 2026-04-23 `0.8.0` pins the current MCP-Geo strategy baseline before a possible larger direction change. It packages all merged work since `0.7.0` on current `main`, including LandIS phase-2 surfacing, AddressBase/
-- `2026-04-23` `README.md`: A research Model Context Protocol (MCP) server for geospatial (Ordnance Survey) and statistical (Office of National Statistics) data. If you have Docker installed and Internet access, have this running in 3 minutes. This
 - `2026-04-22` `docs/reports/os_ngd_spring_2026_release_impact.md`: Date: 2026-04-22 - [OS NGD product page](https://www.ordnancesurvey.co.uk/products/os-ngd) - [OS NGD What's New](https://docs.os.uk/osngd/os-ngd-news/whats-new) - [OS NGD API Features: data available](https://docs.os.uk/
 - `2026-04-22` `AGENTS.md`: This document defines how agents (and humans) should work within the `mcp-geo` repository. It replaces a template from a different project—details below are specific to this codebase. - FastAPI-based Model Context Protoc
 - `2026-04-13` `tests/test_mcp_docker_local.py`: from __future__ import annotations
 - `2026-04-13` `scripts/mcp-docker-local`: set -euo pipefail
 - `2026-04-12` `tools/council_tax.py`: from __future__ import annotations
 - `2026-04-12` `tests/test_elicitation_forms.py`: from server.mcp import elicitation_forms as forms
-- `2026-04-12` `tests/test_council_tax_band.py`: from __future__ import annotations
-- `2026-04-12` `server/mcp/elicitation_forms.py`: from __future__ import annotations
 
 ## Knowledge Base
 

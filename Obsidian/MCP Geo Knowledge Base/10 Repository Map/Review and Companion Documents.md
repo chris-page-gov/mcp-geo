@@ -4,18 +4,18 @@ kb_kind: "storyline_note"
 source_paths:
   - "GEMINI.md"
   - "Gemini-Code-Review.md"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/GEMINI.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/Gemini-Code-Review.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/GEMINI.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/Gemini-Code-Review.md"
 source_hashes:
   GEMINI.md: "sha256:d36bb40f-904fc33b-15e34bff-a06b1f73-383e9ac2-15c10cd2-33c6d10c-fd971368"
   Gemini-Code-Review.md: "sha256:65d676b2-ef0cc74f-bad244ac-3c28d05a-bd5c9934-2c8766d6-f3fc7f69-eefe28ff"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-24"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Review and Companion Documents
 
@@ -38,5 +38,5 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`GEMINI.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/GEMINI.md)
-- [`Gemini-Code-Review.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/Gemini-Code-Review.md)
+- [`GEMINI.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/GEMINI.md)
+- [`Gemini-Code-Review.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/Gemini-Code-Review.md)

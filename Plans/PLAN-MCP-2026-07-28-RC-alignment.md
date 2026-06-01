@@ -241,6 +241,10 @@ MCP Geo impact:
 - Added JSON Schema 2020-12 guardrail checks for registered tool schemas:
   object root for inputs, no external `$ref`, bounded depth, and bounded node
   count.
+- Added `scripts/mcp-http-demo-local` so HTTP MCP connectors can be launched
+  with the same OS API key hydration and ONS/OS cache mounts as the Docker
+  STDIO wrappers. This closes the demo gap where the protocol endpoint was
+  healthy but postcode/geography examples lacked mounted host data.
 
 Tasks remains a future extension target. No task runtime was added because MCP
 Geo does not yet have a selected long-running workflow that needs the new Tasks
@@ -256,6 +260,9 @@ Completed validation:
 - `./scripts/ruff-local`
 - `./scripts/mypy-local`
 - `./scripts/pytest-local -q` (`1586 passed`, `20 skipped`, coverage `90.03%`)
+- Focused wrapper regressions for the HTTP demo launcher and cache/API-key
+  mount plan:
+  `./scripts/pytest-local -q --no-cov tests/test_mcp_docker_local.py -k 'http_plan or http_demo or ons_geo_cache_mounts'`
 - STDIO client interop smoke for `tools/list`, `tools/call`,
   `resources/list`, and `resources/read`
   (`103` tools, `41` resources, no JSON-RPC errors)

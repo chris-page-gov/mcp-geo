@@ -66,41 +66,41 @@ source_paths:
   - "playground/trials/tests/map_story_gallery.spec.js"
   - "playground/trials/tests/support/host_simulation.js"
   - "playground/vite.config.js"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/app.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/index.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/package-lock.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/package.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.compact-matrix.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.compact.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.full.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.live.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.trials.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/App.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/AuditWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/BenchmarkWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/DebugWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/ExplorerWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/RoutingWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/UiPreviewPanel.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/lib/debug.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/lib/playgroundApi.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/lib/uiBridge.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/main.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/audit_workbench.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/benchmark_workbench.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_controls.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_host_harness.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_local_layers.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_option_matrix.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/bridge_security.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/compact_matrix.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/smoke.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/support/compact_assertions.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/app.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/index.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/package-lock.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/package.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.compact-matrix.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.compact.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.full.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.live.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.trials.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/App.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/AuditWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/BenchmarkWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/DebugWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/ExplorerWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/RoutingWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/UiPreviewPanel.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/debug.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/playgroundApi.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/uiBridge.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/main.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/audit_workbench.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/benchmark_workbench.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_controls.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_host_harness.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_local_layers.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_option_matrix.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/bridge_security.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/compact_matrix.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/smoke.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/support/compact_assertions.js"
 source_hashes:
   playground/app.py: "sha256:756203ad-e4c461a3-57bd10dc-ad734e91-5849464b-a46f2fc4-082d3888-c4220a50"
   playground/index.html: "sha256:761ae4e6-c9556f3a-25a15773-3933254d-59fa81f1-b877c6ca-31329157-49134125"
@@ -134,10 +134,10 @@ source_hashes:
   playground/tests/compact_windows/compact_matrix.spec.js: "sha256:801bb816-188454f3-59d49fe0-1eb1aaa5-23d02895-1d1532fe-5eb61b04-e3b738be"
   playground/tests/compact_windows/smoke.spec.js: "sha256:09f47f81-41f73db7-7cec8d93-bb136bc7-ce6384d9-577ab910-a7349966-029a23a0"
   playground/tests/compact_windows/support/compact_assertions.js: "sha256:f3f7312d-659d1390-abb42598-0c88db4d-e62ca857-54f1ab2f-36478757-0e952580"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Playground and Browser Tests
 
@@ -221,49 +221,49 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Binary Artifacts
 
-- `playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-darwin.png` (12.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-darwin.png)
-- `playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-linux.png` (10.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-linux.png)
-- `playground/trials/fixtures/synthetic_osm_tile.png` (2.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/trials/fixtures/synthetic_osm_tile.png)
+- `playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-darwin.png` (12.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-darwin.png)
+- `playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-linux.png` (10.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/geography_selector.spec.js-snapshots/geography-selector-map-linux.png)
+- `playground/trials/fixtures/synthetic_osm_tile.png` (2.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/trials/fixtures/synthetic_osm_tile.png)
 
 ## Pinned Sources
 
-- [`playground/app.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/app.py)
-- [`playground/index.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/index.html)
-- [`playground/package-lock.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/package-lock.json)
-- [`playground/package.json`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/package.json)
-- [`playground/playwright.compact-matrix.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.compact-matrix.config.js)
-- [`playground/playwright.compact.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.compact.config.js)
-- [`playground/playwright.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.config.js)
-- [`playground/playwright.full.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.full.config.js)
-- [`playground/playwright.live.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.live.config.js)
-- [`playground/playwright.trials.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/playwright.trials.config.js)
-- [`playground/src/App.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/App.svelte)
-- [`playground/src/components/AuditWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/AuditWorkbench.svelte)
-- [`playground/src/components/BenchmarkWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/BenchmarkWorkbench.svelte)
-- [`playground/src/components/DebugWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/DebugWorkbench.svelte)
-- [`playground/src/components/ExplorerWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/ExplorerWorkbench.svelte)
-- [`playground/src/components/RoutingWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/RoutingWorkbench.svelte)
-- [`playground/src/components/UiPreviewPanel.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/components/UiPreviewPanel.svelte)
-- [`playground/src/lib/debug.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/lib/debug.js)
-- [`playground/src/lib/playgroundApi.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/lib/playgroundApi.js)
-- [`playground/src/lib/uiBridge.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/lib/uiBridge.js)
-- [`playground/src/main.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/src/main.js)
-- [`playground/tests/audit_workbench.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/audit_workbench.spec.js)
-- [`playground/tests/benchmark_workbench.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/benchmark_workbench.spec.js)
-- [`playground/tests/boundary_explorer_controls.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_controls.spec.js)
-- [`playground/tests/boundary_explorer_host_harness.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_host_harness.spec.js)
-- [`playground/tests/boundary_explorer_local_layers.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_local_layers.spec.js)
-- [`playground/tests/boundary_explorer_option_matrix.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/boundary_explorer_option_matrix.spec.js)
-- [`playground/tests/bridge_security.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/bridge_security.spec.js)
-- [`playground/tests/compact_windows/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/README.md)
-- [`playground/tests/compact_windows/compact_matrix.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/compact_matrix.spec.js)
-- [`playground/tests/compact_windows/smoke.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/smoke.spec.js)
-- [`playground/tests/compact_windows/support/compact_assertions.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/support/compact_assertions.js)
-- [`playground/tests/compact_windows/support/host_profiles.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/support/host_profiles.js)
-- [`playground/tests/compact_windows/support/mcp_bridge.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/support/mcp_bridge.js)
-- [`playground/tests/compact_windows/support/ui_paths.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/compact_windows/support/ui_paths.js)
-- [`playground/tests/feature_inspector.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/feature_inspector.spec.js)
-- [`playground/tests/full/audit_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/full/audit_full.spec.js)
-- [`playground/tests/full/benchmarks_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/full/benchmarks_full.spec.js)
-- [`playground/tests/full/debug_and_widgets_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/full/debug_and_widgets_full.spec.js)
-- [`playground/tests/full/explorer_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/playground/tests/full/explorer_full.spec.js)
+- [`playground/app.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/app.py)
+- [`playground/index.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/index.html)
+- [`playground/package-lock.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/package-lock.json)
+- [`playground/package.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/package.json)
+- [`playground/playwright.compact-matrix.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.compact-matrix.config.js)
+- [`playground/playwright.compact.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.compact.config.js)
+- [`playground/playwright.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.config.js)
+- [`playground/playwright.full.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.full.config.js)
+- [`playground/playwright.live.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.live.config.js)
+- [`playground/playwright.trials.config.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.trials.config.js)
+- [`playground/src/App.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/App.svelte)
+- [`playground/src/components/AuditWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/AuditWorkbench.svelte)
+- [`playground/src/components/BenchmarkWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/BenchmarkWorkbench.svelte)
+- [`playground/src/components/DebugWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/DebugWorkbench.svelte)
+- [`playground/src/components/ExplorerWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/ExplorerWorkbench.svelte)
+- [`playground/src/components/RoutingWorkbench.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/RoutingWorkbench.svelte)
+- [`playground/src/components/UiPreviewPanel.svelte`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/UiPreviewPanel.svelte)
+- [`playground/src/lib/debug.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/debug.js)
+- [`playground/src/lib/playgroundApi.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/playgroundApi.js)
+- [`playground/src/lib/uiBridge.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/uiBridge.js)
+- [`playground/src/main.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/main.js)
+- [`playground/tests/audit_workbench.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/audit_workbench.spec.js)
+- [`playground/tests/benchmark_workbench.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/benchmark_workbench.spec.js)
+- [`playground/tests/boundary_explorer_controls.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_controls.spec.js)
+- [`playground/tests/boundary_explorer_host_harness.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_host_harness.spec.js)
+- [`playground/tests/boundary_explorer_local_layers.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_local_layers.spec.js)
+- [`playground/tests/boundary_explorer_option_matrix.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_option_matrix.spec.js)
+- [`playground/tests/bridge_security.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/bridge_security.spec.js)
+- [`playground/tests/compact_windows/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/README.md)
+- [`playground/tests/compact_windows/compact_matrix.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/compact_matrix.spec.js)
+- [`playground/tests/compact_windows/smoke.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/smoke.spec.js)
+- [`playground/tests/compact_windows/support/compact_assertions.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/support/compact_assertions.js)
+- [`playground/tests/compact_windows/support/host_profiles.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/support/host_profiles.js)
+- [`playground/tests/compact_windows/support/mcp_bridge.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/support/mcp_bridge.js)
+- [`playground/tests/compact_windows/support/ui_paths.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/support/ui_paths.js)
+- [`playground/tests/feature_inspector.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/feature_inspector.spec.js)
+- [`playground/tests/full/audit_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/full/audit_full.spec.js)
+- [`playground/tests/full/benchmarks_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/full/benchmarks_full.spec.js)
+- [`playground/tests/full/debug_and_widgets_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/full/debug_and_widgets_full.spec.js)
+- [`playground/tests/full/explorer_full.spec.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/full/explorer_full.spec.js)

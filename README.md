@@ -395,11 +395,16 @@ directly or rerun the check with `--rebuild`:
 Optional HTTP transport:
 
 ```bash
-docker run --rm -p 8000:8000 \
-  -e OS_API_KEY=your-api-key-here \
-  mcp-geo-server \
-  uvicorn server.main:app --host 0.0.0.0 --port 8000
+./scripts/mcp-http-demo-local
 ```
+
+The HTTP demo launcher uses the same Docker wrapper hydration as the STDIO
+client wrappers: it reads `OS_API_KEY` / `OS_API_KEY_FILE`, mounts ONS/OS cache
+directories when present, enables the MCP 2026 release-candidate flag by
+default, and starts `http://127.0.0.1:8000/mcp` for HTTP-capable clients such as
+Codex, VS Code, Inspector, and Claude Code HTTP connections. If you are running
+from a clean worktree but want to reuse an existing checkout's `.env` and cache
+paths, set `MCP_GEO_ENV_FILE=/absolute/path/to/mcp-geo/.env` before launching.
 
 > Tip: Replace `mcp-geo-server` with `ghcr.io/chris-page-gov/mcp-geo:latest`
 > in any Docker command to use the pre-built image instead of a local build.

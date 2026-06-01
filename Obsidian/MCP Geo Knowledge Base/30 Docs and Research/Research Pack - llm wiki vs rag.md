@@ -4,18 +4,18 @@ kb_kind: "artifact_catalog"
 source_paths:
   - "research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md"
   - "research/llm_wiki_vs_rag/README.md"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/llm_wiki_vs_rag/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/llm_wiki_vs_rag/README.md"
 source_hashes:
   research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md: "sha256:d6936f34-0218edc4-d791e984-cbad5966-a3fe2d83-f8a76aaf-b0a004ec-ae08ad8f"
   research/llm_wiki_vs_rag/README.md: "sha256:a8ce9752-7ea258c1-2dc71f18-08703fb8-cb3abce4-3c2041dd-d748181c-0b8ea5fa"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-04-28"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Research Pack - llm wiki vs rag
 
@@ -38,5 +38,5 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md)
-- [`research/llm_wiki_vs_rag/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/llm_wiki_vs_rag/README.md)
+- [`research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md)
+- [`research/llm_wiki_vs_rag/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/llm_wiki_vs_rag/README.md)

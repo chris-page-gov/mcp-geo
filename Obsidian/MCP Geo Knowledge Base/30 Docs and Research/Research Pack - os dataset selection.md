@@ -9,16 +9,16 @@ source_paths:
   - "research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx"
   - "research/os_dataset_selection/cv3_1hb_roadlinks.html"
   - "research/os_dataset_selection/initial_design_codex.md"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/OS Data Hub API Ecosystem.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/cv3_1hb_roadlinks.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/initial_design_codex.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/OS Data Hub API Ecosystem.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/cv3_1hb_roadlinks.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/initial_design_codex.md"
 source_hashes:
   research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx: "sha256:3166f5a9-3b1d3f5e-52b3c6ea-ff5280af-4c20e641-5a912017-53088583-9fb1e452"
   research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx: "sha256:294c5550-7e38e660-f11f7a1d-ff720b90-9a3b76f3-53944a59-99a7c986-d2396159"
@@ -27,10 +27,10 @@ source_hashes:
   research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx: "sha256:5260346d-d878e54e-0c18b754-a22ab030-9725887c-a4213b0b-64d75d12-5cd6ee98"
   research/os_dataset_selection/cv3_1hb_roadlinks.html: "sha256:1d57b699-083edb41-9612c911-fe029aab-58404b20-03e55bda-fb17c40e-085e692e"
   research/os_dataset_selection/initial_design_codex.md: "sha256:3b405ab6-80160e94-b489d606-7ac05869-35ab393d-9f0cee03-7c6b2a9f-55106a66"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-08"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Research Pack - os dataset selection
 
@@ -57,18 +57,18 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Binary Artifacts
 
-- `research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx` (10.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx)
-- `research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx` (11.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx)
-- `research/os_dataset_selection/OS Data Hub API Ecosystem.png` (6.0 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/OS Data Hub API Ecosystem.png)
-- `research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf` (16.0 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf)
-- `research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx` (12.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx)
+- `research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx` (10.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx)
+- `research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx` (11.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx)
+- `research/os_dataset_selection/OS Data Hub API Ecosystem.png` (6.0 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/OS Data Hub API Ecosystem.png)
+- `research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf` (16.0 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf)
+- `research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx` (12.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx)
 
 ## Pinned Sources
 
-- [`research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx)
-- [`research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx)
-- [`research/os_dataset_selection/OS Data Hub API Ecosystem.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/OS Data Hub API Ecosystem.png)
-- [`research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf)
-- [`research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx)
-- [`research/os_dataset_selection/cv3_1hb_roadlinks.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/cv3_1hb_roadlinks.html)
-- [`research/os_dataset_selection/initial_design_codex.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/os_dataset_selection/initial_design_codex.md)
+- [`research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/Geospatial Essentials_ A Reference Guide for Digital Mapping APIs.docx)
+- [`research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/National Geographic Database (NGD) Strategic Data Analysis_ Spatial Intelligence for Infrastructure and Planning.docx)
+- [`research/os_dataset_selection/OS Data Hub API Ecosystem.png`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/OS Data Hub API Ecosystem.png)
+- [`research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf)
+- [`research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx)
+- [`research/os_dataset_selection/cv3_1hb_roadlinks.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/cv3_1hb_roadlinks.html)
+- [`research/os_dataset_selection/initial_design_codex.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/os_dataset_selection/initial_design_codex.md)

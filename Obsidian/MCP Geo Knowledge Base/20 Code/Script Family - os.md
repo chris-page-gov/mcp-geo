@@ -3,16 +3,16 @@ title: "Script Family - os"
 kb_kind: "code_family"
 source_paths:
   - "scripts/os_mcp.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/os_mcp.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/os_mcp.py"
 source_hashes:
   scripts/os_mcp.py: "sha256:c4cfec32-bb300f8a-6201310a-aa3a8e08-c16f50c7-1dd06791-5fb12105-bdf7f1db"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-11-03"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - os
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`scripts/os_mcp.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/os_mcp.py)
+- [`scripts/os_mcp.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/os_mcp.py)

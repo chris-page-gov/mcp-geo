@@ -3,16 +3,16 @@ title: "Script Family - replicate"
 kb_kind: "code_family"
 source_paths:
   - "scripts/replicate_claude_tutorial.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/replicate_claude_tutorial.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/replicate_claude_tutorial.py"
 source_hashes:
   scripts/replicate_claude_tutorial.py: "sha256:14a96faa-01936b56-79c62428-ee251b29-fc4ea50b-0c2330b7-143f69f2-dfebefc8"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-19"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - replicate
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`scripts/replicate_claude_tutorial.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/replicate_claude_tutorial.py)
+- [`scripts/replicate_claude_tutorial.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/replicate_claude_tutorial.py)

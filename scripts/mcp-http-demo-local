@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+export MCP_GEO_DOCKER_TRANSPORT="${MCP_GEO_DOCKER_TRANSPORT:-http}"
+export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-http-demo}"
+export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-http-demo}"
+export MCP_GEO_POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-http-demo}"
+export MCP_GEO_HTTP_CONTAINER_NAME="${MCP_GEO_HTTP_CONTAINER_NAME:-mcp-geo-http-demo}"
+export MCP_GEO_HTTP_HOST="${MCP_GEO_HTTP_HOST:-127.0.0.1}"
+export MCP_GEO_HTTP_PORT="${MCP_GEO_HTTP_PORT:-8000}"
+export MCP_GEO_HTTP_REPLACE="${MCP_GEO_HTTP_REPLACE:-1}"
+export MCP_HTTP_AUTH_MODE="${MCP_HTTP_AUTH_MODE:-off}"
+export MCP_2026_RC_ENABLED="${MCP_2026_RC_ENABLED:-1}"
+
+if [[ -z "${OS_API_KEY:-}" && -z "${OS_API_KEY_FILE:-}" && -r "$HOME/.secrets/os_api_key" ]]; then
+  export OS_API_KEY_FILE="$HOME/.secrets/os_api_key"
+fi
+
+if [[ -z "${MCP_GEO_HOST_DATA_REPO_ROOT:-}" && -n "${MCP_GEO_ENV_FILE:-}" ]]; then
+  env_dir="$(cd "$(dirname "$MCP_GEO_ENV_FILE")" && pwd)"
+  if [[ -d "$env_dir/data/cache" ]]; then
+    export MCP_GEO_HOST_DATA_REPO_ROOT="$env_dir"
+  fi
+fi
+
+exec "$REPO_ROOT/scripts/mcp-docker-local"

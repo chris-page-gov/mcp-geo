@@ -5,20 +5,20 @@ source_paths:
   - "scripts/stakeholder_benchmark_pack.py"
   - "scripts/stakeholder_live_run.py"
   - "scripts/stakeholder_phase1_extension.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/stakeholder_benchmark_pack.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/stakeholder_live_run.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/stakeholder_phase1_extension.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/stakeholder_benchmark_pack.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/stakeholder_live_run.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/stakeholder_phase1_extension.py"
 source_hashes:
   scripts/stakeholder_benchmark_pack.py: "sha256:8b641725-1b08f4aa-c9c99969-9d4f7085-913da300-c6dd846d-14abdfee-54dc0421"
   scripts/stakeholder_live_run.py: "sha256:70d31724-b812c4c8-816f6971-2b66e464-cf49a580-ee7ec65e-9bb7235c-4d7c2b1d"
   scripts/stakeholder_phase1_extension.py: "sha256:02e12bdb-81e1ce5d-30cb912d-73f67114-0bfa464f-d6369d3e-af484cc2-97d5cb8a"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-09"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - stakeholder
 
@@ -37,6 +37,6 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`scripts/stakeholder_benchmark_pack.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/stakeholder_benchmark_pack.py)
-- [`scripts/stakeholder_live_run.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/stakeholder_live_run.py)
-- [`scripts/stakeholder_phase1_extension.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/stakeholder_phase1_extension.py)
+- [`scripts/stakeholder_benchmark_pack.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/stakeholder_benchmark_pack.py)
+- [`scripts/stakeholder_live_run.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/stakeholder_live_run.py)
+- [`scripts/stakeholder_phase1_extension.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/stakeholder_phase1_extension.py)

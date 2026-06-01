@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "scripts/ons_geo_cache_refresh.py"
   - "scripts/ons_geo_live_validate.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/ons_geo_cache_refresh.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/ons_geo_live_validate.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/ons_geo_cache_refresh.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/ons_geo_live_validate.py"
 source_hashes:
   scripts/ons_geo_cache_refresh.py: "sha256:fc798823-1c757bcc-fccbda62-a6fcb1ff-53cd382c-0ecda194-76f665ba-15672072"
   scripts/ons_geo_live_validate.py: "sha256:a5fbdce5-41da9282-1467460a-9419cad2-b1bcee50-52179ccb-635a177a-ee0e3ef3"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-22"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - ons
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`scripts/ons_geo_cache_refresh.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/ons_geo_cache_refresh.py)
-- [`scripts/ons_geo_live_validate.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/ons_geo_live_validate.py)
+- [`scripts/ons_geo_cache_refresh.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/ons_geo_cache_refresh.py)
+- [`scripts/ons_geo_live_validate.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/ons_geo_live_validate.py)

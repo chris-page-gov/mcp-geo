@@ -17,24 +17,24 @@ source_paths:
   - "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex"
   - "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex"
   - "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02a-term-mapping-table.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/03-outcomes.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/04-research-questions.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/05-method-and-evidence.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/06-case-study-mcp-geo.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/07-deliverables-and-timeline.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/08-risks-and-guardrails.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02a-term-mapping-table.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/03-outcomes.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/04-research-questions.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/05-method-and-evidence.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/06-case-study-mcp-geo.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/07-deliverables-and-timeline.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/08-risks-and-guardrails.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex"
 source_hashes:
   research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt: "sha256:c6c6bc8d-ed293b09-81438efe-0becd514-1ac5c7e5-2be6ae4f-83ac3274-0bb7db7d"
   research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex: "sha256:46e0b2a5-a960acb2-e480305c-6ddfb2db-66e3c89a-0aac7a70-fdb95454-f288ac81"
@@ -51,10 +51,10 @@ source_hashes:
   research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex: "sha256:60306278-0b928204-a5f7cbaa-53d51cbf-051bb54f-036933eb-f77dfffc-ac1f774e"
   research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex: "sha256:40b605b2-99f74cd9-ac972742-c0d1aaa4-a045e4c0-395c9af8-86499f63-a623eff8"
   research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex: "sha256:c7427585-765c2325-711354ee-e8e7b390-fd7959bc-e028ad8e-332921ff-74ec54d4"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-21"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Research Pack - From Apps to Answers Connecting Public Sector Data to AI with MCP
 
@@ -85,18 +85,18 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02a-term-mapping-table.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02a-term-mapping-table.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/03-outcomes.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/03-outcomes.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/04-research-questions.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/04-research-questions.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/05-method-and-evidence.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/05-method-and-evidence.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/06-case-study-mcp-geo.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/06-case-study-mcp-geo.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/07-deliverables-and-timeline.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/07-deliverables-and-timeline.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/08-risks-and-guardrails.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/08-risks-and-guardrails.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex)
-- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/README.txt)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/main.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/references.bib)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/01-executive-summary.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02-problem-and-thesis.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02a-term-mapping-table.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/02a-term-mapping-table.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/03-outcomes.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/03-outcomes.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/04-research-questions.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/04-research-questions.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/05-method-and-evidence.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/05-method-and-evidence.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/06-case-study-mcp-geo.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/06-case-study-mcp-geo.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/07-deliverables-and-timeline.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/07-deliverables-and-timeline.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/08-risks-and-guardrails.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/08-risks-and-guardrails.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex)
+- [`research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex)

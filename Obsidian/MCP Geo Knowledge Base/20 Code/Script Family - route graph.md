@@ -4,18 +4,18 @@ kb_kind: "code_family"
 source_paths:
   - "scripts/route_graph_pipeline.py"
   - "scripts/route_graph_schema.sql"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/route_graph_pipeline.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/route_graph_schema.sql"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/route_graph_pipeline.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/route_graph_schema.sql"
 source_hashes:
   scripts/route_graph_pipeline.py: "sha256:ec09f292-a14dee10-128b2cf7-d7e472a1-a49ce468-049475e3-f6e137ec-64a82f44"
   scripts/route_graph_schema.sql: "sha256:0268e25e-27327e75-22bcea0a-2050efe0-4a62de6f-52a3121b-8bc2843f-dfb8e4ec"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-03-10"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - route graph
 
@@ -33,5 +33,5 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`scripts/route_graph_pipeline.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/route_graph_pipeline.py)
-- [`scripts/route_graph_schema.sql`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/scripts/route_graph_schema.sql)
+- [`scripts/route_graph_pipeline.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/route_graph_pipeline.py)
+- [`scripts/route_graph_schema.sql`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/route_graph_schema.sql)

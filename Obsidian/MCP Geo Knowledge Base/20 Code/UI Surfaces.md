@@ -18,25 +18,25 @@ source_paths:
   - "ui/vendor/maplibre-gl.css"
   - "ui/vendor/maplibre-gl.js"
   - "ui/vendor/shp.min.js"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/boundary_explorer.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/feature_inspector.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/fora_york_house_map.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/geography_selector.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/route_planner.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/shared/compact_contract.css"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/shared/compact_contract.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/simple_map.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/statistics_dashboard.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl-csp-worker.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl-js.LICENSE.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl.css"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/shp.min.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/boundary_explorer.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/feature_inspector.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/fora_york_house_map.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/geography_selector.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/route_planner.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/shared/compact_contract.css"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/shared/compact_contract.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/simple_map.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/statistics_dashboard.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl-csp-worker.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl-js.LICENSE.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl.css"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/shp.min.js"
 source_hashes:
   ui/__init__.py: "sha256:9bfa894f-4e4f5a69-6c492533-c4437f7a-29c7885e-5ee97dc0-8650905b-0c18b88f"
   ui/boundary_explorer.html: "sha256:6786a3c8-58cf7d5f-ebf2355f-bdaaeb72-f438120f-69b0f22d-8affbd45-e5ae1eef"
@@ -54,10 +54,10 @@ source_hashes:
   ui/vendor/maplibre-gl.css: "sha256:43c1d886-b5fdf0aa-c4e7135b-d6f84b82-3d9f4828-3a648012-665f9be5-2c01389f"
   ui/vendor/maplibre-gl.js: "sha256:aa49ba07-2cb2d462-1c365e50-1867cbc0-ffead0d4-a42dd79c-b8f18252-5082451a"
   ui/vendor/shp.min.js: "sha256:a5f5875f-f1cdeaec-b9b84fb6-dd531cc7-f59ac929-57076ba2-1a9a194f-97c756bb"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-01-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # UI Surfaces
 
@@ -92,19 +92,19 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`ui/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/__init__.py)
-- [`ui/boundary_explorer.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/boundary_explorer.html)
-- [`ui/feature_inspector.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/feature_inspector.html)
-- [`ui/fora_york_house_map.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/fora_york_house_map.html)
-- [`ui/geography_selector.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/geography_selector.html)
-- [`ui/route_planner.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/route_planner.html)
-- [`ui/shared/compact_contract.css`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/shared/compact_contract.css)
-- [`ui/shared/compact_contract.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/shared/compact_contract.js)
-- [`ui/simple_map.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/simple_map.html)
-- [`ui/statistics_dashboard.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/statistics_dashboard.html)
-- [`ui/vendor/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/README.md)
-- [`ui/vendor/maplibre-gl-csp-worker.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl-csp-worker.js)
-- [`ui/vendor/maplibre-gl-js.LICENSE.txt`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl-js.LICENSE.txt)
-- [`ui/vendor/maplibre-gl.css`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl.css)
-- [`ui/vendor/maplibre-gl.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/maplibre-gl.js)
-- [`ui/vendor/shp.min.js`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/ui/vendor/shp.min.js)
+- [`ui/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/__init__.py)
+- [`ui/boundary_explorer.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/boundary_explorer.html)
+- [`ui/feature_inspector.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/feature_inspector.html)
+- [`ui/fora_york_house_map.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/fora_york_house_map.html)
+- [`ui/geography_selector.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/geography_selector.html)
+- [`ui/route_planner.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/route_planner.html)
+- [`ui/shared/compact_contract.css`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/shared/compact_contract.css)
+- [`ui/shared/compact_contract.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/shared/compact_contract.js)
+- [`ui/simple_map.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/simple_map.html)
+- [`ui/statistics_dashboard.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/statistics_dashboard.html)
+- [`ui/vendor/README.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/README.md)
+- [`ui/vendor/maplibre-gl-csp-worker.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl-csp-worker.js)
+- [`ui/vendor/maplibre-gl-js.LICENSE.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl-js.LICENSE.txt)
+- [`ui/vendor/maplibre-gl.css`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl.css)
+- [`ui/vendor/maplibre-gl.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/maplibre-gl.js)
+- [`ui/vendor/shp.min.js`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/ui/vendor/shp.min.js)

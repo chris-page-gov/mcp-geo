@@ -21,28 +21,28 @@ source_paths:
   - "server/route_planning.py"
   - "server/security.py"
   - "server/tool_naming.py"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/boundary_cache.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/boundary_run_paths.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/circuit_breaker.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/dataset_cache.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/error_taxonomy.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/landis.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/logging.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/maps_proxy.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/observability.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/ons_geo_cache.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/ons_geo_catalog.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/ons_geo_freshness.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/owasp_mcp_validation.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/protocol.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/route_graph.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/route_planning.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/security.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/tool_naming.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/boundary_cache.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/boundary_run_paths.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/circuit_breaker.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/dataset_cache.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/error_taxonomy.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/landis.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/logging.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/maps_proxy.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/observability.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/ons_geo_cache.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/ons_geo_catalog.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/ons_geo_freshness.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/owasp_mcp_validation.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/protocol.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/route_graph.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/route_planning.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/security.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/tool_naming.py"
 source_hashes:
   server/__init__.py: "sha256:fdccb177-cfe80d74-cebd4491-092b6bda-7d0886fc-c6f66b57-e70c3e51-940545b8"
   server/boundary_cache.py: "sha256:eb52cbcc-96762938-9690e80c-97224ac1-64758056-75ac8368-0f56454d-a30bc7b2"
@@ -63,10 +63,10 @@ source_hashes:
   server/route_planning.py: "sha256:509981c7-1d05541e-27932d05-afb083ed-1a2d45fc-f59d3eef-461908e3-c2c31512"
   server/security.py: "sha256:f863adee-02c4c1c3-c79296c5-791e3b71-55d56d03-cd8720d5-dbda8ab8-8cefaabf"
   server/tool_naming.py: "sha256:88ac9bc8-188a5bc0-21619ff2-8139a757-531ad024-4665e0bc-0accb589-fa545af4"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Server Runtime Overview
 
@@ -83,7 +83,7 @@ last_validated_at: "2026-06-01T01:38:32Z"
 | `server/boundary_cache.py` | from __future__ import annotations | 2026-01-30 | 2026-02-22 | `tests/test_admin_lookup_cache.py`, `tests/test_admin_lookup_extended.py`, `tests/test_boundary_cache.py`, `tests/test_resource_catalog.py` |
 | `server/boundary_run_paths.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | `tests/test_boundary_run_paths.py` |
 | `server/circuit_breaker.py` | from __future__ import annotations | 2026-02-02 | 2026-02-02 | `tests/conftest.py`, `tests/test_circuit_breaker.py`, `tests/test_council_tax_band.py`, `tests/test_nomis_common.py` |
-| `server/dataset_cache.py` | from __future__ import annotations | 2026-01-25 | 2026-01-25 | `tests/test_dataset_cache.py`, `tests/test_ons_codes_unit.py` |
+| `server/dataset_cache.py` | from __future__ import annotations | 2026-01-25 | 2026-01-25 | `tests/test_dataset_cache.py`, `tests/test_mcp_docker_local.py`, `tests/test_ons_codes_unit.py` |
 | `server/error_taxonomy.py` | from __future__ import annotations | 2026-01-25 | 2026-04-04 | `tests/test_error_taxonomy.py` |
 | `server/landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-22 | `tests/test_check_shared_benchmark_cache.py`, `tests/test_evaluation_harness_full.py`, `tests/test_landis_ingest.py`, `tests/test_landis_release_reconciliation.py` |
 | `server/logging.py` | from __future__ import annotations | 2026-01-25 | 2026-02-21 | `tests/evaluation/questions.py`, `tests/test_logging_redaction.py`, `tests/test_os_downloads_tools.py`, `tests/test_playground_events.py` |
@@ -93,7 +93,7 @@ last_validated_at: "2026-06-01T01:38:32Z"
 | `server/ons_geo_catalog.py` | from __future__ import annotations | 2026-04-09 | 2026-04-12 | `tests/test_ons_geo_catalog.py` |
 | `server/ons_geo_freshness.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo.py`, `tests/test_ons_geo_catalog.py`, `tests/test_ons_geo_freshness.py` |
 | `server/owasp_mcp_validation.py` | from __future__ import annotations | 2026-03-13 | 2026-03-24 | `tests/test_owasp_mcp_validation.py` |
-| `server/protocol.py` | Protocol version constants and negotiation helpers for MCP transports. | 2026-01-24 | 2026-02-11 | `tests/audit_test_utils.py`, `tests/test_audit_normalise.py`, `tests/test_client_capabilities.py`, `tests/test_host_benchmark.py` |
+| `server/protocol.py` | Protocol version constants and negotiation helpers for MCP transports. | 2026-01-24 | 2026-06-01 | `tests/audit_test_utils.py`, `tests/test_audit_normalise.py`, `tests/test_client_capabilities.py`, `tests/test_host_benchmark.py` |
 | `server/route_graph.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_os_route_tools.py`, `tests/test_route_graph.py`, `tests/test_route_graph_integration.py`, `tests/test_route_graph_pipeline.py` |
 | `server/route_planning.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/evaluation/questions.py`, `tests/test_os_mcp_route_query.py`, `tests/test_route_planning.py`, `tests/test_stakeholder_live_run.py` |
 | `server/security.py` | REDACTION_TOKEN = "[REDACTED]" | 2025-09-16 | 2026-04-22 | `tests/test_owasp_mcp_validation.py`, `tests/test_run_local_tool.py`, `tests/test_security.py` |
@@ -101,22 +101,22 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Pinned Sources
 
-- [`server/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/__init__.py)
-- [`server/boundary_cache.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/boundary_cache.py)
-- [`server/boundary_run_paths.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/boundary_run_paths.py)
-- [`server/circuit_breaker.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/circuit_breaker.py)
-- [`server/dataset_cache.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/dataset_cache.py)
-- [`server/error_taxonomy.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/error_taxonomy.py)
-- [`server/landis.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/landis.py)
-- [`server/logging.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/logging.py)
-- [`server/maps_proxy.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/maps_proxy.py)
-- [`server/observability.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/observability.py)
-- [`server/ons_geo_cache.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/ons_geo_cache.py)
-- [`server/ons_geo_catalog.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/ons_geo_catalog.py)
-- [`server/ons_geo_freshness.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/ons_geo_freshness.py)
-- [`server/owasp_mcp_validation.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/owasp_mcp_validation.py)
-- [`server/protocol.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/protocol.py)
-- [`server/route_graph.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/route_graph.py)
-- [`server/route_planning.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/route_planning.py)
-- [`server/security.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/security.py)
-- [`server/tool_naming.py`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/server/tool_naming.py)
+- [`server/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/__init__.py)
+- [`server/boundary_cache.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/boundary_cache.py)
+- [`server/boundary_run_paths.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/boundary_run_paths.py)
+- [`server/circuit_breaker.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/circuit_breaker.py)
+- [`server/dataset_cache.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/dataset_cache.py)
+- [`server/error_taxonomy.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/error_taxonomy.py)
+- [`server/landis.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/landis.py)
+- [`server/logging.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/logging.py)
+- [`server/maps_proxy.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/maps_proxy.py)
+- [`server/observability.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/observability.py)
+- [`server/ons_geo_cache.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/ons_geo_cache.py)
+- [`server/ons_geo_catalog.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/ons_geo_catalog.py)
+- [`server/ons_geo_freshness.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/ons_geo_freshness.py)
+- [`server/owasp_mcp_validation.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/owasp_mcp_validation.py)
+- [`server/protocol.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/protocol.py)
+- [`server/route_graph.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/route_graph.py)
+- [`server/route_planning.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/route_planning.py)
+- [`server/security.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/security.py)
+- [`server/tool_naming.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/tool_naming.py)

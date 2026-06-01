@@ -56,41 +56,41 @@ source_paths:
   - "troubleshooting/peatland-bowland-floor-question-deep-analysis-2026-02-19.md"
   - "troubleshooting/third-harold-wood-after-updates-analysis-2026-03-15.md"
   - "troubleshooting/validating-nomis-trace-evidence-2026-03-03.md"
-source_commit: "2d7d7ba76db4643934aa2bd1b294e0e352285702"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/ABP/after-revision-trace-claude-report.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/ABP/after-revision-trace-claude.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fifth Harold Wood, after updates.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fifth harold_wood_walk_the_streets.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fourth Harold Wood, after updates.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fourth Harold Wood, after updates.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/check_real_sites.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/draw_roads_on_map.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/failure_data_availability.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/mapping_landis_results.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/MCP-Geo view of Harold Wood Essex.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/MCP-Geo view of Harold Wood Essex.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Meeth, North Devon report.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Meeth-N-Devon-Cowork-failed.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Start Meeth 3D Map.command"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/meeth_3d_buildings.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/meeth_openreach_report.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-08 at 18.07.24.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-09 at 06.11.13.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-09 at 09.47.36.png"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Second Harold Wood, after updates.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Third Harold Wood, after updates.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Third Harold Wood, after updates.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Validating-NOMIS.docx"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Validating-NOMIS.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-better-ward-boundaries-election.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-floor-questions-harness-report-2026-02-18.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/ABP/after-revision-trace-claude-report.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/ABP/after-revision-trace-claude.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fifth Harold Wood, after updates.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fifth harold_wood_walk_the_streets.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fourth Harold Wood, after updates.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fourth Harold Wood, after updates.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/check_real_sites.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/draw_roads_on_map.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/failure_data_availability.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/mapping_landis_results.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/MCP-Geo view of Harold Wood Essex.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/MCP-Geo view of Harold Wood Essex.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Meeth, North Devon report.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Meeth-N-Devon-Cowork-failed.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Start Meeth 3D Map.command"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/meeth_3d_buildings.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/meeth_openreach_report.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-08 at 18.07.24.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-09 at 06.11.13.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-09 at 09.47.36.png"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Second Harold Wood, after updates.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Third Harold Wood, after updates.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Third Harold Wood, after updates.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Validating-NOMIS.docx"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Validating-NOMIS.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-better-ward-boundaries-election.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-floor-questions-harness-report-2026-02-18.md"
 source_hashes:
   troubleshooting/ABP/after-revision-trace-claude-report.md: "sha256:4c90ffa8-ecdfc7ad-cab93f62-4fd2f699-0905c555-67799523-4521306f-7e360f97"
   troubleshooting/ABP/after-revision-trace-claude.md: "sha256:383d47bf-118cf48b-448ce2f3-6ff5c564-a1fd4ca1-06198cb8-51418677-5c5496fe"
@@ -124,10 +124,10 @@ source_hashes:
   troubleshooting/Validating-NOMIS.md: "sha256:e1b2f7c1-7e3d4f44-da11d74f-d526f649-9ac83ae4-ad1a6c94-12e95ace-6bad58c3"
   troubleshooting/claude-better-ward-boundaries-election.md: "sha256:d65dc373-8f275f6f-813f187e-605a9c41-a52e058a-dcea09d9-a50950a8-72b0e40b"
   troubleshooting/claude-floor-questions-harness-report-2026-02-18.md: "sha256:cd80a7ef-12314161-2060e1c0-d00362c1-14f05419-70a22d3a-4e717292-1da8e0e5"
-generated_at: "2026-06-01T01:38:32Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-08"
-last_validated_at: "2026-06-01T01:38:32Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Troubleshooting and Case Notes
 
@@ -217,59 +217,59 @@ last_validated_at: "2026-06-01T01:38:32Z"
 
 ## Binary Artifacts
 
-- `troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx` (21.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx)
-- `troubleshooting/Fifth Harold Wood, after updates.docx` (60.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fifth Harold Wood, after updates.docx)
-- `troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx` (159.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx)
-- `troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf` (71.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf)
-- `troubleshooting/Fourth Harold Wood, after updates.docx` (50.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fourth Harold Wood, after updates.docx)
-- `troubleshooting/MCP-Geo view of Harold Wood Essex.docx` (195.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/MCP-Geo view of Harold Wood Essex.docx)
-- `troubleshooting/Meeth North Devon/Meeth, North Devon report.docx` (9.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Meeth, North Devon report.docx)
-- `troubleshooting/Screenshot 2026-02-08 at 18.07.24.png` (168.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-08 at 18.07.24.png)
-- `troubleshooting/Screenshot 2026-02-09 at 06.11.13.png` (573.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-09 at 06.11.13.png)
-- `troubleshooting/Screenshot 2026-02-09 at 09.47.36.png` (263.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-09 at 09.47.36.png)
-- `troubleshooting/Second Harold Wood, after updates.docx` (101.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Second Harold Wood, after updates.docx)
-- `troubleshooting/Third Harold Wood, after updates.docx` (119.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Third Harold Wood, after updates.docx)
-- `troubleshooting/Validating-NOMIS.docx` (49.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Validating-NOMIS.docx)
+- `troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx` (21.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx)
+- `troubleshooting/Fifth Harold Wood, after updates.docx` (60.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fifth Harold Wood, after updates.docx)
+- `troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx` (159.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx)
+- `troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf` (71.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf)
+- `troubleshooting/Fourth Harold Wood, after updates.docx` (50.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fourth Harold Wood, after updates.docx)
+- `troubleshooting/MCP-Geo view of Harold Wood Essex.docx` (195.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/MCP-Geo view of Harold Wood Essex.docx)
+- `troubleshooting/Meeth North Devon/Meeth, North Devon report.docx` (9.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Meeth, North Devon report.docx)
+- `troubleshooting/Screenshot 2026-02-08 at 18.07.24.png` (168.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-08 at 18.07.24.png)
+- `troubleshooting/Screenshot 2026-02-09 at 06.11.13.png` (573.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-09 at 06.11.13.png)
+- `troubleshooting/Screenshot 2026-02-09 at 09.47.36.png` (263.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-09 at 09.47.36.png)
+- `troubleshooting/Second Harold Wood, after updates.docx` (101.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Second Harold Wood, after updates.docx)
+- `troubleshooting/Third Harold Wood, after updates.docx` (119.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Third Harold Wood, after updates.docx)
+- `troubleshooting/Validating-NOMIS.docx` (49.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Validating-NOMIS.docx)
 
 ## Pinned Sources
 
-- [`troubleshooting/ABP/after-revision-trace-claude-report.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/ABP/after-revision-trace-claude-report.md)
-- [`troubleshooting/ABP/after-revision-trace-claude.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/ABP/after-revision-trace-claude.md)
-- [`troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx)
-- [`troubleshooting/Fifth Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fifth Harold Wood, after updates.docx)
-- [`troubleshooting/Fifth harold_wood_walk_the_streets.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fifth harold_wood_walk_the_streets.html)
-- [`troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx)
-- [`troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.md)
-- [`troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf)
-- [`troubleshooting/Fourth Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fourth Harold Wood, after updates.docx)
-- [`troubleshooting/Fourth Harold Wood, after updates.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Fourth Harold Wood, after updates.md)
-- [`troubleshooting/Landis/check_real_sites.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/check_real_sites.md)
-- [`troubleshooting/Landis/draw_roads_on_map.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/draw_roads_on_map.md)
-- [`troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md)
-- [`troubleshooting/Landis/failure_data_availability.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/failure_data_availability.md)
-- [`troubleshooting/Landis/mapping_landis_results.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Landis/mapping_landis_results.md)
-- [`troubleshooting/MCP-Geo view of Harold Wood Essex.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/MCP-Geo view of Harold Wood Essex.docx)
-- [`troubleshooting/MCP-Geo view of Harold Wood Essex.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/MCP-Geo view of Harold Wood Essex.md)
-- [`troubleshooting/Meeth North Devon/Meeth, North Devon report.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Meeth, North Devon report.docx)
-- [`troubleshooting/Meeth North Devon/Meeth-N-Devon-Cowork-failed.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Meeth-N-Devon-Cowork-failed.md)
-- [`troubleshooting/Meeth North Devon/Start Meeth 3D Map.command`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/Start Meeth 3D Map.command)
-- [`troubleshooting/Meeth North Devon/meeth_3d_buildings.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/meeth_3d_buildings.html)
-- [`troubleshooting/Meeth North Devon/meeth_openreach_report.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Meeth North Devon/meeth_openreach_report.html)
-- [`troubleshooting/Screenshot 2026-02-08 at 18.07.24.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-08 at 18.07.24.png)
-- [`troubleshooting/Screenshot 2026-02-09 at 06.11.13.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-09 at 06.11.13.png)
-- [`troubleshooting/Screenshot 2026-02-09 at 09.47.36.png`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Screenshot 2026-02-09 at 09.47.36.png)
-- [`troubleshooting/Second Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Second Harold Wood, after updates.docx)
-- [`troubleshooting/Third Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Third Harold Wood, after updates.docx)
-- [`troubleshooting/Third Harold Wood, after updates.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Third Harold Wood, after updates.md)
-- [`troubleshooting/Validating-NOMIS.docx`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Validating-NOMIS.docx)
-- [`troubleshooting/Validating-NOMIS.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/Validating-NOMIS.md)
-- [`troubleshooting/claude-better-ward-boundaries-election.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-better-ward-boundaries-election.md)
-- [`troubleshooting/claude-floor-questions-harness-report-2026-02-18.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-floor-questions-harness-report-2026-02-18.md)
-- [`troubleshooting/claude-map-fail.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-map-fail.md)
-- [`troubleshooting/claude-stopped-after-ngd-features.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-stopped-after-ngd-features.md)
-- [`troubleshooting/claude-system-instructions-hide-mcp.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/claude-system-instructions-hide-mcp.md)
-- [`troubleshooting/continued-fail-after-several-codex-attempts.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/continued-fail-after-several-codex-attempts.md)
-- [`troubleshooting/cv13hb-boundary-host.html`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/cv13hb-boundary-host.html)
-- [`troubleshooting/epic-fail-after-mapping-update.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/epic-fail-after-mapping-update.md)
-- [`troubleshooting/fourth-harold-wood-after-updates-analysis-2026-03-15.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/fourth-harold-wood-after-updates-analysis-2026-03-15.md)
-- [`troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md`](https://github.com/chris-page-gov/mcp-geo/blob/2d7d7ba76db4643934aa2bd1b294e0e352285702/troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md)
+- [`troubleshooting/ABP/after-revision-trace-claude-report.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/ABP/after-revision-trace-claude-report.md)
+- [`troubleshooting/ABP/after-revision-trace-claude.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/ABP/after-revision-trace-claude.md)
+- [`troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx)
+- [`troubleshooting/Fifth Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fifth Harold Wood, after updates.docx)
+- [`troubleshooting/Fifth harold_wood_walk_the_streets.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fifth harold_wood_walk_the_streets.html)
+- [`troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.docx)
+- [`troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.md)
+- [`troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf)
+- [`troubleshooting/Fourth Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fourth Harold Wood, after updates.docx)
+- [`troubleshooting/Fourth Harold Wood, after updates.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Fourth Harold Wood, after updates.md)
+- [`troubleshooting/Landis/check_real_sites.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/check_real_sites.md)
+- [`troubleshooting/Landis/draw_roads_on_map.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/draw_roads_on_map.md)
+- [`troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md)
+- [`troubleshooting/Landis/failure_data_availability.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/failure_data_availability.md)
+- [`troubleshooting/Landis/mapping_landis_results.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Landis/mapping_landis_results.md)
+- [`troubleshooting/MCP-Geo view of Harold Wood Essex.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/MCP-Geo view of Harold Wood Essex.docx)
+- [`troubleshooting/MCP-Geo view of Harold Wood Essex.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/MCP-Geo view of Harold Wood Essex.md)
+- [`troubleshooting/Meeth North Devon/Meeth, North Devon report.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Meeth, North Devon report.docx)
+- [`troubleshooting/Meeth North Devon/Meeth-N-Devon-Cowork-failed.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Meeth-N-Devon-Cowork-failed.md)
+- [`troubleshooting/Meeth North Devon/Start Meeth 3D Map.command`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/Start Meeth 3D Map.command)
+- [`troubleshooting/Meeth North Devon/meeth_3d_buildings.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/meeth_3d_buildings.html)
+- [`troubleshooting/Meeth North Devon/meeth_openreach_report.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Meeth North Devon/meeth_openreach_report.html)
+- [`troubleshooting/Screenshot 2026-02-08 at 18.07.24.png`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-08 at 18.07.24.png)
+- [`troubleshooting/Screenshot 2026-02-09 at 06.11.13.png`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-09 at 06.11.13.png)
+- [`troubleshooting/Screenshot 2026-02-09 at 09.47.36.png`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Screenshot 2026-02-09 at 09.47.36.png)
+- [`troubleshooting/Second Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Second Harold Wood, after updates.docx)
+- [`troubleshooting/Third Harold Wood, after updates.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Third Harold Wood, after updates.docx)
+- [`troubleshooting/Third Harold Wood, after updates.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Third Harold Wood, after updates.md)
+- [`troubleshooting/Validating-NOMIS.docx`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Validating-NOMIS.docx)
+- [`troubleshooting/Validating-NOMIS.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/Validating-NOMIS.md)
+- [`troubleshooting/claude-better-ward-boundaries-election.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-better-ward-boundaries-election.md)
+- [`troubleshooting/claude-floor-questions-harness-report-2026-02-18.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-floor-questions-harness-report-2026-02-18.md)
+- [`troubleshooting/claude-map-fail.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-map-fail.md)
+- [`troubleshooting/claude-stopped-after-ngd-features.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-stopped-after-ngd-features.md)
+- [`troubleshooting/claude-system-instructions-hide-mcp.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/claude-system-instructions-hide-mcp.md)
+- [`troubleshooting/continued-fail-after-several-codex-attempts.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/continued-fail-after-several-codex-attempts.md)
+- [`troubleshooting/cv13hb-boundary-host.html`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/cv13hb-boundary-host.html)
+- [`troubleshooting/epic-fail-after-mapping-update.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/epic-fail-after-mapping-update.md)
+- [`troubleshooting/fourth-harold-wood-after-updates-analysis-2026-03-15.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/fourth-harold-wood-after-updates-analysis-2026-03-15.md)
+- [`troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md)
