@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from loguru import logger
 
 from server import stdio_adapter
+from server.mcp import rc2026
 from server.mcp.client_capabilities import (
     bool_env as _shared_bool_env,
 )
@@ -41,7 +42,6 @@ from server.mcp.elicitation_forms import (
 )
 from server.mcp.prompts import get_prompt, list_prompts
 from server.mcp.resource_handoff import decorate_resource_handoff
-from server.mcp import rc2026
 from server.mcp.tool_search import get_toolset_catalog, resolve_default_toolset_filters_from_env
 from server.observability import record_tool_call
 from server.protocol import (
@@ -346,7 +346,8 @@ def build_prometheus_lines() -> list[str]:
     lines = [
         "# HELP mcp_http_auth_failures_total Total failed MCP HTTP auth decisions by reason",
         "# TYPE mcp_http_auth_failures_total counter",
-        "# HELP mcp_http_standard_header_observations_total Total MCP HTTP standard-header observations by header and issue",
+        "# HELP mcp_http_standard_header_observations_total "
+        "Total MCP HTTP standard-header observations by header and issue",
         "# TYPE mcp_http_standard_header_observations_total counter",
         "# HELP mcp_http_session_quota_rejections_total Total MCP HTTP session quota rejections",
         "# TYPE mcp_http_session_quota_rejections_total counter",
@@ -794,9 +795,15 @@ def _call_tool(params: dict[str, Any], capabilities: dict[str, Any]) -> dict[str
     return result
 
 
-def _dispatch(method: str, params: dict[str, Any], session_state: dict[str, Any]) -> Any:
+def _dispatch(
+    method: str,
+    params: dict[str, Any],
+    session_state: dict[str, Any],
+    protocol_version: str | None = None,
+) -> Any:
     protocol_version = normalize_protocol_version(
-        rc2026.requested_protocol_from_params(method, params)
+        protocol_version
+        or rc2026.requested_protocol_from_params(method, params)
         or session_state.get("protocolVersion")
     ) or PROTOCOL_VERSION
     if method == "server/discover":
@@ -970,7 +977,7 @@ async def mcp_endpoint(request: Request):
         return _session_quota_failure_response(msg_id, headers)
     if msg_id is None:
         try:
-            _dispatch(method, params, session_state)
+            _dispatch(method, params, session_state, protocol_version)
         except Exception:
             pass
         return Response(status_code=status.HTTP_202_ACCEPTED, headers=headers)
@@ -1239,7 +1246,7 @@ async def mcp_endpoint(request: Request):
                 headers=headers,
             )
 
-        result = _dispatch(method, params, session_state)
+        result = _dispatch(method, params, session_state, protocol_version)
         if method == "initialize" and isinstance(result, dict):
             negotiated = normalize_protocol_version(result.get("protocolVersion"))
             if negotiated and is_supported_protocol_version(negotiated):
@@ -1256,7 +1263,11 @@ async def mcp_endpoint(request: Request):
             headers=headers,
         )
     except LookupError as exc:
-        code = -32602 if protocol_version == MCP_2026_RC_PROTOCOL_VERSION and method == "resources/read" else 1001
+        code = (
+            -32602
+            if protocol_version == MCP_2026_RC_PROTOCOL_VERSION and method == "resources/read"
+            else 1001
+        )
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content=_resp_error(msg_id, code, str(exc)),

@@ -7,10 +7,10 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 import tools.ons_geo as ons_geo_tools
+from server import ons_geo_freshness
 from server.config import settings
 from server.main import app
 from server.ons_geo_cache import ONSGeoCacheReadError, ensure_schema
-from server import ons_geo_freshness
 
 client = TestClient(app)
 

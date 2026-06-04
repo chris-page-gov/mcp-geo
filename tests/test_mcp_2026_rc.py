@@ -89,6 +89,26 @@ def test_mcp_2026_rc_cache_metadata_on_tools_list(client, monkeypatch):
     assert result["cacheScope"] == "public"
 
 
+def test_mcp_2026_rc_header_only_cache_metadata_on_tools_list(client, monkeypatch):
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-protocol-version": MCP_2026_RC_PROTOCOL_VERSION,
+            "mcp-method": "tools/list",
+        },
+        json=_rpc("list-1", "tools/list", {}),
+    )
+
+    assert resp.status_code == 200
+    assert resp.headers.get("mcp-protocol-version") == MCP_2026_RC_PROTOCOL_VERSION
+    assert "mcp-session-id" not in resp.headers
+    result = resp.json()["result"]
+    assert result["resultType"] == "complete"
+    assert result["ttlMs"] == rc2026.DEFAULT_LIST_TTL_MS
+    assert result["cacheScope"] == "public"
+
+
 def test_mcp_2026_rc_resource_not_found_uses_invalid_params(client, monkeypatch):
     monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
     uri = "ui://mcp-geo/unknown"
