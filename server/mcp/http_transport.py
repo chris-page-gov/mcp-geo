@@ -728,6 +728,16 @@ def _validate_standard_headers(
     headers: dict[str, str],
 ) -> JSONResponse | None:
     strict = is_mcp_2026_rc_protocol(protocol_version)
+    protocol_header = request.headers.get("mcp-protocol-version")
+    if strict and not protocol_header:
+        _record_standard_header_observation("MCP-Protocol-Version", "missing")
+        return _header_mismatch_response(
+            msg_id=msg_id,
+            headers=headers,
+            header_name="MCP-Protocol-Version",
+            message="Missing MCP-Protocol-Version header",
+            expected=protocol_version,
+        )
     method_header = request.headers.get("mcp-method")
     if not method_header:
         _record_standard_header_observation("Mcp-Method", "missing")
@@ -1325,8 +1335,13 @@ async def mcp_endpoint(request: Request):
             headers=headers,
         )
     except MethodNotFound as exc:
+        status_code = (
+            status.HTTP_404_NOT_FOUND
+            if is_mcp_2026_rc_protocol(protocol_version)
+            else status.HTTP_200_OK
+        )
         return JSONResponse(
-            status_code=status.HTTP_200_OK,
+            status_code=status_code,
             content=_resp_error(msg_id, -32601, str(exc)),
             headers=headers,
         )

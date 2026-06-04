@@ -100,6 +100,26 @@ def test_mcp_2026_rc_requires_standard_headers_in_strict_mode(client, monkeypatc
     assert error["data"]["header"] == "Mcp-Method"
 
 
+def test_mcp_2026_rc_requires_protocol_header_when_meta_selects_rc(client, monkeypatch):
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-method": "tools/list"},
+        json=_rpc("list-1", "tools/list", {"_meta": _rc_meta()}),
+    )
+
+    assert resp.status_code == 400
+    error = resp.json()["error"]
+    assert resp.json()["id"] == "list-1"
+    assert error["code"] == -32001
+    assert error["message"] == "Missing MCP-Protocol-Version header"
+    assert error["data"] == {
+        "type": "HeaderMismatch",
+        "header": "MCP-Protocol-Version",
+        "expected": MCP_2026_RC_PROTOCOL_VERSION,
+    }
+
+
 def test_mcp_2026_rc_name_header_mismatch_uses_header_mismatch(client, monkeypatch):
     monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
     resp = client.post(
@@ -170,6 +190,24 @@ def test_mcp_2026_rc_cache_metadata_on_tools_list(client, monkeypatch):
     assert result["resultType"] == "complete"
     assert result["ttlMs"] == rc2026.DEFAULT_LIST_TTL_MS
     assert result["cacheScope"] == "public"
+
+
+def test_mcp_2026_rc_unknown_method_returns_http_404(client, monkeypatch):
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-protocol-version": MCP_2026_RC_PROTOCOL_VERSION,
+            "mcp-method": "unknown/method",
+        },
+        json=_rpc("missing-1", "unknown/method", {"_meta": _rc_meta()}),
+    )
+
+    assert resp.status_code == 404
+    body = resp.json()
+    assert body["id"] == "missing-1"
+    assert body["error"]["code"] == -32601
+    assert body["error"]["message"] == "Method not found: unknown/method"
 
 
 def test_mcp_2026_rc_header_only_cache_metadata_on_tools_list(client, monkeypatch):
