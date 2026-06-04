@@ -18,6 +18,30 @@ def _write_jsonl(path: Path, records: list[dict[str, object]]) -> None:
             handle.write("\n")
 
 
+def _card_summary() -> dict[str, object]:
+    return {
+        "repo_filter": "mcp-geo",
+        "summary": {
+            "date_range": {
+                "start": "2026-02-10T10:00:00Z",
+                "end": "2026-02-10T11:00:00Z",
+            },
+            "active_runtime_hours": 1.0,
+            "wall_clock_span_hours": 1.0,
+            "total_tokens": 1200,
+            "input_tokens": 700,
+            "output_tokens": 500,
+            "cached_input_tokens": 2000,
+            "tool_calls": 3,
+            "shell_calls": 1,
+            "patch_calls": 1,
+            "apply_patch_lines_added": 2,
+            "peak_single_step_tokens": 345,
+            "context_compactions": 2,
+        },
+    }
+
+
 def test_build_summary_filters_repo_and_computes_metrics(tmp_path: Path) -> None:
     codex_home = tmp_path / ".codex"
 
@@ -194,6 +218,31 @@ def test_build_summary_filters_repo_and_computes_metrics(tmp_path: Path) -> None
     assert "<text>0.1h</text>" in svg
     assert "<text>1.2k</text>" in svg
     assert "<text>3</text>" in svg
+
+
+def test_render_summary_card_svg_falls_back_from_stale_skill_template_path(
+    tmp_path: Path,
+) -> None:
+    stale_template = (
+        tmp_path
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "openai-bundled-old"
+        / "skills"
+        / "mcp-geo-long-horizon-summary"
+        / "templates"
+        / "summary_card.svg.tmpl"
+    )
+
+    svg = render_summary_card_svg(
+        _card_summary(),
+        title="Codex MCP-Geo Summary",
+        template_path=stale_template,
+    )
+
+    assert "Codex MCP-Geo Summary" in svg
+    assert "1.0h" in svg
 
 
 def test_build_summary_counts_apply_patch_lines_from_function_call_json_arguments(
