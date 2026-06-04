@@ -159,7 +159,7 @@ class Candidate:
             return "automation"
         if PR_WORKFLOW_RE.search(prompt[:160]):
             return "github_workflow"
-        if "review" in prompt[:240]:
+        if "review" in set(WORD_RE.findall(prompt[:240])):
             return "review"
         return "interactive"
 
@@ -368,7 +368,7 @@ def session_paths(codex_home: Path) -> list[Path]:
     if sessions_root.exists():
         paths.extend(sessions_root.glob("**/*.jsonl"))
     if archived_root.exists():
-        paths.extend(archived_root.glob("*.jsonl"))
+        paths.extend(archived_root.glob("**/*.jsonl"))
     return sorted(paths)
 
 

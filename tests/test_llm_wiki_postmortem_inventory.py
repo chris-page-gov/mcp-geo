@@ -34,6 +34,11 @@ def test_session_kind_matches_pr_as_whole_term_only() -> None:
     assert _candidate("Review the pull request checks").session_kind == "github_workflow"
 
 
+def test_session_kind_matches_review_as_whole_term_only() -> None:
+    assert _candidate("track preview spec updates").session_kind == "interactive"
+    assert _candidate("Please review this transcript").session_kind == "review"
+
+
 def test_status_monitor_detection_matches_terms_not_substrings() -> None:
     assert inventory.looks_like_status_monitor("improve caching logic") is False
     assert inventory.looks_like_status_monitor("please check pr status") is True
@@ -182,6 +187,21 @@ def test_parse_candidate_counts_custom_tool_calls(tmp_path: Path) -> None:
         "web_search_call": 1,
     }
     assert inventory.candidate_record(candidate, repo_root)["toolCalls"] == 3
+
+
+def test_session_paths_recurses_into_archived_sessions(tmp_path: Path) -> None:
+    active = tmp_path / "sessions" / "2026" / "06" / "active.jsonl"
+    archived = tmp_path / "archived_sessions" / "2026" / "06" / "archived.jsonl"
+    top_level_archive = tmp_path / "archived_sessions" / "top-level.jsonl"
+    active.parent.mkdir(parents=True)
+    archived.parent.mkdir(parents=True)
+    active.write_text("{}", encoding="utf-8")
+    archived.write_text("{}", encoding="utf-8")
+    top_level_archive.write_text("{}", encoding="utf-8")
+
+    paths = inventory.session_paths(tmp_path)
+
+    assert paths == sorted([active, archived, top_level_archive])
 
 
 def test_injected_agents_context_preserves_following_prompt() -> None:
