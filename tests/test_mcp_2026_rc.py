@@ -150,6 +150,27 @@ def test_mcp_2026_rc_header_only_cache_metadata_on_tools_list(client, monkeypatc
     assert result["cacheScope"] == "public"
 
 
+def test_stable_http_list_ignores_prior_stdio_rc_negotiation(client, monkeypatch):
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    monkeypatch.setattr(
+        stdio_adapter,
+        "CLIENT_CAPABILITY_SUMMARY",
+        {"negotiatedProtocolVersion": MCP_2026_RC_PROTOCOL_VERSION},
+    )
+
+    resp = client.post(
+        "/mcp",
+        headers={"mcp-protocol-version": PROTOCOL_VERSION},
+        json=_rpc("list-1", "tools/list", {}),
+    )
+
+    assert resp.status_code == 200
+    assert resp.headers.get("mcp-protocol-version") == PROTOCOL_VERSION
+    result = resp.json()["result"]
+    assert "ttlMs" not in result
+    assert "cacheScope" not in result
+
+
 def test_mcp_2026_rc_header_only_initialize_negotiates_rc_stateless(client, monkeypatch):
     http_transport._SESSION_STATE.clear()
     monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")

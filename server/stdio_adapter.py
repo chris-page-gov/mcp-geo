@@ -80,7 +80,7 @@ RESOURCE_LIST.extend(list_ui_resources())
 RESOURCE_LIST.extend(list_data_resources())
 
 
-def handle_get_resource(params: Dict[str, Any]) -> Any:
+def handle_get_resource(params: Dict[str, Any], protocol_version: str | None = None) -> Any:
     name = params.get("name")
     uri = params.get("uri")
     resource = read_resource_content(name=name, uri=uri)
@@ -88,11 +88,16 @@ def handle_get_resource(params: Dict[str, Any]) -> Any:
     return rc2026.add_cache_metadata(
         result,
         method="resources/read",
-        protocol_version=_request_protocol_version(params),
+        protocol_version=_request_protocol_version(params, protocol_version),
     )
 
 
-def _request_protocol_version(params: Dict[str, Any] | None = None) -> str:
+def _request_protocol_version(
+    params: Dict[str, Any] | None = None,
+    explicit_protocol_version: str | None = None,
+) -> str:
+    if explicit_protocol_version:
+        return explicit_protocol_version
     meta_version = rc2026.requested_protocol_from_params(None, params or {})
     if meta_version == MCP_2026_RC_PROTOCOL_VERSION and rc2026.is_mcp_2026_rc_enabled():
         return MCP_2026_RC_PROTOCOL_VERSION
@@ -826,7 +831,7 @@ def _build_list_tool_entries(
     return tool_entries
 
 
-def handle_list_tools(_params: Dict[str, Any]) -> Any:
+def handle_list_tools(_params: Dict[str, Any], protocol_version: str | None = None) -> Any:
     compact = _compact_startup_catalog()
     toolset = _params.get("toolset")
     if toolset is not None and not isinstance(toolset, str):
@@ -881,7 +886,7 @@ def handle_list_tools(_params: Dict[str, Any]) -> Any:
     return rc2026.add_cache_metadata(
         result,
         method="tools/list",
-        protocol_version=_request_protocol_version(_params),
+        protocol_version=_request_protocol_version(_params, protocol_version),
     )
 
 
@@ -1110,28 +1115,31 @@ def _compact_resources(resources: List[dict[str, Any]]) -> List[dict[str, Any]]:
     return compact_resources
 
 
-def handle_list_resources(_params: Dict[str, Any]) -> Any:
+def handle_list_resources(_params: Dict[str, Any], protocol_version: str | None = None) -> Any:
     result = {"resources": _compact_resources(RESOURCE_LIST)}
     return rc2026.add_cache_metadata(
         result,
         method="resources/list",
-        protocol_version=_request_protocol_version(_params),
+        protocol_version=_request_protocol_version(_params, protocol_version),
     )
 
-def handle_list_resource_templates(_params: Dict[str, Any]) -> Any:
+def handle_list_resource_templates(
+    _params: Dict[str, Any],
+    protocol_version: str | None = None,
+) -> Any:
     result = {"resourceTemplates": []}
     return rc2026.add_cache_metadata(
         result,
         method="resources/templates/list",
-        protocol_version=_request_protocol_version(_params),
+        protocol_version=_request_protocol_version(_params, protocol_version),
     )
 
-def handle_list_prompts(_params: Dict[str, Any]) -> Any:
+def handle_list_prompts(_params: Dict[str, Any], protocol_version: str | None = None) -> Any:
     result = {"prompts": list_prompt_defs()}
     return rc2026.add_cache_metadata(
         result,
         method="prompts/list",
-        protocol_version=_request_protocol_version(_params),
+        protocol_version=_request_protocol_version(_params, protocol_version),
     )
 
 

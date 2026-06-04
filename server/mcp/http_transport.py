@@ -850,7 +850,7 @@ def _dispatch(
     if method == "initialize":
         return _initialize(params, session_state, protocol_version)
     if method == "tools/list":
-        result = stdio_adapter.handle_list_tools(params)
+        result = stdio_adapter.handle_list_tools(params, protocol_version=protocol_version)
         return rc2026.add_cache_metadata(
             result,
             method=method,
@@ -861,14 +861,17 @@ def _dispatch(
     if method == "tools/call":
         return _call_tool(params, session_state.get("capabilities", {}))
     if method == "resources/list":
-        result = stdio_adapter.handle_list_resources(params)
+        result = stdio_adapter.handle_list_resources(params, protocol_version=protocol_version)
         return rc2026.add_cache_metadata(
             result,
             method=method,
             protocol_version=protocol_version,
         )
     if method == "resources/templates/list":
-        result = stdio_adapter.handle_list_resource_templates(params)
+        result = stdio_adapter.handle_list_resource_templates(
+            params,
+            protocol_version=protocol_version,
+        )
         return rc2026.add_cache_metadata(
             result,
             method=method,
@@ -877,7 +880,7 @@ def _dispatch(
     if method == "resources/describe":
         return {"resources": stdio_adapter.RESOURCE_LIST}
     if method == "resources/read":
-        result = stdio_adapter.handle_get_resource(params)
+        result = stdio_adapter.handle_get_resource(params, protocol_version=protocol_version)
         return rc2026.add_cache_metadata(
             result,
             method=method,
