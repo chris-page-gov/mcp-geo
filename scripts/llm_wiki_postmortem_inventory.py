@@ -24,7 +24,7 @@ from urllib.parse import urlsplit, urlunsplit
 LOCAL_PATH_RE = re.compile(r"/Users/[^\s`'\"<>)]*")
 EXTSSD_RE = re.compile(r"/Volumes/ExtSSD-Data(?:/Data)?[^\s`'\"<>)]*")
 SECRET_ASSIGNMENT_RE = re.compile(
-    r"\b(?P<key>OS_API_KEY|api_key|apikey|access_token|token)\b"
+    r"\b(?P<key>[A-Za-z0-9_]*(?:api_key|apikey|access_token|token|secret))\b"
     r"(?P<sep>\s*[:=]\s*)"
     r"(?:Bearer\s+)?[^\s,;]+",
     re.IGNORECASE,
@@ -394,6 +394,14 @@ def repo_matches(meta: dict[str, Any], repo_root: Path, repo_name: str) -> bool:
         cwd_path = Path(cwd)
     if cwd_path == repo_root or repo_root in cwd_path.parents:
         return True
+    parts = cwd_path.parts
+    for index, part in enumerate(parts[:-2]):
+        if (
+            part == ".codex"
+            and parts[index + 1] == "worktrees"
+            and parts[index + 2] == repo_name
+        ):
+            return True
     if Path(cwd).name == repo_name and "/.codex/worktrees/" in cwd:
         return True
     git_meta = meta.get("git") or {}

@@ -44,13 +44,27 @@ def test_status_monitor_detection_matches_terms_not_substrings() -> None:
 
 
 def test_sanitize_text_redacts_bearer_tokens() -> None:
-    text = "Authorization: Bearer sk-secret-token\nOS_API_KEY=abc123"
+    text = "\n".join(
+        [
+            "Authorization: Bearer sk-secret-token",
+            "OS_API_KEY=abc123",
+            "OPENAI_API_KEY=sk-openai-secret",
+            "GITHUB_TOKEN=ghp_secret",
+            "MCP_HTTP_JWT_HS256_SECRET=jwt-secret",
+        ]
+    )
     redacted = inventory.sanitize_text(text)
 
     assert "sk-secret-token" not in redacted
     assert "abc123" not in redacted
+    assert "sk-openai-secret" not in redacted
+    assert "ghp_secret" not in redacted
+    assert "jwt-secret" not in redacted
     assert "Authorization: [REDACTED]" in redacted
     assert "OS_API_KEY=[REDACTED]" in redacted
+    assert "OPENAI_API_KEY=[REDACTED]" in redacted
+    assert "GITHUB_TOKEN=[REDACTED]" in redacted
+    assert "MCP_HTTP_JWT_HS256_SECRET=[REDACTED]" in redacted
 
 
 def test_parse_timestamp_normalizes_naive_values_to_utc() -> None:
@@ -87,6 +101,13 @@ def test_candidate_record_redacts_repository_url_credentials(tmp_path: Path) -> 
 def test_repo_matches_accepts_repo_subdirectories(tmp_path: Path) -> None:
     repo_root = tmp_path / "mcp-geo"
     meta = {"cwd": str(repo_root / "server" / "mcp"), "git": {}}
+
+    assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
+
+
+def test_repo_matches_accepts_codex_worktree_subdirectories(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    meta = {"cwd": "/Users/example/.codex/worktrees/mcp-geo/server", "git": {}}
 
     assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
 
