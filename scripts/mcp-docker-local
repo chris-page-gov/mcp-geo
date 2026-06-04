@@ -557,6 +557,8 @@ emit_plan() {
   printf 'default_toolset=%s\n' "${MCP_TOOLS_DEFAULT_TOOLSET:-}"
   printf 'include_toolsets=%s\n' "${MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS:-}"
   printf 'exclude_toolsets=%s\n' "${MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS:-}"
+  printf 'mcp_2026_rc_enabled=%s\n' "${MCP_2026_RC_ENABLED:-}"
+  printf 'mcp_protocol_2026_07_28_enabled=%s\n' "${MCP_PROTOCOL_2026_07_28_ENABLED:-}"
   printf 'addressbase_xref_host_path=%s\n' "$ADDRESSBASE_XREF_HOST_PATH"
   printf 'addressbase_xref_container_path=%s\n' "$ADDRESSBASE_XREF_CONTAINER_PATH"
   printf 'ons_dataset_host_cache_dir=%s\n' "$ONS_DATASET_HOST_CACHE_DIR"
@@ -646,6 +648,8 @@ hydrate_env_values \
   "MCP_TOOLS_DEFAULT_TOOLSET" \
   "MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS" \
   "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS" \
+  "MCP_2026_RC_ENABLED" \
+  "MCP_PROTOCOL_2026_07_28_ENABLED" \
   "ONS_DATASET_CACHE_DIR" \
   "ONS_GEO_CACHE_DIR" \
   "ONS_GEO_CACHE_INDEX_PATH" \

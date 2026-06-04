@@ -516,9 +516,19 @@ def _internal_error(msg_id: Any, method: str | None, exc: Exception) -> dict[str
     return _resp_error(msg_id, -32603, "Internal error", {"correlationId": correlation_id})
 
 
-def _initialize(params: dict[str, Any], session_state: dict[str, Any]) -> dict[str, Any]:
+def _initialize(
+    params: dict[str, Any],
+    session_state: dict[str, Any],
+    protocol_version: str | None = None,
+) -> dict[str, Any]:
     requested = params.get("protocolVersion")
-    protocol_version = negotiate_protocol_version(requested)
+    resolved = normalize_protocol_version(protocol_version)
+    if requested is not None:
+        protocol_version = negotiate_protocol_version(requested)
+    elif resolved and is_supported_protocol_version(resolved):
+        protocol_version = resolved
+    else:
+        protocol_version = negotiate_protocol_version(requested)
     capabilities = params.get("capabilities")
     session_state["capabilities"] = capabilities if isinstance(capabilities, dict) else {}
     session_state["capabilitySummary"] = _summarize_client_capabilities(
@@ -809,7 +819,7 @@ def _dispatch(
     if method == "server/discover":
         return rc2026.build_server_discover_result()
     if method == "initialize":
-        return _initialize(params, session_state)
+        return _initialize(params, session_state, protocol_version)
     if method == "tools/list":
         result = stdio_adapter.handle_list_tools(params)
         return rc2026.add_cache_metadata(
@@ -866,6 +876,11 @@ def _dispatch(
 
 @router.post("/mcp")
 async def mcp_endpoint(request: Request):
+    requested_session_id = request.headers.get("mcp-session-id")
+    requested_session_existed = False
+    if requested_session_id:
+        with _SESSION_LOCK:
+            requested_session_existed = requested_session_id in _SESSION_STATE
     session_id, session_state = _get_session(request)
     headers = {"mcp-session-id": session_id}
     msg_id: Any = None
@@ -944,6 +959,9 @@ async def mcp_endpoint(request: Request):
             headers=headers,
         )
     if _request_wants_stateless_2026_rc(request, method, params):
+        if not requested_session_existed:
+            with _SESSION_LOCK:
+                _SESSION_STATE.pop(session_id, None)
         headers = {}
         session_state = {"capabilities": {}, "stateless": True}
     rc2026.update_state_from_request_meta(session_state, params)

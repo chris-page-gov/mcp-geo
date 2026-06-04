@@ -404,6 +404,51 @@ exit 1
     assert _plan_value(proc.stdout, "os_data_cache_mount_enabled") == "true"
 
 
+def test_mcp_docker_local_env_file_hydrates_rc_flags(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-docker-local"
+    fake_docker = tmp_path / "docker"
+    env_file = tmp_path / "demo.env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "MCP_2026_RC_ENABLED=1",
+                "MCP_PROTOCOL_2026_07_28_ENABLED=1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = _isolated_env(tmp_path)
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_ENV_FILE"] = str(env_file)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "mcp_2026_rc_enabled") == "1"
+    assert _plan_value(proc.stdout, "mcp_protocol_2026_07_28_enabled") == "1"
+
+
 def test_mcp_http_demo_local_sets_http_defaults(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     wrapper = repo_root / "scripts" / "mcp-http-demo-local"
@@ -439,6 +484,58 @@ exit 1
     assert _plan_value(proc.stdout, "postgis_container_name") == "mcp-geo-postgis-http-demo"
     assert _plan_value(proc.stdout, "postgis_volume") == "mcp-geo-postgis-http-demo"
     assert _plan_value(proc.stdout, "http_container_name") == "mcp-geo-http-demo"
+
+
+def test_mcp_http_demo_local_honors_dotenv_overrides(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-http-demo-local"
+    fake_docker = tmp_path / "docker"
+    env_file = tmp_path / "demo.env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "MCP_GEO_DOCKER_NETWORK=custom-http-network",
+                "MCP_GEO_POSTGIS_CONTAINER=custom-postgis",
+                "MCP_GEO_POSTGIS_VOLUME=custom-postgis-volume",
+                "MCP_GEO_HTTP_CONTAINER_NAME=custom-http",
+                "MCP_GEO_HTTP_PORT=8787",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = _isolated_env(tmp_path)
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_ENV_FILE"] = str(env_file)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "transport_mode") == "http"
+    assert _plan_value(proc.stdout, "network") == "custom-http-network"
+    assert _plan_value(proc.stdout, "postgis_container_name") == "custom-postgis"
+    assert _plan_value(proc.stdout, "postgis_volume") == "custom-postgis-volume"
+    assert _plan_value(proc.stdout, "http_container_name") == "custom-http"
+    assert _plan_value(proc.stdout, "http_port") == "8787"
 
 
 def test_mcp_docker_local_plan_disables_ons_geo_cache_mounts_when_missing(

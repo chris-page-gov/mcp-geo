@@ -3,6 +3,57 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+hydrate_demo_env_value() {
+  local key="$1"
+  local file="${MCP_GEO_ENV_FILE:-$REPO_ROOT/.env}"
+  local value="${!key:-}"
+  if [[ -n "$value" || ! -f "$file" ]]; then
+    return 0
+  fi
+  value="$(
+    awk -v k="$key" '
+      /^[[:space:]]*#/ { next }
+      {
+        line = $0
+        sub(/^[[:space:]]*export[[:space:]]+/, "", line)
+        if (line !~ ("^[[:space:]]*" k "[[:space:]]*=")) {
+          next
+        }
+        sub("^[[:space:]]*" k "[[:space:]]*=", "", line)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+        if ((line ~ /^".*"$/) || (line ~ /^'\''.*'\''$/)) {
+          line = substr(line, 2, length(line) - 2)
+        }
+        print line
+        found = 1
+      }
+      END {
+        if (!found) {
+          exit 1
+        }
+      }
+    ' "$file" 2>/dev/null || true
+  )"
+  if [[ -n "$value" ]]; then
+    export "$key=$value"
+  fi
+}
+
+for key in \
+  MCP_GEO_DOCKER_TRANSPORT \
+  MCP_GEO_DOCKER_NETWORK \
+  MCP_GEO_POSTGIS_CONTAINER \
+  MCP_GEO_POSTGIS_VOLUME \
+  MCP_GEO_HTTP_CONTAINER_NAME \
+  MCP_GEO_HTTP_HOST \
+  MCP_GEO_HTTP_PORT \
+  MCP_GEO_HTTP_REPLACE \
+  MCP_HTTP_AUTH_MODE \
+  MCP_2026_RC_ENABLED \
+  MCP_PROTOCOL_2026_07_28_ENABLED; do
+  hydrate_demo_env_value "$key"
+done
+
 export MCP_GEO_DOCKER_TRANSPORT="${MCP_GEO_DOCKER_TRANSPORT:-http}"
 export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-http-demo}"
 export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-http-demo}"
