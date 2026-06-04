@@ -97,6 +97,15 @@ def test_sanitize_text_redacts_bearer_tokens() -> None:
     assert "MCP_HTTP_JWT_HS256_SECRET=[REDACTED]" in redacted
 
 
+def test_sanitize_text_redacts_credentials_embedded_in_urls() -> None:
+    text = "remote=https://ghp_secret-token@github.com/chris-page-gov/mcp-geo.git"
+
+    redacted = inventory.sanitize_text(text)
+
+    assert "ghp_secret-token" not in redacted
+    assert "https://github.com/chris-page-gov/mcp-geo.git" in redacted
+
+
 def test_parse_timestamp_normalizes_naive_values_to_utc() -> None:
     parsed = inventory.parse_timestamp("2026-05-14T09:00:00")
 
@@ -244,6 +253,44 @@ def test_session_paths_recurses_into_archived_sessions(tmp_path: Path) -> None:
     paths = inventory.session_paths(tmp_path)
 
     assert paths == sorted([active, archived, top_level_archive])
+
+
+def test_markdown_rows_escape_table_pipes_once() -> None:
+    candidate_row = inventory.markdown_table_row(
+        {
+            "startTimestamp": "2026-05-14T09:00:00Z",
+            "sessionId": "session-123456",
+            "title": "Run a|b",
+            "kind": "interactive",
+            "effortBand": "tiny",
+            "estimatedVisibleTokens": 1234,
+            "userMessages": 1,
+            "assistantMessages": 2,
+            "toolCalls": 3,
+            "promptExcerpt": "Use x|y",
+        }
+    )
+    repetition_row = inventory.repetition_table_row(
+        {
+            "groupId": "repeat-001",
+            "type": "status_monitor",
+            "label": "PR|checks",
+            "curationTreatment": "merge|summaries",
+            "startTimestamp": "2026-05-14T09:00:00Z",
+            "endTimestamp": "2026-05-14T09:10:00Z",
+            "sessionCount": 2,
+            "estimatedVisibleTokens": 4321,
+            "toolCalls": 4,
+            "sessionIdRange": "abc..def",
+        }
+    )
+
+    assert "Run a\\|b" in candidate_row
+    assert "Use x\\|y" in candidate_row
+    assert "Run a\\\\|b" not in candidate_row
+    assert "PR\\|checks" in repetition_row
+    assert "merge\\|summaries" in repetition_row
+    assert "PR\\\\|checks" not in repetition_row
 
 
 def test_injected_agents_context_preserves_following_prompt() -> None:

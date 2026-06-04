@@ -23,6 +23,12 @@ from urllib.parse import urlsplit, urlunsplit
 
 LOCAL_PATH_RE = re.compile(r"/Users/[^\s`'\"<>)]*")
 EXTSSD_RE = re.compile(r"/Volumes/ExtSSD-Data(?:/Data)?[^\s`'\"<>)]*")
+CREDENTIAL_URL_RE = re.compile(
+    r"(?P<scheme>https?://)"
+    r"(?P<userinfo>[^/\s@]+@)"
+    r"(?P<host>[^/\s`'\"<>)]*)",
+    re.IGNORECASE,
+)
 SECRET_ASSIGNMENT_RE = re.compile(
     r"(?P<key_quote>[\"']?)"
     r"\b(?P<key>[A-Za-z0-9_]*(?:api_key|apikey|access_token|token|secret))\b"
@@ -194,6 +200,10 @@ def sha256_file(path: Path) -> str:
 def sanitize_text(text: str) -> str:
     text = EXTSSD_RE.sub("[EXTSSD_DATA_PATH]", text)
     text = LOCAL_PATH_RE.sub("[LOCAL_PATH]", text)
+    text = CREDENTIAL_URL_RE.sub(
+        lambda match: f"{match.group('scheme')}{match.group('host')}",
+        text,
+    )
     text = AUTHORIZATION_HEADER_RE.sub(
         lambda match: (
             f"{match.group('key_quote')}{match.group('key')}{match.group('key_quote')}"
@@ -211,6 +221,10 @@ def sanitize_text(text: str) -> str:
         text,
     )
     return text
+
+
+def markdown_table_cell(value: object) -> str:
+    return str(value).replace("|", "\\|")
 
 
 def sanitize_repository_url(url: str | None) -> str | None:
@@ -691,8 +705,8 @@ def write_json(path: Path, records: list[dict[str, Any]]) -> None:
 
 
 def markdown_table_row(record: dict[str, Any]) -> str:
-    title = str(record["title"]).replace("|", "\\\\|")
-    prompt = str(record["promptExcerpt"]).replace("|", "\\\\|")
+    title = markdown_table_cell(record["title"])
+    prompt = markdown_table_cell(record["promptExcerpt"])
     return (
         f"| `{record['startTimestamp'] or 'unknown'}` | `{record['sessionId'][:8]}` | "
         f"{title} | `{record['kind']}` | `{record['effortBand']}` | "
@@ -703,8 +717,8 @@ def markdown_table_row(record: dict[str, Any]) -> str:
 
 def repetition_table_row(record: dict[str, Any]) -> str:
     group_type = str(record["type"]).replace("_", " ").title()
-    label = str(record["label"]).replace("|", "\\\\|")
-    treatment = str(record["curationTreatment"]).replace("|", "\\\\|")
+    label = markdown_table_cell(record["label"])
+    treatment = markdown_table_cell(record["curationTreatment"])
     span = f"{record['startTimestamp'] or 'unknown'} -> {record['endTimestamp'] or 'unknown'}"
     return (
         f"| `{record['groupId']}` | {group_type} | {label} | `{span}` | "
