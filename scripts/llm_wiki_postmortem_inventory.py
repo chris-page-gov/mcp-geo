@@ -33,6 +33,14 @@ AUTHORIZATION_HEADER_RE = re.compile(
     r"\b(?P<key>authorization)\b(?P<sep>\s*[:=]\s*)(?:Bearer\s+)?[^\n,;]+",
     re.IGNORECASE,
 )
+AGENTS_CONTEXT_RE = re.compile(
+    r"\A# AGENTS\.md instructions for [^\n]*\n\s*<INSTRUCTIONS>.*?</INSTRUCTIONS>\s*",
+    re.DOTALL,
+)
+ENVIRONMENT_CONTEXT_RE = re.compile(
+    r"\A<environment_context>.*?</environment_context>\s*",
+    re.DOTALL,
+)
 AUTOMATION_TITLE_RE = re.compile(
     r"\bautomation:\s*(.*?)(?:\s+automation id:|\s+automation memory:|\s+last run:|$)",
     re.IGNORECASE,
@@ -136,8 +144,11 @@ class Candidate:
     @property
     def first_user_prompt(self) -> str:
         for message in self.messages:
-            if message.role == "user" and not is_context_only(message.text):
-                return message.text
+            if message.role != "user":
+                continue
+            prompt = strip_leading_context_blocks(message.text)
+            if prompt:
+                return prompt
         return ""
 
     @property
@@ -332,8 +343,17 @@ def is_environment_only(text: str) -> bool:
 
 
 def is_context_only(text: str) -> bool:
+    return not strip_leading_context_blocks(text)
+
+
+def strip_leading_context_blocks(text: str) -> str:
     stripped = text.strip()
-    return stripped.startswith("# AGENTS.md instructions for ")
+    while True:
+        updated = AGENTS_CONTEXT_RE.sub("", stripped, count=1).strip()
+        updated = ENVIRONMENT_CONTEXT_RE.sub("", updated, count=1).strip()
+        if updated == stripped:
+            return stripped
+        stripped = updated
 
 
 def session_paths(codex_home: Path) -> list[Path]:
@@ -385,7 +405,8 @@ def infer_title(messages: list[Message], fallback: str) -> str:
     for message in messages:
         if message.role != "user" or is_context_only(message.text):
             continue
-        lines = [line.strip("# ").strip() for line in message.text.splitlines() if line.strip()]
+        prompt = strip_leading_context_blocks(message.text)
+        lines = [line.strip("# ").strip() for line in prompt.splitlines() if line.strip()]
         for line in lines:
             if line.startswith("<") or line.startswith("# Files mentioned by the user"):
                 continue

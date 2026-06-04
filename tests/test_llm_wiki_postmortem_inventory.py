@@ -91,5 +91,26 @@ def test_repo_matches_accepts_repo_subdirectories(tmp_path: Path) -> None:
     assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
 
 
+def test_injected_agents_context_preserves_following_prompt() -> None:
+    text = "\n".join(
+        [
+            "# AGENTS.md instructions for /workspace/mcp-geo",
+            "",
+            "<INSTRUCTIONS>",
+            "Repository guidance.",
+            "</INSTRUCTIONS>",
+            "<environment_context>",
+            "<cwd>/workspace/mcp-geo</cwd>",
+            "</environment_context>",
+            "Please review PR #78",
+        ]
+    )
+    candidate = _candidate(text)
+
+    assert candidate.first_user_prompt == "Please review PR #78"
+    assert candidate.session_kind == "github_workflow"
+    assert inventory.infer_title(candidate.messages, "Fallback") == "Please review PR #78"
+
+
 def json_dump(value: object) -> str:
     return json.dumps(value, sort_keys=True)
