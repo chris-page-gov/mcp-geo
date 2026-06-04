@@ -113,6 +113,30 @@ def test_mcp_2026_rc_name_header_mismatch_uses_header_mismatch(client, monkeypat
     }
 
 
+def test_mcp_2026_rc_protocol_header_meta_mismatch_uses_header_mismatch(client, monkeypatch):
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-protocol-version": PROTOCOL_VERSION,
+            "mcp-method": "tools/list",
+        },
+        json=_rpc("list-1", "tools/list", {"_meta": _rc_meta()}),
+    )
+
+    assert resp.status_code == 400
+    error = resp.json()["error"]
+    assert resp.json()["id"] == "list-1"
+    assert error["code"] == -32001
+    assert error["message"] == "MCP-Protocol-Version does not match _meta.protocolVersion"
+    assert error["data"] == {
+        "type": "HeaderMismatch",
+        "header": "MCP-Protocol-Version",
+        "expected": MCP_2026_RC_PROTOCOL_VERSION,
+        "received": PROTOCOL_VERSION,
+    }
+
+
 def test_mcp_2026_rc_cache_metadata_on_tools_list(client, monkeypatch):
     monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
     resp = client.post(

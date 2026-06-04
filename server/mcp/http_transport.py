@@ -574,6 +574,7 @@ def _resolve_request_protocol_version(
     request: Request,
     method: str,
     params: dict[str, Any],
+    msg_id: Any,
     session_state: dict[str, Any],
     headers: dict[str, str],
 ) -> tuple[str, JSONResponse | None]:
@@ -644,11 +645,13 @@ def _resolve_request_protocol_version(
         if header_version and header_version != meta_version:
             return (
                 meta_version,
-                _protocol_error_response(
+                _header_mismatch_response(
+                    msg_id=msg_id,
                     headers=headers,
+                    header_name="MCP-Protocol-Version",
                     message="MCP-Protocol-Version does not match _meta.protocolVersion",
-                    requested=header_version,
-                    negotiated=meta_version,
+                    expected=meta_version,
+                    received=header_version,
                 ),
             )
         return meta_version, None
@@ -656,11 +659,13 @@ def _resolve_request_protocol_version(
     if negotiated and header_version and header_version != negotiated:
         return (
             negotiated,
-            _protocol_error_response(
+            _header_mismatch_response(
+                msg_id=msg_id,
                 headers=headers,
+                header_name="MCP-Protocol-Version",
                 message="MCP-Protocol-Version does not match negotiated session protocol",
-                requested=header_version,
-                negotiated=negotiated,
+                expected=negotiated,
+                received=header_version,
             ),
         )
 
@@ -1007,6 +1012,7 @@ async def mcp_endpoint(request: Request):
         request=request,
         method=method,
         params=params,
+        msg_id=msg_id,
         session_state=session_state,
         headers=headers,
     )
