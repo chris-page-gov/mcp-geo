@@ -684,6 +684,29 @@ def _expected_mcp_name(method: str, params: dict[str, Any]) -> str | None:
     return None
 
 
+def _header_mismatch_response(
+    *,
+    headers: dict[str, str],
+    header_name: str,
+    message: str,
+    expected: str | None = None,
+    received: str | None = None,
+) -> JSONResponse:
+    data: dict[str, Any] = {
+        "type": "HeaderMismatch",
+        "header": header_name,
+    }
+    if expected is not None:
+        data["expected"] = expected
+    if received is not None:
+        data["received"] = received
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=_resp_error(None, -32001, message, data),
+        headers=headers,
+    )
+
+
 def _validate_standard_headers(
     *,
     request: Request,
@@ -697,18 +720,21 @@ def _validate_standard_headers(
     if not method_header:
         _record_standard_header_observation("Mcp-Method", "missing")
         if strict:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content=_resp_error(None, -32600, "Missing Mcp-Method header"),
+            return _header_mismatch_response(
                 headers=headers,
+                header_name="Mcp-Method",
+                message="Missing Mcp-Method header",
+                expected=method,
             )
     elif method_header != method:
         _record_standard_header_observation("Mcp-Method", "mismatch")
         if strict:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content=_resp_error(None, -32600, "Mcp-Method header mismatch"),
+            return _header_mismatch_response(
                 headers=headers,
+                header_name="Mcp-Method",
+                message="Mcp-Method header mismatch",
+                expected=method,
+                received=method_header,
             )
 
     expected_name = _expected_mcp_name(method, params)
@@ -718,18 +744,21 @@ def _validate_standard_headers(
     if not name_header:
         _record_standard_header_observation("Mcp-Name", "missing")
         if strict:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content=_resp_error(None, -32600, "Missing Mcp-Name header"),
+            return _header_mismatch_response(
                 headers=headers,
+                header_name="Mcp-Name",
+                message="Missing Mcp-Name header",
+                expected=expected_name,
             )
     elif name_header != expected_name:
         _record_standard_header_observation("Mcp-Name", "mismatch")
         if strict:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content=_resp_error(None, -32600, "Mcp-Name header mismatch"),
+            return _header_mismatch_response(
                 headers=headers,
+                header_name="Mcp-Name",
+                message="Mcp-Name header mismatch",
+                expected=expected_name,
+                received=name_header,
             )
     return None
 

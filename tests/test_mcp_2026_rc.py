@@ -15,6 +15,15 @@ def _rc_meta() -> dict[str, object]:
     }
 
 
+def _rc_namespaced_meta() -> dict[str, object]:
+    return {
+        "io.modelcontextprotocol/protocolVersion": MCP_2026_RC_PROTOCOL_VERSION,
+        "io.modelcontextprotocol/clientCapabilities": {"elicitation": {}},
+        "io.modelcontextprotocol/clientInfo": {"name": "rc-test", "version": "0"},
+        "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01",
+    }
+
+
 def _rpc(msg_id: str, method: str, params: dict[str, object]) -> dict[str, object]:
     return {"jsonrpc": "2.0", "id": msg_id, "method": method, "params": params}
 
@@ -67,7 +76,39 @@ def test_mcp_2026_rc_requires_standard_headers_in_strict_mode(client, monkeypatc
     )
 
     assert resp.status_code == 400
-    assert resp.json()["error"]["message"] == "Missing Mcp-Method header"
+    error = resp.json()["error"]
+    assert error["code"] == -32001
+    assert error["message"] == "Missing Mcp-Method header"
+    assert error["data"]["type"] == "HeaderMismatch"
+    assert error["data"]["header"] == "Mcp-Method"
+
+
+def test_mcp_2026_rc_name_header_mismatch_uses_header_mismatch(client, monkeypatch):
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-protocol-version": MCP_2026_RC_PROTOCOL_VERSION,
+            "mcp-method": "resources/read",
+            "mcp-name": "mcp://wrong/resource",
+        },
+        json=_rpc(
+            "read-1",
+            "resources/read",
+            {"_meta": _rc_meta(), "uri": "mcp://resources/admin/sample"},
+        ),
+    )
+
+    assert resp.status_code == 400
+    error = resp.json()["error"]
+    assert error["code"] == -32001
+    assert error["message"] == "Mcp-Name header mismatch"
+    assert error["data"] == {
+        "type": "HeaderMismatch",
+        "header": "Mcp-Name",
+        "expected": "mcp://resources/admin/sample",
+        "received": "mcp://wrong/resource",
+    }
 
 
 def test_mcp_2026_rc_cache_metadata_on_tools_list(client, monkeypatch):
@@ -208,6 +249,11 @@ def test_stdio_server_discover_and_cache_metadata(monkeypatch):
     assert listed["ttlMs"] == rc2026.DEFAULT_LIST_TTL_MS
     assert listed["cacheScope"] == "public"
 
+    listed_namespaced = stdio_adapter.handle_list_tools({"_meta": _rc_namespaced_meta()})
+    assert listed_namespaced["resultType"] == "complete"
+    assert listed_namespaced["ttlMs"] == rc2026.DEFAULT_LIST_TTL_MS
+    assert listed_namespaced["cacheScope"] == "public"
+
 
 def test_stdio_rc_meta_is_ignored_without_feature_flag(monkeypatch):
     monkeypatch.delenv("MCP_2026_RC_ENABLED", raising=False)
@@ -230,10 +276,18 @@ def test_rc2026_helper_guardrail_branches(monkeypatch):
         }
     )
     assert meta["logLevel"] == "debug"
+    namespaced_meta = rc2026.request_meta_from_params({"_meta": _rc_namespaced_meta()})
+    assert namespaced_meta["protocolVersion"] == MCP_2026_RC_PROTOCOL_VERSION
+    assert namespaced_meta["clientInfo"] == {"name": "rc-test", "version": "0"}
+    assert namespaced_meta["capabilities"] == {"elicitation": {}}
+    session_state: dict[str, object] = {}
+    rc2026.update_state_from_request_meta(session_state, {"_meta": _rc_namespaced_meta()})
+    assert session_state["lastRequestProtocolVersion"] == MCP_2026_RC_PROTOCOL_VERSION
+    assert session_state["capabilities"] == {"elicitation": {}}
     assert rc2026.wants_2026_rc_protocol(
         header_version=None,
         method="tools/list",
-        params={"_meta": {"protocolVersion": MCP_2026_RC_PROTOCOL_VERSION}},
+        params={"_meta": {"io.modelcontextprotocol/protocolVersion": MCP_2026_RC_PROTOCOL_VERSION}},
     )
 
     assert rc2026.add_cache_metadata(

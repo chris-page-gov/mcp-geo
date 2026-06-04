@@ -10,7 +10,6 @@ from loguru import logger
 from server import __version__ as SERVER_VERSION
 from server.mcp.resource_catalog import MCP_APPS_MIME
 from server.protocol import (
-    MCP_2026_RC_PROTOCOL_VERSION,
     is_mcp_2026_rc_enabled,
     is_mcp_2026_rc_protocol,
     normalize_protocol_version,
@@ -25,6 +24,13 @@ MAX_SCHEMA_DEPTH = 64
 MAX_SCHEMA_NODES = 10_000
 
 _TRACE_META_KEYS = ("traceparent", "tracestate", "baggage")
+_META_PROTOCOL_VERSION_KEYS = ("protocolVersion", "io.modelcontextprotocol/protocolVersion")
+_META_CLIENT_INFO_KEYS = ("clientInfo", "io.modelcontextprotocol/clientInfo")
+_META_CAPABILITY_KEYS = (
+    "capabilities",
+    "clientCapabilities",
+    "io.modelcontextprotocol/clientCapabilities",
+)
 
 
 def build_server_capabilities() -> dict[str, Any]:
@@ -65,13 +71,15 @@ def request_meta_from_params(params: Mapping[str, Any] | None) -> dict[str, Any]
     if not isinstance(raw_meta, Mapping):
         return {}
     result: dict[str, Any] = {}
-    protocol_version = normalize_protocol_version(raw_meta.get("protocolVersion"))
+    protocol_version = normalize_protocol_version(
+        _first_meta_value(raw_meta, _META_PROTOCOL_VERSION_KEYS)
+    )
     if protocol_version:
         result["protocolVersion"] = protocol_version
-    client_info = raw_meta.get("clientInfo")
+    client_info = _first_meta_value(raw_meta, _META_CLIENT_INFO_KEYS)
     if isinstance(client_info, Mapping):
         result["clientInfo"] = dict(client_info)
-    capabilities = raw_meta.get("capabilities")
+    capabilities = _first_meta_value(raw_meta, _META_CAPABILITY_KEYS)
     if isinstance(capabilities, Mapping):
         result["capabilities"] = dict(capabilities)
     log_level = raw_meta.get("logLevel")
@@ -85,6 +93,13 @@ def request_meta_from_params(params: Mapping[str, Any] | None) -> dict[str, Any]
     if trace_context:
         result["traceContext"] = trace_context
     return result
+
+
+def _first_meta_value(raw_meta: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
+    for key in keys:
+        if key in raw_meta:
+            return raw_meta[key]
+    return None
 
 
 def update_state_from_request_meta(
