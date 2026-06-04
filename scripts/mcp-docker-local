@@ -559,6 +559,9 @@ emit_plan() {
   printf 'exclude_toolsets=%s\n' "${MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS:-}"
   printf 'mcp_2026_rc_enabled=%s\n' "${MCP_2026_RC_ENABLED:-}"
   printf 'mcp_protocol_2026_07_28_enabled=%s\n' "${MCP_PROTOCOL_2026_07_28_ENABLED:-}"
+  printf 'mcp_http_auth_mode=%s\n' "${MCP_HTTP_AUTH_MODE:-}"
+  printf 'mcp_http_auth_token_present=%s\n' "$([[ -n "${MCP_HTTP_AUTH_TOKEN:-}" ]] && printf true || printf false)"
+  printf 'mcp_http_jwt_hs256_secret_present=%s\n' "$([[ -n "${MCP_HTTP_JWT_HS256_SECRET:-}" ]] && printf true || printf false)"
   printf 'addressbase_xref_host_path=%s\n' "$ADDRESSBASE_XREF_HOST_PATH"
   printf 'addressbase_xref_container_path=%s\n' "$ADDRESSBASE_XREF_CONTAINER_PATH"
   printf 'ons_dataset_host_cache_dir=%s\n' "$ONS_DATASET_HOST_CACHE_DIR"
@@ -650,6 +653,12 @@ hydrate_env_values \
   "MCP_TOOLS_DEFAULT_EXCLUDE_TOOLSETS" \
   "MCP_2026_RC_ENABLED" \
   "MCP_PROTOCOL_2026_07_28_ENABLED" \
+  "MCP_HTTP_AUTH_MODE" \
+  "MCP_HTTP_AUTH_TOKEN_FILE" \
+  "MCP_HTTP_JWT_HS256_SECRET_FILE" \
+  "MCP_HTTP_JWT_ISSUER" \
+  "MCP_HTTP_JWT_AUDIENCE" \
+  "MCP_HTTP_JWT_REQUIRED_SCOPES" \
   "ONS_DATASET_CACHE_DIR" \
   "ONS_GEO_CACHE_DIR" \
   "ONS_GEO_CACHE_INDEX_PATH" \
@@ -662,6 +671,8 @@ hydrate_env_values \
   "ADDRESSBASE_PREMIUM_DUCKDB_MEMORY_LIMIT" \
   "BOUNDARY_RUNS_DIR" \
   "BOUNDARY_RUNS_SEARCH_DIRS"
+hydrate_env_secret "MCP_HTTP_AUTH_TOKEN"
+hydrate_env_secret "MCP_HTTP_JWT_HS256_SECRET"
 
 DATA_DIR="$(resolve_host_path "$DATA_DIR")"
 LOG_DIR="$(resolve_host_path "$LOG_DIR")"

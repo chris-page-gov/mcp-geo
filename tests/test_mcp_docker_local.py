@@ -31,6 +31,14 @@ def _isolated_env(tmp_path: Path) -> dict[str, str]:
         "BOUNDARY_RUNS_DIR",
         "BOUNDARY_RUNS_SEARCH_DIRS",
         "MCP_GEO_LANDIS_DATA_ROOT",
+        "MCP_HTTP_AUTH_MODE",
+        "MCP_HTTP_AUTH_TOKEN",
+        "MCP_HTTP_AUTH_TOKEN_FILE",
+        "MCP_HTTP_JWT_HS256_SECRET",
+        "MCP_HTTP_JWT_HS256_SECRET_FILE",
+        "MCP_HTTP_JWT_ISSUER",
+        "MCP_HTTP_JWT_AUDIENCE",
+        "MCP_HTTP_JWT_REQUIRED_SCOPES",
     ):
         env.pop(key, None)
     return env
@@ -447,6 +455,63 @@ exit 1
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert _plan_value(proc.stdout, "mcp_2026_rc_enabled") == "1"
     assert _plan_value(proc.stdout, "mcp_protocol_2026_07_28_enabled") == "1"
+
+
+def test_mcp_docker_local_env_file_hydrates_http_auth_secrets(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-docker-local"
+    fake_docker = tmp_path / "docker"
+    env_file = tmp_path / "demo.env"
+    token_file = tmp_path / "http_token.txt"
+    jwt_secret_file = tmp_path / "jwt_secret.txt"
+
+    token_file.write_text("static-demo-token\n", encoding="utf-8")
+    jwt_secret_file.write_text("jwt-demo-secret\n", encoding="utf-8")
+    env_file.write_text(
+        "\n".join(
+            [
+                "MCP_HTTP_AUTH_MODE=hs256_jwt",
+                f"MCP_HTTP_AUTH_TOKEN_FILE={token_file}",
+                f"MCP_HTTP_JWT_HS256_SECRET_FILE={jwt_secret_file}",
+                "MCP_HTTP_JWT_ISSUER=https://issuer.example.test",
+                "MCP_HTTP_JWT_AUDIENCE=mcp-geo-demo",
+                "MCP_HTTP_JWT_REQUIRED_SCOPES=geo:read",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = _isolated_env(tmp_path)
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_ENV_FILE"] = str(env_file)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "mcp_http_auth_mode") == "hs256_jwt"
+    assert _plan_value(proc.stdout, "mcp_http_auth_token_present") == "true"
+    assert _plan_value(proc.stdout, "mcp_http_jwt_hs256_secret_present") == "true"
+    assert "static-demo-token" not in proc.stdout + proc.stderr
+    assert "jwt-demo-secret" not in proc.stdout + proc.stderr
 
 
 def test_mcp_http_demo_local_sets_http_defaults(tmp_path: Path) -> None:
