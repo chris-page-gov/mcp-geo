@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 LOCAL_PATH_RE = re.compile(r"/Users/[^\s`'\"<>)]*")
 EXTSSD_RE = re.compile(r"/Volumes/ExtSSD-Data(?:/Data)?[^\s`'\"<>)]*")
@@ -179,6 +180,24 @@ def sanitize_text(text: str) -> str:
         text,
     )
     return text
+
+
+def sanitize_repository_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    redacted = sanitize_text(str(url))
+    parsed = urlsplit(redacted)
+    if parsed.scheme in {"http", "https"} and "@" in parsed.netloc:
+        redacted = urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc.rsplit("@", 1)[1],
+                parsed.path,
+                parsed.query,
+                parsed.fragment,
+            )
+        )
+    return redacted
 
 
 def parse_timestamp(value: str) -> datetime | None:
@@ -349,8 +368,11 @@ def load_session_index(codex_home: Path) -> dict[str, dict[str, Any]]:
 
 def repo_matches(meta: dict[str, Any], repo_root: Path, repo_name: str) -> bool:
     cwd = str(meta.get("cwd") or "")
-    repo_root_str = str(repo_root)
-    if cwd == repo_root_str:
+    try:
+        cwd_path = Path(cwd).expanduser().resolve(strict=False)
+    except (OSError, RuntimeError):
+        cwd_path = Path(cwd)
+    if cwd_path == repo_root or repo_root in cwd_path.parents:
         return True
     if Path(cwd).name == repo_name and "/.codex/worktrees/" in cwd:
         return True
@@ -478,7 +500,7 @@ def candidate_record(candidate: Candidate, repo_root: Path) -> dict[str, Any]:
         "sourceJsonlPath": source_path,
         "sourceJsonlSha256": candidate.source_sha256,
         "gitCommitHash": candidate.git_commit_hash,
-        "repositoryUrl": candidate.repository_url,
+        "repositoryUrl": sanitize_repository_url(candidate.repository_url),
     }
 
 

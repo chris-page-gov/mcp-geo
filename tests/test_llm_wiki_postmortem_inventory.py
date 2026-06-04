@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import UTC
 from pathlib import Path
 
@@ -71,3 +72,24 @@ def test_candidate_record_uses_repo_relative_source_path(tmp_path: Path) -> None
     )
 
     assert record["sourceJsonlPath"] == "postmortem/candidate.jsonl"
+
+
+def test_candidate_record_redacts_repository_url_credentials(tmp_path: Path) -> None:
+    candidate = _candidate("Summarize this")
+    candidate.repository_url = "https://ghp_secret-token@github.com/chris-page-gov/mcp-geo.git"
+
+    record = inventory.candidate_record(candidate, tmp_path)
+
+    assert record["repositoryUrl"] == "https://github.com/chris-page-gov/mcp-geo.git"
+    assert "ghp_secret-token" not in json_dump(record)
+
+
+def test_repo_matches_accepts_repo_subdirectories(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    meta = {"cwd": str(repo_root / "server" / "mcp"), "git": {}}
+
+    assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
+
+
+def json_dump(value: object) -> str:
+    return json.dumps(value, sort_keys=True)
