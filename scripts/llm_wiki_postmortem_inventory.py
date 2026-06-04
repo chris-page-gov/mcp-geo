@@ -388,6 +388,13 @@ def load_session_index(codex_home: Path) -> dict[str, dict[str, Any]]:
 
 def repo_matches(meta: dict[str, Any], repo_root: Path, repo_name: str) -> bool:
     cwd = str(meta.get("cwd") or "")
+    git_meta = meta.get("git") or {}
+    repository_url = str(git_meta.get("repository_url") or "")
+    repository_matches = repository_url.endswith(f"/{repo_name}.git") or repository_url.endswith(
+        f"/{repo_name}"
+    )
+    if not cwd:
+        return repository_matches
     try:
         cwd_path = Path(cwd).expanduser().resolve(strict=False)
     except (OSError, RuntimeError):
@@ -404,9 +411,7 @@ def repo_matches(meta: dict[str, Any], repo_root: Path, repo_name: str) -> bool:
             return True
     if Path(cwd).name == repo_name and "/.codex/worktrees/" in cwd:
         return True
-    git_meta = meta.get("git") or {}
-    repository_url = str(git_meta.get("repository_url") or "")
-    return repository_url.endswith(f"/{repo_name}.git") or repository_url.endswith(f"/{repo_name}")
+    return repository_matches
 
 
 def infer_title(messages: list[Message], fallback: str) -> str:
