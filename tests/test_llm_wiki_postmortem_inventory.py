@@ -65,6 +65,8 @@ def test_sanitize_text_redacts_bearer_tokens() -> None:
     text = "\n".join(
         [
             "Authorization: Bearer sk-secret-token",
+            '{"Authorization": "Bearer sk-json-auth"}',
+            'headers={"authorization":"Bearer sk-compact-json-auth"}',
             "OS_API_KEY=abc123",
             "OPENAI_API_KEY=sk-openai-secret",
             '{"OPENAI_API_KEY": "sk-json-secret"}',
@@ -76,6 +78,8 @@ def test_sanitize_text_redacts_bearer_tokens() -> None:
     redacted = inventory.sanitize_text(text)
 
     assert "sk-secret-token" not in redacted
+    assert "sk-json-auth" not in redacted
+    assert "sk-compact-json-auth" not in redacted
     assert "abc123" not in redacted
     assert "sk-openai-secret" not in redacted
     assert "sk-json-secret" not in redacted
@@ -83,6 +87,8 @@ def test_sanitize_text_redacts_bearer_tokens() -> None:
     assert "ghp_secret" not in redacted
     assert "jwt-secret" not in redacted
     assert "Authorization: [REDACTED]" in redacted
+    assert '"Authorization": "[REDACTED]"' in redacted
+    assert 'headers={"authorization":"[REDACTED]"}' in redacted
     assert "OS_API_KEY=[REDACTED]" in redacted
     assert "OPENAI_API_KEY=[REDACTED]" in redacted
     assert '"OPENAI_API_KEY": "[REDACTED]"' in redacted

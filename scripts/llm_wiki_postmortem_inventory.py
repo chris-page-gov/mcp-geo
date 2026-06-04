@@ -35,7 +35,13 @@ SECRET_ASSIGNMENT_RE = re.compile(
     re.IGNORECASE,
 )
 AUTHORIZATION_HEADER_RE = re.compile(
-    r"\b(?P<key>authorization)\b(?P<sep>\s*[:=]\s*)(?:Bearer\s+)?[^\n,;]+",
+    r"(?P<key_quote>[\"']?)"
+    r"\b(?P<key>authorization)\b"
+    r"(?P=key_quote)"
+    r"(?P<sep>\s*[:=]\s*)"
+    r"(?P<value_quote>[\"']?)"
+    r"(?:Bearer\s+)?[^\n,;}\]\)\"']+"
+    r"(?P=value_quote)",
     re.IGNORECASE,
 )
 AGENTS_CONTEXT_RE = re.compile(
@@ -189,7 +195,11 @@ def sanitize_text(text: str) -> str:
     text = EXTSSD_RE.sub("[EXTSSD_DATA_PATH]", text)
     text = LOCAL_PATH_RE.sub("[LOCAL_PATH]", text)
     text = AUTHORIZATION_HEADER_RE.sub(
-        lambda match: f"{match.group('key')}{match.group('sep')}[REDACTED]",
+        lambda match: (
+            f"{match.group('key_quote')}{match.group('key')}{match.group('key_quote')}"
+            f"{match.group('sep')}{match.group('value_quote')}[REDACTED]"
+            f"{match.group('value_quote')}"
+        ),
         text,
     )
     text = SECRET_ASSIGNMENT_RE.sub(
