@@ -190,7 +190,7 @@ def test_build_release_audit_combines_schedule_probe_and_geoportal(monkeypatch) 
         "load_addressbase_epoch_schedule",
         lambda: [
             {"epoch": 126, "publication_date": "2026-04-02", "scheduled": False},
-            {"epoch": 127, "publication_date": "2026-05-14", "scheduled": True},
+            {"epoch": 127, "publication_date": "2026-07-14", "scheduled": True},
         ],
     )
     monkeypatch.setattr(
@@ -319,7 +319,7 @@ def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_in
                 }
             }
 
-        def __enter__(self) -> "DummyResponse":
+        def __enter__(self) -> DummyResponse:
             return self
 
         def __exit__(self, exc_type, exc, tb) -> None:
