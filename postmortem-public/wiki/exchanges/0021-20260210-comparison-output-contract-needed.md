@@ -18,7 +18,7 @@ tags:
 
 # 0021. Comparison Output Contract Needed
 
-Conversation reader: [start-to-finish](../readers/conv-003-claude-leamington-warwick-stats-routing.md) | Previous: [EX-0020](0020-20260210-census-query-parameter-failures.md) | Next: CONV-004 pending
+Conversation reader: [start-to-finish](../readers/conv-003-claude-leamington-warwick-stats-routing.md) | Previous: [EX-0020](0020-20260210-census-query-parameter-failures.md) | Next: [EX-0022](0022-20260415-uprn-lookup-false-not-found.md)
 
 ## Publication Boundary
 

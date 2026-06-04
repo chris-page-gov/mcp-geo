@@ -23,7 +23,13 @@ from typing import Any
 LOCAL_PATH_RE = re.compile(r"/Users/[^\s`'\"<>)]*")
 EXTSSD_RE = re.compile(r"/Volumes/ExtSSD-Data(?:/Data)?[^\s`'\"<>)]*")
 SECRET_ASSIGNMENT_RE = re.compile(
-    r"\b(OS_API_KEY|api_key|apikey|access_token|token|authorization)\b\s*[:=]\s*[^\s,;]+",
+    r"\b(?P<key>OS_API_KEY|api_key|apikey|access_token|token)\b"
+    r"(?P<sep>\s*[:=]\s*)"
+    r"(?:Bearer\s+)?[^\s,;]+",
+    re.IGNORECASE,
+)
+AUTHORIZATION_HEADER_RE = re.compile(
+    r"\b(?P<key>authorization)\b(?P<sep>\s*[:=]\s*)(?:Bearer\s+)?[^\n,;]+",
     re.IGNORECASE,
 )
 AUTOMATION_TITLE_RE = re.compile(
@@ -53,6 +59,8 @@ STATUS_MONITOR_WORDS = frozenset(
         "workflow",
     }
 )
+WORD_RE = re.compile(r"\b[a-z0-9]+\b")
+PR_WORKFLOW_RE = re.compile(r"\b(?:pr|pull request)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -136,7 +144,7 @@ class Candidate:
         prompt = self.first_user_prompt.strip().lower()
         if prompt.startswith("automation:"):
             return "automation"
-        if "pull request" in prompt or "pr" in prompt[:160]:
+        if PR_WORKFLOW_RE.search(prompt[:160]):
             return "github_workflow"
         if "review" in prompt[:240]:
             return "review"
@@ -162,7 +170,14 @@ def sha256_file(path: Path) -> str:
 def sanitize_text(text: str) -> str:
     text = EXTSSD_RE.sub("[EXTSSD_DATA_PATH]", text)
     text = LOCAL_PATH_RE.sub("[LOCAL_PATH]", text)
-    text = SECRET_ASSIGNMENT_RE.sub(lambda match: f"{match.group(1)}=[REDACTED]", text)
+    text = AUTHORIZATION_HEADER_RE.sub(
+        lambda match: f"{match.group('key')}{match.group('sep')}[REDACTED]",
+        text,
+    )
+    text = SECRET_ASSIGNMENT_RE.sub(
+        lambda match: f"{match.group('key')}{match.group('sep')}[REDACTED]",
+        text,
+    )
     return text
 
 
@@ -170,9 +185,12 @@ def parse_timestamp(value: str) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def timestamp_sort_key(candidate: Candidate) -> datetime:
@@ -207,7 +225,8 @@ def automation_title(prompt: str) -> str | None:
 
 
 def looks_like_status_monitor(normalised_prompt: str) -> bool:
-    return any(word in normalised_prompt for word in STATUS_MONITOR_WORDS)
+    tokens = set(WORD_RE.findall(normalised_prompt))
+    return "pull request" in normalised_prompt or bool(tokens & STATUS_MONITOR_WORDS)
 
 
 def repetition_profile(candidate: Candidate) -> RepetitionProfile | None:
@@ -248,7 +267,7 @@ def repetition_profile(candidate: Candidate) -> RepetitionProfile | None:
     if looks_like_status_monitor(normalised) and candidate.token_estimate <= 16_000:
         label = "Status/check monitoring"
         signature = f"status:{normalised[:180]}"
-        if "pull request" in normalised or " pr " in f" {normalised} ":
+        if PR_WORKFLOW_RE.search(normalised):
             label = "PR/check status monitoring"
             signature = "status:pr-checks"
         return RepetitionProfile("status_monitor", label, signature)
@@ -431,10 +450,13 @@ def candidate_record(candidate: Candidate, repo_root: Path) -> dict[str, Any]:
     prompt = candidate.first_user_prompt
     prompt_excerpt = compact_prompt_excerpt(prompt)
     try:
-        source_path = str(candidate.source_path.relative_to(Path.home()))
-        source_path = f"~/{source_path}"
+        source_path = str(candidate.source_path.relative_to(repo_root))
     except ValueError:
-        source_path = str(candidate.source_path)
+        try:
+            source_path = str(candidate.source_path.relative_to(Path.home()))
+            source_path = f"~/{source_path}"
+        except ValueError:
+            source_path = str(candidate.source_path)
     return {
         "sessionId": candidate.session_id,
         "startTimestamp": candidate.start_timestamp,
