@@ -2,6 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROCESS_DOCKER_TRANSPORT="${MCP_GEO_DOCKER_TRANSPORT:-}"
 
 hydrate_demo_env_value() {
   local key="$1"
@@ -54,7 +55,11 @@ for key in \
   hydrate_demo_env_value "$key"
 done
 
-export MCP_GEO_DOCKER_TRANSPORT="${MCP_GEO_DOCKER_TRANSPORT:-http}"
+if [[ -n "$PROCESS_DOCKER_TRANSPORT" ]]; then
+  export MCP_GEO_DOCKER_TRANSPORT="$PROCESS_DOCKER_TRANSPORT"
+else
+  export MCP_GEO_DOCKER_TRANSPORT="http"
+fi
 export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-http-demo}"
 export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-http-demo}"
 export MCP_GEO_POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-http-demo}"

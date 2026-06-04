@@ -665,6 +665,51 @@ exit 1
     assert _plan_value(proc.stdout, "http_port") == "8787"
 
 
+def test_mcp_http_demo_local_forces_http_over_dotenv_transport(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-http-demo-local"
+    fake_docker = tmp_path / "docker"
+    env_file = tmp_path / "demo.env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "MCP_GEO_DOCKER_TRANSPORT=stdio",
+                "MCP_GEO_HTTP_PORT=8787",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = _isolated_env(tmp_path)
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_ENV_FILE"] = str(env_file)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "transport_mode") == "http"
+    assert _plan_value(proc.stdout, "http_port") == "8787"
+
+
 def test_mcp_docker_local_plan_disables_ons_geo_cache_mounts_when_missing(
     tmp_path: Path,
 ) -> None:
