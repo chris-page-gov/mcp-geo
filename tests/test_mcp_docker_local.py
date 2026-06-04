@@ -31,6 +31,12 @@ def _isolated_env(tmp_path: Path) -> dict[str, str]:
         "BOUNDARY_RUNS_DIR",
         "BOUNDARY_RUNS_SEARCH_DIRS",
         "MCP_GEO_LANDIS_DATA_ROOT",
+        "MCP_GEO_DOCKER_TRANSPORT",
+        "MCP_GEO_HTTP_HOST",
+        "MCP_GEO_HTTP_PORT",
+        "MCP_GEO_HTTP_CONTAINER_PORT",
+        "MCP_GEO_HTTP_CONTAINER_NAME",
+        "MCP_GEO_HTTP_REPLACE",
         "MCP_HTTP_AUTH_MODE",
         "MCP_HTTP_AUTH_TOKEN",
         "MCP_HTTP_AUTH_TOKEN_FILE",
@@ -345,6 +351,62 @@ exit 1
     assert _plan_value(proc.stdout, "ons_geo_cache_index_mount_enabled") == "true"
     assert _plan_value(proc.stdout, "os_data_host_cache_dir") == str(os_data_cache)
     assert _plan_value(proc.stdout, "os_data_cache_mount_enabled") == "true"
+
+
+def test_mcp_docker_local_env_file_hydrates_http_transport_defaults(
+    tmp_path: Path,
+) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "scripts" / "mcp-docker-local"
+    fake_docker = tmp_path / "docker"
+    env_file = tmp_path / "demo.env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "MCP_GEO_DOCKER_TRANSPORT=http",
+                "MCP_GEO_HTTP_HOST=0.0.0.0",
+                "MCP_GEO_HTTP_PORT=8787",
+                "MCP_GEO_HTTP_CONTAINER_PORT=9000",
+                "MCP_GEO_HTTP_CONTAINER_NAME=custom-http",
+                "MCP_GEO_HTTP_REPLACE=0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    _write_executable(
+        fake_docker,
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "info" ]]; then
+  exit 0
+fi
+exit 1
+""",
+    )
+
+    env = _isolated_env(tmp_path)
+    env["MCP_GEO_DOCKER_BIN"] = str(fake_docker)
+    env["MCP_GEO_DOCKER_PLAN_ONLY"] = "1"
+    env["MCP_GEO_POSTGIS_REUSE_DEVCONTAINER"] = "0"
+    env["MCP_GEO_ENV_FILE"] = str(env_file)
+
+    proc = subprocess.run(
+        ["bash", str(wrapper)],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _plan_value(proc.stdout, "transport_mode") == "http"
+    assert _plan_value(proc.stdout, "http_bind_host") == "0.0.0.0"
+    assert _plan_value(proc.stdout, "http_port") == "8787"
+    assert _plan_value(proc.stdout, "http_container_port") == "9000"
+    assert _plan_value(proc.stdout, "http_container_name") == "custom-http"
+    assert _plan_value(proc.stdout, "http_replace_container") == "0"
 
 
 def test_mcp_docker_local_env_file_hydrates_documented_host_cache_vars(
