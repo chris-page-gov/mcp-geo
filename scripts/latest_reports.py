@@ -13,7 +13,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
+from server.boundary_run_paths import (  # noqa: E402
+    boundary_run_lookup_error,
+    latest_boundary_run_report,
+)
 
 try:  # Suppress loguru default sink during report runs.
     from loguru import logger
@@ -92,6 +95,8 @@ def main() -> None:
     if include_boundary:
         latest = latest_boundary_run_report(args.workdir)
         output["boundary_pipeline_latest"] = str(latest) if latest else None
+        if latest is None:
+            output["boundary_pipeline_error"] = boundary_run_lookup_error(args.workdir)
 
     cache_status = None
     if include_cache:

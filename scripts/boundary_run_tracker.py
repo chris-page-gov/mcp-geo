@@ -11,7 +11,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
+from server.boundary_run_paths import (  # noqa: E402
+    boundary_run_lookup_error,
+    latest_boundary_run_report,
+)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -314,7 +317,7 @@ def main() -> None:
     if report_path is None:
         report_path = latest_boundary_run_report(args.workdir)
     if not report_path or not report_path.exists():
-        raise SystemExit("No run_report.json found.")
+        raise SystemExit(boundary_run_lookup_error(args.workdir))
 
     manifest_path = Path(args.manifest)
     if not manifest_path.exists():

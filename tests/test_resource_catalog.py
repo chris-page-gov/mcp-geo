@@ -14,11 +14,13 @@ LEGACY_CDN_DOMAINS = frozenset({"https://unpkg.com", "https://cdn.jsdelivr.net"}
 
 def test_boundary_latest_report_missing(monkeypatch: MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", tmp_path)
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_SEARCH_DIRS", [])
     entry = resource_catalog.resolve_data_resource("boundary-latest-report")
     assert entry is not None
     content, etag, meta = resource_catalog.load_data_content(entry)
     payload = json.loads(content)
     assert payload.get("code") == "NOT_FOUND"
+    assert "No boundary run report found" in payload.get("message", "")
     assert etag
     assert meta is None
 
@@ -30,6 +32,7 @@ def test_boundary_latest_report_present(monkeypatch: MonkeyPatch, tmp_path) -> N
     report_path = report_dir / "run_report.json"
     report_path.write_text("{\"ok\":true}", encoding="utf-8")
     monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", runs_dir)
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_SEARCH_DIRS", [])
     entry = resource_catalog.resolve_data_resource("boundary-latest-report")
     assert entry is not None
     content, etag, meta = resource_catalog.load_data_content(entry)
@@ -228,6 +231,7 @@ def test_ui_resources_use_local_vendor_assets_under_widget_csp() -> None:
 def test_latest_run_report_path_missing_dir(monkeypatch: MonkeyPatch, tmp_path) -> None:
     missing_dir = tmp_path / "missing"
     monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_DIR", missing_dir)
+    monkeypatch.setattr(resource_catalog, "BOUNDARY_RUNS_SEARCH_DIRS", [])
     assert resource_catalog._latest_run_report_path() is None
 
 
