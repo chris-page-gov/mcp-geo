@@ -120,6 +120,57 @@ def test_repo_matches_rejects_missing_cwd_without_matching_remote(tmp_path: Path
     assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
 
 
+def test_parse_candidate_counts_custom_tool_calls(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    repo_root.mkdir()
+    source_path = tmp_path / "session.jsonl"
+    records = [
+        {
+            "type": "session_meta",
+            "payload": {
+                "id": "session-1",
+                "timestamp": "2026-05-14T09:00:00Z",
+                "cwd": str(repo_root),
+                "git": {},
+            },
+        },
+        {
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": "Create a patch"}],
+            },
+        },
+        {
+            "type": "response_item",
+            "payload": {"type": "function_call", "name": "exec_command"},
+        },
+        {
+            "type": "response_item",
+            "payload": {"type": "custom_tool_call", "name": "apply_patch"},
+        },
+        {
+            "type": "response_item",
+            "payload": {"type": "web_search_call", "query": "mcp geo"},
+        },
+    ]
+    source_path.write_text(
+        "\n".join(json.dumps(record) for record in records),
+        encoding="utf-8",
+    )
+
+    candidate = inventory.parse_candidate(source_path, {}, repo_root)
+
+    assert candidate is not None
+    assert candidate.tool_counts == {
+        "exec_command": 1,
+        "apply_patch": 1,
+        "web_search_call": 1,
+    }
+    assert inventory.candidate_record(candidate, repo_root)["toolCalls"] == 3
+
+
 def test_injected_agents_context_preserves_following_prompt() -> None:
     text = "\n".join(
         [

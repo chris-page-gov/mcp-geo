@@ -467,8 +467,11 @@ def parse_candidate(
                         phase=payload.get("phase"),
                     )
                 )
-            elif record_type == "response_item" and payload.get("type") == "function_call":
-                name = str(payload.get("name") or "function_call")
+            elif record_type == "response_item" and payload.get("type") in {
+                "function_call",
+                "custom_tool_call",
+            }:
+                name = str(payload.get("name") or payload.get("type") or "tool_call")
                 tool_counts[name] = tool_counts.get(name, 0) + 1
             elif record_type == "response_item" and payload.get("type") in {
                 "web_search_call",
