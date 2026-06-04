@@ -686,6 +686,7 @@ def _expected_mcp_name(method: str, params: dict[str, Any]) -> str | None:
 
 def _header_mismatch_response(
     *,
+    msg_id: Any,
     headers: dict[str, str],
     header_name: str,
     message: str,
@@ -702,7 +703,7 @@ def _header_mismatch_response(
         data["received"] = received
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content=_resp_error(None, -32001, message, data),
+        content=_resp_error(msg_id, -32001, message, data),
         headers=headers,
     )
 
@@ -712,6 +713,7 @@ def _validate_standard_headers(
     request: Request,
     method: str,
     params: dict[str, Any],
+    msg_id: Any,
     protocol_version: str,
     headers: dict[str, str],
 ) -> JSONResponse | None:
@@ -721,6 +723,7 @@ def _validate_standard_headers(
         _record_standard_header_observation("Mcp-Method", "missing")
         if strict:
             return _header_mismatch_response(
+                msg_id=msg_id,
                 headers=headers,
                 header_name="Mcp-Method",
                 message="Missing Mcp-Method header",
@@ -730,6 +733,7 @@ def _validate_standard_headers(
         _record_standard_header_observation("Mcp-Method", "mismatch")
         if strict:
             return _header_mismatch_response(
+                msg_id=msg_id,
                 headers=headers,
                 header_name="Mcp-Method",
                 message="Mcp-Method header mismatch",
@@ -745,6 +749,7 @@ def _validate_standard_headers(
         _record_standard_header_observation("Mcp-Name", "missing")
         if strict:
             return _header_mismatch_response(
+                msg_id=msg_id,
                 headers=headers,
                 header_name="Mcp-Name",
                 message="Missing Mcp-Name header",
@@ -754,6 +759,7 @@ def _validate_standard_headers(
         _record_standard_header_observation("Mcp-Name", "mismatch")
         if strict:
             return _header_mismatch_response(
+                msg_id=msg_id,
                 headers=headers,
                 header_name="Mcp-Name",
                 message="Mcp-Name header mismatch",
@@ -1011,6 +1017,7 @@ async def mcp_endpoint(request: Request):
         request=request,
         method=method,
         params=params,
+        msg_id=msg_id,
         protocol_version=protocol_version,
         headers=headers,
     )

@@ -77,6 +77,7 @@ def test_mcp_2026_rc_requires_standard_headers_in_strict_mode(client, monkeypatc
 
     assert resp.status_code == 400
     error = resp.json()["error"]
+    assert resp.json()["id"] == "list-1"
     assert error["code"] == -32001
     assert error["message"] == "Missing Mcp-Method header"
     assert error["data"]["type"] == "HeaderMismatch"
@@ -101,6 +102,7 @@ def test_mcp_2026_rc_name_header_mismatch_uses_header_mismatch(client, monkeypat
 
     assert resp.status_code == 400
     error = resp.json()["error"]
+    assert resp.json()["id"] == "read-1"
     assert error["code"] == -32001
     assert error["message"] == "Mcp-Name header mismatch"
     assert error["data"] == {
