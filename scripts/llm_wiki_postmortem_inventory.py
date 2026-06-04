@@ -427,6 +427,8 @@ def repo_matches(meta: dict[str, Any], repo_root: Path, repo_name: str) -> bool:
             and parts[index + 2] == repo_name
         ):
             return True
+    if repo_name in parts:
+        return True
     if Path(cwd).name == repo_name and "/.codex/worktrees/" in cwd:
         return True
     return repository_matches

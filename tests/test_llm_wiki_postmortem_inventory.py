@@ -136,6 +136,20 @@ def test_repo_matches_accepts_codex_worktree_subdirectories(tmp_path: Path) -> N
     assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
 
 
+def test_repo_matches_accepts_other_checkout_with_exact_repo_segment(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    meta = {"cwd": "/Users/example/repos/mcp-geo/server", "git": {}}
+
+    assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
+
+
+def test_repo_matches_rejects_partial_repo_name_segment(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    meta = {"cwd": "/Users/example/repos/mcp-geology/server", "git": {}}
+
+    assert inventory.repo_matches(meta, repo_root, "mcp-geo") is False
+
+
 def test_repo_matches_rejects_missing_cwd_without_matching_remote(tmp_path: Path) -> None:
     repo_root = tmp_path / "mcp-geo"
     assert inventory.repo_matches({"git": {}}, repo_root, "mcp-geo") is False
