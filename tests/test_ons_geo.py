@@ -524,6 +524,11 @@ def test_ons_geo_by_uprn_exact_mode(tmp_path: Path, monkeypatch) -> None:
         db_name=db_name,
         index_path=index_path,
     )
+    monkeypatch.setattr(
+        ons_geo_tools,
+        "summarize_uprn_dataset_freshness",
+        lambda **_: {"status": "current", "lagEpochs": 0},
+    )
 
     resp = client.post(
         "/tools/call",
