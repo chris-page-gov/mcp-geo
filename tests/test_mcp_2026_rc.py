@@ -63,8 +63,24 @@ def test_mcp_2026_rc_rejected_without_feature_flag(client, monkeypatch):
 
     assert resp.status_code == 400
     body = resp.json()
+    assert body["id"] == "discover-1"
     assert body["error"]["message"] == "Unsupported protocol version"
     assert PROTOCOL_VERSION in body["error"]["data"]["supported"]
+
+
+def test_mcp_2026_rc_meta_protocol_error_preserves_request_id(client, monkeypatch):
+    monkeypatch.delenv("MCP_2026_RC_ENABLED", raising=False)
+    resp = client.post(
+        "/mcp",
+        json=_rpc("list-1", "tools/list", {"_meta": _rc_meta()}),
+    )
+
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["id"] == "list-1"
+    assert body["error"]["code"] == -32600
+    assert body["error"]["message"] == "Unsupported protocol version"
+    assert body["error"]["data"]["requested"] == MCP_2026_RC_PROTOCOL_VERSION
 
 
 def test_mcp_2026_rc_requires_standard_headers_in_strict_mode(client, monkeypatch):

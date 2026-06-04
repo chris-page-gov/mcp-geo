@@ -552,6 +552,7 @@ def _initialize(
 
 def _protocol_error_response(
     *,
+    msg_id: Any,
     headers: dict[str, str],
     message: str,
     requested: str | None = None,
@@ -564,7 +565,7 @@ def _protocol_error_response(
         data["negotiated"] = negotiated
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content=_resp_error(None, -32600, message, data),
+        content=_resp_error(msg_id, -32600, message, data),
         headers=headers,
     )
 
@@ -583,6 +584,7 @@ def _resolve_request_protocol_version(
         return (
             PROTOCOL_VERSION,
             _protocol_error_response(
+                msg_id=msg_id,
                 headers=headers,
                 message="Unsupported protocol version",
                 requested=header_version,
@@ -595,6 +597,7 @@ def _resolve_request_protocol_version(
         return (
             PROTOCOL_VERSION,
             _protocol_error_response(
+                msg_id=msg_id,
                 headers=headers,
                 message="Unsupported protocol version",
                 requested=request_meta_version,
@@ -609,6 +612,7 @@ def _resolve_request_protocol_version(
         return (
             PROTOCOL_VERSION,
             _protocol_error_response(
+                msg_id=msg_id,
                 headers=headers,
                 message="Unsupported protocol version",
                 requested=meta_version,
@@ -636,6 +640,7 @@ def _resolve_request_protocol_version(
             return (
                 negotiated,
                 _protocol_error_response(
+                    msg_id=msg_id,
                     headers=headers,
                     message="_meta.protocolVersion does not match negotiated session protocol",
                     requested=meta_version,
