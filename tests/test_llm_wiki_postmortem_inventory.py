@@ -138,6 +138,22 @@ def test_repo_matches_rejects_missing_cwd_without_matching_remote(tmp_path: Path
     assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
 
 
+def test_repo_matches_accepts_ssh_remote_when_cwd_is_missing(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    meta = {"git": {"repository_url": "git@github.com:chris-page-gov/mcp-geo.git"}}
+
+    assert inventory.repo_matches(meta, repo_root, "mcp-geo") is True
+
+
+def test_repo_matches_rejects_nonmatching_ssh_remote_when_cwd_is_missing(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    meta = {"git": {"repository_url": "git@github.com:chris-page-gov/other-repo.git"}}
+
+    assert inventory.repo_matches(meta, repo_root, "mcp-geo") is False
+
+
 def test_parse_candidate_counts_custom_tool_calls(tmp_path: Path) -> None:
     repo_root = tmp_path / "mcp-geo"
     repo_root.mkdir()

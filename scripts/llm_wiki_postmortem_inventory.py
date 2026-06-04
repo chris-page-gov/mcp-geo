@@ -391,13 +391,17 @@ def load_session_index(codex_home: Path) -> dict[str, dict[str, Any]]:
     return index
 
 
+def repository_url_matches_repo(repository_url: str, repo_name: str) -> bool:
+    remote_path = repository_url.strip().rstrip("/").replace(":", "/")
+    remote_repo_name = remote_path.rsplit("/", 1)[-1]
+    return remote_repo_name in {repo_name, f"{repo_name}.git"}
+
+
 def repo_matches(meta: dict[str, Any], repo_root: Path, repo_name: str) -> bool:
     cwd = str(meta.get("cwd") or "")
     git_meta = meta.get("git") or {}
     repository_url = str(git_meta.get("repository_url") or "")
-    repository_matches = repository_url.endswith(f"/{repo_name}.git") or repository_url.endswith(
-        f"/{repo_name}"
-    )
+    repository_matches = repository_url_matches_repo(repository_url, repo_name)
     if not cwd:
         return repository_matches
     try:
