@@ -70,6 +70,7 @@ STATUS_MONITOR_WORDS = frozenset(
 )
 WORD_RE = re.compile(r"\b[a-z0-9]+\b")
 PR_WORKFLOW_RE = re.compile(r"\b(?:pr|pull request)\b", re.IGNORECASE)
+PR_REFERENCE_RE = re.compile(r"\b(?:pr|pull request)\s*#?\s*(\d+)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -269,6 +270,7 @@ def repetition_profile(candidate: Candidate) -> RepetitionProfile | None:
         signature = f"automation:{normalise_prompt_for_signature(title)}"
         return RepetitionProfile("automation", title, signature, global_group=True)
 
+    pr_reference = PR_REFERENCE_RE.search(prompt)
     normalised = normalise_prompt_for_signature(prompt)
     if not normalised:
         return None
@@ -299,7 +301,10 @@ def repetition_profile(candidate: Candidate) -> RepetitionProfile | None:
         signature = f"status:{normalised[:180]}"
         if PR_WORKFLOW_RE.search(normalised):
             label = "PR/check status monitoring"
-            signature = "status:pr-checks"
+            if pr_reference:
+                signature = f"status:pr-checks:{pr_reference.group(1)}"
+            else:
+                signature = f"status:pr-checks:{normalised[:180]}"
         return RepetitionProfile("status_monitor", label, signature)
 
     return RepetitionProfile(

@@ -43,6 +43,19 @@ def test_status_monitor_detection_matches_terms_not_substrings() -> None:
     assert profile.category == "repeated_prompt"
 
 
+def test_pr_status_signatures_keep_distinct_pr_numbers() -> None:
+    pr_78_profile = inventory.repetition_profile(_candidate("Please review PR #78"))
+    pr_91_profile = inventory.repetition_profile(_candidate("Please review PR #91"))
+    pr_78_status_profile = inventory.repetition_profile(_candidate("Please check PR 78 status"))
+
+    assert pr_78_profile is not None
+    assert pr_91_profile is not None
+    assert pr_78_status_profile is not None
+    assert pr_78_profile.signature == "status:pr-checks:78"
+    assert pr_78_status_profile.signature == "status:pr-checks:78"
+    assert pr_91_profile.signature == "status:pr-checks:91"
+
+
 def test_sanitize_text_redacts_bearer_tokens() -> None:
     text = "\n".join(
         [
