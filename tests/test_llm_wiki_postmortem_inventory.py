@@ -314,5 +314,63 @@ def test_injected_agents_context_preserves_following_prompt() -> None:
     assert inventory.infer_title(candidate.messages, "Fallback") == "Please review PR #78"
 
 
+def test_parse_candidate_skips_standalone_agents_context_message(tmp_path: Path) -> None:
+    repo_root = tmp_path / "mcp-geo"
+    repo_root.mkdir()
+    source_path = tmp_path / "session.jsonl"
+    agents_context = "\n".join(
+        [
+            "# AGENTS.md instructions for /workspace/mcp-geo",
+            "",
+            "<INSTRUCTIONS>",
+            "Repository guidance.",
+            "</INSTRUCTIONS>",
+            "<environment_context>",
+            "<cwd>/workspace/mcp-geo</cwd>",
+            "</environment_context>",
+        ]
+    )
+    records = [
+        {
+            "type": "session_meta",
+            "payload": {
+                "id": "session-1",
+                "timestamp": "2026-05-14T09:00:00Z",
+                "cwd": str(repo_root),
+                "git": {},
+            },
+        },
+        {
+            "type": "response_item",
+            "timestamp": "2026-05-14T09:00:01Z",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": agents_context}],
+            },
+        },
+        {
+            "type": "response_item",
+            "timestamp": "2026-05-14T09:00:02Z",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": "Please review PR #78"}],
+            },
+        },
+    ]
+    source_path.write_text(
+        "\n".join(json.dumps(record) for record in records),
+        encoding="utf-8",
+    )
+
+    candidate = inventory.parse_candidate(source_path, {}, repo_root)
+
+    assert candidate is not None
+    assert candidate.user_message_count == 1
+    assert candidate.first_user_prompt == "Please review PR #78"
+    assert "Repository guidance" not in json_dump(inventory.candidate_record(candidate, repo_root))
+
+
 def json_dump(value: object) -> str:
     return json.dumps(value, sort_keys=True)

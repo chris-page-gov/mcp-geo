@@ -501,7 +501,7 @@ def parse_candidate(
                 if role not in {"user", "assistant"}:
                     continue
                 text = message_text(payload.get("content", []))
-                if not text or is_environment_only(text):
+                if not text or is_environment_only(text) or is_context_only(text):
                     continue
                 messages.append(
                     Message(
