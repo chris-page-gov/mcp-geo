@@ -67,6 +67,8 @@ def test_sanitize_text_redacts_bearer_tokens() -> None:
             "Authorization: Bearer sk-secret-token",
             "OS_API_KEY=abc123",
             "OPENAI_API_KEY=sk-openai-secret",
+            '{"OPENAI_API_KEY": "sk-json-secret"}',
+            "{'GITHUB_TOKEN': 'ghp_json_secret'}",
             "GITHUB_TOKEN=ghp_secret",
             "MCP_HTTP_JWT_HS256_SECRET=jwt-secret",
         ]
@@ -76,11 +78,15 @@ def test_sanitize_text_redacts_bearer_tokens() -> None:
     assert "sk-secret-token" not in redacted
     assert "abc123" not in redacted
     assert "sk-openai-secret" not in redacted
+    assert "sk-json-secret" not in redacted
+    assert "ghp_json_secret" not in redacted
     assert "ghp_secret" not in redacted
     assert "jwt-secret" not in redacted
     assert "Authorization: [REDACTED]" in redacted
     assert "OS_API_KEY=[REDACTED]" in redacted
     assert "OPENAI_API_KEY=[REDACTED]" in redacted
+    assert '"OPENAI_API_KEY": "[REDACTED]"' in redacted
+    assert "'GITHUB_TOKEN': '[REDACTED]'" in redacted
     assert "GITHUB_TOKEN=[REDACTED]" in redacted
     assert "MCP_HTTP_JWT_HS256_SECRET=[REDACTED]" in redacted
 

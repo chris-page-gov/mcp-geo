@@ -24,9 +24,14 @@ from urllib.parse import urlsplit, urlunsplit
 LOCAL_PATH_RE = re.compile(r"/Users/[^\s`'\"<>)]*")
 EXTSSD_RE = re.compile(r"/Volumes/ExtSSD-Data(?:/Data)?[^\s`'\"<>)]*")
 SECRET_ASSIGNMENT_RE = re.compile(
+    r"(?P<key_quote>[\"']?)"
     r"\b(?P<key>[A-Za-z0-9_]*(?:api_key|apikey|access_token|token|secret))\b"
+    r"(?P=key_quote)"
     r"(?P<sep>\s*[:=]\s*)"
-    r"(?:Bearer\s+)?[^\s,;]+",
+    r"(?:Bearer\s+)?"
+    r"(?P<value_quote>[\"']?)"
+    r"[^\s,;}\]\)\"']+"
+    r"(?P=value_quote)",
     re.IGNORECASE,
 )
 AUTHORIZATION_HEADER_RE = re.compile(
@@ -188,7 +193,11 @@ def sanitize_text(text: str) -> str:
         text,
     )
     text = SECRET_ASSIGNMENT_RE.sub(
-        lambda match: f"{match.group('key')}{match.group('sep')}[REDACTED]",
+        lambda match: (
+            f"{match.group('key_quote')}{match.group('key')}{match.group('key_quote')}"
+            f"{match.group('sep')}{match.group('value_quote')}[REDACTED]"
+            f"{match.group('value_quote')}"
+        ),
         text,
     )
     return text
