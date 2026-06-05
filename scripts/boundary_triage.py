@@ -12,7 +12,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import scripts.boundary_run_tracker as tracker  # noqa: E402
-from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
+from server.boundary_run_paths import (  # noqa: E402
+    boundary_run_lookup_error,
+    latest_boundary_run_report,
+)
 
 ERROR_FIXES = {
     "code_field_missing": {
@@ -149,7 +152,7 @@ def main() -> None:
     args = parse_args()
     report_path = latest_boundary_run_report(args.workdir)
     if report_path is None:
-        raise SystemExit("No run_report.json found.")
+        raise SystemExit(boundary_run_lookup_error(args.workdir))
     report = _load_json(report_path)
     manifest = _load_json(Path(args.manifest))
     summary = tracker._summarize(report, manifest)["summary"]

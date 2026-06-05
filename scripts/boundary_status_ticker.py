@@ -5,7 +5,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +14,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import scripts.boundary_run_tracker as tracker  # noqa: E402
-from server.boundary_run_paths import latest_boundary_run_report  # noqa: E402
+from server.boundary_run_paths import (  # noqa: E402
+    boundary_run_lookup_error,
+    latest_boundary_run_report,
+)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -43,7 +46,7 @@ def _print_status(report_path: Path, manifest_path: Path) -> None:
     summary = tracker._summarize(report, manifest)["summary"]
     errors = _error_counts(report)
     exceptions = len(report.get("exceptions", []) or [])
-    timestamp = datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%SZ")
     line = (
         f"[{timestamp}] families_ok={summary['families_ok']}/{summary['families_total']} "
         f"downloads_ok={summary['download_ok']}/{summary['download_expected']} "
@@ -67,7 +70,7 @@ def main() -> None:
     args = parse_args()
     report_path = latest_boundary_run_report(args.workdir)
     if report_path is None:
-        raise SystemExit("No run_report.json found.")
+        raise SystemExit(boundary_run_lookup_error(args.workdir))
     manifest_path = Path(args.manifest)
     if not manifest_path.exists():
         raise SystemExit(f"Missing manifest at {manifest_path}")
@@ -77,7 +80,7 @@ def main() -> None:
     while True:
         report_path = latest_boundary_run_report(args.workdir)
         if report_path is None:
-            print("Waiting for run_report.json...")
+            print(f"Waiting for run_report.json. {boundary_run_lookup_error(args.workdir)}")
         else:
             _print_status(report_path, manifest_path)
         time.sleep(max(5, args.interval))

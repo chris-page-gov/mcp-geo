@@ -10,6 +10,7 @@ from typing import Any, Optional
 from urllib.parse import quote
 
 from server.boundary_run_paths import (
+    boundary_run_lookup_error,
     configured_boundary_run_dir,
     configured_boundary_run_search_dirs,
     latest_boundary_run_report,
@@ -1289,7 +1290,14 @@ def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] |
         latest = _latest_run_report_path()
         if not latest:
             content = json.dumps(
-                {"isError": True, "code": "NOT_FOUND", "message": "No run report found."}
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": boundary_run_lookup_error(
+                        BOUNDARY_RUNS_DIR,
+                        BOUNDARY_RUNS_SEARCH_DIRS,
+                    ),
+                }
             )
             return content, _etag_from_bytes(b"missing", "boundary-latest-report"), None
         content, etag = _load_json_file(latest)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -87,3 +88,43 @@ def latest_boundary_run_report(
                 best_key = key
                 best_path = report_path
     return best_path
+
+
+def _missing_path_reason(path: Path) -> str:
+    if path.is_symlink():
+        try:
+            target = os.readlink(path)
+        except OSError:
+            target = "<unreadable>"
+        return f"broken symlink to {target}"
+    parts = path.parts
+    if len(parts) >= 3 and parts[1] == "Volumes":
+        volume = Path(parts[0], parts[1], parts[2])
+        if not volume.exists():
+            return f"external volume {volume} is not mounted"
+    return "path does not exist"
+
+
+def boundary_run_lookup_error(
+    primary: str | Path | None = None,
+    search_dirs: Iterable[str | Path] | None = None,
+) -> str:
+    roots = boundary_run_dirs(primary, search_dirs)
+    if not roots:
+        return "No boundary run directories are configured."
+
+    details: list[str] = []
+    for root in roots:
+        if root.is_dir():
+            details.append(f"{root} (no */run_report.json files)")
+        elif root.exists():
+            details.append(f"{root} (not a directory)")
+        else:
+            details.append(f"{root} ({_missing_path_reason(root)})")
+
+    return (
+        "No boundary run report found. Searched: "
+        + "; ".join(details)
+        + ". If the archive lives on an external SSD, mount the drive or update "
+        "BOUNDARY_RUNS_DIR/BOUNDARY_RUNS_SEARCH_DIRS."
+    )
