@@ -16,6 +16,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from server.boundary_run_paths import (  # noqa: E402
+    boundary_run_lookup_error,
     latest_boundary_run_report,
     resolve_boundary_run_dir,
 )
@@ -86,7 +87,7 @@ def main() -> None:
     for iteration in range(1, args.max_iterations + 1):
         report_path = latest_boundary_run_report(run_root)
         if report_path is None:
-            raise SystemExit("No run_report.json produced by pipeline.")
+            raise SystemExit(boundary_run_lookup_error(run_root))
         report = _load_json(report_path)
         errors = report.get("errors", []) or []
         if not errors:

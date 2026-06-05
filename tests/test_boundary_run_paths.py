@@ -49,3 +49,14 @@ def test_latest_boundary_run_report_prefers_primary_when_run_ids_tie(tmp_path: P
     latest = boundary_run_paths.latest_boundary_run_report(primary, [external_data_root])
 
     assert latest == primary_report
+
+
+def test_boundary_run_lookup_error_mentions_missing_external_volume() -> None:
+    message = boundary_run_paths.boundary_run_lookup_error(
+        "/tmp/mcp-geo-missing-boundary-runs",
+        ["/Volumes/DefinitelyMissingExtSSD/Data"],
+    )
+
+    assert "No boundary run report found" in message
+    assert "external volume /Volumes/DefinitelyMissingExtSSD is not mounted" in message
+    assert "BOUNDARY_RUNS_DIR/BOUNDARY_RUNS_SEARCH_DIRS" in message
