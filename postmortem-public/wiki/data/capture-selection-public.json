@@ -1,0 +1,110 @@
+[
+  {
+    "capture_id": "CAP-001",
+    "session_id": "019c2ffd-c59f-7bd2-b989-db8a21019ca0",
+    "date": "2026-02-05",
+    "priority": 1,
+    "effort_band": "large",
+    "estimated_visible_tokens": 138487,
+    "tool_calls": 869,
+    "title": "Claude Opus 4.6 MCP comprehension gap analysis",
+    "public_source_signals": [
+      "docs/Claude_failed_conversation.md",
+      "docs/Claude_success_conversation.md",
+      "docs/Claude_opus_4-6_failed_convo_1.md",
+      "docs/claude_opus_4-6_failed_convo_2.md"
+    ],
+    "recommended_conversation": "CONV-002/CONV-003 context",
+    "status": "context-used-in-conv-002-and-conv-003"
+  },
+  {
+    "capture_id": "CAP-002",
+    "session_id": "019c5742-38dd-7361-9ebc-675c1c6768d9",
+    "date": "2026-02-13",
+    "priority": 2,
+    "effort_band": "small",
+    "estimated_visible_tokens": 4883,
+    "tool_calls": 70,
+    "title": "Track Claude CV1 3HB map failure and oversized return behaviour",
+    "public_source_signals": [
+      "docs/Claude_failed_conversation.md"
+    ],
+    "recommended_conversation": "CONV-002",
+    "status": "curated-in-conv-002"
+  },
+  {
+    "capture_id": "CAP-003",
+    "session_id": "019c5d1f-c361-7110-9db2-3da81253f3e9",
+    "date": "2026-02-14",
+    "priority": 3,
+    "effort_band": "small",
+    "estimated_visible_tokens": 4384,
+    "tool_calls": 24,
+    "title": "Constrained CV1 3HB os_places.by_postcode probe",
+    "public_source_signals": [
+      "docs/Claude_success_conversation.md"
+    ],
+    "recommended_conversation": "CONV-002",
+    "status": "curated-in-conv-002"
+  },
+  {
+    "capture_id": "CAP-004",
+    "session_id": "019c5d25-3c0f-76c3-95c7-b070f940db9e",
+    "date": "2026-02-14",
+    "priority": 4,
+    "effort_band": "small",
+    "estimated_visible_tokens": 4020,
+    "tool_calls": 1,
+    "title": "Exact CV1 3HB MCP tools/call sanity check",
+    "public_source_signals": [
+      "docs/Claude_success_conversation.md"
+    ],
+    "recommended_conversation": "CONV-002",
+    "status": "curated-in-conv-002"
+  },
+  {
+    "capture_id": "CAP-005",
+    "session_id": "019c3a1d-530b-71e3-b8ab-e21009305395",
+    "date": "2026-02-07",
+    "priority": 5,
+    "effort_band": "small",
+    "estimated_visible_tokens": 5270,
+    "tool_calls": 75,
+    "title": "Claude Warwick/Leamington OS-data overload follow-up",
+    "public_source_signals": [
+      "docs/claude_opus_4-6_failed_convo_2.md"
+    ],
+    "recommended_conversation": "CONV-003",
+    "status": "curated-in-conv-003"
+  },
+  {
+    "capture_id": "CAP-006",
+    "session_id": "019c48f1-6a2c-7361-ae37-726cce23e500",
+    "date": "2026-02-10",
+    "priority": 6,
+    "effort_band": "medium",
+    "estimated_visible_tokens": 16018,
+    "tool_calls": 433,
+    "title": "NOMIS/statistics routing failure follow-up",
+    "public_source_signals": [
+      "docs/Claude_opus_4-6_failed_convo_1.md"
+    ],
+    "recommended_conversation": "CONV-003",
+    "status": "curated-in-conv-003"
+  },
+  {
+    "capture_id": "CAP-007",
+    "session_id": "019d90c0-d4cf-75b0-adb4-7253ce356054",
+    "date": "2026-04-15",
+    "priority": 7,
+    "effort_band": "small",
+    "estimated_visible_tokens": 6634,
+    "tool_calls": 97,
+    "title": "Claude ONS UPRN shard-ingestion incident",
+    "public_source_signals": [
+      "CONTEXT.md"
+    ],
+    "recommended_conversation": "CONV-004",
+    "status": "curated-in-conv-004"
+  }
+]

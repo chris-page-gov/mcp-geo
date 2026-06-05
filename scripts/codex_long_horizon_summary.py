@@ -480,12 +480,31 @@ def _default_svg_template_path() -> Path:
     )
 
 
+def _looks_like_stale_skill_template_path(path: Path) -> bool:
+    parts = set(path.parts)
+    return (
+        path.name == "summary_card.svg.tmpl"
+        and "skills" in parts
+        and "mcp-geo-long-horizon-summary" in parts
+    )
+
+
+def _resolve_svg_template_path(template_path: Path | None) -> Path:
+    resolved_template = (template_path or _default_svg_template_path()).expanduser()
+    if resolved_template.exists() or template_path is None:
+        return resolved_template
+    default_template = _default_svg_template_path()
+    if _looks_like_stale_skill_template_path(resolved_template) and default_template.exists():
+        return default_template
+    return resolved_template
+
+
 def render_summary_card_svg(
     summary: dict[str, Any],
     title: str = SUMMARY_TITLE_DEFAULT,
     template_path: Path | None = None,
 ) -> str:
-    resolved_template = (template_path or _default_svg_template_path()).expanduser()
+    resolved_template = _resolve_svg_template_path(template_path)
     template_text = resolved_template.read_text(encoding="utf-8")
     template = Template(template_text)
     return template.safe_substitute(_card_template_context(summary, title))

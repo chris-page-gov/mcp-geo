@@ -26,5 +26,138 @@
     "path": "research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md",
     "type": "research",
     "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-005",
+    "title": "Repeatable Conversation Postmortem Workflow",
+    "path": "postmortem-public/wiki/repeatable-workflow.md",
+    "type": "workflow",
+    "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-006",
+    "title": "Repository LLM-Wiki Postmortem Workflow Note",
+    "path": "docs/llm_wiki_postmortem_workflow.md",
+    "type": "workflow",
+    "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-007",
+    "title": "Codex Session Candidate Inventory Script",
+    "path": "scripts/llm_wiki_postmortem_inventory.py",
+    "type": "script",
+    "conversation": "CONV-001"
+  },
+  {
+    "artifact_id": "ART-008",
+    "title": "Selected Conversation Capture Queue",
+    "path": "postmortem-public/wiki/capture-selection.md",
+    "type": "selection",
+    "conversation": "CONV-002-CONV-004"
+  },
+  {
+    "artifact_id": "ART-009",
+    "title": "Claude Failed Conversation Example",
+    "path": "docs/Claude_failed_conversation.md",
+    "type": "source-example",
+    "conversation": "CONV-002"
+  },
+  {
+    "artifact_id": "ART-010",
+    "title": "Claude Success Conversation Example",
+    "path": "docs/Claude_success_conversation.md",
+    "type": "source-example",
+    "conversation": "CONV-002"
+  },
+  {
+    "artifact_id": "ART-011",
+    "title": "Claude Opus Failed Conversation Example 1",
+    "path": "docs/Claude_opus_4-6_failed_convo_1.md",
+    "type": "source-example",
+    "conversation": "CONV-003"
+  },
+  {
+    "artifact_id": "ART-012",
+    "title": "Claude Opus Failed Conversation Example 2",
+    "path": "docs/claude_opus_4-6_failed_convo_2.md",
+    "type": "source-example",
+    "conversation": "CONV-003"
+  },
+  {
+    "artifact_id": "ART-013",
+    "title": "CONV-002 Public Source Note",
+    "path": "postmortem-public/wiki/sources/conv-002-claude-cv1-map-failure-success.md",
+    "type": "source-note",
+    "conversation": "CONV-002"
+  },
+  {
+    "artifact_id": "ART-014",
+    "title": "CONV-002 Start-to-Finish Reader",
+    "path": "postmortem-public/wiki/readers/conv-002-claude-cv1-map-failure-success.md",
+    "type": "reader",
+    "conversation": "CONV-002"
+  },
+  {
+    "artifact_id": "ART-015",
+    "title": "CONV-002 Exchange Notes",
+    "path": "postmortem-public/wiki/exchanges/",
+    "type": "exchange-set",
+    "conversation": "CONV-002"
+  },
+  {
+    "artifact_id": "ART-016",
+    "title": "CONV-003 Public Source Note",
+    "path": "postmortem-public/wiki/sources/conv-003-claude-leamington-warwick-stats-routing.md",
+    "type": "source-note",
+    "conversation": "CONV-003"
+  },
+  {
+    "artifact_id": "ART-017",
+    "title": "CONV-003 Start-to-Finish Reader",
+    "path": "postmortem-public/wiki/readers/conv-003-claude-leamington-warwick-stats-routing.md",
+    "type": "reader",
+    "conversation": "CONV-003"
+  },
+  {
+    "artifact_id": "ART-018",
+    "title": "CONV-003 Exchange Notes",
+    "path": "postmortem-public/wiki/exchanges/",
+    "type": "exchange-set",
+    "conversation": "CONV-003"
+  },
+  {
+    "artifact_id": "ART-019",
+    "title": "CONV-004 Public Source Note",
+    "path": "postmortem-public/wiki/sources/conv-004-ons-uprn-shard-ingestion-incident.md",
+    "type": "source-note",
+    "conversation": "CONV-004"
+  },
+  {
+    "artifact_id": "ART-020",
+    "title": "CONV-004 Start-to-Finish Reader",
+    "path": "postmortem-public/wiki/readers/conv-004-ons-uprn-shard-ingestion-incident.md",
+    "type": "reader",
+    "conversation": "CONV-004"
+  },
+  {
+    "artifact_id": "ART-021",
+    "title": "CONV-004 Exchange Notes",
+    "path": "postmortem-public/wiki/exchanges/",
+    "type": "exchange-set",
+    "conversation": "CONV-004"
+  },
+  {
+    "artifact_id": "ART-022",
+    "title": "ONS Cache Refresh Script",
+    "path": "scripts/ons_geo_cache_refresh.py",
+    "type": "code",
+    "conversation": "CONV-004"
+  },
+  {
+    "artifact_id": "ART-023",
+    "title": "ONS Cache Refresh Regression Tests",
+    "path": "tests/test_ons_geo_cache_refresh.py",
+    "type": "test",
+    "conversation": "CONV-004"
   }
 ]

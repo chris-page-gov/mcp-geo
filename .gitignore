@@ -259,3 +259,7 @@ research/Archive/
 # Obsidian knowledge-base local overlay (canonical vault remains tracked)
 Obsidian/MCP Geo Knowledge Base/98 Local Overlay/
 data/knowledge_base/obsidian_kb_overlay_manifest.json
+
+# Private LLM-wiki/postmortem source archive. Publish only curated derivatives
+# under postmortem-public/.
+postmortem/
