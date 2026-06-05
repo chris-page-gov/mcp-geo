@@ -523,7 +523,9 @@ def _initialize(
 ) -> dict[str, Any]:
     requested = params.get("protocolVersion")
     resolved = normalize_protocol_version(protocol_version)
-    if requested is not None:
+    if resolved == MCP_2026_RC_PROTOCOL_VERSION:
+        protocol_version = resolved
+    elif requested is not None:
         protocol_version = negotiate_protocol_version(requested)
     elif resolved and is_supported_protocol_version(resolved):
         protocol_version = resolved

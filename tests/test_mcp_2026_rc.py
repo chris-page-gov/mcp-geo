@@ -270,6 +270,31 @@ def test_mcp_2026_rc_header_only_initialize_negotiates_rc_stateless(client, monk
     assert http_transport._SESSION_STATE == {}
 
 
+def test_mcp_2026_rc_header_initialize_does_not_downgrade_to_stable_body(
+    client, monkeypatch
+):
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
+    resp = client.post(
+        "/mcp",
+        headers={
+            "mcp-protocol-version": MCP_2026_RC_PROTOCOL_VERSION,
+            "mcp-method": "initialize",
+        },
+        json=_rpc(
+            "init-1",
+            "initialize",
+            {"protocolVersion": PROTOCOL_VERSION, "capabilities": {}},
+        ),
+    )
+
+    assert resp.status_code == 200
+    assert resp.headers.get("mcp-protocol-version") == MCP_2026_RC_PROTOCOL_VERSION
+    assert "mcp-session-id" not in resp.headers
+    assert resp.json()["result"]["protocolVersion"] == MCP_2026_RC_PROTOCOL_VERSION
+    assert http_transport._SESSION_STATE == {}
+
+
 def test_mcp_2026_rc_resource_not_found_uses_invalid_params(client, monkeypatch):
     monkeypatch.setenv("MCP_2026_RC_ENABLED", "1")
     uri = "ui://mcp-geo/unknown"
